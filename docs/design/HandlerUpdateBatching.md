@@ -21,9 +21,11 @@ Pending properties are distinct and retain relative last-occurrence order. For e
 
 Handlers reuse an indexed pending-property list, its lookup dictionary, and the dispatcher callback after their first automatic batch. This keeps enqueue and move-to-last operations O(1) without allocating linked-list nodes or callback closures for each batch.
 
+Synchronous barriers clear pending properties, not the outstanding dispatcher callback. Later automatic updates reuse that callback until it runs, so repeated barriers within one dispatcher turn do not post duplicate callbacks. The callback belongs to the handler, not a particular virtual view; replacing or disconnecting the view discards its pending properties, and the callback only processes the current queue.
+
 Accessing `PlatformView` or `ContainerView`, invoking any command -- including measure invalidation -- committing an explicit batch, changing the virtual view, and disconnecting the handler are barriers. Platform-view access does not flush while a mapper is executing.
 
-Measure invalidation is not coalesced: `InvalidateMeasure` is never itself queued and is always dispatched synchronously. However, like every other command, any pending property updates queued earlier in the same batch are flushed immediately beforehand, so the platform view reflects current values before a layout pass is requested. Disconnecting a handler is the one exception: pending updates are discarded, not flushed, since applying them to a handler that is being torn down would be wasted (or unsafe) work.
+Measure invalidation is not coalesced: `InvalidateMeasure` is never itself queued and is always dispatched synchronously. However, like every other command, any pending property updates queued earlier in the same batch are flushed immediately beforehand, so the platform view reflects current values before a layout pass is requested. Disconnecting a handler is the one exception: pending updates are discarded, not flushed, since applying them to a handler that is being torn down would be wasted (or unsafe) work. Flush barriers are suppressed throughout teardown, including container removal while the platform view is still accessible.
 
 At flush time, the handler:
 

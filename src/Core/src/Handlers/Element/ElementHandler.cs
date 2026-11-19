@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Handlers
 		bool _hasMappedAutomaticLeadingUpdate;
 		bool _isPropertyUpdateFlushScheduled;
 		bool _isExplicitFlushPendingUnwind;
+		bool _isDisconnecting;
 		int _pendingPropertyUpdateHead = -1;
 		int _pendingPropertyUpdateTail = -1;
 		int _mapperExecutionDepth;
@@ -428,6 +429,9 @@ namespace Microsoft.Maui.Handlers
 
 		internal void FlushPendingPropertyUpdates()
 		{
+			if (_isDisconnecting)
+				return;
+
 			if (_pendingPropertyUpdateIndices is not { Count: > 0 } indices)
 			{
 				if (_mapperExecutionDepth == 0 && _hasMappedAutomaticLeadingUpdate)
@@ -531,16 +535,8 @@ namespace Microsoft.Maui.Handlers
 			_pendingPropertyUpdateHead = -1;
 			_pendingPropertyUpdateTail = -1;
 
-			// Reset the scheduling state along with the queue itself. Without this, a flush
-			// triggered by a barrier (PlatformView/ContainerView access), an explicit commit, or
-			// a virtual-view/disconnect reset leaves _isPropertyUpdateFlushScheduled set to true
-			// even though nothing is actually scheduled to run against the *new* queue contents.
-			// TryScheduleAutomaticPropertyUpdateFlush() would then early-return true for the next
-			// leading update without actually scheduling anything new,
-			// silently relying on a stale dispatcher callback (if any) to eventually flush
-			// properties that callback was never queued for. Any already-dispatched callback
-			// still safely no-ops against an empty/foreign queue when it eventually runs.
-			_isPropertyUpdateFlushScheduled = false;
+			// Clearing properties does not cancel an outstanding handler-scoped callback.
+			// Reuse it for later updates; only the callback clears the scheduling flag.
 			_isExplicitFlushPendingUnwind = false;
 		}
 
@@ -595,16 +591,23 @@ namespace Microsoft.Maui.Handlers
 			// about to be torn down.
 			if (_platformView != null && VirtualView != null)
 			{
-				// Give derived handlers a chance to tear down state that needs the platform view
-				// while it is still reachable through the PlatformView property.
-				OnDisconnecting();
+				_isDisconnecting = true;
+				try
+				{
+					// Teardown can read PlatformView/ContainerView, but must not flush pending work.
+					OnDisconnecting();
 
-				// We set the PlatformView to null so no one outside of this handler tries to access
-				// PlatformView. PlatformView access should be isolated to the instance passed into
-				// DisconnectHandler
-				var oldPlatformView = _platformView;
-				_platformView = null;
-				DisconnectHandler(oldPlatformView);
+					// We set the PlatformView to null so no one outside of this handler tries to access
+					// PlatformView. PlatformView access should be isolated to the instance passed into
+					// DisconnectHandler
+					var oldPlatformView = _platformView;
+					_platformView = null;
+					DisconnectHandler(oldPlatformView);
+				}
+				finally
+				{
+					_isDisconnecting = false;
+				}
 			}
 
 			_handlerState = ElementHandlerState.Disconnected;

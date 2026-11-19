@@ -862,25 +862,75 @@ namespace Microsoft.Maui.UnitTests
 			handler.UpdateValue("Value");
 
 			Assert.Equal(3, mapCount);
-			// The PlatformView barrier flush above resets the scheduling flag along with the
-			// queue, so the third UpdateValue's leading update is free to schedule a genuine new
-			// dispatcher callback: there are now two pending callbacks -- the stale one enqueued
-			// before the barrier flush, and the new one. Without resetting the flag, the stale
-			// flag would block the new schedule, leaving the fourth (queued) update stranded on
-			// a callback that was already consumed by the barrier flush.
-			Assert.Equal(2, dispatcher.PendingCount);
-
-			dispatcher.RunNext();
-
-			Assert.Equal(4, mapCount);
 			Assert.Equal(1, dispatcher.PendingCount);
 
-			// The remaining stale callback still runs safely against the now-empty queue: it
-			// does not reschedule or re-map anything.
 			dispatcher.RunNext();
 
 			Assert.Equal(4, mapCount);
 			Assert.Equal(0, dispatcher.PendingCount);
+		}
+
+		[Theory]
+		[InlineData("PlatformView")]
+		[InlineData("ContainerView")]
+		[InlineData("InvalidateMeasure")]
+		[InlineData("Command")]
+		[InlineData("BatchCommit")]
+		public void RepeatedBarriersReuseOutstandingDispatcherCallback(string barrier)
+		{
+			var mapCount = 0;
+			var commandCount = 0;
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var commands = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => commandCount++,
+				["Command"] = (handler, view, args) => commandCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateCommandHandlerWithDispatcher(mapper, commands, dispatcher);
+			var view = new AutomaticBatchingButton();
+			handler.SetVirtualView(view);
+			mapCount = 0;
+			commandCount = 0;
+
+			for (var i = 0; i < 100; i++)
+			{
+				handler.UpdateValue("Value");
+				handler.UpdateValue("Value");
+				switch (barrier)
+				{
+					case "PlatformView":
+						Assert.NotNull(handler.PlatformView);
+						break;
+					case "ContainerView":
+						_ = handler.ContainerView;
+						break;
+					case "BatchCommit":
+						view.BatchBegin();
+						view.BatchCommit();
+						break;
+					default:
+						handler.Invoke(barrier, null);
+						break;
+				}
+			}
+
+			Assert.Equal(200, mapCount);
+			Assert.Equal(barrier == "InvalidateMeasure" || barrier == "Command" ? 100 : 0, commandCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+			dispatcher.RunNext();
+			Assert.Equal(200, mapCount);
+			Assert.Equal(0, dispatcher.PendingCount);
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			Assert.Equal(201, mapCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+			dispatcher.RunNext();
+			Assert.Equal(202, mapCount);
 		}
 
 		[Fact]
@@ -910,6 +960,37 @@ namespace Microsoft.Maui.UnitTests
 			view.BatchCommit();
 
 			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void OutstandingCallbackFlushesOnlyReplacementViewsUpdates(bool disconnect)
+		{
+			var mapped = new List<IView>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapped.Add(view),
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			handler.SetVirtualView(new AutomaticBatchingButton());
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			if (disconnect)
+				((IElementHandler)handler).DisconnectHandler();
+
+			var replacement = new AutomaticBatchingButton();
+			handler.SetVirtualView(replacement);
+			mapped.Clear();
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+
+			Assert.Equal(new IView[] { replacement }, mapped);
+			Assert.Equal(1, dispatcher.PendingCount);
+			dispatcher.RunNext();
+			Assert.Equal(new IView[] { replacement, replacement }, mapped);
+			Assert.Equal(0, dispatcher.PendingCount);
 		}
 
 		[Fact]
@@ -958,6 +1039,60 @@ namespace Microsoft.Maui.UnitTests
 			dispatcher.RunNext();
 
 			Assert.Equal(1, mapCount);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void DisconnectDiscardsPendingUpdatesBeforeRemovingContainer(bool automatic)
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var collection = new MauiHandlersCollection();
+			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(collection));
+			collection.TryAddSingleton<IDispatcher>(dispatcher);
+			var handler = new ContainerReadingHandlerStub(mapper);
+			handler.SetMauiContext(new HandlersContextStub(new MauiFactory(collection)));
+			Button view = automatic ? new AutomaticBatchingButton() : new AlwaysBatchingButton();
+			handler.SetVirtualView(view);
+			handler.HasContainer = true;
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			((IElementHandler)handler).DisconnectHandler();
+
+			Assert.True(handler.ContainerRemoved);
+			Assert.Equal(automatic ? 1 : 0, mapCount);
+			Assert.Null(((IElementHandler)handler).PlatformView);
+			Assert.Null(handler.ContainerView);
+			if (automatic)
+				dispatcher.RunNext();
+			Assert.Equal(automatic ? 1 : 0, mapCount);
+		}
+
+		class ContainerReadingHandlerStub : HandlerStub
+		{
+			public ContainerReadingHandlerStub(PropertyMapper mapper) : base(mapper)
+			{
+			}
+
+			public bool ContainerRemoved { get; private set; }
+
+			protected override void SetupContainer() =>
+				SetContainerView(new object());
+
+			protected override void RemoveContainer()
+			{
+				Assert.NotNull(ContainerView);
+				Assert.NotNull(PlatformView);
+				SetContainerView(null);
+				ContainerRemoved = true;
+			}
 		}
 
 		static HandlerStub CreateHandlerWithDispatcher(
