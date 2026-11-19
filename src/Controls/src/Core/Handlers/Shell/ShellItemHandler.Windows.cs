@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		readonly HashSet<ShellSection> _trackedShellSections = new();
 		ItemsRepeater? _overflowMenuItemsHost;
 		readonly HashSet<ShellSection> _badgeTrackedSections = new();
+		bool _selectionChangedHandled;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -81,6 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (mauiNavView is not null)
 			{
 				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+				mauiNavView.ItemInvoked += OnNavigationItemInvoked;
 				mauiNavView.OnApplyTemplateFinished += OnNavigationViewApplyTemplateFinished;
 				TrackOverflowMenuItems(mauiNavView.TopNavMenuItemsOverflowHost);
 			}
@@ -98,6 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mnv)
 			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				mnv.ItemInvoked -= OnNavigationItemInvoked;
 				mnv.OnApplyTemplateFinished -= OnNavigationViewApplyTemplateFinished;
 				if (mnv.AutoSuggestBox is { } autoSuggestBox)
 				{
@@ -207,6 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 				if (PlatformView is NavigationView navView && navView?.SelectedItem is not null && navView.SelectedItem != currentItem)
 				{
+					_selectionChangedHandled = true;
 					((IShellItemController)shell.CurrentItem!).ProposeSection(shellSection);
 				}
 
@@ -218,11 +222,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				var currentItem = parentShell.CurrentItem?.CurrentItem;
 				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
 				{
+					_selectionChangedHandled = true;
 					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
 					parentShell.CurrentItem = shellContent;
 				}
 				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent && existingSection.IsVisibleSection)
 				{
+					_selectionChangedHandled = true;
 					// Fire OnNavigatingFrom before CurrentItem changes, so it captures the correct outgoing page.
 					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
 						ShellNavigationSource.ShellContentChanged,
@@ -241,6 +247,28 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					parentShell.CurrentItem = shellContent;
 				}
+			}
+		}
+
+		void OnNavigationItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+		{
+			if (_selectionChangedHandled)
+			{
+				_selectionChangedHandled = false;
+				return;
+			}
+
+			if (VirtualView is null ||
+				args.InvokedItemContainer?.DataContext is not NavigationViewItemViewModel invokedItem ||
+				!ReferenceEquals(invokedItem, sender.SelectedItem))
+			{
+				return;
+			}
+
+			var shellSection = invokedItem.Data as ShellSection ?? (invokedItem.Data as ShellContent)?.Parent as ShellSection;
+			if (shellSection is not null && VirtualView.CurrentItem == shellSection)
+			{
+				VirtualView.SendTabReselectedAsync(shellSection).FireAndForget(this);
 			}
 		}
 
