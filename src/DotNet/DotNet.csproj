@@ -73,6 +73,10 @@
     <ItemGroup>
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/*" />
     </ItemGroup>
+    <!-- Servicing SDKs bundle a versioned microsoft.net.sdk.maui/<version>/ manifest, which
+         takes precedence over the unversioned one copied below and installs the GA packs
+         instead of the locally built ones. -->
+    <RemoveDir Directories="$(_WorkloadManifestInstallDirectory)/microsoft.net.sdk.maui" />
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
