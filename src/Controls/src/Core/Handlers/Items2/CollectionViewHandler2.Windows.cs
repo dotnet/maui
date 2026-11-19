@@ -28,6 +28,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+		[SelectableItemsView.IsItemTapEnabledMapperKey] = MapIsItemTapEnabled,
 		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 
 	};
@@ -93,13 +94,43 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	internal static readonly WThickness MultiSelectContentMargin = new WThickness(32, 0, 0, 0);
 	static readonly WThickness ZeroMargin = new WThickness(0);
 
+	internal static void MapIsItemTapEnabled(CollectionViewHandler2 handler, SelectableItemsView itemsView)
+	{
+		handler.UpdateItemInvokedEnabled();
+	}
+
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdateItemInvokedEnabled();
 		handler.UpdatePlatformSelection();
 		handler.UpdateMultiSelectContentMargin();
 		// The margin change affects item sizes, so invalidate the MeasureFirstItem cache
 		// to avoid stale sizes being applied to items realized after the mode switch.
 		handler.InvalidateFirstItemSize();
+	}
+
+	/// <summary>
+	/// WinUI only raises ItemInvoked for single taps when nothing can be selected, so it reports taps in
+	/// <see cref="SelectionMode.None"/>; with selection enabled, taps are reported by <see cref="ItemFactory"/>.
+	/// </summary>
+	void UpdateItemInvokedEnabled()
+	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
+		PlatformView.IsItemInvokedEnabled = ItemsView.SelectionMode == SelectionMode.None && ItemsView.IsItemTapEnabled;
+	}
+
+	void PlatformItemInvoked(WItemsView sender, ItemsViewItemInvokedEventArgs args)
+	{
+		if (ItemsView is null || ItemsView.SelectionMode != SelectionMode.None ||
+			args.InvokedItem is ItemTemplateContext2 { IsHeader: true } or ItemTemplateContext2 { IsFooter: true })
+		{
+			return;
+		}
+
+		var item = args.InvokedItem is ItemTemplateContext2 itemPair ? itemPair.Item : args.InvokedItem;
+		ItemsView.SendItemTapped(item, null, -1, -1);
 	}
 
 	/// <summary>
@@ -176,6 +207,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 					});
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
+			PlatformView.ItemInvoked += PlatformItemInvoked;
 			PlatformView.Loaded += OnPlatformViewLoaded;
 
 			if (PlatformView is MauiItemsView mauiItemsViewConnect)
@@ -231,6 +263,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		}
 
 		platformView.SelectionChanged -= PlatformSelectionChanged;
+		platformView.ItemInvoked -= PlatformItemInvoked;
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
 		if (platformView is MauiItemsView mauiItemsView)

@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						});
 
 				newListViewBase.SelectionChanged += PlatformSelectionChanged;
+				newListViewBase.ItemClick += PlatformItemClick;
 			}
 
 			UpdatePlatformSelection();
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.ItemClick -= PlatformItemClick;
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 			}
 
@@ -72,6 +74,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
+		}
+
+		partial void UpdateIsItemTapEnabled(SelectableItemsView itemsView)
+		{
+			if (ListViewBase is ListViewBase listViewBase)
+			{
+				listViewBase.IsItemClickEnabled = itemsView.IsItemTapEnabled;
+			}
+		}
+
+		void PlatformItemClick(object sender, ItemClickEventArgs args)
+		{
+			if (ItemsView is not SelectableItemsView itemsView)
+			{
+				return;
+			}
+
+			var item = args.ClickedItem is ItemTemplateContext itemPair ? itemPair.Item : args.ClickedItem;
+			var tap = itemsView.CreateItemTappedEventArgs(item, null, -1, -1);
+
+			// ItemClick is raised before the platform selection changes; report the tap after the selection is updated
+			if (sender is not ListViewBase listViewBase ||
+				!listViewBase.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => { if (itemsView.Handler is not null) itemsView.SendItemTapped(tap); }))
+			{
+				itemsView.SendItemTapped(tap);
+			}
 		}
 
 		void UpdatePlatformSelection()

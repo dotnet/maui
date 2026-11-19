@@ -32,7 +32,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
+
+			var tap = CreateItemTappedEventArgs(indexPath);
 			FormsSelectItem(indexPath);
+			ItemsView.SendItemTapped(tap);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
@@ -42,7 +45,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
+
+			// In Single mode UIKit also deselects the previous item when another item is tapped; only a
+			// deselection in Multiple mode is the result of tapping the item itself.
+			var tap = ItemsView.SelectionMode == SelectionMode.Multiple ? CreateItemTappedEventArgs(indexPath) : null;
 			FormsDeselectItem(indexPath);
+			ItemsView.SendItemTapped(tap);
+		}
+
+		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
+		internal bool ShouldSelectItemCore(NSIndexPath indexPath)
+		{
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
+			{
+				return false;
+			}
+
+			if (ItemsView.SelectionMode != SelectionMode.None)
+			{
+				return true;
+			}
+
+			// Selection is only allowed in None mode so that taps are reported; the item itself never becomes selected
+			ItemsView.SendItemTapped(CreateItemTappedEventArgs(indexPath));
+			return false;
+		}
+
+		ItemTappedEventArgs CreateItemTappedEventArgs(NSIndexPath indexPath)
+		{
+			if (!ItemsView.IsItemTapEnabled)
+			{
+				return null;
+			}
+
+			var item = GetItemAtIndex(indexPath);
+
+			if (ItemsView is GroupableItemsView { IsGrouped: true })
+			{
+				return ItemsView.CreateItemTappedEventArgs(item, ItemsSource.Group(indexPath), (int)indexPath.Section, (int)indexPath.Item);
+			}
+
+			return ItemsView.CreateItemTappedEventArgs(item, null, -1, (int)indexPath.Item);
+		}
+
+		internal void UpdateItemTapEnabled()
+		{
+			if (ItemsView.SelectionMode == SelectionMode.None)
+			{
+				CollectionView.AllowsSelection = ItemsView.IsEnabled && ItemsView.IsItemTapEnabled;
+			}
+
+			CollectionView.UpdateAccessibilityTraits(ItemsView);
 		}
 
 		// Called by Forms to mark an item selected 
@@ -174,6 +227,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (mode)
 			{
 				case SelectionMode.None:
+					// Selection can stay enabled in None mode to report taps, so clear any selection left from a previous mode
+					ClearSelection();
 					return;
 				case SelectionMode.Single:
 					var selectedItem = ItemsView.SelectedItem;
@@ -203,7 +258,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (mode)
 			{
 				case SelectionMode.None:
-					CollectionView.AllowsSelection = false;
+					// Selection stays enabled while item taps are observed; ShouldSelectItemCore reports the tap and refuses the selection
+					CollectionView.AllowsSelection = isEnabled && ItemsView.IsItemTapEnabled;
 					CollectionView.AllowsMultipleSelection = false;
 					ClearsSelectionOnViewWillAppear = true;
 					break;

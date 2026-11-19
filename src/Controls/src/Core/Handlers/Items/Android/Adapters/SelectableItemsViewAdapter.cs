@@ -37,6 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Recycled ViewHolders may have been created before SelectionMode or item tapping changed
+			selectable.UpdateClickListener(IsItemClickEnabled);
+
 			// Watch for clicks so the user can select the item held by this ViewHolder
 			selectable.Clicked += SelectableClicked;
 
@@ -69,11 +72,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateSelectionMode()
 		{
-			// Update click listeners for all currently visible ViewHolders when SelectionMode changes
-			bool selectionEnabled = ItemsView.SelectionMode is not SelectionMode.None;
+			// Update click listeners for all currently visible ViewHolders when SelectionMode or item tapping changes
+			bool clickEnabled = IsItemClickEnabled;
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
-				_currentViewHolders[i].UpdateClickListener(selectionEnabled);
+				_currentViewHolders[i].UpdateClickListener(clickEnabled);
 			}
 		}
 
@@ -171,9 +174,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return false;
 			}
-			// Disable click listeners when SelectionMode is None to prevent TalkBack from announcing items as clickable
-			return ItemsView.SelectionMode != SelectionMode.None;
+			// Disable click listeners when items can be neither selected nor tapped to prevent TalkBack from announcing items as clickable
+			return IsItemClickEnabled;
 		}
+
+		bool IsItemClickEnabled => ItemsView.SelectionMode != SelectionMode.None || ItemsView.IsItemTapEnabled;
 
 		bool PositionIsSelected(int position)
 		{
@@ -193,6 +198,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (adapterPosition >= 0 && adapterPosition < ItemsSource?.Count)
     		{
+				var tap = CreateItemTappedEventArgs(adapterPosition);
+
         		UpdateMauiSelection(adapterPosition);
         		// Unconditionally sync visual state for Single mode.
         		// Handles value-equal items where PropertyChanged is suppressed.
@@ -201,7 +208,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             		ClearPlatformSelection();
             		clickedHolder.IsSelected = true;
         		}
+
+				ItemsView.SendItemTapped(tap);
     		}
+		}
+
+		ItemTappedEventArgs CreateItemTappedEventArgs(int adapterPosition)
+		{
+			if (!ItemsView.IsItemTapEnabled)
+			{
+				return null;
+			}
+
+			var item = ItemsSource.GetItem(adapterPosition);
+
+			if (ItemsView is GroupableItemsView { IsGrouped: true } && ItemsSource is IGroupableItemsViewSource groupableSource)
+			{
+				var (groupIndex, indexInGroup) = groupableSource.GetGroupAndIndex(adapterPosition);
+
+				if (groupIndex >= 0)
+				{
+					// Positions within a group include the group header, when there is one
+					if (groupableSource.GetGroupItemsViewSource(groupIndex)?.HasHeader == true)
+					{
+						indexInGroup--;
+					}
+
+					return ItemsView.CreateItemTappedEventArgs(item, groupableSource.GetGroup(groupIndex), groupIndex, indexInGroup);
+				}
+			}
+
+			return ItemsView.CreateItemTappedEventArgs(item, null, -1, adapterPosition - (ItemsSource.HasHeader ? 1 : 0));
 		}
 
 		void UpdateMauiSelection(int adapterPosition)

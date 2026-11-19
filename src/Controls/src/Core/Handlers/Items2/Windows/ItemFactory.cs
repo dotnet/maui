@@ -39,6 +39,31 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			"OriginTemplate", typeof(DataTemplate), typeof(ItemFactory), null);
 
 	/// <summary>
+	/// Reports item taps when selection is enabled. The wrapper sees the tap before its <see cref="ItemContainer"/>
+	/// does, and only when no control inside the item handled it.
+	/// </summary>
+	void OnWrapperTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+	{
+		if (sender is not ElementWrapper { IsHeaderOrFooter: false, VirtualView: View view } wrapper ||
+			!_view.TryGetTarget(out var itemsView) ||
+			itemsView is not SelectableItemsView { IsItemTapEnabled: true } selectableItemsView ||
+			selectableItemsView.SelectionMode == SelectionMode.None)
+		{
+			return;
+		}
+
+		var tap = selectableItemsView.CreateItemTappedEventArgs(view.BindingContext, null, -1, -1);
+
+		// The ItemContainer selects the item after this handler runs, and the handler then syncs the MAUI selection
+		// on the dispatcher; report the tap after both so that it follows the selection change.
+		if (!wrapper.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+			() => { if (selectableItemsView.Handler is not null) selectableItemsView.SendItemTapped(tap); }))
+		{
+			selectableItemsView.SendItemTapped(tap);
+		}
+	}
+
+	/// <summary>
 	/// Creates or retrieves a recycled <see cref="ItemContainer"/> for the given data context.
 	/// </summary>
 	public UIElement? GetElement(ElementFactoryGetArgs args)
@@ -87,6 +112,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				if (itemsView.Handler?.MauiContext is not null && viewContent is not null)
 				{
 					wrapper = new ElementWrapper(itemsView.Handler.MauiContext);
+					wrapper.Tapped += OnWrapperTapped;
 					wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
 					{
 						LayoutAlignment.Start => HorizontalAlignment.Left,
