@@ -16,6 +16,8 @@ param(
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$HeadSha,
     [int]$LookbackDays = 7,
+    # Comments are normally posted by the workflow's bot; set this to refresh a manual trial's comments.
+    [string]$CommentAuthor,
     [switch]$DryRun
 )
 
@@ -26,7 +28,7 @@ $since = (Get-Date).ToUniversalTime().AddDays(-$LookbackDays).ToString('yyyy-MM-
 $raw = & gh api --paginate --slurp "repos/$Repository/issues/comments?since=$since&per_page=100&sort=updated&direction=desc"
 if ($LASTEXITCODE -ne 0) { throw 'Could not list recent comments.' }
 $comments = @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_ }) | Where-Object {
-    $_.user.type -eq 'Bot' -and
+    $(if ($CommentAuthor) { $_.user.login -eq $CommentAuthor } else { $_.user.type -eq 'Bot' }) -and
     $_.body -and $_.body.StartsWith($script:RunTestsCommentMarker) -and
     $_.body -match '<!-- review-run-tests-state: (running|done) -->'
 }
