@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal abstract class SkiaSharpTools
 	{
-		const int ERROR_ACCESS_DENIED = -2147024891;
-		const int ERROR_SHARING_VIOLATION = -2147024864;
+		internal const int ERROR_ACCESS_DENIED = -2147024891;
+		internal const int ERROR_SHARING_VIOLATION = -2147024864;
 		const int DEFAULT_FILE_WRITE_RETRY_ATTEMPTS = 10;
 		const int DEFAULT_FILE_WRITE_RETRY_DELAY_MS = 1000;
 
