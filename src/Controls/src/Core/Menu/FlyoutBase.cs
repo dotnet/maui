@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Controls
 		/// Call this method on the target's UI thread. Supported on Android, Windows,
 		/// iOS 15 and later, and Mac Catalyst 15 and later, subject to the application's MAUI platform minimums,
 		/// using a native PopupMenu on Android,
-		/// the attached WinUI menu flyout on Windows, and a custom popover on iOS and Mac Catalyst.
-		/// The Apple popover displays submenus as navigable pages, not cascading native menus.
+		/// the attached WinUI menu flyout on Windows, and a native menu on iOS and Mac Catalyst 17.4 and later.
+		/// Earlier supported Apple versions use a custom popover with submenus displayed as navigable pages.
 		/// Existing long-press and right-click presentation is unchanged.
 		/// Requests made while the programmatic menu is open are ignored.
 		/// Android anchors the popup to the native target without registering a long-press listener.

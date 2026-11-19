@@ -22,6 +22,11 @@ namespace Microsoft.Maui.Platform
 		PopoverDelegate? _delegate;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The unload observer is disposed when the interaction is removed.")]
 		IDisposable? _unloaded;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The native menu button is released after menu dismissal.")]
+		NativeMenuButton? _nativeButton;
+		WeakReference<IMenuFlyout>? _nativeFlyout;
+		bool _nativeDismissing;
+		bool _nativeActionInvoked;
 		bool _closing;
 
 		MauiContextFlyoutPopover(IViewHandler handler) => _handler = new(handler);
@@ -79,6 +84,12 @@ namespace Microsoft.Maui.Platform
 				throw new InvalidOperationException("The attached context flyout must contain an action, not only separators.");
 
 			var presenter = new MauiContextFlyoutPopover(handler);
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+			{
+				presenter.ShowNative(target, view, flyout, sections);
+				return;
+			}
+
 			var root = new MenuController(presenter, sections, null);
 			var navigation = new UINavigationController(root)
 			{
@@ -111,6 +122,129 @@ namespace Microsoft.Maui.Platform
 			presenter._unloaded = view.OnUnloaded(presenter.Remove);
 
 			controller.PresentViewController(navigation, false, null);
+		}
+
+		[SupportedOSPlatform("ios17.4")]
+		[SupportedOSPlatform("maccatalyst17.4")]
+		void ShowNative(UIView target, IView view, IMenuFlyout flyout, List<List<MenuEntry>> sections)
+		{
+			_nativeFlyout = new(flyout);
+			var button = new NativeMenuButton(this, target.Bounds)
+			{
+				Menu = CreateNativeMenu(sections),
+				ShowsMenuAsPrimaryAction = true,
+				PreferredMenuElementOrder = UIContextMenuConfigurationElementOrder.Fixed,
+				UserInteractionEnabled = false,
+				AccessibilityElementsHidden = true,
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight
+			};
+#if MACCATALYST
+			// Catalyst pull-down menus use the hosting button's width as their minimum width.
+			button.Frame = new CGRect(target.Bounds.GetMidX() - 0.5, target.Bounds.GetMaxY() - 1, 1, 1);
+			button.AutoresizingMask = UIViewAutoresizing.FlexibleLeftMargin |
+				UIViewAutoresizing.FlexibleRightMargin | UIViewAutoresizing.FlexibleTopMargin;
+#endif
+			_nativeButton = button;
+			target.AddSubview(button);
+			target.AddInteraction(this);
+			_unloaded = view.OnUnloaded(Remove);
+			button.PerformPrimaryAction();
+		}
+
+		UIMenu CreateNativeMenu(List<List<MenuEntry>> sections)
+		{
+			var groups = new UIMenuElement[sections.Count];
+			var owner = new WeakReference<MauiContextFlyoutPopover>(this);
+			for (int section = 0; section < sections.Count; section++)
+			{
+				var entries = sections[section];
+				var children = new UIMenuElement[entries.Count];
+				for (int row = 0; row < entries.Count; row++)
+				{
+					var entry = entries[row];
+					if (entry.Children is { } submenu && entry.IsEnabled)
+					{
+						using var contents = CreateNativeMenu(submenu);
+						children[row] = UIMenu.Create(entry.Text, entry.Image, UIMenuIdentifier.None,
+							0, contents.Children);
+					}
+					else
+					{
+						var action = UIAction.Create(entry.Text, entry.Image, null, _ =>
+						{
+							if (owner.TryGetTarget(out var presenter))
+								presenter.ActivateNative(entry);
+						});
+						action.Attributes = entry.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+						children[row] = action;
+					}
+				}
+				groups[section] = UIMenu.Create(string.Empty, null, UIMenuIdentifier.None,
+					UIMenuOptions.DisplayInline, children);
+			}
+			return UIMenu.Create(groups);
+		}
+
+		void ActivateNative(MenuEntry entry)
+		{
+			if (_closing || _nativeActionInvoked || !entry.IsEnabled || entry.Children is not null ||
+				!_handler.TryGetTarget(out var handler) ||
+				handler.PlatformView != _nativeButton?.Superview || _nativeButton?.Window is null ||
+				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } view ||
+				view is not IContextFlyoutElement contextFlyout ||
+				_nativeFlyout is null || !_nativeFlyout.TryGetTarget(out var flyout) || contextFlyout.ContextFlyout != flyout)
+				return;
+
+			_nativeActionInvoked = true;
+			entry.Element.Clicked();
+		}
+
+		void CloseNative()
+		{
+			if (_closing)
+				return;
+
+			_closing = true;
+			_unloaded?.Dispose();
+			_unloaded = null;
+			View?.RemoveInteraction(this);
+			if (_nativeButton is { Held: true } button && !_nativeDismissing)
+				button.ContextMenuInteraction?.DismissMenu();
+			else if (!_nativeDismissing)
+				CompleteNativeClose();
+		}
+
+		void CompleteNativeClose()
+		{
+			CloseNative();
+			var button = _nativeButton;
+			if (button is null)
+				return;
+
+			_nativeButton = null;
+			_nativeFlyout = null;
+			var target = button.Superview;
+			var menu = button.Menu;
+			button.Menu = null;
+			button.RemoveFromSuperview();
+			button.Dispose();
+			if (menu is not null)
+				DisposeNativeMenu(menu);
+			if (target?.Window is not null)
+				UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, target);
+			Dispose();
+		}
+
+		static void DisposeNativeMenu(UIMenu menu)
+		{
+			foreach (var child in menu.Children)
+			{
+				if (child is UIMenu submenu)
+					DisposeNativeMenu(submenu);
+				else
+					child.Dispose();
+			}
+			menu.Dispose();
 		}
 
 		static List<List<MenuEntry>> CreateSections(IList<IMenuElement> elements, IMauiContext context)
@@ -151,6 +285,12 @@ namespace Microsoft.Maui.Platform
 
 		void Close(Action? selected = null, bool dismiss = true)
 		{
+			if (_nativeButton is not null)
+			{
+				CloseNative();
+				return;
+			}
+
 			if (_closing)
 				return;
 
@@ -224,6 +364,7 @@ namespace Microsoft.Maui.Platform
 			internal readonly UIImage? Image;
 			internal readonly List<List<MenuEntry>>? Children;
 			readonly bool _enabled;
+			MenuEntry? _parent;
 
 			internal MenuEntry(IMenuElement element, UIImage? image, List<List<MenuEntry>>? children)
 			{
@@ -232,9 +373,39 @@ namespace Microsoft.Maui.Platform
 				Image = image;
 				Children = children;
 				_enabled = element.IsEnabled && (children is null || children.Count > 0);
+				if (children is not null)
+				{
+					foreach (var section in children)
+					{
+						foreach (var child in section)
+							child._parent = this;
+					}
+				}
 			}
 
-			internal bool IsEnabled => _enabled && Element.IsEnabled;
+			internal bool IsEnabled => _enabled && Element.IsEnabled && (_parent?.IsEnabled ?? true);
+		}
+
+		sealed class NativeMenuButton : UIButton
+		{
+			readonly WeakReference<MauiContextFlyoutPopover> _owner;
+
+			internal NativeMenuButton(MauiContextFlyoutPopover owner, CGRect frame) : base(frame) =>
+				_owner = new(owner);
+
+			public override void WillEnd(UIContextMenuInteraction interaction, UIContextMenuConfiguration configuration,
+				IUIContextMenuInteractionAnimating? animator)
+			{
+				base.WillEnd(interaction, configuration, animator);
+				if (!_owner.TryGetTarget(out var owner))
+					return;
+
+				owner._nativeDismissing = true;
+				if (animator is not null)
+					animator.AddCompletion(owner.CompleteNativeClose);
+				else
+					BeginInvokeOnMainThread(owner.CompleteNativeClose);
+			}
 		}
 
 		sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
