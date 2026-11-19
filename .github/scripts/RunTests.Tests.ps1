@@ -156,6 +156,13 @@ Describe 'Run-tests comment' {
         $body | Should -Match '@octocat'
     }
 
+    It 'says nothing runs when no UI test is affected' {
+        $none = Resolve-RunTestsSelection (New-Proposal @() @()) $inventory
+        $noneBody = New-RunTestsComment -Selection $none -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
+        $noneBody | Should -Match '<summary><strong>&#x2705; Running</strong> &#x2014; nothing</summary>'
+        $noneBody | Should -Not -Match 'on none'
+    }
+
     It 'updates the result in place when the build finishes' {
         $done = [pscustomobject]@{ id = 99; status = 'completed'; result = 'failed'; _links = $build._links }
         $timeline = [pscustomobject]@{ records = @(

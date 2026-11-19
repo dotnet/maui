@@ -480,7 +480,8 @@ function New-RunTestsComment {
 
     # What runs
     $lines.Add('<details>')
-    $lines.Add("<summary><strong>&#x2705; Running</strong> &#x2014; $(Format-RunTestsCount $runCount 'category' 'categories') on $platformText</summary>")
+    $runningText = if ($Selection.mode -eq 'none') { 'nothing' } else { "$(Format-RunTestsCount $runCount 'category' 'categories') on $platformText" }
+    $lines.Add("<summary><strong>&#x2705; Running</strong> &#x2014; $runningText</summary>")
     $lines.Add('<br/>')
     $lines.Add('')
     switch ($Selection.mode) {
