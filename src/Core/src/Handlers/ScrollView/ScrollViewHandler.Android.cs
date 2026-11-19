@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 				FillViewport = true
 			};
 
+			// Safe-area insets arrive as native padding; let the content scroll under them, as on iOS.
+			scrollView.SetClipToPadding(false);
+
 			return scrollView;
 		}
 
@@ -353,6 +356,7 @@ namespace Microsoft.Maui.Handlers
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{
 					currentPaddingLayer.RemoveAllViews();
+					nativeContent.RemoveFromParent();
 					currentPaddingLayer.AddView(nativeContent);
 				}
 			}
@@ -378,6 +382,7 @@ namespace Microsoft.Maui.Handlers
 			UpdateClipForShadow(paddingShim, handler.PlatformView, scrollView.PresentedContent);
 
 			handler.PlatformView.RemoveAllViews();
+			nativeContent.RemoveFromParent();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
 		}

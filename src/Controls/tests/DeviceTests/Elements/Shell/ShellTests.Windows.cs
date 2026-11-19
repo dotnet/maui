@@ -106,6 +106,76 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Flyout Items Release The Shell When It Is Swapped")]
+		public async Task FlyoutItemsReleaseTheShellWhenItIsSwapped()
+		{
+			SetupBuilder();
+
+			var window = new Controls.Window(new ContentPage());
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(window.Page);
+
+				var shellReference = await ShowShellAndSwapItOut(window);
+
+				// The window is still open here, so this checks the swap and not the window teardown.
+				// With the window open the old shell only becomes collectable after a few dispatcher
+				// passes, so collect with a pause in between rather than in a tight loop.
+				await AssertEventually(() =>
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					return !shellReference.IsAlive;
+				}, timeout: 10000, interval: 250, message: "The old shell was not collected");
+			}, timeOut: TimeSpan.FromSeconds(30));
+		}
+
+		// Not inlined so no local of the old shell ends up in the test's state machine.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		async Task<WeakReference> ShowShellAndSwapItOut(Controls.Window window)
+		{
+			var shell = await CreateShellAsync(AddFlyoutItems);
+			window.Page = shell;
+			await OnLoadedAsync(shell.CurrentPage);
+
+			var shellView = (ShellView)shell.Handler.PlatformView;
+			await AssertEventually(() => shellView.GetChildren<ShellFlyoutItemView>().Any());
+
+			var shellHandler = shell.Handler;
+			var newShell = await CreateShellAsync(AddFlyoutItems);
+			window.Page = newShell;
+			await OnLoadedAsync(newShell.CurrentPage);
+			shellHandler.DisconnectHandler();
+
+			return new WeakReference(shell);
+		}
+
+		[Fact(DisplayName = "Flyout Item Can Be Measured After The Shell Disconnects")]
+		public async Task FlyoutItemCanBeMeasuredAfterTheShellDisconnects()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(AddFlyoutItems);
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var shellView = handler.PlatformView;
+				await AssertEventually(() => shellView.GetChildren<ShellFlyoutItemView>().Any());
+				var flyoutItem = shellView.GetChildren<ShellFlyoutItemView>().First();
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				flyoutItem.InvalidateMeasure();
+				flyoutItem.Measure(new global::Windows.Foundation.Size(200, 200));
+			});
+		}
+
+		static void AddFlyoutItems(Shell shell)
+		{
+			shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			shell.Items.Add(new FlyoutItem { Title = "One", Items = { new ContentPage { Title = "One" } } });
+			shell.Items.Add(new FlyoutItem { Title = "Two", Items = { new ContentPage { Title = "Two" } } });
+		}
+
 		[Fact(DisplayName = "Shell Title Updates Correctly")]
 		public async Task ShellTitleUpdatesCorrectly()
 		{
@@ -211,6 +281,36 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingFlyoutBackgroundImageRestoresBackground(bool configured)
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				if (configured)
+					shell.FlyoutBackground = new SolidColorBrush(Colors.Blue);
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await AssertEventually(() => IsViewLaidOut(navigationView));
+				var expected = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color;
+				if (configured)
+					Assert.Equal(Colors.Blue.ToWindowsColor(), expected);
+				handler.GetRequiredService<IFontRegistrar>().Register("dokdo_regular.ttf", "Dokdo");
+				var image = new FontImageSource { FontFamily = "Dokdo", Glyph = "X", Size = 24 };
+				shell.FlyoutBackgroundImage = image;
+				await AssertEventually(() => navigationView.PaneContentGrid.Background is UI.Xaml.Media.ImageBrush);
+				shell.FlyoutBackgroundImage = null;
+				Assert.Equal(expected, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color);
 			});
 		}
 

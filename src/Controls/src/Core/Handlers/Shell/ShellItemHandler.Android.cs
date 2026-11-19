@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
@@ -13,6 +16,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -53,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers
         public static PropertyMapper<ShellItem, ShellItemHandler> Mapper = new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
         {
             [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+            [nameof(Element.AutomationId)] = MapAutomationId,
             [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
         };
 
@@ -154,6 +159,8 @@ namespace Microsoft.Maui.Controls.Handlers
             ((AView)_viewPager).SaveEnabled = false;
             _viewPager.UserInputEnabled = false;
             _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+            // The default item animator fades the old section out before the new one fades in, showing the window background in between.
+            (_viewPager.GetChildAt(0) as RecyclerView)?.SetItemAnimator(null);
 
             // Register page change callback for VP2 settle notifications.
             // When VP2 finishes settling on a page, OnPageSelected re-syncs toolbar
@@ -219,6 +226,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Get BNV reference for appearance tracker
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
             RecreateBottomNavigationAppearanceTracker();
+            UpdateTabBarAutomationIds();
 
             // Initial setup registers the appearance observer immediately afterward. When
             // setup was deferred, replay state for the newly-created bottom tabs.
@@ -234,6 +242,14 @@ namespace Microsoft.Maui.Controls.Handlers
             _appearanceTracker?.Dispose();
             _shellContext ??= GetShellContext();
             _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
+
+
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _bottomNavigationView is not null &&
+                _appearanceTracker is ShellBottomNavViewAppearanceTracker concreteAppearanceTracker)
+            {
+                concreteAppearanceTracker.CaptureNativeAppearance(_bottomNavigationView);
+            }
         }
 
         /// <summary>
@@ -254,6 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Update BNV reference (SetElement creates a new BNV)
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
             RecreateBottomNavigationAppearanceTracker();
+            UpdateTabBarAutomationIds();
         }
 
         void RemoveBottomNavigationInfrastructure()
@@ -445,7 +462,74 @@ namespace Microsoft.Maui.Controls.Handlers
             return BottomNavigationViewUtils.CreateMoreBottomSheet(
                 selectCallback,
                 MauiContext!,
-                items);
+                items,
+                BottomNavigationViewUtils.MaxBottomNavigationItems,
+                setAutomationId: (view, index) =>
+                {
+                    if (VirtualView is not null)
+                    {
+                        var sections = ((IShellItemController)VirtualView).GetItems();
+                        if (index >= 0 && index < sections.Count)
+                            SetAutomationIdAccessibilityDelegate(view, GetAutomationId(sections[index]));
+                    }
+                });
+        }
+
+        void UpdateTabBarAutomationIds()
+        {
+            if (VirtualView is not TabBar shellItem ||
+                !((IShellItemController)shellItem).ShowTabs ||
+                _bottomNavigationView is not { } bottomNavigationView)
+            {
+                return;
+            }
+
+            SetAutomationIdAccessibilityDelegate(bottomNavigationView, shellItem.AutomationId);
+
+            bottomNavigationView.Post(() =>
+            {
+                if (!ReferenceEquals(_bottomNavigationView, bottomNavigationView) ||
+                    VirtualView is not TabBar currentShellItem ||
+                    !((IShellItemController)currentShellItem).ShowTabs)
+                {
+                    return;
+                }
+
+                var shellSections = ((IShellItemController)currentShellItem).GetItems();
+                var visibleItemCount = shellSections.Count > bottomNavigationView.MaxItemCount
+                    ? bottomNavigationView.MaxItemCount - 1
+                    : shellSections.Count;
+
+                for (int i = 0; i < visibleItemCount; i++)
+                {
+                    var itemView = bottomNavigationView.FindViewById(i);
+                    if (itemView is not null)
+                        SetAutomationIdAccessibilityDelegate(itemView, GetAutomationId(shellSections[i]));
+                }
+            });
+        }
+
+        internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+        {
+            if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs)
+                handler.UpdateTabBarAutomationIds();
+        }
+
+        static string? GetAutomationId(ShellSection shellSection) =>
+            shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId;
+
+        static void SetAutomationIdAccessibilityDelegate(AView view, string? automationId)
+        {
+            var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
+            var originalDelegate = currentDelegate is AutomationIdAccessibilityDelegate automationIdDelegate
+                ? automationIdDelegate.WrappedDelegate
+                : currentDelegate;
+
+            ViewCompat.SetAccessibilityDelegate(
+                view,
+                string.IsNullOrEmpty(automationId)
+                    ? originalDelegate
+                    : new AutomationIdAccessibilityDelegate(automationId, originalDelegate));
         }
 
         /// <summary>
@@ -710,12 +794,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 oldHandler.RemoveTopTabs();
             }
 
-            // Evaluate incoming section's top tabs (will place if > 1 content)
+            // Only restore the incoming section's top tabs when its navigation stack is at root.
             if (newSection?.Handler is ShellSectionHandler newHandler)
             {
                 var visibleCount = ((IShellSectionController)newSection).GetItems().Count;
 
-                if (visibleCount > 1)
+                if (visibleCount > 1 && newSection.Stack.Count == 1)
                 {
                     newHandler.PlaceTopTabs();
                 }
@@ -792,6 +876,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var shellItem = VirtualView;
+            UpdateTabBarAutomationIds();
 
             var shellSections = ((IShellItemController)shellItem).GetItems();
 
@@ -820,6 +905,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild an existing bottom navigation menu. A newly-created manager was
             // already populated by SetElement in SetupTabbedViewManager.
             existingTabbedViewManager?.RefreshTabs();
+            UpdateValue(nameof(Element.AutomationId));
             UpdateTabBarVisibility();
 
             // Signal that the adapter was just rebuilt. The next SwitchToSection call
@@ -994,6 +1080,27 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompatWrapper
+        {
+            readonly string _automationId;
+
+            public AutomationIdAccessibilityDelegate(string automationId, AccessibilityDelegateCompat? originalDelegate)
+                : base(originalDelegate)
+            {
+                _automationId = automationId;
+            }
+
+            public override void OnInitializeAccessibilityNodeInfo(
+                AView? host,
+                AccessibilityNodeInfoCompat? info)
+            {
+                base.OnInitializeAccessibilityNodeInfo(host, info);
+
+                if (host?.Context is not null && info is not null)
+                    info.ViewIdResourceName = $"{host.Context.PackageName}:id/{_automationId}";
+            }
+        }
+
         #region Toolbar Management
 
         /// <summary>
@@ -1041,6 +1148,13 @@ namespace Microsoft.Maui.Controls.Handlers
             // Set up toolbar tracker and appearance tracker
             _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
             _toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
+
+
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _toolbarAppearanceTracker is ShellToolbarAppearanceTracker concreteToolbarAppearanceTracker)
+            {
+                concreteToolbarAppearanceTracker.CaptureNativeColors(_toolbar);
+            }
 
             // Set the toolbar reference
             if (_toolbarTracker is not null && _shellToolbar is not null)
