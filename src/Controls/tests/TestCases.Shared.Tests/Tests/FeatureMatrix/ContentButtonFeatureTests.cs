@@ -104,6 +104,7 @@ public class ContentButtonFeatureTests : _GalleryUITest
 
 		Assert.That(GetStatusValue("ScrollY"), Is.GreaterThan(0));
 		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+		Assert.That(GetStatusValue("Pressed"), Is.GreaterThan(0));
 		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(GetStatusValue("Released")));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
@@ -118,6 +119,7 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		App.DragCoordinates(rect.X + rect.Width / 2, rect.Y + rect.Height / 2,
 			rect.X + rect.Width * 1.1f, rect.Y + rect.Height / 2);
 		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+		Assert.That(GetStatusValue("Pressed"), Is.GreaterThan(0));
 		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(GetStatusValue("Released")));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
@@ -139,6 +141,7 @@ public class ContentButtonFeatureTests : _GalleryUITest
 			}
 		});
 		Assert.That(Status, Does.Contain("Commands=1; Clicks=1"));
+		Assert.That(Status, Does.Contain("Pressed=1; Released=1"));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
 #endif
