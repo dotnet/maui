@@ -294,7 +294,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if (!e.Event.IsCanceled)
+				// A key release that completed a long press opening a context menu isn't a tap
+				if (!e.Event.IsCanceled && !ContextFlyoutKeyTracker.IsConsumedKeyUp(e.Event))
 				{
 					// Prefer Tap over LongPress for accessibility key activation.
 					// A confirm key press is a discrete action that maps to Tap semantics.

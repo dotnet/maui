@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Platform
 				if (e.IsFromSource(InputSourceType.Mouse) && (e.ButtonState & MotionEventButtonState.Secondary) != 0)
 				{
 					// Secondary click opens the menu right away; the view never sees the press
-					if (manager.Show())
+					if (manager.Show(e.GetX(), e.GetY()))
 					{
 						SetActive(true);
 						_swallowing = true;
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Platform
 				// Don't dispose the runnable here: it is the one currently running
 				_pendingLongPress = null;
 
-				if (_candidate is null || !_candidate.TryGetTarget(out var manager) || !_window.IsAlive() || !manager.Show())
+				if (_candidate is null || !_candidate.TryGetTarget(out var manager) || !_window.IsAlive() || !manager.Show(_downX, _downY))
 				{
 					Reset();
 					return;

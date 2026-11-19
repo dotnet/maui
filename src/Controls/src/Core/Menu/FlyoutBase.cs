@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The <see cref="MenuFlyout"/> to show, or <see langword="null"/> to remove the context menu.</param>
 		/// <remarks>
 		/// The menu opens with the platform's context menu gesture: a long press on iOS and Android, a secondary
-		/// (right) click on Mac Catalyst, Windows and Android with a mouse, and Shift+F10 on Windows and Android.
+		/// (right) click on Mac Catalyst, Windows and Android with a mouse, Shift+F10 or the menu key on Windows,
+		/// and holding Enter or the D-pad center on a focused control on Android.
 		/// Its items are read every time it opens, so bindings, <see cref="MenuItem.IsEnabled"/> and commands that
 		/// can't execute are always reflected. Elements without a context menu aren't affected.
 		/// On iOS and Android, a long press that already does something else keeps doing it, for example a

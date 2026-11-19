@@ -511,9 +511,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
 				{
-					if (ContextFlyoutManager.IsContextMenuKeyDown(keyCode, e) && ContextFlyoutManager.TryShowForFocusedView(CurrentFocus))
-						return true;
-
 					var handled = false;
 					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
 					{
@@ -565,6 +562,14 @@ namespace Microsoft.Maui.Controls.Platform
 					});
 
 					return handled || base.OnKeyUp(keyCode, e);
+				}
+
+				public override void OnAttachedToWindow()
+				{
+					base.OnAttachedToWindow();
+
+					// Context flyouts open when a confirm key is held on the focused view (see MauiAppCompatActivity)
+					ContextFlyoutKeyTracker.Observe(Window?.DecorView);
 				}
 
 				public override bool DispatchTouchEvent(MotionEvent? e)

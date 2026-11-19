@@ -6,6 +6,7 @@ using Android.Views;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -227,14 +228,17 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(manager.Popup);
 				Dispatch(window, downTime, MotionEventActions.Up, x, y + 200);
 
-				// Holding opens the menu; the rest of the touch is consumed so nothing gets clicked
+				// Holding opens the menu where the view was pressed; the rest of the touch is consumed so nothing gets clicked
+				var (pressX, pressY) = (x - 40, y + 10);
 				downTime = SystemClock.UptimeMillis();
-				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
+				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, pressX, pressY));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
 				Assert.NotNull(manager.Popup);
-				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, x, y));
+				AssertAnchoredAt(manager, pressX, pressY);
+				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, pressX, pressY));
 
 				manager.Dismiss();
+				Assert.Null(manager.Anchor?.Parent);
 			}));
 		}
 
@@ -391,12 +395,100 @@ namespace Microsoft.Maui.DeviceTests
 				var (x, y) = GetCenterInWindow(view);
 				var downTime = SystemClock.UptimeMillis();
 
-				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
+				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x + 30, y - 20, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Assert.NotNull(manager.Popup);
-				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse));
+				AssertAnchoredAt(manager, x + 30, y - 20);
+				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, x + 30, y - 20, InputSourceType.Mouse));
 
 				manager.Dismiss();
 			}));
+		}
+
+		[Fact(DisplayName = "Holding a confirm key on a focused control opens its context menu at its center; a short press clicks")]
+		public async Task HoldingConfirmKeyOpensContextMenu()
+		{
+			SetupBuilder();
+			var clicks = 0;
+			var button = new Button { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
+			button.Clicked += (_, _) => clicks++;
+			FlyoutBase.SetContextFlyout(button, CreateFlyout(out _));
+
+			await WithTouchTrackerAsync(() => AttachAndRun(button, async handler =>
+			{
+				var view = (AView)handler.PlatformView!;
+				var manager = ContextFlyoutManager.Get(view)!;
+				view.FocusableInTouchMode = true;
+				ContextFlyoutKeyTracker.Observe(view.RootView);
+				Assert.True(view.RequestFocus());
+
+				// A short press clicks and doesn't open the menu
+				SendKey(view, KeyEventActions.Down);
+				SendKey(view, KeyEventActions.Up);
+				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+				Assert.Equal(1, clicks);
+				Assert.Null(manager.Popup);
+
+				// Modifiers (e.g. Shift+Enter) don't open the menu
+				SendKey(view, KeyEventActions.Down, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
+				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+				Assert.Null(manager.Popup);
+				SendKey(view, KeyEventActions.Up, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
+
+				// Holding opens the menu at the center of the view
+				SendKey(view, KeyEventActions.Down);
+				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+				Assert.NotNull(manager.Popup);
+				var (x, y) = GetCenterInWindow(view);
+				AssertAnchoredAt(manager, x, y);
+
+				// Releasing the key after the menu opened doesn't click, like a native long click
+				SendKey(view, KeyEventActions.Up);
+				Assert.Equal(1, clicks);
+				Assert.False(view.Pressed);
+
+				manager.Dismiss();
+				view.FocusableInTouchMode = false;
+			}));
+
+			static void SendKey(AView view, KeyEventActions action, MetaKeyStates meta = 0)
+			{
+				var now = SystemClock.UptimeMillis();
+				using var e = new KeyEvent(now, now, action, Keycode.Enter, 0, meta);
+				view.DispatchKeyEvent(e);
+			}
+		}
+
+		[Fact(DisplayName = "Items without an icon are laid out like a native popup menu")]
+		public async Task ItemsWithoutIconHaveNoPlaceholder()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target" };
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout
+			{
+				new MenuFlyoutItem { Text = "With icon", IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Blue } },
+				new MenuFlyoutItem { Text = "Without icon" },
+			});
+
+			await WithTouchTrackerAsync(() => AttachAndRun(label, async handler =>
+			{
+				var manager = ContextFlyoutManager.Get((AView)handler.PlatformView!)!;
+				Assert.True(manager.Show());
+
+				await AssertHelpers.AssertEventually(() => manager.Popup!.Menu.GetItem(0)!.Icon is not null);
+				Assert.Null(manager.Popup!.Menu.GetItem(1)!.Icon);
+
+				manager.Dismiss();
+			}));
+		}
+
+		static void AssertAnchoredAt(ContextFlyoutManager manager, float x, float y)
+		{
+			var anchor = Assert.IsAssignableFrom<AView>(manager.Anchor);
+			Assert.NotNull(anchor.Parent);
+			var location = new int[2];
+			anchor.GetLocationInWindow(location);
+			Assert.Equal((int)x, location[0]);
+			Assert.Equal((int)y, location[1]);
 		}
 
 		[Fact(DisplayName = "Outside a MauiAppCompatActivity a long-click listener is used and removed again")]

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using AMenu = Android.Views.IMenu;
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Platform
 		PopupMenu? _popup;
 		Dictionary<int, IMenuElement>? _leafItems;
 		List<ISubMenu>? _subMenus;
+		PopupAnchorView? _anchor;
 		List<IDisposable>? _imageResults;
 		int _menuVersion;
 
@@ -88,6 +90,8 @@ namespace Microsoft.Maui.Platform
 
 		internal PopupMenu? Popup => _popup;
 
+		internal AView? Anchor => _anchor;
+
 		internal static ContextFlyoutManager? Get(AView view) =>
 			s_managersByView.TryGetValue(view, out var manager) ? manager : null;
 
@@ -102,6 +106,9 @@ namespace Microsoft.Maui.Platform
 			var manager = new ContextFlyoutManager(handler, view);
 			s_managersByView.Add(view, manager);
 			s_managers.Add(new WeakReference<ContextFlyoutManager>(manager));
+
+			// The view (or one of its children) may already have focus
+			ContextFlyoutKeyTracker.Refresh(view);
 		}
 
 		internal static void Detach(AView view)
@@ -183,25 +190,36 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Opens the context flyout of the focused view, or of the closest ancestor that has one.
+		/// Finds the context flyout that holding a confirm key (Enter, D-pad center, ...) opens for the focused
+		/// view. Like native long-clicks, the focused view must be clickable, and the menu of the view or of the
+		/// closest ancestor with one opens. A long press that already does something else keeps priority.
 		/// </summary>
-		internal static bool TryShowForFocusedView(AView? focused)
+		internal static ContextFlyoutManager? FindForFocusedView(AView? focused)
 		{
-			if (!HasAny)
-				return false;
+			if (!HasAny || focused is null || !focused.Enabled || !focused.Clickable)
+				return null;
 
 			for (var current = focused; current is not null; current = current.Parent as AView)
 			{
-				if (Get(current) is { } manager && manager.Show())
-					return true;
+				if (Get(current) is { } manager)
+					return manager.CanShow() && !manager.DefersLongPress() ? manager : null;
+
+				if (HandlesLongPress(current))
+					return null;
 			}
 
-			return false;
+			return null;
 		}
 
-		// Shift+F10 opens on key down, like Windows. The menu key isn't used: it opens the options menu.
-		internal static bool IsContextMenuKeyDown(Keycode keyCode, KeyEvent? e) =>
-			keyCode == Keycode.F10 && e is not null && e.HasModifiers(MetaKeyStates.ShiftOn);
+		/// <summary>
+		/// Shows the menu where a key long press on the given view opens it: at the view's center, like native.
+		/// </summary>
+		internal bool ShowForKey(AView focused)
+		{
+			var location = new int[2];
+			focused.GetLocationInWindow(location);
+			return Show(location[0] + focused.Width / 2f, location[1] + focused.Height / 2f);
+		}
 
 		/// <summary>
 		/// Marks a view whose long press is handled by MAUI, so that a context flyout doesn't take it over.
@@ -280,8 +298,11 @@ namespace Microsoft.Maui.Platform
 		/// <summary>
 		/// Builds the menu from the current state of the flyout and shows it.
 		/// </summary>
+		/// <param name="windowX">Where the menu opens, in window coordinates, like native context menus that
+		/// open where the view was pressed. Without a position, the menu is anchored to the view.</param>
+		/// <param name="windowY">See <paramref name="windowX"/>.</param>
 		/// <returns><see langword="true"/> when a menu is (about to be) shown.</returns>
-		internal bool Show()
+		internal bool Show(float? windowX = null, float? windowY = null)
 		{
 			if (!_view.TryGetTarget(out var view) || !view.IsAlive() || !view.IsAttachedToWindow || !view.IsShown || view.Context is not Context context)
 				return false;
@@ -293,7 +314,8 @@ namespace Microsoft.Maui.Platform
 			Dismiss();
 
 			var version = ++_menuVersion;
-			var popup = new PopupMenu(context, view);
+			var anchor = windowX is float x && windowY is float y ? PopupAnchorView.Create(view, x, y) : null;
+			var popup = new PopupMenu(context, anchor ?? view);
 			var leafItems = new Dictionary<int, IMenuElement>();
 			var subMenus = new List<ISubMenu>();
 			var iconLoads = new List<Task>();
@@ -310,6 +332,10 @@ namespace Microsoft.Maui.Platform
 			// next menu is shown or the flyout is detached.
 			popup.MenuItemClick += OnMenuItemClick;
 
+			if (anchor is not null)
+				popup.DismissEvent += (_, _) => anchor.OnMenuClosed();
+
+			_anchor = anchor;
 			_popup = popup;
 			_leafItems = leafItems;
 			_subMenus = subMenus;
@@ -325,8 +351,6 @@ namespace Microsoft.Maui.Platform
 			void AddItems(AMenu menu, IList<IMenuElement> items)
 			{
 				var groupId = nextGroupId++;
-				List<AMenuItem>? itemsWithoutIcon = null;
-				var hasIcons = false;
 
 				for (int i = 0; i < items.Count; i++)
 				{
@@ -365,21 +389,7 @@ namespace Microsoft.Maui.Platform
 					menuItem.SetEnabled(item.IsEnabled);
 
 					if (item.Source is IImageSource { IsEmpty: false } source)
-					{
-						hasIcons = true;
 						iconLoads.Add(LoadIconAsync(menuItem, source, version, context, mauiContext));
-					}
-					else
-					{
-						(itemsWithoutIcon ??= new List<AMenuItem>()).Add(menuItem);
-					}
-				}
-
-				// Keep the text of all items aligned when only some of them have an icon
-				if (hasIcons && itemsWithoutIcon is not null)
-				{
-					foreach (var menuItem in itemsWithoutIcon)
-						menuItem.SetIcon(CreateIconPlaceholder(context));
 				}
 
 				MenuCompat.SetGroupDividerEnabled(menu, true);
@@ -424,6 +434,9 @@ namespace Microsoft.Maui.Platform
 
 			if (popup.IsAlive())
 				popup.Dismiss();
+
+			_anchor?.Remove();
+			_anchor = null;
 		}
 
 		static bool HasItems(IMenuFlyout flyout)
@@ -491,15 +504,6 @@ namespace Microsoft.Maui.Platform
 
 			if (result.Value is Drawable drawable)
 				menuItem.SetIcon(ToMenuIcon(drawable, context));
-		}
-
-		static GradientDrawable CreateIconPlaceholder(Context context)
-		{
-			var size = (int)context.ToPixels(IconSizeDp);
-			var placeholder = new GradientDrawable();
-			placeholder.SetColor(global::Android.Graphics.Color.Transparent);
-			placeholder.SetSize(size, size);
-			return placeholder;
 		}
 
 		// Menu icons are 24dp; larger images (e.g. a full-size png) are scaled down to fit
@@ -698,6 +702,74 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// An invisible 1x1 view at the position the menu opens, as popup menus open next to a view.
+		/// </summary>
+		sealed class PopupAnchorView : AView
+		{
+			// The window briefly regains focus when the root menu is replaced by a sub menu, which uses this anchor too
+			const int RemoveDelayMilliseconds = 300;
+
+			bool _menuClosed;
+
+			PopupAnchorView(Context context) : base(context)
+			{
+				Focusable = false;
+				Clickable = false;
+				ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			}
+
+			public static PopupAnchorView? Create(AView view, float windowX, float windowY)
+			{
+				if (view.RootView is not FrameLayout root || view.Context is not Context context)
+					return null;
+
+				var x = (int)windowX;
+				var y = (int)windowY;
+				var anchor = new PopupAnchorView(context);
+				root.AddView(anchor, new FrameLayout.LayoutParams(1, 1)
+				{
+					LeftMargin = x - root.PaddingLeft,
+					TopMargin = y - root.PaddingTop,
+				});
+
+				// The popup reads the anchor's position when it's shown, which can be before the next layout pass
+				anchor.Layout(x, y, x + 1, y + 1);
+				return anchor;
+			}
+
+			public void OnMenuClosed()
+			{
+				_menuClosed = true;
+				RemoveWhenWindowHasFocus();
+			}
+
+			public override void OnWindowFocusChanged(bool hasWindowFocus)
+			{
+				base.OnWindowFocusChanged(hasWindowFocus);
+
+				if (hasWindowFocus)
+					RemoveWhenWindowHasFocus();
+			}
+
+			// While a menu is open the window doesn't have focus, so this waits for sub menus to close as well
+			void RemoveWhenWindowHasFocus()
+			{
+				if (_menuClosed && this.IsAlive() && IsAttachedToWindow)
+					PostDelayed(() =>
+					{
+						if (this.IsAlive() && HasWindowFocus)
+							Remove();
+					}, RemoveDelayMilliseconds);
+			}
+
+			public void Remove()
+			{
+				if (this.IsAlive())
+					this.RemoveFromParent();
+			}
 		}
 
 		sealed class LongClickListener : Java.Lang.Object, AView.IOnLongClickListener
