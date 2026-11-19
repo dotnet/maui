@@ -452,8 +452,24 @@ namespace Microsoft.Maui.Controls
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
 		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			=> DisplayPromptAsync(title, message, false, accept, cancel, placeholder, maxLength, keyboard, initialValue);
+
+		/// <summary>
+		/// Displays a prompt dialog to the application user with the intent to capture a single string value.
+		/// </summary>
+		/// <param name="title">The title of the prompt dialog.</param>
+		/// <param name="message">The body text of the prompt dialog.</param>
+		/// <param name="preselectInitialValue">When <see langword="true"/>, the <paramref name="initialValue"/> text will be pre-selected so the user can easily overwrite it.</param>
+		/// <param name="accept">Text to be displayed on the 'Accept' button.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
+		/// <param name="placeholder">The placeholder text to display in the prompt. Can be <see langword="null"/> when no placeholder is desired.</param>
+		/// <param name="maxLength">The maximum length of the user response.</param>
+		/// <param name="keyboard">The keyboard type to use for the user response.</param>
+		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
+		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
+		public Task<string> DisplayPromptAsync(string title, string message, bool preselectInitialValue, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
-			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
+			var args = new PromptArguments(title, message, preselectInitialValue, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
 			var window = Window;
 			if (IsPlatformEnabled)
