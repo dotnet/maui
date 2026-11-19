@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.Accessibility;
@@ -321,6 +322,29 @@ namespace Microsoft.Maui.DeviceTests
 
 				button.On<AndroidPlatform>().SetRippleColor(null);
 				Assert.Equal(nativeDefault, platformView.RippleColor!.DefaultColor);
+			});
+		}
+
+		[Fact]
+		public async Task BackgroundChangesRespectRippleMapperCustomization()
+		{
+			SetupBuilder();
+			var button = new ControlsContentButton();
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			var customRipple = Colors.Magenta.ToPlatform();
+			mapper.AppendToMapping(
+				Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty.PropertyName,
+				(handler, _) => handler.PlatformView.RippleColor = ColorStateList.ValueOf(customRipple));
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				button.On<AndroidPlatform>().SetRippleColor(Colors.Blue);
+				Assert.Equal(customRipple.ToArgb(), handler.PlatformView.RippleColor!.DefaultColor);
+
+				button.Background = CreateGradient(Colors.Red, Colors.Orange);
+				Assert.Equal(customRipple.ToArgb(), handler.PlatformView.RippleColor!.DefaultColor);
 			});
 		}
 

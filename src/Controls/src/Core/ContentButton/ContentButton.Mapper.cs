@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 				MapRippleColor);
 			ContentButtonHandler.Mapper.AppendToMapping<ContentButton, IContentButtonHandler>(
 				nameof(Background),
-				MapRippleColor);
+				(handler, _) => handler.UpdateValue(PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty.PropertyName));
 #endif
 		}
 	}
