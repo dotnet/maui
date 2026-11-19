@@ -60,12 +60,22 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
 					var checkBox = (CheckBox)bindable;
-					if (!(bool)newValue && checkBox.IsChecked is null)
+					if (!(bool)newValue && checkBox.GetContext(IsCheckedProperty) is { } context)
 					{
-						// Keep the existing binding or setter priority when clearing mixed state.
-						var context = checkBox.GetContext(IsCheckedProperty);
-						checkBox.SetValueCore(IsCheckedProperty, BooleanBoxes.FalseBox, SetValueFlags.None,
-							SetValuePrivateFlags.Default, context.Values.GetSpecificity());
+						// Clear hidden mixed values too, so clearing a higher-priority setter cannot restore null.
+						for (var i = 0; i < context.Values.Count - 1; i++)
+						{
+							if (context.Values.GetValueAt(i) is null)
+							{
+								context.Values[context.Values.GetSpecificityAt(i)] = BooleanBoxes.FalseBox;
+							}
+						}
+
+						if (checkBox.IsChecked is null)
+						{
+							checkBox.SetValueCore(IsCheckedProperty, BooleanBoxes.FalseBox, SetValueFlags.None,
+								SetValuePrivateFlags.Default, context.Values.GetSpecificity());
+						}
 					}
 				}, defaultBindingMode: BindingMode.TwoWay);
 

@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
 
@@ -9,6 +11,25 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CheckBoxTests
 	{
+		bool? GetNativeCheckedState(CheckBoxHandler handler) =>
+			handler.PlatformView.IsChecked;
+
+		void ActivateNativeCheckBox(CheckBoxHandler handler)
+		{
+			var peer = new CheckBoxAutomationPeer(handler.PlatformView);
+			var provider = (IToggleProvider)peer.GetPattern(PatternInterface.Toggle);
+			if (handler.PlatformView.IsEnabled)
+			{
+				provider.Toggle();
+			}
+			else
+			{
+				var error = Record.Exception(() => provider.Toggle());
+				Assert.NotNull(error);
+				Assert.Equal(unchecked((int)0x80040200), error.HResult); // UIA_E_ELEMENTNOTENABLED
+			}
+		}
+
 		CheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
 

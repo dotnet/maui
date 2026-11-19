@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Platform
 
 		void OnTouchUpInside(object? sender, EventArgs e)
 		{
+			if (!Enabled)
+			{
+				return;
+			}
+
 			IsChecked = IsChecked switch
 			{
 				false => true,

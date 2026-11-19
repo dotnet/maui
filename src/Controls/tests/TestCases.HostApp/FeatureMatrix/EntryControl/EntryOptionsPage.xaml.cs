@@ -308,10 +308,10 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		var attributes = FontAttributes.None;
 
-		if (FontAttributesBoldCheckBox.IsChecked)
+		if (FontAttributesBoldCheckBox.IsChecked == true)
 			attributes |= FontAttributes.Bold;
 
-		if (FontAttributesItalicCheckBox.IsChecked)
+		if (FontAttributesItalicCheckBox.IsChecked == true)
 			attributes |= FontAttributes.Italic;
 
 		_viewModel.FontAttributes = attributes;

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
@@ -142,6 +143,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(0, commands);
 		}
 
+		[Fact]
+		public void DisablingThreeStateNormalizesHiddenStyleValue()
+		{
+			var checkBox = new CheckBox
+			{
+				IsThreeState = true,
+				Style = new Style(typeof(CheckBox))
+				{
+					Setters = { new Setter { Property = CheckBox.IsCheckedProperty, Value = null } }
+				}
+			};
+			Assert.Null(checkBox.IsChecked);
+			checkBox.IsChecked = true;
+			var events = 0;
+			var commands = 0;
+			checkBox.CheckedChanged += (_, e) =>
+			{
+				Assert.Equal((bool?)false, e.CheckedValue);
+				events++;
+			};
+			checkBox.Command = new Command(() => commands++);
+
+			checkBox.IsThreeState = false;
+
+			Assert.True(checkBox.IsChecked);
+			Assert.Equal(0, events);
+			Assert.Equal(0, commands);
+
+			checkBox.ClearValue(CheckBox.IsCheckedProperty);
+
+			Assert.False(checkBox.IsChecked);
+			Assert.Equal(1, events);
+			Assert.Equal(1, commands);
+			checkBox.IsThreeState = true;
+			Assert.False(checkBox.IsChecked);
+		}
+
 		[Theory]
 		[InlineData(false, true)]
 		[InlineData(false, null)]
@@ -240,6 +278,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(text, checkBox.GetStringValue());
 			Assert.False(checkBox.TrySetValue("not a state"));
 			Assert.Equal(expected, checkBox.IsChecked);
+		}
+
+		[Theory]
+		[InlineData(true, null)]
+		[InlineData(false, false)]
+		public async Task DragAndDropRoundTripsIndeterminateState(bool threeState, bool? expected)
+		{
+			var source = new CheckBox { IsThreeState = true, IsChecked = null };
+			var target = new CheckBox { IsThreeState = threeState, IsChecked = true };
+			var drag = new DragGestureRecognizer();
+			var drop = new DropGestureRecognizer { AllowDrop = true };
+			source.GestureRecognizers.Add(drag);
+			target.GestureRecognizers.Add(drop);
+
+			var data = drag.SendDragStarting(source).Data;
+			Assert.Equal("Indeterminate", data.Text);
+			await drop.SendDrop(new DropEventArgs(new DataPackageView(data)));
+
+			Assert.Equal(expected, target.IsChecked);
+			Assert.Null(source.IsChecked);
 		}
 
 		[Theory]

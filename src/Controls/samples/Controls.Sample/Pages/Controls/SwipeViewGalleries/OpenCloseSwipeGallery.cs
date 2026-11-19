@@ -144,7 +144,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 			openButton.Clicked += (sender, e) =>
 			{
-				bool animated = animatedCheckBox.IsChecked;
+				bool animated = animatedCheckBox.IsChecked == true;
 				swipeView1.Open(OpenSwipeItem.LeftItems, animated);
 				swipeView2.Open(OpenSwipeItem.LeftItems, animated);
 
@@ -153,7 +153,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 			closeButton.Clicked += (sender, e) =>
 			{
-				bool animated = animatedCheckBox.IsChecked;
+				bool animated = animatedCheckBox.IsChecked == true;
 				swipeView1.Close(animated);
 				swipeView2.Close(animated);
 

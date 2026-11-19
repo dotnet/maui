@@ -33,7 +33,7 @@ public partial class CheckBoxUITestSample : ContentPage
 
 		checkBox.CheckedChanged += (s, e) =>
 		{
-			label.Text = $"CheckBox is {(checkBox.IsChecked ? "Checked" : "Unchecked")}";
+			label.Text = $"CheckBox is {(checkBox.IsChecked == true ? "Checked" : "Unchecked")}";
 		};
 
 		grid.AddChild(label, 0, 0);
