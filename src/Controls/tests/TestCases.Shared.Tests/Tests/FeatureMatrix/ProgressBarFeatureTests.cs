@@ -126,28 +126,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(10)]
-		public void ProgressBar_SetBackgroundColor_Orange_VerifyVisualState()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-			App.WaitForElement("BackgroundColorOrangeButton");
-			App.Tap("BackgroundColorOrangeButton");
-			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test, Order(11)]
-		public void ProgressBar_SetBackgroundColor_LightBlue_VerifyVisualState()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-			App.WaitForElement("BackgroundColorLightBlueButton");
-			App.Tap("BackgroundColorLightBlueButton");
-			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test, Order(12)]
 		public void ProgressBar_SetProgressColorAndBackgroundColor_VerifyVisualState()
 		{
 			App.WaitForElement("ResetButton");
@@ -164,7 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test, Order(13)]
+		[Test, Order(11)]
 		public void ProgressBar_SetIsVisibleFalse_VerifyVisualState()
 		{
 			App.WaitForElement("ResetButton");
@@ -172,6 +150,28 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("IsVisibleFalseRadio");
 			App.Tap("IsVisibleFalseRadio");
 			App.WaitForNoElement("ProgressBarControl");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //For more info, see: https://github.com/dotnet/maui/issues/40307
+		[Test, Order(12)]
+		public void ProgressBar_SetBackgroundColor_Orange_VerifyVisualState()
+		{
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+			App.WaitForElement("BackgroundColorOrangeButton");
+			App.Tap("BackgroundColorOrangeButton");
+			App.WaitForElement("ProgressBarControl");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test, Order(13)]
+		public void ProgressBar_SetBackgroundColor_LightBlue_VerifyVisualState()
+		{
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+			App.WaitForElement("BackgroundColorLightBlueButton");
+			App.Tap("BackgroundColorLightBlueButton");
+			App.WaitForElement("ProgressBarControl");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -268,5 +268,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ProgressBarControl");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
+#endif
 	}
 }

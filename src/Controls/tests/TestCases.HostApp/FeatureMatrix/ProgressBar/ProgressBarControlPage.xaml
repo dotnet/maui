@@ -5,14 +5,17 @@
              x:Class="Maui.Controls.Sample.ProgressBarControlPage"
              x:DataType="local:ProgressBarViewModel"
              Title="ProgressBarFeature">
+       <ContentPage.Resources>
+              <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+              <local:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
+       </ContentPage.Resources>
 
        <Grid ColumnDefinitions="0.5*, 0.5*"
              RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
              RowSpacing="10"
              ColumnSpacing="15"
              Padding="20">
-              <Grid x:Name="ProgressBarGrid"
-                    Grid.ColumnSpan="2">
+              <Grid Grid.ColumnSpan="2">
                      <ProgressBar x:Name="progressBarControl"
                                   AutomationId="ProgressBarControl"
                                   BackgroundColor="{Binding BackgroundColor}"
@@ -33,11 +36,9 @@
                      VerticalOptions="Center"/>
               <local:UITestEntry Grid.Row="1"
                                  Grid.Column="1"
-                                 x:Name="ProgressEntry"
                                  AutomationId="ProgressEntry"
                                  IsCursorVisible="False"
-                                 Text="0.50"
-                                 TextChanged="OnProgressChanged"
+                                 Text="{Binding ProgressText}"
                                  Keyboard="Numeric"
                                  HorizontalOptions="Start"
                                  VerticalOptions="Center"
@@ -56,12 +57,14 @@
                      <Button Text="Orange"
                              BackgroundColor="Orange"
                              TextColor="White"
-                             Clicked="BackgroundColorButton_Clicked"
+                             Command="{Binding BackgroundColorCommand}"
+                             CommandParameter="{x:Static Colors.Orange}"
                              AutomationId="BackgroundColorOrangeButton"/>
                      <Button Text="Light Blue"
                              BackgroundColor="LightBlue"
                              TextColor="Black"
-                             Clicked="BackgroundColorButton_Clicked"
+                             Command="{Binding BackgroundColorCommand}"
+                             CommandParameter="{x:Static Colors.LightBlue}"
                              AutomationId="BackgroundColorLightBlueButton"/>
               </StackLayout>
 
@@ -74,17 +77,14 @@
                            Grid.Column="1"
                            Orientation="Horizontal"
                            VerticalOptions="Center">
-                     <RadioButton x:Name="IsVisibleTrueRadio"
-                                  AutomationId="IsVisibleTrueRadio"
+                     <RadioButton AutomationId="IsVisibleTrueRadio"
                                   GroupName="IsVisible"
                                   Content="True"
-                                  IsChecked="True"
-                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
-                     <RadioButton x:Name="IsVisibleFalseRadio"
-                                  AutomationId="IsVisibleFalseRadio"
+                                  IsChecked="{Binding IsVisible, Mode=TwoWay}"/>
+                     <RadioButton AutomationId="IsVisibleFalseRadio"
                                   GroupName="IsVisible"
                                   Content="False"
-                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
+                                  IsChecked="{Binding IsVisible, Mode=TwoWay, Converter={StaticResource InverseBooleanConverter}}"/>
               </StackLayout>
 
               <!-- Flow Direction -->
@@ -97,16 +97,14 @@
                            Grid.Column="1"
                            Orientation="Horizontal"
                            VerticalOptions="Center">
-                     <RadioButton x:Name="FlowDirectionLTR"
-                                  AutomationId="FlowDirectionLTR"
+                     <RadioButton AutomationId="FlowDirectionLTR"
                                   GroupName="FlowDirection"
                                   Content="LTR"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
-                     <RadioButton x:Name="FlowDirectionRTL"
-                                  AutomationId="FlowDirectionRTL"
+                                  IsChecked="{Binding FlowDirection, Mode=TwoWay, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static FlowDirection.LeftToRight}}"/>
+                     <RadioButton AutomationId="FlowDirectionRTL"
                                   GroupName="FlowDirection"
                                   Content="RTL"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
+                                  IsChecked="{Binding FlowDirection, Mode=TwoWay, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static FlowDirection.RightToLeft}}"/>
               </StackLayout>
 
               <!-- Progress Color -->
@@ -122,12 +120,14 @@
                      <Button Text="Green"
                              BackgroundColor="Green"
                              TextColor="White"
-                             Clicked="ProgressColorButton_Clicked"
+                             Command="{Binding ProgressColorCommand}"
+                             CommandParameter="{x:Static Colors.Green}"
                              AutomationId="ProgressColorGreenButton"/>
                      <Button Text="Red"
                              BackgroundColor="Red"
                              TextColor="White"
-                             Clicked="ProgressColorButton_Clicked"
+                             Command="{Binding ProgressColorCommand}"
+                             CommandParameter="{x:Static Colors.Red}"
                              AutomationId="ProgressColorRedButton"/>
               </StackLayout>
 
@@ -140,17 +140,14 @@
                            Grid.Column="1"
                            Orientation="Horizontal"
                            VerticalOptions="Center">
-                     <RadioButton x:Name="ShadowFalseRadio"
-                                  AutomationId="ShadowFalseRadio"
+                     <RadioButton AutomationId="ShadowFalseRadio"
                                   GroupName="Shadow"
                                   Content="False"
-                                  IsChecked="True"
-                                  CheckedChanged="OnShadowCheckedChanged"/>
-                     <RadioButton x:Name="ShadowTrueRadio"
-                                  AutomationId="ShadowTrueRadio"
+                                  IsChecked="{Binding HasShadow, Mode=TwoWay, Converter={StaticResource InverseBooleanConverter}}"/>
+                     <RadioButton AutomationId="ShadowTrueRadio"
                                   GroupName="Shadow"
                                   Content="True"
-                                  CheckedChanged="OnShadowCheckedChanged"/>
+                                  IsChecked="{Binding HasShadow, Mode=TwoWay}"/>
               </StackLayout>
 
               <!-- IsEnabled -->
@@ -162,17 +159,14 @@
                            Grid.Column="1"
                            Orientation="Horizontal"
                            VerticalOptions="Center">
-                     <RadioButton x:Name="IsEnabledTrueRadio"
-                                  AutomationId="IsEnabledTrueRadio"
+                     <RadioButton AutomationId="IsEnabledTrueRadio"
                                   GroupName="IsEnabled"
                                   Content="True"
-                                  IsChecked="True"
-                                  CheckedChanged="OnIsEnabledCheckedChanged"/>
-                     <RadioButton x:Name="IsEnabledFalseRadio"
-                                  AutomationId="IsEnabledFalseRadio"
+                                  IsChecked="{Binding IsEnabled, Mode=TwoWay}"/>
+                     <RadioButton AutomationId="IsEnabledFalseRadio"
                                   GroupName="IsEnabled"
                                   Content="False"
-                                  CheckedChanged="OnIsEnabledCheckedChanged"/>
+                                  IsChecked="{Binding IsEnabled, Mode=TwoWay, Converter={StaticResource InverseBooleanConverter}}"/>
               </StackLayout>
 
               <Label Grid.Row="8"
@@ -192,11 +186,10 @@
                      Text="ProgressTo"/>
               <local:UITestEntry Grid.Row="9"
                                  Grid.Column="1"
-                                 x:Name="ProgressToEntry"
                                  AutomationId="ProgressToEntry"
                                  IsCursorVisible="False"
                                  Keyboard="Numeric"
-                                 Text="0"
+                                 Text="{Binding ProgressToText}"
                                  HorizontalOptions="Start"
                                  VerticalOptions="Center"
                                  WidthRequest="100"/>
