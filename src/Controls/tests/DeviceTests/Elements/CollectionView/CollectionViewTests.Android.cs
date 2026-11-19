@@ -10,11 +10,13 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
+using ScrollView = Microsoft.Maui.Controls.ScrollView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -172,6 +174,116 @@ namespace Microsoft.Maui.DeviceTests
 					var viewHolder = recyclerView.FindViewHolderForAdapterPosition(position);
 					Assert.True(viewHolder is SimpleViewHolder simpleViewHolder && simpleViewHolder.View == view,
 						$"Reload {reload}: position {position} should show {((Label)view).Text}, but shows {Describe(viewHolder)}");
+				}
+			});
+		}
+
+		[Fact]
+		public async Task Issue40308EmptyViewDoesNotLogImproperRequestLayoutWhenSiblingChanges()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				RegisterCommonHandlers(handlers);
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+				handlers.AddHandler<ScrollView, ScrollViewHandler>();
+				handlers.AddHandler<BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
+			}));
+
+			var photos = new ObservableCollection<string>();
+			var sibling = new Label { Text = "Sibling control" };
+			var expanded = false;
+			var changeLayout = new Microsoft.Maui.Controls.Button { Text = "Change sibling layout" };
+			changeLayout.Clicked += (_, _) =>
+			{
+				expanded = !expanded;
+				sibling.HeightRequest = expanded ? 100 : -1;
+			};
+			var collectionView = new CollectionView
+			{
+				ItemsSource = photos,
+				HeightRequest = 180,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal) { ItemSpacing = 8 },
+				EmptyView = new Label
+				{
+					Text = "No photo yet",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				},
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var image = new Image { HeightRequest = 150, WidthRequest = 150 };
+					image.SetBinding(Image.SourceProperty, ".");
+					return image;
+				})
+			};
+			var page = new ContentPage
+			{
+				Content = new ScrollView
+				{
+					Content = new VerticalStackLayout
+					{
+						Padding = 16,
+						Spacing = 12,
+						Children =
+						{
+							changeLayout,
+							sibling,
+							collectionView,
+							new BoxView { HeightRequest = 900, Color = Colors.LightGray },
+							new Label { Text = "Scroll back up to bring the CollectionView into view again." }
+						}
+					}
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(page, async _ =>
+			{
+				var recyclerView = Assert.IsType<CollectionViewHandler>(collectionView.Handler).PlatformView;
+				await WaitForIssue40308Frames(recyclerView);
+				var itemView = Assert.IsType<EmptyViewContentView>(
+					recyclerView.FindViewHolderForAdapterPosition(0)?.ItemView);
+				Assert.True(itemView.IsAttachedToWindow);
+
+				// View.toString() starts with the native class and instance hash, before changing bounds/flags.
+				var nativeIdentity = itemView.ToString().Split(' ')[0];
+				var marker = $"Issue40308-{System.Guid.NewGuid():N}";
+				var arrangedDuringLayout = false;
+				System.EventHandler<AView.LayoutChangeEventArgs> onLayout = (_, _) =>
+				{
+					arrangedDuringLayout |= itemView.IsInLayout;
+				};
+
+				recyclerView.LayoutChange += onLayout;
+				try
+				{
+					global::Android.Util.Log.Warn("Maui40308", $"{marker}-start");
+					for (var pass = 0; pass < 2; pass++)
+					{
+						arrangedDuringLayout = false;
+						var previousY = collectionView.Y;
+						((IButtonController)changeLayout).SendClicked();
+						await WaitForIssue40308Frames(recyclerView);
+
+						Assert.True(arrangedDuringLayout, "The attached EmptyView must participate in native layout.");
+						Assert.NotEqual(previousY, collectionView.Y);
+					}
+					global::Android.Util.Log.Warn("Maui40308", $"{marker}-end");
+
+					// Observe the real ViewRootImpl diagnostic, including requests RecyclerView may
+					// intercept before they reach an ancestor RequestLayout override. Never clear logcat.
+					var log = await ReadIssue40308Logcat();
+					var start = log.IndexOf($"{marker}-start", System.StringComparison.Ordinal);
+					var end = log.IndexOf($"{marker}-end", System.StringComparison.Ordinal);
+					Assert.True(start >= 0 && end > start,
+						$"Both log markers must be readable; missing/truncated logcat is not a pass.\n{log}");
+					var warnings = log.Substring(start, end - start).Split('\n').Where(line =>
+						line.Contains("requestLayout() improperly called", System.StringComparison.Ordinal) &&
+						line.Contains(nativeIdentity, System.StringComparison.Ordinal));
+					Assert.True(!warnings.Any(), string.Join("\n", warnings));
+				}
+				finally
+				{
+					recyclerView.LayoutChange -= onLayout;
 				}
 			});
 		}
@@ -1003,6 +1115,36 @@ namespace Microsoft.Maui.DeviceTests
 			{
 			}
 		}
+
+		static async Task WaitForIssue40308Frames(AView view)
+		{
+			// Include subsequent traversals and requests posted by RequestLayoutIfNeeded.
+			for (var frame = 0; frame < 6; frame++)
+			{
+				var completed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				using var callback = new Java.Lang.Runnable(() => view.Post(() => completed.TrySetResult(true)));
+				view.PostOnAnimation(callback);
+				await completed.Task.WaitAsync(System.TimeSpan.FromSeconds(5));
+			}
+		}
+
+		static Task<string> ReadIssue40308Logcat() => Task.Run(async () =>
+		{
+			// Android permits reading this app's own logs without READ_LOGS or adb privileges.
+			using var builder = new Java.Lang.ProcessBuilder("/system/bin/logcat", "-d", "-b", "main",
+				"-v", "raw", $"--pid={(global::Android.OS.Process.MyPid())}", "*:W");
+			builder.RedirectErrorStream(true);
+			using var process = builder.Start();
+			try
+			{
+				using var reader = new System.IO.StreamReader(process.InputStream);
+				return await reader.ReadToEndAsync().WaitAsync(System.TimeSpan.FromSeconds(5));
+			}
+			finally
+			{
+				process.Destroy();
+			}
+		});
 
 		class TestRecyclerEmptyView : FrameLayout, IMauiRecyclerViewEmptyView
 		{
