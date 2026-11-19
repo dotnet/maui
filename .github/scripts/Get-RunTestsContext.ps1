@@ -121,9 +121,4 @@ New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $path = Join-Path $OutputDirectory 'context.json'
 $context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $path -Encoding utf8
 Write-Host "Collected $($files.Count) changed files and $($context.inventory.categories.Count) UI categories for PR #$PrNumber at $($pr.head.sha)."
-$fullRun = [bool](Get-RunTestsFullSuiteProposal -BaseRef $pr.base.ref)
-if ($fullRun) { Write-Host 'The full suite is required; the AI selection is skipped.' }
-if ($env:GITHUB_OUTPUT) {
-    "ready=true" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
-    "full_run=$($fullRun.ToString().ToLowerInvariant())" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
-}
+if ($env:GITHUB_OUTPUT) { "ready=true" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }

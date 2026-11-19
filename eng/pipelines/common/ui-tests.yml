@@ -130,8 +130,8 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Material3 feature tests use their own category, not the corresponding control category.
-  # Selecting an affected control therefore retains the complete Material3 variant.
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), contains(join(',', parameters.selectedCategories), 'Button'), contains(join(',', parameters.selectedCategories), 'Picker'), containsValue(parameters.selectedCategories, 'CheckBox'), containsValue(parameters.selectedCategories, 'Editor'), containsValue(parameters.selectedCategories, 'Entry'), containsValue(parameters.selectedCategories, 'Image'), containsValue(parameters.selectedCategories, 'Label'), containsValue(parameters.selectedCategories, 'ProgressBar'), containsValue(parameters.selectedCategories, 'SearchBar'), containsValue(parameters.selectedCategories, 'Slider'), containsValue(parameters.selectedCategories, 'Switch'))) }}:
+  # A selection runs this lane only when it names Material3 explicitly.
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))) }}:
   - stage: build_ui_tests_material3
     displayName: Build UITests Material3 Sample App
     dependsOn: []
@@ -311,7 +311,7 @@ stages:
                       platform: 'Android Shell Renderer'
                       artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), contains(join(',', parameters.selectedCategories), 'Button'), contains(join(',', parameters.selectedCategories), 'Picker'), containsValue(parameters.selectedCategories, 'CheckBox'), containsValue(parameters.selectedCategories, 'Editor'), containsValue(parameters.selectedCategories, 'Entry'), containsValue(parameters.selectedCategories, 'Image'), containsValue(parameters.selectedCategories, 'Label'), containsValue(parameters.selectedCategories, 'ProgressBar'), containsValue(parameters.selectedCategories, 'SearchBar'), containsValue(parameters.selectedCategories, 'Slider'), containsValue(parameters.selectedCategories, 'Switch'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))) }}:
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
     dependsOn: build_ui_tests_material3

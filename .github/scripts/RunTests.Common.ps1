@@ -32,7 +32,6 @@ $script:RunTestsUmbrellas = [ordered]@{
     Shell          = 'Shell'
 }
 
-$script:RunTestsMaterial3Controls = @('CheckBox', 'Editor', 'Entry', 'Image', 'Label', 'ProgressBar', 'SearchBar', 'Slider', 'Switch')
 
 $script:RunTestsCommentMarker = '<!-- review-run-tests -->'
 $script:RunTestsCheckPrefix = 'maui-pr-uitests'
@@ -173,18 +172,19 @@ function Resolve-RunTestsSelection {
         $mode = 'none'
         $validCategories.Clear()
     } elseif ($categories.Count -gt 0 -and $validCategories.Count -eq 0) {
-        # Every requested category was unknown: never risk a filter that runs zero tests.
-        $notes.Add('No requested category matched the inventory; running all categories on the selected platforms.')
-        $mode = 'selected'
+        # Every requested category was unknown. Only run what the AI selected: nothing.
+        $notes.Add('No requested category matched the inventory, so nothing from this selection runs.')
+        $mode = 'none'
+        $orderedPlatforms = @()
     } else {
         $mode = 'selected'
     }
 
-    # Material3 only exists on Android. Drop it rather than queue an empty lane elsewhere.
-    if ($mode -eq 'selected' -and $validCategories.Count -gt 0 -and
-        @($validCategories | Where-Object { $_ -cne 'Material3' }).Count -eq 0 -and 'android' -cnotin $orderedPlatforms) {
-        $notes.Add('Material3 tests only run on Android; added Android.')
-        $orderedPlatforms = @($knownPlatforms | Where-Object { $_ -in (@($orderedPlatforms) + 'android') })
+    # Material3 only has an Android lane. Never add a platform the AI did not select.
+    if ($mode -eq 'selected' -and $validCategories.Contains('Material3') -and 'android' -cnotin $orderedPlatforms) {
+        $notes.Add('`Material3` only has Android tests and Android was not selected, so it does not run.')
+        [void]$validCategories.Remove('Material3')
+        if ($validCategories.Count -eq 0) { $mode = 'none'; $orderedPlatforms = @() }
     }
 
     $expanded = [System.Collections.Generic.List[string]]::new()
@@ -247,14 +247,6 @@ function Resolve-RunTestsSelection {
         }
     }
 
-    # eng/pipelines/common/ui-tests.yml also runs the Android Material3 lane for these controls.
-    if ($mode -eq 'selected' -and 'android' -cin $orderedPlatforms -and -not $expanded.Contains('Material3') -and
-        @($expanded | Where-Object { $_ -match 'Button|Picker' -or $_ -cin $script:RunTestsMaterial3Controls }).Count) {
-        $expanded.Add('Material3')
-        if ($platformCategories.Contains('android')) { $platformCategories['android'] = @($platformCategories['android']) + 'Material3' }
-        $notes.Add('Android Material3 tests also run because a Material3-styled control was selected.')
-    }
-
     return [pscustomobject]@{
         mode = $mode
         platforms = @($orderedPlatforms)
@@ -262,8 +254,6 @@ function Resolve-RunTestsSelection {
         expandedCategories = @($allCategories | Where-Object { $expanded.Contains($_) })
         platformCategories = $platformCategories
         pipelineCategories = @($pipelineCategories)
-        # The full suite was required by the PR's base branch, not chosen by the AI.
-        forced = [bool](& $get 'forced')
         summary = (Format-RunTestsText $summary 600)
         rationale = (Format-RunTestsText $rationale 4000 -Multiline)
         notes = @($notes)
@@ -470,8 +460,7 @@ function New-RunTestsComment {
     $lines.Add('')
     $lines.Add('## Selected UI Tests')
     $lines.Add('')
-    $what = if ($Selection.PSObject.Properties['forced']?.Value) { 'Full UI test suite' } else { 'AI-selected UI tests' }
-    $lines.Add("> $who &#x2014; $what for commit [``$short``](https://github.com/$repo/commit/$sha).")
+    $lines.Add("> $who &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
     $lines.Add('')
     $lines.Add('<p align="left">')
     $lines.Add((Get-RunTestsBadge 'Result' $status.badge $status.color))
@@ -541,11 +530,32 @@ function New-RunTestsComment {
     $lines.Add('<!-- /run-tests-results -->')
     # Why
     $lines.Add('<details>')
-    $why = if ($Selection.PSObject.Properties['forced']?.Value) { 'reason' } else { 'AI rationale' }
-    $lines.Add("<summary><strong>&#x1F916; Why these tests</strong> &#x2014; $why</summary>")
+    $lines.Add("<summary><strong>&#x1F916; Why these tests</strong> &#x2014; $(Get-RunTestsSelectedByText $Selection -Short)</summary>")
     $lines.Add('<br/>')
     $lines.Add('')
-    $lines.Add($(if ($Selection.rationale) { $Selection.rationale } else { '_No rationale provided._' }))
+    $models = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ })
+    if ($models.Count -gt 1) {
+        $lines.Add('Each model chose independently; every test that runs was selected by at least one of them.')
+        $lines.Add('')
+        $lines.Add("| Platform | $(($models | ForEach-Object { $_.displayName }) -join ' | ') |")
+        $lines.Add("| --- |$(' --- |' * $models.Count)")
+        foreach ($platform in Get-RunTestsPlatformIds) {
+            $cells = foreach ($model in $models) {
+                if ($model.mode -eq 'full') { '_all categories_' }
+                elseif ($model.platformCategories -and $model.platformCategories.Contains($platform) -and @($model.platformCategories[$platform]).Count) { Format-RunTestsCategoryList @($model.platformCategories[$platform]) }
+                else { '&#x2014;' }
+            }
+            $lines.Add("| $(Get-RunTestsPlatformName $platform) | $($cells -join ' | ') |")
+        }
+        foreach ($model in $models) {
+            $lines.Add('')
+            $lines.Add("**$($model.displayName)** &#x2014; $(if ($model.summary) { $model.summary } else { '_no summary_' })")
+            $lines.Add('')
+            $lines.Add($(if ($model.rationale) { $model.rationale } else { '_No rationale provided._' }))
+        }
+    } else {
+        $lines.Add($(if ($Selection.rationale) { $Selection.rationale } else { '_No rationale provided._' }))
+    }
     foreach ($note in $Selection.notes) { $lines.Add(''); $lines.Add("> [!NOTE]`n> $(Format-RunTestsText $note 300)") }
     $lines.Add('')
     $lines.Add('</details>')
@@ -864,21 +874,78 @@ function Get-RunTestsRunnableCategories {
     return $result
 }
 
-# PRs into these branches always run the full suite: they stabilize a release.
-$script:RunTestsFullSuiteBasePattern = '^(release|candidate)/'
 
-function Get-RunTestsFullSuiteProposal {
+# Models allowed to select tests, with the names shown in comments.
+$script:RunTestsModels = [ordered]@{ 'gpt-6.1-sol' = 'GPT-6.1 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
+
+function Get-RunTestsSelectedByText {
     <#
     .SYNOPSIS
-    Returns a full-suite proposal when the PR's base branch requires one, otherwise $null.
+    "AI-selected UI tests (GPT-6.1 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
     #>
-    param([string]$BaseRef)
-    if ($BaseRef -match $script:RunTestsFullSuiteBasePattern) {
-        return @{
-            full_run = $true; forced = $true; platforms = '[]'; categories = '[]'
-            summary = "Full UI test suite, because this PR targets ``$(Format-RunTestsText $BaseRef 100)``."
-            rationale = 'PRs into `release/*` and `candidate/*` branches always run the full suite, so no AI selection was made.'
+    param([Parameter(Mandatory)]$Selection, [switch]$Short)
+    $names = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ } | ForEach-Object { $_.displayName })
+    if ($Short) { return $(if ($names.Count) { "AI rationale ($($names -join ' + '))" } else { 'AI rationale' }) }
+    return $(if ($names.Count) { "AI-selected UI tests ($($names -join ' + '))" } else { 'AI-selected UI tests' })
+}
+
+function Merge-RunTestsSelections {
+    <#
+    .SYNOPSIS
+    Combines the selections of several models: each platform runs the union of the categories the
+    models chose for it. A test runs only if at least one model selected it.
+
+    .PARAMETER Selections
+    Ordered dictionary of model id -> selection from Resolve-RunTestsSelection.
+    #>
+    param([Parameter(Mandatory)][System.Collections.IDictionary]$Selections, [Parameter(Mandatory)]$Inventory)
+    $models = @(foreach ($id in $Selections.Keys) {
+            $s = $Selections[$id]
+            [pscustomobject]@{
+                id = $id; displayName = $(if ($script:RunTestsModels.Contains($id)) { $script:RunTestsModels[$id] } else { $id })
+                mode = $s.mode; platformCategories = $s.platformCategories; summary = $s.summary; rationale = $s.rationale
+            }
+        })
+    $all = @($Selections.Values)
+    $notes = [System.Collections.Generic.List[string]]::new()
+    foreach ($id in $Selections.Keys) {
+        foreach ($note in $Selections[$id].notes) { $notes.Add("$($script:RunTestsModels[$id] ?? $id): $note") }
+    }
+    $allCategories = Get-RunTestsAllCategories $Inventory
+    $summary = (@($models | ForEach-Object { "**$($_.displayName):** $($_.summary)" }) -join '<br/>')
+    $base = [ordered]@{
+        mode = 'none'; platforms = @(); categories = @(); expandedCategories = @(); platformCategories = [ordered]@{}
+        pipelineCategories = @(); summary = $summary; rationale = ''; notes = @($notes); models = $models
+    }
+    if (@($all | Where-Object { $_.mode -eq 'full' }).Count) {
+        $full = @($all | Where-Object { $_.mode -eq 'full' })[0]
+        $base.mode = 'full'; $base.platforms = @($full.platforms); $base.expandedCategories = @($full.expandedCategories)
+        return [pscustomobject]$base
+    }
+    $active = @($all | Where-Object { $_.mode -eq 'selected' })
+    if (-not $active.Count) { return [pscustomobject]$base }
+
+    $map = [ordered]@{}
+    foreach ($platform in Get-RunTestsPlatformIds) {
+        $set = @($active | ForEach-Object { if ($_.platformCategories -and $_.platformCategories.Contains($platform)) { @($_.platformCategories[$platform]) } } | Where-Object { $_ })
+        if ($set.Count) { $map[$platform] = @($allCategories | Where-Object { $_ -cin $set }) }
+    }
+    $platforms = @($map.Keys)
+    $expanded = @($allCategories | Where-Object { $c = $_; @($platforms | Where-Object { $c -cin $map[$_] }).Count })
+    $pipeline = [System.Collections.Generic.List[string]]::new()
+    $everythingEverywhere = -not @($active | Where-Object { $_.categories.Count -gt 0 }).Count
+    if (-not $everythingEverywhere) {
+        foreach ($c in $expanded) {
+            $on = @($platforms | Where-Object { $c -cin $map[$_] })
+            if ($on.Count -eq $platforms.Count -or $c -ceq 'Material3') { $pipeline.Add($c) }
+            else { foreach ($platform in $on) { $pipeline.Add("$($script:RunTestsPipelinePlatform[$platform]):$c") } }
         }
     }
-    return $null
+    $base.mode = 'selected'
+    $base.platforms = $platforms
+    $base.categories = $(if ($everythingEverywhere) { @() } else { $expanded })
+    $base.expandedCategories = $expanded
+    $base.platformCategories = $map
+    $base.pipelineCategories = @($pipeline)
+    return [pscustomobject]$base
 }

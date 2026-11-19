@@ -47,11 +47,12 @@ Describe 'Resolve-RunTestsSelection' {
         $s.notes -join ' ' | Should -Match 'NotACategory'
     }
 
-    It 'falls back to every category when no requested category is valid' {
+    It 'runs nothing, never everything, when no requested category is valid' {
         $s = Resolve-RunTestsSelection (New-Proposal @('windows') @('Nope')) $inventory
-        $s.mode | Should -Be 'selected'
-        $s.categories.Count | Should -Be 0
-        $s.expandedCategories.Count | Should -Be (Get-RunTestsAllCategories $inventory).Count
+        $s.mode | Should -Be 'none'
+        $s.platforms.Count | Should -Be 0
+        $s.expandedCategories.Count | Should -Be 0
+        $s.notes -join ' ' | Should -Match 'nothing from this selection runs'
     }
 
     It 'runs nothing when no platform is selected' {
@@ -66,11 +67,18 @@ Describe 'Resolve-RunTestsSelection' {
         $s.platforms.Count | Should -Be 4
     }
 
-    It 'adds the Android Material3 lane the pipeline runs for Material3 controls' {
+    It 'never adds categories or platforms the AI did not select' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Button')) $inventory
-        $s.expandedCategories | Should -Contain 'Material3'
-        $s = Resolve-RunTestsSelection (New-Proposal @('ios') @('Button')) $inventory
         $s.expandedCategories | Should -Not -Contain 'Material3'
+        $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Button', 'Material3')) $inventory
+        $s.expandedCategories | Should -Contain 'Material3'
+        # Material3 has only an Android lane: dropped, Android is not added.
+        $s = Resolve-RunTestsSelection (New-Proposal @('ios') @('Material3')) $inventory
+        $s.mode | Should -Be 'none'
+        $s.platforms | Should -Not -Contain 'android'
+        $s = Resolve-RunTestsSelection (New-Proposal @('ios') @('Button', 'Material3')) $inventory
+        $s.platforms | Should -Be @('ios')
+        $s.expandedCategories | Should -Be @('Button')
     }
 
     It 'rejects unknown platforms and non-identifier values' {
@@ -277,38 +285,75 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
     }
 }
 
-Describe 'Full suite rules' {
-    It 'forces the full suite for PRs into release and candidate branches' {
-        foreach ($base in 'release/10.0.1xx-sr6', 'candidate/11.0.1xx-sr2') {
-            $proposal = Get-RunTestsFullSuiteProposal -BaseRef $base
-            $proposal.full_run | Should -BeTrue
-            $proposal.summary | Should -Match ([regex]::Escape($base))
+Describe 'Two-model selection' {
+    BeforeAll {
+        function Resolve-Pair($gpt, $opus) {
+            $resolved = [ordered]@{}
+            if ($gpt) { $resolved['gpt-6.1-sol'] = Resolve-RunTestsSelection $gpt $inventory }
+            if ($opus) { $resolved['claude-opus-5.5'] = Resolve-RunTestsSelection $opus $inventory }
+            Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
         }
     }
 
-    It 'leaves other PRs to the AI selection' {
-        foreach ($base in 'main', 'net11', 'inflight/current', 'net11.0', 'feature/release/x') {
-            Get-RunTestsFullSuiteProposal -BaseRef $base | Should -BeNullOrEmpty
-        }
+    It 'runs the union of both models, per platform' {
+        $s = Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('android', 'ios') @('Label'))
+        $s.mode | Should -Be 'selected'
+        $s.platforms | Should -Be @('android', 'ios')
+        $s.platformCategories['android'] | Should -Be @('Button', 'Label')
+        $s.platformCategories['ios'] | Should -Be @('Label')
+        # Button was only chosen for Android, so it must not run on iOS.
+        $s.pipelineCategories | Should -Be @('android:Button', 'Label')
     }
 
-    It 'labels a required full suite as such instead of as an AI selection' {
-        $selection = Resolve-RunTestsSelection -Proposal (Get-RunTestsFullSuiteProposal -BaseRef 'release/10.0.1xx-sr6') -Inventory $inventory
-        $selection.mode | Should -Be 'full'
-        $selection.forced | Should -BeTrue
-        $body = New-RunTestsComment -Selection $selection -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
-        $body | Should -Match 'Full UI test suite for commit'
-        $body | Should -Match 'Why these tests</strong> &#x2014; reason'
-        $body | Should -Not -Match 'AI-selected'
-        $ai = Resolve-RunTestsSelection -Proposal (New-Proposal @('android') @('Button')) -Inventory $inventory
-        $ai.forced | Should -BeFalse
-        (New-RunTestsComment -Selection $ai -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run') | Should -Match 'AI-selected UI tests'
+    It 'runs only what one model chose when the other found nothing' {
+        $s = Resolve-Pair (New-Proposal @() @()) (New-Proposal @('windows') @('Window'))
+        $s.platforms | Should -Be @('windows')
+        $s.pipelineCategories | Should -Be @('Window')
     }
 
-    It 'only accepts the exact command' {
-        $workflow = Get-Content (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.md') -Raw
-        $workflow | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
-        $workflow | Should -Not -Match '--all'
+    It 'runs nothing when neither model selects anything' {
+        (Resolve-Pair (New-Proposal @() @()) (New-Proposal @() @())).mode | Should -Be 'none'
+        (Resolve-Pair $null $null).mode | Should -Be 'none'
+    }
+
+    It 'runs the full suite only when a model chose it' {
+        (Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @() @() $true)).mode | Should -Be 'full'
+        (Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('ios') @('Label'))).mode | Should -Be 'selected'
+    }
+
+    It 'keeps every category on a platform a model chose wholesale' {
+        $s = Resolve-Pair (New-Proposal @('android') @()) (New-Proposal @('ios') @('Label'))
+        $s.platformCategories['android'].Count | Should -BeGreaterThan 50
+        $s.pipelineCategories | Should -Contain 'android:Button'
+        $s.pipelineCategories | Should -Contain 'Label'
+        $s.pipelineCategories | Should -Not -Contain 'ios:Button'
+    }
+
+    It 'shows what each model chose and who selected the tests' {
+        $s = Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('android', 'ios') @('Label'))
+        $body = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
+        $body | Should -Match 'AI-selected UI tests \(GPT-6.1 Sol \+ Claude Opus 5.5\)'
+        $body | Should -Match '\| Platform \| GPT-6.1 Sol \| Claude Opus 5.5 \|'
+        $body | Should -Match '\| Android \| `Button` \| `Label` \|'
+        $body | Should -Match '\| iOS \| &#x2014; \| `Label` \|'
+        $body | Should -Match '\*\*GPT-6.1 Sol\*\*'
+        $body | Should -Not -Match 'Full UI test suite'
+    }
+
+    It 'wires GPT-6.1 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
+        $workflows = Join-Path $PSScriptRoot '../workflows'
+        $gpt = Get-Content (Join-Path $workflows 'copilot-review-run-tests.md') -Raw
+        $opus = Get-Content (Join-Path $workflows 'copilot-review-run-tests-opus.md') -Raw
+        $gpt | Should -Match '(?m)^model: gpt-6.1-sol$'
+        $opus | Should -Match '(?m)^model: claude-opus-5.5$'
+        foreach ($workflow in $gpt, $opus) { $workflow | Should -Match '- shared/run-tests-selection.md' }
+        $gpt | Should -Match 'gh workflow run copilot-review-run-tests-opus.lock.yml'
+        $gpt | Should -Not -Match 'gh workflow run review-run-tests-dispatch.yml'
+        $opus | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
+        $gpt | Should -Match "proposal\['model'\] = 'gpt-6.1-sol'"
+        $opus | Should -Match "proposal\['model'\] = 'claude-opus-5.5'"
+        $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
+        foreach ($workflow in $gpt, $opus) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
     }
 }
 
@@ -332,6 +377,12 @@ Describe 'Pipeline templates' {
         $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
         $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+selectedPlatforms: \$\{\{ parameters\.selectedPlatforms \}\}\s+selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')
         ([regex]::Matches($ci, 'selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')).Count | Should -Be 1
+    }
+
+    It 'runs the Material3 lane only when Material3 is selected' {
+        $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
+        $tests | Should -Not -Match "contains\(join\(',', parameters\.selectedCategories\), 'Button'\)"
+        ([regex]::Matches($tests, [regex]::Escape("containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))"))).Count | Should -Be 2
     }
 
     It 'accepts platform-qualified categories in every platform matrix' {

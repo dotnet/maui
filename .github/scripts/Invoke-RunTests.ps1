@@ -26,8 +26,9 @@ param(
     [Parameter(Mandatory)][string]$ContextPath,
     [string]$AgentOutputPath,
     [string]$ProposalJson,
-    # proposal.json handed over by the agentic workflow (one run_selected_ui_tests item).
-    [string]$ProposalPath,
+    # proposal.json files handed over by the agentic workflows, one per model
+    # (one run_selected_ui_tests item each, plus the trusted `model` id).
+    [string[]]$ProposalPath,
     # The /review run-tests run to credit in the comment and checks.
     [string]$WorkflowRunUrl,
     [string]$OutputDirectory = $(if ($env:RUNNER_TEMP) { Join-Path $env:RUNNER_TEMP 'run-tests' } else { Join-Path ([IO.Path]::GetTempPath()) 'run-tests' }),
@@ -62,38 +63,44 @@ function Invoke-GhJson {
     return ($raw -join "`n") | ConvertFrom-Json -Depth 50
 }
 
-function Get-Proposal {
-    if ($ProposalJson) { return $ProposalJson | ConvertFrom-Json -AsHashtable }
-    if ($ProposalPath -and (Test-Path -LiteralPath $ProposalPath)) {
-        $file = Get-Item -LiteralPath $ProposalPath
-        if ($file.Length -gt 65536) { throw 'The proposal file is unexpectedly large.' }
-        return Get-Content -LiteralPath $ProposalPath -Raw | ConvertFrom-Json -AsHashtable -Depth 5
+$script:ProposalKeys = 'platforms', 'categories', 'full_run', 'summary', 'rationale'
+
+function Select-ProposalFields {
+    # Only the fields the agent may set; anything else in its output is ignored.
+    param([System.Collections.IDictionary]$Item)
+    $proposal = @{}
+    foreach ($key in $script:ProposalKeys) { if ($Item.Contains($key)) { $proposal[$key] = $Item[$key] } }
+    return $proposal
+}
+
+function Get-Proposals {
+    # model id -> proposal, in a stable model order.
+    $proposals = [ordered]@{}
+    if ($ProposalJson) { $proposals['gpt-6.1-sol'] = Select-ProposalFields ($ProposalJson | ConvertFrom-Json -AsHashtable) }
+    foreach ($path in @($ProposalPath | Where-Object { $_ })) {
+        if (-not (Test-Path -LiteralPath $path)) { throw "Proposal file $path does not exist." }
+        if ((Get-Item -LiteralPath $path).Length -gt 65536) { throw 'The proposal file is unexpectedly large.' }
+        $item = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable -Depth 5
+        $model = [string]$item['model']
+        if (-not $script:RunTestsModels.Contains($model)) { throw "Proposal $path names an unknown model '$model'." }
+        $proposals[$model] = Select-ProposalFields $item
     }
-    if (-not $AgentOutputPath -or -not (Test-Path -LiteralPath $AgentOutputPath)) {
-        return $null
+    if ($AgentOutputPath -and (Test-Path -LiteralPath $AgentOutputPath)) {
+        $output = Get-Content -LiteralPath $AgentOutputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 20
+        $items = @($output.items | Where-Object { $_.type -eq 'run_selected_ui_tests' })
+        # The tool is documented as call-once; use the last call if the agent corrected itself.
+        if ($items.Count) { $proposals['gpt-6.1-sol'] = Select-ProposalFields $items[-1] }
     }
-    $output = Get-Content -LiteralPath $AgentOutputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 20
-    $items = @($output.items | Where-Object { $_.type -eq 'run_selected_ui_tests' })
-    if ($items.Count -eq 0) { return $null }
-    # The tool is documented as call-once; use the last call if the agent corrected itself.
-    return $items[-1]
+    $ordered = [ordered]@{}
+    foreach ($model in $script:RunTestsModels.Keys) { if ($proposals.Contains($model)) { $ordered[$model] = $proposals[$model] } }
+    return $ordered
 }
 
 $context = Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json -Depth 30
 if ([int]$context.prNumber -ne $PrNumber) { throw 'The collected context belongs to a different PR.' }
 $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
 
-# PRs into release/candidate branches always run the full suite, whatever the agent said.
-$proposal = Get-RunTestsFullSuiteProposal -BaseRef ([string]$context.baseRef)
-if (-not $proposal) { $proposal = Get-Proposal }
-if (-not $proposal) {
-    # The agent failed or produced nothing usable: fall back to the full suite rather than guessing.
-    $proposal = @{
-        full_run = $true; platforms = '[]'; categories = '[]'
-        summary = 'The AI selection was unavailable, so the full UI test suite was selected.'
-        rationale = 'No valid `run_selected_ui_tests` proposal was produced by the agent.'
-    }
-}
+$proposals = Get-Proposals
 # Which categories have enabled tests on each platform, from this trusted checkout, plus the
 # categories the PR's own changed tests enable (evaluated per platform at the PR head).
 $runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
@@ -103,7 +110,15 @@ if ($context.PSObject.Properties['changedTestRunnable'] -and $context.changedTes
         if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
     }
 }
-$selection = Resolve-RunTestsSelection -Proposal $proposal -Inventory $inventory -Runnable $runnable
+# Only AI-selected tests run: each model's proposal is validated on its own, then the union is taken.
+$resolved = [ordered]@{}
+foreach ($model in $proposals.Keys) {
+    $resolved[$model] = Resolve-RunTestsSelection -Proposal $proposals[$model] -Inventory $inventory -Runnable $runnable
+}
+$selection = Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
+$selectionError = if ($proposals.Count -eq 0) {
+    'No AI model produced a test selection, so nothing was queued. Comment `/review run-tests` again, or use `/azp run maui-pr-uitests` for the full suite.'
+}
 $selection | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'selection.json') -Encoding utf8
 
 # Re-check the caller and the PR: the agent may have taken minutes and the PR may have moved.
@@ -139,7 +154,9 @@ function Get-VerifiedPullRequest {
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
 $queueError = $null
-if ($pr.state -ne 'open') {
+if ($selectionError) {
+    $queueError = $selectionError
+} elseif ($pr.state -ne 'open') {
     $queueError = 'The PR is no longer open.'
 } elseif ($pr.head.sha -cne $context.headSha) {
     $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review run-tests`` again."
