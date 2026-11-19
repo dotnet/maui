@@ -220,6 +220,38 @@ namespace Microsoft.Maui.Controls
 				((IStyle)basedOn).UnApply(bindable);
 		}
 
+		/// <summary>
+		/// Replaces the setters of this style and reapplies them to every element the style is
+		/// currently applied to (including elements reached through a derived style). Used by
+		/// XAML Hot Reload so existing consumers observe edited setter values without being
+		/// re-resolved. Triggers and behaviors are left untouched.
+		/// </summary>
+		internal void ReplaceSetters(IEnumerable<Setter> setters)
+		{
+			var newSetters = new List<Setter>(setters);
+			var targets = new List<(BindableObject Target, SetterSpecificity Specificity)>();
+			lock (_targets)
+			{
+				foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
+				{
+					if (specificities.TryGetValue(target.Key, out var specificity))
+						targets.Add((target.Key, (SetterSpecificity)specificity));
+				}
+			}
+
+			foreach (var (target, specificity) in targets)
+				foreach (Setter setter in Setters)
+					setter.UnApply(target, specificity);
+
+			Setters.Clear();
+			foreach (var setter in newSetters)
+				Setters.Add(setter);
+
+			foreach (var (target, specificity) in targets)
+				foreach (Setter setter in Setters)
+					setter.Apply(target, specificity);
+		}
+
 		bool ValidateBasedOn(Style value)
 			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
 	}

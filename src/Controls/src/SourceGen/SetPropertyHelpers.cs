@@ -155,7 +155,7 @@ static class SetPropertyHelpers
 	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
 	/// Creates the resource on demand using a lambda, or a stable local function when replacing an entry.
 	/// </summary>
-	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, string? replacementFactoryName = null)
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, string? replacementFactoryName = null, bool updateLiveStyle = false)
 	{
 		// Get the type of the resource
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
@@ -274,8 +274,21 @@ static class SetPropertyHelpers
 		if (replacementFactoryName is not null)
 		{
 			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+			// Hot reload: update a live shared style in place so consumers holding it directly refresh;
+			// otherwise replace the factory so future lookups get the new value.
+			if (updateLiveStyle)
+			{
+				writer.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle({parentVar.ValueAccessor}, {keyExpression}, (global::Microsoft.Maui.Controls.Style){replacementFactoryName}()))");
+				writer.WriteLine("{");
+				writer.Indent++;
+			}
 			writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
 			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, {replacementFactoryName}, shared: {shared.ToString().ToLowerInvariant()});");
+			if (updateLiveStyle)
+			{
+				writer.Indent--;
+				writer.WriteLine("}");
+			}
 		}
 	}
 

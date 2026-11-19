@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, bool? LazyRD = null);
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
 		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
@@ -219,6 +219,7 @@ public static class SourceGeneratorDriver
 					"build_property.EnableMauiIncrementalHotReload" => _additionalFile.EnableIncrementalHotReload ? "true" : "false",
 					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ? _additionalFile.LineInfo : null,
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
+					"build_property.MauiXamlLazyRD" => _additionalFile.LazyRD?.ToString().ToLowerInvariant(),
 					_ => null
 				};
 

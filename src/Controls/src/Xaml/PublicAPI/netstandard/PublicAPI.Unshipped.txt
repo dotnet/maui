@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(Microsoft.Maui.Controls.ResourceDictionary! dictionary, string? key, Microsoft.Maui.Controls.Style! replacement) -> bool

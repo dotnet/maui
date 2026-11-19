@@ -1308,16 +1308,25 @@ static class UpdateComponentCodeWriter
 		if (parent is not ElementNode style || style.XmlType.Name != "Style"
 			|| !style.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var styleType)
 			|| styleType?.ToFQDisplayString() != "global::Microsoft.Maui.Controls.Style"
-			|| style.Properties.ContainsKey(XmlName.xKey)
-			|| style.Properties.ContainsKey(new XmlName("", "Class"))
 			|| style.Parent is not SGRootNode dictionary)
 			return false;
+
+		string? key = null;
+		if (style.Properties.TryGetValue(XmlName.xKey, out var keyNode))
+		{
+			if (keyNode is not ValueNode { Value: string keyString })
+				return false;
+			key = keyString;
+		}
+		bool isImplicitStyle = key is null && !style.Properties.ContainsKey(new XmlName("", "Class"));
 
 		if (!replacedStyles.Add(style))
 			return true;
 
-		// Replacing the resource both converts Setter.Value through the IC pipeline and
-		// notifies existing implicit-style consumers. Mutating the lazy Setter does neither.
+		// Mutating the live Setter neither converts Setter.Value through the IC pipeline nor
+		// reapplies the style. Rebuild the style instead. Replacing an implicit style notifies its
+		// consumers (they look it up by type); keyed and Class styles are held directly by their
+		// consumers (StaticResource, StyleClass, BasedOn), so their live instance is updated in place.
 		using (PrePost.NewBlock(codeWriter))
 		{
 			var context = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache,
@@ -1336,7 +1345,8 @@ static class UpdateComponentCodeWriter
 				var styleId = nodeIds?.TryGetValue(style, out var id) == true
 					? id : $"{style.LineNumber}_{style.LinePosition}";
 				SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter,
-					context.Variables[dictionary], replacement, context, replacementFactoryName: $"CreateStyle_{styleId}");
+					context.Variables[dictionary], replacement, context, replacementFactoryName: $"CreateStyle_{styleId}",
+					updateLiveStyle: !isImplicitStyle);
 			}
 			else
 			{
@@ -1345,7 +1355,21 @@ static class UpdateComponentCodeWriter
 				replacement.Accept(new SetResourcesVisitor(context), null);
 				replacement.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), null);
 				var styleVariable = context.Variables[replacement].ValueAccessor;
-				codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
+				if (isImplicitStyle)
+					codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
+				else if (key is null)
+				{
+					// Class styles share a per-class list, so there is no single entry to replace.
+					codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(this, null, {styleVariable});");
+				}
+				else
+				{
+					var keyExpression = $"\"{EscapeString(key)}\"";
+					codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(this, {keyExpression}, {styleVariable}))");
+					codeWriter.Indent++;
+					codeWriter.WriteLine($"this[{keyExpression}] = {styleVariable};");
+					codeWriter.Indent--;
+				}
 			}
 			foreach (var localMethod in context.LocalMethods)
 				codeWriter.WriteLine(localMethod);

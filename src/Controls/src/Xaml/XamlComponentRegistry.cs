@@ -353,6 +353,64 @@ public static class XamlComponentRegistry
 		return null;
 	}
 
+	/// <summary>
+	/// Updates the setters of a <see cref="Style"/> already materialized in <paramref name="dictionary"/>
+	/// and reapplies them to every element currently using that style.
+	/// </summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's <c>x:Key</c>, or <see langword="null"/> for an implicit or <c>Class</c> style.</param>
+	/// <param name="replacement">A freshly built style whose setters replace those of the live style.</param>
+	/// <returns>
+	/// <see langword="true"/> if a live, shared style compatible with <paramref name="replacement"/> was updated;
+	/// <see langword="false"/> if the caller must replace the dictionary entry instead (style not materialized yet,
+	/// <c>x:Shared="False"</c>, or a change other than setters).
+	/// </returns>
+	/// <remarks>
+	/// Generator-only helper used by <c>UpdateComponent()</c> during incremental hot reload. Updating the live instance
+	/// refreshes consumers that hold it directly (<c>StaticResource</c>, <c>StyleClass</c>, derived styles), which
+	/// replacing the dictionary entry alone does not.
+	/// </remarks>
+	public static bool TryUpdateStyle(ResourceDictionary dictionary, string? key, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+
+		key ??= string.IsNullOrEmpty(replacement.Class)
+			? replacement.TargetType.FullName
+			: Style.StyleClassPrefix + replacement.Class;
+		if (key is null || !dictionary.TryGetLocalMaterializedValue(key, out var value))
+			return false;
+
+		Style? live = value as Style;
+		if (live is null && value is IList<Style> classStyles)
+		{
+			foreach (var candidate in classStyles)
+			{
+				if (candidate.TargetType != replacement.TargetType || candidate.Class != replacement.Class)
+					continue;
+				if (live is not null)
+					return false;
+				live = candidate;
+			}
+		}
+
+		if (live is null || ReferenceEquals(live, replacement) || !IsSetterOnlyChange(live, replacement))
+			return false;
+
+		live.ReplaceSetters(replacement.Setters);
+		return true;
+	}
+
+	static bool IsSetterOnlyChange(Style live, Style replacement)
+		=> live.TargetType == replacement.TargetType
+			&& live.Class == replacement.Class
+			&& live.ApplyToDerivedTypes == replacement.ApplyToDerivedTypes
+			&& live.CanCascade == replacement.CanCascade
+			&& ReferenceEquals(live.BasedOn, replacement.BasedOn)
+			&& live.BaseResourceKey == replacement.BaseResourceKey;
+
 	static void TrackInstance(object page)
 	{
 		var type = page.GetType();
