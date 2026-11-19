@@ -10,8 +10,8 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	[SupportedOSPlatform("maccatalyst16.0")]
-	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst15.0")]
+	[SupportedOSPlatform("ios15.0")]
 	sealed class MauiContextFlyoutPopover : NSObject, IUIInteraction
 	{
 		readonly WeakReference<IViewHandler> _handler;
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Platform
 
 			public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 			{
-#pragma warning disable CA1422 // Trait-change fallback also supports iOS/Mac Catalyst 16.
+#pragma warning disable CA1422 // Trait-change fallback also supports iOS/Mac Catalyst 15.
 				base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422
 				if (previousTraitCollection is not null &&
