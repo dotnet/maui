@@ -107,8 +107,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(collectionView.IsItemTapEnabled);
 
-			void First(object sender, ItemTappedEventArgs e) { }
-			void Second(object sender, ItemTappedEventArgs e) { }
+			void First(object sender, ItemTappedEventArgs e)
+			{ }
+			void Second(object sender, ItemTappedEventArgs e)
+			{ }
 
 			collectionView.ItemTapped += First;
 			Assert.True(collectionView.IsItemTapEnabled);
