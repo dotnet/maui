@@ -277,6 +277,51 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
     }
 }
 
+Describe 'Full suite rules' {
+    It 'forces the full suite for --all, whatever the base branch' {
+        $proposal = Get-RunTestsFullSuiteProposal -BaseRef 'main' -Requested
+        $proposal.full_run | Should -BeTrue
+        $proposal.summary | Should -Match '--all'
+    }
+
+    It 'forces the full suite for PRs into release and candidate branches' {
+        foreach ($base in 'release/10.0.1xx-sr6', 'candidate/11.0.1xx-sr2') {
+            $proposal = Get-RunTestsFullSuiteProposal -BaseRef $base
+            $proposal.full_run | Should -BeTrue
+            $proposal.summary | Should -Match ([regex]::Escape($base))
+        }
+    }
+
+    It 'leaves other PRs to the AI selection' {
+        foreach ($base in 'main', 'net11', 'inflight/current', 'net11.0', 'feature/release/x') {
+            Get-RunTestsFullSuiteProposal -BaseRef $base | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'labels a required full suite as such instead of as an AI selection' {
+        $selection = Resolve-RunTestsSelection -Proposal (Get-RunTestsFullSuiteProposal -BaseRef 'main' -Requested) -Inventory $inventory
+        $selection.mode | Should -Be 'full'
+        $selection.forced | Should -BeTrue
+        $body = New-RunTestsComment -Selection $selection -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
+        $body | Should -Match 'Full UI test suite for commit'
+        $body | Should -Match 'Why these tests</strong> &#x2014; reason'
+        $body | Should -Not -Match 'AI-selected'
+        $ai = Resolve-RunTestsSelection -Proposal (New-Proposal @('android') @('Button')) -Inventory $inventory
+        $ai.forced | Should -BeFalse
+        (New-RunTestsComment -Selection $ai -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run') | Should -Match 'AI-selected UI tests'
+    }
+
+    It 'only accepts the exact command, optionally with --all' {
+        $workflow = Get-Content (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.md') -Raw
+        $workflow | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests(\s+--all)?\s*$/i'))
+        $pattern = '^\s*/review\s+run-tests(\s+--all)?\s*$'
+        '/review run-tests' | Should -Match $pattern
+        '/review run-tests --all' | Should -Match $pattern
+        '/review run-tests --all please' | Should -Not -Match $pattern
+        '/review run-tests --allx' | Should -Not -Match $pattern
+    }
+}
+
 Describe 'Pipeline templates' {
     BeforeAll {
         $script:pipelines = Join-Path $PSScriptRoot '../../eng/pipelines/common'
@@ -291,6 +336,12 @@ Describe 'Pipeline templates' {
         $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
         $values = [regex]::Matches($tests, 'requireExecutedTests:\s*(.+)') | ForEach-Object { $_.Groups[1].Value.Trim() } | Sort-Object -Unique
         $values | Should -Be @('${{ eq(parameters.selectedRun, true) }}')
+    }
+
+    It 'only lets pull-request builds narrow the suite' {
+        $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
+        $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+selectedPlatforms: \$\{\{ parameters\.selectedPlatforms \}\}\s+selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')
+        ([regex]::Matches($ci, 'selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')).Count | Should -Be 1
     }
 
     It 'accepts platform-qualified categories in every platform matrix' {

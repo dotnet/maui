@@ -180,9 +180,13 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
-      selectedRun: ${{ parameters.selectedRun }}
-      selectedPlatforms: ${{ parameters.selectedPlatforms }}
-      selectedCategories: ${{ parameters.selectedCategories }}
+      # A selection (/review run-tests) only narrows pull-request builds. Branch, scheduled and
+      # manual builds of main, release/*, candidate/* and the other CI branches always run the
+      # full suite, whatever parameters they were queued with.
+      ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+        selectedRun: ${{ parameters.selectedRun }}
+        selectedPlatforms: ${{ parameters.selectedPlatforms }}
+        selectedCategories: ${{ parameters.selectedCategories }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:

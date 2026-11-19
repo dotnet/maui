@@ -83,7 +83,10 @@ $context = Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json -Depth 
 if ([int]$context.prNumber -ne $PrNumber) { throw 'The collected context belongs to a different PR.' }
 $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
 
-$proposal = Get-Proposal
+# `--all` and PRs into release/candidate branches always run the full suite, whatever the agent said.
+$requested = [bool]($context.PSObject.Properties['fullRunRequested']?.Value)
+$proposal = Get-RunTestsFullSuiteProposal -BaseRef ([string]$context.baseRef) -Requested:$requested
+if (-not $proposal) { $proposal = Get-Proposal }
 if (-not $proposal) {
     # The agent failed or produced nothing usable: fall back to the full suite rather than guessing.
     $proposal = @{

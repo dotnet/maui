@@ -1,5 +1,5 @@
 ---
-description: "/review run-tests: AI picks the UI test categories and platforms a PR affects, then queues only those in maui-pr-uitests."
+description: "/review run-tests: AI picks the UI test categories and platforms a PR affects, then queues only those in maui-pr-uitests. /review run-tests --all queues the full suite."
 
 imports:
   - shared/gpt-6.1-sol.md
@@ -27,17 +27,21 @@ on:
     issues: write
     pull-requests: write
   steps:
-    - name: Authorize exact /review run-tests command
+    - name: Authorize exact /review run-tests [--all] command
       id: command
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ github.token }}
         script: |
           core.setOutput('authorized', 'false');
+          core.setOutput('all', 'false');
           if (context.eventName === 'issue_comment') {
-            if (context.payload.action !== 'created' || !context.payload.issue?.pull_request ||
-                !/^\s*\/review\s+run-tests\s*$/i.test(context.payload.comment?.body ?? '')) return;
-          } else if (context.eventName !== 'workflow_dispatch') {
+            const match = /^\s*\/review\s+run-tests(\s+--all)?\s*$/i.exec(context.payload.comment?.body ?? '');
+            if (context.payload.action !== 'created' || !context.payload.issue?.pull_request || !match) return;
+            core.setOutput('all', match[1] ? 'true' : 'false');
+          } else if (context.eventName === 'workflow_dispatch') {
+            core.setOutput('all', String(context.payload.inputs?.all) === 'true' ? 'true' : 'false');
+          } else {
             return;
           }
           const { owner, repo } = context.repo;
@@ -67,7 +71,12 @@ on:
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-      run: pwsh -NoProfile -File .github/scripts/Get-RunTestsContext.ps1 -PrNumber "$PR_NUMBER" -OutputDirectory "$RUNNER_TEMP/run-tests"
+        FULL_RUN_REQUESTED: ${{ steps.command.outputs.all }}
+      shell: pwsh
+      run: |
+        $arguments = @{ PrNumber = [int]$env:PR_NUMBER; OutputDirectory = "$env:RUNNER_TEMP/run-tests" }
+        if ($env:FULL_RUN_REQUESTED -eq 'true') { $arguments.FullRunRequested = $true }
+        ./.github/scripts/Get-RunTestsContext.ps1 @arguments
     - name: Upload context
       if: steps.context.outputs.ready == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -82,8 +91,14 @@ on:
         description: PR to select UI tests for
         type: number
         required: false
+      all:
+        description: Run the full suite (same as /review run-tests --all)
+        type: boolean
+        required: false
+        default: false
 
-if: needs.pre_activation.outputs.context_ready == 'true'
+# The AI only runs when a selection is wanted; --all and release/candidate PRs go straight to the full suite.
+if: needs.pre_activation.outputs.context_ready == 'true' && needs.pre_activation.outputs.full_run != 'true'
 
 permissions:
   contents: read
@@ -100,6 +115,25 @@ jobs:
   pre-activation:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
+      full_run: ${{ steps.context.outputs.full_run }}
+  # `/review run-tests --all`, or a PR into release/* or candidate/*: no AI selection, hand the
+  # collected context straight to the dispatch workflow, which queues the full suite.
+  run-tests-full:
+    needs: [pre_activation]
+    if: ${{ needs.pre_activation.outputs.context_ready == 'true' && needs.pre_activation.outputs.full_run == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Hand over to the dispatch workflow for the full suite
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          gh workflow run review-run-tests-dispatch.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
   # If the agent fails, still give the requester a run: the full suite, clearly labelled.
   # An agent can emit its proposal and then exit non-zero; the proposal is still handed over
   # in that case, so only fall back when no proposal was dispatched.
