@@ -1,0 +1,22 @@
+parameters:
+  - name: platform
+    type: string
+
+jobs:
+  - job: Sample
+    dependsOn: Intake
+    condition: succeeded('Intake')
+    variables:
+      reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+    ${{ if eq(parameters.platform, 'android') }}:
+      pool:
+        vmImage: ubuntu-22.04
+    ${{ else }}:
+      pool:
+        vmImage: macOS-26
+    timeoutInMinutes: 120
+    steps:
+      - checkout: none
+      - template: issue-replicate-sample-steps.yml
+        parameters:
+          platform: ${{ parameters.platform }}

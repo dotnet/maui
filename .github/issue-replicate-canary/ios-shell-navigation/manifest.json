@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 37360,
+  "commentId": 6000595071,
+  "platform": "ios",
+  "targetRef": "main",
+  "targetSha": "7a5a5d610cc056e6fbd0f3dfe3930ea6de1f28bc",
+  "author": "asi-evin",
+  "issueText": "Reviewed manual canary for issue 37360: on iOS, dismissing a Shell modal and pushing a detail page from Shell.Navigated can deliver a pop notification to the root and disconnect its handler. Run a normal push/pop control first, then up to three modal-dismissal/detail-return cycles. Observe the real root handler and root NavigatedFrom event; do not inject either outcome. This new candidate has not yet been executed and is not proof of the original app's blank-page interaction.",
+  "sourceType": "repository",
+  "sourceUrl": "https://github.com/asi-evin/ShellBlankRootPageRepro",
+  "sourceCommit": "194d02fb5eb861ac8c22f4edd9d4ee7a6f0aaa75",
+  "sampleSha256": "30729bb23a1ca051a065bbec9069ad48bd3de38684ead7b8b878ac7e53f0bc0c"
+}
