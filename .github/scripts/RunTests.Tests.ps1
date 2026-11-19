@@ -163,6 +163,41 @@ Describe 'Run-tests comment' {
         $updated | Should -Match '\| Android Button \| &#x274C; failed \|'
         $updated | Should -Not -Match 'Skipped job'
         $updated | Should -Match '1 passed, 1 failed of 2 jobs'
+        $updated | Should -Not -Match 'Failed tests'
+    }
+
+    It 'lists failed tests with the platforms they failed on' {
+        $done = [pscustomobject]@{ id = 99; status = 'completed'; result = 'failed'; _links = $build._links }
+        $failed = ConvertTo-RunTestsFailedTests @(
+            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll' },
+            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll' },
+            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.winui.tests.dll' },
+            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.ButtonFeatureTests'; testCaseTitle = 'Button_<Script>'; automatedTestStorage = 'controls.testcases.mac.tests.dll' }
+        )
+        $failed.Count | Should -Be 2
+        ($failed | Where-Object name -eq 'Issue4981.PromptInitialValueIsNotSelected').platforms | Should -Be @('Android', 'Windows')
+        $results = ConvertTo-RunTestsResults -Build $done -Timeline $null -FailedTests $failed
+        $updated = Update-RunTestsComment -Body $body -Build $done -Results $results
+        $updated | Should -Match '\*\*Failed tests\*\* \(2\)'
+        $updated | Should -Match '\| `Issue4981.PromptInitialValueIsNotSelected` \| Android, Windows \|'
+        $updated | Should -Match 'MacCatalyst'
+        $updated | Should -Not -Match '<Script>'
+        $updated | Should -Not -Match 'earlier attempts'
+        $rerunTimeline = [pscustomobject]@{ records = @([pscustomobject]@{ type = 'Job'; name = 'Windows Label'; result = 'failed'; state = 'completed'; attempt = 2 }) }
+        $rerun = Update-RunTestsComment -Body $body -Build $done -Results (ConvertTo-RunTestsResults -Build $done -Timeline $rerunTimeline -FailedTests $failed)
+        $rerun | Should -Match 'earlier attempts that later passed'
+    }
+
+    It 're-renders a finished comment when a retried build finishes again' {
+        $first = [pscustomobject]@{ id = 99; status = 'completed'; result = 'failed'; _links = $build._links }
+        $failedJob = [pscustomobject]@{ records = @([pscustomobject]@{ type = 'Job'; name = 'Windows Label'; result = 'failed'; state = 'completed' }) }
+        $done = Update-RunTestsComment -Body $body -Build $first -Results (ConvertTo-RunTestsResults -Build $first -Timeline $failedJob)
+        $retried = [pscustomobject]@{ id = 99; status = 'completed'; result = 'succeeded'; _links = $build._links }
+        $passedJob = [pscustomobject]@{ records = @([pscustomobject]@{ type = 'Job'; name = 'Windows Label'; result = 'succeeded'; state = 'completed' }) }
+        $again = Update-RunTestsComment -Body $done -Build $retried -Results (ConvertTo-RunTestsResults -Build $retried -Timeline $passedJob)
+        $again | Should -Match 'Result-PASSED|Result-SUCCEEDED'
+        $again | Should -Not -Match 'Result-FAILED'
+        $again | Should -Match '\| Windows Label \| &#x2705; succeeded \|'
     }
 }
 

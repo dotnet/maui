@@ -565,10 +565,51 @@ function Format-RunTestsResultsBlock {
         $icon = switch ($job.result) { 'succeeded' { '&#x2705;' } 'failed' { '&#x274C;' } 'canceled' { '&#x26AA;' } 'succeededWithIssues' { '&#x26A0;&#xFE0F;' } default { '&#x23F3;' } }
         $lines.Add("| $($job.name -replace '\|', '/') | $icon $($job.result) |")
     }
+    $failedTests = @($Results.PSObject.Properties['failedTests']?.Value | Where-Object { $_ })
+    if ($failedTests.Count -gt 0) {
+        $lines.Add('')
+        $lines.Add("**Failed tests** ($($failedTests.Count))")
+        $lines.Add('')
+        $lines.Add('| Test | Platforms |')
+        $lines.Add('| --- | --- |')
+        foreach ($test in @($failedTests | Select-Object -First $script:RunTestsMaxFailedTests)) {
+            $lines.Add("| ``$(Format-RunTestsText $test.name)`` | $($test.platforms -join ', ') |")
+        }
+        if ($Results.PSObject.Properties['rerun']?.Value) {
+            $lines.Add('')
+            $lines.Add('Some jobs were re-run, so this list can include failures from earlier attempts that later passed.')
+        }
+        if ($failedTests.Count -gt $script:RunTestsMaxFailedTests) {
+            $lines.Add('')
+            $lines.Add("...and $($failedTests.Count - $script:RunTestsMaxFailedTests) more in the run's Tests tab.")
+        }
+    }
     $lines.Add('')
     $lines.Add('</details>')
     $lines.Add('')
     return ($lines -join "`n")
+}
+
+$script:RunTestsMaxFailedTests = 25
+$script:RunTestsTestAssemblyPlatforms = [ordered]@{ android = 'Android'; ios = 'iOS'; mac = 'MacCatalyst'; winui = 'Windows' }
+
+function ConvertTo-RunTestsFailedTests {
+    <#
+    .SYNOPSIS
+    Groups Azure DevOps failed test results (testresults/resultsbybuild) by test, with the platforms they failed on.
+    #>
+    param([AllowNull()]$TestResults)
+    $groups = [ordered]@{}
+    foreach ($result in @($TestResults | Where-Object { $_ })) {
+        $class = ([string]$result.automatedTestName -split '\.')[-1]
+        $title = [string]$result.testCaseTitle
+        $name = if ($class -and $title -and $class -ne $title) { "$class.$title" } elseif ($title) { $title } else { $class }
+        if (-not $name) { continue }
+        $platform = if ([string]$result.automatedTestStorage -match 'testcases\.(\w+)\.tests') { $script:RunTestsTestAssemblyPlatforms[$Matches[1]] ?? $Matches[1] } else { $null }
+        if (-not $groups.Contains($name)) { $groups[$name] = [System.Collections.Generic.SortedSet[string]]::new() }
+        if ($platform) { [void]$groups[$name].Add($platform) }
+    }
+    return @($groups.Keys | Sort-Object | ForEach-Object { [pscustomobject]@{ name = $_; platforms = @($groups[$_]) } })
 }
 
 function Update-RunTestsComment {
@@ -616,7 +657,7 @@ function ConvertTo-RunTestsResults {
     .SYNOPSIS
     Summarizes an Azure DevOps build + timeline into the comment's results block.
     #>
-    param([Parameter(Mandatory)]$Build, [AllowNull()]$Timeline)
+    param([Parameter(Mandatory)]$Build, [AllowNull()]$Timeline, [AllowNull()]$FailedTests)
     $jobs = @()
     if ($Timeline -and $Timeline.records) {
         $byId = @{}
@@ -639,6 +680,8 @@ function ConvertTo-RunTestsResults {
         completed = $completed
         result = [string]$Build.result
         jobs = $jobs
+        failedTests = @($FailedTests | Where-Object { $_ })
+        rerun = [bool]@($Timeline.records | Where-Object { $_.type -eq 'Job' -and [int]($_.attempt ?? 1) -gt 1 }).Count
         headline = $headline
     }
 }
