@@ -233,16 +233,7 @@ function Resolve-RunTestsSelection {
             } else {
                 $running = @($expanded | Where-Object { $c = $_; @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] }).Count })
                 $expanded.Clear(); foreach ($c in $running) { $expanded.Add($c) }
-                foreach ($c in $running) {
-                    $on = @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] })
-                    # Material3 has its own Android-only lane, so it never needs a qualifier.
-                    if ($on.Count -eq $orderedPlatforms.Count -or $c -ceq 'Material3') {
-                        $pipelineCategories.Add($c)
-                    } else {
-                        # Limit the category to the platforms where its tests are compiled in.
-                        foreach ($platform in $on) { $pipelineCategories.Add("$($script:RunTestsPipelinePlatform[$platform]):$c") }
-                    }
-                }
+                foreach ($c in (ConvertTo-RunTestsPipelineCategories -Platforms $orderedPlatforms -PlatformCategories $platformCategories -Categories $running)) { $pipelineCategories.Add($c) }
             }
         }
     }
@@ -896,6 +887,33 @@ function Get-RunTestsSelectedByText {
     return $(if ($names.Count) { "AI-selected UI tests ($($names -join ' + '))" } else { 'AI-selected UI tests' })
 }
 
+function ConvertTo-RunTestsPipelineCategories {
+    <#
+    .SYNOPSIS
+    Encodes a per-platform selection as the pipeline's selectedCategories list.
+    .DESCRIPTION
+    When every selected platform runs the same categories, the list holds plain names. Otherwise
+    EVERY entry is platform-qualified (android:Button, ios:Label, android:Material3). The template
+    guards in eng/pipelines/common/ui-tests.yml rely on a list never mixing the two forms: plain
+    names apply to every selected platform, and in a qualified list each stage looks only at its
+    own platform's entries.
+    #>
+    param([string[]]$Platforms, $PlatformCategories, [string[]]$Categories)
+    $uniform = $true
+    foreach ($c in $Categories) {
+        foreach ($platform in $Platforms) {
+            if ($c -cnotin @($PlatformCategories[$platform])) { $uniform = $false }
+        }
+    }
+    if ($uniform) { return @($Categories) }
+    $qualified = foreach ($c in $Categories) {
+        foreach ($platform in $Platforms) {
+            if ($c -cin @($PlatformCategories[$platform])) { "$($script:RunTestsPipelinePlatform[$platform]):$c" }
+        }
+    }
+    return @($qualified)
+}
+
 function Merge-RunTestsSelections {
     <#
     .SYNOPSIS
@@ -942,11 +960,7 @@ function Merge-RunTestsSelections {
     $pipeline = [System.Collections.Generic.List[string]]::new()
     $everythingEverywhere = -not @($active | Where-Object { $_.categories.Count -gt 0 }).Count
     if (-not $everythingEverywhere) {
-        foreach ($c in $expanded) {
-            $on = @($platforms | Where-Object { $c -cin $map[$_] })
-            if ($on.Count -eq $platforms.Count -or $c -ceq 'Material3') { $pipeline.Add($c) }
-            else { foreach ($platform in $on) { $pipeline.Add("$($script:RunTestsPipelinePlatform[$platform]):$c") } }
-        }
+        foreach ($c in (ConvertTo-RunTestsPipelineCategories -Platforms $platforms -PlatformCategories $map -Categories $expanded)) { $pipeline.Add($c) }
     }
     $base.mode = 'selected'
     $base.platforms = $platforms

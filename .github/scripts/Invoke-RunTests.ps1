@@ -137,7 +137,8 @@ function Get-VerifiedPullRequest {
     #>
     for ($attempt = 1; $attempt -le 8; $attempt++) {
         $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
-        if ($current.state -ne 'open' -or $current.head.sha -cne $context.headSha) { return @{ pr = $current; merge = $false } }
+        if ($current.state -ne 'open' -or $current.head.sha -cne $context.headSha -or
+            ($context.baseRef -and $current.base.ref -cne $context.baseRef)) { return @{ pr = $current; merge = $false } }
         if ($current.mergeable -eq $false) { return @{ pr = $current; merge = $false } }
         if ($current.merge_commit_sha) {
             $merge = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
@@ -162,6 +163,9 @@ if ($selectionError) {
     $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review run-tests`` again."
     # Report against the commit the selection was made for.
     $pr.head.sha = $context.headSha
+} elseif ($context.baseRef -and $pr.base.ref -cne $context.baseRef) {
+    # Retargeting keeps the head SHA, but the models selected tests for the diff against the old base.
+    $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review run-tests`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
 }

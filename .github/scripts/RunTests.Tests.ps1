@@ -278,7 +278,8 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
     It 'limits a category to the platforms where it has tests' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios') @('Window', 'Label')) $inventory -Runnable $runnable
         $s.platforms | Should -Be @('android', 'ios')
-        $s.pipelineCategories | Sort-Object | Should -Be @('ios:Window', 'Label')
+        # Platforms differ, so every entry is qualified; the template never sees a mixed list.
+        $s.pipelineCategories | Sort-Object | Should -Be @('android:Label', 'ios:Label', 'ios:Window')
         $s.platformCategories['android'] | Should -Not -Contain 'Window'
         (Get-RunTestsTemplateParameters $s).selectedCategories | Should -Match '"ios:Window"'
     }
@@ -318,7 +319,7 @@ Describe 'Two-model selection' {
         $s.platformCategories['android'] | Should -Be @('Button', 'Label')
         $s.platformCategories['ios'] | Should -Be @('Label')
         # Button was only chosen for Android, so it must not run on iOS.
-        $s.pipelineCategories | Should -Be @('android:Button', 'Label')
+        $s.pipelineCategories | Should -Be @('android:Button', 'android:Label', 'ios:Label')
     }
 
     It 'runs only what one model chose when the other found nothing' {
@@ -341,7 +342,9 @@ Describe 'Two-model selection' {
         $s = Resolve-Pair (New-Proposal @('android') @()) (New-Proposal @('ios') @('Label'))
         $s.platformCategories['android'].Count | Should -BeGreaterThan 50
         $s.pipelineCategories | Should -Contain 'android:Button'
-        $s.pipelineCategories | Should -Contain 'Label'
+        $s.pipelineCategories | Should -Contain 'android:Label'
+        $s.pipelineCategories | Should -Contain 'ios:Label'
+        $s.pipelineCategories | Should -Not -Contain 'Label'
         $s.pipelineCategories | Should -Not -Contain 'ios:Button'
     }
 
@@ -398,7 +401,7 @@ Describe 'Pipeline templates' {
     It 'runs the Material3 lane only when Material3 is selected' {
         $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
         $tests | Should -Not -Match "contains\(join\(',', parameters\.selectedCategories\), 'Button'\)"
-        ([regex]::Matches($tests, [regex]::Escape("containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))"))).Count | Should -Be 2
+        ([regex]::Matches($tests, [regex]::Escape("containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), containsValue(parameters.selectedCategories, 'android:Material3'))"))).Count | Should -Be 2
     }
 
     It 'accepts platform-qualified categories in every platform matrix' {
@@ -406,6 +409,26 @@ Describe 'Pipeline templates' {
         foreach ($platform in 'android', 'ios', 'windows', 'catalyst') {
             $tests | Should -Match ([regex]::Escape("format('$($platform):{0}', category)"))
         }
+    }
+
+    It 'never mixes plain and platform-qualified categories' {
+        $map = [ordered]@{ android = @('Button', 'Label', 'Material3'); ios = @('Label') }
+        ConvertTo-RunTestsPipelineCategories -Platforms 'android', 'ios' -PlatformCategories $map -Categories 'Button', 'Label', 'Material3' |
+            Should -Be @('android:Button', 'android:Label', 'ios:Label', 'android:Material3')
+        $same = [ordered]@{ android = @('Label'); ios = @('Label') }
+        ConvertTo-RunTestsPipelineCategories -Platforms 'android', 'ios' -PlatformCategories $same -Categories 'Label' | Should -Be @('Label')
+        ConvertTo-RunTestsPipelineCategories -Platforms 'android' -PlatformCategories ([ordered]@{ android = @('Material3') }) -Categories 'Material3' | Should -Be @('Material3')
+    }
+
+    It 'handles qualified selections in every stage guard, including the dedicated lanes' {
+        $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
+        foreach ($value in 'android:Shell1', 'android:Shell2', 'android:SafeAreaEdges', 'android:Material3') {
+            $tests | Should -Match ([regex]::Escape("containsValue(parameters.selectedCategories, '$value')"))
+        }
+        $tests | Should -Match ([regex]::Escape("format('windows:{0}', categoryGroup)"))
+        $tests | Should -Match ([regex]::Escape("contains(join(',', parameters.selectedCategories), 'windows:CollectionView')"))
+        # Plain-name checks only apply to plain lists, so another platform's entry never turns a stage on.
+        ([regex]::Matches($tests, [regex]::Escape("not(contains(join(',', parameters.selectedCategories), ':'))"))).Count | Should -Be 10
     }
 
     It 'never interpolates selected platform values into the sample build script' {

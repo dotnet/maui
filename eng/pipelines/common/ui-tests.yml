@@ -112,7 +112,7 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
-- ${{ if and(or(containsValue(parameters.selectedPlatforms, 'android'), containsValue(parameters.selectedPlatforms, 'ios'), containsValue(parameters.selectedPlatforms, 'catalyst')), or(eq(length(parameters.selectedCategories), 0), ne(join('', parameters.selectedCategories), 'Material3'))) }}:
+- ${{ if and(or(containsValue(parameters.selectedPlatforms, 'android'), containsValue(parameters.selectedPlatforms, 'ios'), containsValue(parameters.selectedPlatforms, 'catalyst')), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:'), contains(join(',', parameters.selectedCategories), 'ios:'), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
     dependsOn: []
@@ -131,7 +131,9 @@ stages:
 
   # Material3 feature tests use their own category, not the corresponding control category.
   # A selection runs this lane only when it names Material3 explicitly.
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))) }}:
+  # selectedCategories is either all plain names (same categories on every selected platform) or
+  # all platform-qualified (android:Button, ios:Label); every guard below handles both forms.
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), containsValue(parameters.selectedCategories, 'android:Material3'))) }}:
   - stage: build_ui_tests_material3
     displayName: Build UITests Material3 Sample App
     dependsOn: []
@@ -152,7 +154,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
-- ${{ if and(eq(parameters.BuildNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), ne(join('', parameters.selectedCategories), 'Material3'))) }}:
+- ${{ if and(eq(parameters.BuildNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -169,7 +171,7 @@ stages:
                   platform: ios
                   skipProvisioning: ${{ parameters.skipProvisioning }}
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), ''))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), '')), contains(join(',', parameters.selectedCategories), 'windows:'))) }}:
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
     dependsOn: []
@@ -187,7 +189,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Windows CV1 Build Stage - Separate build with UseWindowsCollectionView2Handler=false
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), contains(join(',', parameters.selectedCategories), 'CollectionView'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), contains(join(',', parameters.selectedCategories), 'CollectionView')), contains(join(',', parameters.selectedCategories), 'windows:CollectionView'))) }}:
   - stage: build_ui_tests_windows_cv1
     displayName: Build UITests Windows CV1 Sample App
     dependsOn: []
@@ -206,7 +208,7 @@ stages:
                 runtimeVariant: "CoreCLR"
                 useWindowsCV1: true
                 skipProvisioning: ${{ parameters.skipProvisioning }}
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'SafeAreaEdges', ''), ''))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'SafeAreaEdges', ''), '')), contains(replace(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:SafeAreaEdges', ''), 'android:'))) }}:
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
     dependsOn: build_ui_tests_coreclr
@@ -261,7 +263,7 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'Shell2'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'Shell2'), containsValue(parameters.selectedCategories, 'android:Shell1'), containsValue(parameters.selectedCategories, 'android:Shell2'))) }}:
   - stage: android_ui_tests_shell_renderer
     displayName: Android UITests Shell Renderer
     dependsOn: build_ui_tests_coreclr
@@ -273,10 +275,10 @@ stages:
               - job: shell_renderer_android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
-                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1')) }}:
+                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'android:Shell1')) }}:
                       Shell1:
                         CATEGORYGROUP: Shell1
-                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell2')) }}:
+                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell2'), containsValue(parameters.selectedCategories, 'android:Shell2')) }}:
                       Shell2:
                         CATEGORYGROUP: Shell2
                 timeoutInMinutes: 240
@@ -311,7 +313,7 @@ stages:
                       platform: 'Android Shell Renderer'
                       artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), containsValue(parameters.selectedCategories, 'android:Material3'))) }}:
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
     dependsOn: build_ui_tests_material3
@@ -354,7 +356,7 @@ stages:
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 # SafeAreaEdges tests on Android API 36 with Pixel 3 XL
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'SafeAreaEdges'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'SafeAreaEdges'), containsValue(parameters.selectedCategories, 'android:SafeAreaEdges'))) }}:
   - stage: android_ui_tests_safeareaedges
     displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
     dependsOn: build_ui_tests_coreclr
@@ -392,7 +394,7 @@ stages:
                     platform: 'Android SafeAreaEdges'
                     artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), ne(join('', parameters.selectedCategories), 'Material3'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
   - stage: ios_ui_tests_coreclr
     displayName: iOS UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
@@ -452,7 +454,7 @@ stages:
                       platform: 'iOS'
                       artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-- ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), ne(join('', parameters.selectedCategories), 'Material3'))) }}:
+- ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
@@ -504,7 +506,7 @@ stages:
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), ''))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), '')), contains(join(',', parameters.selectedCategories), 'windows:'))) }}:
   - stage: winui_ui_tests
     displayName: WinUI UITests
     dependsOn: build_ui_tests_windows
@@ -554,7 +556,7 @@ stages:
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   # Windows CV1 UI Tests - Run the same CollectionView shards with UseWindowsCollectionView2Handler=false
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), contains(join(',', parameters.selectedCategories), 'CollectionView'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), contains(join(',', parameters.selectedCategories), 'CollectionView')), contains(join(',', parameters.selectedCategories), 'windows:CollectionView'))) }}:
   - stage: winui_ui_tests_cv1
     displayName: WinUI UITests CV1
     dependsOn: build_ui_tests_windows_cv1
@@ -566,7 +568,7 @@ stages:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ if startsWith(categoryGroup, 'CollectionView') }}:
-                        ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'CollectionView'), containsValue(parameters.selectedCategories, categoryGroup)) }}:
+                        ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'CollectionView'), containsValue(parameters.selectedCategories, categoryGroup), containsValue(parameters.selectedCategories, format('windows:{0}', categoryGroup))) }}:
                           ${{ categoryGroup }}:
                             CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
@@ -597,7 +599,7 @@ stages:
                     parameters:
                       platform: 'Windows CV1'
                       artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
-- ${{ if and(containsValue(parameters.selectedPlatforms, 'catalyst'), or(eq(length(parameters.selectedCategories), 0), ne(join('', parameters.selectedCategories), 'Material3'))) }}:
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'catalyst'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
