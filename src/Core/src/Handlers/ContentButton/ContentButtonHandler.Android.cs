@@ -29,8 +29,14 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
-			if (!ReferenceEquals(((IElementHandler)this).VirtualView, view))
+			var elementHandler = (IElementHandler)this;
+			var previousView = elementHandler.VirtualView;
+			if (!ReferenceEquals(previousView, view))
+			{
 				ReleasePressed();
+				if (!ReferenceEquals(elementHandler.VirtualView, previousView))
+					return;
+			}
 
 			base.SetVirtualView(view);
 

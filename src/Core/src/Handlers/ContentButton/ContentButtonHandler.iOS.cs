@@ -17,9 +17,14 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
+			var elementHandler = (IElementHandler)this;
 			// A live exchange must finish the old button's press before events target the new button.
-			if (((IElementHandler)this).VirtualView is IContentButton previousView && !ReferenceEquals(previousView, view))
+			if (elementHandler.VirtualView is IContentButton previousView && !ReferenceEquals(previousView, view))
+			{
 				_proxy.Release();
+				if (!ReferenceEquals(elementHandler.VirtualView, previousView))
+					return;
+			}
 
 			base.SetVirtualView(view);
 

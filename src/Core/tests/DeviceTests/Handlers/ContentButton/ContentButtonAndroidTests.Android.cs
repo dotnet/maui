@@ -218,6 +218,31 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReentrantReplacementKeepsNewestView()
+		{
+			var firstReleased = 0;
+			var first = new ContentButtonStub();
+			var second = new ContentButtonStub();
+			var third = new ContentButtonStub();
+
+			await AttachAndRun(first, handler =>
+			{
+				first.Released = () =>
+				{
+					firstReleased++;
+					handler.SetVirtualView(third);
+				};
+				DispatchTouch(handler.PlatformView, MotionEventActions.Down);
+
+				handler.SetVirtualView(second);
+
+				Assert.Same(third, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(1, firstReleased);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
 		public async Task DisabledPressedViewIsNotRetainedAfterReplacement()
 		{
 			var (reference, handler) = await DisablePressedButtonAndReplace();

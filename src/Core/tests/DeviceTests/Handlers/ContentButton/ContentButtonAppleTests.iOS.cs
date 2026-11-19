@@ -94,6 +94,31 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReentrantReplacementKeepsNewestView()
+		{
+			var firstReleased = 0;
+			var first = new ContentButtonStub();
+			var second = new ContentButtonStub();
+			var third = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				first.Released = () =>
+				{
+					firstReleased++;
+					handler.SetVirtualView(third);
+				};
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
+
+				handler.SetVirtualView(second);
+
+				Assert.Same(third, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(1, firstReleased);
+			});
+		}
+
+		[Fact]
 		public async Task NativeButtonRaisesWindowLifecycleEvents()
 		{
 			var handler = await CreateHandlerAsync(new ContentButtonStub());
