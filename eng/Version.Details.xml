@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="11.0.101-servicing.26566.116">
+    <Dependency Name="Microsoft.NET.Sdk" Version="12.0.100-alpha.1.26523.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f41eb11e376b9f85a5c896de7b3c8551828f415e</Sha>
+      <Sha>846769e14f918f16ee85e7055c72fcc2f6b141bb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="11.0.1">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="12.0.0-alpha.1.26523.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f41eb11e376b9f85a5c896de7b3c8551828f415e</Sha>
+      <Sha>846769e14f918f16ee85e7055c72fcc2f6b141bb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="37.2.40">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="37.99.0-preview.1.358">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>37b36910817c0cd8f2df9b7b8b6a086cf00ea13f</Sha>
+      <Sha>fe38ddddf9b2134f0d424e5b94797ed2ec40ddcd</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
     <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-11.0.100-rc.2" Version="37.2.0-rc.2.84" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
