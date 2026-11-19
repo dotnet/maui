@@ -54,13 +54,13 @@ namespace Microsoft.Maui.Platform
 		internal MauiContentButton()
 		{
 			Padding = new WThickness(0);
-			HorizontalContentAlignment = HorizontalAlignment.Stretch;
-			VerticalContentAlignment = VerticalAlignment.Stretch;
+			HorizontalContentAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+			VerticalContentAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			ContentPanel = new ContentPanel
 			{
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Stretch,
+				HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+				VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch,
 				IsHitTestVisible = false,
 				Margin = new WThickness(0)
 			};
