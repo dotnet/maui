@@ -133,19 +133,19 @@ namespace Microsoft.Maui.Handlers
 			ShowContextFlyoutWindows(handler, view);
 #else
 #if MACCATALYST
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Show(handler, view);
 				return;
 			}
 #elif IOS
-			if (OperatingSystem.IsIOSVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Show(handler, view);
 				return;
 			}
 #endif
-			throw new PlatformNotSupportedException("Programmatic context flyouts require Android, Windows, iOS 16 or later, or Mac Catalyst 16 or later.");
+			throw new PlatformNotSupportedException("Programmatic context flyouts require Android, Windows, iOS 15 or later, or Mac Catalyst 15 or later.");
 #endif
 		}
 

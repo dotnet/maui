@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
 #else
-			if (handler.PlatformView is PlatformView uiView && OperatingSystem.IsIOSVersionAtLeast(16))
+			if (handler.PlatformView is PlatformView uiView && OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Remove(uiView);
 			}
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is PlatformView uiView)
 			{
-				if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				{
 					MauiContextFlyoutPopover.Remove(uiView);
 				}
@@ -67,12 +67,12 @@ namespace Microsoft.Maui.Handlers
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
 #if MACCATALYST
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Remove(platformView);
 			}
 #else
-			if (OperatingSystem.IsIOSVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Remove(platformView);
 			}

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 					return;
 
 				try
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = CreateContextFlyoutTarget();
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 					return;
 
 				var platformView = handler.PlatformView;
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var label = CreateContextFlyoutTarget();
 				CreateHandler<LabelHandler>(label);
-				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
 					Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(label));
 				else
 					Assert.Throws<PlatformNotSupportedException>(() => FlyoutBase.ShowContextFlyout(label));
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = CreateContextFlyoutTarget();
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				{
 					Assert.Throws<PlatformNotSupportedException>(() => FlyoutBase.ShowContextFlyout(label));
 					return;
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = CreateContextFlyoutTarget();
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				{
 					Assert.Throws<PlatformNotSupportedException>(() => FlyoutBase.ShowContextFlyout(label));
 					return;
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.DeviceTests
 			var layout = new Grid { Children = { label } };
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				{
 					Assert.Throws<PlatformNotSupportedException>(() => FlyoutBase.ShowContextFlyout(label));
 					return;
