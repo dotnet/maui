@@ -1217,9 +1217,16 @@ internal class TabbedViewManager
 
     void OnMoreItemSelectedInternal(int selectedIndex, BottomSheetDialog dialog)
     {
-        if (selectedIndex >= 0 && _bottomNavigationView.SelectedItemId != selectedIndex && Element.Tabs.Count > selectedIndex)
+        if (selectedIndex >= 0 && Element.Tabs.Count > selectedIndex)
         {
-            Element.CurrentTab = Element.Tabs[selectedIndex];
+            if (selectedIndex == Element.CurrentTabIndex)
+            {
+                OnTabReselected?.Invoke(selectedIndex);
+            }
+            else if (_bottomNavigationView.SelectedItemId != selectedIndex)
+            {
+                Element.CurrentTab = Element.Tabs[selectedIndex];
+            }
         }
 
         OnMoreItemSelected?.Invoke(selectedIndex, dialog);

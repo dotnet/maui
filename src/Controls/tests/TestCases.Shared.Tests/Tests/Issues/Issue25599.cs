@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // To fix the issue in ios https://github.com/dotnet/maui/pull/25749#pullrequestreview-2554186362
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,10 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("HomePageButton");
 			App.Tap("HomePageButton");
 			App.WaitForElement("DetailsPageLabel");
-			App.Tap("Home"); // Tapping already selected tab using Title
+			App.TapTab("Home"); // Tapping already selected tab triggers OnNavigating, which cancels pop-to-root
 			App.WaitForElement("DetailsPageLabel");
-			App.WaitForNoElement("HomePageLabel"); // Navigation does not occur when clicking on an already selected tab
+			App.WaitForNoElement("HomePageLabel");
 		}
 	}
 }
-#endif
