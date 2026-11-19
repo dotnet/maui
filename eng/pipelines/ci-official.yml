@@ -82,6 +82,12 @@ extends:
       binskim:
         scanOutputDirectoryOnly: true
       codeql:
+        # CodeQL for the compiled languages (C# and Java) runs in the CodeQL stage below, not in every job.
+        compiled:
+          enabled: false
+        # Turning off the compiled scan also turns off the interpreted scan, so turn it back on here.
+        interpreted:
+          enabled: true
         runSourceLanguagesInSourceAnalysis: true
       policheck:
         enabled: true
@@ -157,6 +163,82 @@ extends:
         parameters:
           pool: ${{ parameters.WindowsPool }}
           dependsOnStage: Pack
+
+    # CodeQL for the compiled languages (C# and Java), in the scheduled and manual builds of main.
+    # CodeQL scans a language at most every 72 hours for each branch and BuildIdentifier, and a failed scan still blocks
+    # the next one for 72 hours. The 1ES template starts CodeQL right after the checkout, and CodeQL fails its scan when
+    # the job fails later, in the provisioning for example. Here CodeQL starts after the provisioning, and the build is
+    # the only step between the start and the end of CodeQL. On nights when no scan is due, CodeQL does nothing and the
+    # job is only a build.
+    # This is a separate stage, so that it cannot hold up the publishing. It runs after Pack because it needs the
+    # runtime manifest packages that Pack macOS publishes.
+    - ${{ if and(in(variables['Build.Reason'], 'Schedule', 'Manual'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+      - stage: CodeQL
+        displayName: CodeQL
+        dependsOn: Pack
+        condition: succeededOrFailed()
+        jobs:
+          - template: /eng/common/templates-official/job/job.yml@self
+            parameters:
+              name: build_Windows
+              displayName: CodeQL Windows
+              pool: ${{ parameters.WindowsPool }}
+              timeoutInMinutes: 240
+              workspace:
+                clean: all
+              enablePublishBuildArtifacts: true
+              preSteps:
+              - checkout: self
+                fetchDepth: 1
+                clean: true
+              steps:
+              # Same as the prepareSteps of the Pack stage.
+              - template: /eng/pipelines/common/provision.yml@self
+                parameters:
+                  checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                  skipJdk: false
+                  skipAndroidCommonSdks: false
+                  skipAndroidPlatformApis: false
+                  onlyAndroidPlatformDefaultApis: true
+                  skipAndroidEmulatorImages: true
+                  skipAndroidCreateAvds: true
+                  skipSimulatorSetup: true
+                  skipProvisioning: true
+                  skipXcode: false
+                  base64Encode: true
+                  outputVariableName: dotnetbuilds-internal-container-read-token-base64
+
+              # Downloads the runtime manifest packages that Pack macOS publishes. The provisioning restores them from here.
+              - task: DownloadPipelineArtifact@2
+                displayName: Download Mac Native Binaries
+                inputs:
+                  artifact: MacNativeArtifacts
+                  path: '$(Build.SourcesDirectory)/artifacts/bin'
+
+              - script: dotnet cake --target=dotnet --configuration="$(_BuildConfig)" --verbosity=diagnostic
+                displayName: Provision SDK & Workloads
+                retryCountOnTaskFailure: 3
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
+                  RuntimeManifestPackageSource: $(Build.SourcesDirectory)/artifacts/bin/runtime-manifests
+
+              # Enabled is needed because variables.yml sets Codeql.Enabled to false.
+              - task: CodeQL3000Init@0
+                displayName: CodeQL Initialize
+                inputs:
+                  Enabled: true
+                  BuildIdentifier: CodeQL_build_Windows
+                  Language: csharp,java
+
+              # CodeQL drops its databases when any step between Initialize and Finalize fails, so keep only the build here.
+              - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) /p:BuildPackageProjects=true /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/codeql-build.binlog $(_OfficialBuildIdArgs)
+                displayName: Build
+
+              # Runs even if the build failed, so that CodeQL can clean up.
+              - task: CodeQL3000Finalize@0
+                displayName: CodeQL Finalize
+                condition: always()
 
     # Localization with OneLocBuild. Only run on official builds for handoff branches.
     - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
