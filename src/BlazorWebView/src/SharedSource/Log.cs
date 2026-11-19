@@ -67,4 +67,13 @@ internal static partial class Log
 
 	[LoggerMessage(EventId = 19, Level = LogLevel.Error, Message = "The StaticContentCacheControlProvider threw an exception for request '{requestUri}'. Falling back to the default Cache-Control header.")]
 	public static partial void StaticContentCacheControlProviderFailed(this ILogger logger, string requestUri, Exception exception);
+
+	[LoggerMessage(EventId = 20, Level = LogLevel.Warning, Message = "Reloading the page because its web content process ended. This starts the Blazor app again.")]
+	public static partial void ReloadingAfterWebContentProcessTermination(this ILogger logger);
+
+	[LoggerMessage(EventId = 21, Level = LogLevel.Error, Message = "The web content process ended again before the reloaded page had been loaded for {interval}. Not reloading it this time, to avoid a crash loop.")]
+	public static partial void NotReloadingAfterWebContentProcessTermination(this ILogger logger, TimeSpan interval);
+
+	[LoggerMessage(EventId = 22, Level = LogLevel.Warning, Message = "The web content process ended while the web view is not visible. The page is reloaded once it is visible again.")]
+	public static partial void DeferringReloadAfterWebContentProcessTermination(this ILogger logger);
 }
