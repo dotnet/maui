@@ -221,7 +221,7 @@ public partial class ViewHandler
 		}
 
 		if (target.ContextFlyout is not Microsoft.UI.Xaml.Controls.MenuFlyout { Items.Count: > 0 } platformFlyout ||
-			flyout.Handler?.PlatformView != platformFlyout)
+			!ReferenceEquals(flyout.Handler?.PlatformView, platformFlyout))
 		{
 			throw new InvalidOperationException("The target must have its menu flyout attached to the native view.");
 		}
