@@ -15,6 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+#if IOS
 		[Theory]
 		[InlineData("Items", true)]
 		[InlineData("FlyoutContent", true)]
@@ -172,6 +173,8 @@ namespace Microsoft.Maui.DeviceTests
 				return mapper;
 			}
 		}
+
+#endif
 
 #if !MACCATALYST
 		[Theory]
