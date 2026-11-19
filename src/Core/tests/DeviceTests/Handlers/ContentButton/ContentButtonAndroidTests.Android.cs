@@ -250,7 +250,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ReplacementRefreshesSafeAreaListenerEligibility()
 		{
-			var handler = await CreateHandlerAsync(new ContentButtonStub());
+			var content = new ButtonStub();
+			var handler = await CreateHandlerAsync(new ContentButtonStub { Content = content });
 
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -261,7 +262,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(platformView));
 
-				handler.SetVirtualView(new ExplicitSafeAreaContentButtonStub());
+				handler.SetVirtualView(new ExplicitSafeAreaContentButtonStub { Content = content });
 				Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(platformView));
 
 				using var builder = new WindowInsetsCompat.Builder();
@@ -269,8 +270,9 @@ namespace Microsoft.Maui.DeviceTests
 					.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(40, 0, 0, 0))
 					.Build();
 				ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+				platformView.Layout(0, 0, 180, 90);
 
-				Assert.Equal(40, platformView.PaddingLeft);
+				Assert.Equal(MauiContext.Context.FromPixels(40), content.Frame.X, 1);
 				parent.RemoveView(platformView);
 			});
 		}
@@ -405,6 +407,32 @@ namespace Microsoft.Maui.DeviceTests
 				DispatchTouch(platformView, MotionEventActions.Down, 1, 1, downTime);
 				DispatchTouch(platformView, MotionEventActions.Up, 1, 1, downTime);
 				await Task.Delay(250);
+				Assert.Equal(1, secondClicks);
+			});
+		}
+
+		[Fact]
+		public async Task QueuedReplacementDoesNotRedirectTouchClick()
+		{
+			var firstClicks = 0;
+			var secondClicks = 0;
+			var first = new ContentButtonStub { Clicked = () => firstClicks++ };
+			var second = new ContentButtonStub { Clicked = () => secondClicks++ };
+
+			await AttachAndRun(first, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				first.Released = () => platformView.Post(() => handler.SetVirtualView(second));
+
+				DispatchTouch(platformView, MotionEventActions.Down);
+				DispatchTouch(platformView, MotionEventActions.Up);
+
+				Assert.Equal(1, firstClicks);
+				Assert.Equal(0, secondClicks);
+				await DrainPostedWork(platformView);
+				Assert.Same(second, ((IElementHandler)handler).VirtualView);
+
+				Assert.True(platformView.PerformClick());
 				Assert.Equal(1, secondClicks);
 			});
 		}

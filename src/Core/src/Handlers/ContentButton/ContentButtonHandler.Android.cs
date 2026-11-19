@@ -191,9 +191,14 @@ namespace Microsoft.Maui.Handlers
 					var cancelActivation = releasedOutside || !ReferenceEquals(touchTarget, button) ||
 						!IsConnectedTo(handler, button) ||
 						!ReferenceEquals(((IElementHandler)handler).PlatformView, platformView);
-					if (cancelActivation && platformView is not null)
+					if (platformView is not null)
+					{
 						platformView.Pressed = false;
-					return cancelActivation;
+						if (!cancelActivation)
+							platformView.PerformClick();
+					}
+
+					return true;
 			}
 
 			return false;
