@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -214,6 +215,34 @@ namespace Microsoft.Maui.DeviceTests
 
 				return Task.CompletedTask;
 			});
+		}
+
+		[Fact]
+		public async Task DisabledPressedViewIsNotRetainedAfterReplacement()
+		{
+			var (reference, handler) = await DisablePressedButtonAndReplace();
+
+			await AssertionExtensions.WaitForGC(reference);
+			Assert.NotNull(((IElementHandler)handler).VirtualView);
+			GC.KeepAlive(handler);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<(WeakReference Reference, ContentButtonHandler Handler)> DisablePressedButtonAndReplace()
+		{
+			var first = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(first);
+			var reference = new WeakReference(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				DispatchTouch(handler.PlatformView, MotionEventActions.Down);
+				first.IsEnabled = false;
+				handler.UpdateValue(nameof(IView.IsEnabled));
+				handler.SetVirtualView(new ContentButtonStub());
+			});
+
+			return (reference, handler);
 		}
 
 		[Fact]

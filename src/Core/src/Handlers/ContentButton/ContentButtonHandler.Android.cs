@@ -195,6 +195,8 @@ namespace Microsoft.Maui.Handlers
 
 		void ReleasePressed()
 		{
+			_touchTarget = null;
+
 			if (!_isPressed)
 				return;
 
