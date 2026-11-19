@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 #if __IOS__ || MACCATALYST
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
 #endif
+			[nameof(ITemplatedIndicatorView.IndicatorsLayoutOverride)] = MapIndicatorsLayoutOverride
 		};
 
 		public static CommandMapper<IIndicatorView, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
