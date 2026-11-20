@@ -742,6 +742,72 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("A late-loading selected bottom-tab icon should use the bar's current tint, not the tint captured at startup (Issue 40405)")]
+		public async Task LateLoadingSelectedBottomTabIconUsesCurrentBarTint()
+		{
+			SetupBuilder();
+
+			// The icon stream is held back so the icon-load callback runs only after
+			// the native bar tint has changed, as with Shell applying its configured tint.
+			var iconGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var iconBytes = CreateSolidPng(global::Android.Graphics.Color.White);
+
+			var delayedIcon = new StreamImageSource
+			{
+				Stream = async _ =>
+				{
+					await iconGate.Task;
+					return new System.IO.MemoryStream(iconBytes);
+				}
+			};
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true, pages: new[]
+			{
+		new ContentPage { Title = "Page 1", IconImageSource = delayedIcon },
+		new ContentPage { Title = "Page 2" }
+		});
+
+			// Deliberately set neither SelectedTabColor nor UnselectedTabColor.
+			// Without them, the fix must fall back to the bar's *current* tint.
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNav = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNav);
+
+				// Native bar tint changes while the selected tab's icon is still loading.
+				var orange = Colors.Orange.ToPlatform();
+				bottomNav.ItemIconTintList = new global::Android.Content.Res.ColorStateList(
+				new[]
+			{
+		new[] { global::Android.Resource.Attribute.StateChecked },
+		Array.Empty<int>()
+			},
+				new[] { orange.ToArgb(), global::Android.Graphics.Color.Gray.ToArgb() });
+
+				// Let the icon finish loading. Its callback re-applies the item tint.
+				iconGate.SetResult(true);
+
+				var menuItem = bottomNav.Menu.GetItem(0);
+				await AssertEventually(() => menuItem.Icon is not null, message: "Tab icon never loaded.");
+
+				// The selected icon must render with the bar's current (orange) tint,
+				// not the tint captured when the tabs were first set up.
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", Colors.Orange, true);
+			});
+
+			static byte[] CreateSolidPng(global::Android.Graphics.Color color)
+			{
+				using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(
+					48, 48, global::Android.Graphics.Bitmap.Config.Argb8888);
+				bitmap.EraseColor(color);
+				using var stream = new System.IO.MemoryStream();
+				bitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+				return stream.ToArray();
+			}
+		}
+
+		[Fact]
 		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
 		public async Task BottomNavigationViewExtendsToScreenBottom()
 		{
