@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;
 
-			(_webChromeClient as BlazorWebChromeClient)?.ExitFullScreen();
+			(_webChromeClient as BlazorWebChromeClient)?.Disconnect();
 
 			platformView.StopLoading();
 

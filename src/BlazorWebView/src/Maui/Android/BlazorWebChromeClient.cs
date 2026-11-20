@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		readonly global::System.WeakReference<Activity?> _activityReference;
 		readonly WebViewFullScreenPresenter _fullScreenPresenter = new();
+		bool _isDisconnected;
 
 		public BlazorWebChromeClient(Activity? activity)
 		{
@@ -32,6 +33,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (view is null || callback is null)
 			{
 				base.OnShowCustomView(view, callback);
+				return;
+			}
+
+			if (_isDisconnected)
+			{
+				// Nothing would ever hide a view shown now (see Disconnect), so tell the page it stays out of fullscreen.
+				callback.OnCustomViewHidden();
 				return;
 			}
 
@@ -52,12 +60,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <summary>
-		/// Leaves fullscreen when the WebView goes away while it is showing. The handler detaches this client
-		/// before destroying the WebView, so Chromium's own OnHideCustomView never arrives, and the fullscreen
-		/// view, the landscape orientation and the hidden system bars would otherwise stay on the activity.
+		/// Leaves fullscreen and refuses to enter it again; called when the handler disconnects. The WebView keeps this
+		/// client until its components are disposed, so the page can still ask for fullscreen, and the handler then
+		/// detaches the client before destroying the WebView, so Chromium's own OnHideCustomView never arrives. A view
+		/// shown in that time would leave the fullscreen view, the landscape orientation and the hidden system bars on
+		/// the activity.
 		/// </summary>
-		internal void ExitFullScreen()
+		internal void Disconnect()
 		{
+			_isDisconnected = true;
+
 			if (_fullScreenPresenter.IsShowing)
 			{
 				OnHideCustomView();

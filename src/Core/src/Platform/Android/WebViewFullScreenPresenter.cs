@@ -20,15 +20,22 @@ namespace Microsoft.Maui.Platform
 		WebChromeClient.ICustomViewCallback _videoViewCallback;
 		ScreenOrientation _originalOrientation = ScreenOrientation.Unspecified;
 		WindowInsetsControllerCompat _windowInsetsController;
-		bool _isSystemBarVisible;
+
+		/// <summary>
+		/// The system bars fullscreen hid and leaving it shows again, as <see cref="WindowInsetsCompat.Type"/> flags (the
+		/// platform's WindowInsets.Type has the same values). From API 30 only the bars that were visible; below API 30,
+		/// where the visibility of each bar is not read, all of them.
+		/// </summary>
+		int _systemBarsToRestore;
 
 		public bool IsShowing => _customView is not null;
 
 		public void Show(Activity context, View view, WebChromeClient.ICustomViewCallback callback)
 		{
-			if (context is null)
+			if (context is null || context.IsFinishing || context.IsDestroyed || context.Window?.DecorView.IsAttachedToWindow != true)
 			{
-				// Nothing can be shown, so tell the page right away; otherwise it believes it is still in fullscreen.
+				// Nothing can be shown without a window on screen, so tell the page right away; otherwise it believes it is
+				// still in fullscreen.
 				callback?.OnCustomViewHidden();
 				return;
 			}
@@ -43,21 +50,28 @@ namespace Microsoft.Maui.Platform
 
 			context.RequestedOrientation = ScreenOrientation.Landscape;
 
-			// Handle system UI visibility based on Android version
+			// Handle system UI visibility based on Android version.
+			// The window's decor-fits policy stays as the app set it (MauiAppCompatActivity draws edge to edge): the custom
+			// view goes on the decor view, outside the content that policy pads, and Android has no getter to put the app's
+			// own value back afterwards.
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
-
 				var controller = context.Window.InsetsController;
 				if (controller != null)
 				{
-					// Store current visibility state
+					// Store which system bars are visible, each on its own
 					var windowInsets = context.Window.DecorView.RootWindowInsets;
-					_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) ||
-						windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+					_systemBarsToRestore = 0;
+					foreach (var systemBar in new[] { WindowInsetsCompat.Type.StatusBars(), WindowInsetsCompat.Type.NavigationBars(), WindowInsetsCompat.Type.CaptionBar() })
+					{
+						if (windowInsets?.IsVisible(systemBar) == true)
+						{
+							_systemBarsToRestore |= systemBar;
+						}
+					}
 
 					// Hide system bars
-					if (_isSystemBarVisible)
+					if (_systemBarsToRestore != 0)
 					{
 						controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 						controller.Hide(WindowInsetsCompat.Type.SystemBars());
@@ -72,14 +86,11 @@ namespace Microsoft.Maui.Platform
 
 				// Store current state
 				_windowInsetsController = windowInsetsController;
-				_isSystemBarVisible = true; // Assume visible by default
+				_systemBarsToRestore = WindowInsetsCompat.Type.SystemBars(); // Assume visible by default
 
 				// Hide system bars
 				windowInsetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 				windowInsetsController.Hide(WindowInsetsCompat.Type.SystemBars());
-
-				// Make content appear behind system bars
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
 			}
 
 			// Add the CustomView
@@ -109,26 +120,18 @@ namespace Microsoft.Maui.Platform
 			// Restore system UI visibility based on Android version
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
-
 				var controller = context.Window.InsetsController;
-				if (controller != null && _isSystemBarVisible)
+				if (controller != null && _systemBarsToRestore != 0)
 				{
-					controller.Show(WindowInsetsCompat.Type.SystemBars());
+					controller.Show(_systemBarsToRestore);
 				}
 			}
 			else if (OperatingSystem.IsAndroidVersionAtLeast(19))
 			{
 				// For API 19-29, use WindowInsetsControllerCompat from AndroidX
-				if (_windowInsetsController != null && _isSystemBarVisible)
+				if (_windowInsetsController != null && _systemBarsToRestore != 0)
 				{
-					_windowInsetsController.Show(WindowInsetsCompat.Type.SystemBars());
-				}
-
-				// Restore content layout
-				if (context.Window != null)
-				{
-					WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
+					_windowInsetsController.Show(_systemBarsToRestore);
 				}
 			}
 
@@ -136,6 +139,7 @@ namespace Microsoft.Maui.Platform
 			_customView = null;
 			_videoViewCallback = null;
 			_windowInsetsController = null;
+			_systemBarsToRestore = 0;
 		}
 	}
 }
