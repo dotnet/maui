@@ -68,7 +68,7 @@ on:
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-      run: pwsh -NoProfile -File .github/scripts/Get-RunTestsContext.ps1 -PrNumber "$PR_NUMBER" -OutputDirectory "$RUNNER_TEMP/run-tests"
+      run: pwsh -NoProfile -File .github/scripts/Get-RunTestsContext.ps1 -PrNumber "$PR_NUMBER" -OutputDirectory "$RUNNER_TEMP/run-tests" -PostUnsupportedComment
     - name: Upload context
       if: steps.context.outputs.ready == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

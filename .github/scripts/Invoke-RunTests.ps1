@@ -157,8 +157,20 @@ function Get-VerifiedPullRequest {
     return @{ pr = $current; merge = $false }
 }
 
+function Get-RunTestsPipelineAt([string]$Ref) {
+    $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$Ref" 2>$null
+    if ($LASTEXITCODE -ne 0) { return '' }
+    return ($raw -join "`n")
+}
+
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
+# The build runs the pipeline from GitHub's test-merge commit. GitHub refreshes that commit lazily,
+# so right after the selection parameters reach the target branch it can still merge an older base.
+$pipelineReady = $true
+if ($selection.mode -eq 'selected' -and $verified.merge -and -not $DryRun) {
+    $pipelineReady = Test-RunTestsPipelineSupportsSelection (Get-RunTestsPipelineAt $pr.merge_commit_sha)
+}
 $queueError = $null
 if ($selectionError) {
     $queueError = $selectionError
@@ -173,6 +185,8 @@ if ($selectionError) {
     $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review run-tests`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
+} elseif (-not $pipelineReady) {
+    $queueError = "GitHub's test-merge commit for this PR ($($pr.merge_commit_sha.Substring(0, 8))) merges an older ``$($pr.base.ref)`` whose maui-pr-uitests pipeline cannot run a selection yet. GitHub refreshes it after the next push to the PR; then comment ``/review run-tests`` again."
 }
 
 $build = $null
@@ -200,8 +214,9 @@ if (-not $queueError -and $selection.mode -ne 'none') {
                 Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
             }
         } catch {
-            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message)"
-            $queueError = 'The Azure DevOps request failed; see the workflow log.'
+            $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
+            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
+            $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
             $build = $null
         } finally {
             $AzdoToken = $null

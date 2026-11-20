@@ -154,6 +154,36 @@ Describe 'Get-RunTestsMergeState' {
     }
 }
 
+Describe 'Pipeline support checks' {
+    It 'recognises a pipeline that declares the selection parameters' {
+        $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
+        Test-RunTestsPipelineSupportsSelection $current | Should -BeTrue
+        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: BuildConfigurations`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: selectedRun`n  - name: selectedPlatforms`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection '' | Should -BeFalse
+    }
+
+    It "reports Azure DevOps' own validation messages" {
+        $body = '{"customProperties":{"ValidationResults":[{"result":"error","message":"Unexpected parameter ''selectedRun''"},{"result":"error","message":"Unexpected parameter ''selectedPlatforms''"}]},"message":"Could not queue the build because there were validation errors or warnings."}'
+        Get-RunTestsAzdoErrorText $body | Should -Be "Unexpected parameter 'selectedRun'; Unexpected parameter 'selectedPlatforms'"
+        Get-RunTestsAzdoErrorText '{"message":"TF401019: not found"}' | Should -Be 'TF401019: not found'
+        Get-RunTestsAzdoErrorText '' | Should -Be ''
+    }
+
+    It 'stops before the models run when the target branch cannot run a selection' {
+        $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
+        $contextScript | Should -Match 'Test-RunTestsPipelineSupportsSelection'
+        $contextScript | Should -Match 'ready=false'
+        Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
+    }
+
+    It 'checks the test-merge commit pipeline before queueing' {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$pr\.merge_commit_sha\)'
+        $invoke | Should -Match 'Get-RunTestsAzdoErrorText'
+    }
+}
+
 Describe 'Changed-test context collection' {
     BeforeAll { $script:contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1') }
 

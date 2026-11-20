@@ -914,6 +914,35 @@ function ConvertTo-RunTestsPipelineCategories {
     return @($qualified)
 }
 
+$script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
+
+function Test-RunTestsPipelineSupportsSelection {
+    <#
+    .SYNOPSIS
+    True when a ci-uitests.yml accepts the selectedRun/selectedPlatforms/selectedCategories parameters.
+    Azure DevOps rejects a queue request whose template parameters the built commit does not declare.
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Content)
+    if (-not $Content) { return $false }
+    foreach ($name in 'selectedRun', 'selectedPlatforms', 'selectedCategories') {
+        if ($Content -notmatch "(?m)^\s*-\s*name:\s*$name\s*$") { return $false }
+    }
+    return $true
+}
+
+function Get-RunTestsAzdoErrorText {
+    <#
+    .SYNOPSIS
+    Extracts Azure DevOps' own reason (validation results or message) from a failed REST call.
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Body)
+    if (-not $Body) { return '' }
+    try { $json = $Body | ConvertFrom-Json -Depth 20 } catch { return (Format-RunTestsText $Body 300) }
+    $messages = @($json.customProperties.ValidationResults | ForEach-Object { $_.message } | Where-Object { $_ } | Select-Object -Unique -First 3)
+    if (-not $messages.Count -and $json.message) { $messages = @($json.message) }
+    return (Format-RunTestsText ($messages -join '; ') 300)
+}
+
 function Get-RunTestsMergeState {
     <#
     .SYNOPSIS

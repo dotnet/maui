@@ -15,7 +15,9 @@ param(
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$PipelineYamlPath = "$PSScriptRoot/../../eng/pipelines/common/ui-tests.yml",
     [int]$MaxPatchCharsPerFile = 6000,
-    [int]$MaxPatchCharsTotal = 200000
+    [int]$MaxPatchCharsTotal = 200000,
+    # Tell the requester on the PR when its target branch cannot run a selection.
+    [switch]$PostUnsupportedComment
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +32,20 @@ function Invoke-GhJson {
 
 $pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
 if ($pr.state -ne 'open') { throw "PR #$PrNumber is not open." }
+
+# The build runs the target branch's pipeline. Without the selection parameters there, Azure DevOps
+# rejects the request, so say so now instead of running both models for nothing.
+$basePipeline = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$([uri]::EscapeDataString($pr.base.ref))" 2>$null
+if ($LASTEXITCODE -eq 0 -and -not (Test-RunTestsPipelineSupportsSelection ($basePipeline -join "`n"))) {
+    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: that branch's maui-pr-uitests pipeline has no selected-run parameters. Use ``/azp run maui-pr-uitests`` for the full suite."
+    Write-Host $message
+    if ($PostUnsupportedComment) {
+        $body = @{ body = "<!-- review-run-tests-unsupported -->`n$message" } | ConvertTo-Json
+        $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input - | Out-Null
+    }
+    if ($env:GITHUB_OUTPUT) { "ready=false" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }
+    return
+}
 
 # --paginate concatenates pages as separate JSON arrays; --slurp merges them.
 $pages = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/pulls/$PrNumber/files?per_page=100")
