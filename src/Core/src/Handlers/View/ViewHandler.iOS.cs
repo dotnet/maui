@@ -15,15 +15,12 @@ namespace Microsoft.Maui.Handlers
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-#if MACCATALYST
 			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
-#endif
 		}
 
-#if MACCATALYST
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
@@ -50,7 +47,6 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 		}
-#endif
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{

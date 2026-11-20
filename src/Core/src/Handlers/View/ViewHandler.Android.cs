@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 			if (platformView.IsAlive())
 			{
 				platformView.FocusChange -= OnPlatformViewFocusChange;
+				MauiContextMenu.Remove(platformView);
 
 				if (ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
 				{
@@ -246,6 +247,26 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
+			if (handler.PlatformView is not PlatformView platformView)
+			{
+				return;
+			}
+
+			var flyout = (view as IContextFlyoutElement)?.ContextFlyout;
+
+			if (flyout is not null && flyout is not IMenuFlyout)
+			{
+				throw new NotSupportedException("Android context flyouts must be a MenuFlyout.");
+			}
+
+			if (flyout is IMenuFlyout)
+			{
+				MauiContextMenu.Attach(platformView, handler);
+			}
+			else
+			{
+				MauiContextMenu.Remove(platformView);
+			}
 		}
 
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
