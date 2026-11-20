@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Controls
 		/// system's text menus instead. That is the edit menu on iOS and Mac Catalyst (iOS 16 and later; on earlier
 		/// versions the context menu opens on long press), and the selection toolbar and the context menu of a
 		/// secondary click on Android.
+		/// Set the <c>MauiEnableMobileContextFlyouts</c> MSBuild property to <see langword="false"/> to turn off
+		/// context menus on iOS and Android and the text menu items on iOS, Mac Catalyst and Android.
 		/// </remarks>
 		public static void SetContextFlyout(BindableObject b, FlyoutBase value)
 		{

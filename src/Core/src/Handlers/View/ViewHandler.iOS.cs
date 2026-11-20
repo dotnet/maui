@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Handlers
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
+			// Before context flyouts on iOS, they only worked on Mac Catalyst
+			if (!OperatingSystem.IsMacCatalyst() && !RuntimeFeature.AreMobileContextFlyoutsEnabled)
+				return;
+
 			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
 				// Views without a context flyout never get an interaction, so there is nothing to remove

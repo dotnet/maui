@@ -467,6 +467,28 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+		[Fact(DisplayName = "With mobile context flyouts turned off, views keep their behavior from before")]
+		public async Task MobileContextFlyoutsCanBeTurnedOff()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target" };
+			var entry = new Entry { Text = "Text" };
+			FlyoutBase.SetContextFlyout(label, CreateFlyout(out _));
+			FlyoutBase.SetContextFlyout(entry, CreateFlyout(out _));
+			var root = new VerticalStackLayout { label, entry };
+
+			await WithMobileContextFlyoutsDisabled(() => AttachAndRun(root, handler =>
+			{
+				var labelView = (AView)label.Handler!.PlatformView!;
+				var editText = (global::Android.Widget.EditText)entry.Handler!.PlatformView!;
+
+				Assert.Null(ContextFlyoutManager.Get(labelView));
+				Assert.Null(ContextFlyoutManager.Get(editText));
+				Assert.False(labelView.LongClickable);
+				Assert.Null(editText.CustomSelectionActionModeCallback);
+			}));
+		}
+
 		[Fact(DisplayName = "The menus of ancestors are added after the view's own, like native context menus")]
 		public async Task AncestorMenusAreMerged()
 		{

@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Platform
 	{
 		// The edit menu can only be extended from iOS 16; before that text inputs keep only their own menu
 		internal static bool IsSupported =>
-			OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16);
+			RuntimeFeature.AreMobileContextFlyoutsEnabled &&
+			(OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16));
 
 		/// <summary>
 		/// The system's edit menu of a text input, followed by the items of the closest context flyout of the input
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Platform
 		[SupportedOSPlatform("maccatalyst16.0")]
 		internal static UIMenu? AddItems(UIView textInput, UIMenu? menu, UIMenuElement[] suggestedActions)
 		{
-			if (MauiUIContextMenuInteraction.FindClosest(textInput) is not MauiUIContextMenuInteraction interaction ||
+			if (!IsSupported || MauiUIContextMenuInteraction.FindClosest(textInput) is not MauiUIContextMenuInteraction interaction ||
 				interaction.CreateMenu() is not UIMenu { Children.Length: > 0 } flyoutMenu)
 				return menu;
 

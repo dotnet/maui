@@ -251,7 +251,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-			if (view is not IContextFlyoutElement contextFlyoutContainer || handler.PlatformView is not PlatformView platformView)
+			if (!RuntimeFeature.AreMobileContextFlyoutsEnabled ||
+				view is not IContextFlyoutElement contextFlyoutContainer || handler.PlatformView is not PlatformView platformView)
 				return;
 
 			if (contextFlyoutContainer.ContextFlyout is null)

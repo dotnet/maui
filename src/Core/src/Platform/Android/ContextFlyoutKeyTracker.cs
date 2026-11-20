@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void Observe(AView? root)
 		{
-			if (root is null || s_observedRoots.TryGetValue(root, out _) || root.ViewTreeObserver is not ViewTreeObserver observer)
+			if (!RuntimeFeature.AreMobileContextFlyoutsEnabled || root is null || s_observedRoots.TryGetValue(root, out _) ||
+				root.ViewTreeObserver is not ViewTreeObserver observer)
 				return;
 
 			s_observedRoots.Add(root, s_observedRoots);

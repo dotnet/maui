@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -42,6 +43,22 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
 				});
 			});
+		}
+
+		const string MobileContextFlyoutsSwitch = "Microsoft.Maui.RuntimeFeature.AreMobileContextFlyoutsEnabled";
+
+		// Runs the action with context flyouts on iOS and Android turned off, like MauiEnableMobileContextFlyouts=false
+		static async Task WithMobileContextFlyoutsDisabled(Func<Task> action)
+		{
+			AppContext.SetSwitch(MobileContextFlyoutsSwitch, false);
+			try
+			{
+				await action();
+			}
+			finally
+			{
+				AppContext.SetSwitch(MobileContextFlyoutsSwitch, true);
+			}
 		}
 
 		// Copy, Disabled, ---, Edit > Nested

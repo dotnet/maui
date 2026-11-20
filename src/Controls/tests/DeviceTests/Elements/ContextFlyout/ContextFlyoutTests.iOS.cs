@@ -330,6 +330,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "With mobile context flyouts turned off, iOS has no context menus and Mac Catalyst works like before")]
+		public async Task MobileContextFlyoutsCanBeTurnedOff()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target" };
+			var entry = new Entry { Text = "Text" };
+			FlyoutBase.SetContextFlyout(label, CreateFlyout(out _));
+			FlyoutBase.SetContextFlyout(entry, CreateFlyout(out _));
+			var root = new VerticalStackLayout { WidthRequest = 300, Children = { label, entry } };
+
+			await WithMobileContextFlyoutsDisabled(() => AttachAndRun(root, _ =>
+			{
+				var labelView = (UIView)label.Handler!.PlatformView!;
+				var textField = (UIView)entry.Handler!.PlatformView!;
+
+				if (!OperatingSystem.IsMacCatalyst())
+				{
+					Assert.Null(GetInteraction(labelView));
+					Assert.Null(GetInteraction(textField));
+					return;
+				}
+
+				// Mac Catalyst: the text input opens its context menu, and its edit menu is the system's
+				var interaction = GetInteraction(textField)!;
+				textField.LayoutIfNeeded();
+				Assert.NotNull(interaction.GetConfigurationForMenu(new CoreGraphics.CGPoint(textField.Bounds.Width / 2, textField.Bounds.Height / 2)));
+
+				var suggested = new UIMenuElement[] { UIAction.Create("System", null, null, _ => { }) };
+				var menu = GetEditMenu(textField, suggested);
+				Assert.True(menu is null || menu.Children.All(e => e.Title == "System"));
+			}));
+		}
+
 		[Fact(DisplayName = "Actions of an edit menu keep working after the menu was requested again")]
 		public async Task EarlierEditMenuActionsKeepWorking()
 		{

@@ -17,6 +17,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
+| MauiEnableMobileContextFlyouts | Microsoft.Maui.RuntimeFeature.AreMobileContextFlyoutsEnabled | When disabled, `FlyoutBase.ContextFlyout` works like in earlier versions: context menus only on Windows and Mac Catalyst, and text inputs don't add the items to their text menus. Enabled by default. See [MauiEnableMobileContextFlyouts](#mauienablemobilecontextflyouts). |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
 ## Runtime settings
@@ -163,6 +164,20 @@ Defaults to `false`
 Enable VisualDiagnostics and BindingDiagnostics
 
 Defaults to `EnableDiagnostics`
+
+## MauiEnableMobileContextFlyouts
+
+Controls whether `FlyoutBase.ContextFlyout` shows context menus on iOS and Android, and whether the items of a context flyout are added to the system's text menus of `Entry`, `Editor` and `SearchBar` (on iOS 16+, Mac Catalyst 16+ and Android).
+
+**Default Value**: `true`
+
+Elements without a context flyout aren't affected either way. Disable it to keep the behavior of earlier versions, for example when an app sets context flyouts for Windows and Mac Catalyst in XAML that's shared with iOS and Android:
+
+```xml
+<PropertyGroup>
+  <MauiEnableMobileContextFlyouts>false</MauiEnableMobileContextFlyouts>
+</PropertyGroup>
+```
 
 ## _EnableMauiAspire
 
