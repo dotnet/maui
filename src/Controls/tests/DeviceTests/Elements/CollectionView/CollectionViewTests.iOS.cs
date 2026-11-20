@@ -375,6 +375,7 @@ namespace Microsoft.Maui.DeviceTests
 				var shouldSelect = ((UICollectionViewDelegate)uiCollectionView.Delegate).ShouldSelectItem(uiCollectionView, NSIndexPath.FromItemSection(1, 0));
 
 				Assert.False(shouldSelect);
+				await AssertHelpers.AssertEventually(() => taps.Count == 1, message: "The tap was not reported.");
 				Assert.Equal("B", Assert.Single(taps).Item);
 				Assert.Empty(uiCollectionView.GetIndexPathsForSelectedItems());
 
@@ -385,8 +386,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task ItemTappedReportsOnlyTheTappedItemInSelectionModeSingle()
+		[Theory]
+		[InlineData(SelectionMode.Single)]
+		[InlineData(SelectionMode.Multiple)]
+		public async Task ItemTappedReportsOnlyTheTappedItem(SelectionMode selectionMode)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -400,27 +403,51 @@ namespace Microsoft.Maui.DeviceTests
 			var collectionView = new CollectionView
 			{
 				ItemsSource = new[] { "A", "B" },
-				SelectionMode = SelectionMode.Single,
+				SelectionMode = selectionMode,
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
-			var events = new List<string>();
-			collectionView.SelectionChanged += (s, e) => events.Add($"Selection:{collectionView.SelectedItem}");
-			collectionView.ItemTapped += (s, e) => events.Add($"Tapped:{e.Item}");
+			var taps = new List<object>();
+			collectionView.ItemTapped += (s, e) => taps.Add(e.Item);
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				var uiCollectionView = handler.Controller.CollectionView;
+				var collectionViewDelegate = (UICollectionViewDelegate)uiCollectionView.Delegate;
 				var a = NSIndexPath.FromItemSection(0, 0);
 				var b = NSIndexPath.FromItemSection(1, 0);
 
-				// UIKit's sequence when the user taps A, taps A again, then taps B
-				var collectionViewDelegate = (UICollectionViewDelegate)uiCollectionView.Delegate;
-				collectionViewDelegate.ItemSelected(uiCollectionView, a);
-				collectionViewDelegate.ItemSelected(uiCollectionView, a);
-				collectionViewDelegate.ItemDeselected(uiCollectionView, a);
-				collectionViewDelegate.ItemSelected(uiCollectionView, b);
+				// Each block is the sequence of callbacks UIKit makes for one tap or click
+				async Task Tap(object expected, params Action[] callbacks)
+				{
+					var count = taps.Count;
+					foreach (var callback in callbacks)
+					{
+						callback();
+					}
 
-				Assert.Equal(new[] { "Selection:A", "Tapped:A", "Tapped:A", "Selection:B", "Tapped:B" }, events);
+					await AssertHelpers.AssertEventually(() => taps.Count > count, message: $"The tap on {expected} was not reported.");
+					await Task.Delay(100);
+					Assert.Equal(new[] { expected }, taps.Skip(count));
+				}
+
+				await Tap("A", () => collectionViewDelegate.ItemSelected(uiCollectionView, a));
+
+				// Selecting another item also deselects the previous one: in Single mode, and on Mac Catalyst in
+				// Multiple mode, where a plain click replaces the selection
+				await Tap("B",
+					() => collectionViewDelegate.ItemDeselected(uiCollectionView, a),
+					() => collectionViewDelegate.ItemSelected(uiCollectionView, b));
+
+				if (selectionMode == SelectionMode.Single)
+				{
+					// Tapping the selected item again
+					await Tap("B", () => collectionViewDelegate.ItemSelected(uiCollectionView, b));
+				}
+				else
+				{
+					// Tapping a selected item deselects it
+					await Tap("B", () => collectionViewDelegate.ItemDeselected(uiCollectionView, b));
+				}
 			});
 		}
 

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var tap = CreateItemTappedEventArgs(indexPath);
 			FormsSelectItem(indexPath);
-			ItemsView.SendItemTapped(tap);
+			QueueItemTapped(tap, selected: true);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
@@ -44,11 +44,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// In Single mode UIKit also deselects the previous item when another item is tapped; only a
-			// deselection in Multiple mode is the result of tapping the item itself.
-			var tap = ItemsView.SelectionMode == SelectionMode.Multiple ? CreateItemTappedEventArgs(indexPath) : null;
+			var tap = CreateItemTappedEventArgs(indexPath);
 			FormsDeselectItem(indexPath);
-			ItemsView.SendItemTapped(tap);
+			QueueItemTapped(tap, selected: false);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
@@ -65,8 +63,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Selection is only allowed in None mode so that taps are reported; the item itself never becomes selected
-			ItemsView.SendItemTapped(CreateItemTappedEventArgs(indexPath));
+			QueueItemTapped(CreateItemTappedEventArgs(indexPath), selected: true);
 			return false;
+		}
+
+		ItemTappedEventArgs _pendingTap;
+		bool _pendingTapSelected;
+		bool _isTapQueued;
+
+		// One click or tap can make UIKit deselect other items besides selecting the tapped one: the previous item in
+		// Single mode, and on Mac Catalyst every other item in Multiple mode, because a plain click replaces the
+		// selection. Collect the callbacks of one event and report a single tap: the selected item if there is one,
+		// otherwise the deselected item (a tap that deselects it in Multiple mode).
+		void QueueItemTapped(ItemTappedEventArgs tap, bool selected)
+		{
+			if (tap is null)
+			{
+				return;
+			}
+
+			if (_pendingTap is null || selected || !_pendingTapSelected)
+			{
+				_pendingTap = tap;
+				_pendingTapSelected = selected;
+			}
+
+			if (!_isTapQueued)
+			{
+				_isTapQueued = true;
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(SendPendingItemTapped);
+			}
+		}
+
+		void SendPendingItemTapped()
+		{
+			var tap = _pendingTap;
+			_pendingTap = null;
+			_isTapQueued = false;
+
+			ItemsView?.SendItemTapped(tap);
 		}
 
 		ItemTappedEventArgs CreateItemTappedEventArgs(NSIndexPath indexPath)

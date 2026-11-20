@@ -62,13 +62,19 @@ public class Issue40332 : _IssuesUITest
 		App.Tap("ItemA");
 		WaitForLog("Selection:A;Tapped:A@0");
 
+#if MACCATALYST
+		// On Mac Catalyst a plain click replaces the selection (https://github.com/dotnet/maui/issues/18028): UIKit
+		// deselects A and selects B, which is still a single tap
+		App.Tap("ItemB");
+		WaitForLog("Selection:A;Tapped:A@0;Selection:;Selection:B;Tapped:B@1");
+#else
 		App.Tap("ItemB");
 		WaitForLog("Selection:A;Tapped:A@0;Selection:A,B;Tapped:B@1");
 
-		// Deselecting is also a tap. Deselect an item other than the one clicked last: on Mac Catalyst, clicking
-		// the same item twice in a row through the UI test driver deselects and then reselects it.
+		// Deselecting is also a tap
 		App.Tap("ItemA");
 		WaitForLog("Selection:A;Tapped:A@0;Selection:A,B;Tapped:B@1;Selection:B;Tapped:A@0");
+#endif
 	}
 
 	[Test]
