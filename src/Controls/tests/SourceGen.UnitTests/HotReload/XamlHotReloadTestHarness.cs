@@ -361,7 +361,8 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				options.NoWarn,
 				EnableIncrementalHotReload: true,
 				EnableDiagnostics: options.EnableDiagnostics,
-				EnablePreviewFeatures: options.EnablePreviewFeatures);
+				EnablePreviewFeatures: options.EnablePreviewFeatures,
+				LazyRD: options.LazyRD);
 			files.Add(document.Key, new XamlHotReloadAdditionalFile(options, file));
 		}
 
@@ -528,7 +529,8 @@ internal sealed record XamlHotReloadDocument(
 	string? TargetFramework = "net11.0",
 	string? NoWarn = null,
 	bool EnableDiagnostics = true,
-	bool EnablePreviewFeatures = false);
+	bool EnablePreviewFeatures = false,
+	bool? LazyRD = null);
 
 internal sealed record XamlHotReloadSourceVersion(
 	string Xaml,
