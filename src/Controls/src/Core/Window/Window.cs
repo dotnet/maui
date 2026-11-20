@@ -587,45 +587,10 @@ namespace Microsoft.Maui.Controls
 			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
 
-			try
-			{
-				// After the window handler, so the page handler changes this raises cannot subscribe the alert
-				// manager again, and before the window scope goes away, so the page handlers can still use it.
-				DisconnectPresentedPages();
-			}
-			finally
-			{
-				// On Android, preserve window scope to enable reuse when Activity is recreated
+			// On Android, preserve window scope to enable reuse when Activity is recreated
 #if !ANDROID
-				mauiContext?.DisposeWindowScope();
+			mauiContext?.DisposeWindowScope();
 #endif
-			}
-		}
-
-		/// <summary>
-		/// Disconnects the handlers of the page and the modal pages this window presents. Their platform views
-		/// are torn down with the window, and a handler that runs work of its own (a BlazorWebView's renderer and
-		/// its components' timers) would otherwise keep running after the window is gone. A page shown again in a
-		/// new window gets new handlers there.
-		/// </summary>
-		/// <remarks>
-		/// Only pages whose parent is still this window: an app that reuses one page instance can already have
-		/// put it into a newer window, and its handlers then belong to that window.
-		/// </remarks>
-		void DisconnectPresentedPages()
-		{
-			foreach (var modalPage in ModalNavigationManager.ModalStack.ToArray())
-			{
-				if (modalPage.Parent == this)
-				{
-					modalPage.DisconnectHandlers();
-				}
-			}
-
-			if (Page?.Parent == this)
-			{
-				Page.DisconnectHandlers();
-			}
 		}
 
 		void IWindow.Resumed()
