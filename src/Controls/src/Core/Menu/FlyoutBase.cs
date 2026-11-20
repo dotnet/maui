@@ -22,10 +22,15 @@ namespace Microsoft.Maui.Controls
 		/// A long press is shared with other behavior the way each platform shares it. On iOS the context menu
 		/// takes the long press over, including from a <see cref="LongPressGestureRecognizer"/>. On Android the
 		/// pressed view's own long-press handler comes first (a <see cref="LongPressGestureRecognizer"/> or
-		/// <see cref="DragGestureRecognizer"/> on it), then the context menu, which comes before text selection in
-		/// an <see cref="Entry"/> or <see cref="Editor"/> and before tooltips. Double-tapping still selects text on
-		/// both. Reordering a <see cref="CollectionView"/> keeps its long press on both. The menu still opens with
-		/// a secondary click or the keyboard.
+		/// <see cref="DragGestureRecognizer"/> on it), then the context menu, which comes before tooltips, and the
+		/// menus of the element's ancestors are added after its own, like native Android context menus.
+		/// Reordering a <see cref="CollectionView"/> keeps its long press on both. The menu still opens with a
+		/// secondary click or the keyboard.
+		/// Text inputs (<see cref="Entry"/>, <see cref="Editor"/>, <see cref="SearchBar"/>) keep their own text
+		/// selection, like in native apps: the items of their context menu, or of an ancestor's, are added to the
+		/// system's text menus instead. That is the edit menu on iOS and Mac Catalyst (iOS 16 and later; on earlier
+		/// versions the context menu opens on long press), and the selection toolbar and the context menu of a
+		/// secondary click on Android.
 		/// </remarks>
 		public static void SetContextFlyout(BindableObject b, FlyoutBase value)
 		{

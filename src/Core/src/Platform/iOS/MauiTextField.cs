@@ -29,6 +29,13 @@ namespace Microsoft.Maui.Platform
 			base.WillMoveToWindow(window);
 		}
 
+		/// <inheritdoc/>
+		/// <remarks>Adds the items of the context flyout of the text input, or of one of its parents, to the edit menu.</remarks>
+		[System.Runtime.Versioning.SupportedOSPlatform("ios16.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst16.0")]
+		public override UIMenu? GetEditMenu(UITextRange textRange, UIMenuElement[] suggestedActions) =>
+			ContextFlyoutEditMenu.AddItems(this, base.GetEditMenu(textRange, suggestedActions), suggestedActions);
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();

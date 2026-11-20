@@ -19,11 +19,20 @@ namespace Microsoft.Maui.Handlers
 			{
 				UIImage? contextUiImage = VirtualView.Source.GetPlatformContextMenuImage(MauiContext!);
 
+				// Menus are rebuilt every time they're requested, which disconnects this handler, while UIKit can
+				// still show (and invoke) a menu it got before. The action keeps working with the item itself.
+				var item = new WeakReference<IMenuFlyoutItem>(VirtualView);
+
 				var uiAction = UIAction.Create(
 					title: VirtualView.Text ?? string.Empty,
 					image: contextUiImage,
 					identifier: null,
-					handler: (_) => VirtualView?.Clicked());
+					handler: (_) =>
+					{
+						// A menu shown before can outlive changes: MenuItem.Clicked is raised even when disabled
+						if (item.TryGetTarget(out var menuItem) && menuItem.IsEnabled)
+							menuItem.Clicked();
+					});
 
 				return uiAction;
 			}

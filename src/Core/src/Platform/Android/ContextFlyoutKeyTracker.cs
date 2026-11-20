@@ -18,9 +18,15 @@ namespace Microsoft.Maui.Platform
 	{
 		static readonly ConditionalWeakTable<AView, object> s_observedRoots = new();
 
-		static WeakReference<AView>? s_listenedView;
+		// The focused view each window listens to: windows keep their focused view while another one has focus
+		static readonly ConditionalWeakTable<AView, WeakReference<AView>> s_listenedViews = new();
+
+		static WeakReference<AView>? s_pendingView;
 		static Java.Lang.Runnable? s_pendingLongPress;
 		static Keycode s_keyCode;
+
+		// The key press that opened a menu: its release may go to the menu instead, so it's matched by its down time
+		static long s_downTime;
 		static bool s_consumeKeyUp;
 		static KeyEvent? s_consumedKeyUp;
 
@@ -42,8 +48,8 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void Refresh(AView view)
 		{
-			if (view.IsAttachedToWindow && view.RootView?.FindFocus() is AView focused)
-				UpdateListenedView(focused);
+			if (view.IsAttachedToWindow && view.RootView is AView root && root.FindFocus() is AView focused)
+				UpdateListenedView(root, focused);
 		}
 
 		/// <summary>
@@ -55,31 +61,40 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		internal static bool IsConsumedKeyUp(KeyEvent? e) =>
 			e is not null && e.Action == KeyEventActions.Up &&
-			((s_consumeKeyUp && e.KeyCode == s_keyCode) ||
+			((s_consumeKeyUp && e.KeyCode == s_keyCode && e.DownTime == s_downTime) ||
 			(s_consumedKeyUp is KeyEvent consumed && consumed.IsAlive() && consumed.KeyCode == e.KeyCode && consumed.EventTime == e.EventTime));
 
-		static void OnGlobalFocusChange(object? sender, ViewTreeObserver.GlobalFocusChangeEventArgs e) =>
-			UpdateListenedView(e.NewFocus);
-
-		static void UpdateListenedView(AView? focused)
+		static void OnGlobalFocusChange(object? sender, ViewTreeObserver.GlobalFocusChangeEventArgs e)
 		{
-			if (s_listenedView is not null && s_listenedView.TryGetTarget(out var listened))
+			if ((e.NewFocus ?? e.OldFocus)?.RootView is AView root)
+				UpdateListenedView(root, e.NewFocus);
+		}
+
+		static void UpdateListenedView(AView root, AView? focused)
+		{
+			if (s_listenedViews.TryGetValue(root, out var reference) && reference.TryGetTarget(out var listened))
 			{
 				if (listened == focused)
 					return;
 
 				if (listened.IsAlive())
 					listened.KeyPress -= OnKeyPress;
+
+				if (s_pendingView is not null && s_pendingView.TryGetTarget(out var pending) && pending == listened)
+					Cancel();
 			}
 
-			s_listenedView = null;
-			Cancel();
+			s_listenedViews.Remove(root);
+
+			// Text can also be selected with the keyboard, which shows its toolbars
+			if (ContextFlyoutManager.HasAny)
+				ContextFlyoutTextMenus.Prepare(focused);
 
 			if (focused is null || ContextFlyoutManager.FindForFocusedView(focused) is null)
 				return;
 
 			focused.KeyPress += OnKeyPress;
-			s_listenedView = new WeakReference<AView>(focused);
+			s_listenedViews.Add(root, new WeakReference<AView>(focused));
 		}
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
@@ -92,7 +107,7 @@ namespace Microsoft.Maui.Platform
 
 			if (keyEvent.Action == KeyEventActions.Up)
 			{
-				if (keyEvent.KeyCode != s_keyCode)
+				if (keyEvent.KeyCode != s_keyCode || keyEvent.DownTime != s_downTime)
 					return;
 
 				Cancel();
@@ -115,10 +130,14 @@ namespace Microsoft.Maui.Platform
 			Cancel();
 			s_consumeKeyUp = false;
 
-			if (!keyEvent.KeyCode.IsConfirmKey() || !keyEvent.HasNoModifiers || ContextFlyoutManager.FindForFocusedView(view) is null)
+			// Like views do natively: from Android 13 only without modifiers (Shift+Enter isn't a long click)
+			if (!keyEvent.KeyCode.IsConfirmKey() || (OperatingSystem.IsAndroidVersionAtLeast(33) && !keyEvent.HasNoModifiers) ||
+				ContextFlyoutManager.FindForFocusedView(view) is null)
 				return;
 
 			s_keyCode = keyEvent.KeyCode;
+			s_downTime = keyEvent.DownTime;
+			s_pendingView = new WeakReference<AView>(view);
 			s_pendingLongPress = new Java.Lang.Runnable(OnLongPress);
 			view.PostDelayed(s_pendingLongPress, ViewConfiguration.LongPressTimeout);
 		}
@@ -128,7 +147,7 @@ namespace Microsoft.Maui.Platform
 			// Don't dispose the runnable here: it is the one currently running
 			s_pendingLongPress = null;
 
-			if (s_listenedView is null || !s_listenedView.TryGetTarget(out var focused) || !focused.IsAlive() || !focused.HasFocus)
+			if (s_pendingView is null || !s_pendingView.TryGetTarget(out var focused) || !focused.IsAlive() || !focused.HasFocus)
 				return;
 
 			// Look up the menu again: it may have been removed while the key was held
@@ -144,11 +163,12 @@ namespace Microsoft.Maui.Platform
 			if (s_pendingLongPress is null)
 				return;
 
-			if (s_listenedView is not null && s_listenedView.TryGetTarget(out var view) && view.IsAlive())
+			if (s_pendingView is not null && s_pendingView.TryGetTarget(out var view) && view.IsAlive())
 				view.RemoveCallbacks(s_pendingLongPress);
 
 			s_pendingLongPress.Dispose();
 			s_pendingLongPress = null;
+			s_pendingView = null;
 		}
 	}
 }

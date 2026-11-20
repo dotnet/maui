@@ -20,6 +20,14 @@
             </FlyoutBase.ContextFlyout>
         </Label>
 
+        <Entry AutomationId="FlyoutEntry" Text="Long press any word of this text to select it and show the text menu">
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Entry item" Command="{Binding RecordCommand}" CommandParameter="entry-item" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Entry>
+
         <Border AutomationId="TapBorder" Padding="12" Stroke="Gray">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding RecordCommand}" CommandParameter="border-tapped" />

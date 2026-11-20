@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Platform
 			float _downY;
 			long _downTime;
 			bool _swallowing;
+			DetachListener? _detachListener;
 			bool _dispatchingCancel;
 			bool _active;
 
@@ -111,8 +112,10 @@ namespace Microsoft.Maui.Platform
 
 				if (e.IsFromSource(InputSourceType.Mouse) && (e.ButtonState & MotionEventButtonState.Secondary) != 0)
 				{
-					// Secondary click opens the menu right away; the view never sees the press
-					if (manager.Show(e.GetX(), e.GetY()))
+					// Secondary click opens the menu right away; the view never sees the press.
+					// On text it's the text's own context menu, with the flyout items added.
+					float windowX = e.GetX(), windowY = e.GetY();
+					if (ShowTextContextMenu(root, manager, windowX, windowY) || manager.Show(windowX, windowY))
 					{
 						SetActive(true);
 						_swallowing = true;
@@ -181,6 +184,12 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			static bool ShowTextContextMenu(AView root, ContextFlyoutManager manager, float x, float y) =>
+				manager.FindTouchTarget(root, x, y) is AView target &&
+				ContextFlyoutTextMenus.IsText(target) &&
+				ContextFlyoutManager.TryMapToLocal(root, target, x, y, out var localX, out var localY) &&
+				ContextFlyoutTextMenus.ShowContextMenu(target, localX, localY, () => manager.Show(x, y));
+
 			bool IsBeyondSlop(MotionEvent e)
 			{
 				var dx = e.GetX() - _downX;
@@ -220,9 +229,40 @@ namespace Microsoft.Maui.Platform
 				_active = active;
 
 				if (active)
+				{
 					s_activeStates.Add(this);
+
+					// A window that goes away during a touch never ends it, which would keep it alive
+					if (_detachListener is null && _window.IsAlive() && _window.DecorView is AView decor)
+					{
+						_detachListener = new DetachListener(this);
+						decor.AddOnAttachStateChangeListener(_detachListener);
+					}
+				}
 				else
+				{
 					s_activeStates.Remove(this);
+				}
+			}
+
+			internal void OnDetached() => Reset();
+		}
+
+		sealed class DetachListener : Java.Lang.Object, AView.IOnAttachStateChangeListener
+		{
+			readonly WeakReference<TouchState> _state;
+
+			public DetachListener(TouchState state) =>
+				_state = new WeakReference<TouchState>(state);
+
+			public void OnViewAttachedToWindow(AView? attachedView)
+			{
+			}
+
+			public void OnViewDetachedFromWindow(AView? detachedView)
+			{
+				if (_state.TryGetTarget(out var state))
+					state.OnDetached();
 			}
 		}
 	}

@@ -82,9 +82,54 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		// Mac Catalyst opens context menus with a secondary click, which doesn't compete with long presses
-		internal UIContextMenuConfiguration? GetConfigurationForMenu(CGPoint location) =>
-			!OperatingSystem.IsMacCatalyst() && DefersLongPress(location) ? null : GetConfigurationForMenu();
+		internal UIContextMenuConfiguration? GetConfigurationForMenu(CGPoint location)
+		{
+			// Text inputs keep selecting text; the items are added to their edit menu instead
+			var view = View;
+			if (view is not null && view.PointInside(location, null) && ContextFlyoutEditMenu.IsTextInput(view.HitTest(location, null), view))
+				return null;
+
+			// Mac Catalyst opens context menus with a secondary click, which doesn't compete with long presses
+			return !OperatingSystem.IsMacCatalyst() && DefersLongPress(location) ? null : GetConfigurationForMenu();
+		}
+
+		/// <summary>
+		/// The context menu interaction of the closest view, starting at the given one, whose context flyout can show.
+		/// </summary>
+		internal static MauiUIContextMenuInteraction? FindClosest(UIView view)
+		{
+			for (var current = view; current is not null; current = current.Superview)
+			{
+				foreach (var interaction in current.Interactions)
+				{
+					if (interaction is MauiUIContextMenuInteraction menuInteraction && menuInteraction.CanShow())
+						return menuInteraction;
+				}
+
+				if (current is UIWindow)
+					break;
+			}
+
+			return null;
+		}
+
+		bool CanShow()
+		{
+			var virtualView = Handler?.VirtualView;
+			if ((virtualView as IContextFlyoutElement)?.ContextFlyout is not IMenuFlyout menuFlyout || Handler?.MauiContext is null)
+				return false;
+
+			if (!OperatingSystem.IsMacCatalyst() && virtualView is IView view && (!view.IsEnabled || view.InputTransparent))
+				return false;
+
+			for (int i = 0; i < menuFlyout.Count; i++)
+			{
+				if (menuFlyout[i] is not IMenuFlyoutSeparator)
+					return true;
+			}
+
+			return false;
+		}
 
 		internal UIMenu? CreateMenu()
 		{

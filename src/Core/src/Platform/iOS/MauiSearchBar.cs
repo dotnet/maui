@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 		// Delegate that detects selection/cursor changes on the internal UITextField.
 		// UITextFieldDelegate.DidChangeSelection (iOS 13+) fires for tap-to-reposition,
 		// long-press selection, keyboard arrow navigation, and text input.
-		class SearchEditorDelegate : UITextFieldDelegate
+		internal sealed class SearchEditorDelegate : UITextFieldDelegate
 		{
 			readonly WeakReference<MauiSearchBar> _owner;
 
@@ -117,6 +117,13 @@ namespace Microsoft.Maui.Platform
 					owner.SelectionChanged?.Invoke(owner, EventArgs.Empty);
 				}
 			}
+
+			// Adds the items of the context flyout of the search bar, or of one of its parents, to the edit menu.
+			// Returning null keeps the system's menu.
+			[System.Runtime.Versioning.SupportedOSPlatform("ios16.0")]
+			[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst16.0")]
+			public override UIMenu? GetEditMenu(UITextField textField, NSRange range, UIMenuElement[] suggestedActions) =>
+				ContextFlyoutEditMenu.AddItems(textField, null, suggestedActions);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

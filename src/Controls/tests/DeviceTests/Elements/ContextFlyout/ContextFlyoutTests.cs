@@ -29,6 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Editor, EditorHandler>();
+					handlers.AddHandler<SearchBar, SearchBarHandler>();
+					handlers.AddHandler<Picker, PickerHandler>();
+					handlers.AddHandler<DatePicker, DatePickerHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 

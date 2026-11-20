@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Platform
 
 			// The view (or one of its children) may already have focus
 			ContextFlyoutKeyTracker.Refresh(view);
+			ContextFlyoutTextMenus.Prepare(view);
 		}
 
 		internal static void Detach(AView view)
@@ -193,8 +194,9 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static ContextFlyoutManager? FindForFocusedView(AView? focused)
 		{
-			// Text inputs use the confirm keys themselves (new line, IME action)
-			if (!HasAny || focused is null || focused is EditText || !focused.Enabled || !(ReceivesTouches(focused) || Get(focused) is not null))
+			// Text inputs use the confirm keys themselves (new line, IME action); pickers and the like don't
+			if (!HasAny || focused is null || focused is EditText { KeyListener: not null } || ContextFlyoutTextMenus.IsTextView(focused) ||
+				!focused.Enabled || !(ReceivesTouches(focused) || Get(focused) is not null))
 				return null;
 
 			if (HasLongPressHandler(focused, Get(focused)))
@@ -260,7 +262,7 @@ namespace Microsoft.Maui.Platform
 			if (!_view.TryGetTarget(out var view) || !view.IsAlive())
 				return true;
 
-			var target = view is ViewGroup group ? FindTouchTargetAt(root, group, x, y) ?? view : view;
+			var target = FindTouchTarget(view, root, x, y);
 
 			// Reordering a collection the press is in, whether the menu is on an item, the collection or around it
 			for (var current = target; current is not null; current = current.Parent as AView)
@@ -273,12 +275,29 @@ namespace Microsoft.Maui.Platform
 			if (target != view && !target.Enabled)
 				return true;
 
+			// Text keeps selecting text on long press; its toolbars show the flyout items instead
+			if (ContextFlyoutTextMenus.IsText(target))
+			{
+				ContextFlyoutTextMenus.Prepare(target);
+				return true;
+			}
+
 			return HasLongPressHandler(target, Get(target));
 		}
 
-		// Used for the accessibility long-click action and the long-click fallback, which act on the view itself
+		/// <summary>
+		/// The view that receives a touch at the given point in the view with this flyout.
+		/// </summary>
+		internal AView? FindTouchTarget(AView root, float x, float y) =>
+			_view.TryGetTarget(out var view) && view.IsAlive() ? FindTouchTarget(view, root, x, y) : null;
+
+		static AView FindTouchTarget(AView view, AView root, float x, float y) =>
+			view is ViewGroup group ? FindTouchTargetAt(root, group, x, y) ?? view : view;
+
+		// Used for the accessibility long-click action and the long-click fallback, which act on the view itself.
+		// Text keeps its own long click (selecting text); its menus show the flyout items instead.
 		bool DefersLongPress() =>
-			!_view.TryGetTarget(out var view) || !view.IsAlive() || HasLongPressHandler(view, this);
+			!_view.TryGetTarget(out var view) || !view.IsAlive() || HasLongPressHandler(view, this) || ContextFlyoutTextMenus.IsText(view);
 
 		// The innermost view under the point that receives touches, like ViewGroup dispatches them
 		static AView? FindTouchTargetAt(AView root, ViewGroup group, float x, float y)
@@ -397,7 +416,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 
 			if (!_handler.TryGetTarget(out var handler) || handler.MauiContext is not IMauiContext mauiContext ||
-				!TryGetFlyout(handler, out var flyout))
+				!TryGetFlyout(handler, out _))
 				return false;
 
 			Dismiss();
@@ -408,10 +427,15 @@ namespace Microsoft.Maui.Platform
 			var leafItems = new Dictionary<int, IMenuElement>();
 			var subMenus = new List<ISubMenu>();
 			var iconLoads = new List<Task>();
-			int nextItemId = 1;
-			int nextGroupId = 1;
 
-			AddItems(popup.Menu, flyout);
+			// Like native context menus, the menus of the view's ancestors are added after its own
+			var flyouts = CollectFlyouts(view);
+			var writer = new MenuWriter(
+				(menuItem, element) => leafItems[menuItem.ItemId] = element,
+				(menuItem, source) => iconLoads.Add(LoadIconAsync(menuItem, source, version, context, mauiContext)),
+				subMenus);
+			writer.Write(popup.Menu, flyouts);
+			MenuCompat.SetGroupDividerEnabled(popup.Menu, true);
 
 			if (iconLoads.Count > 0)
 				popup.SetForceShowIcon(true);
@@ -436,11 +460,88 @@ namespace Microsoft.Maui.Platform
 				_ = ShowWhenIconsLoadedAsync(popup, version, iconLoads);
 
 			return true;
+		}
 
-			void AddItems(AMenu menu, IList<IMenuElement> items)
+		/// <summary>
+		/// The context flyouts that apply to a view, like the context menu Android builds for it: the flyout of the
+		/// view itself, followed by the ones of its ancestors. Flyouts that can't show (disabled or input transparent
+		/// views, no items) are left out, and a flyout shared by several of them is added once.
+		/// </summary>
+		internal static List<IMenuFlyout> CollectFlyouts(AView? view) =>
+			CollectFlyouts(view, out _);
+
+		internal static List<IMenuFlyout> CollectFlyouts(AView? view, out IMauiContext? mauiContext)
+		{
+			var flyouts = new List<IMenuFlyout>();
+			mauiContext = null;
+
+			for (var current = view; current is not null; current = current.Parent as AView)
 			{
-				var groupId = nextGroupId++;
+				if (Get(current) is not ContextFlyoutManager manager || !manager._handler.TryGetTarget(out var handler) ||
+					!TryGetFlyout(handler, out var flyout) || flyouts.Contains(flyout))
+					continue;
 
+				mauiContext ??= handler.MauiContext;
+				flyouts.Add(flyout);
+			}
+
+			return flyouts;
+		}
+
+		/// <summary>
+		/// Adds the items of context flyouts to a native menu. Separators start a new group, which Android draws a
+		/// divider for; the menus of ancestors continue the list, like native context menus.
+		/// </summary>
+		internal sealed class MenuWriter
+		{
+			readonly Action<AMenuItem, IMenuElement> _onItem;
+			readonly Action<AMenuItem, IImageSource>? _onIcon;
+			readonly List<ISubMenu>? _subMenus;
+
+			public MenuWriter(Action<AMenuItem, IMenuElement> onItem, Action<AMenuItem, IImageSource>? onIcon = null, List<ISubMenu>? subMenus = null)
+			{
+				_onItem = onItem;
+				_onIcon = onIcon;
+				_subMenus = subMenus;
+			}
+
+			/// <summary>The first group id; menus that already have groups (like text menus) start after theirs.</summary>
+			public int FirstGroupId { get; init; } = 1;
+
+			/// <summary>The first item id; menus that already have items use ids that don't collide with theirs.</summary>
+			public int FirstItemId
+			{
+				get => _nextItemId;
+				init => _nextItemId = value;
+			}
+
+			/// <summary>The order of the items, which Android sorts menus by.</summary>
+			public int Order { get; init; } = AMenu.None;
+
+			/// <summary>The group ids that were used.</summary>
+			public List<int> GroupIds { get; } = new();
+
+			int _nextItemId = 1;
+
+			public void Write(AMenu menu, IReadOnlyList<IMenuFlyout> flyouts)
+			{
+				if (flyouts.Count == 0)
+					return;
+
+				var groupId = NewGroup();
+				foreach (var flyout in flyouts)
+					groupId = Write(menu, flyout, groupId);
+			}
+
+			int NewGroup()
+			{
+				var groupId = FirstGroupId + GroupIds.Count;
+				GroupIds.Add(groupId);
+				return groupId;
+			}
+
+			int Write(AMenu menu, IList<IMenuElement> items, int groupId)
+			{
 				for (int i = 0; i < items.Count; i++)
 				{
 					var item = items[i];
@@ -448,28 +549,30 @@ namespace Microsoft.Maui.Platform
 					// Android draws a divider where the group changes
 					if (item is IMenuFlyoutSeparator)
 					{
-						groupId = nextGroupId++;
+						groupId = NewGroup();
 						continue;
 					}
 
-					var itemId = nextItemId++;
+					var itemId = _nextItemId++;
 					var title = item.Text ?? string.Empty;
 					AMenuItem? menuItem;
 
 					if (item is IMenuFlyoutSubItem subItem)
 					{
-						var subMenu = menu.AddSubMenu(groupId, itemId, AMenu.None, title);
+						var subMenu = menu.AddSubMenu(groupId, itemId, Order, title);
 						if (subMenu is null)
 							continue;
 
-						subMenus.Add(subMenu);
-						AddItems(subMenu, subItem);
+						_subMenus?.Add(subMenu);
+						Write(subMenu, subItem, NewGroup());
+						MenuCompat.SetGroupDividerEnabled(subMenu, true);
 						menuItem = subMenu.Item;
 					}
 					else
 					{
-						menuItem = menu.Add(groupId, itemId, AMenu.None, title);
-						leafItems[itemId] = item;
+						menuItem = menu.Add(groupId, itemId, Order, title);
+						if (menuItem is not null)
+							_onItem(menuItem, item);
 					}
 
 					if (menuItem is null)
@@ -478,10 +581,10 @@ namespace Microsoft.Maui.Platform
 					menuItem.SetEnabled(item.IsEnabled);
 
 					if (item.Source is IImageSource { IsEmpty: false } source)
-						iconLoads.Add(LoadIconAsync(menuItem, source, version, context, mauiContext));
+						_onIcon?.Invoke(menuItem, source);
 				}
 
-				MenuCompat.SetGroupDividerEnabled(menu, true);
+				return groupId;
 			}
 		}
 
@@ -596,7 +699,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Menu icons are 24dp; larger images (e.g. a full-size png) are scaled down to fit
-		static Drawable ToMenuIcon(Drawable drawable, Context context)
+		internal static Drawable ToMenuIcon(Drawable drawable, Context context)
 		{
 			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
 				return drawable;

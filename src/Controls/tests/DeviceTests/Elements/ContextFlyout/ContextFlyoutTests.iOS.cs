@@ -168,8 +168,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// UIKit gives the context menu priority over long-press gestures and text selection, like in native apps
-		public static TheoryData<string> ExistingLongPressBehaviors => new() { "None", "LongPressGesture", "Entry" };
+		// UIKit gives the context menu priority over long-press gestures, like in native apps
+		public static TheoryData<string> ExistingLongPressBehaviors => new() { "None", "LongPressGesture" };
 
 		[Theory(DisplayName = "The context menu opens like in native apps, also with other long-press behavior")]
 		[MemberData(nameof(ExistingLongPressBehaviors))]
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				View target = behavior == "Entry" ? new Entry { Text = "Text" } : new Label { Text = "Target" };
+				View target = new Label { Text = "Target" };
 				if (behavior == "LongPressGesture")
 					target.GestureRecognizers.Add(new LongPressGestureRecognizer());
 
@@ -253,6 +253,174 @@ namespace Microsoft.Maui.DeviceTests
 
 				reordering.RemoveFromSuperview();
 			});
+		}
+
+		// The text input itself, or a text input inside a layout with the flyout
+		public static TheoryData<string, bool> TextInputs => new()
+		{
+			{ "Entry", false },
+			{ "Editor", false },
+			{ "SearchBar", false },
+			{ "Entry", true },
+			{ "Editor", true },
+		};
+
+		[Theory(DisplayName = "Text inputs keep selecting text on long press; the flyout items join their edit menu")]
+		[MemberData(nameof(TextInputs))]
+		public async Task TextInputsAddItemsToEditMenu(string kind, bool flyoutOnParent)
+		{
+			SetupBuilder();
+
+			View input = kind switch
+			{
+				"Editor" => new Editor { Text = "Text", HeightRequest = 80 },
+				"SearchBar" => new SearchBar { Text = "Text", WidthRequest = 300 },
+				_ => new Entry { Text = "Text" },
+			};
+
+			var label = new Label { Text = "Label" };
+			var layout = new VerticalStackLayout { WidthRequest = 300, Children = { input, label } };
+			var withFlyout = flyoutOnParent ? (View)layout : input;
+			FlyoutBase.SetContextFlyout(withFlyout, CreateFlyout(out _));
+
+			await AttachAndRun(layout, _ =>
+			{
+				var interactionView = (UIView)withFlyout.Handler!.PlatformView!;
+				var interaction = GetInteraction(interactionView)!;
+				var inputView = (UIView)input.Handler!.PlatformView!;
+				UIView textView = inputView is MauiSearchBar searchBar ? searchBar.GetSearchTextField()! : inputView;
+				interactionView.LayoutIfNeeded();
+				inputView.LayoutIfNeeded();
+				Assert.True(textView.Bounds.Width > 0 && textView.Bounds.Height > 0);
+
+				// A long press on the text keeps selecting text
+				var onText = textView.ConvertPointToView(new CoreGraphics.CGPoint(textView.Bounds.Width / 2, textView.Bounds.Height / 2), interactionView);
+				var configuration = interaction.GetConfigurationForMenu(onText);
+
+				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				{
+					// The edit menu can only be extended from iOS 16; before that the context menu is the only way to the items
+					Assert.NotNull(configuration);
+					return;
+				}
+
+				Assert.Null(configuration);
+
+				// Other views keep opening the context menu
+				if (flyoutOnParent)
+				{
+					var labelView = (UIView)label.Handler!.PlatformView!;
+					var onLabel = labelView.ConvertPointToView(new CoreGraphics.CGPoint(labelView.Bounds.Width / 2, labelView.Bounds.Height / 2), interactionView);
+					Assert.NotNull(interaction.GetConfigurationForMenu(onLabel));
+				}
+
+				// The edit menu keeps the system's actions and adds the flyout items after them
+				var suggested = new UIMenuElement[] { UIAction.Create("System", null, null, _ => { }) };
+				var menu = GetEditMenu(textView, suggested);
+				Assert.NotNull(menu);
+				Assert.Equal("System", menu!.Children[0].Title);
+				var items = Assert.IsType<UIMenu>(menu.Children[^1]);
+				Assert.True(items.Options.HasFlag(UIMenuOptions.DisplayInline));
+				Assert.Equal(new[] { "Copy", "Disabled", "Edit" }, GetAllTitles(items).Where(t => t is "Copy" or "Disabled" or "Edit").ToArray());
+
+				// Without a flyout the edit menu is the system's
+				FlyoutBase.SetContextFlyout(withFlyout, null);
+				var systemMenu = GetEditMenu(textView, suggested);
+				Assert.True(systemMenu is null || systemMenu.Children.All(e => e.Title == "System"));
+			});
+		}
+
+		[Fact(DisplayName = "Actions of an edit menu keep working after the menu was requested again")]
+		public async Task EarlierEditMenuActionsKeepWorking()
+		{
+			SetupBuilder();
+
+			var clicks = 0;
+			var flyout = CreateFlyout(out _);
+			((MenuFlyoutItem)flyout[0]).Clicked += (_, _) => clicks++;
+			var entry = new Entry { Text = "Text" };
+			FlyoutBase.SetContextFlyout(entry, flyout);
+
+			await AttachAndRun(entry, handler =>
+			{
+				if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+					return;
+
+				var textView = (UIView)handler.PlatformView!;
+				var suggested = Array.Empty<UIMenuElement>();
+
+				// UIKit asks for the edit menu again (e.g. when the selection changes) while it can still show the first one
+				var first = GetEditMenu(textView, suggested)!;
+				GetEditMenu(textView, suggested);
+
+				var copy = FindAction(first, "Copy");
+				using var sender = new UIButton();
+				sender.SendAction(copy);
+				Assert.Equal(1, clicks);
+
+				// An item disabled since the menu was built doesn't run
+				((MenuFlyoutItem)flyout[0]).IsEnabled = false;
+				sender.SendAction(copy);
+				Assert.Equal(1, clicks);
+			});
+		}
+
+		static UIAction FindAction(UIMenu menu, string title)
+		{
+			foreach (var element in menu.Children)
+			{
+				if (element is UIAction action && action.Title == title)
+					return action;
+
+				if (element is UIMenu child && FindActionOrNull(child, title) is UIAction found)
+					return found;
+			}
+
+			throw new InvalidOperationException($"No action {title}");
+
+			static UIAction? FindActionOrNull(UIMenu menu, string title)
+			{
+				try
+				{
+					return FindAction(menu, title);
+				}
+				catch (InvalidOperationException)
+				{
+					return null;
+				}
+			}
+		}
+
+		[Fact(DisplayName = "Read-only text that can't be selected keeps opening the context menu")]
+		public async Task NonSelectableEditorOpensContextMenu()
+		{
+			SetupBuilder();
+
+			var editor = new Editor { Text = "Text", IsReadOnly = true, HeightRequest = 80 };
+			FlyoutBase.SetContextFlyout(editor, CreateFlyout(out _));
+
+			await AttachAndRun(editor, handler =>
+			{
+				var textView = (MauiTextView)handler.PlatformView!;
+				textView.Selectable = false;
+				var interaction = GetInteraction(textView)!;
+
+				Assert.NotNull(interaction.GetConfigurationForMenu(new CoreGraphics.CGPoint(textView.Bounds.Width / 2, textView.Bounds.Height / 2)));
+			});
+		}
+
+		static UIMenu? GetEditMenu(UIView textView, UIMenuElement[] suggested)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				return null;
+
+			return textView switch
+			{
+				MauiTextField textField => textField.GetEditMenu(textField.SelectedTextRange ?? textField.GetTextRange(textField.BeginningOfDocument, textField.EndOfDocument)!, suggested),
+				MauiTextView editor => editor.GetEditMenu(editor.SelectedTextRange ?? editor.GetTextRange(editor.BeginningOfDocument, editor.EndOfDocument)!, suggested),
+				UITextField searchField => searchField.Delegate.GetEditMenu(searchField, new Foundation.NSRange(0, 0), suggested),
+				_ => null,
+			};
 		}
 
 		static MauiUIContextMenuInteraction? GetInteraction(UIView view) =>

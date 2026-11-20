@@ -76,6 +76,51 @@ public class Issue33402 : _IssuesUITest
 	}
 #endif
 
+#if ANDROID || IOS
+	// Text keeps its own selection, like in native apps; the flyout items join the text's menu
+	[Test, Order(6)]
+	[Category(UITestCategories.ContextActions)]
+	public void LongPressOnEntryKeepsTextSelectionAndShowsFlyoutItems()
+	{
+		App.WaitForElement("FlyoutEntry");
+
+#if ANDROID
+		// The text toolbar is a window of its own, which the page source only includes with this setting
+		var driver = (OpenQA.Selenium.Appium.Android.AndroidDriver)((AppiumApp)App).Driver;
+		driver.SetSetting("enableMultiWindows", true);
+		try
+		{
+#endif
+			// A long press selects a word on Android; on iOS it moves the cursor and a double tap selects a word
+#if ANDROID
+			App.LongPress("FlyoutEntry");
+#else
+			App.DoubleTap("FlyoutEntry");
+#endif
+
+			// The system's text menu can put extra items on another page or in an overflow menu
+#if ANDROID
+			const string more = "//*[@content-desc='More options']";
+			App.WaitForElement(AppiumQuery.ByXPath($"//*[@text='Entry item'] | {more}"));
+#else
+			const string more = "//*[@name='Next Page' or @name='Forward']";
+			App.WaitForElement(AppiumQuery.ByXPath($"//*[@name='Entry item' or @label='Entry item'] | {more}"));
+#endif
+			if (App.FindElements(MenuItem("Entry item")).Count == 0)
+				App.WaitForElement(AppiumQuery.ByXPath(more)).Tap();
+
+			TapMenuItem("Entry item");
+			Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("entry-item"));
+#if ANDROID
+		}
+		finally
+		{
+			driver.SetSetting("enableMultiWindows", false);
+		}
+#endif
+	}
+#endif
+
 	void OpenContextFlyout(string automationId)
 	{
 		App.WaitForElement(automationId);

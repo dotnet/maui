@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
@@ -328,7 +330,11 @@ namespace Microsoft.Maui.DeviceTests
 			{ "DragGesture", false },
 			{ "ChildLongPressGesture", false },
 			{ "ParentLongPressGesture", true },
-			{ "Entry", true },
+			{ "Entry", false },
+			{ "EntryInParent", false },
+			{ "ReadOnlyEntry", true },
+			{ "DatePicker", true },
+			{ "Picker", true },
 			{ "ToolTip", true },
 			{ "ReorderingParent", false },
 			{ "ReorderingWithMenu", false },
@@ -343,11 +349,22 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task LongPressFollowsNativePriority(string behavior, bool menuOpensOnLongPress)
 		{
 			SetupBuilder();
-			var pressed = behavior == "Entry" ? (Microsoft.Maui.Controls.View)new Entry { Text = "Text" } : new Label { Text = "Target" };
+			// Text keeps its own long press (selecting text) and shows the flyout items in its toolbars instead
+			var isText = behavior is "Entry" or "EntryInParent";
+			Microsoft.Maui.Controls.View pressed = behavior switch
+			{
+				"Entry" or "EntryInParent" => new Entry { Text = "Text" },
+				// Read-only text can't be selected, so it opens the context menu like other views
+				"ReadOnlyEntry" => new Entry { Text = "Text", IsReadOnly = true },
+				"Picker" => new Picker { Title = "Picker" },
+				// Text-based, but it doesn't select text
+				"DatePicker" => new DatePicker(),
+				_ => new Label { Text = "Target" },
+			};
 			pressed.WidthRequest = 200;
 			pressed.HeightRequest = 100;
 			var root = new Grid { Children = { pressed } };
-			var withMenu = behavior is "ChildLongPressGesture" or "ReorderingWithMenu" or "ElevatedLongPressGesture" or "DisabledChildWithMenu" or "DisabledChildLongPressGesture"
+			var withMenu = behavior is "ChildLongPressGesture" or "ReorderingWithMenu" or "ElevatedLongPressGesture" or "DisabledChildWithMenu" or "DisabledChildLongPressGesture" or "EntryInParent"
 				? (Microsoft.Maui.Controls.View)root
 				: pressed;
 			var longPresses = 0;
@@ -416,6 +433,13 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
 				Assert.Equal(menuOpensOnLongPress, manager.Popup is not null);
 
+				if (isText)
+				{
+					var editText = Assert.IsAssignableFrom<global::Android.Widget.EditText>(view);
+					Assert.NotNull(editText.CustomSelectionActionModeCallback);
+					Assert.NotNull(editText.CustomInsertionActionModeCallback);
+				}
+
 				// Only one of them happens: the gesture doesn't fire after the menu opened, even on a parent
 				if (behavior.EndsWith("LongPressGesture", StringComparison.Ordinal))
 				{
@@ -427,19 +451,222 @@ namespace Microsoft.Maui.DeviceTests
 				Dispatch(window, downTime, MotionEventActions.Up, x, y);
 				manager.Dismiss();
 
-				// The accessibility long-click action acts on the view with the menu itself
-				var sameViewHandler = behavior is "LongPressGesture" or "DragGesture";
+				// The accessibility long-click action acts on the view with the menu itself; text keeps its own
+				var sameViewHandler = behavior is "LongPressGesture" or "DragGesture" or "Entry";
 				menuView.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null);
 				Assert.Equal(!sameViewHandler, manager.Popup is not null);
 				manager.Dismiss();
 
-				// A secondary click always opens the context menu
+				// A secondary click always opens a context menu; on text it's the text's own, with the flyout items
 				downTime = SystemClock.UptimeMillis();
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
-				Assert.NotNull(manager.Popup);
+				Assert.Equal(!isText, manager.Popup is not null);
+				manager.Dismiss();
+				view.Context!.GetActivity()!.CloseContextMenu();
+			}));
+		}
+
+		[Fact(DisplayName = "The menus of ancestors are added after the view's own, like native context menus")]
+		public async Task AncestorMenusAreMerged()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
+			var parentClicks = 0;
+			var parentItem = new MenuFlyoutItem { Text = "Parent" };
+			parentItem.Clicked += (_, _) => parentClicks++;
+			var root = new Grid { Children = { label } };
+			var sharedFlyout = CreateFlyout(out _);
+			FlyoutBase.SetContextFlyout(label, sharedFlyout);
+			FlyoutBase.SetContextFlyout(root, new MenuFlyout { parentItem });
+
+			await WithTouchTrackerAsync(() => AttachAndRun(root, handler =>
+			{
+				var manager = ContextFlyoutManager.Get((AView)label.Handler!.PlatformView!)!;
+				Assert.True(manager.Show());
+
+				var menu = manager.Popup!.Menu;
+				Assert.Equal(new[] { "Copy", "Disabled", "Edit", "Parent" }, GetTitles(menu));
+
+				// Natively the items of the menus follow each other, without a divider in between
+				Assert.Equal(menu.GetItem(2)!.GroupId, menu.GetItem(3)!.GroupId);
+
+				Assert.True(menu.PerformIdentifierAction(menu.GetItem(3)!.ItemId, 0));
+				Assert.Equal(1, parentClicks);
+				manager.Dismiss();
+
+				// A flyout shared by the view and an ancestor is added once
+				FlyoutBase.SetContextFlyout(root, sharedFlyout);
+				Assert.True(manager.Show());
+				Assert.Equal(new[] { "Copy", "Disabled", "Edit" }, GetTitles(manager.Popup!.Menu));
 				manager.Dismiss();
 			}));
+		}
+
+		[Fact(DisplayName = "Text toolbars show the flyout items; the app's own toolbar callbacks keep working")]
+		public async Task TextToolbarsShowFlyoutItems()
+		{
+			SetupBuilder();
+			var entry = new Entry { Text = "Text", WidthRequest = 200, HeightRequest = 100 };
+			var copyClicks = 0;
+			var flyout = CreateFlyout(out _);
+			((MenuFlyoutItem)flyout[0]).Clicked += (_, _) => copyClicks++;
+			var root = new Grid { Children = { entry } };
+			FlyoutBase.SetContextFlyout(entry, flyout);
+			FlyoutBase.SetContextFlyout(root, new MenuFlyout { new MenuFlyoutItem { Text = "Parent" } });
+
+			await WithTouchTrackerAsync(() => AttachAndRun(root, handler =>
+			{
+				var editText = (global::Android.Widget.EditText)entry.Handler!.PlatformView!;
+				var appCallback = new ToolbarCallbackStub();
+				editText.CustomSelectionActionModeCallback = appCallback;
+				ContextFlyoutTextMenus.Prepare(editText);
+
+				var callback = editText.CustomSelectionActionModeCallback!;
+				Assert.NotSame(appCallback, callback);
+				Assert.NotNull(editText.CustomInsertionActionModeCallback);
+
+				var menu = new global::AndroidX.AppCompat.Widget.PopupMenu(editText.Context!, editText).Menu;
+				Assert.True(callback.OnCreateActionMode(null, menu));
+				Assert.Equal(new[] { "App", "Copy", "Disabled", "Edit", "Parent" }, GetTitles(menu));
+
+				// The flyouts are read again when the toolbar updates, without adding the items twice
+				Assert.True(callback.OnPrepareActionMode(null, menu));
+				Assert.Equal(new[] { "App", "Copy", "Disabled", "Edit", "Parent" }, GetTitles(menu));
+
+				Assert.True(callback.OnActionItemClicked(null, FindItem(menu, "Copy")));
+				Assert.Equal(1, copyClicks);
+
+				// Disabled items do nothing
+				Assert.True(callback.OnActionItemClicked(null, FindItem(menu, "Disabled")));
+				Assert.Equal(1, copyClicks);
+
+				// The app's own items still go to the app's callback
+				callback.OnActionItemClicked(null, FindItem(menu, "App"));
+				Assert.Equal(1, appCallback.Clicks);
+
+				callback.OnDestroyActionMode(null);
+				Assert.True(appCallback.Destroyed);
+
+				// An app that wraps the callback in its own after the flyout was added still gets the items once
+				editText.CustomSelectionActionModeCallback = new DelegatingCallback(callback);
+				ContextFlyoutTextMenus.Prepare(editText);
+				var outer = editText.CustomSelectionActionModeCallback!;
+				Assert.IsNotType<DelegatingCallback>(outer);
+				menu.Clear();
+				Assert.True(outer.OnCreateActionMode(null, menu));
+				Assert.Equal(new[] { "App", "Copy", "Disabled", "Edit", "Parent" }, GetTitles(menu));
+				callback = outer;
+
+				// Without flyouts nothing is added
+				FlyoutBase.SetContextFlyout(entry, null);
+				FlyoutBase.SetContextFlyout(root, null);
+				menu.Clear();
+				Assert.True(callback.OnCreateActionMode(null, menu));
+				Assert.Equal(new[] { "App" }, GetTitles(menu));
+			}));
+		}
+
+		[Fact(DisplayName = "A secondary click on text opens its native context menu with the flyout items")]
+		public async Task SecondaryClickOnTextShowsNativeTextMenu()
+		{
+			SetupBuilder();
+			var entry = new Entry { Text = "Text", WidthRequest = 200, HeightRequest = 100 };
+			var copyClicks = 0;
+			var flyout = CreateFlyout(out _);
+			((MenuFlyoutItem)flyout[0]).Clicked += (_, _) => copyClicks++;
+			var root = new Grid { Children = { entry } };
+			FlyoutBase.SetContextFlyout(entry, flyout);
+			FlyoutBase.SetContextFlyout(root, new MenuFlyout { new MenuFlyoutItem { Text = "Parent" } });
+
+			await WithTouchTrackerAsync(() => AttachAndRun(root, handler =>
+			{
+				var editText = (global::Android.Widget.EditText)entry.Handler!.PlatformView!;
+				var window = editText.Context!.GetActivity()!.Window!;
+				var decor = window.DecorView;
+				var decorWasLongClickable = decor.LongClickable;
+
+				// An app's own native context menu listener keeps working next to the flyout
+				IContextMenu? created = null;
+				editText.ContextMenuCreated += (_, e) => created = e.Menu;
+
+				var (x, y) = GetCenterInWindow(editText);
+				var downTime = SystemClock.UptimeMillis();
+				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
+				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
+
+				Assert.NotNull(created);
+				var titles = GetTitles(created!);
+
+				// Like the items apps add to native context menus, the flyout items come before the text's own actions
+				Assert.Equal(new[] { "Copy", "Disabled", "Edit", "Parent" }, titles.Take(4));
+				Assert.True(titles.Length > 4, "The text's own actions follow the flyout items");
+
+				Assert.True(created!.PerformIdentifierAction(FindItem(created, "Copy").ItemId, 0));
+				Assert.Equal(1, copyClicks);
+
+				// The listener that added the items is only there while the menu is built
+				Assert.Equal(decorWasLongClickable, decor.LongClickable);
+				editText.Context!.GetActivity()!.CloseContextMenu();
+			}));
+		}
+
+		static string[] GetTitles(IMenu menu)
+		{
+			var titles = new List<string>();
+			for (int i = 0; i < menu.Size(); i++)
+				titles.Add(menu.GetItem(i)!.TitleFormatted?.ToString() ?? string.Empty);
+
+			return titles.ToArray();
+		}
+
+		static IMenuItem FindItem(IMenu menu, string title)
+		{
+			for (int i = 0; i < menu.Size(); i++)
+			{
+				if (menu.GetItem(i)!.TitleFormatted?.ToString() == title)
+					return menu.GetItem(i)!;
+			}
+
+			throw new InvalidOperationException($"No menu item {title}");
+		}
+
+		sealed class DelegatingCallback : Java.Lang.Object, ActionMode.ICallback
+		{
+			readonly ActionMode.ICallback _inner;
+
+			public DelegatingCallback(ActionMode.ICallback inner) => _inner = inner;
+
+			public bool OnCreateActionMode(ActionMode? mode, IMenu? menu) => _inner.OnCreateActionMode(mode, menu);
+
+			public bool OnPrepareActionMode(ActionMode? mode, IMenu? menu) => _inner.OnPrepareActionMode(mode, menu);
+
+			public bool OnActionItemClicked(ActionMode? mode, IMenuItem? item) => _inner.OnActionItemClicked(mode, item);
+
+			public void OnDestroyActionMode(ActionMode? mode) => _inner.OnDestroyActionMode(mode);
+		}
+
+		sealed class ToolbarCallbackStub : Java.Lang.Object, ActionMode.ICallback
+		{
+			public int Clicks { get; private set; }
+
+			public bool Destroyed { get; private set; }
+
+			public bool OnCreateActionMode(ActionMode? mode, IMenu? menu)
+			{
+				menu?.Add(0, 1, 0, "App");
+				return true;
+			}
+
+			public bool OnPrepareActionMode(ActionMode? mode, IMenu? menu) => false;
+
+			public bool OnActionItemClicked(ActionMode? mode, IMenuItem? item)
+			{
+				Clicks++;
+				return true;
+			}
+
+			public void OnDestroyActionMode(ActionMode? mode) => Destroyed = true;
 		}
 
 		[Theory(DisplayName = "Holding a confirm key on a focused control opens its context menu at its center; a short press clicks")]
@@ -475,39 +702,54 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(view.RequestFocus());
 
 				// A short press clicks and doesn't open the menu
-				SendKey(view, KeyEventActions.Down);
-				SendKey(view, KeyEventActions.Up);
+				var downTime = SendKey(view, KeyEventActions.Down);
+				SendKey(view, KeyEventActions.Up, downTime);
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
 				Assert.Equal(1, clicks);
 				Assert.Null(manager.Popup);
 
-				// Modifiers (e.g. Shift+Enter) don't open the menu
-				SendKey(view, KeyEventActions.Down, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
-				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.Null(manager.Popup);
-				SendKey(view, KeyEventActions.Up, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
+				// From Android 13, keys with modifiers (e.g. Shift+Enter) don't long click views, so they don't open the menu
+				if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				{
+					downTime = SendKey(view, KeyEventActions.Down, meta: MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
+					await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+					Assert.Null(manager.Popup);
+					SendKey(view, KeyEventActions.Up, downTime, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
+				}
 
 				// Holding opens the menu at the center of the view
-				SendKey(view, KeyEventActions.Down);
+				downTime = SendKey(view, KeyEventActions.Down);
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
 				Assert.NotNull(manager.Popup);
 				var (x, y) = GetCenterInWindow(view);
 				AssertAnchoredAt(manager, x, y);
 
 				// Releasing the key after the menu opened doesn't click, like a native long click
-				SendKey(view, KeyEventActions.Up);
+				SendKey(view, KeyEventActions.Up, downTime);
 				Assert.Equal(1, clicks);
 				Assert.False(view.Pressed);
-
 				manager.Dismiss();
+
+				// When the release goes to the open menu instead, later presses (e.g. on a tap gesture elsewhere) still count
+				downTime = SendKey(view, KeyEventActions.Down);
+				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+				Assert.NotNull(manager.Popup);
+				manager.Dismiss();
+				var now = SystemClock.UptimeMillis();
+				using (var release = new KeyEvent(downTime, now, KeyEventActions.Up, Keycode.Enter, 0))
+					Assert.True(ContextFlyoutKeyTracker.IsConsumedKeyUp(release));
+				using (var laterRelease = new KeyEvent(now, now, KeyEventActions.Up, Keycode.Enter, 0))
+					Assert.False(ContextFlyoutKeyTracker.IsConsumedKeyUp(laterRelease));
+
 				view.FocusableInTouchMode = false;
 			}));
 
-			static void SendKey(AView view, KeyEventActions action, MetaKeyStates meta = 0)
+			static long SendKey(AView view, KeyEventActions action, long? downTime = null, MetaKeyStates meta = 0)
 			{
 				var now = SystemClock.UptimeMillis();
-				using var e = new KeyEvent(now, now, action, Keycode.Enter, 0, meta);
+				using var e = new KeyEvent(downTime ?? now, now, action, Keycode.Enter, 0, meta);
 				view.DispatchKeyEvent(e);
+				return downTime ?? now;
 			}
 		}
 
