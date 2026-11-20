@@ -45,9 +45,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	CollectionViewSource? _collectionViewSource;
 	IList? _itemsSource;
-
-	/// <summary>The list shown by the platform view: item contexts when there is an item template, otherwise the items.</summary>
-	internal IList? PlatformItemsSource => _itemsSource;
 	ItemFactory? _itemFactory;
 
 	FrameworkElement? _emptyView;

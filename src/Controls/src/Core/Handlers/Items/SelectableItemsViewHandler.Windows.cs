@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var item = args.ClickedItem is ItemTemplateContext itemPair ? itemPair.Item : args.ClickedItem;
-			GetItemPosition(listViewBase, args.ClickedItem, out var group, out var indexInGroup);
-			var tap = itemsView.CreateItemTappedEventArgs(item, group, -1, indexInGroup);
+			GetItemPosition(listViewBase, args.ClickedItem, out var group, out var groupIndex, out var indexInGroup);
+			var tap = itemsView.CreateItemTappedEventArgs(item, group, groupIndex, indexInGroup);
 
 			// ItemClick is raised before the platform selection changes; report the tap after the selection is updated
 			if (!listViewBase.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => { if (itemsView.Handler is not null) itemsView.SendItemTapped(tap); }))
@@ -104,44 +104,67 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		// Finds the clicked row rather than the first equal item, so repeated items report their own position
-		void GetItemPosition(ListViewBase listViewBase, object clickedItem, out object group, out int indexInGroup)
+		void GetItemPosition(ListViewBase listViewBase, object clickedItem, out object group, out int groupIndex, out int indexInGroup)
 		{
 			group = null;
+			groupIndex = -1;
 			indexInGroup = -1;
 
-			var source = CollectionViewSource?.Source as System.Collections.IEnumerable;
+			// The platform's items are materialized once, so item contexts can be matched by reference
+			var row = clickedItem is ItemTemplateContext
+				? IndexOfReference(listViewBase.Items, clickedItem)
+				: GetFocusedRow(listViewBase, clickedItem);
 
-			if (CollectionViewSource?.IsSourceGrouped == true)
+			if (row < 0)
 			{
-				// Each group context corresponds to the entry of the items source at the same position
-				var groups = (ItemsView?.ItemsSource as System.Collections.IEnumerable)?.GetEnumerator();
+				return;
+			}
 
-				foreach (var entry in source ?? Array.Empty<object>())
+			if (CollectionViewSource?.IsSourceGrouped != true)
+			{
+				indexInGroup = row;
+				return;
+			}
+
+			// The rows of a grouped source are the items of each group in turn, followed by the group's footer if any.
+			// Each group context corresponds to the entry of the items source at the same position.
+			var groups = (ItemsView?.ItemsSource as System.Collections.IEnumerable)?.GetEnumerator();
+
+			try
+			{
+				var position = 0;
+				var currentGroup = 0;
+
+				foreach (var entry in CollectionViewSource.Source as System.Collections.IEnumerable ?? Array.Empty<object>())
 				{
 					var userGroup = groups is not null && groups.MoveNext() ? groups.Current : null;
+					var count = entry is GroupTemplateContext { Items: System.Collections.IEnumerable groupItems } ? Count(groupItems) : 0;
 
-					if (entry is GroupTemplateContext { Items: System.Collections.IEnumerable groupItems })
+					if (row < position + count)
 					{
-						var index = IndexOfReference(groupItems, clickedItem);
-						if (index >= 0)
-						{
-							group = userGroup;
-							indexInGroup = index;
-							return;
-						}
+						group = userGroup;
+						groupIndex = currentGroup;
+						indexInGroup = row - position;
+						return;
+					}
+
+					position += count;
+
+					if (userGroup is System.Collections.IEnumerable and not string)
+					{
+						currentGroup++;
 					}
 				}
-
-				return;
 			}
-
-			if (clickedItem is ItemTemplateContext && source is not null)
+			finally
 			{
-				indexInGroup = IndexOfReference(source, clickedItem);
-				return;
+				(groups as IDisposable)?.Dispose();
 			}
+		}
 
-			// Without an item template the items themselves are shown; the clicked row has focus
+		// Without an item template the items themselves are shown; the clicked row has focus
+		static int GetFocusedRow(ListViewBase listViewBase, object clickedItem)
+		{
 			if (listViewBase.XamlRoot is not null &&
 				Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(listViewBase.XamlRoot) is Microsoft.UI.Xaml.Controls.Primitives.SelectorItem container &&
 				ItemsControl.ItemsControlFromItemContainer(container) == listViewBase)
@@ -149,9 +172,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var index = listViewBase.IndexFromContainer(container);
 				if (index >= 0 && Equals(listViewBase.Items[index], clickedItem))
 				{
-					indexInGroup = index;
+					return index;
 				}
 			}
+
+			return -1;
+		}
+
+		static int Count(System.Collections.IEnumerable items)
+		{
+			if (items is System.Collections.ICollection collection)
+			{
+				return collection.Count;
+			}
+
+			var count = 0;
+
+			foreach (var _ in items)
+			{
+				count++;
+			}
+
+			return count;
 		}
 
 		static int IndexOfReference(System.Collections.IEnumerable items, object item)
