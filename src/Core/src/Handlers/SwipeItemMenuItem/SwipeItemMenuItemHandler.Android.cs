@@ -83,7 +83,17 @@ namespace Microsoft.Maui.Handlers
 
 			if (background.IsNullOrEmpty() && handler is SwipeItemMenuItemHandler platformHandler)
 			{
-				handler.PlatformView.Background = platformHandler._defaultBackground;
+				var platformView = handler.PlatformView;
+
+				// Restoring the default background can overwrite the padding that centers the text.
+				// Preserve the button's current padding.
+				int paddingLeft = platformView.PaddingLeft;
+				int paddingTop = platformView.PaddingTop;
+				int paddingRight = platformView.PaddingRight;
+				int paddingBottom = platformView.PaddingBottom;
+
+				platformView.Background = platformHandler._defaultBackground;
+				platformView.SetPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 			}
 			else
 			{
