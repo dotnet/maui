@@ -265,6 +265,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets a value that indicates whether the user can select the text of the <see cref="Microsoft.Maui.Controls.Label"/>, for example to copy it. The default value is <see langword="false"/>. This is a bindable property.</summary>
+		/// <remarks>
+		/// On Android, the native text view does not apply <see cref="Microsoft.Maui.LineBreakMode"/> truncation (an ellipsis) to selectable text.
+		/// </remarks>
 		public bool IsTextSelectable
 		{
 			get => (bool)GetValue(IsTextSelectableProperty);

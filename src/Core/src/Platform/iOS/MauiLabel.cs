@@ -81,6 +81,46 @@ namespace Microsoft.Maui.Platform
 		internal bool IsSelectionView(UIView view) =>
 			_selectionTextView is not null && view is not null && view.IsDescendantOfView(_selectionTextView);
 
+		// Only text glyphs start a selection. Touches on the empty part of the text view fall through to the label,
+		// so the label's own gesture recognizers behave the same as when it is not selectable.
+		public override UIView HitTest(CoreGraphics.CGPoint point, UIEvent uievent)
+		{
+			var hit = base.HitTest(point, uievent);
+
+			if (_selectionTextView is { } textView && hit is not null && hit.IsDescendantOfView(textView) &&
+				!IsPointOnText(textView, ConvertPointToView(point, textView)))
+			{
+				return this;
+			}
+
+			return hit;
+		}
+
+		static bool IsPointOnText(UITextView textView, CoreGraphics.CGPoint point)
+		{
+			if (textView.GetClosestPositionToPoint(point) is not { } position)
+			{
+				return false;
+			}
+
+			var start = textView.BeginningOfDocument;
+			var index = (int)textView.GetOffsetFromPosition(start, position);
+			var length = textView.AttributedText?.Length ?? 0;
+
+			for (var i = Math.Max(index - 1, 0); i <= index && i < length; i++)
+			{
+				var range = textView.GetTextRange(textView.GetPosition(start, i), textView.GetPosition(start, i + 1));
+
+				// Allow a little vertical slack so the gaps between lines still count as text.
+				if (range is not null && RectangleF.Inflate(textView.GetFirstRectForRange(range), 0, 4).Contains(point))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		static UITextView CreateSelectionTextView()
 		{
 			var textView = new UITextView(RectangleF.Empty)
@@ -115,8 +155,35 @@ namespace Microsoft.Maui.Platform
 			SyncSelectionTextView();
 		}
 
+		// A truncating paragraph style makes a text view cut every paragraph to one line, whereas UILabel only truncates
+		// the last visible line. The text container applies the truncation for multi-line labels instead.
+		NSAttributedString GetSelectionText()
+		{
+			var source = AttributedText ?? new NSAttributedString();
+
+			if (Lines == 1 || source.Length == 0)
+			{
+				return source;
+			}
+
+			var result = new NSMutableAttributedString(source);
+
+			source.EnumerateAttribute(UIStringAttributeKey.ParagraphStyle, new NSRange(0, source.Length), NSAttributedStringEnumeration.None, (NSObject value, NSRange range, ref bool stop) =>
+			{
+				if (value is NSParagraphStyle style &&
+					style.LineBreakMode is UILineBreakMode.TailTruncation or UILineBreakMode.HeadTruncation or UILineBreakMode.MiddleTruncation)
+				{
+					var wrapping = (NSMutableParagraphStyle)style.MutableCopy();
+					wrapping.LineBreakMode = UILineBreakMode.WordWrap;
+					result.AddAttribute(UIStringAttributeKey.ParagraphStyle, wrapping, range);
+				}
+			});
+
+			return result;
+		}
+
 		bool IsSelectionTextViewCurrent(UITextView textView) =>
-			textView.AttributedText.IsEqual(AttributedText) &&
+			textView.AttributedText.IsEqual(GetSelectionText()) &&
 			textView.TextContainer.MaximumNumberOfLines == (nuint)Math.Max((int)Lines, 0) &&
 			textView.TextContainer.LineBreakMode == LineBreakMode;
 
@@ -128,7 +195,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var rect = GetInsetRect(Bounds);
-			var attributedText = AttributedText ?? new NSAttributedString();
+			var attributedText = GetSelectionText();
 
 			// Assigning the text resets the selection, so only do it when the content changed.
 			if (!textView.AttributedText.IsEqual(attributedText))
