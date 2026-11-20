@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		static readonly ConditionalWeakTable<TextView, ColorStateList> defaultTextColors = new();
 		static readonly ConditionalWeakTable<TextView, InteractionState> s_preSelectableInteractionStates = new();
 
-		sealed record InteractionState(bool Focusable, bool FocusableInTouchMode, bool Clickable, bool LongClickable);
+		sealed record InteractionState(ViewFocusability? FocusableMode, bool Focusable, bool FocusableInTouchMode, bool Clickable, bool LongClickable);
 
 		public static void UpdateIsTextSelectable(this TextView textView, ILabel label)
 		{
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Platform
 			if (isSelectable)
 			{
 				s_preSelectableInteractionStates.AddOrUpdate(textView, new InteractionState(
+					OperatingSystem.IsAndroidVersionAtLeast(26) ? textView.GetFocusable() : null,
 					textView.Focusable,
 					textView.FocusableInTouchMode,
 					textView.Clickable,
@@ -51,7 +52,16 @@ namespace Microsoft.Maui.Platform
 			{
 				s_preSelectableInteractionStates.Remove(textView);
 
-				textView.Focusable = state.Focusable;
+				// Focusable can be "auto" (focusable only while clickable), which a plain bool can't represent.
+				if (state.FocusableMode is { } focusableMode && OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					textView.SetFocusable(focusableMode);
+				}
+				else
+				{
+					textView.Focusable = state.Focusable;
+				}
+
 				textView.FocusableInTouchMode = state.FocusableInTouchMode;
 				textView.Clickable = state.Clickable;
 				textView.LongClickable = state.LongClickable;

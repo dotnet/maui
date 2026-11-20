@@ -97,6 +97,25 @@ public class LabelIsTextSelectableScenarios : ContentPage
 		stack.Add(Add("Disabled", Sample, l => l.IsEnabled = false));
 		stack.Add(Add("TapLabel", "Tap this label", l => l.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _gestureLabel.Text = "Gesture: label tap") })));
 		stack.Add(Add("LongPressLabel", "Long press this label", l => l.GestureRecognizers.Add(new LongPressGestureRecognizer { Command = new Command(() => _gestureLabel.Text = "Gesture: long press") })));
+		var shadowTap = new Label
+		{
+			AutomationId = "ShadowTapLabel",
+			Text = "Shadow tap label",
+			FontSize = 12,
+			BackgroundColor = Colors.LightYellow,
+			IsTextSelectable = true,
+			Shadow = new Shadow { Radius = 2, Opacity = 0.3f, Offset = new Point(1, 1) },
+		};
+		shadowTap.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _gestureLabel.Text = "Gesture: shadow tap") });
+		stack.Add(shadowTap);
+
+		var lateTaps = 0;
+		var lateTap = new Label { AutomationId = "LateTapLabel", Text = "Late selectable tap label", FontSize = 12, BackgroundColor = Colors.LightYellow };
+		lateTap.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _gestureLabel.Text = $"Gesture: late tap {++lateTaps}") });
+		var enableLate = new Button { AutomationId = "EnableLate", Text = "Enable", HeightRequest = 36 };
+		enableLate.Clicked += (s, e) => lateTap.IsTextSelectable = true;
+		stack.Add(new HorizontalStackLayout { Spacing = 8, Children = { lateTap, enableLate } });
+
 		// Last, because Android lays out truncated selectable text differently and would shift the labels below.
 		stack.Add(Add("MaxLines", Sample + " " + Sample, l => { l.MaxLines = 2; l.LineBreakMode = LineBreakMode.TailTruncation; }));
 		stack.Add(Add("HeadTrunc", Sample + " " + Sample, l => { l.MaxLines = 1; l.LineBreakMode = LineBreakMode.HeadTruncation; }));

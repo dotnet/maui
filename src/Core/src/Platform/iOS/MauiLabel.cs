@@ -87,7 +87,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var hit = base.HitTest(point, uievent);
 
+			// While text is selected, the handles and the area around the text must keep reaching the text view.
 			if (_selectionTextView is { } textView && hit is not null && hit.IsDescendantOfView(textView) &&
+				textView.SelectedRange.Length == 0 &&
 				!IsPointOnText(textView, ConvertPointToView(point, textView)))
 			{
 				return this;
@@ -140,6 +142,27 @@ namespace Microsoft.Maui.Platform
 			return textView;
 		}
 
+		// UILabel does not redraw, and so does not reach DrawText, when its text becomes empty.
+		public override string Text
+		{
+			get => base.Text;
+			set
+			{
+				base.Text = value;
+				InvalidateSelectionLayout();
+			}
+		}
+
+		public override NSAttributedString AttributedText
+		{
+			get => base.AttributedText;
+			set
+			{
+				base.AttributedText = value;
+				InvalidateSelectionLayout();
+			}
+		}
+
 		void InvalidateSelectionLayout()
 		{
 			if (_selectionTextView is not null)
@@ -155,35 +178,61 @@ namespace Microsoft.Maui.Platform
 			SyncSelectionTextView();
 		}
 
-		// A truncating paragraph style makes a text view cut every paragraph to one line, whereas UILabel only truncates
-		// the last visible line. The text container applies the truncation for multi-line labels instead.
+		// UILabel falls back to its own font and color for text without those attributes, a text view does not.
+		// A truncating paragraph style also makes a text view cut every paragraph to one line, whereas UILabel only
+		// truncates the last visible line. The text container applies the truncation for multi-line labels instead.
 		NSAttributedString GetSelectionText()
 		{
 			var source = AttributedText ?? new NSAttributedString();
 
-			if (Lines == 1 || source.Length == 0)
+			if (source.Length == 0)
 			{
 				return source;
 			}
 
 			var result = new NSMutableAttributedString(source);
+			var fullRange = new NSRange(0, source.Length);
 
-			source.EnumerateAttribute(UIStringAttributeKey.ParagraphStyle, new NSRange(0, source.Length), NSAttributedStringEnumeration.None, (NSObject value, NSRange range, ref bool stop) =>
+			FillMissingAttribute(source, result, UIStringAttributeKey.Font, Font);
+			FillMissingAttribute(source, result, UIStringAttributeKey.ForegroundColor, TextColor);
+
+			if (Lines != 1)
 			{
-				if (value is NSParagraphStyle style &&
-					style.LineBreakMode is UILineBreakMode.TailTruncation or UILineBreakMode.HeadTruncation or UILineBreakMode.MiddleTruncation)
+				source.EnumerateAttribute(UIStringAttributeKey.ParagraphStyle, fullRange, NSAttributedStringEnumeration.None, (NSObject value, NSRange range, ref bool stop) =>
 				{
-					var wrapping = (NSMutableParagraphStyle)style.MutableCopy();
-					wrapping.LineBreakMode = UILineBreakMode.WordWrap;
-					result.AddAttribute(UIStringAttributeKey.ParagraphStyle, wrapping, range);
-				}
-			});
+					if (value is NSParagraphStyle style &&
+						style.LineBreakMode is UILineBreakMode.TailTruncation or UILineBreakMode.HeadTruncation or UILineBreakMode.MiddleTruncation)
+					{
+						var wrapping = (NSMutableParagraphStyle)style.MutableCopy();
+						wrapping.LineBreakMode = UILineBreakMode.WordWrap;
+						result.AddAttribute(UIStringAttributeKey.ParagraphStyle, wrapping, range);
+					}
+				});
+			}
 
 			return result;
 		}
 
+		static void FillMissingAttribute(NSAttributedString source, NSMutableAttributedString result, NSString key, NSObject fallback)
+		{
+			if (fallback is null)
+			{
+				return;
+			}
+
+			source.EnumerateAttribute(key, new NSRange(0, source.Length), NSAttributedStringEnumeration.None, (NSObject value, NSRange range, ref bool stop) =>
+			{
+				if (value is null)
+				{
+					result.AddAttribute(key, fallback, range);
+				}
+			});
+		}
+
 		bool IsSelectionTextViewCurrent(UITextView textView) =>
 			textView.AttributedText.IsEqual(GetSelectionText()) &&
+			textView.TextAlignment == TextAlignment &&
+			textView.SemanticContentAttribute == SemanticContentAttribute &&
 			textView.TextContainer.MaximumNumberOfLines == (nuint)Math.Max((int)Lines, 0) &&
 			textView.TextContainer.LineBreakMode == LineBreakMode;
 
@@ -204,6 +253,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			textView.TextAlignment = TextAlignment;
+			textView.SemanticContentAttribute = SemanticContentAttribute;
 			textView.TextContainer.MaximumNumberOfLines = (nuint)Math.Max((int)Lines, 0);
 			textView.TextContainer.LineBreakMode = LineBreakMode;
 

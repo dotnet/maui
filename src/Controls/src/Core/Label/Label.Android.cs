@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapIsTextSelectableFocusable(ILabelHandler handler, Label label)
 		{
-			if (!label.IsTextSelectable && (label.HasAccessibleTapGesture() || label.HasAccessibleLongPressGesture()))
+			if (!label.IsConnectingHandler() && !label.IsTextSelectable && (label.HasAccessibleTapGesture() || label.HasAccessibleLongPressGesture()))
 			{
 				handler.PlatformView.Focusable = true;
 			}

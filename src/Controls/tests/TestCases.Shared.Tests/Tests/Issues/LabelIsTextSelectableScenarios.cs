@@ -47,6 +47,13 @@ public class LabelIsTextSelectableScenarios : _IssuesUITest
 		}
 	}
 
+	// Taps the first glyphs of the label, because the center of a label can be empty space that never reaches the native text view.
+	void TapOnText(string id)
+	{
+		var rect = App.WaitForElement(id).GetRect();
+		App.TapCoordinates(rect.X + 20, rect.CenterY());
+	}
+
 	[Test]
 	[Category(UITestCategories.Label)]
 	public void TogglingIsTextSelectableDoesNotChangeLayout()
@@ -81,8 +88,27 @@ public class LabelIsTextSelectableScenarios : _IssuesUITest
 	[Category(UITestCategories.Label)]
 	public void LabelTapStillWorksWhenTextIsSelectable()
 	{
-		App.WaitForElement("TapLabel");
-		App.Tap("TapLabel");
+		TapOnText("TapLabel");
 		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("GestureResult", "Gesture: label tap"));
+	}
+
+	[Test]
+	[Category(UITestCategories.Label)]
+	public void ShadowedLabelTapStillWorksWhenTextIsSelectable()
+	{
+		TapOnText("ShadowTapLabel");
+		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("GestureResult", "Gesture: shadow tap"));
+	}
+
+	[Test]
+	[Category(UITestCategories.Label)]
+	public void LabelTapStillWorksAfterEnablingSelectionAtRuntime()
+	{
+		TapOnText("LateTapLabel");
+		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("GestureResult", "Gesture: late tap 1"));
+
+		App.Tap("EnableLate");
+		TapOnText("LateTapLabel");
+		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("GestureResult", "Gesture: late tap 2"));
 	}
 }
