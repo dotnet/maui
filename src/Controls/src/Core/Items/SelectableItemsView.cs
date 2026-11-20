@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>An <see cref="ICommand"/> to execute when an item is tapped, or <see langword="null"/> for no command.</value>
 		/// <remarks>
-		/// The command's parameter is set to the <see cref="ItemTappedCommandParameter"/> value.
-		/// The command executes before the <see cref="ItemTapped"/> event is raised.
+		/// The command's parameter is the <see cref="ItemTappedCommandParameter"/> value when that property is set;
+		/// otherwise it is the tapped item. The command executes before the <see cref="ItemTapped"/> event is raised.
 		/// See <see cref="ItemTapped"/> for when a tap is reported.
 		/// </remarks>
 		public ICommand ItemTappedCommand
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the parameter to pass to the <see cref="ItemTappedCommand"/>.
 		/// </summary>
-		/// <value>The command parameter, or <see langword="null"/> if no parameter is needed.</value>
+		/// <value>The command parameter. When this property is not set, the tapped item is passed to the command.</value>
 		public object ItemTappedCommandParameter
 		{
 			get => GetValue(ItemTappedCommandParameterProperty);
@@ -236,6 +236,19 @@ namespace Microsoft.Maui.Controls
 
 			var isGrouped = this is GroupableItemsView { IsGrouped: true };
 
+			if (isGrouped && indexInGroup >= 0)
+			{
+				// Handlers may know only one of the group and its index
+				if (groupIndex < 0 && group is not null)
+				{
+					groupIndex = GetGroupIndex(group);
+				}
+				else if (groupIndex >= 0 && group is null)
+				{
+					group = GetGroup(groupIndex);
+				}
+			}
+
 			if (indexInGroup < 0 || (isGrouped && groupIndex < 0))
 			{
 				FindItem(item, isGrouped, out group, out groupIndex, out indexInGroup);
@@ -264,7 +277,8 @@ namespace Microsoft.Maui.Controls
 
 			if (command is not null)
 			{
-				var commandParameter = ItemTappedCommandParameter;
+				// The parameter can't be bound to the tapped item from outside the item template, so default to it
+				var commandParameter = IsSet(ItemTappedCommandParameterProperty) ? ItemTappedCommandParameter : args.Item;
 
 				if (command.CanExecute(commandParameter))
 				{
@@ -347,6 +361,56 @@ namespace Microsoft.Maui.Controls
 
 				currentGroup++;
 			}
+		}
+
+		int GetGroupIndex(object group)
+		{
+			var index = 0;
+
+			if (ItemsSource is IEnumerable groups)
+			{
+				foreach (var candidate in groups)
+				{
+					if (!IsGroup(candidate))
+					{
+						continue;
+					}
+
+					if (ReferenceEquals(candidate, group))
+					{
+						return index;
+					}
+
+					index++;
+				}
+			}
+
+			return -1;
+		}
+
+		object GetGroup(int groupIndex)
+		{
+			var index = 0;
+
+			if (ItemsSource is IEnumerable groups)
+			{
+				foreach (var candidate in groups)
+				{
+					if (!IsGroup(candidate))
+					{
+						continue;
+					}
+
+					if (index == groupIndex)
+					{
+						return candidate;
+					}
+
+					index++;
+				}
+			}
+
+			return null;
 		}
 
 		static bool IsGroup(object candidate) => candidate is IEnumerable and not string;

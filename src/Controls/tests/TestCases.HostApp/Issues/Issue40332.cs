@@ -9,6 +9,9 @@ public class Issue40332 : ContentPage
 	readonly Label _eventLog;
 	readonly List<string> _entries = new();
 	readonly List<string> _items = new() { "A", "B", "C" };
+	readonly List<string> _duplicates = new() { "A", "B", "A" };
+	readonly List<string> _plainItems = new() { "Plain1", "Plain2" };
+	readonly DataTemplate _itemTemplate;
 	readonly List<Issue40332Group> _groups = new()
 	{
 		new Issue40332Group("G1", new[] { "A", "B" }),
@@ -24,7 +27,7 @@ public class Issue40332 : ContentPage
 			AutomationId = "TapCollectionView",
 			SelectionMode = SelectionMode.Single,
 			ItemsSource = _items,
-			ItemTemplate = new DataTemplate(() =>
+			ItemTemplate = _itemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label { FontSize = 20, VerticalOptions = LayoutOptions.Center };
 				label.SetBinding(Label.TextProperty, ".");
@@ -92,6 +95,24 @@ public class Issue40332 : ContentPage
 								CreateButton("Reset", Reset),
 							}
 						},
+						new HorizontalStackLayout
+						{
+							Spacing = 4,
+							Children =
+							{
+								CreateButton("Duplicates", () => _collectionView.ItemsSource = _duplicates),
+								CreateButton("NoTemplate", () =>
+								{
+									_collectionView.ItemTemplate = null;
+									_collectionView.ItemsSource = _plainItems;
+								}),
+								CreateButton("UseCommand", () =>
+								{
+									_collectionView.ItemTapped -= OnItemTapped;
+									_collectionView.ItemTappedCommand = new Command(p => Log($"Command:{p}"));
+								}),
+							}
+						},
 					}
 				},
 				_eventLog,
@@ -104,6 +125,8 @@ public class Issue40332 : ContentPage
 	{
 		_collectionView.ItemTapped -= OnItemTapped;
 		_collectionView.ItemTapped += OnItemTapped;
+		_collectionView.ItemTappedCommand = null;
+		_collectionView.ItemTemplate = _itemTemplate;
 		_collectionView.SelectionMode = SelectionMode.None;
 		_collectionView.SelectedItem = null;
 		_collectionView.IsGrouped = false;

@@ -86,20 +86,89 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void PlatformItemClick(object sender, ItemClickEventArgs args)
 		{
-			if (ItemsView is not SelectableItemsView itemsView)
+			if (ItemsView is not SelectableItemsView itemsView || sender is not ListViewBase listViewBase ||
+				args.ClickedItem is GroupFooterItemTemplateContext)
 			{
 				return;
 			}
 
 			var item = args.ClickedItem is ItemTemplateContext itemPair ? itemPair.Item : args.ClickedItem;
-			var tap = itemsView.CreateItemTappedEventArgs(item, null, -1, -1);
+			GetItemPosition(listViewBase, args.ClickedItem, out var group, out var indexInGroup);
+			var tap = itemsView.CreateItemTappedEventArgs(item, group, -1, indexInGroup);
 
 			// ItemClick is raised before the platform selection changes; report the tap after the selection is updated
-			if (sender is not ListViewBase listViewBase ||
-				!listViewBase.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => { if (itemsView.Handler is not null) itemsView.SendItemTapped(tap); }))
+			if (!listViewBase.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => { if (itemsView.Handler is not null) itemsView.SendItemTapped(tap); }))
 			{
 				itemsView.SendItemTapped(tap);
 			}
+		}
+
+		// Finds the clicked row rather than the first equal item, so repeated items report their own position
+		void GetItemPosition(ListViewBase listViewBase, object clickedItem, out object group, out int indexInGroup)
+		{
+			group = null;
+			indexInGroup = -1;
+
+			var source = CollectionViewSource?.Source as System.Collections.IEnumerable;
+
+			if (CollectionViewSource?.IsSourceGrouped == true)
+			{
+				// Each group context corresponds to the entry of the items source at the same position
+				var groups = (ItemsView?.ItemsSource as System.Collections.IEnumerable)?.GetEnumerator();
+
+				foreach (var entry in source ?? Array.Empty<object>())
+				{
+					var userGroup = groups is not null && groups.MoveNext() ? groups.Current : null;
+
+					if (entry is GroupTemplateContext { Items: System.Collections.IEnumerable groupItems })
+					{
+						var index = IndexOfReference(groupItems, clickedItem);
+						if (index >= 0)
+						{
+							group = userGroup;
+							indexInGroup = index;
+							return;
+						}
+					}
+				}
+
+				return;
+			}
+
+			if (clickedItem is ItemTemplateContext && source is not null)
+			{
+				indexInGroup = IndexOfReference(source, clickedItem);
+				return;
+			}
+
+			// Without an item template the items themselves are shown; the clicked row has focus
+			if (listViewBase.XamlRoot is not null &&
+				Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(listViewBase.XamlRoot) is Microsoft.UI.Xaml.Controls.Primitives.SelectorItem container &&
+				ItemsControl.ItemsControlFromItemContainer(container) == listViewBase)
+			{
+				var index = listViewBase.IndexFromContainer(container);
+				if (index >= 0 && Equals(listViewBase.Items[index], clickedItem))
+				{
+					indexInGroup = index;
+				}
+			}
+		}
+
+		static int IndexOfReference(System.Collections.IEnumerable items, object item)
+		{
+			var index = 0;
+
+			foreach (var candidate in items)
+			{
+				if (ReferenceEquals(candidate, item))
+				{
+					return index;
+				}
+
+				index++;
+			}
+
+			return -1;
 		}
 
 		void UpdatePlatformSelection()

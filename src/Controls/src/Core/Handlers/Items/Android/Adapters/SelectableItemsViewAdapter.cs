@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
 		HashSet<object> _selectedSet = new HashSet<object>();
+		WeakReference<RecyclerView> _recyclerView;
 
 		protected internal SelectableItemsViewAdapter(TItemsView selectableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
@@ -38,13 +39,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Recycled ViewHolders may have been created before SelectionMode or item tapping changed
-			selectable.UpdateClickListener(IsItemClickEnabled);
+			selectable.UpdateClickListener(IsClickEnabled(selectable));
 
-			// Watch for clicks so the user can select the item held by this ViewHolder
+			// Watch for clicks so the user can select the item held by this ViewHolder.
+			// A visible holder can be rebound without being recycled first, so never subscribe twice.
+			selectable.Clicked -= SelectableClicked;
 			selectable.Clicked += SelectableClicked;
 
 			// Keep track of the view holders here so we can clear the native selection
-			_currentViewHolders.Add(selectable);
+			if (!_currentViewHolders.Contains(selectable))
+			{
+				_currentViewHolders.Add(selectable);
+			}
 
 			// Make sure that if this item is one of the selected items, it's marked as selected
 			selectable.IsSelected = PositionIsSelected(position);
@@ -73,10 +79,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateSelectionMode()
 		{
 			// Update click listeners for all currently visible ViewHolders when SelectionMode or item tapping changes
-			bool clickEnabled = IsItemClickEnabled;
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
-				_currentViewHolders[i].UpdateClickListener(clickEnabled);
+				_currentViewHolders[i].UpdateClickListener(IsClickEnabled(_currentViewHolders[i]));
 			}
 		}
 
@@ -179,6 +184,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		bool IsItemClickEnabled => ItemsView.SelectionMode != SelectionMode.None || ItemsView.IsItemTapEnabled;
+
+		// Goes through IsSelectionEnabled so that adapters overriding it keep control over which items are clickable
+		bool IsClickEnabled(SelectableViewHolder holder)
+		{
+			RecyclerView recyclerView = null;
+			_recyclerView?.TryGetTarget(out recyclerView);
+			var parent = holder.ItemView.Parent as ViewGroup ?? recyclerView;
+
+			return IsSelectionEnabled(parent, holder.ItemViewType);
+		}
+
+		public override void OnAttachedToRecyclerView(RecyclerView recyclerView)
+		{
+			base.OnAttachedToRecyclerView(recyclerView);
+			_recyclerView = new WeakReference<RecyclerView>(recyclerView);
+		}
+
+		public override void OnDetachedFromRecyclerView(RecyclerView recyclerView)
+		{
+			_recyclerView = null;
+			base.OnDetachedFromRecyclerView(recyclerView);
+		}
 
 		bool PositionIsSelected(int position)
 		{

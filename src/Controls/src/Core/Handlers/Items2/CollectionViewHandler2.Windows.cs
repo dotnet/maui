@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -110,27 +111,149 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	}
 
 	/// <summary>
-	/// WinUI only raises ItemInvoked for single taps when nothing can be selected, so it reports taps in
-	/// <see cref="SelectionMode.None"/>; with selection enabled, taps are reported by <see cref="ItemFactory"/>.
+	/// Item taps are reported from two sources. WinUI raises ItemInvoked for taps only when nothing can be
+	/// selected, but in every mode for the Enter key, double taps and UI Automation invoke; in
+	/// <see cref="SelectionMode.Single"/> and <see cref="SelectionMode.Multiple"/> single taps are reported
+	/// from <see cref="PlatformTapped"/>. Neither is raised when a control inside the item handled the tap.
 	/// </summary>
 	void UpdateItemInvokedEnabled()
 	{
 		if (PlatformView is null || ItemsView is null)
 			return;
 
-		PlatformView.IsItemInvokedEnabled = ItemsView.SelectionMode == SelectionMode.None && ItemsView.IsItemTapEnabled;
+		PlatformView.IsItemInvokedEnabled = ItemsView.IsItemTapEnabled;
 	}
 
 	void PlatformItemInvoked(WItemsView sender, ItemsViewItemInvokedEventArgs args)
 	{
-		if (ItemsView is null || ItemsView.SelectionMode != SelectionMode.None ||
-			args.InvokedItem is ItemTemplateContext2 { IsHeader: true } or ItemTemplateContext2 { IsFooter: true })
+		if (ItemsView is null || !ItemsView.IsItemTapEnabled || PlatformItemsSource is not IList source)
+			return;
+
+		int index;
+
+		if (args.InvokedItem is ItemTemplateContext2)
+		{
+			// Item contexts are unique per row, so this is exact even when the items repeat
+			index = source.IndexOf(args.InvokedItem);
+		}
+		else
+		{
+			// Without an item template the items themselves are shown; WinUI makes the invoked row current
+			index = sender.CurrentItemIndex;
+			if (index < 0 || index >= source.Count || !Equals(source[index], args.InvokedItem))
+			{
+				index = source.IndexOf(args.InvokedItem);
+			}
+		}
+
+		ReportItemTapped(index);
+	}
+
+	void PlatformTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+	{
+		if (ItemsView is null || ItemsView.SelectionMode == SelectionMode.None || !ItemsView.IsItemTapEnabled ||
+			PlatformView is not MauiItemsView platformView || platformView.ItemsRepeaterControl is not ItemsRepeater repeater)
 		{
 			return;
 		}
 
-		var item = args.InvokedItem is ItemTemplateContext2 itemPair ? itemPair.Item : args.InvokedItem;
-		ItemsView.SendItemTapped(item, null, -1, -1);
+		// Only taps on items count, not on the header, footer or empty view
+		for (var current = e.OriginalSource as Microsoft.UI.Xaml.DependencyObject;
+			current is not null && !ReferenceEquals(current, platformView);
+			current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+		{
+			if (current is ItemContainer container)
+			{
+				ReportItemTapped(repeater.GetElementIndex(container));
+				return;
+			}
+		}
+	}
+
+	void ReportItemTapped(int index)
+	{
+		if (ItemsView is not SelectableItemsView itemsView || PlatformItemsSource is not IList source ||
+			index < 0 || index >= source.Count || source[index] is ItemTemplateContext2 { IsHeader: true } or ItemTemplateContext2 { IsFooter: true })
+		{
+			return;
+		}
+
+		var entry = source[index];
+		var item = entry is ItemTemplateContext2 context ? context.Item : entry;
+		var tap = TryGetItemPosition(itemsView, index, out var groupIndex, out var indexInGroup)
+			? itemsView.CreateItemTappedEventArgs(item, null, groupIndex, indexInGroup)
+			: itemsView.CreateItemTappedEventArgs(item, null, -1, -1);
+
+		// The platform selection is synced to the MAUI selection on the dispatcher; report the tap after that
+		var dispatcherQueue = PlatformView?.DispatcherQueue;
+		if (dispatcherQueue is null || !dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+			{
+				if (itemsView.Handler is not null)
+					itemsView.SendItemTapped(tap);
+			}))
+		{
+			itemsView.SendItemTapped(tap);
+		}
+	}
+
+	/// <summary>
+	/// Maps a row of the flattened platform list to the item's position in the items source. When grouped,
+	/// the list holds each group's header (if there is a header template), its items and its footer (if there is a
+	/// footer template); without an item template only the items are shown.
+	/// </summary>
+	static bool TryGetItemPosition(SelectableItemsView itemsView, int flatIndex, out int groupIndex, out int indexInGroup)
+	{
+		groupIndex = -1;
+		indexInGroup = flatIndex;
+
+		if (itemsView is not GroupableItemsView { IsGrouped: true } groupable)
+		{
+			return true;
+		}
+
+		indexInGroup = -1;
+
+		if (groupable.ItemsSource is not System.Collections.IEnumerable groups)
+		{
+			return false;
+		}
+
+		var templated = groupable.ItemTemplate is not null;
+		var hasHeader = templated && groupable.GroupHeaderTemplate is not null;
+		var hasFooter = templated && groupable.GroupFooterTemplate is not null;
+		var position = 0;
+		var currentGroup = 0;
+
+		foreach (var group in groups)
+		{
+			if (group is string || group is not System.Collections.IEnumerable groupItems)
+			{
+				continue;
+			}
+
+			if (hasHeader)
+			{
+				position++;
+			}
+
+			var count = 0;
+			foreach (var _ in groupItems)
+			{
+				count++;
+			}
+
+			if (flatIndex >= position && flatIndex < position + count)
+			{
+				groupIndex = currentGroup;
+				indexInGroup = flatIndex - position;
+				return true;
+			}
+
+			position += count + (hasFooter ? 1 : 0);
+			currentGroup++;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -208,6 +331,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
 			PlatformView.ItemInvoked += PlatformItemInvoked;
+			PlatformView.Tapped += PlatformTapped;
 			PlatformView.Loaded += OnPlatformViewLoaded;
 
 			if (PlatformView is MauiItemsView mauiItemsViewConnect)
@@ -264,6 +388,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		platformView.SelectionChanged -= PlatformSelectionChanged;
 		platformView.ItemInvoked -= PlatformItemInvoked;
+		platformView.Tapped -= PlatformTapped;
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
 		if (platformView is MauiItemsView mauiItemsView)

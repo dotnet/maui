@@ -317,6 +317,102 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ItemTappedEnablesSelectionInputAndButtonTraitInSelectionModeNone()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			Label label = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "A", "B" },
+				SelectionMode = SelectionMode.None,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var itemLabel = new Label();
+					itemLabel.SetBinding(Label.TextProperty, ".");
+					label ??= itemLabel;
+					return itemLabel;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+				await AssertHelpers.AssertEventually(() => label?.Handler?.PlatformView is UIView,
+					message: "The item template was not realized.");
+				var platformLabel = (UIView)label.Handler.PlatformView;
+
+				Assert.False(uiCollectionView.AllowsSelection);
+				Assert.Equal((UIAccessibilityTrait)0, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+
+				var taps = new List<ItemTappedEventArgs>();
+				void OnItemTapped(object sender, ItemTappedEventArgs e) => taps.Add(e);
+				collectionView.ItemTapped += OnItemTapped;
+
+				Assert.True(uiCollectionView.AllowsSelection);
+				Assert.Equal(UIAccessibilityTrait.Button, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+
+				// A tap asks the delegate first; in None mode the tap is reported and the selection refused
+				var shouldSelect = ((UICollectionViewDelegate)uiCollectionView.Delegate).ShouldSelectItem(uiCollectionView, NSIndexPath.FromItemSection(1, 0));
+
+				Assert.False(shouldSelect);
+				Assert.Equal("B", Assert.Single(taps).Item);
+				Assert.Empty(uiCollectionView.GetIndexPathsForSelectedItems());
+
+				collectionView.ItemTapped -= OnItemTapped;
+
+				Assert.False(uiCollectionView.AllowsSelection);
+				Assert.Equal((UIAccessibilityTrait)0, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+			});
+		}
+
+		[Fact]
+		public async Task ItemTappedReportsOnlyTheTappedItemInSelectionModeSingle()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "A", "B" },
+				SelectionMode = SelectionMode.Single,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+			var events = new List<string>();
+			collectionView.SelectionChanged += (s, e) => events.Add($"Selection:{collectionView.SelectedItem}");
+			collectionView.ItemTapped += (s, e) => events.Add($"Tapped:{e.Item}");
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+				var a = NSIndexPath.FromItemSection(0, 0);
+				var b = NSIndexPath.FromItemSection(1, 0);
+
+				// UIKit's sequence when the user taps A, taps A again, then taps B
+				var collectionViewDelegate = (UICollectionViewDelegate)uiCollectionView.Delegate;
+				collectionViewDelegate.ItemSelected(uiCollectionView, a);
+				collectionViewDelegate.ItemSelected(uiCollectionView, a);
+				collectionViewDelegate.ItemDeselected(uiCollectionView, a);
+				collectionViewDelegate.ItemSelected(uiCollectionView, b);
+
+				Assert.Equal(new[] { "Selection:A", "Tapped:A", "Tapped:A", "Selection:B", "Tapped:B" }, events);
+			});
+		}
+
+		[Fact]
 		public async Task ChangingSelectionModeToNoneClearsButtonTraitFromNestedAccessibilityElement()
 		{
 			EnsureHandlerCreated(builder =>

@@ -102,6 +102,47 @@ public class Issue40332 : _IssuesUITest
 		WaitForLog("Inner:B");
 	}
 
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void RepeatedItemsReportTheTappedRow()
+	{
+		ResetPage();
+		App.Tap("Duplicates");
+
+		App.WaitForElement("ItemA");
+		var rows = App.FindElements("ItemA");
+		Assert.That(rows, Has.Count.EqualTo(2));
+		rows.Last().Tap();
+		WaitForLog("Selection:A;Tapped:A@2");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void ItemTappedIsRaisedWithoutAnItemTemplate()
+	{
+		ResetPage();
+		App.Tap("NoTemplate");
+
+		// Without an item template the rows only show the items' text
+		App.WaitForElement("Plain2").Tap();
+		WaitForLog("Selection:Plain2;Tapped:Plain2@1");
+
+		App.WaitForElement("Plain2").Tap();
+		WaitForLog("Selection:Plain2;Tapped:Plain2@1;Tapped:Plain2@1");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void ItemTappedCommandReceivesTheTappedItem()
+	{
+		ResetPage();
+		App.Tap("ModeNone");
+		App.Tap("UseCommand");
+
+		App.Tap("ItemB");
+		WaitForLog("Command:B");
+	}
+
 	void ResetPage()
 	{
 		App.WaitForElement("Reset");

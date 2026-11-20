@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -429,6 +430,145 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(viewHolder.ItemView.HasOnClickListeners,
 					"Items should have click listeners after changing SelectionMode from None to Single");
 			});
+		}
+
+		[Fact(DisplayName = "ItemTapped makes items clickable with touch feedback in SelectionMode None, until the last handler is removed")]
+		public async Task ItemTappedTogglesClickabilityAndTouchFeedbackInSelectionModeNone()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var itemView = LayoutAndGetViewHolder(handler.PlatformView).ItemView;
+
+				Assert.False(itemView.Clickable);
+				Assert.Null(itemView.Foreground);
+
+				var taps = 0;
+				void OnItemTapped(object sender, ItemTappedEventArgs e) => taps++;
+				collectionView.ItemTapped += OnItemTapped;
+
+				Assert.True(itemView.HasOnClickListeners);
+				Assert.True(itemView.Clickable);
+				Assert.NotNull(itemView.Foreground);
+
+				itemView.PerformClick();
+				Assert.Equal(1, taps);
+				Assert.Null(collectionView.SelectedItem);
+
+				collectionView.ItemTapped -= OnItemTapped;
+
+				Assert.False(itemView.HasOnClickListeners);
+				Assert.False(itemView.Clickable);
+				Assert.Null(itemView.Foreground);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView items keep touch feedback when unselected and after the selection is cleared")]
+		public async Task TouchFeedbackDoesNotDependOnSelection()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single
+			};
+			collectionView.SelectionChanged += (s, e) => collectionView.SelectedItem = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var itemView = LayoutAndGetViewHolder(handler.PlatformView).ItemView;
+
+				Assert.NotNull(itemView.Foreground);
+
+				itemView.PerformClick();
+
+				Assert.Null(collectionView.SelectedItem);
+				Assert.NotNull(itemView.Foreground);
+			});
+		}
+
+		[Fact(DisplayName = "Rebinding a visible item does not report its next tap twice")]
+		public async Task RebindingAVisibleItemDoesNotDuplicateTaps()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+			var taps = new List<object>();
+			collectionView.ItemTapped += (s, e) => taps.Add(e.Item);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				// RecyclerView rebinds visible holders in place, without recycling them, when an item changes
+				handler.PlatformView.GetAdapter().OnBindViewHolder(viewHolder, 0);
+				handler.PlatformView.GetAdapter().OnBindViewHolder(viewHolder, 0);
+
+				viewHolder.ItemView.PerformClick();
+
+				Assert.Equal(new object[] { "Item 1" }, taps);
+			});
+		}
+
+		[Fact(DisplayName = "Items an adapter makes non-selectable stay non-clickable when rebound")]
+		public async Task AdapterIsSelectionEnabledOverrideIsRespected()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, NonSelectableCollectionViewHandler>();
+				});
+			});
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<NonSelectableCollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				handler.PlatformView.GetAdapter().OnBindViewHolder(viewHolder, 0);
+				collectionView.SelectionMode = SelectionMode.Multiple;
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners);
+				Assert.False(viewHolder.ItemView.Clickable);
+			});
+		}
+
+		class NonSelectableCollectionViewHandler : CollectionViewHandler
+		{
+			protected override ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource> CreateAdapter() =>
+				new NonSelectableAdapter(VirtualView);
+
+			class NonSelectableAdapter : ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>
+			{
+				public NonSelectableAdapter(ReorderableItemsView itemsView) : base(itemsView)
+				{
+				}
+
+				protected override bool IsSelectionEnabled(global::Android.Views.ViewGroup parent, int viewType) => false;
+			}
 		}
 
 		[Fact(DisplayName = "CollectionView SelectionMode Single → Multiple keeps click listeners")]

@@ -61,6 +61,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void KnownPositionIsUsedForRepeatedItems()
+		{
+			var groups = new List<List<string>> { new() { "a" }, new() { "a", "a" } };
+			var collectionView = new CollectionView { IsGrouped = true, ItemsSource = groups };
+			var taps = new List<ItemTappedEventArgs>();
+			collectionView.ItemTapped += (_, e) => taps.Add(e);
+
+			// Handlers can know the group, or only its index
+			collectionView.SendItemTapped("a", groups[1], -1, 1);
+			collectionView.SendItemTapped("a", null, 1, 0);
+
+			Assert.Same(groups[1], taps[0].Group);
+			Assert.Equal(4, taps[0].ItemIndex);
+			Assert.Same(groups[1], taps[1].Group);
+			Assert.Equal(3, taps[1].ItemIndex);
+		}
+
+		[Fact]
 		public void CommandExecutesWithItsParameterBeforeEvent()
 		{
 			var order = new List<string>();
@@ -77,6 +95,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(new[] { "command", "event" }, order);
 			Assert.Equal("parameter", commandParameter);
+		}
+
+		[Fact]
+		public void CommandReceivesTheTappedItemWhenNoParameterIsSet()
+		{
+			object commandParameter = "unset";
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "a", "b" },
+				ItemTappedCommand = new Command(p => commandParameter = p),
+			};
+
+			collectionView.SendItemTapped("b", null, -1, 1);
+			Assert.Equal("b", commandParameter);
+
+			collectionView.ItemTappedCommandParameter = null;
+			collectionView.SendItemTapped("b", null, -1, 1);
+			Assert.Null(commandParameter);
 		}
 
 		[Fact]
