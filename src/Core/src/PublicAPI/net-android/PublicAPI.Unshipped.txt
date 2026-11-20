@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.ILabel.IsTextSelectable.get -> bool
+static Microsoft.Maui.Handlers.LabelHandler.MapIsTextSelectable(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
+static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsTextSelectable(this Android.Widget.TextView! textView, Microsoft.Maui.ILabel! label) -> void

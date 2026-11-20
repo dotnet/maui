@@ -690,6 +690,12 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
+			// The text view of a selectable label has its own recognizers that would otherwise win over the label's taps.
+			if (tap.View is MauiLabel label && label.IsSelectionView(other.View))
+			{
+				return true;
+			}
+
 			var otherTap = other as UITapGestureRecognizer;
 			if (otherTap == null)
 			{

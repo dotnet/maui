@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -13,14 +14,29 @@ namespace Microsoft.Maui.Platform
 	public class MauiLabel : UILabel, IUIViewLifeCycleEvents
 	{
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
+		// Owned by this label's own view hierarchy and released when selection is turned off, so it cannot outlive the label.
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The text view is a subview of this label and does not reference it.")]
+		UITextView _selectionTextView;
 
-		public UIEdgeInsets TextInsets { get; set; }
+		UIEdgeInsets _textInsets;
+
+		public UIEdgeInsets TextInsets
+		{
+			get => _textInsets;
+			set
+			{
+				_textInsets = value;
+				InvalidateSelectionLayout();
+			}
+		}
+
 		internal UIControlContentVerticalAlignment VerticalAlignment
 		{
 			get => _verticalAlignment;
 			set
 			{
 				_verticalAlignment = value;
+				InvalidateSelectionLayout();
 				SetNeedsDisplay();
 			}
 		}
@@ -33,7 +49,109 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public override void DrawText(RectangleF rect)
+		// UILabel has no native text selection. While selectable, a UITextView hosted inside this label renders
+		// and selects the text, and the label keeps measuring it so layout is unchanged.
+		internal bool IsTextSelectable
+		{
+			get => _selectionTextView is not null;
+			set
+			{
+				if (value == IsTextSelectable)
+				{
+					return;
+				}
+
+				if (value)
+				{
+					_selectionTextView = CreateSelectionTextView();
+					AddSubview(_selectionTextView);
+					SyncSelectionTextView();
+				}
+				else
+				{
+					_selectionTextView.RemoveFromSuperview();
+					_selectionTextView.Dispose();
+					_selectionTextView = null;
+				}
+
+				SetNeedsDisplay();
+			}
+		}
+
+		internal bool IsSelectionView(UIView view) =>
+			_selectionTextView is not null && view is not null && view.IsDescendantOfView(_selectionTextView);
+
+		static UITextView CreateSelectionTextView()
+		{
+			var textView = new UITextView(RectangleF.Empty)
+			{
+				Editable = false,
+				Selectable = true,
+				ScrollEnabled = false,
+				Opaque = false,
+				BackgroundColor = UIColor.Clear,
+				TextContainerInset = UIEdgeInsets.Zero,
+				DataDetectorTypes = UIDataDetectorType.None,
+				IsAccessibilityElement = false,
+			};
+
+			textView.TextContainer.LineFragmentPadding = 0;
+
+			return textView;
+		}
+
+		void InvalidateSelectionLayout()
+		{
+			if (_selectionTextView is not null)
+			{
+				SetNeedsLayout();
+			}
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			SyncSelectionTextView();
+		}
+
+		bool IsSelectionTextViewCurrent(UITextView textView) =>
+			textView.AttributedText.IsEqual(AttributedText) &&
+			textView.TextContainer.MaximumNumberOfLines == (nuint)Math.Max((int)Lines, 0) &&
+			textView.TextContainer.LineBreakMode == LineBreakMode;
+
+		void SyncSelectionTextView()
+		{
+			if (_selectionTextView is not { } textView)
+			{
+				return;
+			}
+
+			var rect = GetInsetRect(Bounds);
+			var attributedText = AttributedText ?? new NSAttributedString();
+
+			// Assigning the text resets the selection, so only do it when the content changed.
+			if (!textView.AttributedText.IsEqual(attributedText))
+			{
+				textView.AttributedText = attributedText;
+			}
+
+			textView.TextAlignment = TextAlignment;
+			textView.TextContainer.MaximumNumberOfLines = (nuint)Math.Max((int)Lines, 0);
+			textView.TextContainer.LineBreakMode = LineBreakMode;
+
+			var textHeight = nfloat.Min(textView.SizeThatFits(new SizeF(rect.Width, nfloat.MaxValue)).Height, rect.Height);
+			var y = _verticalAlignment switch
+			{
+				UIControlContentVerticalAlignment.Top => rect.Y,
+				UIControlContentVerticalAlignment.Bottom => rect.Bottom - textHeight,
+				_ => rect.Y + (rect.Height - textHeight) / 2,
+			};
+
+			textView.Frame = new RectangleF(rect.X, y, rect.Width, textHeight);
+		}
+
+		RectangleF GetInsetRect(RectangleF rect)
 		{
 			var insets = TextInsets;
 
@@ -47,7 +165,23 @@ namespace Microsoft.Maui.Platform
 					insets.Left);
 			}
 
-			rect = insets.InsetRect(rect);
+			return insets.InsetRect(rect);
+		}
+
+		public override void DrawText(RectangleF rect)
+		{
+			if (_selectionTextView is { } textView)
+			{
+				// The hosted text view draws the text. If something changed the label without a layout pass, resync.
+				if (!IsSelectionTextViewCurrent(textView))
+				{
+					SetNeedsLayout();
+				}
+
+				return;
+			}
+
+			rect = GetInsetRect(rect);
 
 
 			if (_verticalAlignment != UIControlContentVerticalAlignment.Center

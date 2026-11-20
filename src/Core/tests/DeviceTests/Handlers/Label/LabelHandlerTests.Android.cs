@@ -93,6 +93,36 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
+		bool GetNativeIsTextSelectable(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).IsTextSelectable;
+
+		[Fact(DisplayName = "Disabling IsTextSelectable Restores Interaction State")]
+		public async Task DisablingIsTextSelectableRestoresInteractionState()
+		{
+			var label = new LabelStub() { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var values = await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = GetPlatformLabel(handler);
+				var initial = (textView.Focusable, textView.Clickable, textView.LongClickable);
+
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var selectable = (textView.Focusable, textView.Clickable, textView.LongClickable);
+
+				label.IsTextSelectable = false;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var restored = (textView.Focusable, textView.Clickable, textView.LongClickable);
+
+				return (initial, selectable, restored);
+			});
+
+			Assert.Equal((true, true, true), values.selectable);
+			Assert.Equal(values.initial, values.restored);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 

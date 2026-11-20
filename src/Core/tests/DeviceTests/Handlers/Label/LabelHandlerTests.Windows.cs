@@ -108,6 +108,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(DependencyProperty.UnsetValue, values.Reset);
 		}
 
+		bool GetNativeIsTextSelectable(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).IsTextSelectionEnabled;
+
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 

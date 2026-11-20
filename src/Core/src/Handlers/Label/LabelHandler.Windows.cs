@@ -83,6 +83,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextDecorations(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateTextDecorations(label);
 
+		public static void MapIsTextSelectable(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateIsTextSelectable(label);
+
 		public static void MapPadding(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdatePadding(label);
 

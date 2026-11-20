@@ -65,6 +65,14 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
+		static void MapIsTextSelectableFocusable(ILabelHandler handler, Label label)
+		{
+			if (!label.IsTextSelectable && (label.HasAccessibleTapGesture() || label.HasAccessibleLongPressGesture()))
+			{
+				handler.PlatformView.Focusable = true;
+			}
+		}
+
 		public static void MapMaxLines(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateMaxLines(label);

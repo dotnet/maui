@@ -305,7 +305,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
-				e.Handled = OnTouchEvent(e.Event);
+			{
+				var handled = OnTouchEvent(e.Event);
+
+				// Let selectable text also see the touch so long-press selection still works next to gestures.
+				e.Handled = handled && sender is not global::Android.Widget.TextView { IsTextSelectable: true };
+			}
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)

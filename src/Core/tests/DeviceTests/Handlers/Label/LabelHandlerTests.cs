@@ -315,6 +315,57 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(platformText);
 		}
 
+		[Theory(DisplayName = "IsTextSelectable Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextSelectableInitializesCorrectly(bool isTextSelectable)
+		{
+			var label = new LabelStub()
+			{
+				Text = "Test",
+				IsTextSelectable = isTextSelectable
+			};
+
+			var values = await GetValueAsync(label, (handler) =>
+			{
+				return new
+				{
+					ViewValue = label.IsTextSelectable,
+					PlatformViewValue = GetNativeIsTextSelectable(handler)
+				};
+			});
+
+			Assert.Equal(isTextSelectable, values.ViewValue);
+			Assert.Equal(isTextSelectable, values.PlatformViewValue);
+		}
+
+		[Fact(DisplayName = "IsTextSelectable Updates Correctly")]
+		public async Task IsTextSelectableUpdatesCorrectly()
+		{
+			var label = new LabelStub() { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var values = await InvokeOnMainThreadAsync(() =>
+			{
+				var initial = GetNativeIsTextSelectable(handler);
+
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var selectable = GetNativeIsTextSelectable(handler);
+
+				label.IsTextSelectable = false;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var notSelectable = GetNativeIsTextSelectable(handler);
+
+				return (initial, selectable, notSelectable);
+			});
+
+			Assert.False(values.initial);
+			Assert.True(values.selectable);
+			Assert.False(values.notSelectable);
+		}
+
 		[Category(TestCategory.Label)]
 		public class LabelTextStyleTests : TextStyleHandlerTests<LabelHandler, LabelStub>
 		{

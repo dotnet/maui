@@ -65,6 +65,9 @@ namespace Microsoft.Maui.Platform
 				platformControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
 		}
 
+		public static void UpdateIsTextSelectable(this TextBlock platformControl, ILabel label) =>
+			platformControl.IsTextSelectionEnabled = label.IsTextSelectable;
+
 		public static void UpdateLineHeight(this TextBlock platformControl, ILabel label)
 		{
 			if (label.LineHeight >= 0)

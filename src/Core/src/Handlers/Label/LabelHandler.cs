@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
+			[nameof(ILabel.IsTextSelectable)] = MapIsTextSelectable,
 #if ANDROID
 			[nameof(ILabel.Background)] = MapBackground,
 #endif
