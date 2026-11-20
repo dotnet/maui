@@ -12,16 +12,29 @@ public class Issue4981 : ContentPage
 			AutomationId = "PreselectTrueButton",
 			Text = "Preselect initial value"
 		};
-		preselectButton.Clicked += async (_, _) =>
-			await DisplayPromptAsync("Initial selection", "Initial value is selected", initialValue: InitialValue, preselectInitialValue: true);
 
 		var noPreselectButton = new Button
 		{
 			AutomationId = "PreselectFalseButton",
 			Text = "Do not preselect initial value"
 		};
+		var resultLabel = new Label
+		{
+			AutomationId = "PromptResult",
+			IsVisible = false
+		};
 		noPreselectButton.Clicked += async (_, _) =>
-			await DisplayPromptAsync("Initial selection", "Initial value is not selected", initialValue: InitialValue, preselectInitialValue: false);
+		{
+			resultLabel.IsVisible = false;
+			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is not selected", initialValue: InitialValue, preselectInitialValue: false);
+			resultLabel.IsVisible = true;
+		};
+		preselectButton.Clicked += async (_, _) =>
+		{
+			resultLabel.IsVisible = false;
+			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is selected", initialValue: InitialValue, preselectInitialValue: true);
+			resultLabel.IsVisible = true;
+		};
 
 		Content = new VerticalStackLayout
 		{
@@ -30,7 +43,8 @@ public class Issue4981 : ContentPage
 			Children =
 			{
 				preselectButton,
-				noPreselectButton
+				noPreselectButton,
+				resultLabel
 			}
 		};
 	}
