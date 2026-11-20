@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 				var manager = ContextFlyoutManager.Get((AView)handler.PlatformView!)!;
 				Assert.True(manager.Show());
 
-				var menu = manager.Popup!.Menu;
+				var menu = manager.Menu!;
 				Assert.Equal(3, menu.Size());
 
 				var copy = menu.GetItem(0)!;
@@ -104,17 +104,17 @@ namespace Microsoft.Maui.DeviceTests
 				var manager = ContextFlyoutManager.Get((AView)handler.PlatformView!)!;
 
 				Assert.True(manager.Show());
-				var menu = manager.Popup!.Menu;
+				var menu = manager.Menu!;
 				menu.PerformIdentifierAction(menu.GetItem(0)!.ItemId, 0);
 				Assert.Equal("parameter", executedParameter);
 
 				Assert.True(manager.Show());
-				menu = manager.Popup!.Menu;
+				menu = manager.Menu!;
 				menu.PerformIdentifierAction(menu.GetItem(1)!.ItemId, 0);
 				Assert.False(disabledExecuted);
 
 				Assert.True(manager.Show());
-				menu = manager.Popup!.Menu;
+				menu = manager.Menu!;
 				var subMenu = menu.GetItem(2)!.SubMenu!;
 				subMenu.PerformIdentifierAction(subMenu.GetItem(0)!.ItemId, 0);
 				Assert.True(nestedClicked);
@@ -140,14 +140,14 @@ namespace Microsoft.Maui.DeviceTests
 				var manager = ContextFlyoutManager.Get((AView)handler.PlatformView!)!;
 
 				Assert.True(manager.Show());
-				Assert.Equal("Before", manager.Popup!.Menu.GetItem(3)!.TitleFormatted?.ToString());
+				Assert.Equal("Before", manager.Menu!.GetItem(3)!.TitleFormatted?.ToString());
 
 				viewModel.Title = "After";
 				nested.Text = "Nested renamed";
 				flyout.RemoveAt(0);
 
 				Assert.True(manager.Show());
-				var menu = manager.Popup!.Menu;
+				var menu = manager.Menu!;
 				Assert.Equal(3, menu.Size());
 				Assert.Equal("After", menu.GetItem(2)!.TitleFormatted?.ToString());
 				Assert.Equal("Nested renamed", menu.GetItem(1)!.SubMenu!.GetItem(0)!.TitleFormatted?.ToString());
@@ -196,8 +196,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Contains(node.ActionList!, a => a.Id == AccessibilityNodeInfoCompat.ActionLongClick);
 
 				Assert.True(view.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null));
-				Assert.NotNull(manager.Popup);
+				Assert.NotNull(manager.Menu);
+
+				// Like a native long click that isn't a touch, the menu opens as a dialog rather than at a position
+				Assert.Null(manager.MenuPosition);
 				manager.Dismiss();
+				Assert.Null(manager.Menu);
 			}));
 		}
 
@@ -220,14 +224,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Up, x, y));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.Null(manager.Popup);
+				Assert.Null(manager.Menu);
 
 				// Moving beyond the touch slop (scrolling) cancels the long press
 				downTime = SystemClock.UptimeMillis();
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Move, x, y + 200));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.Null(manager.Popup);
+				Assert.Null(manager.Menu);
 				Dispatch(window, downTime, MotionEventActions.Up, x, y + 200);
 
 				// Holding opens the menu where the view was pressed; the rest of the touch is consumed so nothing gets clicked
@@ -235,12 +239,12 @@ namespace Microsoft.Maui.DeviceTests
 				downTime = SystemClock.UptimeMillis();
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, pressX, pressY));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.NotNull(manager.Popup);
-				AssertAnchoredAt(manager, pressX, pressY);
+				Assert.NotNull(manager.Menu);
+				AssertOpenedAt(manager, view, pressX, pressY);
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, pressX, pressY));
 
 				manager.Dismiss();
-				Assert.Null(manager.Anchor?.Parent);
+				Assert.Null(manager.Menu);
 			}));
 		}
 
@@ -268,8 +272,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
 
-				Assert.NotNull(topManager.Popup);
-				Assert.Null(bottomManager.Popup);
+				Assert.NotNull(topManager.Menu);
+				Assert.Null(bottomManager.Menu);
 				topManager.Dismiss();
 				await Task.Yield();
 			}));
@@ -316,7 +320,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
 
-				Assert.NotNull(parentManager.Popup);
+				Assert.NotNull(parentManager.Menu);
 				parentManager.Dismiss();
 				await Task.Yield();
 			}));
@@ -431,7 +435,7 @@ namespace Microsoft.Maui.DeviceTests
 				var downTime = SystemClock.UptimeMillis();
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.Equal(menuOpensOnLongPress, manager.Popup is not null);
+				Assert.Equal(menuOpensOnLongPress, manager.Menu is not null);
 
 				if (isText)
 				{
@@ -454,14 +458,14 @@ namespace Microsoft.Maui.DeviceTests
 				// The accessibility long-click action acts on the view with the menu itself; text keeps its own
 				var sameViewHandler = behavior is "LongPressGesture" or "DragGesture" or "Entry";
 				menuView.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null);
-				Assert.Equal(!sameViewHandler, manager.Popup is not null);
+				Assert.Equal(!sameViewHandler, manager.Menu is not null);
 				manager.Dismiss();
 
 				// A secondary click always opens a context menu; on text it's the text's own, with the flyout items
 				downTime = SystemClock.UptimeMillis();
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
-				Assert.Equal(!isText, manager.Popup is not null);
+				Assert.Equal(!isText, manager.Menu is not null);
 				manager.Dismiss();
 				view.Context!.GetActivity()!.CloseContextMenu();
 			}));
@@ -507,7 +511,7 @@ namespace Microsoft.Maui.DeviceTests
 				var manager = ContextFlyoutManager.Get((AView)label.Handler!.PlatformView!)!;
 				Assert.True(manager.Show());
 
-				var menu = manager.Popup!.Menu;
+				var menu = manager.Menu!;
 				Assert.Equal(new[] { "Copy", "Disabled", "Edit", "Parent" }, GetTitles(menu));
 
 				// Natively the items of the menus follow each other, without a divider in between
@@ -520,7 +524,7 @@ namespace Microsoft.Maui.DeviceTests
 				// A flyout shared by the view and an ancestor is added once
 				FlyoutBase.SetContextFlyout(root, sharedFlyout);
 				Assert.True(manager.Show());
-				Assert.Equal(new[] { "Copy", "Disabled", "Edit" }, GetTitles(manager.Popup!.Menu));
+				Assert.Equal(new[] { "Copy", "Disabled", "Edit" }, GetTitles(manager.Menu!));
 				manager.Dismiss();
 			}));
 		}
@@ -728,23 +732,23 @@ namespace Microsoft.Maui.DeviceTests
 				SendKey(view, KeyEventActions.Up, downTime);
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
 				Assert.Equal(1, clicks);
-				Assert.Null(manager.Popup);
+				Assert.Null(manager.Menu);
 
 				// From Android 13, keys with modifiers (e.g. Shift+Enter) don't long click views, so they don't open the menu
 				if (OperatingSystem.IsAndroidVersionAtLeast(33))
 				{
 					downTime = SendKey(view, KeyEventActions.Down, meta: MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
 					await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-					Assert.Null(manager.Popup);
+					Assert.Null(manager.Menu);
 					SendKey(view, KeyEventActions.Up, downTime, MetaKeyStates.ShiftOn | MetaKeyStates.ShiftLeftOn);
 				}
 
 				// Holding opens the menu at the center of the view
 				downTime = SendKey(view, KeyEventActions.Down);
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.NotNull(manager.Popup);
+				Assert.NotNull(manager.Menu);
 				var (x, y) = GetCenterInWindow(view);
-				AssertAnchoredAt(manager, x, y);
+				AssertOpenedAt(manager, view, x, y);
 
 				// Releasing the key after the menu opened doesn't click, like a native long click
 				SendKey(view, KeyEventActions.Up, downTime);
@@ -755,7 +759,7 @@ namespace Microsoft.Maui.DeviceTests
 				// When the release goes to the open menu instead, later presses (e.g. on a tap gesture elsewhere) still count
 				downTime = SendKey(view, KeyEventActions.Down);
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.NotNull(manager.Popup);
+				Assert.NotNull(manager.Menu);
 				manager.Dismiss();
 				var now = SystemClock.UptimeMillis();
 				using (var release = new KeyEvent(downTime, now, KeyEventActions.Up, Keycode.Enter, 0))
@@ -775,37 +779,97 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		[Fact(DisplayName = "Items without an icon are laid out like a native popup menu")]
-		public async Task ItemsWithoutIconHaveNoPlaceholder()
+		[Fact(DisplayName = "Items have no icons, like native context menus")]
+		public async Task ContextMenuItemsHaveNoIcons()
 		{
 			SetupBuilder();
 			var label = new Label { Text = "Target" };
 			FlyoutBase.SetContextFlyout(label, new MenuFlyout
 			{
 				new MenuFlyoutItem { Text = "With icon", IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Blue } },
-				new MenuFlyoutItem { Text = "Without icon" },
+				new MenuFlyoutSubItem { Text = "Sub menu with icon", IconImageSource = new FontImageSource { Glyph = "B", Color = Colors.Blue } },
 			});
 
-			await WithTouchTrackerAsync(() => AttachAndRun(label, async handler =>
+			await WithTouchTrackerAsync(() => AttachAndRun(label, handler =>
 			{
 				var manager = ContextFlyoutManager.Get((AView)handler.PlatformView!)!;
 				Assert.True(manager.Show());
 
-				await AssertHelpers.AssertEventually(() => manager.Popup!.Menu.GetItem(0)!.Icon is not null);
-				Assert.Null(manager.Popup!.Menu.GetItem(1)!.Icon);
+				var menu = manager.Menu!;
+				Assert.Equal(new[] { "With icon", "Sub menu with icon" }, GetTitles(menu));
+				Assert.Null(menu.GetItem(0)!.Icon);
+				Assert.Null(menu.GetItem(1)!.Icon);
 
 				manager.Dismiss();
 			}));
 		}
 
-		static void AssertAnchoredAt(ContextFlyoutManager manager, float x, float y)
+		[Fact(DisplayName = "Showing another view's context menu replaces the open one")]
+		public async Task OnlyOneContextMenuIsOpen()
 		{
-			var anchor = Assert.IsAssignableFrom<AView>(manager.Anchor);
-			Assert.NotNull(anchor.Parent);
+			SetupBuilder();
+			var first = new Label { Text = "First" };
+			var second = new Label { Text = "Second" };
+			FlyoutBase.SetContextFlyout(first, new MenuFlyout { new MenuFlyoutItem { Text = "First item" } });
+			FlyoutBase.SetContextFlyout(second, new MenuFlyout { new MenuFlyoutItem { Text = "Second item" } });
+			var root = new VerticalStackLayout { first, second };
+
+			await WithTouchTrackerAsync(() => AttachAndRun(root, handler =>
+			{
+				var firstManager = ContextFlyoutManager.Get((AView)first.Handler!.PlatformView!)!;
+				var secondManager = ContextFlyoutManager.Get((AView)second.Handler!.PlatformView!)!;
+
+				Assert.True(firstManager.Show());
+				Assert.True(secondManager.Show());
+
+				// The window has one context menu: dismissing the replaced flyout doesn't close the open one
+				Assert.Null(firstManager.Menu);
+				Assert.Equal(new[] { "Second item" }, GetTitles(secondManager.Menu!));
+				firstManager.Dismiss();
+				Assert.NotNull(secondManager.Menu);
+
+				secondManager.Dismiss();
+				Assert.Null(secondManager.Menu);
+			}));
+		}
+
+		[Fact(DisplayName = "Removing the flyout closes its open sub menu too")]
+		public async Task DismissClosesOpenSubMenu()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
+			FlyoutBase.SetContextFlyout(label, CreateFlyout(out _));
+
+			await WithTouchTrackerAsync(() => AttachAndRun(label, async handler =>
+			{
+				var view = (AView)handler.PlatformView!;
+				var manager = ContextFlyoutManager.Get(view)!;
+				var decor = view.RootView!;
+				await AssertHelpers.AssertEventually(() => decor.HasWindowFocus, message: "The window has focus before the menu opens");
+
+				// Opened at a position, so it's a popup: on phones the sub menu replaces it with a popup of its own
+				var (x, y) = GetCenterInWindow(view);
+				Assert.True(manager.Show(x, y));
+				await AssertHelpers.AssertEventually(() => !decor.HasWindowFocus, message: "The menu takes focus");
+				var menu = manager.Menu!;
+				Assert.True(menu.PerformIdentifierAction(FindItem(menu, "Edit").ItemId, 0));
+				await Task.Delay(300);
+
+				FlyoutBase.SetContextFlyout(label, null);
+
+				// Nothing is left open on top of the window
+				await AssertHelpers.AssertEventually(() => decor.HasWindowFocus, message: "The sub menu was closed");
+			}));
+		}
+
+		static void AssertOpenedAt(ContextFlyoutManager manager, AView view, float windowX, float windowY)
+		{
+			Assert.True(manager.MenuPosition.HasValue);
+			var position = manager.MenuPosition!.Value;
 			var location = new int[2];
-			anchor.GetLocationInWindow(location);
-			Assert.Equal((int)x, location[0]);
-			Assert.Equal((int)y, location[1]);
+			view.GetLocationInWindow(location);
+			Assert.Equal(windowX - location[0], position.X, 1f);
+			Assert.Equal(windowY - location[1], position.Y, 1f);
 		}
 
 		[Fact(DisplayName = "Outside a MauiAppCompatActivity a long-click listener is used and removed again")]
@@ -837,6 +901,49 @@ namespace Microsoft.Maui.DeviceTests
 					ContextFlyoutManager.UseTouchTrackerOverride = previous;
 				}
 			});
+		}
+
+		[Fact(DisplayName = "Outside a MauiAppCompatActivity a long click opens the native context menu with the flyout items")]
+		public async Task LongClickFallbackOpensNativeContextMenu()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Target" };
+			var copyClicks = 0;
+			var flyout = CreateFlyout(out _);
+			((MenuFlyoutItem)flyout[0]).Clicked += (_, _) => copyClicks++;
+			FlyoutBase.SetContextFlyout(label, flyout);
+
+			var previous = ContextFlyoutManager.UseTouchTrackerOverride;
+			ContextFlyoutManager.UseTouchTrackerOverride = false;
+
+			try
+			{
+				await AttachAndRun(label, async handler =>
+				{
+					var view = (AView)handler.PlatformView!;
+					var manager = ContextFlyoutManager.Get(view)!;
+					Assert.True(manager.UsesLongClickFallback);
+					var decor = view.RootView!;
+					var decorWasLongClickable = decor.LongClickable;
+
+					// Android opens the menu itself when the long-click listener doesn't handle the long click
+					Assert.True(view.PerformLongClick());
+					await AssertHelpers.AssertEventually(() => manager.Menu is not null);
+
+					var menu = manager.Menu!;
+					Assert.Equal(new[] { "Copy", "Disabled", "Edit" }, GetTitles(menu));
+					Assert.True(menu.PerformIdentifierAction(menu.GetItem(0)!.ItemId, 0));
+					Assert.Equal(1, copyClicks);
+
+					// The listener that added the items is only there while the menu is built
+					Assert.Equal(decorWasLongClickable, decor.LongClickable);
+					manager.Dismiss();
+				});
+			}
+			finally
+			{
+				ContextFlyoutManager.UseTouchTrackerOverride = previous;
+			}
 		}
 
 		static void WithTouchTracker(Action action)

@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AMenu = Android.Views.IMenu;
@@ -19,12 +16,7 @@ namespace Microsoft.Maui.Platform
 	static class ContextFlyoutTextMenus
 	{
 		// Above the groups text menus use for their own items, so the flyout items get their own section
-		const int FirstGroupId = 1000;
-		const int IconLoadTimeoutMilliseconds = 300;
-
-		// A window keeps its native context menu until the next one, so the icons it shows are kept with the window
-		static readonly ConditionalWeakTable<AView, List<IDisposable>> s_iconResults = new();
-		static int s_menuVersion;
+		const int FirstGroupId = ContextFlyoutManager.FirstMenuId;
 
 		/// <summary>
 		/// Whether the view is text that handles long presses and secondary clicks itself: editable text and
@@ -74,205 +66,12 @@ namespace Microsoft.Maui.Platform
 			if (!IsText(view) || view is not TextView textView)
 				return false;
 
-			var flyouts = ContextFlyoutManager.CollectFlyouts(textView, out var mauiContext);
-			if (flyouts.Count == 0 || mauiContext is null)
+			// Like the items apps add to native context menus, they come before the text's own actions
+			var flyouts = ContextFlyoutManager.CollectFlyouts(textView);
+			if (flyouts.Count == 0)
 				return false;
 
-			var sources = new List<IImageSource>();
-			foreach (var flyout in flyouts)
-				CollectIcons(flyout, sources);
-
-			if (textView.Context is null)
-				return false;
-
-			if (sources.Count == 0)
-			{
-				s_menuVersion++;
-				return Show(textView, x, y, flyouts, null) || fallback();
-			}
-
-			_ = ShowWhenIconsLoadedAsync(textView, x, y, flyouts, sources, mauiContext, fallback);
-			return true;
-		}
-
-		static async Task ShowWhenIconsLoadedAsync(TextView textView, float x, float y, List<IMenuFlyout> flyouts, List<IImageSource> sources, IMauiContext mauiContext, Func<bool> fallback)
-		{
-			// A newer secondary click replaces this one, like it replaces the menu that's open
-			var version = ++s_menuVersion;
-			var context = textView.Context!;
-			var icons = new Dictionary<IImageSource, Drawable>();
-			var results = new List<IDisposable>();
-			var tooLate = false;
-
-			var loads = new List<Task>(sources.Count);
-			foreach (var source in sources)
-				loads.Add(LoadAsync(source));
-
-			try
-			{
-				await Task.WhenAny(Task.WhenAll(loads), Task.Delay(IconLoadTimeoutMilliseconds));
-			}
-			catch
-			{
-				// An icon that fails to load is left out; the menu is still shown
-			}
-
-			// Icons that finish loading later are released right away
-			Dictionary<IImageSource, Drawable> loadedIcons;
-			lock (results)
-			{
-				tooLate = true;
-				loadedIcons = new Dictionary<IImageSource, Drawable>(icons);
-			}
-
-			if (version != s_menuVersion || !textView.IsAlive() || !textView.IsAttachedToWindow || !textView.IsShown ||
-				!IsText(textView) || textView.RootView is not AView root)
-			{
-				Release(results);
-				return;
-			}
-
-			if (!Show(textView, x, y, flyouts, loadedIcons))
-			{
-				Release(results);
-				fallback();
-				return;
-			}
-
-			// The window keeps showing the icons of its last context menu, so they're released with the next one
-			if (s_iconResults.TryGetValue(root, out var previous))
-				Release(previous);
-
-			s_iconResults.AddOrUpdate(root, results);
-
-			async Task LoadAsync(IImageSource source)
-			{
-				IImageSourceServiceResult<Drawable>? result;
-				try
-				{
-					result = await source.GetPlatformImageAsync(mauiContext);
-				}
-				catch
-				{
-					return;
-				}
-
-				if (result is null)
-					return;
-
-				lock (results)
-				{
-					if (tooLate)
-					{
-						result.Dispose();
-						return;
-					}
-
-					results.Add(result);
-
-					if (result.Value is Drawable drawable)
-						icons[source] = ContextFlyoutManager.ToMenuIcon(drawable, context);
-				}
-			}
-		}
-
-		static void Release(List<IDisposable> results)
-		{
-			foreach (var result in results)
-				result.Dispose();
-
-			results.Clear();
-		}
-
-		static void CollectIcons(IList<IMenuElement> items, List<IImageSource> sources)
-		{
-			foreach (var item in items)
-			{
-				if (item is IMenuFlyoutSeparator)
-					continue;
-
-				if (item.Source is IImageSource { IsEmpty: false } source && !sources.Contains(source))
-					sources.Add(source);
-
-				if (item is IMenuFlyoutSubItem subItem)
-					CollectIcons(subItem, sources);
-			}
-		}
-
-		static bool Show(TextView textView, float x, float y, List<IMenuFlyout> flyouts, Dictionary<IImageSource, Drawable>? icons)
-		{
-			// Native context menus are built by the pressed view and then its ancestors, up to the window's root
-			// view, so a listener there adds the items after the text's own. It's only there while the menu is built.
-			// The root is the window's own decor view: apps don't register context menus on it, as that would make
-			// the whole window long-clickable, so no listener of the app is replaced.
-			if (textView.RootView is not AView root)
-				return false;
-
-			var wasLongClickable = root.LongClickable;
-			using var listener = new ContextMenuListener(flyouts, icons);
-			root.SetOnCreateContextMenuListener(listener);
-
-			try
-			{
-				return textView.ShowContextMenu(x, y);
-			}
-			finally
-			{
-				// Setting a listener makes the view long-clickable
-				root.SetOnCreateContextMenuListener(null);
-				root.LongClickable = wasLongClickable;
-			}
-		}
-
-		sealed class ContextMenuListener : Java.Lang.Object, AView.IOnCreateContextMenuListener
-		{
-			readonly List<IMenuFlyout> _flyouts;
-			readonly Dictionary<IImageSource, Drawable>? _icons;
-
-			public ContextMenuListener(List<IMenuFlyout> flyouts, Dictionary<IImageSource, Drawable>? icons)
-			{
-				_flyouts = flyouts;
-				_icons = icons;
-			}
-
-			public void OnCreateContextMenu(IContextMenu? menu, AView? v, IContextMenuContextMenuInfo? menuInfo)
-			{
-				if (menu is null)
-					return;
-
-				// Like the items apps add to native context menus, they come before the text's own actions
-				var writer = new ContextFlyoutManager.MenuWriter(
-					(menuItem, element) => menuItem.SetOnMenuItemClickListener(new ItemClickListener(element)),
-					(menuItem, source) =>
-					{
-						if (_icons is not null && _icons.TryGetValue(source, out var icon))
-							menuItem.SetIcon(icon);
-					})
-				{
-					FirstGroupId = FirstGroupId,
-					FirstItemId = FirstGroupId,
-				};
-
-				writer.Write(menu, _flyouts);
-			}
-		}
-
-		sealed class ItemClickListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
-		{
-			// The window keeps its last context menu, which mustn't keep the flyout alive
-			readonly WeakReference<IMenuElement> _element;
-
-			public ItemClickListener(IMenuElement element) =>
-				_element = new WeakReference<IMenuElement>(element);
-
-			public bool OnMenuItemClick(AMenuItem item)
-			{
-				// MenuItem.Clicked is raised even when disabled, so check the current state first
-				if (_element.TryGetTarget(out var element) && element.IsEnabled)
-					element.Clicked();
-
-				return true;
-			}
+			return ContextFlyoutManager.ShowNativeContextMenu(textView, (x, y), flyouts, out _) || fallback();
 		}
 
 		/// <summary>

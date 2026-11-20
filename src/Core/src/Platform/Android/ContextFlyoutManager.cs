@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Android.Content;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
@@ -12,12 +9,11 @@ using AndroidX.Core.View.Accessibility;
 using AMenu = Android.Views.IMenu;
 using AMenuItem = Android.Views.IMenuItem;
 using AView = Android.Views.View;
-using PopupMenu = AndroidX.AppCompat.Widget.PopupMenu;
 
 namespace Microsoft.Maui.Platform
 {
 	/// <summary>
-	/// Shows the <see cref="IContextFlyoutElement.ContextFlyout"/> of a view as a native popup menu.
+	/// Shows the <see cref="IContextFlyoutElement.ContextFlyout"/> of a view as Android's own context menu.
 	/// </summary>
 	/// <remarks>
 	/// The manager never changes how the view handles touches: long presses and secondary clicks are
@@ -25,11 +21,14 @@ namespace Microsoft.Maui.Platform
 	/// selection, scrolling and accessibility focus behave exactly as they do without a context flyout.
 	/// Only when the view isn't hosted by a <see cref="MauiAppCompatActivity"/> (for example when embedding)
 	/// is a native long-click listener used instead.
+	/// The menu is the window's native context menu, like <see cref="AView.ShowContextMenu()"/> opens: it's built by
+	/// the view and its ancestors, and the flyout items are added by a listener on the window's root view that is
+	/// only there while the menu is built (see <see cref="ShowNativeContextMenu"/>).
 	/// </remarks>
 	internal sealed class ContextFlyoutManager
 	{
-		const int IconLoadTimeoutMilliseconds = 300;
-		const int IconSizeDp = 24;
+		// Above the ids menus use for their own items and groups (like text menus), so the flyout items get their own
+		internal const int FirstMenuId = 1000;
 
 		static readonly List<WeakReference<ContextFlyoutManager>> s_managers = new();
 		static readonly ConditionalWeakTable<AView, ContextFlyoutManager> s_managersByView = new();
@@ -40,6 +39,9 @@ namespace Microsoft.Maui.Platform
 		// Views that take long presses over from their children, like a reorderable CollectionView
 		static readonly ConditionalWeakTable<AView, object> s_longPressInterceptors = new();
 
+		// A window reuses its context menu, so it belongs to whichever flyout showed it last
+		static readonly ConditionalWeakTable<IContextMenu, WeakReference<ContextFlyoutManager>> s_menuOwners = new();
+
 		readonly WeakReference<AView> _view;
 		WeakReference<IViewHandler> _handler;
 		readonly bool _usesLongClickFallback;
@@ -47,12 +49,9 @@ namespace Microsoft.Maui.Platform
 		LongClickListener? _longClickListener;
 		AccessibilityDelegateCompatWrapper? _accessibilityDelegate;
 
-		PopupMenu? _popup;
-		Dictionary<int, IMenuElement>? _leafItems;
+		IContextMenu? _menu;
 		List<ISubMenu>? _subMenus;
-		PopupAnchorView? _anchor;
-		List<IDisposable>? _imageResults;
-		int _menuVersion;
+		(float X, float Y)? _menuPosition;
 
 		ContextFlyoutManager(IViewHandler handler, AView view)
 		{
@@ -91,9 +90,11 @@ namespace Microsoft.Maui.Platform
 
 		internal bool UsesLongClickFallback => _usesLongClickFallback;
 
-		internal PopupMenu? Popup => _popup;
+		/// <summary>The context menu this flyout opened, until it's dismissed or another one opens in its window.</summary>
+		internal IContextMenu? Menu => IsShowing(this, _menu) ? _menu : null;
 
-		internal AView? Anchor => _anchor;
+		/// <summary>Where the menu was asked to open, relative to the view; <see langword="null"/> when Android chose (a dialog, or a native long click).</summary>
+		internal (float X, float Y)? MenuPosition => _menuPosition;
 
 		internal static ContextFlyoutManager? Get(AView view) =>
 			s_managersByView.TryGetValue(view, out var manager) ? manager : null;
@@ -299,6 +300,23 @@ namespace Microsoft.Maui.Platform
 		bool DefersLongPress() =>
 			!_view.TryGetTarget(out var view) || !view.IsAlive() || HasLongPressHandler(view, this) || ContextFlyoutTextMenus.IsText(view);
 
+		// Android opens the context menu right after the long-click listener, so the items are added until then
+		void PrepareNativeLongClick()
+		{
+			if (!_view.TryGetTarget(out var view) || !view.IsAlive() || !_handler.TryGetTarget(out var handler) ||
+				!TryGetFlyout(handler, out _) || NativeMenuScope.Create(view, CollectFlyouts(view)) is not NativeMenuScope scope)
+				return;
+
+			var posted = view.Post(() =>
+			{
+				SetMenu(scope.Menu, scope.SubMenus, null);
+				scope.Dispose();
+			});
+
+			if (!posted)
+				scope.Dispose();
+		}
+
 		// The innermost view under the point that receives touches, like ViewGroup dispatches them
 		static AView? FindTouchTargetAt(AView root, ViewGroup group, float x, float y)
 		{
@@ -404,62 +422,183 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Builds the menu from the current state of the flyout and shows it.
+		/// Builds the menu from the current state of the flyout and opens it, as Android's own context menu.
 		/// </summary>
-		/// <param name="windowX">Where the menu opens, in window coordinates, like native context menus that
-		/// open where the view was pressed. Without a position, the menu is anchored to the view.</param>
+		/// <param name="windowX">Where the menu opens, in window coordinates, like native context menus that open
+		/// where the view was pressed. Without a position the menu opens as a dialog, like native context menus that
+		/// aren't opened by a touch (for example by an accessibility service).</param>
 		/// <param name="windowY">See <paramref name="windowX"/>.</param>
-		/// <returns><see langword="true"/> when a menu is (about to be) shown.</returns>
+		/// <returns><see langword="true"/> when the request to open a menu was handled.</returns>
 		internal bool Show(float? windowX = null, float? windowY = null)
 		{
-			if (!_view.TryGetTarget(out var view) || !view.IsAlive() || !view.IsAttachedToWindow || !view.IsShown || view.Context is not Context context)
+			if (!_view.TryGetTarget(out var view) || !view.IsAlive() || !view.IsAttachedToWindow || !view.IsShown)
 				return false;
 
-			if (!_handler.TryGetTarget(out var handler) || handler.MauiContext is not IMauiContext mauiContext ||
-				!TryGetFlyout(handler, out _))
+			if (!_handler.TryGetTarget(out var handler) || !TryGetFlyout(handler, out _))
 				return false;
 
-			Dismiss();
+			(float X, float Y)? position = null;
+			if (windowX is float x && windowY is float y && view.RootView is AView root)
+			{
+				if (!TryMapToLocal(root, view, x, y, out var localX, out var localY))
+				{
+					var location = new int[2];
+					view.GetLocationInWindow(location);
+					localX = x - location[0];
+					localY = y - location[1];
+				}
 
-			var version = ++_menuVersion;
-			var anchor = windowX is float x && windowY is float y ? PopupAnchorView.Create(view, x, y) : null;
-			var popup = new PopupMenu(context, anchor ?? view);
-			var leafItems = new Dictionary<int, IMenuElement>();
-			var subMenus = new List<ISubMenu>();
-			var iconLoads = new List<Task>();
+				position = (localX, localY);
+			}
 
 			// Like native context menus, the menus of the view's ancestors are added after its own
-			var flyouts = CollectFlyouts(view);
-			var writer = new MenuWriter(
-				(menuItem, element) => leafItems[menuItem.ItemId] = element,
-				(menuItem, source) => iconLoads.Add(LoadIconAsync(menuItem, source, version, context, mauiContext)),
-				subMenus);
-			writer.Write(popup.Menu, flyouts);
-			MenuCompat.SetGroupDividerEnabled(popup.Menu, true);
+			if (!ShowNativeContextMenuCore(view, position, CollectFlyouts(view), out var menu, out var subMenus))
+				return false;
 
-			if (iconLoads.Count > 0)
-				popup.SetForceShowIcon(true);
-
-			// No DismissEvent cleanup: on small screens the root popup is dismissed to show a sub menu,
-			// and the sub menu's items are still routed through this popup. State is released when the
-			// next menu is shown or the flyout is detached.
-			popup.MenuItemClick += OnMenuItemClick;
-
-			if (anchor is not null)
-				popup.DismissEvent += (_, _) => anchor.OnMenuClosed();
-
-			_anchor = anchor;
-			_popup = popup;
-			_leafItems = leafItems;
-			_subMenus = subMenus;
-
-			// The popup measures its width once, so icons are loaded before it's shown
-			if (iconLoads.Count == 0)
-				ShowPopup(popup, version);
-			else
-				_ = ShowWhenIconsLoadedAsync(popup, version, iconLoads);
-
+			SetMenu(menu, subMenus, position);
 			return true;
+		}
+
+		void SetMenu(IContextMenu? menu, List<ISubMenu>? subMenus, (float X, float Y)? position)
+		{
+			_menu = menu;
+			_subMenus = menu is null ? null : subMenus;
+			_menuPosition = menu is null ? null : position;
+
+			if (menu is not null)
+				s_menuOwners.AddOrUpdate(menu, new WeakReference<ContextFlyoutManager>(this));
+		}
+
+		static bool IsShowing(ContextFlyoutManager manager, IContextMenu? menu) =>
+			menu is not null && menu.IsAlive() && s_menuOwners.TryGetValue(menu, out var owner) &&
+			owner.TryGetTarget(out var current) && current == manager;
+
+		/// <summary>
+		/// Opens the window's native context menu for a view, like <see cref="AView.ShowContextMenu()"/> does, with the
+		/// items of the given flyouts.
+		/// </summary>
+		/// <remarks>
+		/// Native context menus are built by the view and then its ancestors, up to the window's root view, so a
+		/// listener there adds the items after the ones of the view and its ancestors (like the actions of text).
+		/// It's only there while the menu is built. The root is the window's own decor view: apps don't register
+		/// context menus on it, as that would make the whole window long-clickable, so no listener of the app is
+		/// replaced.
+		/// </remarks>
+		/// <param name="view">The view the menu is for.</param>
+		/// <param name="position">Where the menu opens, relative to the view. Without one it opens as a dialog.</param>
+		/// <param name="flyouts">The flyouts whose items are added.</param>
+		/// <param name="menu">The menu, when the flyout items were added to it.</param>
+		/// <returns><see langword="true"/> when the request was handled: a menu opened, or an ancestor handled it
+		/// instead (like a ListView, which runs its long-click listener first).</returns>
+		internal static bool ShowNativeContextMenu(AView view, (float X, float Y)? position, IReadOnlyList<IMenuFlyout> flyouts, out IContextMenu? menu) =>
+			ShowNativeContextMenuCore(view, position, flyouts, out menu, out _);
+
+		static bool ShowNativeContextMenuCore(AView view, (float X, float Y)? position, IReadOnlyList<IMenuFlyout> flyouts, out IContextMenu? menu, out List<ISubMenu>? subMenus)
+		{
+			menu = null;
+			subMenus = null;
+
+			if (flyouts.Count == 0 || NativeMenuScope.Create(view, flyouts) is not NativeMenuScope scope)
+				return false;
+
+			using (scope)
+			{
+				var shown = position is (float x, float y) && OperatingSystem.IsAndroidVersionAtLeast(24)
+					? view.ShowContextMenu(x, y)
+					: view.ShowContextMenu();
+
+				menu = shown ? scope.Menu : null;
+				subMenus = menu is null ? null : scope.SubMenus;
+				return shown;
+			}
+		}
+
+		/// <summary>
+		/// Adds the flyout items to the context menus the window builds while the scope is open.
+		/// </summary>
+		sealed class NativeMenuScope : IDisposable
+		{
+			readonly AView _root;
+			readonly bool _wasLongClickable;
+			ContextMenuListener? _listener;
+
+			NativeMenuScope(AView root, ContextMenuListener listener)
+			{
+				_root = root;
+				_wasLongClickable = root.LongClickable;
+				_listener = listener;
+				root.SetOnCreateContextMenuListener(listener);
+			}
+
+			public IContextMenu? Menu => _listener?.Menu;
+
+			public List<ISubMenu>? SubMenus => _listener?.SubMenus;
+
+			public static NativeMenuScope? Create(AView view, IReadOnlyList<IMenuFlyout> flyouts) =>
+				view.RootView is AView root ? new NativeMenuScope(root, new ContextMenuListener(flyouts)) : null;
+
+			public void Dispose()
+			{
+				if (_listener is null)
+					return;
+
+				// Setting a listener makes the view long-clickable
+				if (_root.IsAlive())
+				{
+					_root.SetOnCreateContextMenuListener(null);
+					_root.LongClickable = _wasLongClickable;
+				}
+
+				_listener.Dispose();
+				_listener = null;
+			}
+		}
+
+		sealed class ContextMenuListener : Java.Lang.Object, AView.IOnCreateContextMenuListener
+		{
+			readonly IReadOnlyList<IMenuFlyout> _flyouts;
+
+			public ContextMenuListener(IReadOnlyList<IMenuFlyout> flyouts) =>
+				_flyouts = flyouts;
+
+			public IContextMenu? Menu { get; private set; }
+
+			// On phones an open sub menu is a popup of its own, which closing the menu doesn't close
+			public List<ISubMenu> SubMenus { get; } = new();
+
+			public void OnCreateContextMenu(IContextMenu? menu, AView? v, IContextMenuContextMenuInfo? menuInfo)
+			{
+				if (menu is null)
+					return;
+
+				var writer = new MenuWriter((menuItem, element) => menuItem.SetOnMenuItemClickListener(new ItemClickListener(element)), SubMenus)
+				{
+					FirstGroupId = FirstMenuId,
+					FirstItemId = FirstMenuId,
+				};
+
+				writer.Write(menu, _flyouts);
+				MenuCompat.SetGroupDividerEnabled(menu, true);
+				Menu = menu;
+			}
+		}
+
+		sealed class ItemClickListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+		{
+			// The window keeps its last context menu, which mustn't keep the flyout alive
+			readonly WeakReference<IMenuElement> _element;
+
+			public ItemClickListener(IMenuElement element) =>
+				_element = new WeakReference<IMenuElement>(element);
+
+			public bool OnMenuItemClick(AMenuItem item)
+			{
+				// MenuItem.Clicked is raised even when disabled, so check the current state first
+				if (_element.TryGetTarget(out var element) && element.IsEnabled)
+					element.Clicked();
+
+				return true;
+			}
 		}
 
 		/// <summary>
@@ -467,13 +606,9 @@ namespace Microsoft.Maui.Platform
 		/// view itself, followed by the ones of its ancestors. Flyouts that can't show (disabled or input transparent
 		/// views, no items) are left out, and a flyout shared by several of them is added once.
 		/// </summary>
-		internal static List<IMenuFlyout> CollectFlyouts(AView? view) =>
-			CollectFlyouts(view, out _);
-
-		internal static List<IMenuFlyout> CollectFlyouts(AView? view, out IMauiContext? mauiContext)
+		internal static List<IMenuFlyout> CollectFlyouts(AView? view)
 		{
 			var flyouts = new List<IMenuFlyout>();
-			mauiContext = null;
 
 			for (var current = view; current is not null; current = current.Parent as AView)
 			{
@@ -481,7 +616,6 @@ namespace Microsoft.Maui.Platform
 					!TryGetFlyout(handler, out var flyout) || flyouts.Contains(flyout))
 					continue;
 
-				mauiContext ??= handler.MauiContext;
 				flyouts.Add(flyout);
 			}
 
@@ -495,13 +629,11 @@ namespace Microsoft.Maui.Platform
 		internal sealed class MenuWriter
 		{
 			readonly Action<AMenuItem, IMenuElement> _onItem;
-			readonly Action<AMenuItem, IImageSource>? _onIcon;
 			readonly List<ISubMenu>? _subMenus;
 
-			public MenuWriter(Action<AMenuItem, IMenuElement> onItem, Action<AMenuItem, IImageSource>? onIcon = null, List<ISubMenu>? subMenus = null)
+			public MenuWriter(Action<AMenuItem, IMenuElement> onItem, List<ISubMenu>? subMenus = null)
 			{
 				_onItem = onItem;
-				_onIcon = onIcon;
 				_subMenus = subMenus;
 			}
 
@@ -578,10 +710,8 @@ namespace Microsoft.Maui.Platform
 					if (menuItem is null)
 						continue;
 
+					// Like native context menus, items have no icons
 					menuItem.SetEnabled(item.IsEnabled);
-
-					if (item.Source is IImageSource { IsEmpty: false } source)
-						_onIcon?.Invoke(menuItem, source);
 				}
 
 				return groupId;
@@ -606,29 +736,29 @@ namespace Microsoft.Maui.Platform
 
 		internal void Dismiss()
 		{
-			var popup = _popup;
-			if (popup is null)
+			var menu = _menu;
+			var subMenus = _subMenus;
+			var wasShowing = IsShowing(this, menu);
+			_menu = null;
+			_subMenus = null;
+			_menuPosition = null;
+
+			if (!wasShowing)
 				return;
 
-			_menuVersion++;
+			s_menuOwners.Remove(menu!);
 
-			// On small screens an open sub menu is a separate popup that replaced the root one
-			if (_subMenus is not null)
+			// On phones an open sub menu replaced the menu with a popup of its own, so it's closed separately
+			if (subMenus is not null)
 			{
-				foreach (var subMenu in _subMenus)
+				foreach (var subMenu in subMenus)
 				{
 					if (subMenu.IsAlive())
 						subMenu.Close();
 				}
 			}
 
-			Cleanup(popup);
-
-			if (popup.IsAlive())
-				popup.Dismiss();
-
-			_anchor?.Remove();
-			_anchor = null;
+			menu!.Close();
 		}
 
 		static bool HasItems(IMenuFlyout flyout)
@@ -640,123 +770,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return false;
-		}
-
-		void ShowPopup(PopupMenu popup, int version)
-		{
-			if (version != _menuVersion || _popup != popup)
-				return;
-
-			if (!_view.TryGetTarget(out var view) || !view.IsAlive() || !view.IsAttachedToWindow || !view.IsShown)
-			{
-				Dismiss();
-				return;
-			}
-
-			popup.Show();
-		}
-
-		async Task ShowWhenIconsLoadedAsync(PopupMenu popup, int version, List<Task> iconLoads)
-		{
-			try
-			{
-				await Task.WhenAny(Task.WhenAll(iconLoads), Task.Delay(IconLoadTimeoutMilliseconds));
-			}
-			catch
-			{
-				// An icon that fails to load is left out; the menu is still shown
-			}
-
-			ShowPopup(popup, version);
-		}
-
-		async Task LoadIconAsync(AMenuItem menuItem, IImageSource source, int version, Context context, IMauiContext mauiContext)
-		{
-			IImageSourceServiceResult<Drawable>? result;
-
-			try
-			{
-				result = await source.GetPlatformImageAsync(mauiContext);
-			}
-			catch
-			{
-				return;
-			}
-
-			if (result is null)
-				return;
-
-			if (version != _menuVersion || !menuItem.IsAlive())
-			{
-				result.Dispose();
-				return;
-			}
-
-			(_imageResults ??= new List<IDisposable>()).Add(result);
-
-			if (result.Value is Drawable drawable)
-				menuItem.SetIcon(ToMenuIcon(drawable, context));
-		}
-
-		// Menu icons are 24dp; larger images (e.g. a full-size png) are scaled down to fit
-		internal static Drawable ToMenuIcon(Drawable drawable, Context context)
-		{
-			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
-				return drawable;
-
-			var maxSize = (int)context.ToPixels(IconSizeDp);
-			var width = drawable.IntrinsicWidth;
-			var height = drawable.IntrinsicHeight;
-
-			if (width > 0 && height > 0 && width <= maxSize && height <= maxSize)
-				return drawable;
-
-			if (width <= 0 || height <= 0)
-			{
-				width = maxSize;
-				height = maxSize;
-			}
-
-			var scale = Math.Min((double)maxSize / width, (double)maxSize / height);
-			var layer = new LayerDrawable(new[] { drawable });
-			layer.SetLayerSize(0, Math.Max(1, (int)(width * scale)), Math.Max(1, (int)(height * scale)));
-			return layer;
-		}
-
-		void OnMenuItemClick(object? sender, PopupMenu.MenuItemClickEventArgs e)
-		{
-			if (e.Item is not AMenuItem item || _leafItems is null || !_leafItems.TryGetValue(item.ItemId, out var element))
-			{
-				// Sub menu headers open their sub menu
-				e.Handled = false;
-				return;
-			}
-
-			e.Handled = true;
-
-			// MenuItem.Clicked is raised even when disabled, so check the current state first
-			if (element.IsEnabled)
-				element.Clicked();
-		}
-
-		void Cleanup(PopupMenu popup)
-		{
-			popup.MenuItemClick -= OnMenuItemClick;
-
-			if (_popup == popup)
-			{
-				_popup = null;
-				_leafItems = null;
-				_subMenus = null;
-			}
-
-			if (_imageResults is not null)
-			{
-				foreach (var result in _imageResults)
-					result.Dispose();
-
-				_imageResults = null;
-			}
 		}
 
 		internal static bool TryMapToLocal(AView root, AView view, float x, float y, out float localX, out float localY)
@@ -884,74 +897,6 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		/// <summary>
-		/// An invisible 1x1 view at the position the menu opens, as popup menus open next to a view.
-		/// </summary>
-		sealed class PopupAnchorView : AView
-		{
-			// The window briefly regains focus when the root menu is replaced by a sub menu, which uses this anchor too
-			const int RemoveDelayMilliseconds = 300;
-
-			bool _menuClosed;
-
-			PopupAnchorView(Context context) : base(context)
-			{
-				Focusable = false;
-				Clickable = false;
-				ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
-			}
-
-			public static PopupAnchorView? Create(AView view, float windowX, float windowY)
-			{
-				if (view.RootView is not FrameLayout root || view.Context is not Context context)
-					return null;
-
-				var x = (int)windowX;
-				var y = (int)windowY;
-				var anchor = new PopupAnchorView(context);
-				root.AddView(anchor, new FrameLayout.LayoutParams(1, 1)
-				{
-					LeftMargin = x - root.PaddingLeft,
-					TopMargin = y - root.PaddingTop,
-				});
-
-				// The popup reads the anchor's position when it's shown, which can be before the next layout pass
-				anchor.Layout(x, y, x + 1, y + 1);
-				return anchor;
-			}
-
-			public void OnMenuClosed()
-			{
-				_menuClosed = true;
-				RemoveWhenWindowHasFocus();
-			}
-
-			public override void OnWindowFocusChanged(bool hasWindowFocus)
-			{
-				base.OnWindowFocusChanged(hasWindowFocus);
-
-				if (hasWindowFocus)
-					RemoveWhenWindowHasFocus();
-			}
-
-			// While a menu is open the window doesn't have focus, so this waits for sub menus to close as well
-			void RemoveWhenWindowHasFocus()
-			{
-				if (_menuClosed && this.IsAlive() && IsAttachedToWindow)
-					PostDelayed(() =>
-					{
-						if (this.IsAlive() && HasWindowFocus)
-							Remove();
-					}, RemoveDelayMilliseconds);
-			}
-
-			public void Remove()
-			{
-				if (this.IsAlive())
-					this.RemoveFromParent();
-			}
-		}
-
 		sealed class LongClickListener : Java.Lang.Object, AView.IOnLongClickListener
 		{
 			readonly WeakReference<ContextFlyoutManager> _manager;
@@ -959,8 +904,15 @@ namespace Microsoft.Maui.Platform
 			public LongClickListener(ContextFlyoutManager manager) =>
 				_manager = new WeakReference<ContextFlyoutManager>(manager);
 
-			public bool OnLongClick(AView? v) =>
-				_manager.TryGetTarget(out var manager) && !manager.DefersLongPress() && manager.Show();
+			// Not handling the long click lets Android open the context menu where the view was pressed, like it does
+			// for views with a native context menu; the flyout items are added while it's built.
+			public bool OnLongClick(AView? v)
+			{
+				if (_manager.TryGetTarget(out var manager) && !manager.DefersLongPress())
+					manager.PrepareNativeLongClick();
+
+				return false;
+			}
 		}
 
 		sealed class AccessibilityCommand : Java.Lang.Object, IAccessibilityViewCommand
