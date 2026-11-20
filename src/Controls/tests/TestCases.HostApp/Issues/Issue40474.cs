@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 39484, "SwipeItem background should reset when cleared", PlatformAffected.Android)]
-public class Issue39484 : ContentPage
+[Issue(IssueTracker.Github, 40474, "SwipeItem background should reset when cleared", PlatformAffected.Android)]
+public class Issue40474 : ContentPage
 {
-	public Issue39484()
+	public Issue40474()
 	{
 		BackgroundColor = Colors.White;
 
