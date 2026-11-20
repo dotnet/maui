@@ -122,6 +122,101 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task PendingThresholdNotificationUsesLatestQualifyingSource()
+		{
+			SetupBuilder();
+
+			var firstSource = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"First {i}"));
+			var secondSource = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Second {i}"));
+			var collectionView = new CollectionView { ItemsSource = firstSource, RemainingItemsThreshold = -1 };
+			int notifications = 0;
+			collectionView.RemainingItemsThresholdReached += (_, _) => notifications++;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nativeView = handler.Controller.CollectionView;
+					var delegator = new ThresholdTestDelegator(handler.Controller) { LastVisibleIndex = 9 };
+					nativeView.Delegate = delegator;
+					collectionView.RemainingItemsThreshold = 0;
+					delegator.Scrolled(nativeView);
+					collectionView.ItemsSource = secondSource;
+					delegator.Scrolled(nativeView);
+					Assert.Equal(0, notifications);
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => drained.TrySetResult());
+				});
+				await drained.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.Equal(1, notifications);
+			});
+		}
+
+		[Theory]
+		[InlineData("threshold")]
+		[InlineData("scroll")]
+		[InlineData("items")]
+		[InlineData("layout")]
+		public async Task PendingThresholdNotificationIsDiscardedWhenStateChanges(string change)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			var collectionView = new CollectionView { ItemsSource = items, RemainingItemsThreshold = -1 };
+			int notifications = 0;
+			collectionView.RemainingItemsThresholdReached += (_, _) => notifications++;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nativeView = handler.Controller.CollectionView;
+					var delegator = new ThresholdTestDelegator(handler.Controller) { LastVisibleIndex = 4 };
+					nativeView.Delegate = delegator;
+					collectionView.RemainingItemsThreshold = 5;
+					delegator.Scrolled(nativeView);
+
+					switch (change)
+					{
+						case "threshold":
+							collectionView.RemainingItemsThreshold = 0;
+							break;
+						case "scroll":
+							delegator.LastVisibleIndex = 0;
+							delegator.Scrolled(nativeView);
+							break;
+						case "items":
+							for (int i = 0; i < 10; i++)
+								items.Add($"Added {i}");
+							break;
+						case "layout":
+							collectionView.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+							Assert.NotSame(delegator, nativeView.Delegate);
+							break;
+					}
+
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => drained.TrySetResult());
+				});
+				await drained.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.Equal(0, notifications);
+			});
+		}
+
+		class ThresholdTestDelegator : ItemsViewDelegator2<ReorderableItemsView, ItemsViewController2<ReorderableItemsView>>
+		{
+			public ThresholdTestDelegator(ItemsViewController2<ReorderableItemsView> controller)
+				: base(controller.CollectionView.CollectionViewLayout, controller)
+			{
+			}
+
+			public int LastVisibleIndex { get; set; }
+
+			protected override (bool VisibleItems, int First, int Center, int Last) GetVisibleItemsIndex() =>
+				(true, 0, 0, LastVisibleIndex);
+		}
+
 		[Theory]
 		[InlineData(false, true)]
 		[InlineData(true, true)]
