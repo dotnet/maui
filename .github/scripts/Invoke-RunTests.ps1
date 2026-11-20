@@ -230,14 +230,19 @@ if (-not $queueError -and $selection.mode -ne 'none') {
                 Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
             }
         } catch {
-            $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
-            if ([int]$_.Exception.Response?.StatusCode -eq 403) {
-                # Queueing with template parameters needs 'Edit queue build configuration' on the
-                # pipeline, on top of 'Queue builds'; a full run without parameters needs only the latter.
-                $reason = "the trigger identity may queue maui-pr-uitests but not with parameters (it needs 'Edit queue build configuration' on that pipeline). $reason".Trim()
+            if ($_.FullyQualifiedErrorId -like 'RunTestsEntraSignInFailed*') {
+                Write-Warning "Signing in to Azure DevOps failed: $($_.Exception.Message)"
+                $queueError = "Could not sign in to Azure DevOps: Microsoft Entra refused the token ($(Format-RunTestsText $_.Exception.Message 250)). Nothing was queued; comment ``/review run-tests`` again later."
+            } else {
+                $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
+                if ([int]$_.Exception.Response?.StatusCode -eq 403) {
+                    # Queueing with template parameters needs 'Edit queue build configuration' on the
+                    # pipeline, on top of 'Queue builds'; a full run without parameters needs only the latter.
+                    $reason = "the trigger identity may queue maui-pr-uitests but not with parameters (it needs 'Edit queue build configuration' on that pipeline). $reason".Trim()
+                }
+                Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
+                $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
             }
-            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
-            $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
             $build = $null
         } finally {
             $AzdoToken = $null

@@ -718,16 +718,32 @@ function Get-RunTestsAzdoToken {
     $oidc = Invoke-RestMethod -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange" `
         -Headers @{ Authorization = "Bearer $($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN)" } -TimeoutSec 30
     Write-Host "::add-mask::$($oidc.value)"
-    $token = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" `
-        -ContentType 'application/x-www-form-urlencoded' -TimeoutSec 30 -Body @{
-            grant_type = 'client_credentials'
-            client_id = $clientId
-            client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
-            client_assertion = $oidc.value
-            scope = '499b84ac-1321-427f-aa17-267ca6975798/.default'
+    # Entra sometimes refuses the exchange for a while (e.g. AADSTS53003, Conditional Access), so
+    # retry a few times; if it still fails, report Entra's own reason instead of a bare HTTP status.
+    $reason = ''
+    for ($attempt = 1; $attempt -le 4; $attempt++) {
+        try {
+            $token = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" `
+                -ContentType 'application/x-www-form-urlencoded' -TimeoutSec 30 -Body @{
+                    grant_type = 'client_credentials'
+                    client_id = $clientId
+                    client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+                    client_assertion = $oidc.value
+                    scope = '499b84ac-1321-427f-aa17-267ca6975798/.default'
+                }
+            Write-Host "::add-mask::$($token.access_token)"
+            return $token.access_token
+        } catch {
+            $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
+            if (-not $reason) { $reason = $_.Exception.Message }
+            Write-Warning "Microsoft Entra sign-in failed (attempt $attempt): $reason"
+            if ($attempt -lt 4) { Start-Sleep -Seconds (15 * $attempt) }
         }
-    Write-Host "::add-mask::$($token.access_token)"
-    return $token.access_token
+    }
+    $record = [System.Management.Automation.ErrorRecord]::new(
+        [System.InvalidOperationException]::new($reason), 'RunTestsEntraSignInFailed',
+        [System.Management.Automation.ErrorCategory]::AuthenticationError, $null)
+    throw $record
 }
 
 # ---------------------------------------------------------------------------
@@ -947,6 +963,8 @@ function Get-RunTestsAzdoErrorText {
     try { $json = $Body | ConvertFrom-Json -Depth 20 } catch { return (Format-RunTestsText $Body 300) }
     $messages = @($json.customProperties.ValidationResults | ForEach-Object { $_.message } | Where-Object { $_ } | Select-Object -Unique -First 3)
     if (-not $messages.Count -and $json.message) { $messages = @($json.message) }
+    # Microsoft Entra token errors: keep the AADSTS code and text, drop the trace/correlation ids.
+    if (-not $messages.Count -and $json.error_description) { $messages = @((([string]$json.error_description) -split ' Trace ID:')[0]) }
     return (Format-RunTestsText ($messages -join '; ') 300)
 }
 

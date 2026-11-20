@@ -202,6 +202,35 @@ Describe 'Pipeline support checks' {
         Get-RunTestsAzdoErrorText '' | Should -Be ''
     }
 
+    It "reports Microsoft Entra's reason without trace ids" {
+        $body = '{"error":"invalid_request","error_description":"AADSTS53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance. Trace ID: 6bbd Correlation ID: 4618 Timestamp: 2026-11-20 19:57:12Z","error_codes":[53003]}'
+        Get-RunTestsAzdoErrorText $body | Should -Be 'AADSTS53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance.'
+    }
+
+    It 'retries the Entra sign-in and then fails with a sign-in error id' {
+        $env:AZDO_TRIGGER_TENANT_ID = 'tenant'; $env:AZDO_TRIGGER_CLIENT_ID = 'client'
+        $env:ACTIONS_ID_TOKEN_REQUEST_URL = 'https://token.example/?x=1'; $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'request'
+        try {
+            Mock Start-Sleep {}
+            Mock Write-Warning {}
+            Mock Invoke-RestMethod { [pscustomobject]@{ value = 'oidc' } } -ParameterFilter { $Uri -like 'https://token.example/*' }
+            Mock Invoke-RestMethod { throw 'AADSTS53003: Access has been blocked by Conditional Access policies.' } -ParameterFilter { $Uri -like 'https://login.microsoftonline.com/*' }
+            $caught = $null
+            try { Get-RunTestsAzdoToken } catch { $caught = $_ }
+            $caught.FullyQualifiedErrorId | Should -BeLike 'RunTestsEntraSignInFailed*'
+            $caught.Exception.Message | Should -Match 'AADSTS53003'
+            Should -Invoke Invoke-RestMethod -Times 4 -Exactly -ParameterFilter { $Uri -like 'https://login.microsoftonline.com/*' }
+        } finally {
+            'AZDO_TRIGGER_TENANT_ID', 'AZDO_TRIGGER_CLIENT_ID', 'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN' | ForEach-Object { Remove-Item "env:$_" -ErrorAction SilentlyContinue }
+        }
+    }
+
+    It 'says when Azure DevOps sign-in, not the queue request, failed' {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match "FullyQualifiedErrorId -like 'RunTestsEntraSignInFailed\*'"
+        $invoke | Should -Match 'Could not sign in to Azure DevOps'
+    }
+
     It 'stops before the models run when the target branch cannot run a selection' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
         $contextScript | Should -Match 'Test-RunTestsPipelineSupportsSelection'
