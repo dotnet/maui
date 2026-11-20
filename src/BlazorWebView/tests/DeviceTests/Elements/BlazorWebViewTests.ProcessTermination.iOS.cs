@@ -230,6 +230,47 @@ public partial class BlazorWebViewTests
 			});
 	}
 
+	[Fact]
+	public Task WebContentProcessTerminationAfterThePageNavigatedByItselfReloadsTheNewPage()
+	{
+		var testLoggerProvider = new TestLoggerProvider();
+		return RunBlazorStartupTest(async (handler, webView) =>
+		{
+			var blazorWebView = Assert.IsAssignableFrom<BlazorWebView>(handler.VirtualView);
+			var terminated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			void OnProcessTerminated(object? sender, WebViewProcessTerminatedEventArgs e) => terminated.TrySetResult();
+
+			// The startup page was asked for with LoadRequest. This one is not: the page navigates to it by itself.
+			var navigatedToUrl = BlazorWebViewHandler.AppOrigin + "PageTheWebViewNavigatedTo";
+
+			blazorWebView.ProcessTerminated += OnProcessTerminated;
+			try
+			{
+				await webView.AttachAndRun(async () =>
+				{
+					await WebViewHelpers.ExecuteScriptAsync(webView,
+						$"document.getElementById('controlDiv').innerText = 'BeforeNavigation'; setTimeout(function () {{ location.href = '{navigatedToUrl}'; }}); 'navigating'");
+					await WaitForControlDivAfterReload(webView, "Static");
+					Assert.Equal(navigatedToUrl, await WebViewHelpers.ExecuteScriptAsync(webView, "location.href"));
+					await WaitForPageLoaded(webView);
+
+					await WebViewHelpers.ExecuteScriptAsync(webView, "document.getElementById('controlDiv').innerText = 'BeforeTermination'");
+					KillWebContentProcess(webView);
+					await terminated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+					await WaitForControlDivAfterReload(webView, "Static");
+
+					Assert.Equal(navigatedToUrl, await WebViewHelpers.ExecuteScriptAsync(webView, "location.href"));
+				});
+
+				Assert.Single(testLoggerProvider.GetEvents(), e => e.EventId.Name == ReloadingEventName);
+			}
+			finally
+			{
+				blazorWebView.ProcessTerminated -= OnProcessTerminated;
+			}
+		}, testLoggerProvider);
+	}
+
 	// Ends the web content process the way the system does when it crashes or reclaims it.
 	// _webProcessIdentifier is private WebKit API, used only by this test.
 	static void KillWebContentProcess(WKWebView webView) =>
