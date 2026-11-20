@@ -187,6 +187,14 @@ Describe 'Pipeline support checks' {
         Test-RunTestsPipelineSupportsSelection '' | Should -BeFalse
     }
 
+    It 'requires every parameter the queue request sends' {
+        $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
+        Test-RunTestsPipelineSupportsSelection $current -Parameters @('selectedRun', 'uitestPlatformIos', 'uitest_Label') | Should -BeTrue
+        # A category added on the target branch after GitHub last computed the test merge.
+        Test-RunTestsPipelineSupportsSelection $current -Parameters @('uitest_SomeNewCategory') | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection $current -Parameters @('uitest_Label.*') | Should -BeFalse
+    }
+
     It "reports Azure DevOps' own validation messages" {
         $body = '{"customProperties":{"ValidationResults":[{"result":"error","message":"Unexpected parameter ''selectedRun''"},{"result":"error","message":"Unexpected parameter ''selectedPlatforms''"}]},"message":"Could not queue the build because there were validation errors or warnings."}'
         Get-RunTestsAzdoErrorText $body | Should -Be "Unexpected parameter 'selectedRun'; Unexpected parameter 'selectedPlatforms'"
@@ -203,7 +211,11 @@ Describe 'Pipeline support checks' {
 
     It 'checks the test-merge commit pipeline before queueing' {
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
-        $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$pr\.merge_commit_sha\)'
+        $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$current\.merge_commit_sha\) -Parameters \$requiredParameters'
+        # GitHub refreshes a test merge of an older target branch lazily: wait for it, don't fail at once.
+        $invoke | Should -Match 'AddMinutes\(10\)'
+        $invoke | Should -Match 'pipelineReady = \$verified\.pipelineReady'
+        Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/review-run-tests-dispatch.yml') | Should -Match 'timeout-minutes: 25'
         $invoke | Should -Match 'Get-RunTestsAzdoErrorText'
         $invoke | Should -Match "Edit queue build configuration"
     }

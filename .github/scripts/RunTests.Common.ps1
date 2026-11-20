@@ -924,12 +924,14 @@ $script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
 function Test-RunTestsPipelineSupportsSelection {
     <#
     .SYNOPSIS
-    True when a ci-uitests.yml accepts the selectedRun, uitestPlatform* and uitest_<Category> parameters.
+    True when a ci-uitests.yml accepts the selectedRun, uitestPlatform* and uitest_<Category> parameters,
+    plus every name in -Parameters (the ones a queue request will send).
     Azure DevOps rejects a queue request whose template parameters the built commit does not declare.
     #>
-    param([AllowNull()][AllowEmptyString()][string]$Content)
+    param([AllowNull()][AllowEmptyString()][string]$Content, [string[]]$Parameters = @())
     if (-not $Content) { return $false }
-    foreach ($name in 'selectedRun', 'uitestPlatformAndroid', 'uitestPlatformWindows', 'uitest_Button') {
+    foreach ($name in @('selectedRun', 'uitestPlatformAndroid', 'uitestPlatformWindows', 'uitest_Button') + @($Parameters)) {
+        $name = [regex]::Escape($name)
         if ($Content -notmatch "(?m)^\s*-\s*name:\s*$name\s*$") { return $false }
     }
     return $true

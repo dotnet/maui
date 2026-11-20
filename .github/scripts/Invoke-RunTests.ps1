@@ -134,43 +134,59 @@ if (-not $DryRun -and $Actor) {
         throw "@$Actor no longer has write access; nothing was queued."
     }
 }
-function Get-VerifiedPullRequest {
-    <#
-    .SYNOPSIS
-    Reads the PR and confirms GitHub's test-merge commit really merges the selected head.
-    After a push GitHub recomputes the merge asynchronously; until then merge_commit_sha can
-    still point at a merge of the previous head, so wait for it rather than trusting it.
-    #>
-    for ($attempt = 1; $attempt -le 8; $attempt++) {
-        $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
-        $mergeCommit = $null
-        if ($current.state -eq 'open' -and $current.merge_commit_sha) {
-            $mergeCommit = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
-        }
-        switch (Get-RunTestsMergeState -PullRequest $current -MergeCommit $mergeCommit -HeadSha $context.headSha -BaseRef $context.baseRef) {
-            'ready' { return @{ pr = $current; merge = $true } }
-            'moved' { return @{ pr = $current; merge = $false } }
-        }
-        Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
-        Start-Sleep -Seconds 10
-    }
-    return @{ pr = $current; merge = $false }
-}
-
 function Get-RunTestsPipelineAt([string]$Ref) {
     $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$Ref" 2>$null
     if ($LASTEXITCODE -ne 0) { return '' }
     return ($raw -join "`n")
 }
 
+# Parameters the queue request will send; the pipeline in the built commit must declare all of them.
+$requiredParameters = @((Get-RunTestsTemplateParameters $selection).Keys)
+$checkPipeline = $selection.mode -eq 'selected' -and -not $DryRun
+
+function Get-VerifiedPullRequest {
+    <#
+    .SYNOPSIS
+    Reads the PR and confirms GitHub's test-merge commit really merges the selected head and that
+    its maui-pr-uitests pipeline accepts the selection.
+    After a push GitHub recomputes the merge asynchronously; until then merge_commit_sha can
+    still point at a merge of the previous head, so wait for it rather than trusting it.
+    GitHub also refreshes the test merge lazily after the target branch moves (a PR comment or
+    read nudges it), so a merge of an older base whose pipeline cannot take the selection yet is
+    waited on too, for longer.
+    #>
+    $deadline = [DateTime]::UtcNow.AddMinutes(10)
+    $attempt = 0
+    $current = $null
+    $pipelineReady = $true
+    while ($true) {
+        $attempt++
+        $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
+        $mergeCommit = $null
+        if ($current.state -eq 'open' -and $current.merge_commit_sha) {
+            $mergeCommit = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
+        }
+        $state = Get-RunTestsMergeState -PullRequest $current -MergeCommit $mergeCommit -HeadSha $context.headSha -BaseRef $context.baseRef
+        if ($state -eq 'moved') { return @{ pr = $current; merge = $false; pipelineReady = $true } }
+        if ($state -eq 'ready') {
+            if (-not $checkPipeline) { return @{ pr = $current; merge = $true; pipelineReady = $true } }
+            $pipelineReady = Test-RunTestsPipelineSupportsSelection (Get-RunTestsPipelineAt $current.merge_commit_sha) -Parameters $requiredParameters
+            if ($pipelineReady) { return @{ pr = $current; merge = $true; pipelineReady = $true } }
+            Write-Host "Test-merge commit $($current.merge_commit_sha.Substring(0, 8)) merges an older $($current.base.ref) whose pipeline cannot take this selection; waiting for GitHub to refresh it (attempt $attempt)..."
+        } else {
+            Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
+            # A missing or outdated merge of the head itself normally settles within a minute or two.
+            if ($attempt -ge 12) { return @{ pr = $current; merge = $false; pipelineReady = $true } }
+        }
+        if ([DateTime]::UtcNow -ge $deadline) { break }
+        Start-Sleep -Seconds 15
+    }
+    return @{ pr = $current; merge = ($state -eq 'ready'); pipelineReady = $pipelineReady }
+}
+
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
-# The build runs the pipeline from GitHub's test-merge commit. GitHub refreshes that commit lazily,
-# so right after the selection parameters reach the target branch it can still merge an older base.
-$pipelineReady = $true
-if ($selection.mode -eq 'selected' -and $verified.merge -and -not $DryRun) {
-    $pipelineReady = Test-RunTestsPipelineSupportsSelection (Get-RunTestsPipelineAt $pr.merge_commit_sha)
-}
+$pipelineReady = $verified.pipelineReady
 $queueError = $null
 if ($selectionError) {
     $queueError = $selectionError
@@ -186,7 +202,7 @@ if ($selectionError) {
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
 } elseif (-not $pipelineReady) {
-    $queueError = "GitHub's test-merge commit for this PR ($($pr.merge_commit_sha.Substring(0, 8))) merges an older ``$($pr.base.ref)`` whose maui-pr-uitests pipeline cannot run a selection yet. GitHub refreshes it after the next push to the PR; then comment ``/review run-tests`` again."
+    $queueError = "GitHub's test-merge commit for this PR ($($pr.merge_commit_sha.Substring(0, 8))) still merges an older ``$($pr.base.ref)`` whose maui-pr-uitests pipeline cannot run this selection, and GitHub did not refresh it within 10 minutes. Comment ``/review run-tests`` again later, or update the branch / push to the PR to make GitHub refresh it now."
 }
 
 $build = $null

@@ -39,7 +39,7 @@ jobs:
     # Credentialed dispatch only from the trusted default branch.
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     permissions:
       actions: read
       checks: write
