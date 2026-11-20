@@ -29,6 +29,233 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)]
+	public class ShellRendererTransitionTests : ControlsHandlerTestBase
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task NavigatingFromModalToShellItemPreservesContentPosition(bool useTabBar) =>
+			VerifyModalNavigationAsync(useTabBar: useTabBar);
+
+		[Fact]
+		public Task CustomItemRendererPreservesContentPositionAfterModalNavigation() =>
+			VerifyModalNavigationAsync(useCustomRenderer: true);
+
+		[Fact]
+		public Task ResumingShellItemRequestsInsetsWithoutAnotherTransition() =>
+			VerifyModalNavigationAsync(resumeAgain: true);
+
+		[Fact]
+		public Task CenteredEdgeToEdgeContentRemainsCenteredAfterModalNavigation() =>
+			VerifyModalNavigationAsync(centerContent: true);
+
+		[Fact]
+		public async Task ResumingUnrelatedFragmentDoesNotRequestInsets()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
+
+			var page = new ContentPage { Content = new Label { Text = "Shell content" } };
+			var shell = await InvokeOnMainThreadAsync(() => new Shell { Items = { page } });
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				var current = renderer.LatestItemRenderer.Fragment;
+				await AssertEventually(() => current.IsResumed);
+				var manager = current.ParentFragmentManager;
+				var container = Assert.IsAssignableFrom<ViewGroup>(current.View.Parent);
+				using var unrelated = new InsetsRecordingFragment();
+				try
+				{
+					manager.BeginTransaction()
+						.Add(container.Id, unrelated)
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					var view = Assert.IsType<InsetsRecordingView>(unrelated.View);
+					Assert.True(view.IsAttachedToWindow);
+					Assert.False(unrelated.IsResumed);
+					var requests = view.InsetRequestCount;
+
+					// Observe direct requests synchronously, not window-wide inset redispatches.
+					manager.BeginTransaction()
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+
+					Assert.True(unrelated.IsResumed);
+					Assert.Same(current, renderer.LatestItemRenderer.Fragment);
+					Assert.Equal(requests, view.InsetRequestCount);
+				}
+				finally
+				{
+					manager.BeginTransaction().Remove(unrelated).CommitNow();
+				}
+			});
+		}
+
+		async Task VerifyModalNavigationAsync(
+			bool useTabBar = false, bool useCustomRenderer = false, bool resumeAgain = false, bool centerContent = false)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
+
+			var label = new Label { Text = "First line\nSecond line", HorizontalOptions = LayoutOptions.Center };
+			var contentLayout = new VerticalStackLayout
+			{
+				VerticalOptions = centerContent ? LayoutOptions.Center : LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Center,
+				Children = { label }
+			};
+			if (centerContent)
+				contentLayout.SafeAreaEdges = SafeAreaEdges.None;
+
+			var targetPage = new ContentPage
+			{
+				Content = contentLayout
+			};
+			Shell.SetNavBarIsVisible(targetPage, false);
+			ShellItem target = useTabBar ? new TabBar() : new ShellItem();
+			target.Route = "TransitionProbeTarget";
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = targetPage } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
+
+			var homePage = new ContentPage { Content = new Label { Text = "Home" } };
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
+				var shell = new Shell();
+				shell.Items.Add(homePage);
+				shell.Items.Add(target);
+				return shell;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(homePage);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				renderer.UseCustomItemRenderer = useCustomRenderer || resumeAgain;
+				await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
+				await shell.GoToAsync("//TransitionProbeTarget");
+				await AssertEventually(() => renderer.LatestItemRenderer?.Fragment.IsResumed == true);
+
+				Assert.Same(target, renderer.LatestItemRenderer.ShellItem);
+				Assert.Empty(homePage.Navigation.ModalStack);
+
+				await OnLoadedAsync(label);
+				var pageView = (AView)targetPage.Handler.PlatformView;
+				var labelView = (AView)label.Handler.PlatformView;
+				using var insets = ViewCompat.GetRootWindowInsets(pageView);
+				Assert.NotNull(insets);
+				var topInset = insets.GetInsets(WindowInsetsCompat.Type.StatusBars()).Top;
+				Assert.True(topInset > 0);
+				var fragment = renderer.LatestItemRenderer.Fragment;
+				var root = fragment.View;
+
+				if (resumeAgain)
+				{
+					await AssertEventually(() => root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1);
+					var manager = fragment.ParentFragmentManager;
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					Assert.False(fragment.IsResumed);
+					Assert.True(root.IsAttachedToWindow);
+					var recordingView = Assert.IsType<InsetsRecordingView>(root);
+					var requests = recordingView.InsetRequestCount;
+
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+					Assert.True(fragment.IsResumed);
+					Assert.Same(root, fragment.View);
+					Assert.Equal(requests + 1, recordingView.InsetRequestCount);
+				}
+
+				var pageLocation = new int[2];
+				var labelLocation = new int[2];
+				var expectedY = 0;
+				var positionMatches = await Wait(() =>
+				{
+					pageView.GetLocationOnScreen(pageLocation);
+					labelView.GetLocationOnScreen(labelLocation);
+					expectedY = centerContent
+						? pageLocation[1] + (pageView.Height - labelView.Height) / 2
+						: Math.Max(pageLocation[1], topInset);
+					return pageView.Height > 0 && labelView.Height > 0 &&
+						root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1 &&
+						Math.Abs(labelLocation[1] - expectedY) <= 1;
+				});
+				Assert.True(positionMatches,
+					$"Expected label Y={expectedY}, actual={labelLocation[1]}, page Y={pageLocation[1]}, " +
+					$"page height={pageView.Height}, label height={labelView.Height}, status bar={topInset}, " +
+					$"layout padding={((AView)contentLayout.Handler.PlatformView).PaddingTop}, page padding={pageView.PaddingTop}, " +
+					$"root scale={root.ScaleY}, alpha={root.Alpha}");
+			});
+		}
+
+		class TransitionProbeShellRenderer : ShellRenderer
+		{
+			public TransitionProbeShellRenderer()
+			{
+			}
+
+			public IShellItemRenderer LatestItemRenderer { get; private set; }
+			public bool UseCustomItemRenderer { get; set; }
+
+			protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+			{
+				return LatestItemRenderer = UseCustomItemRenderer
+					? new CustomShellItemRenderer(this)
+					: base.CreateShellItemRenderer(shellItem);
+			}
+		}
+
+		class CustomShellItemRenderer : ShellItemRenderer
+		{
+			public CustomShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			{
+			}
+
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState)
+			{
+				var view = new InsetsRecordingView(inflater.Context);
+				view.AddView(base.OnCreateView(inflater, container, savedInstanceState),
+					new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+				return view;
+			}
+		}
+
+		class InsetsRecordingFragment : AndroidX.Fragment.App.Fragment
+		{
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState) =>
+				new InsetsRecordingView(inflater.Context);
+		}
+
+		class InsetsRecordingView : global::Android.Widget.FrameLayout
+		{
+			public InsetsRecordingView(global::Android.Content.Context context) : base(context)
+			{
+			}
+
+			public int InsetRequestCount { get; private set; }
+
+			public override void RequestApplyInsets()
+			{
+				InsetRequestCount++;
+				base.RequestApplyInsets();
+			}
+		}
+	}
+
+	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
 		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
