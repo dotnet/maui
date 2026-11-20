@@ -132,14 +132,9 @@ namespace Microsoft.Maui.Handlers
 #elif WINDOWS
 			ShowContextFlyoutWindows(handler, view);
 #else
-#if MACCATALYST
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
-			{
-				MauiContextFlyoutPopover.Show(handler, view);
-				return;
-			}
-#elif IOS
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+#if IOS || MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(15) ||
+				OperatingSystem.IsMacCatalystVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Show(handler, view);
 				return;

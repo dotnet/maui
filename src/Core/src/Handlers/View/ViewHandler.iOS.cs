@@ -66,17 +66,11 @@ namespace Microsoft.Maui.Handlers
 			Justification = "Implements the instance handler lifecycle hook.")]
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-#if MACCATALYST
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) ||
+				OperatingSystem.IsMacCatalystVersionAtLeast(15))
 			{
 				MauiContextFlyoutPopover.Remove(platformView);
 			}
-#else
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
-			{
-				MauiContextFlyoutPopover.Remove(platformView);
-			}
-#endif
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
