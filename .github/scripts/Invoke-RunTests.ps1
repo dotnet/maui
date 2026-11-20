@@ -110,6 +110,12 @@ if ($context.PSObject.Properties['changedTestRunnable'] -and $context.changedTes
         if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
     }
 }
+if ($context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
+    # Some changed UI test files were not inspected, so an AI-selected category may be enabled only
+    # by them. Keep every AI-selected category rather than pruning it as "no enabled tests".
+    Write-Host 'Not every changed UI test file was inspected; keeping all AI-selected categories.'
+    $runnable = $null
+}
 # Only AI-selected tests run: each model's proposal is validated on its own, then the union is taken.
 $resolved = [ordered]@{}
 foreach ($model in $proposals.Keys) {
@@ -137,14 +143,13 @@ function Get-VerifiedPullRequest {
     #>
     for ($attempt = 1; $attempt -le 8; $attempt++) {
         $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
-        if ($current.state -ne 'open' -or $current.head.sha -cne $context.headSha -or
-            ($context.baseRef -and $current.base.ref -cne $context.baseRef)) { return @{ pr = $current; merge = $false } }
-        if ($current.mergeable -eq $false) { return @{ pr = $current; merge = $false } }
-        if ($current.merge_commit_sha) {
-            $merge = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
-            if (@($merge.parents).Count -eq 2 -and $merge.parents[1].sha -ceq $current.head.sha) {
-                return @{ pr = $current; merge = $true }
-            }
+        $mergeCommit = $null
+        if ($current.state -eq 'open' -and $current.merge_commit_sha) {
+            $mergeCommit = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
+        }
+        switch (Get-RunTestsMergeState -PullRequest $current -MergeCommit $mergeCommit -HeadSha $context.headSha -BaseRef $context.baseRef) {
+            'ready' { return @{ pr = $current; merge = $true } }
+            'moved' { return @{ pr = $current; merge = $false } }
         }
         Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
         Start-Sleep -Seconds 10
@@ -152,8 +157,20 @@ function Get-VerifiedPullRequest {
     return @{ pr = $current; merge = $false }
 }
 
+function Get-RunTestsPipelineAt([string]$Ref) {
+    $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$Ref" 2>$null
+    if ($LASTEXITCODE -ne 0) { return '' }
+    return ($raw -join "`n")
+}
+
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
+# The build runs the pipeline from GitHub's test-merge commit. GitHub refreshes that commit lazily,
+# so right after the selection parameters reach the target branch it can still merge an older base.
+$pipelineReady = $true
+if ($selection.mode -eq 'selected' -and $verified.merge -and -not $DryRun) {
+    $pipelineReady = Test-RunTestsPipelineSupportsSelection (Get-RunTestsPipelineAt $pr.merge_commit_sha)
+}
 $queueError = $null
 if ($selectionError) {
     $queueError = $selectionError
@@ -168,6 +185,8 @@ if ($selectionError) {
     $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review run-tests`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
+} elseif (-not $pipelineReady) {
+    $queueError = "GitHub's test-merge commit for this PR ($($pr.merge_commit_sha.Substring(0, 8))) merges an older ``$($pr.base.ref)`` whose maui-pr-uitests pipeline cannot run a selection yet. GitHub refreshes it after the next push to the PR; then comment ``/review run-tests`` again."
 }
 
 $build = $null
@@ -195,8 +214,14 @@ if (-not $queueError -and $selection.mode -ne 'none') {
                 Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
             }
         } catch {
-            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message)"
-            $queueError = 'The Azure DevOps request failed; see the workflow log.'
+            $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
+            if ([int]$_.Exception.Response?.StatusCode -eq 403) {
+                # Queueing with template parameters needs 'Edit queue build configuration' on the
+                # pipeline, on top of 'Queue builds'; a full run without parameters needs only the latter.
+                $reason = "the trigger identity may queue maui-pr-uitests but not with parameters (it needs 'Edit queue build configuration' on that pipeline). $reason".Trim()
+            }
+            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
+            $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
             $build = $null
         } finally {
             $AzdoToken = $null

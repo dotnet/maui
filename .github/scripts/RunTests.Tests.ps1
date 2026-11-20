@@ -103,8 +103,29 @@ Describe 'New-RunTestsQueueRequest' {
         $r.sourceBranch | Should -Be 'refs/pull/1234/merge'
         $r.triggerInfo['pr.sourceSha'] | Should -Be ('a' * 40)
         $r.triggerInfo['pr.isFork'] | Should -Be 'True'
-        $r.templateParameters.selectedPlatforms | Should -Be '["android","catalyst"]'
-        $r.templateParameters.selectedCategories | Should -Be '["Label"]'
+        $r.templateParameters.selectedRun | Should -Be 'true'
+        $r.templateParameters.uitestPlatformAndroid | Should -Be 'true'
+        $r.templateParameters.uitestPlatformCatalyst | Should -Be 'true'
+        $r.templateParameters.uitestPlatformIos | Should -Be 'false'
+        $r.templateParameters.uitest_Label | Should -Be 'android+catalyst'
+        # Nothing free-text: Azure DevOps refuses those from an identity with only 'Queue builds'.
+        @($r.templateParameters.Keys | Where-Object { $_ -notmatch '^(selectedRun|uitestPlatform(Android|Ios|Catalyst|Windows)|uitest_[A-Za-z0-9_]+)$' }) | Should -BeNullOrEmpty
+    }
+
+    It 'only sends values the pipeline declares' {
+        $ci = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios', 'maccatalyst', 'windows') @()) $inventory
+        $parameters = Get-RunTestsTemplateParameters $s
+        foreach ($key in $parameters.Keys) {
+            $block = [regex]::Match($ci, "(?ms)^  - name: $key\s*\n(.*?)(?=^  - name: |^\S)")
+            $block.Success | Should -BeTrue -Because "$key must be a declared parameter"
+            if ($key -like 'uitest_*') {
+                $block.Groups[1].Value | Should -Match ('values: \[[^\]]*(?<=[\[ ])' + [regex]::Escape($parameters[$key]) + '[,\]]')
+            } else {
+                $block.Groups[1].Value | Should -Match 'type: boolean'
+            }
+        }
+        $parameters['uitest_Button'] | Should -Be 'android+ios+catalyst+windows'
     }
 
     It 'uses pipeline defaults for a full run' {
@@ -114,10 +135,98 @@ Describe 'New-RunTestsQueueRequest' {
 
     It 'detects when Azure DevOps dropped the selection' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Label')) $inventory
-        $good = [pscustomobject]@{ templateParameters = [pscustomobject]@{ selectedRun = 'true'; selectedPlatforms = '["android"]'; selectedCategories = '["Label"]' } }
+        $good = [pscustomobject]@{ templateParameters = [pscustomobject]@{
+                selectedRun = 'True'; uitestPlatformAndroid = 'True'; uitestPlatformIos = 'False'; uitestPlatformCatalyst = 'False'; uitestPlatformWindows = 'False'; uitest_Label = 'android' } }
         $bad = [pscustomobject]@{ templateParameters = [pscustomobject]@{ selectedRun = 'False' } }
         Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeTrue
         Test-RunTestsQueuedSelection -Build $bad -Selection $s | Should -BeFalse
+        $good.templateParameters.uitest_Label = 'android+ios'
+        Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeFalse
+    }
+}
+
+Describe 'Get-RunTestsMergeState' {
+    BeforeAll {
+        function New-Pr([string]$Head = ('a' * 40), [string]$Base = 'main', [string]$State = 'open', $Mergeable = $true, [string]$Merge = ('b' * 40)) {
+            [pscustomobject]@{
+                state = $State; mergeable = $Mergeable; merge_commit_sha = $Merge
+                head = [pscustomobject]@{ sha = $Head }; base = [pscustomobject]@{ ref = $Base }
+            }
+        }
+        function New-Merge([string]$Sha, [string]$SecondParent) {
+            [pscustomobject]@{ sha = $Sha; parents = @([pscustomobject]@{ sha = ('c' * 40) }, [pscustomobject]@{ sha = $SecondParent }) }
+        }
+    }
+
+    It 'builds only a test-merge commit of the selected head' {
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('b' * 40) ('a' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'ready'
+    }
+
+    It 'waits while GitHub still points at the merge of the previous head' {
+        # The original failure: after a push, merge_commit_sha still merged the old head.
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('b' * 40) ('d' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Merge $null) -MergeCommit $null -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('e' * 40) ('a' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+    }
+
+    It 'stops when the PR moved, was retargeted, closed or conflicts' {
+        $merge = New-Merge ('b' * 40) ('a' * 40)
+        Get-RunTestsMergeState -PullRequest (New-Pr -Head ('f' * 40)) -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Base 'net11') -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -State 'closed') -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Mergeable $false) -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+    }
+}
+
+Describe 'Pipeline support checks' {
+    It 'recognises a pipeline that declares the selection parameters' {
+        $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
+        Test-RunTestsPipelineSupportsSelection $current | Should -BeTrue
+        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: BuildConfigurations`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: selectedRun`n  - name: selectedPlatforms`n  - name: selectedCategories`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection '' | Should -BeFalse
+    }
+
+    It "reports Azure DevOps' own validation messages" {
+        $body = '{"customProperties":{"ValidationResults":[{"result":"error","message":"Unexpected parameter ''selectedRun''"},{"result":"error","message":"Unexpected parameter ''selectedPlatforms''"}]},"message":"Could not queue the build because there were validation errors or warnings."}'
+        Get-RunTestsAzdoErrorText $body | Should -Be "Unexpected parameter 'selectedRun'; Unexpected parameter 'selectedPlatforms'"
+        Get-RunTestsAzdoErrorText '{"message":"TF401019: not found"}' | Should -Be 'TF401019: not found'
+        Get-RunTestsAzdoErrorText '' | Should -Be ''
+    }
+
+    It 'stops before the models run when the target branch cannot run a selection' {
+        $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
+        $contextScript | Should -Match 'Test-RunTestsPipelineSupportsSelection'
+        $contextScript | Should -Match 'ready=false'
+        Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
+    }
+
+    It 'checks the test-merge commit pipeline before queueing' {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$pr\.merge_commit_sha\)'
+        $invoke | Should -Match 'Get-RunTestsAzdoErrorText'
+        $invoke | Should -Match "Edit queue build configuration"
+    }
+}
+
+Describe 'Changed-test context collection' {
+    BeforeAll { $script:contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1') }
+
+    It 'URL-encodes changed test paths before reading them' {
+        $contextScript | Should -Match ([regex]::Escape('[uri]::EscapeDataString($_)'))
+        $contextScript | Should -Match ([regex]::Escape('contents/$($encodedPath)?ref='))
+    }
+
+    It 'reports an incomplete scan so trusted code does not prune' {
+        $contextScript | Should -Match 'changedTestScanComplete = \$false; continue'
+        $contextScript | Should -Match 'changedTestScanComplete = \$changedTestScanComplete'
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match 'changedTestScanComplete -eq \$false'
+    }
+
+    It 'keeps every AI-selected category when nothing is known to be runnable' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Button', 'Window')) $inventory -Runnable $null
+        $s.platformCategories['android'] | Should -Be @('Button', 'Window')
     }
 }
 
@@ -281,7 +390,8 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
         # Platforms differ, so every entry is qualified; the template never sees a mixed list.
         $s.pipelineCategories | Sort-Object | Should -Be @('android:Label', 'ios:Label', 'ios:Window')
         $s.platformCategories['android'] | Should -Not -Contain 'Window'
-        (Get-RunTestsTemplateParameters $s).selectedCategories | Should -Match '"ios:Window"'
+        (Get-RunTestsTemplateParameters $s).uitest_Window | Should -Be 'ios'
+        (Get-RunTestsTemplateParameters $s).uitest_Label | Should -Be 'android+ios'
     }
 
     It 'drops platforms that would run nothing' {
@@ -320,6 +430,14 @@ Describe 'Two-model selection' {
         $s.platformCategories['ios'] | Should -Be @('Label')
         # Button was only chosen for Android, so it must not run on iOS.
         $s.pipelineCategories | Should -Be @('android:Button', 'android:Label', 'ios:Label')
+    }
+
+    It 'shows the rationale when only one model produced a proposal' {
+        $s = Resolve-Pair $null (New-Proposal @('windows') @('Window'))
+        $s.rationale | Should -Be '- reason'
+        $comment = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://example.test/run' -Requester 'someone'
+        $comment | Should -Match '- reason'
+        $comment | Should -Not -Match 'No rationale provided'
     }
 
     It 'runs only what one model chose when the other found nothing' {
@@ -394,8 +512,24 @@ Describe 'Pipeline templates' {
 
     It 'only lets pull-request builds narrow the suite' {
         $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
-        $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+selectedPlatforms: \$\{\{ parameters\.selectedPlatforms \}\}\s+selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')
-        ([regex]::Matches($ci, 'selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')).Count | Should -Be 1
+        $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+\$\{\{ if eq\(parameters\.selectedRun, true\) \}\}:')
+        ([regex]::Matches($ci, '(?m)^\s+selectedCategories:')).Count | Should -Be 1
+        # An empty list would mean every category, so a selected run always carries a sentinel.
+        $ci | Should -Match 'selectedCategories:\s+#[^\n]*\n\s+- none:none'
+    }
+
+    It 'declares one fixed-value parameter per UI test category' {
+        $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
+        $declared = @([regex]::Matches($ci, '(?m)^  - name: uitest_(\w+)$') | ForEach-Object { $_.Groups[1].Value })
+        $declared | Should -Be @(Get-RunTestsAllCategories $inventory)
+        # Every selection parameter is a boolean or has a fixed value list; nothing free-text.
+        foreach ($name in $declared) {
+            $ci | Should -Match "(?m)^  - name: uitest_$name\n    type: string\n    default: none\n    values: \[none, android, ios, catalyst, windows,"
+        }
+        foreach ($name in 'selectedRun', 'uitestPlatformAndroid', 'uitestPlatformIos', 'uitestPlatformCatalyst', 'uitestPlatformWindows') {
+            $ci | Should -Match "(?m)^  - name: $name\n    type: boolean"
+        }
+        $ci | Should -Not -Match '(?m)^  - name: selected(Platforms|Categories)$'
     }
 
     It 'runs the Material3 lane only when Material3 is selected' {

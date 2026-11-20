@@ -19,6 +19,7 @@ $script:RunTestsPlatforms = [ordered]@{
 }
 
 # Pipeline parameter values differ from the user-facing names for MacCatalyst only.
+$script:RunTestsPlatformParameterSuffix = @{ android = 'Android'; ios = 'Ios'; maccatalyst = 'Catalyst'; windows = 'Windows' }
 $script:RunTestsPipelinePlatform = @{
     android     = 'android'
     ios         = 'ios'
@@ -274,12 +275,21 @@ function Get-RunTestsTemplateParameters {
     #>
     param([Parameter(Mandatory)]$Selection)
     if ($Selection.mode -ne 'selected') { return [ordered]@{} }
-    $platforms = @($Selection.platforms | ForEach-Object { $script:RunTestsPipelinePlatform[$_] })
-    return [ordered]@{
-        selectedRun        = 'true'
-        selectedPlatforms  = (ConvertTo-Json -InputObject @($platforms) -Compress)
-        selectedCategories = (ConvertTo-Json -InputObject @($Selection.pipelineCategories) -Compress)
+    # Only booleans and fixed-value strings: Azure DevOps lets an identity with just 'Queue builds'
+    # set those, while free-text or object parameters need 'Edit queue build configuration'.
+    $parameters = [ordered]@{ selectedRun = 'true' }
+    foreach ($platform in Get-RunTestsPlatformIds) {
+        $parameters["uitestPlatform$($script:RunTestsPlatformParameterSuffix[$platform])"] = $(if ($platform -cin @($Selection.platforms)) { 'true' } else { 'false' })
     }
+    foreach ($category in @($Selection.expandedCategories)) {
+        $on = @(foreach ($platform in Get-RunTestsPlatformIds) {
+                if ($Selection.platformCategories.Contains($platform) -and $category -cin @($Selection.platformCategories[$platform])) {
+                    $script:RunTestsPipelinePlatform[$platform]
+                }
+            })
+        if ($on.Count) { $parameters["uitest_$category"] = $on -join '+' }
+    }
+    return $parameters
 }
 
 function New-RunTestsQueueRequest {
@@ -335,12 +345,7 @@ function Test-RunTestsQueuedSelection {
     foreach ($key in $expected.Keys) {
         $value = if ($actual -is [System.Collections.IDictionary]) { $actual[$key] } else { $actual.PSObject.Properties[$key]?.Value }
         if ($null -eq $value) { return $false }
-        if ($key -eq 'selectedRun') {
-            if ("$value" -notin @('true', 'True')) { return $false }
-            continue
-        }
-        $normalized = ConvertTo-Json -InputObject @(ConvertFrom-Json -InputObject "$value") -Compress
-        if ($normalized -cne $expected[$key]) { return $false }
+        if ("$value" -ine $expected[$key]) { return $false }
     }
     return $true
 }
@@ -914,6 +919,53 @@ function ConvertTo-RunTestsPipelineCategories {
     return @($qualified)
 }
 
+$script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
+
+function Test-RunTestsPipelineSupportsSelection {
+    <#
+    .SYNOPSIS
+    True when a ci-uitests.yml accepts the selectedRun, uitestPlatform* and uitest_<Category> parameters.
+    Azure DevOps rejects a queue request whose template parameters the built commit does not declare.
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Content)
+    if (-not $Content) { return $false }
+    foreach ($name in 'selectedRun', 'uitestPlatformAndroid', 'uitestPlatformWindows', 'uitest_Button') {
+        if ($Content -notmatch "(?m)^\s*-\s*name:\s*$name\s*$") { return $false }
+    }
+    return $true
+}
+
+function Get-RunTestsAzdoErrorText {
+    <#
+    .SYNOPSIS
+    Extracts Azure DevOps' own reason (validation results or message) from a failed REST call.
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Body)
+    if (-not $Body) { return '' }
+    try { $json = $Body | ConvertFrom-Json -Depth 20 } catch { return (Format-RunTestsText $Body 300) }
+    $messages = @($json.customProperties.ValidationResults | ForEach-Object { $_.message } | Where-Object { $_ } | Select-Object -Unique -First 3)
+    if (-not $messages.Count -and $json.message) { $messages = @($json.message) }
+    return (Format-RunTestsText ($messages -join '; ') 300)
+}
+
+function Get-RunTestsMergeState {
+    <#
+    .SYNOPSIS
+    Decides whether GitHub's test-merge commit can be built for the selected head.
+    Returns 'ready' (it merges exactly that head), 'wait' (GitHub has not recomputed it yet, e.g.
+    it still merges the previous head) or 'moved' (the PR closed, moved, was retargeted or conflicts).
+    #>
+    param([Parameter(Mandatory)]$PullRequest, [AllowNull()]$MergeCommit, [Parameter(Mandatory)][string]$HeadSha, [string]$BaseRef)
+    if ($PullRequest.state -ne 'open' -or $PullRequest.head.sha -cne $HeadSha) { return 'moved' }
+    if ($BaseRef -and $PullRequest.base.ref -cne $BaseRef) { return 'moved' }
+    if ($PullRequest.mergeable -eq $false) { return 'moved' }
+    if (-not $PullRequest.merge_commit_sha -or -not $MergeCommit) { return 'wait' }
+    if ($MergeCommit.sha -and $MergeCommit.sha -cne $PullRequest.merge_commit_sha) { return 'wait' }
+    $parents = @($MergeCommit.parents)
+    if ($parents.Count -eq 2 -and $parents[1].sha -ceq $HeadSha) { return 'ready' }
+    return 'wait'
+}
+
 function Merge-RunTestsSelections {
     <#
     .SYNOPSIS
@@ -940,7 +992,7 @@ function Merge-RunTestsSelections {
     $summary = (@($models | ForEach-Object { "**$($_.displayName):** $($_.summary)" }) -join '<br/>')
     $base = [ordered]@{
         mode = 'none'; platforms = @(); categories = @(); expandedCategories = @(); platformCategories = [ordered]@{}
-        pipelineCategories = @(); summary = $summary; rationale = ''; notes = @($notes); models = $models
+        pipelineCategories = @(); summary = $summary; rationale = $(if ($models.Count -eq 1) { $models[0].rationale } else { '' }); notes = @($notes); models = $models
     }
     if (@($all | Where-Object { $_.mode -eq 'full' }).Count) {
         $full = @($all | Where-Object { $_.mode -eq 'full' })[0]
