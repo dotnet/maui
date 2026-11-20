@@ -181,6 +181,7 @@ Describe 'Pipeline support checks' {
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$pr\.merge_commit_sha\)'
         $invoke | Should -Match 'Get-RunTestsAzdoErrorText'
+        $invoke | Should -Match "Edit queue build configuration"
     }
 }
 

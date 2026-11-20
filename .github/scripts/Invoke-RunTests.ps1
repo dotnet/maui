@@ -215,6 +215,11 @@ if (-not $queueError -and $selection.mode -ne 'none') {
             }
         } catch {
             $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
+            if ([int]$_.Exception.Response?.StatusCode -eq 403) {
+                # Queueing with template parameters needs 'Edit queue build configuration' on the
+                # pipeline, on top of 'Queue builds'; a full run without parameters needs only the latter.
+                $reason = "the trigger identity may queue maui-pr-uitests but not with parameters (it needs 'Edit queue build configuration' on that pipeline). $reason".Trim()
+            }
             Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
             $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
             $build = $null
