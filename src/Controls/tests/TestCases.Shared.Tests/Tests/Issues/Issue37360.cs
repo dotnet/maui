@@ -15,7 +15,7 @@ public class Issue37360 : _IssuesUITest
 	public override string Issue => "Shell root remains connected after reentrant modal navigation";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell)]
 	public void RootRemainsConnectedAfterModalDismissalNavigatesToDetail()
 	{
 		const string expected = "Root: connected; unexpected pops: 0";
