@@ -600,7 +600,7 @@ public class PlatformInterop {
                     new int[] {  android.R.attr.state_enabled,  android.R.attr.state_checked },
                     new int[] {  android.R.attr.state_enabled, -android.R.attr.state_checked },
                     new int[] { -android.R.attr.state_enabled,  android.R.attr.state_checked },
-                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_pressed },
+                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_checked },
                 };
             }
             return checkBoxState;
