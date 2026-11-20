@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_logger.NavigatingToUri(absoluteUri);
 			using var nsUrl = new NSUrl(absoluteUri.ToString());
 			using var request = new NSUrlRequest(nsUrl);
+			_webContentProcessReloader.PageRequested(nsUrl);
 			_webview.LoadRequest(request);
 		}
 
@@ -367,6 +368,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					if (uri is not null)
 					{
 						var request = new NSUrlRequest(new NSUrl(uri.AbsoluteUri));
+						_webContentProcessReloader.PageRequested(request.Url);
 						webView.LoadRequest(request);
 					}
 				}

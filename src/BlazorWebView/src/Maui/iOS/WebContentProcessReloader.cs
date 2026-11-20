@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private bool _hasReloadedRecently;
 		private long? _lastNavigationFinishedTimestamp;
+
+		// WebKit's pending API request: the page last asked for with LoadRequest, until its navigation starts.
+		private string? _requestedPageUrl;
 		private NSObject? _sceneWillEnterForegroundObserver;
 		private IDisposable? _movedToWindowSubscription;
 		private bool _isDisposed;
@@ -53,10 +56,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			WaitForWindowIfNeeded();
 		}
 
+		public void PageRequested(NSUrl url)
+		{
+			_requestedPageUrl = url.AbsoluteString;
+		}
+
 		public void NavigationStarted()
 		{
 			// Like WebKit, a new navigation replaces the pending reload: it starts a new web content process itself.
 			StopWaitingUntilVisible();
+			_requestedPageUrl = null;
 		}
 
 		public void NavigationFinished()
@@ -165,6 +174,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			_hasReloadedRecently = true;
 			_handler.Logger.ReloadingAfterWebContentProcessTermination();
+
+			// Like WebKit, a page asked for whose navigation had not started yet is loaded again. By the time WebKit
+			// reports the termination it has already cleared the web view's URL for that page, so it is remembered here.
+			if (_requestedPageUrl is not null)
+			{
+				using var requestedUrl = new NSUrl(_requestedPageUrl);
+				using var requestedPageRequest = new NSUrlRequest(requestedUrl);
+				_webView.LoadRequest(requestedPageRequest);
+				return;
+			}
 
 			// The process ended before the first page was committed, so there is no page to reload. The page that was
 			// being loaded is still the web view's URL, and WebKit loads that one again too.
