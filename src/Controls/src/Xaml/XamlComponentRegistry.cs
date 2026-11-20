@@ -358,7 +358,7 @@ public static class XamlComponentRegistry
 	/// and reapplies them to every element currently using that style.
 	/// </summary>
 	/// <param name="dictionary">The dictionary that declares the style.</param>
-	/// <param name="key">The style's <c>x:Key</c>, or <see langword="null"/> for an implicit or <c>Class</c> style.</param>
+	/// <param name="key">The style's <c>x:Key</c>.</param>
 	/// <param name="replacement">A freshly built style whose setters replace those of the live style.</param>
 	/// <returns>
 	/// <see langword="true"/> if a live, shared style compatible with <paramref name="replacement"/> was updated;
@@ -370,33 +370,52 @@ public static class XamlComponentRegistry
 	/// refreshes consumers that hold it directly (<c>StaticResource</c>, <c>StyleClass</c>, derived styles), which
 	/// replacing the dictionary entry alone does not.
 	/// </remarks>
-	public static bool TryUpdateStyle(ResourceDictionary dictionary, string? key, Style replacement)
+	public static bool TryUpdateStyle(ResourceDictionary dictionary, string key, Style replacement)
 	{
 		if (dictionary is null)
 			throw new ArgumentNullException(nameof(dictionary));
 		if (replacement is null)
 			throw new ArgumentNullException(nameof(replacement));
 
-		key ??= string.IsNullOrEmpty(replacement.Class)
-			? replacement.TargetType.FullName
-			: Style.StyleClassPrefix + replacement.Class;
-		if (key is null || !dictionary.TryGetLocalMaterializedValue(key, out var value))
+		if (!dictionary.TryGetLocalMaterializedValue(key, out var value) || value is not Style live)
 			return false;
 
-		Style? live = value as Style;
-		if (live is null && value is IList<Style> classStyles)
-		{
-			foreach (var candidate in classStyles)
-			{
-				if (candidate.TargetType != replacement.TargetType || candidate.Class != replacement.Class)
-					continue;
-				if (live is not null)
-					return false;
-				live = candidate;
-			}
-		}
+		return TryUpdateStyle(live, replacement);
+	}
 
-		if (live is null || ReferenceEquals(live, replacement) || !IsSetterOnlyChange(live, replacement))
+	/// <summary>Checks for a materialized keyed style without invoking a lazy factory.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's resource key.</param>
+	/// <returns>Whether the dictionary contains a materialized style.</returns>
+	public static bool HasMaterializedStyle(ResourceDictionary dictionary, string key)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		return dictionary.TryGetLocalMaterializedValue(key, out var value) && value is Style;
+	}
+
+	/// <summary>Updates a class style identified by its generated node ID.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="nodeId">The generated identity of the style declaration.</param>
+	/// <param name="replacement">The replacement style.</param>
+	/// <returns>Whether the style was updated.</returns>
+	public static bool TryUpdateClassStyle(ResourceDictionary dictionary, string nodeId, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+		if (!TryGet(dictionary, nodeId, out var value) || value is not Style live)
+			return false;
+		if (!dictionary.TryGetLocalMaterializedValue(Style.StyleClassPrefix + live.Class, out var classes)
+			|| classes is not IList<Style> styles || !styles.Contains(live))
+			return false;
+		return TryUpdateStyle(live, replacement);
+	}
+
+	static bool TryUpdateStyle(Style live, Style replacement)
+	{
+		if (ReferenceEquals(live, replacement) || !IsSetterOnlyChange(live, replacement))
 			return false;
 
 		live.ReplaceSetters(replacement.Setters);
@@ -408,7 +427,6 @@ public static class XamlComponentRegistry
 			&& live.Class == replacement.Class
 			&& live.ApplyToDerivedTypes == replacement.ApplyToDerivedTypes
 			&& live.CanCascade == replacement.CanCascade
-			&& ReferenceEquals(live.BasedOn, replacement.BasedOn)
 			&& live.BaseResourceKey == replacement.BaseResourceKey;
 
 	static void TrackInstance(object page)

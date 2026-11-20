@@ -1319,6 +1319,9 @@ static class UpdateComponentCodeWriter
 			key = keyString;
 		}
 		bool isImplicitStyle = key is null && !style.Properties.ContainsKey(new XmlName("", "Class"));
+		string? classStyleId = null;
+		if (!isImplicitStyle && key is null && (nodeIds?.TryGetValue(style, out classStyleId) != true || string.IsNullOrEmpty(classStyleId)))
+			return false;
 
 		if (!replacedStyles.Add(style))
 			return true;
@@ -1332,24 +1335,46 @@ static class UpdateComponentCodeWriter
 			var context = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache,
 				typeCache, rootType, projectItem, codeWriter);
 			context.Variables[dictionary] = new DirectValue(rootType, "this");
-			var replacement = (ElementNode)style.Clone();
-			replacement.Accept(new XamlNodeVisitor((node, parentNode) => node.Parent = parentNode), dictionary);
-			replacement.Accept(new ExpandMarkupsVisitor(context), null);
-			replacement.Accept(new PruneIgnoredNodesVisitor(), null);
-			replacement.Accept(new SimplifyTypeExtensionVisitor(), null);
-			if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
-				replacement.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), null);
-			replacement.Accept(new InferOnIdiomTypeArgumentsVisitor(context), null);
+			ElementNode CreateReplacement(bool includeBase)
+			{
+				var clone = (ElementNode)style.Clone();
+				if (!includeBase)
+				{
+					// Existing styles retain their base without resolving its resources again.
+					foreach (var name in clone.Properties.Keys.Where(name => name.LocalName == "BasedOn").ToArray())
+						clone.Properties.Remove(name);
+				}
+				clone.Accept(new XamlNodeVisitor((node, parentNode) => node.Parent = parentNode), dictionary);
+				clone.Accept(new ExpandMarkupsVisitor(context), null);
+				clone.Accept(new PruneIgnoredNodesVisitor(), null);
+				clone.Accept(new SimplifyTypeExtensionVisitor(), null);
+				if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
+					clone.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), null);
+				clone.Accept(new InferOnIdiomTypeArgumentsVisitor(context), null);
+				return clone;
+			}
+
+			var replacement = CreateReplacement(includeBase: true);
 			if (replacement.IsLazyResource(dictionary, context))
 			{
 				var styleId = nodeIds?.TryGetValue(style, out var id) == true
 					? id : $"{style.LineNumber}_{style.LinePosition}";
+				string? liveFactory = null;
+				if (!isImplicitStyle && style.Properties.Keys.Any(name => name.LocalName == "BasedOn"))
+				{
+					liveFactory = $"CreateLiveStyle_{styleId}";
+					SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter,
+						context.Variables[dictionary], CreateReplacement(includeBase: false), context,
+						replacementFactoryName: liveFactory, emitReplacement: false);
+				}
 				SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter,
 					context.Variables[dictionary], replacement, context, replacementFactoryName: $"CreateStyle_{styleId}",
-					updateLiveStyle: !isImplicitStyle);
+					updateLiveStyle: !isImplicitStyle, liveStyleFactoryName: liveFactory);
 			}
 			else
 			{
+				if (!isImplicitStyle)
+					replacement = CreateReplacement(includeBase: false);
 				replacement.Accept(new CreateValuesVisitor(context), null);
 				replacement.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
 				replacement.Accept(new SetResourcesVisitor(context), null);
@@ -1359,16 +1384,28 @@ static class UpdateComponentCodeWriter
 					codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
 				else if (key is null)
 				{
-					// Class styles share a per-class list, so there is no single entry to replace.
-					codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(this, null, {styleVariable});");
+					codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateClassStyle(this, \"{EscapeString(classStyleId!)}\", {styleVariable}))");
+					codeWriter.Indent++;
+					codeWriter.WriteLine($"throw new global::System.InvalidOperationException(\"Unable to update class style {EscapeString(classStyleId!)}.\");");
+					codeWriter.Indent--;
 				}
 				else
 				{
 					var keyExpression = $"\"{EscapeString(key)}\"";
 					codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(this, {keyExpression}, {styleVariable}))");
-					codeWriter.Indent++;
-					codeWriter.WriteLine($"this[{keyExpression}] = {styleVariable};");
-					codeWriter.Indent--;
+					using (PrePost.NewBlock(codeWriter))
+					{
+						if (style.Properties.Keys.Any(name => name.LocalName == "BasedOn"))
+						{
+							var fallback = CreateReplacement(includeBase: true);
+							fallback.Accept(new CreateValuesVisitor(context), null);
+							fallback.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
+							fallback.Accept(new SetResourcesVisitor(context), null);
+							fallback.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), null);
+							styleVariable = context.Variables[fallback].ValueAccessor;
+						}
+						codeWriter.WriteLine($"this[{keyExpression}] = {styleVariable};");
+					}
 				}
 			}
 			foreach (var localMethod in context.LocalMethods)

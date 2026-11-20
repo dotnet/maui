@@ -248,9 +248,25 @@ namespace Microsoft.Maui.Controls
 				Setters.Add(setter);
 
 			foreach (var (target, specificity) in targets)
-				foreach (Setter setter in Setters)
-					setter.Apply(target, specificity);
+			{
+				var mergedStyle = target switch
+				{
+					StyleableElement element => element._mergedStyle,
+					Span span => span._mergedStyle,
+					ImageSource imageSource => imageSource._mergedStyle,
+					Shadow shadow => shadow._mergedStyle,
+					_ => null
+				};
+				if (mergedStyle != null && mergedStyle.ContainsStyle(this))
+					mergedStyle.Reapply();
+				else
+					foreach (Setter setter in Setters)
+						setter.Apply(target, specificity);
+			}
 		}
+
+		internal bool ContainsStyle(Style style, BindableObject target)
+			=> ReferenceEquals(this, style) || (BasedOn ?? GetBasedOnResource(target))?.ContainsStyle(style, target) == true;
 
 		bool ValidateBasedOn(Style value)
 			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
