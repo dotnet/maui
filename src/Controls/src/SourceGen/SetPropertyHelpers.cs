@@ -184,7 +184,7 @@ static class SetPropertyHelpers
 	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
 	/// Creates the resource on demand using a lambda, or a stable local function when replacing an entry.
 	/// </summary>
-	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false, string? replacementFactoryName = null)
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false, string? replacementFactoryName = null, bool updateLiveStyle = false, bool emitReplacement = true, string? liveStyleFactoryName = null)
 	{
 		// Nested resources need the same metadata-update-safe factory form as the outer addition.
 		for (SourceGenContext? enclosingContext = context; enclosingContext != null; enclosingContext = enclosingContext.ParentContext)
@@ -210,17 +210,18 @@ static class SetPropertyHelpers
 			key = keyStr;
 
 			// Check for duplicate keys
-			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
+			if (emitReplacement && !context.KeysInRD.TryGetValue(parentVar, out _))
 			{
-				context.KeysInRD[parentVar] = keysInUse = [];
+				context.KeysInRD[parentVar] = [];
 			}
-			if (keysInUse.Contains(key))
+			if (emitReplacement && context.KeysInRD[parentVar].Contains(key))
 			{
 				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
 				return;
 			}
-			keysInUse.Add(key);
+			if (emitReplacement)
+				context.KeysInRD[parentVar].Add(key);
 		}
 
 		// Get the x:Shared attribute (default is true)
@@ -302,15 +303,26 @@ static class SetPropertyHelpers
 				writer.WriteLine($"return null!;");
 			}
 		}
-		if (factoryName is not null)
+		if (factoryName is not null && emitReplacement)
 		{
-			if (replacementFactoryName is not null)
+			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+			// Hot reload: update a live shared style in place so consumers holding it directly refresh;
+			// otherwise replace the factory so future lookups get the new value.
+			if (replacementFactoryName is not null && updateLiveStyle)
 			{
-				var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
-				writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
+				writer.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.HasMaterializedStyle({parentVar.ValueAccessor}, {keyExpression}) || !global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle({parentVar.ValueAccessor}, {keyExpression}, (global::Microsoft.Maui.Controls.Style){liveStyleFactoryName ?? replacementFactoryName}()))");
+				writer.WriteLine("{");
+				writer.Indent++;
 			}
+			if (replacementFactoryName is not null)
+				writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
 			// Explicit delegates avoid introducing cached-lambda fields during metadata updates.
 			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
+			if (replacementFactoryName is not null && updateLiveStyle)
+			{
+				writer.Indent--;
+				writer.WriteLine("}");
+			}
 		}
 	}
 

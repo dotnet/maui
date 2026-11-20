@@ -486,6 +486,21 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		/// <summary>
+		/// Gets a value stored directly in this dictionary (not in merged dictionaries) without
+		/// invoking lazy factories. Lazy entries are returned only when they are shared and
+		/// already materialized; otherwise <paramref name="value"/> is <see langword="null"/>.
+		/// </summary>
+		/// <returns><see langword="true"/> if the key is stored in this dictionary.</returns>
+		internal bool TryGetLocalMaterializedValue(string key, out object value)
+		{
+			if (!_innerDictionary.TryGetValue(key, out value))
+				return false;
+			if (value is LazyResource lazy)
+				value = lazy.TryGetCachedValue(out var cached) ? cached : null;
+			return true;
+		}
+
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
 			var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
@@ -641,6 +656,12 @@ namespace Microsoft.Maui.Controls
 			/// Gets whether this is a shared (cached) resource.
 			/// </summary>
 			public bool Shared => _shared;
+
+			internal bool TryGetCachedValue(out object value)
+			{
+				value = _hasValue ? _cachedValue : null;
+				return _hasValue;
+			}
 
 #if DEBUG
 			/// <summary>
