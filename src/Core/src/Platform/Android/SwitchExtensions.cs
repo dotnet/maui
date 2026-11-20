@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
+		static readonly int[] s_enabledChecked = [AAttribute.StateEnabled, AAttribute.StateChecked];
+		static readonly int[] s_enabledUnchecked = [AAttribute.StateEnabled];
 
 		// Tracks SwitchCompat instances that have had a custom ThumbColor applied, so the
 		// platform default thumb tint is only rebuilt when a previously-set custom color is
@@ -50,46 +52,41 @@ namespace Microsoft.Maui.Platform
 			// so it can be restored when TrackColor is cleared.
 			if (!_defaultTrackTintCache.TryGetValue(materialSwitch, out var defaultTrackTintList))
 			{
-				var currentTint = materialSwitch.TrackTintList;
-				if (currentTint is not null)
+				var themeTint = materialSwitch.TrackTintList;
+				if (themeTint is not null)
 				{
-					_defaultTrackTintCache.Add(materialSwitch, currentTint);
-					defaultTrackTintList = currentTint;
+					_defaultTrackTintCache.Add(materialSwitch, themeTint);
+					defaultTrackTintList = themeTint;
 				}
 			}
 
 			var trackColor = view.TrackColor;
-
-			if (trackColor is not null)
+			if (defaultTrackTintList is null)
 			{
-				var currentTintList = materialSwitch.TrackTintList ?? defaultTrackTintList;
-				materialSwitch.TrackTintList = CreateTrackTintList(currentTintList, trackColor.ToPlatform().ToArgb(), materialSwitch.Checked);
+				materialSwitch.TrackTintList = trackColor?.ToDefaultColorStateList();
+				return;
 			}
-			else
-			{
-				var defaultOffColor = defaultTrackTintList?.GetColorForState([AAttribute.StateEnabled], new AColor(defaultTrackTintList.DefaultColor)) ?? 0;
-				var currentOffColor = materialSwitch.TrackTintList?.GetColorForState([AAttribute.StateEnabled], new AColor(defaultOffColor)) ?? defaultOffColor;
 
-				// Keep a custom checked-state tint while the unchecked state uses its platform default.
-				if (materialSwitch.Checked || currentOffColor != defaultOffColor)
+			var currentTint = materialSwitch.TrackTintList ?? defaultTrackTintList;
+			var isOn = view.IsOn;
+			var customTint = trackColor?.ToPlatform().ToArgb();
+			var fallback = new AColor(defaultTrackTintList.DefaultColor);
+			var defaultOff = defaultTrackTintList.GetColorForState(s_enabledUnchecked, fallback);
+			var currentOff = currentTint.GetColorForState(s_enabledUnchecked, new AColor(defaultOff));
+			if (customTint is not { } color)
+			{
+				// Keep the checked endpoint while MaterialSwitch animates to the default off tint.
+				if (isOn || currentOff != defaultOff)
 					materialSwitch.TrackTintList = defaultTrackTintList;
+				return;
 			}
-		}
 
-		static ColorStateList CreateTrackTintList(ColorStateList? tintList, int color, bool isOn)
-		{
-			if (tintList is null)
-				return ColorStateList.ValueOf(new AColor(color));
-
-			var defaultColor = new AColor(tintList.DefaultColor);
-			var disabledColor = tintList.GetColorForState([], defaultColor);
-			var checkedColor = tintList.GetColorForState([AAttribute.StateEnabled, AAttribute.StateChecked], defaultColor);
-			var normalColor = tintList.GetColorForState([AAttribute.StateEnabled], defaultColor);
-
-			return ColorStateListExtensions.CreateSwitch(
-				disabledColor,
-				isOn ? color : checkedColor,
-				isOn ? normalColor : color);
+			var currentOn = currentTint.GetColorForState(s_enabledChecked, fallback);
+			var disabled = currentTint.GetColorForState([], fallback);
+			materialSwitch.TrackTintList = ColorStateListExtensions.CreateSwitch(
+				disabled,
+				isOn ? color : currentOn,
+				isOn ? currentOff : color);
 		}
 
 		public static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
