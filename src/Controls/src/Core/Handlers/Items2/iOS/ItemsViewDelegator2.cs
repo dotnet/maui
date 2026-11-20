@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CoreFoundation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Handlers.Items;
@@ -17,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		where TViewController : ItemsViewController2<TItemsView>
 	{
 		readonly WeakReference<TViewController> _viewController;
-		WeakReference<IItemsViewSource> _thresholdNotificationSource;
+		bool _notifyingThreshold;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public UICollectionViewLayout ItemsViewLayout { get; }
@@ -71,65 +70,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			PreviousVerticalOffset = (float)contentOffsetY;
 
 			if (!visibleItems || viewController.ItemsSource != source ||
-				!IsThresholdReached(itemsView.RemainingItemsThreshold, source.ItemCount, lastVisibleItemIndex))
+				_notifyingThreshold)
 			{
 				return;
 			}
 
-			if (_thresholdNotificationSource is not null)
-			{
-				_thresholdNotificationSource.SetTarget(source);
-				return;
-			}
-
-			// A threshold handler can update the source, which is unsafe during UIKit's scroll/layout callback.
-			_thresholdNotificationSource = new WeakReference<IItemsViewSource>(source);
-			DispatchQueue.MainQueue.DispatchAsync(DeliverThresholdNotification);
-		}
-
-		static bool IsThresholdReached(int threshold, int itemCount, int lastVisibleItemIndex) =>
-			threshold switch
-			{
-				-1 => false,
-				0 => lastVisibleItemIndex == itemCount - 1,
-				_ => itemCount - 1 - lastVisibleItemIndex <= threshold
-			};
-
-		void DeliverThresholdNotification()
-		{
-			IItemsViewSource deliveredSource = null;
+			// Collection updates can synchronously scroll and reach the threshold again.
+			_notifyingThreshold = true;
 			try
 			{
-				var viewController = ViewController;
-				var itemsView = viewController?.ItemsView;
-				var source = viewController?.ItemsSource;
-				if (itemsView is null || source is null ||
-					!_thresholdNotificationSource.TryGetTarget(out var pendingSource) || source != pendingSource ||
-					itemsView.Handler?.PlatformView != viewController.View ||
-					viewController.CollectionView?.Delegate != this)
+				switch (itemsView.RemainingItemsThreshold)
 				{
-					return;
-				}
-
-				var (visibleItems, _, _, lastVisibleItemIndex) = GetVisibleItemsIndex();
-				if (visibleItems && IsThresholdReached(itemsView.RemainingItemsThreshold, source.ItemCount, lastVisibleItemIndex))
-				{
-					itemsView.SendRemainingItemsThresholdReached();
-					deliveredSource = source;
+					case -1:
+						return;
+					case 0:
+						if (lastVisibleItemIndex == source.ItemCount - 1)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
+					default:
+						if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
 				}
 			}
 			finally
 			{
-				// A replacement source may have reached its threshold during delivery.
-				if (deliveredSource is not null &&
-					_thresholdNotificationSource.TryGetTarget(out var pendingSource) && pendingSource != deliveredSource)
-				{
-					DispatchQueue.MainQueue.DispatchAsync(DeliverThresholdNotification);
-				}
-				else
-				{
-					_thresholdNotificationSource = null;
-				}
+				_notifyingThreshold = false;
 			}
 		}
 
