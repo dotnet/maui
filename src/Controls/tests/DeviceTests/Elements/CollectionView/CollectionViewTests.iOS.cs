@@ -324,40 +324,52 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
 			});
 
-			Label label = null;
+			var items = new List<Grid>();
 			var collectionView = new CollectionView
 			{
 				ItemsSource = new[] { "A", "B" },
 				SelectionMode = SelectionMode.None,
 				ItemTemplate = new DataTemplate(() =>
 				{
-					var itemLabel = new Label();
-					itemLabel.SetBinding(Label.TextProperty, ".");
-					label ??= itemLabel;
-					return itemLabel;
+					// The Button trait goes on the item's accessibility element
+					var accessibilityElement = new Grid();
+					accessibilityElement.SetBinding(SemanticProperties.DescriptionProperty, ".");
+					accessibilityElement.Add(new Label { Text = "Item" });
+					items.Add(accessibilityElement);
+					return accessibilityElement;
 				})
 			};
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				var uiCollectionView = handler.Controller.CollectionView;
-				await AssertHelpers.AssertEventually(() => label?.Handler?.PlatformView is UIView,
-					message: "The item template was not realized.");
-				var platformLabel = (UIView)label.Handler.PlatformView;
+
+				// The template is also instantiated outside of cells (for example to measure items), so only
+				// look at the items shown in the collection view's cells
+				UIView[] CellItems() => items
+					.Select(l => l.Handler?.PlatformView as UIView)
+					.Where(v => v is not null && v.IsDescendantOfView(uiCollectionView))
+					.ToArray();
+				bool AllHaveButtonTrait(bool expected) =>
+					CellItems().All(v => ((v.AccessibilityTraits & UIAccessibilityTrait.Button) != 0) == expected);
+
+				await AssertHelpers.AssertEventually(() => CellItems() is { Length: 2 } cellItems && cellItems.All(v => v.IsAccessibilityElement),
+					message: "The items were not realized in cells as accessibility elements.");
 
 				Assert.False(uiCollectionView.AllowsSelection);
-				Assert.Equal((UIAccessibilityTrait)0, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+				Assert.True(AllHaveButtonTrait(false));
 
 				var taps = new List<ItemTappedEventArgs>();
 				void OnItemTapped(object sender, ItemTappedEventArgs e) => taps.Add(e);
 				collectionView.ItemTapped += OnItemTapped;
 
 				Assert.True(uiCollectionView.AllowsSelection);
-				Assert.Equal(UIAccessibilityTrait.Button, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+				Assert.True(AllHaveButtonTrait(true), "Items that report taps should have the Button trait.");
 
 				// A tap asks the delegate first; in None mode the tap is reported and the selection refused
 				var shouldSelect = ((UICollectionViewDelegate)uiCollectionView.Delegate).ShouldSelectItem(uiCollectionView, NSIndexPath.FromItemSection(1, 0));
@@ -369,7 +381,7 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.ItemTapped -= OnItemTapped;
 
 				Assert.False(uiCollectionView.AllowsSelection);
-				Assert.Equal((UIAccessibilityTrait)0, platformLabel.AccessibilityTraits & UIAccessibilityTrait.Button);
+				Assert.True(AllHaveButtonTrait(false), "The Button trait should be removed with the last ItemTapped handler.");
 			});
 		}
 

@@ -21,7 +21,7 @@ public class Issue40332 : _IssuesUITest
 		App.Tap("ItemB");
 		WaitForLog("Selection:B;Tapped:B@1");
 
-		App.Tap("ItemB");
+		TapAgain("ItemB");
 		WaitForLog("Selection:B;Tapped:B@1;Tapped:B@1");
 	}
 
@@ -48,7 +48,7 @@ public class Issue40332 : _IssuesUITest
 		App.Tap("ItemC");
 		WaitForLog("Tapped:C@2");
 
-		App.Tap("ItemC");
+		TapAgain("ItemC");
 		WaitForLog("Tapped:C@2;Tapped:C@2");
 	}
 
@@ -62,7 +62,7 @@ public class Issue40332 : _IssuesUITest
 		App.Tap("ItemA");
 		WaitForLog("Selection:A;Tapped:A@0");
 
-		App.Tap("ItemA");
+		TapAgain("ItemA");
 		WaitForLog("Selection:A;Tapped:A@0;Selection:;Tapped:A@0");
 	}
 
@@ -127,7 +127,7 @@ public class Issue40332 : _IssuesUITest
 		App.WaitForElement("Plain2").Tap();
 		WaitForLog("Selection:Plain2;Tapped:Plain2@1");
 
-		App.WaitForElement("Plain2").Tap();
+		TapAgain("Plain2");
 		WaitForLog("Selection:Plain2;Tapped:Plain2@1;Tapped:Plain2@1");
 	}
 
@@ -141,6 +141,14 @@ public class Issue40332 : _IssuesUITest
 
 		App.Tap("ItemB");
 		WaitForLog("Command:B");
+	}
+
+	// Wait out the double-click interval, so that tapping the same item again is a second tap rather than a
+	// double click; on Mac Catalyst UIKit reports a double click on an item as three selection changes
+	void TapAgain(string element)
+	{
+		Thread.Sleep(600);
+		App.WaitForElement(element).Tap();
 	}
 
 	void ResetPage()
