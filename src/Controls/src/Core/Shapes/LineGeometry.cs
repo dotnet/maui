@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			float endPointX = (float)EndPoint.X;
 			float endPointY = (float)EndPoint.Y;
 
-			path.Move(startPointX, startPointY);
+			path.MoveTo(startPointX, startPointY);
 			path.LineTo(endPointX, endPointY);
 		}
 	}

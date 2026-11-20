@@ -25,6 +25,80 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.False(menuBarItem.IsEnabled);
 		}
 
+		[Fact]
+		public void MenuBarItemTextChangeUpdatesWindowMenuBar()
+		{
+			var menuBarItem = new MenuBarItem { Text = "File" };
+			var page = new ContentPage();
+			page.MenuBarItems.Add(menuBarItem);
+			var menuBarUpdates = CountWindowMenuBarUpdates(page);
+
+			menuBarItem.Text = "Edit";
+
+			Assert.Equal(1, menuBarUpdates());
+		}
+
+		[Fact]
+		public void MenuFlyoutItemTextChangeUpdatesWindowMenuBar()
+		{
+			var flyoutItem = new MenuFlyoutItem { Text = "Open" };
+			var menuBarItem = new MenuBarItem { Text = "File" };
+			menuBarItem.Add(flyoutItem);
+			var page = new ContentPage();
+			page.MenuBarItems.Add(menuBarItem);
+			var menuBarUpdates = CountWindowMenuBarUpdates(page);
+
+			flyoutItem.Text = "Close";
+
+			Assert.Equal(1, menuBarUpdates());
+		}
+
+		[Fact]
+		public void MenuFlyoutSubItemChildTextChangeUpdatesWindowMenuBar()
+		{
+			var nestedItem = new MenuFlyoutItem { Text = "Document" };
+			var subItem = new MenuFlyoutSubItem { Text = "Recent" };
+			subItem.Add(nestedItem);
+			var menuBarItem = new MenuBarItem { Text = "File" };
+			menuBarItem.Add(subItem);
+			var page = new ContentPage();
+			page.MenuBarItems.Add(menuBarItem);
+			var menuBarUpdates = CountWindowMenuBarUpdates(page);
+
+			nestedItem.Text = "Image";
+
+			Assert.Equal(1, menuBarUpdates());
+		}
+
+		[Fact]
+		public void ContextFlyoutItemTextChangeDoesNotUpdateWindowMenuBar()
+		{
+			var flyoutItem = new MenuFlyoutItem { Text = "Copy" };
+			var label = new Label();
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { flyoutItem });
+			var page = new ContentPage { Content = label };
+			var menuBarUpdates = CountWindowMenuBarUpdates(page);
+
+			flyoutItem.Text = "Paste";
+
+			Assert.Equal(0, menuBarUpdates());
+		}
+
+		static Func<int> CountWindowMenuBarUpdates(Page page)
+		{
+			int count = 0;
+			var mapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandlerStub.Mapper)
+			{
+				[nameof(IMenuBarElement.MenuBar)] = (_, _) => count++
+			};
+
+			_ = new Window(page) { Handler = new WindowHandlerStub(mapper) };
+
+			// Ignore the update from connecting the handler
+			count = 0;
+			return () => count;
+		}
+
 		protected override int GetIndex(MenuBarItemHandlerUpdate handlerUpdate) =>
 			handlerUpdate.Index;
 

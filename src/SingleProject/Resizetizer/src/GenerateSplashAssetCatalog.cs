@@ -279,21 +279,21 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var storyboard = Path.Combine(IntermediateOutputPath, "MauiSplash.storyboard");
 			if (File.Exists(storyboard))
-				File.Delete(storyboard);
+				Utils.DeleteFileWithRetries(storyboard);
 		}
 
 		private void CleanImageSet()
 		{
 			var imageSetPath = Path.Combine(IntermediateOutputPath, DpiPath.Ios.SplashImageSetPath);
 			if (Directory.Exists(imageSetPath))
-				Directory.Delete(imageSetPath, recursive: true);
+				Utils.DeleteDirectoryWithRetries(imageSetPath);
 		}
 
 		private void DeleteColorSet()
 		{
 			var colorSetPath = Path.Combine(IntermediateOutputPath, DpiPath.Ios.SplashColorSetPath);
 			if (Directory.Exists(colorSetPath))
-				Directory.Delete(colorSetPath, recursive: true);
+				Utils.DeleteDirectoryWithRetries(colorSetPath);
 		}
 
 		void ILogger.Log(string message)

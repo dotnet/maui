@@ -60,6 +60,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw xpe;
 			}
 			Context.Types[node] = type;
+			if (IsDeferredMergedDictionary(node, parentNode, type, out _))
+				return;
 			if (IsXaml2009LanguagePrimitive(node))
 			{
 				value = CreateLanguagePrimitive(type, node);
@@ -331,6 +333,45 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		static bool IsXaml2009LanguagePrimitive(ElementNode node) => node.NamespaceURI == XamlParser.X2009Uri;
+
+		/// <summary>
+		/// Empty elements of a ResourceDictionary subtype (typically an x:Class dictionary) added to
+		/// MergedDictionaries are created when they are merged rather than up front, so their
+		/// {StaticResource} can resolve resources from the preceding merged dictionaries (#29589).
+		/// </summary>
+		internal static bool IsDeferredMergedDictionary(ElementNode node, INode parentNode, Type type, out ElementNode mergeTargetNode)
+		{
+			mergeTargetNode = null;
+			if (type is null
+				|| type == typeof(ResourceDictionary)
+				|| type.IsAbstract
+				|| !typeof(ResourceDictionary).IsAssignableFrom(type)
+				|| node.Properties.Count != 0
+				|| node.CollectionItems.Count != 0
+				|| type.GetConstructor(Type.EmptyTypes) is null)
+				return false;
+
+			XmlName propertyName;
+			if (parentNode is ListNode listNode)
+			{
+				mergeTargetNode = listNode.Parent as ElementNode;
+				if (!listNode.TryGetPropertyName(mergeTargetNode, out propertyName))
+					return false;
+			}
+			else if (parentNode is ElementNode parentElement && node.TryGetPropertyName(parentNode, out propertyName))
+				mergeTargetNode = parentElement;
+			else
+				return false;
+
+			if (mergeTargetNode is null || propertyName.LocalName is null
+				|| (propertyName.LocalName != nameof(ResourceDictionary.MergedDictionaries)
+					&& !propertyName.LocalName.EndsWith("." + nameof(ResourceDictionary.MergedDictionaries), StringComparison.Ordinal)))
+			{
+				mergeTargetNode = null;
+				return false;
+			}
+			return true;
+		}
 
 		static object CreateLanguagePrimitive(Type nodeType, ElementNode node)
 		{

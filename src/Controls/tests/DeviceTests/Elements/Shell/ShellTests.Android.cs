@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
@@ -133,6 +134,63 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//Item2");
 				await shell.GoToAsync("..");
 			});
+		}
+
+		[Fact(DisplayName = "Overlapping GoToAsync(\"..\") calls each pop one page")]
+		public async Task OverlappingRelativePopsEachPopAPage()
+		{
+			SetupBuilder();
+
+			Routing.RegisterRoute("overlapPopFirst", typeof(QueryTrackingPage));
+			Routing.RegisterRoute("overlapPopSecond", typeof(ContentPage));
+			Routing.RegisterRoute("overlapPopThird", typeof(ContentPage));
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent()
+				{
+					Route = "Item1",
+					Content = new ContentPage()
+				});
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await shell.GoToAsync($"overlapPopFirst?{nameof(QueryTrackingPage.TestValue)}=1");
+				var firstPage = (QueryTrackingPage)shell.CurrentPage;
+				await shell.GoToAsync("overlapPopSecond");
+				await shell.GoToAsync("overlapPopThird");
+
+				// Fire two relative pops without awaiting the first,
+				// like a double tap on the hardware back button
+				var pop1 = shell.GoToAsync("..");
+				var pop2 = shell.GoToAsync("..");
+				await Task.WhenAll(pop1, pop2);
+
+				// Wait until the navigation stack stops changing before asserting
+				int settledCount = -1;
+				await AssertEventually(() =>
+				{
+					var count = shell.Navigation.NavigationStack.Count;
+					if (count == settledCount)
+						return true;
+
+					settledCount = count;
+					return false;
+				}, timeout: 4000, interval: 500, message: "Navigation stack never settled");
+
+				Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+				Assert.Same(firstPage, shell.CurrentPage);
+				Assert.Equal("1", firstPage.TestValue);
+			});
+		}
+
+		class QueryTrackingPage : ContentPage, IQueryAttributable
+		{
+			public string TestValue { get; private set; }
+
+			public void ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) =>
+				TestValue = query.TryGetValue(nameof(TestValue), out var value) ? (string)value : null;
 		}
 
 		[Theory]
@@ -1111,6 +1169,89 @@ namespace Microsoft.Maui.DeviceTests
 
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
+		}
+	}
+
+	[Category(TestCategory.Shell)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)]
+	public class ShellRendererTopTabTests : ControlsHandlerTestBase
+	{
+		[Fact]
+		public async Task ProgrammaticTopTabNavigationUpdatesToolbar()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, ShellRenderer>();
+			}));
+
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			var otherPage = new ContentPage();
+			var firstTitle = new Label { Text = "First" };
+			var secondTitle = new Label { Text = "Second" };
+			var updatedTitle = new Label { Text = "Updated First" };
+			Shell.SetTitleView(firstPage, firstTitle);
+			Shell.SetTitleView(secondPage, secondTitle);
+			Shell.SetBackgroundColor(firstPage, Colors.Green);
+			Shell.SetBackgroundColor(secondPage, Colors.Red);
+
+			var shell = await InvokeOnMainThreadAsync(() => new Shell
+			{
+				Items =
+				{
+					new TabBar
+					{
+						Items =
+						{
+							new Tab
+							{
+								Route = "TabA",
+								Items =
+								{
+									new ShellContent { Route = "First", Title = "First", Content = firstPage },
+									new ShellContent { Route = "Second", Title = "Second", Content = secondPage }
+								}
+							},
+							new Tab
+							{
+								Route = "TabB",
+								Items = { new ShellContent { Route = "Other", Content = otherPage } }
+							}
+						}
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				Assert.IsType<ShellRenderer>(shell.Handler);
+				await OnNavigatedToAsync(firstPage);
+
+				var pager = ((IPlatformViewHandler)firstPage.Handler).PlatformView.GetParentOfType<ViewPager2>();
+				Assert.NotNull(pager);
+				pager.CurrentItem = 1;
+				await OnNavigatedToAsync(secondPage);
+				await AssertTitleViewText(shell, "Second");
+
+				await shell.GoToAsync("//TabB/Other");
+				await OnNavigatedToAsync(otherPage);
+				await shell.GoToAsync("//TabA/First");
+				await OnNavigatedToAsync(firstPage);
+
+				Assert.Same(firstPage, shell.CurrentPage);
+				await AssertTitleViewText(shell, "First");
+
+				Shell.SetTitleView(firstPage, updatedTitle);
+				await AssertTitleViewText(shell, "Updated First");
+			});
+		}
+
+		async Task AssertTitleViewText(Shell shell, string expected)
+		{
+			_ = await Wait(() => (GetTitleView(shell.Handler) as global::Android.Widget.TextView)?.Text == expected);
+			Assert.Equal(expected, (GetTitleView(shell.Handler) as global::Android.Widget.TextView)?.Text);
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // ToolBarItem not shown on FlyoutPage, issue: https://github.com/dotnet/maui/issues/26330
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -33,4 +32,3 @@ public class Issue2266 : _IssuesUITest
 		App.WaitForElement("Page 3");
 	}
 }
-#endif

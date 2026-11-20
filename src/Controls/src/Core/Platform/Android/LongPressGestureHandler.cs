@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_viewGetter = viewGetter ?? throw new ArgumentNullException(nameof(viewGetter));
 		}
 
+		internal bool IsPlatformViewClickable =>
+			(_handlerGetter()?.PlatformView as global::Android.Views.View)?.Clickable ?? false;
+
 		public bool HasAnyGestures()
 		{
 			var view = _viewGetter();

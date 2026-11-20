@@ -8,11 +8,13 @@ namespace UITest.Appium
 	public class AppiumServerContext : IServerContext
 	{
 		const int Port = 4723;
+		const int MaxSessionRetries = 10;
 		readonly int _serverStartWaitDelay = 1000;
 		readonly List<AppiumUIClientContext> _contexts = new(); // Since tests don't know when they are done, we need to keep track of all the contexts we create so we can dispose them
 		readonly TimeSpan _maxServerWaitTime = TimeSpan.FromSeconds(15);
 		readonly object _serverLock = new object();
 		AppiumLocalService? _server;
+		bool _sessionRetriesExhausted;
 
 		public IUIClientContext CreateUIClientContext(IConfig config)
 		{
@@ -26,6 +28,10 @@ namespace UITest.Appium
 			}
 
 			int retries = 0;
+			// Once a fixture exhausts every retry the device is usually gone (e.g. a crashed emulator).
+			// Give later fixtures a single attempt so the rest of the run fails in minutes instead of hours,
+			// leaving time for the CI retry to recover the device; a successful session restores full retries.
+			int maxRetries = _sessionRetriesExhausted ? 0 : MaxSessionRetries;
 
 			var testDevice = config.GetProperty<TestDevice>("TestDevice");
 			var driverUri = new Uri($"http://localhost:{Port}/wd/hub");
@@ -46,17 +52,19 @@ namespace UITest.Appium
 
 					var newContext = new AppiumUIClientContext(app, config);
 					_contexts.Add(newContext);
+					_sessionRetriesExhausted = false;
 					return newContext;
 				}
 				catch (WebDriverException)
 				{
 					// Default command timeout is 60 seconds when executing the NewSessionCommand
-					if (retries++ < 10)
+					if (retries++ < maxRetries)
 					{
 						Debug.WriteLine($">>>>> Retrying to create the driver, attempt #{retries}");
 					}
 					else
 					{
+						_sessionRetriesExhausted = true;
 						throw;
 					}
 				}
