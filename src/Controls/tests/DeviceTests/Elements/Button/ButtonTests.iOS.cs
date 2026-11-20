@@ -58,6 +58,23 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		class ImageGroupCustomizedAlignmentButtonHandler : ButtonHandler
+		{
+			public ImageGroupCustomizedAlignmentButtonHandler() : base(CreateMapper())
+			{
+			}
+
+			static IPropertyMapper CreateMapper()
+			{
+				var mapper = new PropertyMapper<Button, IButtonHandler>(ButtonHandler.Mapper);
+				mapper.AppendToMapping(nameof(Button.HorizontalTextAlignment), (handler, button) =>
+					handler.PlatformView.HorizontalAlignment = UIControlContentHorizontalAlignment.Trailing);
+				mapper.AppendToMapping(nameof(Button.VerticalTextAlignment), (handler, button) =>
+					handler.PlatformView.VerticalAlignment = UIControlContentVerticalAlignment.Bottom);
+				return mapper;
+			}
+		}
+
 #if IOS && !MACCATALYST
 		[Fact]
 		public async Task NativeAlignmentIsNotRewrittenWhenUnset()
@@ -134,6 +151,113 @@ namespace Microsoft.Maui.DeviceTests
 
 #endif
 		[Theory]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Left, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Right, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Top, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Bottom, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Left, true)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Right, true)]
+		public async Task ConfiguredImageRetainsPositionAndSpacing(Button.ButtonContentLayout.ImagePosition position, bool rtl)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<Button, ConfiguredAlignmentButtonHandler>()));
+			var button = new Button
+			{
+				Text = "A\nB",
+				ImageSource = "red.png",
+				FontSize = 20,
+				BackgroundColor = Colors.White,
+				TextColor = Colors.Blue,
+				WidthRequest = 310,
+				HeightRequest = 260,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Padding = new Thickness(20),
+				FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+				ContentLayout = new Button.ButtonContentLayout(position, 12),
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center
+			};
+			await CreateHandlerAndAddToWindow(button, async () =>
+			{
+				var platform = Assert.IsAssignableFrom<ButtonHandler>(button.Handler).PlatformView;
+				await AssertHelpers.AssertEventually(() => platform.CurrentImage is not null && platform.Bounds.Width > 0);
+				Assert.NotNull(platform.Configuration);
+				((ICrossPlatformLayout)button).CrossPlatformArrange(new Rect(0, 0, platform.Bounds.Width, platform.Bounds.Height));
+				platform.SetNeedsLayout();
+				platform.LayoutIfNeeded();
+				var bitmap = await button.AsRawBitmapAsync();
+				var image = GetRenderedRedImageBounds(bitmap);
+				var text = GetRenderedBlueTextBounds(bitmap);
+				var imageOnLeft = position == Button.ButtonContentLayout.ImagePosition.Left ? !rtl : rtl;
+				var imageOnTop = position == Button.ButtonContentLayout.ImagePosition.Top;
+				var imageOnBottom = position == Button.ButtonContentLayout.ImagePosition.Bottom;
+				var gap = imageOnTop ? text.Top - image.Bottom
+					: imageOnBottom ? image.Top - text.Bottom
+					: imageOnLeft ? text.Left - image.Right : image.Left - text.Right;
+
+				Assert.True(imageOnTop ? image.Bottom < text.Top
+					: imageOnBottom ? text.Bottom < image.Top
+					: imageOnLeft ? image.Right < text.Left : text.Right < image.Left,
+					$"{position}, RTL={rtl}: image {image} must be on the requested side of title {text}.");
+				Assert.True(gap >= 6 && gap <= 24,
+					$"{position}, RTL={rtl}: expected a visible 12-point image/title gap, got {gap} (image {image}, title {text}).");
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ImageAndTextGroupHonorsAlignmentMapperCustomization(bool horizontal)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<Button, ImageGroupCustomizedAlignmentButtonHandler>()));
+			var button = new Button
+			{
+				Text = "A\nB",
+				ImageSource = "red.png",
+				FontSize = 20,
+				BackgroundColor = Colors.White,
+				TextColor = Colors.Blue,
+				WidthRequest = 310,
+				HeightRequest = 260,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Padding = new Thickness(20),
+				ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12),
+				HorizontalTextAlignment = TextAlignment.Start,
+				VerticalTextAlignment = TextAlignment.Start
+			};
+			await CreateHandlerAndAddToWindow(button, async () =>
+			{
+				var platform = Assert.IsAssignableFrom<ButtonHandler>(button.Handler).PlatformView;
+				await AssertHelpers.AssertEventually(() => platform.CurrentImage is not null && platform.Bounds.Width > 0 && platform.Bounds.Height > 0);
+				Assert.Null(platform.Configuration);
+				((ICrossPlatformLayout)button).CrossPlatformArrange(new Rect(0, 0, platform.Bounds.Width, platform.Bounds.Height));
+				platform.SetNeedsLayout();
+				platform.LayoutIfNeeded();
+				Assert.Equal(UIControlContentHorizontalAlignment.Trailing, platform.HorizontalAlignment);
+				Assert.Equal(UIControlContentVerticalAlignment.Bottom, platform.VerticalAlignment);
+
+				var bitmap = await button.AsRawBitmapAsync();
+				var image = GetRenderedRedImageBounds(bitmap);
+				var text = GetRenderedBlueTextBounds(bitmap);
+				var groupLeft = Math.Min(image.Left, text.Left);
+				var groupTop = Math.Min(image.Top, text.Top);
+				if (horizontal)
+				{
+					Assert.True(groupLeft > (double)platform.Bounds.Width / 2,
+						$"Mapper-selected trailing alignment must move image {image} and title {text} to the right.");
+				}
+				else
+				{
+					Assert.True(groupTop > (double)platform.Bounds.Height / 2,
+						$"Mapper-selected bottom alignment must move image {image} and title {text} down.");
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Left, false, false)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Top, false, false)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Right, false, false)]
@@ -188,6 +312,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platform = Assert.IsAssignableFrom<ButtonHandler>(button.Handler).PlatformView;
 				await AssertHelpers.AssertEventually(() => platform.CurrentImage is not null && platform.Bounds.Width > 0 && platform.Bounds.Height > 0);
 				var originalConfiguration = platform.Configuration;
+				var originalContentInsets = originalConfiguration?.ContentInsets;
 				Assert.True(!configured || originalConfiguration is not null);
 				Rect? start = null;
 				Rect? center = null;
@@ -236,11 +361,18 @@ namespace Microsoft.Maui.DeviceTests
 				button.ClearValue(Button.HorizontalTextAlignmentProperty);
 				button.ClearValue(Button.VerticalTextAlignmentProperty);
 				((ICrossPlatformLayout)button).CrossPlatformArrange(new Rect(0, 0, platform.Bounds.Width, platform.Bounds.Height));
-				if (originalConfiguration is not null)
+				if (platform.Configuration is { } configuration)
 				{
-					Assert.Equal(originalConfiguration.ImagePlacement, platform.Configuration!.ImagePlacement);
-					Assert.Equal(originalConfiguration.ImagePadding, platform.Configuration.ImagePadding);
-					Assert.Equal(originalConfiguration.ContentInsets, platform.Configuration.ContentInsets);
+					var expectedPlacement = position switch
+					{
+						Button.ButtonContentLayout.ImagePosition.Left => NSDirectionalRectEdge.Leading,
+						Button.ButtonContentLayout.ImagePosition.Right => NSDirectionalRectEdge.Trailing,
+						Button.ButtonContentLayout.ImagePosition.Top => NSDirectionalRectEdge.Top,
+						_ => NSDirectionalRectEdge.Bottom
+					};
+					Assert.Equal(expectedPlacement, configuration.ImagePlacement);
+					Assert.Equal((nfloat)8, configuration.ImagePadding);
+					Assert.Equal(originalContentInsets, configuration.ContentInsets);
 				}
 			});
 		}

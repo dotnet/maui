@@ -197,6 +197,25 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
+				if (platformButton.Configuration is { } configuration)
+				{
+					var imagePlacement = layout.Position switch
+					{
+						ButtonContentLayout.ImagePosition.Left => NSDirectionalRectEdge.Leading,
+						ButtonContentLayout.ImagePosition.Right => NSDirectionalRectEdge.Trailing,
+						ButtonContentLayout.ImagePosition.Top => NSDirectionalRectEdge.Top,
+						_ => NSDirectionalRectEdge.Bottom
+					};
+					if (configuration.ImagePlacement != imagePlacement || configuration.ImagePadding != spacing)
+					{
+						configuration.ImagePlacement = imagePlacement;
+						configuration.ImagePadding = spacing;
+						platformButton.Configuration = configuration;
+					}
+
+					return;
+				}
+
 				var padding = button.Padding;
 				if (padding.IsNaN)
 				{
@@ -316,8 +335,19 @@ namespace Microsoft.Maui.Controls
 			if (button.IsSetExplicitly(HorizontalTextAlignmentProperty))
 			{
 				var available = Math.Max(0, size.Width - padding.HorizontalThickness - border * 2 - width);
-				var alignment = button.HorizontalTextAlignment;
-				if (((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft())
+				var rtl = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft();
+				var alignment = platformButton.HorizontalAlignment == UIControlContentHorizontalAlignment.Center
+					? button.HorizontalTextAlignment
+					: platformButton.HorizontalAlignment switch
+				{
+					UIControlContentHorizontalAlignment.Leading => TextAlignment.Start,
+					UIControlContentHorizontalAlignment.Trailing => TextAlignment.End,
+					UIControlContentHorizontalAlignment.Left => rtl ? TextAlignment.End : TextAlignment.Start,
+					UIControlContentHorizontalAlignment.Right => rtl ? TextAlignment.Start : TextAlignment.End,
+					UIControlContentHorizontalAlignment.Fill => TextAlignment.Justify,
+					_ => TextAlignment.Center
+				};
+				if (rtl)
 				{
 					alignment = alignment == TextAlignment.Start ? TextAlignment.End : alignment == TextAlignment.End ? TextAlignment.Start : alignment;
 				}
@@ -328,7 +358,14 @@ namespace Microsoft.Maui.Controls
 			if (button.IsSetExplicitly(VerticalTextAlignmentProperty))
 			{
 				var available = Math.Max(0, size.Height - padding.VerticalThickness - border * 2 - height);
-				var alignment = button.VerticalTextAlignment;
+				var alignment = platformButton.VerticalAlignment == UIControlContentVerticalAlignment.Center
+					? button.VerticalTextAlignment
+					: platformButton.VerticalAlignment switch
+				{
+					UIControlContentVerticalAlignment.Top => TextAlignment.Start,
+					UIControlContentVerticalAlignment.Bottom => TextAlignment.End,
+					_ => TextAlignment.Center
+				};
 				offsetY = padding.Top + border - top + (alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? available : available / 2);
 			}
 
