@@ -887,6 +887,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void DestroyingKeepsHandlersWithManualDisconnectPolicy()
 		{
+			// https://github.com/dotnet/maui/issues/40056
 			var mauiContext = CreateMauiContextWithHandlerStubs();
 			var button = new Button();
 			var layout = new VerticalStackLayout { button };
@@ -907,6 +908,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void DestroyingKeepsHandlersOfAPageMovedToANewerWindow()
 		{
+			// https://github.com/dotnet/maui/issues/40056
 			var page = new ContentPage();
 			IWindow oldWindow = new TestWindow(page);
 			page.ToHandler(CreateMauiContextWithHandlerStubs());

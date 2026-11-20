@@ -460,6 +460,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task DestroyingKeepsHandlersOfAModalPageMovedToANewerWindow()
+		{
+			// https://github.com/dotnet/maui/issues/40056
+			var (window, _, _) = CreateWindowWithPlatform();
+			var rootPageHandler = AttachRootPage(window).Handler;
+			var modalPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			await window.Navigation.PushModalAsync(modalPage);
+			_ = new Window(modalPage);
+			var newerWindowModalPageHandler = Substitute.For<IViewHandler>();
+			modalPage.Handler = newerWindowModalPageHandler;
+			// The old window's modal stack still lists the page after it moved.
+			Assert.Contains(modalPage, window.Navigation.ModalStack);
+
+			((IWindow)window).Destroying();
+
+			rootPageHandler.Received(1).DisconnectHandler();
+			newerWindowModalPageHandler.DidNotReceive().DisconnectHandler();
+		}
+
+		[Fact]
 		public async Task DelayedPopFailureAfterTeardownDoesNotRestorePlatformState()
 		{
 			var (window, _, factory) = CreateWindowWithPlatform();
