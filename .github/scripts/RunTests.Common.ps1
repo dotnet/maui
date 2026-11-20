@@ -19,6 +19,7 @@ $script:RunTestsPlatforms = [ordered]@{
 }
 
 # Pipeline parameter values differ from the user-facing names for MacCatalyst only.
+$script:RunTestsPlatformParameterSuffix = @{ android = 'Android'; ios = 'Ios'; maccatalyst = 'Catalyst'; windows = 'Windows' }
 $script:RunTestsPipelinePlatform = @{
     android     = 'android'
     ios         = 'ios'
@@ -274,12 +275,21 @@ function Get-RunTestsTemplateParameters {
     #>
     param([Parameter(Mandatory)]$Selection)
     if ($Selection.mode -ne 'selected') { return [ordered]@{} }
-    $platforms = @($Selection.platforms | ForEach-Object { $script:RunTestsPipelinePlatform[$_] })
-    return [ordered]@{
-        selectedRun        = 'true'
-        selectedPlatforms  = (ConvertTo-Json -InputObject @($platforms) -Compress)
-        selectedCategories = (ConvertTo-Json -InputObject @($Selection.pipelineCategories) -Compress)
+    # Only booleans and fixed-value strings: Azure DevOps lets an identity with just 'Queue builds'
+    # set those, while free-text or object parameters need 'Edit queue build configuration'.
+    $parameters = [ordered]@{ selectedRun = 'true' }
+    foreach ($platform in Get-RunTestsPlatformIds) {
+        $parameters["uitestPlatform$($script:RunTestsPlatformParameterSuffix[$platform])"] = $(if ($platform -cin @($Selection.platforms)) { 'true' } else { 'false' })
     }
+    foreach ($category in @($Selection.expandedCategories)) {
+        $on = @(foreach ($platform in Get-RunTestsPlatformIds) {
+                if ($Selection.platformCategories.Contains($platform) -and $category -cin @($Selection.platformCategories[$platform])) {
+                    $script:RunTestsPipelinePlatform[$platform]
+                }
+            })
+        if ($on.Count) { $parameters["uitest_$category"] = $on -join '+' }
+    }
+    return $parameters
 }
 
 function New-RunTestsQueueRequest {
@@ -335,12 +345,7 @@ function Test-RunTestsQueuedSelection {
     foreach ($key in $expected.Keys) {
         $value = if ($actual -is [System.Collections.IDictionary]) { $actual[$key] } else { $actual.PSObject.Properties[$key]?.Value }
         if ($null -eq $value) { return $false }
-        if ($key -eq 'selectedRun') {
-            if ("$value" -notin @('true', 'True')) { return $false }
-            continue
-        }
-        $normalized = ConvertTo-Json -InputObject @(ConvertFrom-Json -InputObject "$value") -Compress
-        if ($normalized -cne $expected[$key]) { return $false }
+        if ("$value" -ine $expected[$key]) { return $false }
     }
     return $true
 }
@@ -919,12 +924,12 @@ $script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
 function Test-RunTestsPipelineSupportsSelection {
     <#
     .SYNOPSIS
-    True when a ci-uitests.yml accepts the selectedRun/selectedPlatforms/selectedCategories parameters.
+    True when a ci-uitests.yml accepts the selectedRun, uitestPlatform* and uitest_<Category> parameters.
     Azure DevOps rejects a queue request whose template parameters the built commit does not declare.
     #>
     param([AllowNull()][AllowEmptyString()][string]$Content)
     if (-not $Content) { return $false }
-    foreach ($name in 'selectedRun', 'selectedPlatforms', 'selectedCategories') {
+    foreach ($name in 'selectedRun', 'uitestPlatformAndroid', 'uitestPlatformWindows', 'uitest_Button') {
         if ($Content -notmatch "(?m)^\s*-\s*name:\s*$name\s*$") { return $false }
     }
     return $true

@@ -103,8 +103,29 @@ Describe 'New-RunTestsQueueRequest' {
         $r.sourceBranch | Should -Be 'refs/pull/1234/merge'
         $r.triggerInfo['pr.sourceSha'] | Should -Be ('a' * 40)
         $r.triggerInfo['pr.isFork'] | Should -Be 'True'
-        $r.templateParameters.selectedPlatforms | Should -Be '["android","catalyst"]'
-        $r.templateParameters.selectedCategories | Should -Be '["Label"]'
+        $r.templateParameters.selectedRun | Should -Be 'true'
+        $r.templateParameters.uitestPlatformAndroid | Should -Be 'true'
+        $r.templateParameters.uitestPlatformCatalyst | Should -Be 'true'
+        $r.templateParameters.uitestPlatformIos | Should -Be 'false'
+        $r.templateParameters.uitest_Label | Should -Be 'android+catalyst'
+        # Nothing free-text: Azure DevOps refuses those from an identity with only 'Queue builds'.
+        @($r.templateParameters.Keys | Where-Object { $_ -notmatch '^(selectedRun|uitestPlatform(Android|Ios|Catalyst|Windows)|uitest_[A-Za-z0-9_]+)$' }) | Should -BeNullOrEmpty
+    }
+
+    It 'only sends values the pipeline declares' {
+        $ci = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios', 'maccatalyst', 'windows') @()) $inventory
+        $parameters = Get-RunTestsTemplateParameters $s
+        foreach ($key in $parameters.Keys) {
+            $block = [regex]::Match($ci, "(?ms)^  - name: $key\s*\n(.*?)(?=^  - name: |^\S)")
+            $block.Success | Should -BeTrue -Because "$key must be a declared parameter"
+            if ($key -like 'uitest_*') {
+                $block.Groups[1].Value | Should -Match ('values: \[[^\]]*(?<=[\[ ])' + [regex]::Escape($parameters[$key]) + '[,\]]')
+            } else {
+                $block.Groups[1].Value | Should -Match 'type: boolean'
+            }
+        }
+        $parameters['uitest_Button'] | Should -Be 'android+ios+catalyst+windows'
     }
 
     It 'uses pipeline defaults for a full run' {
@@ -114,10 +135,13 @@ Describe 'New-RunTestsQueueRequest' {
 
     It 'detects when Azure DevOps dropped the selection' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Label')) $inventory
-        $good = [pscustomobject]@{ templateParameters = [pscustomobject]@{ selectedRun = 'true'; selectedPlatforms = '["android"]'; selectedCategories = '["Label"]' } }
+        $good = [pscustomobject]@{ templateParameters = [pscustomobject]@{
+                selectedRun = 'True'; uitestPlatformAndroid = 'True'; uitestPlatformIos = 'False'; uitestPlatformCatalyst = 'False'; uitestPlatformWindows = 'False'; uitest_Label = 'android' } }
         $bad = [pscustomobject]@{ templateParameters = [pscustomobject]@{ selectedRun = 'False' } }
         Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeTrue
         Test-RunTestsQueuedSelection -Build $bad -Selection $s | Should -BeFalse
+        $good.templateParameters.uitest_Label = 'android+ios'
+        Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeFalse
     }
 }
 
@@ -159,7 +183,7 @@ Describe 'Pipeline support checks' {
         $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
         Test-RunTestsPipelineSupportsSelection $current | Should -BeTrue
         Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: BuildConfigurations`n" | Should -BeFalse
-        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: selectedRun`n  - name: selectedPlatforms`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: selectedRun`n  - name: selectedPlatforms`n  - name: selectedCategories`n" | Should -BeFalse
         Test-RunTestsPipelineSupportsSelection '' | Should -BeFalse
     }
 
@@ -366,7 +390,8 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
         # Platforms differ, so every entry is qualified; the template never sees a mixed list.
         $s.pipelineCategories | Sort-Object | Should -Be @('android:Label', 'ios:Label', 'ios:Window')
         $s.platformCategories['android'] | Should -Not -Contain 'Window'
-        (Get-RunTestsTemplateParameters $s).selectedCategories | Should -Match '"ios:Window"'
+        (Get-RunTestsTemplateParameters $s).uitest_Window | Should -Be 'ios'
+        (Get-RunTestsTemplateParameters $s).uitest_Label | Should -Be 'android+ios'
     }
 
     It 'drops platforms that would run nothing' {
@@ -487,8 +512,24 @@ Describe 'Pipeline templates' {
 
     It 'only lets pull-request builds narrow the suite' {
         $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
-        $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+selectedPlatforms: \$\{\{ parameters\.selectedPlatforms \}\}\s+selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')
-        ([regex]::Matches($ci, 'selectedCategories: \$\{\{ parameters\.selectedCategories \}\}')).Count | Should -Be 1
+        $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+\$\{\{ if eq\(parameters\.selectedRun, true\) \}\}:')
+        ([regex]::Matches($ci, '(?m)^\s+selectedCategories:')).Count | Should -Be 1
+        # An empty list would mean every category, so a selected run always carries a sentinel.
+        $ci | Should -Match 'selectedCategories:\s+#[^\n]*\n\s+- none:none'
+    }
+
+    It 'declares one fixed-value parameter per UI test category' {
+        $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
+        $declared = @([regex]::Matches($ci, '(?m)^  - name: uitest_(\w+)$') | ForEach-Object { $_.Groups[1].Value })
+        $declared | Should -Be @(Get-RunTestsAllCategories $inventory)
+        # Every selection parameter is a boolean or has a fixed value list; nothing free-text.
+        foreach ($name in $declared) {
+            $ci | Should -Match "(?m)^  - name: uitest_$name\n    type: string\n    default: none\n    values: \[none, android, ios, catalyst, windows,"
+        }
+        foreach ($name in 'selectedRun', 'uitestPlatformAndroid', 'uitestPlatformIos', 'uitestPlatformCatalyst', 'uitestPlatformWindows') {
+            $ci | Should -Match "(?m)^  - name: $name\n    type: boolean"
+        }
+        $ci | Should -Not -Match '(?m)^  - name: selected(Platforms|Categories)$'
     }
 
     It 'runs the Material3 lane only when Material3 is selected' {
