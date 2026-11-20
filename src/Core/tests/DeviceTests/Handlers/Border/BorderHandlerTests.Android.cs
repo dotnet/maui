@@ -51,6 +51,28 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(border, expected, () => border.Background = new SolidPaintStub(expected), nameof(border.Background));
 		}
 
+		[Fact(DisplayName = "DisconnectHandler Does Not Throw When Platform View Is Disposed")]
+		public async Task DisconnectHandlerDoesNotThrowWhenPlatformViewIsDisposed()
+		{
+			var border = new BorderStub
+			{
+				Content = new LabelStub { Text = "Content" }
+			};
+
+			var handler = await CreateHandlerAsync(border);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.Dispose();
+				Assert.Equal(IntPtr.Zero, platformView.Handle);
+
+				var exception = Record.Exception(() => ((IElementHandler)handler).DisconnectHandler());
+
+				Assert.Null(exception);
+			});
+		}
+
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 	}
