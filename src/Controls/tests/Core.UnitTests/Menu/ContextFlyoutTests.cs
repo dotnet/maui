@@ -74,18 +74,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.Throws<ArgumentNullException>(() => FlyoutBase.ShowContextFlyout(null!));
 		}
 
-		[Fact]
-		public void ShowMissingMenuThrows()
-		{
-			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(new Button()));
-		}
-
-		[Fact]
-		public void ShowEmptyMenuThrows()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ShowMissingOrEmptyMenuThrowsBeforeDispatch(bool attachEmptyMenu)
 		{
 			var target = new Button();
-			FlyoutBase.SetContextFlyout(target, new MenuFlyout());
+			if (attachEmptyMenu)
+				FlyoutBase.SetContextFlyout(target, new MenuFlyout());
+
+			int requests = 0;
+			var commands = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper)
+			{
+				[ViewHandler.ShowContextFlyoutCommandKey] = (_, _, _) => requests++
+			};
+			target.Handler = new HandlerStub(new PropertyMapper<IView>(), commands);
+
 			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(target));
+			Assert.Equal(0, requests);
 		}
 
 		[Fact]

@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Platform
 		UINavigationController? _navigation;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "UIKit holds the delegate weakly; it is released on dismissal.")]
 		PopoverDelegate? _delegate;
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The unload observer is disposed when the interaction is removed.")]
-		IDisposable? _unloaded;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The lifecycle observer view is removed and disposed on dismissal.")]
+		UnloadObserverView? _unloadObserver;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The native menu button is released after menu dismissal.")]
 		NativeMenuButton? _nativeButton;
 		WeakReference<IMenuFlyout>? _nativeFlyout;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			var presenter = new MauiContextFlyoutPopover(handler);
 			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
 			{
-				presenter.ShowNative(target, view, flyout, sections);
+				presenter.ShowNative(target, flyout, sections, context);
 				return;
 			}
 
@@ -119,19 +119,19 @@ namespace Microsoft.Maui.Platform
 			// The button requesting presentation must not also receive an outside-dismissal click.
 			popover.PassthroughViews = Array.Empty<UIView>();
 			target.AddInteraction(presenter);
-			presenter._unloaded = view.OnUnloaded(presenter.Remove);
+			presenter.ObserveUnload(target);
 
 			controller.PresentViewController(navigation, false, null);
 		}
 
 		[SupportedOSPlatform("ios17.4")]
 		[SupportedOSPlatform("maccatalyst17.4")]
-		void ShowNative(UIView target, IView view, IMenuFlyout flyout, List<List<MenuEntry>> sections)
+		void ShowNative(UIView target, IMenuFlyout flyout, List<List<MenuEntry>> sections, IMauiContext context)
 		{
 			_nativeFlyout = new(flyout);
 			var button = new NativeMenuButton(this, target.Bounds)
 			{
-				Menu = CreateNativeMenu(sections),
+				Menu = CreateNativeMenu(sections, context),
 				ShowsMenuAsPrimaryAction = true,
 				PreferredMenuElementOrder = UIContextMenuConfigurationElementOrder.Fixed,
 				UserInteractionEnabled = false,
@@ -140,18 +140,19 @@ namespace Microsoft.Maui.Platform
 			};
 #if MACCATALYST
 			// Catalyst pull-down menus use the hosting button's width as their minimum width.
-			button.Frame = new CGRect(target.Bounds.GetMidX() - 0.5, target.Bounds.GetMaxY() - 1, 1, 1);
+			// An even-sized anchor avoids half-point rounding when UIKit resizes the flexible margins.
+			button.Frame = new CGRect(target.Bounds.GetMidX() - 1, target.Bounds.GetMaxY() - 2, 2, 2);
 			button.AutoresizingMask = UIViewAutoresizing.FlexibleLeftMargin |
 				UIViewAutoresizing.FlexibleRightMargin | UIViewAutoresizing.FlexibleTopMargin;
 #endif
 			_nativeButton = button;
 			target.AddSubview(button);
 			target.AddInteraction(this);
-			_unloaded = view.OnUnloaded(Remove);
+			ObserveUnload(target);
 			button.PerformPrimaryAction();
 		}
 
-		UIMenu CreateNativeMenu(List<List<MenuEntry>> sections)
+		UIMenu CreateNativeMenu(List<List<MenuEntry>> sections, IMauiContext context)
 		{
 			var groups = new UIMenuElement[sections.Count];
 			var owner = new WeakReference<MauiContextFlyoutPopover>(this);
@@ -162,20 +163,30 @@ namespace Microsoft.Maui.Platform
 				for (int row = 0; row < entries.Count; row++)
 				{
 					var entry = entries[row];
-					if (entry.Children is { } submenu && entry.IsEnabled)
+					var mappedElement = entry.Element.ToHandler(context).PlatformView;
+					if (entry.Children is { } submenu)
 					{
-						using var contents = CreateNativeMenu(submenu);
-						children[row] = UIMenu.Create(entry.Text, entry.Image, UIMenuIdentifier.None,
-							0, contents.Children);
+						if (mappedElement is not UIMenu mappedMenu)
+							throw new InvalidOperationException("The submenu handler must provide a native UIMenu.");
+						using var contents = CreateNativeMenu(submenu, context);
+						children[row] = mappedMenu.GetMenuByReplacingChildren(contents.Children);
 					}
 					else
 					{
-						var action = UIAction.Create(entry.Text, entry.Image, null, _ =>
+						if (mappedElement is not UIAction mappedAction)
+							throw new InvalidOperationException("The menu item handler must provide a native UIAction.");
+
+						// Keep the registered handler's action and customizations behind the presentation guards.
+						var action = UIAction.Create(mappedAction.Title,
+							mappedAction.Image, mappedAction.Identifier, _ =>
 						{
 							if (owner.TryGetTarget(out var presenter))
-								presenter.ActivateNative(entry);
+								presenter.ActivateNative(entry, mappedAction);
 						});
-						action.Attributes = entry.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+						action.Attributes = mappedAction.Attributes |
+							(entry.IsEnabled ? 0 : UIMenuElementAttributes.Disabled);
+						action.DiscoverabilityTitle = mappedAction.DiscoverabilityTitle;
+						action.State = mappedAction.State;
 						children[row] = action;
 					}
 				}
@@ -185,9 +196,11 @@ namespace Microsoft.Maui.Platform
 			return UIMenu.Create(groups);
 		}
 
-		void ActivateNative(MenuEntry entry)
+		void ActivateNative(MenuEntry entry, UIAction? action)
 		{
-			if (_closing || _nativeActionInvoked || !entry.IsEnabled || entry.Children is not null ||
+			if (_closing || _nativeActionInvoked || !entry.IsEnabled || entry.Children is not null || action is null ||
+				entry.Element.Handler?.PlatformView != action ||
+				(action.Attributes & (UIMenuElementAttributes.Disabled | UIMenuElementAttributes.Hidden)) != 0 ||
 				!_handler.TryGetTarget(out var handler) ||
 				handler.PlatformView != _nativeButton?.Superview || _nativeButton?.Window is null ||
 				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } view ||
@@ -196,7 +209,25 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_nativeActionInvoked = true;
-			entry.Element.Clicked();
+			_nativeButton.SendAction(action);
+		}
+
+		void ObserveUnload(UIView target)
+		{
+			_unloadObserver = new UnloadObserverView(this)
+			{
+				UserInteractionEnabled = false,
+				AccessibilityElementsHidden = true
+			};
+			target.AddSubview(_unloadObserver);
+		}
+
+		void StopObservingUnload()
+		{
+			var observer = _unloadObserver;
+			_unloadObserver = null;
+			observer?.RemoveFromSuperview();
+			observer?.Dispose();
 		}
 
 		void CloseNative()
@@ -205,11 +236,15 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_closing = true;
-			_unloaded?.Dispose();
-			_unloaded = null;
+			StopObservingUnload();
 			View?.RemoveInteraction(this);
 			if (_nativeButton is { Held: true } button && !_nativeDismissing)
+			{
 				button.ContextMenuInteraction?.DismissMenu();
+				// A detached host may never receive UIKit's dismissal completion.
+				if (_nativeButton is { Window: null })
+					CompleteNativeClose();
+			}
 			else if (!_nativeDismissing)
 				CompleteNativeClose();
 		}
@@ -295,8 +330,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_closing = true;
-			_unloaded?.Dispose();
-			_unloaded = null;
+			StopObservingUnload();
 			var target = _view;
 			var navigation = _navigation;
 			_navigation = null;
@@ -384,6 +418,30 @@ namespace Microsoft.Maui.Platform
 			}
 
 			internal bool IsEnabled => _enabled && Element.IsEnabled && (_parent?.IsEnabled ?? true);
+		}
+
+		sealed class UnloadObserverView : UIView
+		{
+			readonly WeakReference<MauiContextFlyoutPopover> _owner;
+			bool _wasLoaded;
+
+			internal UnloadObserverView(MauiContextFlyoutPopover owner) => _owner = new(owner);
+
+			public override void MovedToWindow()
+			{
+				base.MovedToWindow();
+				if (Window is not null)
+					_wasLoaded = true;
+				else if (_wasLoaded)
+				{
+					var owner = _owner;
+					BeginInvokeOnMainThread(() =>
+					{
+						if (owner.TryGetTarget(out var presenter) && presenter.View?.Window is null)
+							presenter.Remove();
+					});
+				}
+			}
 		}
 
 		sealed class NativeMenuButton : UIButton

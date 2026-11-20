@@ -4,6 +4,7 @@ using Android.Content;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task ProgrammaticPopupDoesNotChangeNativeGestures(bool longClickable)
 		{
-			SetupBuilder();
+			SetupBuilder(handlers => handlers.AddHandler<Label, ContextMenuLabelHandler>());
 			var label = CreateContextFlyoutTarget();
 			await CreateHandlerAndAddToWindow<ContextMenuLabelHandler>(label, handler =>
 			{
