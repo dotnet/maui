@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
@@ -178,6 +179,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, commands);
 			checkBox.IsThreeState = true;
 			Assert.False(checkBox.IsChecked);
+		}
+
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public void DisablingThreeStateNormalizesReentrantAssignments(bool fromCommand, bool queueCheckedAfterNull)
+		{
+			var checkBox = new CheckBox { IsThreeState = true };
+			var states = new List<bool?>();
+			var commands = 0;
+			var reentered = false;
+
+			void QueueReentrantChanges()
+			{
+				if (reentered || checkBox.IsChecked != true)
+					return;
+
+				reentered = true;
+				checkBox.IsChecked = null;
+				if (queueCheckedAfterNull)
+					checkBox.IsChecked = true;
+				checkBox.IsThreeState = false;
+			}
+
+			checkBox.CheckedChanged += (_, e) =>
+			{
+				states.Add(e.CheckedValue);
+				if (!fromCommand)
+					QueueReentrantChanges();
+			};
+			checkBox.Command = new Command(() =>
+			{
+				commands++;
+				if (fromCommand)
+					QueueReentrantChanges();
+			});
+
+			checkBox.IsChecked = true;
+
+			Assert.True(reentered);
+			Assert.False(checkBox.IsThreeState);
+			Assert.Equal((bool?)queueCheckedAfterNull, checkBox.IsChecked);
+			Assert.Equal(queueCheckedAfterNull ? new bool?[] { true, false, true } : new bool?[] { true, false }, states);
+			Assert.Equal(states.Count, commands);
 		}
 
 		[Theory]

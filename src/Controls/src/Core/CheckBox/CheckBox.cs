@@ -62,6 +62,20 @@ namespace Microsoft.Maui.Controls
 					var checkBox = (CheckBox)bindable;
 					if (!(bool)newValue && checkBox.GetContext(IsCheckedProperty) is { } context)
 					{
+						// Reentrant setters have already been coerced and will not be coerced again.
+						if (context.DelayedSetters is { } delayedSetters)
+						{
+							var count = delayedSetters.Count;
+							for (var i = 0; i < count; i++)
+							{
+								var setter = delayedSetters.Dequeue();
+								delayedSetters.Enqueue(setter.Value is null
+									? new SetValueArgs(setter.Property, setter.Context, BooleanBoxes.FalseBox,
+										setter.CurrentlyApplying, setter.Attributes, setter.Specificity)
+									: setter);
+							}
+						}
+
 						// Clear hidden mixed values too, so clearing a higher-priority setter cannot restore null.
 						for (var i = 0; i < context.Values.Count - 1; i++)
 						{
