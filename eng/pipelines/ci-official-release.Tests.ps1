@@ -99,6 +99,7 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Not -Match '(?s)- name: ghRepo.*?values:'
     $pipeline | Should -Match 'Repository.*is not enabled for this release pipeline'
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/maui',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/maui-labs',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/macios',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android-libraries',\r?$"

@@ -3,6 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- Runtime manifests use the runtime's release suffix, not the SDK's build suffix. -->
     <_RuntimeManifestVersion>$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftNETCoreAppRefPackageVersion), `-.*`))</_RuntimeManifestVersion>
+    <!-- Isolated builds can supply the exact runtime packages locally instead of using NuGet.org. -->
+    <RuntimeManifestPackageSource Condition="'$(RuntimeManifestPackageSource)' == '' and '$(_RuntimeManifestVersion)' == '$(VersionBand)'">https://api.nuget.org/v3/index.json</RuntimeManifestPackageSource>
+    <RestoreAdditionalProjectSources Condition="'$(RuntimeManifestPackageSource)' != ''">$(RestoreAdditionalProjectSources);$(RuntimeManifestPackageSource)</RestoreAdditionalProjectSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Current.Manifest-$(DotNetVersionBand)"   Version="[$(_RuntimeManifestVersion)]" />

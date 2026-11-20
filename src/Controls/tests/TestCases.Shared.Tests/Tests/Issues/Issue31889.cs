@@ -23,19 +23,28 @@ public class Issue31889 : _IssuesUITest
 	[Category(UITestCategories.Entry)]
 	public void EntryAndEditorTextColorAppThemeBindingUpdatesOnThemeChange()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement(TestEntryId);
 		App.WaitForElement(DarkThemeButtonId);
 		App.Tap(DarkThemeButtonId);
-		VerifyScreenshot(TextColorDarkTheme);
+		VerifyScreenshotOrSetException(ref exception, TextColorDarkTheme);
 		App.WaitForElement(LightThemeButtonId);
 		App.Tap(LightThemeButtonId);
-		VerifyScreenshot(TextColorLightTheme);
+		VerifyScreenshotOrSetException(ref exception, TextColorLightTheme);
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Entry)]
 	public void EntryAndEditorPlaceholderTextColorAppThemeBindingUpdatesOnThemeChange()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement(TestEntryId);
 		App.ClearText(TestEntryId);
 
@@ -53,9 +62,14 @@ public class Issue31889 : _IssuesUITest
 #endif
 		App.WaitForElement(DarkThemeButtonId);
 		App.Tap(DarkThemeButtonId);
-		VerifyScreenshot(PlaceholderColorDarkTheme);
+		VerifyScreenshotOrSetException(ref exception, PlaceholderColorDarkTheme);
 		App.WaitForElement(LightThemeButtonId);
 		App.Tap(LightThemeButtonId);
-		VerifyScreenshot(PlaceholderColorLightTheme);
+		VerifyScreenshotOrSetException(ref exception, PlaceholderColorLightTheme);
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }

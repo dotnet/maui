@@ -15,6 +15,8 @@ public class Issue31917 : _IssuesUITest
 	[Category(UITestCategories.SwipeView)]
 	public void SwipeItemBackgroundShouldUpdateOnAppThemeChange()
 	{
+		Exception? exception = null;
+
 
 		App.WaitForElement("changeThemeButton");
 		App.WaitForElement("TestSwipeView");
@@ -23,7 +25,7 @@ public class Issue31917 : _IssuesUITest
 		App.SwipeLeftToRight("TestSwipeView");
 
 		// Take screenshot before theme change
-		VerifyScreenshot("Issue31917BeforeThemeChange");
+		VerifyScreenshotOrSetException(ref exception, "Issue31917BeforeThemeChange");
 
 		// Change theme
 		App.Tap("changeThemeButton");
@@ -32,7 +34,12 @@ public class Issue31917 : _IssuesUITest
 		App.WaitForElement("changeThemeButton");
 
 		// Take screenshot after theme change to verify background colors updated
-		VerifyScreenshot("Issue31917AfterThemeChange");
+		VerifyScreenshotOrSetException(ref exception, "Issue31917AfterThemeChange");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
 #endif

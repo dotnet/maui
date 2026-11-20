@@ -435,6 +435,37 @@ For rapid development and debugging, you can run specific tests directly:
    dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
    ```
 
+Mac screenshots retain logical window dimensions. The screenshot helper masks
+only the bottom-left and bottom-right rounded-corner fringes before and after
+display-scale normalization. The top and straight edges are not inset or masked.
+Review and regenerate affected visual baselines when
+changing this mask; do not increase comparison tolerances to hide edge differences.
+
+### Multiple Screenshots in One Test
+
+When a test verifies multiple UI states, use `VerifyScreenshotOrSetException`
+with one exception variable for the entire test. This allows later states to be
+captured even when an earlier screenshot comparison fails:
+
+```csharp
+Exception? exception = null;
+
+VerifyScreenshotOrSetException(ref exception, "BeforeChange");
+App.Tap("ChangeButton");
+VerifyScreenshotOrSetException(ref exception, "AfterChange");
+
+if (exception is not null)
+{
+    throw exception;
+}
+```
+
+Keep the final rethrow after any cleanup so the test still fails if a screenshot
+failed. Preserve screenshot names, cropping, tolerances, and other options.
+UI interactions and assertions outside the screenshot helper still fail
+immediately; this pattern does not make an invalid UI state safe to continue.
+Tests capturing only one screenshot can continue to use `VerifyScreenshot`.
+
 ### Full Test Suite: Using Cake Build System
 
 For comprehensive CI-like test runs:

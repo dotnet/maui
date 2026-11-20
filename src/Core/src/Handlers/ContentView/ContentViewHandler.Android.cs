@@ -36,6 +36,15 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
+			// If the outgoing content (or one of its descendants, e.g. an Entry's EditText) still
+			// holds native Android focus, clear it before ripping the view out of the hierarchy.
+			// RemoveAllViews() does not go through DisconnectHandler/ClearFocus, so without this,
+			// a focused EditText gets orphaned mid-focus: the InputMethodManager is left holding a
+			// stale reference to a detached view instead of being told focus was relinquished. That
+			// stale IME state can surface the next time this same Entry (or Content slot) regains
+			// focus, briefly showing the previous keyboard layout before the correct one appears.
+			handler.PlatformView.FindFocus()?.ClearFocus();
+
 			handler.PlatformView.RemoveAllViews();
 
 			if (handler.VirtualView.PresentedContent is IView view)

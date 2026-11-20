@@ -14,12 +14,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		public void BorderBackgroundExpandsOnContentSizeChanged()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("SetHeightTo200");
 			App.Tap("SetHeightTo200");
-			VerifyScreenshot("Issue22606_SetHeightTo200");
+			VerifyScreenshotOrSetException(ref exception, "Issue22606_SetHeightTo200");
 
 			App.Tap("SetHeightTo500");
-			VerifyScreenshot("Issue22606_SetHeightTo500");
+			VerifyScreenshotOrSetException(ref exception, "Issue22606_SetHeightTo500");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 
 #if ANDROID || IOS  //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.

@@ -14,16 +14,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void BorderWidthAffectsTheImageSizing()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original");
 			App.Tap("Change_BorderWidth_Button");
 
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "BorderWidth");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "BorderWidth");
 			App.Tap("Change_BorderWidth_Button");
 
 			App.WaitForElement("Change_BorderWidth_Button");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

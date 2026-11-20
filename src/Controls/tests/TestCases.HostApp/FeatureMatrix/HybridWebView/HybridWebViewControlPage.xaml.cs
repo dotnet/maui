@@ -112,8 +112,9 @@ public partial class HybridWebViewControlPage : ContentPage
 
 		for (var attempt = 0; attempt < 50; attempt++)
 		{
+			// The DOM is ready at 'interactive'; remote gallery images must not block title readiness.
 			var title = await MyHybridWebView.EvaluateJavaScriptAsync(
-				"document.readyState === 'complete' && !window.hybridWebViewReloadPending ? document.title : ''");
+				"document.readyState !== 'loading' && !window.hybridWebViewReloadPending ? document.title : ''");
 			if (title == expectedTitle)
 			{
 				_viewModel.Status = $"Loaded: {title}";

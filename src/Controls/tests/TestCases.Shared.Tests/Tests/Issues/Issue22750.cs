@@ -16,15 +16,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonUpdateValueInsideBorder()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("WaitForStubControl");
 
 			App.Tap("Yes");
 
 			App.Tap("No");
-			VerifyScreenshot("RadioButtonUpdateValueInsideBorderNo");
+			VerifyScreenshotOrSetException(ref exception, "RadioButtonUpdateValueInsideBorderNo");
 
 			App.Tap("Yes");
-			VerifyScreenshot("RadioButtonUpdateValueInsideBorderYes");
+			VerifyScreenshotOrSetException(ref exception, "RadioButtonUpdateValueInsideBorderYes");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
