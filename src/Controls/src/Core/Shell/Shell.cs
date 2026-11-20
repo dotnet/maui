@@ -1879,10 +1879,15 @@ namespace Microsoft.Maui.Controls
 
 		void SendNavigated(ShellNavigatedEventArgs args)
 		{
+			// Take the previous page before raising Navigated: a navigation started from a
+			// Navigated handler replaces _previousPage before NavigatedFrom is sent below.
+			var previousPage = _previousPage;
+			_previousPage = null;
+
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
-			_previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
+			previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_navigationType = NavigationType.Replace;
 
@@ -1911,9 +1916,8 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
-			PropagateSendNavigatedTo();
-			_previousPage = null;
+			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
+			PropagateSendNavigatedTo(previousPage);
 
 			CurrentPage?.PropertyChanged += OnCurrentPagePropertyChanged;
 
@@ -1937,7 +1941,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void PropagateSendNavigatedTo()
+		void PropagateSendNavigatedTo(Page previousPage)
 		{
 			if (CurrentPage is null)
 			{
@@ -1949,13 +1953,13 @@ namespace Microsoft.Maui.Controls
 			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
 			if (CurrentPage.IsLoadedFired)
 			{
-				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, _navigationType));
 			}
 			else
 			{
-				// Capture before _previousPage is nulled in SendNavigated() so OnCurrentPageLoaded
-				// receives the correct PreviousPage in NavigatedToEventArgs when it fires asynchronously.
-				_pendingPreviousPage = _previousPage;
+				// Keep it so OnCurrentPageLoaded receives the correct PreviousPage
+				// in NavigatedToEventArgs when it fires asynchronously.
+				_pendingPreviousPage = previousPage;
 				_pendingNavigationType = _navigationType;
 				CurrentPage.Loaded += OnCurrentPageLoaded;
 			}
