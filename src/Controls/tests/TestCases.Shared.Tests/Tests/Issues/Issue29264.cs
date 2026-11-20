@@ -75,15 +75,13 @@ public class Issue29264 : _IssuesUITest
 		App.WaitForElement("RecipeCarousel");
 		Assert.That(App.FindElement("RecipePositionLabel").GetText(), Is.EqualTo("Position: 0"));
 
-		for (int position = 1; position <= 3; position++)
-		{
-			App.SwipeRightToLeft("RecipeCarousel");
-			Assert.That(App.WaitForTextToBePresentInElement("RecipePositionLabel", $"Position: {position}"), Is.True);
-		}
-
 		const int selectedPosition = 3;
 		const string selectedRecipe = "Fourth Recipe";
+		App.WaitForElement("SelectFourthRecipeButton");
+		App.Tap("SelectFourthRecipeButton");
+		Assert.That(App.WaitForTextToBePresentInElement("RecipePositionLabel", $"Position: {selectedPosition}"), Is.True);
 		Assert.That(App.WaitForTextToBePresentInElement("RecipeCurrentItemLabel", selectedRecipe), Is.True);
+		App.WaitForElement(selectedRecipe);
 		var positionChanges = App.FindElement("RecipePositionChangedLabel").GetText();
 		var orientation = App.FindElement("OrientationLabel").GetText();
 		var carouselBeforeResize = App.WaitForElement("RecipeCarousel").GetRect();

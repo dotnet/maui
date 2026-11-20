@@ -80,6 +80,12 @@ public class Issue29264 : ContentPage
 			AutomationId = "ResizeCarouselButton",
 			Text = "Resize carousel"
 		};
+		var selectRecipeButton = new Button
+		{
+			AutomationId = "SelectFourthRecipeButton",
+			Text = "Select fourth recipe"
+		};
+		selectRecipeButton.Clicked += (_, _) => _carousel.Position = 3;
 		resizeButton.Clicked += (_, _) =>
 		{
 			_carousel.HeightRequest = Math.Max(100, _carousel.HeightRequest - 40);
@@ -104,7 +110,11 @@ public class Issue29264 : ContentPage
 		layout.Add(_orientationLabel, row: 0);
 		layout.Add(_positionLabel, row: 1);
 		layout.Add(loopLabel, row: 2);
-		layout.Add(loopSwitch, row: 3);
+		layout.Add(new HorizontalStackLayout
+		{
+			Spacing = 8,
+			Children = { loopSwitch, selectRecipeButton }
+		}, row: 3);
 		layout.Add(currentItemLabel, row: 4);
 		layout.Add(positionChangedLabel, row: 5);
 		layout.Add(new HorizontalStackLayout

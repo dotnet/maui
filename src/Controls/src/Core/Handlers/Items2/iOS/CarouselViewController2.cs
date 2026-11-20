@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void DeviceOrientationChanged(NSNotification notification)
 		{
-			if (InitialPositionSet)
+			if (InitialPositionSet && !_isUpdating)
 			{
 				CapturePositionBeforeBoundsChange();
 				_isRotating = true;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var boundsSize = CollectionView.Bounds.Size;
 			// Bounds can change without an orientation notification, so detect resizing here as well.
-			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
+			if (InitialPositionSet && !_isUpdating && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
 			{
 				CapturePositionBeforeBoundsChange();
 				_isResizing = true;
@@ -142,21 +142,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (ItemsView is CarouselView carousel && ItemsSource is not null && ItemsSource.ItemCount > 0)
+			if (ItemsView is not CarouselView carousel || ItemsSource is null || ItemsSource.ItemCount == 0)
 			{
-				var position = _positionBeforeBoundsChange >= 0
-					? _positionBeforeBoundsChange
-					: carousel.Position;
-				var indexPath = GetScrollToIndexPath(position);
-
-				if (LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
-				{
-					var scrollPosition = IsHorizontal
-						? UICollectionViewScrollPosition.CenteredHorizontally
-						: UICollectionViewScrollPosition.CenteredVertically;
-					CollectionView.ScrollToItem(indexPath, scrollPosition, false);
-				}
+				CancelBoundsChangeRestoration();
+				return;
 			}
+
+			var position = _positionBeforeBoundsChange >= 0
+				? _positionBeforeBoundsChange
+				: carousel.Position;
+			if (position < 0 || position >= ItemsSource.ItemCount)
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
+			var indexPath = GetScrollToIndexPath(position);
+			if (!LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+
+#if MACCATALYST
+			// Don't let the native observer treat this intentional offset change as a reset.
+			var mauiCollectionView = CollectionView as Items.MauiCollectionView;
+			mauiCollectionView?.ClearPendingScrollRestore();
+#endif
+
+			CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+
+#if MACCATALYST
+			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
+#endif
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -179,7 +201,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_isUpdating = true;
-			// Pending scroll target belongs to the old source; clear it.
+			// Pending scroll and restoration targets belong to the old source.
+			CancelBoundsChangeRestoration();
 			_gotoPosition = -1;
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
@@ -547,7 +570,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
-			if (IsScrollInteractionActive())
+			if (ItemsSource is null || _positionBeforeBoundsChange >= ItemsSource.ItemCount || IsScrollInteractionActive())
 			{
 				CancelBoundsChangeRestoration();
 				return false;

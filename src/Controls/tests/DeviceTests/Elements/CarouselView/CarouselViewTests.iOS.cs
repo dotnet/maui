@@ -155,7 +155,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				controller.UpdateResizeState();
 				var bounds = collectionView.Bounds;
-				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, bounds.Width - 40, bounds.Height);
+				var resizedWidth = bounds.Width - 40;
+				carousel.WidthRequest = (double)resizedWidth;
+				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, resizedWidth, bounds.Height);
 				controller.UpdateResizeState();
 				Assert.Equal(3, controller.PositionBeforeBoundsChange);
 				Assert.Equal("First", carousel.CurrentItem);
@@ -165,19 +167,18 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(controller.ShouldIgnorePositionUpdateAfterBoundsChange(3, false));
 				Assert.Equal(3, controller.PositionBeforeBoundsChange);
 
-				// Deliver the restoration confirmation before UIKit's animation can finish independently.
-				Assert.False(controller.ShouldIgnorePositionUpdateAfterBoundsChange(3, true));
-				controller.SetPosition(3);
-
-				Assert.Equal(-1, controller.PositionBeforeBoundsChange);
-				Assert.Equal(-1, (int)pendingScroll.GetValue(controller));
-				Assert.Equal(3, carousel.Position);
-				Assert.Equal("Fourth", carousel.CurrentItem);
-				Assert.Equal(3, indicator.Position);
-
+				// Let UIKit report the restored cell after the resize gate is lifted.
+				collectionView.LayoutIfNeeded();
 				controller.ViewDidLayoutSubviews();
+				collectionView.CollectionViewLayout.InvalidateLayout();
+				collectionView.LayoutIfNeeded();
 				using var restoredIndexPath = controller.GetScrollToIndexPath(3);
-				await AssertEventually(() => collectionView.CellForItem(restoredIndexPath) is not null);
+				await AssertEventually(() => controller.PositionBeforeBoundsChange == -1 &&
+					(int)pendingScroll.GetValue(controller) == -1 &&
+					carousel.Position == 3 && ReferenceEquals(carousel.CurrentItem, items[3]) &&
+					indicator.Position == 3 &&
+					Array.Exists(collectionView.IndexPathsForVisibleItems, path => path.Equals(restoredIndexPath)),
+					message: "The layout callback did not complete the interrupted animated selection.");
 
 				carousel.IsScrollAnimated = false;
 				carousel.Position = 1;
@@ -193,6 +194,56 @@ namespace Microsoft.Maui.DeviceTests
 					collectionView.CellForItem(finalIndexPath) is not null,
 					message: "A subsequent CurrentItem request was blocked after restoration.");
 				Assert.Equal(4, indicator.Position);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ExplicitScrollToSupersedesPendingBoundsRestoration(bool loop)
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
+			var indicator = new IndicatorView();
+			var carousel = new CarouselView
+			{
+				Loop = loop,
+				Position = 4,
+				WidthRequest = 200,
+				HeightRequest = 240,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { SnapPointsType = SnapPointsType.None },
+				PeekAreaInsets = new Thickness(0, 20, 0, 20),
+				ItemsSource = items,
+				IndicatorView = indicator,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				var collectionView = controller.CollectionView;
+				await AssertEventually(() => controller.InitialPositionSet && ReferenceEquals(carousel.CurrentItem, items[4]));
+
+				controller.UpdateResizeState();
+				var bounds = collectionView.Bounds;
+				carousel.HeightRequest = 300;
+				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, bounds.Width, 300);
+				controller.UpdateResizeState();
+				Assert.Equal(4, controller.PositionBeforeBoundsChange);
+
+				carousel.ScrollTo(2, position: ScrollToPosition.Center, animate: false);
+				Assert.Equal(-1, controller.PositionBeforeBoundsChange);
+				collectionView.LayoutIfNeeded();
+
+				using var targetIndexPath = controller.GetScrollToIndexPath(2);
+				await AssertEventually(() => carousel.Position == 2 &&
+					ReferenceEquals(carousel.CurrentItem, items[2]) &&
+					indicator.Position == 2 &&
+					Array.Exists(collectionView.IndexPathsForVisibleItems, path => path.Equals(targetIndexPath)),
+					message: "The explicit ScrollTo target did not replace the saved resize position.");
 			});
 		}
 
