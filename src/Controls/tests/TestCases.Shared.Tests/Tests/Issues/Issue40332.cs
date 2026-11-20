@@ -62,8 +62,13 @@ public class Issue40332 : _IssuesUITest
 		App.Tap("ItemA");
 		WaitForLog("Selection:A;Tapped:A@0");
 
-		TapAgain("ItemA");
-		WaitForLog("Selection:A;Tapped:A@0;Selection:;Tapped:A@0");
+		App.Tap("ItemB");
+		WaitForLog("Selection:A;Tapped:A@0;Selection:A,B;Tapped:B@1");
+
+		// Deselecting is also a tap. Deselect an item other than the one clicked last: on Mac Catalyst, clicking
+		// the same item twice in a row through the UI test driver deselects and then reselects it.
+		App.Tap("ItemA");
+		WaitForLog("Selection:A;Tapped:A@0;Selection:A,B;Tapped:B@1;Selection:B;Tapped:A@0");
 	}
 
 	[Test]
