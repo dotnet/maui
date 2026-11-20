@@ -153,6 +153,64 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ThresholdNotificationLoadsNewSourceDuringDelivery()
+		{
+			SetupBuilder();
+
+			var firstSource = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"First {i}"));
+			var secondSource = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Second {i}"));
+			var collectionView = new CollectionView { ItemsSource = firstSource, RemainingItemsThreshold = -1 };
+			var notifications = new List<object>();
+			bool commandRunning = false;
+			bool reentered = false;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var secondNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nativeView = handler.Controller.CollectionView;
+					var delegator = new ThresholdTestDelegator(handler.Controller) { LastVisibleIndex = 9 };
+					nativeView.Delegate = delegator;
+					collectionView.RemainingItemsThresholdReachedCommand = new Command(() =>
+					{
+						if (commandRunning)
+							reentered = true;
+
+						notifications.Add(collectionView.ItemsSource);
+						if (notifications.Count == 2)
+							secondNotification.TrySetResult();
+
+						if (notifications.Count != 1)
+							return;
+
+						commandRunning = true;
+						try
+						{
+							collectionView.ItemsSource = secondSource;
+							delegator.Scrolled(nativeView);
+						}
+						finally
+						{
+							commandRunning = false;
+						}
+					});
+					collectionView.RemainingItemsThreshold = 0;
+					delegator.Scrolled(nativeView);
+				});
+				Assert.True(await Task.WhenAny(secondNotification.Task, Task.Delay(TimeSpan.FromSeconds(5))) == secondNotification.Task,
+					"The replacement source did not receive a threshold notification.");
+				await InvokeOnMainThreadAsync(() =>
+				{
+					Assert.False(reentered);
+					Assert.Equal(2, notifications.Count);
+					Assert.Same(firstSource, notifications[0]);
+					Assert.Same(secondSource, notifications[1]);
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData("threshold")]
 		[InlineData("scroll")]

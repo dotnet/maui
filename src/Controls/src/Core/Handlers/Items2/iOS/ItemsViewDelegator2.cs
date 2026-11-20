@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void DeliverThresholdNotification()
 		{
+			IItemsViewSource deliveredSource = null;
 			try
 			{
 				var viewController = ViewController;
@@ -114,11 +115,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (visibleItems && IsThresholdReached(itemsView.RemainingItemsThreshold, source.ItemCount, lastVisibleItemIndex))
 				{
 					itemsView.SendRemainingItemsThresholdReached();
+					deliveredSource = source;
 				}
 			}
 			finally
 			{
-				_thresholdNotificationSource = null;
+				// A replacement source may have reached its threshold during delivery.
+				if (deliveredSource is not null &&
+					_thresholdNotificationSource.TryGetTarget(out var pendingSource) && pendingSource != deliveredSource)
+				{
+					DispatchQueue.MainQueue.DispatchAsync(DeliverThresholdNotification);
+				}
+				else
+				{
+					_thresholdNotificationSource = null;
+				}
 			}
 		}
 
