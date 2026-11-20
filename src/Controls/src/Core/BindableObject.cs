@@ -755,6 +755,13 @@ namespace Microsoft.Maui.Controls
 				NotifyPropertyChanging(property);
 			}
 
+			// Only opted-in properties recheck constraints changed by reentrant callbacks.
+			if (property.CoerceValueAfterPropertyChanging && property.CoerceValue is { } coerceValue)
+			{
+				value = coerceValue(this, value);
+				sameValue = ReferenceEquals(context.Property, BindingContextProperty) ? ReferenceEquals(value, original) : Equals(value, original);
+			}
+
 			context.Values.SetValue(specificity, value);
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 					var checkBox = (CheckBox)bindable;
 					if (!(bool)newValue && checkBox.GetContext(IsCheckedProperty) is { } context)
 					{
-						// Reentrant setters have already been coerced and will not be coerced again.
+						// Normalize queued values when disabling, preserving their order and specificity.
 						if (context.DelayedSetters is { } delayedSetters)
 						{
 							var count = delayedSetters.Count;

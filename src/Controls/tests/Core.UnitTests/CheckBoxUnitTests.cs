@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NSubstitute;
@@ -225,6 +226,78 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal((bool?)queueCheckedAfterNull, checkBox.IsChecked);
 			Assert.Equal(queueCheckedAfterNull ? new bool?[] { true, false, true } : new bool?[] { true, false }, states);
 			Assert.Equal(states.Count, commands);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DisablingThreeStateDuringPropertyChangingNormalizesPendingValue(bool initial)
+		{
+			var checkBox = new CheckBox { IsThreeState = true, IsChecked = initial };
+			var changingValues = new List<bool?>();
+			var changedStates = new List<bool?>();
+			var propertyChangedCount = 0;
+			var commands = 0;
+
+			checkBox.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(CheckBox.IsChecked))
+				{
+					changingValues.Add(checkBox.IsChecked);
+					checkBox.IsThreeState = false;
+				}
+			};
+			checkBox.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(CheckBox.IsChecked))
+				{
+					Assert.False(checkBox.IsChecked);
+					propertyChangedCount++;
+				}
+			};
+			checkBox.CheckedChanged += (_, e) => changedStates.Add(e.CheckedValue);
+			checkBox.Command = new Command(() =>
+			{
+				Assert.False(checkBox.IsChecked);
+				commands++;
+			});
+
+			checkBox.IsChecked = null;
+
+			Assert.False(checkBox.IsThreeState);
+			Assert.False(checkBox.IsChecked);
+			Assert.Equal(new bool?[] { initial }, changingValues);
+			Assert.Equal(initial ? new bool?[] { false } : Array.Empty<bool?>(), changedStates);
+			Assert.Equal(initial ? 1 : 0, propertyChangedCount);
+			Assert.Equal(propertyChangedCount, commands);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void PropertyChangingNormalizationDoesNotPublishNullToBinding(bool initial)
+		{
+			var source = new CheckBox { IsThreeState = true, IsChecked = initial };
+			var target = new CheckBox { IsThreeState = true };
+			target.SetBinding(CheckBox.IsCheckedProperty, static (CheckBox value) => value.IsChecked,
+				source: source);
+			var sourceStates = new List<bool?>();
+			source.CheckedChanged += (_, e) => sourceStates.Add(e.CheckedValue);
+			target.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(CheckBox.IsChecked))
+					target.IsThreeState = false;
+			};
+
+			target.IsChecked = null;
+
+			Assert.False(target.IsThreeState);
+			Assert.False(target.IsChecked);
+			Assert.False(source.IsChecked);
+			Assert.Equal(initial ? new bool?[] { false } : Array.Empty<bool?>(), sourceStates);
+
+			source.IsChecked = true;
+			Assert.True(target.IsChecked);
 		}
 
 		[Theory]
