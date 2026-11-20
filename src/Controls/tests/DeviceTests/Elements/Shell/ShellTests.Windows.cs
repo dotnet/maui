@@ -106,6 +106,76 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Flyout Items Release The Shell When It Is Swapped")]
+		public async Task FlyoutItemsReleaseTheShellWhenItIsSwapped()
+		{
+			SetupBuilder();
+
+			var window = new Controls.Window(new ContentPage());
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(window.Page);
+
+				var shellReference = await ShowShellAndSwapItOut(window);
+
+				// The window is still open here, so this checks the swap and not the window teardown.
+				// With the window open the old shell only becomes collectable after a few dispatcher
+				// passes, so collect with a pause in between rather than in a tight loop.
+				await AssertEventually(() =>
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					return !shellReference.IsAlive;
+				}, timeout: 10000, interval: 250, message: "The old shell was not collected");
+			}, timeOut: TimeSpan.FromSeconds(30));
+		}
+
+		// Not inlined so no local of the old shell ends up in the test's state machine.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		async Task<WeakReference> ShowShellAndSwapItOut(Controls.Window window)
+		{
+			var shell = await CreateShellAsync(AddFlyoutItems);
+			window.Page = shell;
+			await OnLoadedAsync(shell.CurrentPage);
+
+			var shellView = (ShellView)shell.Handler.PlatformView;
+			await AssertEventually(() => shellView.GetChildren<ShellFlyoutItemView>().Any());
+
+			var shellHandler = shell.Handler;
+			var newShell = await CreateShellAsync(AddFlyoutItems);
+			window.Page = newShell;
+			await OnLoadedAsync(newShell.CurrentPage);
+			shellHandler.DisconnectHandler();
+
+			return new WeakReference(shell);
+		}
+
+		[Fact(DisplayName = "Flyout Item Can Be Measured After The Shell Disconnects")]
+		public async Task FlyoutItemCanBeMeasuredAfterTheShellDisconnects()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(AddFlyoutItems);
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var shellView = handler.PlatformView;
+				await AssertEventually(() => shellView.GetChildren<ShellFlyoutItemView>().Any());
+				var flyoutItem = shellView.GetChildren<ShellFlyoutItemView>().First();
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				flyoutItem.InvalidateMeasure();
+				flyoutItem.Measure(new global::Windows.Foundation.Size(200, 200));
+			});
+		}
+
+		static void AddFlyoutItems(Shell shell)
+		{
+			shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			shell.Items.Add(new FlyoutItem { Title = "One", Items = { new ContentPage { Title = "One" } } });
+			shell.Items.Add(new FlyoutItem { Title = "Two", Items = { new ContentPage { Title = "Two" } } });
+		}
+
 		[Fact(DisplayName = "Shell Title Updates Correctly")]
 		public async Task ShellTitleUpdatesCorrectly()
 		{
@@ -211,6 +281,36 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingFlyoutBackgroundImageRestoresBackground(bool configured)
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				if (configured)
+					shell.FlyoutBackground = new SolidColorBrush(Colors.Blue);
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await AssertEventually(() => IsViewLaidOut(navigationView));
+				var expected = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color;
+				if (configured)
+					Assert.Equal(Colors.Blue.ToWindowsColor(), expected);
+				handler.GetRequiredService<IFontRegistrar>().Register("dokdo_regular.ttf", "Dokdo");
+				var image = new FontImageSource { FontFamily = "Dokdo", Glyph = "X", Size = 24 };
+				shell.FlyoutBackgroundImage = image;
+				await AssertEventually(() => navigationView.PaneContentGrid.Background is UI.Xaml.Media.ImageBrush);
+				shell.FlyoutBackgroundImage = null;
+				Assert.Equal(expected, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color);
 			});
 		}
 
@@ -559,6 +659,192 @@ namespace Microsoft.Maui.DeviceTests
 
 			});
 		}
+
+		[Theory(DisplayName = "Flyout selection follows deferred navigation")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task FlyoutSelectionFollowsDeferredNavigation(bool acceptNavigation)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			var firstItem = new FlyoutItem
+			{
+				Title = "First",
+				Items = { new ShellContent { Content = firstPage } }
+			};
+			var secondItem = new FlyoutItem
+			{
+				Title = "Second",
+				Items = { new ShellContent { Content = secondPage } }
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await OpenFlyout(handler);
+
+				WNavigationViewItem secondNativeItem = null;
+				await AssertEventually(() =>
+				 (secondNativeItem = navigationView.GetChildren<WNavigationViewItem>()
+				  .FirstOrDefault(item => IsNavigationViewItemFor(item, secondItem))) != null,
+				 message: "Second flyout item was not realized");
+
+				Assert.Same(firstItem, (navigationView.SelectedItem as NavigationViewItemViewModel)?.Data);
+				Assert.Same(firstPage, shell.CurrentPage);
+
+				var navigating = new TaskCompletionSource<ShellNavigatingEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+				var navigated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				ShellNavigatingDeferral deferral = null;
+				EventHandler<ShellNavigatingEventArgs> onNavigating = (sender, args) =>
+				{
+					deferral = args.GetDeferral();
+					navigating.TrySetResult(args);
+				};
+				EventHandler<ShellNavigatedEventArgs> onNavigated = (sender, args) => navigated.TrySetResult();
+				shell.Navigating += onNavigating;
+				shell.Navigated += onNavigated;
+
+				try
+				{
+					ClickNavigationViewItem(secondNativeItem);
+					var args = await navigating.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					Assert.NotNull(deferral);
+
+					await WaitForFlyoutDispatcherIdle(navigationView);
+					Assert.Same(firstItem, shell.CurrentItem);
+					Assert.Same(firstPage, shell.CurrentPage);
+					Assert.Same(firstItem, (navigationView.SelectedItem as NavigationViewItemViewModel)?.Data);
+
+					if (!acceptNavigation)
+						Assert.True(args.Cancel());
+
+					deferral.Complete();
+					deferral = null;
+
+					if (acceptNavigation)
+						await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+					await WaitForFlyoutDispatcherIdle(navigationView);
+					Assert.Same(acceptNavigation ? secondItem : firstItem, shell.CurrentItem);
+					Assert.Same(acceptNavigation ? secondPage : firstPage, shell.CurrentPage);
+					Assert.Same(acceptNavigation ? secondItem : firstItem,
+					 (navigationView.SelectedItem as NavigationViewItemViewModel)?.Data);
+				}
+				finally
+				{
+					shell.Navigating -= onNavigating;
+					shell.Navigated -= onNavigated;
+					deferral?.Complete();
+				}
+			});
+		}
+
+		[Fact]
+		public async Task InvokingCurrentContentInMultipleItemSectionPreservesFlyoutSelection()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var firstContent = new ShellContent { Title = "First", Content = firstPage };
+			var section = new ShellSection
+			{
+				FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+				Items =
+				{
+					firstContent,
+					new ShellContent { Title = "Second", Content = new ContentPage() }
+				}
+			};
+			var shell = await CreateShellAsync(shell => shell.Items.Add(section));
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await OpenFlyout(handler);
+
+				WNavigationViewItem firstNativeItem = null;
+				await AssertEventually(() =>
+					(firstNativeItem = navigationView.GetChildren<WNavigationViewItem>()
+						.FirstOrDefault(item => IsNavigationViewItemFor(item, firstContent))) != null,
+					message: "First flyout content was not realized");
+
+				var currentItem = shell.CurrentItem;
+				ClickNavigationViewItem(firstNativeItem);
+
+				await WaitForFlyoutDispatcherIdle(navigationView);
+				Assert.Same(currentItem, shell.CurrentItem);
+				Assert.Same(section, currentItem.CurrentItem);
+				Assert.Same(firstContent, section.CurrentItem);
+				Assert.Same(firstPage, shell.CurrentPage);
+				Assert.Same(firstContent, (navigationView.SelectedItem as NavigationViewItemViewModel)?.Data);
+			});
+		}
+
+		[Fact]
+		public async Task FlyoutSelectionRestorationPreservesCurrentItemMapperCustomization()
+		{
+			SetupBuilder();
+
+			var firstItem = new FlyoutItem
+			{
+				Title = "First",
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var secondItem = new FlyoutItem
+			{
+				Title = "Second",
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await WaitForFlyoutDispatcherIdle(navigationView);
+				Assert.Same(firstItem, (navigationView.SelectedItem as NavigationViewItemViewModel)?.Data);
+
+				// Scope the customization to this handler instead of changing the shared mapper.
+				var originalMapper = handler._mapper;
+				var mapper = new PropertyMapper<Shell, ShellHandler>(originalMapper);
+				mapper.AppendToMapping(nameof(Shell.CurrentItem), (h, _) => h.PlatformView.SelectedItem = null);
+				handler._mapper = mapper;
+				try
+				{
+					handler.UpdateValue(nameof(Shell.CurrentItem));
+					Assert.Null(navigationView.SelectedItem);
+
+					await WaitForFlyoutDispatcherIdle(navigationView);
+					Assert.Null(navigationView.SelectedItem);
+					Assert.Same(firstItem, shell.CurrentItem);
+				}
+				finally
+				{
+					handler._mapper = originalMapper;
+				}
+			});
+		}
+
+		static Task WaitForFlyoutDispatcherIdle(ShellView navigationView)
+		{
+			var idle = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			if (!navigationView.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => idle.TrySetResult()))
+				idle.TrySetException(new InvalidOperationException("Unable to queue flyout dispatcher idle callback."));
+
+			return idle.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		}
+
 
 		[Fact(DisplayName = "Selected Item On ShellView Correct With Implict Flyout Item")]
 		public async Task SelectedItemOnShellViewCorrectWithImplictFlyoutItem()

@@ -67,7 +67,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HasAnyGestures()
 		{
-			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false) || (_dragAndDropGestureHandler?.HasAnyDragGestures() ?? false);
+			// A long press only needs to consume ACTION_DOWN when the platform view is not natively
+			// clickable; a clickable view (e.g. Button) consumes the sequence itself and the detector
+			// still sees the UP that cancels its pending LONG_PRESS, while consuming DOWN here would
+			// steal the native click
+			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false) || (_dragAndDropGestureHandler?.HasAnyDragGestures() ?? false) || ((_longPressGestureHandler?.HasAnyGestures() ?? false) && !(_longPressGestureHandler?.IsPlatformViewClickable ?? false));
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds

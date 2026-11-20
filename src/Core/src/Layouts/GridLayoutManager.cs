@@ -355,6 +355,24 @@ namespace Microsoft.Maui.Layouts
 			{
 				FirstMeasurePass();
 
+				// A cell in an Auto row which also spans a * column can only be measured once the * column sizes are
+				// known (and likewise for an Auto column spanning a * row). In that case, resolve the * sizes the cell
+				// is waiting for first and measure it, so the * sizes in the other direction only get the space
+				// that's left over.
+				// This can only happen if the * sizes couldn't be worked out up front in either direction. If cells are
+				// waiting in both directions, there's no order which works for all of them, so we leave it as it is.
+				bool bothDirectionsDeferred = !_isStarWidthPrecomputable && !_isStarHeightPrecomputable;
+				bool autoRowsNeedStarColumns = bothDirectionsDeferred && AnyCellNeedsStarColumnsToSizeAutoRows();
+				bool autoColumnsNeedStarRows = bothDirectionsDeferred && AnyCellNeedsStarRowsToSizeAutoColumns();
+				bool starColumnsFirst = autoRowsNeedStarColumns && !autoColumnsNeedStarRows && !double.IsInfinity(_gridHeightConstraint);
+				bool starRowsFirst = autoColumnsNeedStarRows && !autoRowsNeedStarColumns && !double.IsInfinity(_gridWidthConstraint);
+
+				if (starRowsFirst)
+				{
+					ResolveStarRows(_gridHeightConstraint);
+					SecondMeasurePass(onlyCellsWithKnownConstraints: true);
+				}
+
 				if (!_isStarWidthPrecomputable)
 				{
 					// We didn't have enough info to work out the * column sizes earlier, but now that
@@ -362,7 +380,12 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarColumns(_gridWidthConstraint);
 				}
 
-				if (!_isStarHeightPrecomputable)
+				if (starColumnsFirst)
+				{
+					SecondMeasurePass(onlyCellsWithKnownConstraints: true);
+				}
+
+				if (!_isStarHeightPrecomputable && !starRowsFirst)
 				{
 					// We didn't have enough info to work out the * row sizes earlier, but now that
 					// we've measured the Auto dimensions, we can finalize those values
@@ -431,11 +454,42 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void SecondMeasurePass()
+			bool AnyCellNeedsStarColumnsToSizeAutoRows()
+			{
+				foreach (var cell in _cells)
+				{
+					if (cell.NeedsSecondPass && double.IsNaN(cell.MeasureWidth) && TreatCellHeightAsAuto(cell))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			bool AnyCellNeedsStarRowsToSizeAutoColumns()
+			{
+				foreach (var cell in _cells)
+				{
+					if (cell.NeedsSecondPass && double.IsNaN(cell.MeasureHeight) && TreatCellWidthAsAuto(cell))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			void SecondMeasurePass(bool onlyCellsWithKnownConstraints = false)
 			{
 				foreach (var cell in _cells)
 				{
 					if (!cell.NeedsSecondPass)
+					{
+						continue;
+					}
+
+					if (onlyCellsWithKnownConstraints && (double.IsNaN(cell.MeasureWidth) || double.IsNaN(cell.MeasureHeight)))
 					{
 						continue;
 					}
@@ -475,6 +529,7 @@ namespace Microsoft.Maui.Layouts
 					}
 
 					var measure = MeasureCell(cell, width, height);
+					cell.NeedsSecondPass = false;
 
 					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
 					{
