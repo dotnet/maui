@@ -215,8 +215,15 @@ if (-not $queueError -and $selection.mode -ne 'none') {
         Write-Host 'Azure DevOps dispatch is not available in this repository; publishing the selection only.'
     } else {
         try {
-            if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
-            $headers = @{ Authorization = "Bearer $AzdoToken" }
+            if ($env:AZDO_TRIGGER_PAT -and -not $AzdoToken) {
+                # Fallback while Conditional Access blocks the federated identity: a personal access token.
+                Write-Host "::add-mask::$($env:AZDO_TRIGGER_PAT)"
+                $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:AZDO_TRIGGER_PAT)"))
+                $headers = @{ Authorization = "Basic $basic" }
+            } else {
+                if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
+                $headers = @{ Authorization = "Bearer $AzdoToken" }
+            }
             $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
             $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
                 -ContentType 'application/json' -Body ($request | ConvertTo-Json -Depth 10 -Compress) -TimeoutSec 60
