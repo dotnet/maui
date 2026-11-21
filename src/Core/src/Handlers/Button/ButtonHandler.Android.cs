@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Handlers
 		// Cached default Material theme text colors, captured before any MAUI property mapping.
 		// Restored when TextColor is set to null (e.g. when a VisualState setter is unapplied).
 		ColorStateList? _defaultTextColors;
+		GravityFlags _defaultGravity;
+		global::Android.Views.TextAlignment _defaultTextAlignment;
+		global::Android.Text.JustificationMode _defaultJustificationMode;
+		bool _horizontalTextAlignmentSet;
+		bool _verticalTextAlignmentSet;
 
 		protected override MaterialButton CreatePlatformView()
 		{
@@ -53,6 +58,14 @@ namespace Microsoft.Maui.Handlers
 
 			// Capture Material theme defaults before MAUI property mapping is applied
 			_defaultTextColors = platformView.TextColors;
+			_defaultGravity = platformView.Gravity;
+			_defaultTextAlignment = platformView.TextAlignment;
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				_defaultJustificationMode = platformView.JustificationMode;
+			}
+
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 
 			base.ConnectHandler(platformView);
 		}
@@ -69,13 +82,77 @@ namespace Microsoft.Maui.Handlers
 			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			_defaultTextColors = null;
+			if (_horizontalTextAlignmentSet && OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				platformView.JustificationMode = _defaultJustificationMode;
+			}
+
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
+			if (platformView is MauiMaterialButton mauiButton)
+			{
+				mauiButton.AlignTextAndImage = false;
+			}
 
 			ImageSourceLoader.Reset();
 
 			base.DisconnectHandler(platformView);
 		}
 
-		// This is a Android-specific mapping
+		internal void UpdateHorizontalTextAlignment(TextAlignment? horizontal)
+		{
+			if (PlatformView is not { } platformView)
+			{
+				return;
+			}
+
+			const GravityFlags horizontalMask = GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection;
+			if (horizontal.HasValue || _horizontalTextAlignmentSet)
+			{
+				var gravityWithoutHorizontalAlignment = platformView.Gravity & ~horizontalMask;
+				var horizontalGravity = horizontal?.ToHorizontalGravityFlags() ?? (_defaultGravity & horizontalMask);
+				platformView.Gravity = gravityWithoutHorizontalAlignment | horizontalGravity;
+				platformView.TextAlignment = horizontal?.ToTextAlignment() ?? _defaultTextAlignment;
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					platformView.JustificationMode = horizontal.HasValue
+						? horizontal == TextAlignment.Justify ? global::Android.Text.JustificationMode.InterWord : global::Android.Text.JustificationMode.None
+						: _defaultJustificationMode;
+				}
+			}
+
+			_horizontalTextAlignmentSet = horizontal.HasValue;
+			UpdateImageAndTextAlignment(platformView);
+		}
+
+		internal void UpdateVerticalTextAlignment(TextAlignment? vertical)
+		{
+			if (PlatformView is not { } platformView)
+			{
+				return;
+			}
+
+			if (vertical.HasValue || _verticalTextAlignmentSet)
+			{
+				var gravityWithoutVerticalAlignment = platformView.Gravity & ~GravityFlags.VerticalGravityMask;
+				var verticalGravity = vertical?.ToVerticalGravityFlags() ?? (_defaultGravity & GravityFlags.VerticalGravityMask);
+				platformView.Gravity = gravityWithoutVerticalAlignment | verticalGravity;
+			}
+
+			_verticalTextAlignmentSet = vertical.HasValue;
+			UpdateImageAndTextAlignment(platformView);
+		}
+
+		void UpdateImageAndTextAlignment(MaterialButton platformView)
+		{
+			if (platformView is MauiMaterialButton mauiButton)
+			{
+				mauiButton.AlignTextAndImage = _horizontalTextAlignmentSet || _verticalTextAlignmentSet;
+			}
+
+			platformView.Invalidate();
+		}
+
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateBackground(button);
@@ -112,7 +189,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				// Restore the Material theme default colors captured before any MAUI mapping
 				if (handler is ButtonHandler buttonHandler && buttonHandler._defaultTextColors is not null)
+				{
 					handler.PlatformView?.SetTextColor(buttonHandler._defaultTextColors);
+				}
 			}
 			else
 			{
@@ -177,13 +256,17 @@ namespace Microsoft.Maui.Handlers
 		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
+			{
 				VirtualView.IsFocused = e.HasFocus;
+			}
 		}
 
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
 			if (sender is MaterialButton platformView && VirtualView is not null)
+			{
 				platformView.UpdateBackground(VirtualView);
+			}
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
@@ -209,7 +292,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(Drawable? platformImage)
 			{
 				if (Handler?.PlatformView is not MaterialButton button)
+				{
 					return;
+				}
 
 				button.Icon = platformImage is null
 					? null
