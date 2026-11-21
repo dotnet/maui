@@ -54,6 +54,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return baseHandled || pointerHandled;
 		}
 
+		// Only the detector itself: the pointer handler isn't told, as the view didn't take the touch
+		internal void CancelLongPress(MotionEvent cancel) =>
+			base.OnTouchEvent(cancel);
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);

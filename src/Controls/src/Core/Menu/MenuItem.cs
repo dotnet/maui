@@ -75,6 +75,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets the image displayed for the menu item. This is a bindable property.</summary>
+		/// <remarks>
+		/// In a context menu (<see cref="FlyoutBase.SetContextFlyout(BindableObject, FlyoutBase)"/>) the image isn't
+		/// shown on Android, like in native Android context menus, and on iOS and Mac Catalyst only file and font
+		/// images are shown.
+		/// </remarks>
 		public ImageSource IconImageSource
 		{
 			get => (ImageSource)GetValue(IconImageSourceProperty);

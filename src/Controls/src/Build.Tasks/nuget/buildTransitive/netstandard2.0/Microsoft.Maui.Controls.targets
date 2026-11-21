@@ -387,6 +387,10 @@
                                       Condition="'$(EnableMauiIncrementalHotReload)' != ''"
                                       Value="$(EnableMauiIncrementalHotReload)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreMobileContextFlyoutsEnabled"
+                                      Condition="'$(MauiEnableMobileContextFlyouts)' != ''"
+                                      Value="$(MauiEnableMobileContextFlyouts)"
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds"
                                       Condition="'$(MauiAndroidSystemBarsUseMauiChrome)' != ''"
                                       Value="$(MauiAndroidSystemBarsUseMauiChrome)"

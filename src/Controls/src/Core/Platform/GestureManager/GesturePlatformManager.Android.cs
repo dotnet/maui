@@ -10,6 +10,7 @@ using AndroidX.Core.View;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using AView = Android.Views.View;
 
@@ -25,6 +26,9 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
+		bool _consumesTouches;
+		bool _handlesLongPress;
+		Action<MotionEvent>? _cancelLongPress;
 		bool? _focusableDefaultValue;
 		GestureItemTouchListener? _recyclerViewTouchListener;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
@@ -88,6 +92,13 @@ namespace Microsoft.Maui.Controls.Platform
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
+		}
+
+		// Gesture detectors that saw the press but didn't take the touch don't get the cancel when a context menu opens
+		void CancelLongPress(MotionEvent cancel)
+		{
+			if (_tapAndPanAndSwipeDetector.IsValueCreated && _tapAndPanAndSwipeDetector.Value.Handle != IntPtr.Zero)
+				_tapAndPanAndSwipeDetector.Value.CancelLongPress(cancel);
 		}
 
 		public void Dispose()
@@ -181,6 +192,25 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
+		// Whether the gesture recognizers take the touch (drop targets only watch drags) and handle long presses
+		static (bool ConsumesTouches, bool HandlesLongPress) GetTouchBehavior(View view)
+		{
+			int count = view.GestureRecognizers.Count;
+			if (count == 0)
+				return (true, false);
+
+			var consumesTouches = false;
+			var handlesLongPress = false;
+			for (var i = 0; i < count; i++)
+			{
+				var recognizer = view.GestureRecognizers[i];
+				consumesTouches |= recognizer is not DropGestureRecognizer;
+				handlesLongPress |= recognizer is LongPressGestureRecognizer or DragGestureRecognizer;
+			}
+
+			return (consumesTouches, handlesLongPress);
+		}
+
 		void SetupGestures()
 		{
 			if (View == null)
@@ -218,11 +248,17 @@ namespace Microsoft.Maui.Controls.Platform
 				shouldAddTouchEvent = true;
 			}
 
+
 			// Always unsubscribe first to avoid duplicates
 			ClearRecyclerViewTouchListener(platformView);
 			platformView.Touch -= OnPlatformViewTouched;
 			platformView.KeyPress -= OnKeyPress;
 
+
+			// Context flyouts follow how Android routes long presses, so they need to know which views
+			// receive touches through gesture recognizers and which ones handle long presses themselves
+			(_consumesTouches, _handlesLongPress) = shouldAddTouchEvent ? GetTouchBehavior(View) : (false, false);
+			UpdateContextFlyoutGestureState();
 
 			if (shouldAddTouchEvent)
 			{
@@ -278,7 +314,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if (!e.Event.IsCanceled)
+				// A key release that completed a long press opening a context menu isn't a tap
+				if (!e.Event.IsCanceled && !ContextFlyoutKeyTracker.IsConsumedKeyUp(e.Event))
 				{
 					// Prefer Tap over LongPress for accessibility key activation.
 					// A confirm key press is a discrete action that maps to Tap semantics.
@@ -315,6 +352,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
 				_focusableDefaultValue = null;
+				_consumesTouches = _handlesLongPress = false;
+				ContextFlyoutManager.SetGestureState(platformView, false, false, null);
 				ClearRecyclerViewTouchListener(platformView);
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;
@@ -419,6 +458,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_inputTransparent = Element.InputTransparent;
+			UpdateContextFlyoutGestureState();
 		}
 
 		void UpdateIsEnabled()
@@ -429,6 +469,29 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_isEnabled = Element.IsEnabled;
+			UpdateContextFlyoutGestureState();
+		}
+
+		// Disabled and input transparent views don't take touches through their gesture recognizers
+		void UpdateContextFlyoutGestureState()
+		{
+			if (Control is not AView platformView)
+				return;
+
+			var active = _isEnabled && !_inputTransparent;
+			var handlesLongPress = active && _handlesLongPress;
+			if (handlesLongPress && _cancelLongPress is null)
+			{
+				// Kept by the platform view, so it must not keep this manager and its handler alive
+				var weakManager = new WeakReference<GesturePlatformManager>(this);
+				_cancelLongPress = cancel =>
+				{
+					if (weakManager.TryGetTarget(out var manager))
+						manager.CancelLongPress(cancel);
+				};
+			}
+
+			ContextFlyoutManager.SetGestureState(platformView, active && _consumesTouches, handlesLongPress, handlesLongPress ? _cancelLongPress : null);
 		}
 
 		void ClearRecyclerViewTouchListener(AView platformView)

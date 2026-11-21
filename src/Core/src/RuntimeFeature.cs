@@ -32,6 +32,7 @@ namespace Microsoft.Maui
 		const bool IsiOSShellHandlerEnabledByDefault = false;
 		const bool IsIncrementalHotReloadEnabledByDefault = false;
 		const bool UseMauiAndroidSystemBarBackgroundsByDefault = false;
+		const bool AreMobileContextFlyoutsEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -185,6 +186,18 @@ namespace Microsoft.Maui
 				: UseMauiAndroidSystemBarBackgroundsByDefault;
 
 #pragma warning restore IL4000
+
+		/// <summary>
+		/// Context flyouts on iOS and Android, and context flyout items in the system's text menus of text inputs
+		/// (also on Mac Catalyst). When disabled, context flyouts work like before: only on Windows and Mac Catalyst.
+		/// </summary>
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreMobileContextFlyoutsEnabled)}")]
+#endif
+		internal static bool AreMobileContextFlyoutsEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(AreMobileContextFlyoutsEnabled)}", out bool isEnabled)
+				? isEnabled
+				: AreMobileContextFlyoutsEnabledByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}")]

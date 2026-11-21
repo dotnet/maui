@@ -30,6 +30,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				te.Toolbar?.Handler?.DisconnectHandler();
 			}
+
+			if (VirtualView is IContextFlyoutElement { ContextFlyout: not null })
+			{
+				ContextFlyoutManager.Detach(platformView);
+			}
 		}
 
 		void OnRootViewSet(object? sender, EventArgs e)
@@ -246,6 +251,20 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
+			if (!RuntimeFeature.AreMobileContextFlyoutsEnabled ||
+				view is not IContextFlyoutElement contextFlyoutContainer || handler.PlatformView is not PlatformView platformView)
+				return;
+
+			if (contextFlyoutContainer.ContextFlyout is null)
+			{
+				// Views without a context flyout never get a manager, so there is nothing to remove
+				if (!handler.IsConnectingHandler())
+					ContextFlyoutManager.Detach(platformView);
+			}
+			else
+			{
+				ContextFlyoutManager.Attach(handler, platformView);
+			}
 		}
 
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)

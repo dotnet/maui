@@ -36,6 +36,9 @@ namespace Microsoft.Maui
 		{
 			base.OnPostCreate(savedInstanceState);
 
+			// Context flyouts open when a confirm key is held on the focused view
+			ContextFlyoutKeyTracker.Observe(Window?.DecorView);
+
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnPostCreate>(del => del(this, savedInstanceState));
 		}
 
