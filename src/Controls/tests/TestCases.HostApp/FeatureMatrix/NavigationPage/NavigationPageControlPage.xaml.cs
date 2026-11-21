@@ -142,8 +142,8 @@ namespace Maui.Controls.Sample
 					_viewModel.BackButtonTitle = BackButtonTitleEntry.Text;
 
 				// Update boolean properties from checkboxes
-				_viewModel.HasNavigationBar = HasNavigationBarCheckBox.IsChecked;
-				_viewModel.HasBackButton = HasBackButtonCheckBox.IsChecked;
+				_viewModel.HasNavigationBar = HasNavigationBarCheckBox.IsChecked == true;
+				_viewModel.HasBackButton = HasBackButtonCheckBox.IsChecked == true;
 
 				UpdateNavigationInfo();
 			}
@@ -329,13 +329,13 @@ namespace Maui.Controls.Sample
 		// HasNavigationBar - NavigationPage attached property
 		private void OnHasNavigationBarChanged(object sender, CheckedChangedEventArgs e)
 		{
-			_viewModel.HasNavigationBar = HasNavigationBarCheckBox.IsChecked;
+			_viewModel.HasNavigationBar = HasNavigationBarCheckBox.IsChecked == true;
 		}
 
 		// HasBackButton - NavigationPage attached property
 		private void OnHasBackButtonChanged(object sender, CheckedChangedEventArgs e)
 		{
-			_viewModel.HasBackButton = HasBackButtonCheckBox.IsChecked;
+			_viewModel.HasBackButton = HasBackButtonCheckBox.IsChecked == true;
 		}
 
 		// Push a new page to test NavigationPage properties and attached properties

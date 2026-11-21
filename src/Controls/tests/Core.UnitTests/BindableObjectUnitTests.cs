@@ -544,6 +544,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(value.ToUpperInvariant(), mock.GetValue(property));
 		}
 
+		[Theory]
+		[InlineData(false, 5, 1, 1)]
+		[InlineData(true, 0, 2, 0)]
+		public void ReentrantCoercionRequiresOptIn(bool optIn, int expected, int expectedCoercions, int expectedChanges)
+		{
+			var maximum = 10;
+			var coercions = 0;
+			var changes = 0;
+			var property = BindableProperty.Create(nameof(MockBindable.TargetInt), typeof(int), typeof(MockBindable), 0,
+				coerceValue: (_, value) =>
+				{
+					coercions++;
+					return Math.Min((int)value, maximum);
+				});
+			property.CoerceValueAfterPropertyChanging = optIn;
+			var mock = new MockBindable();
+			mock.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == property.PropertyName)
+					maximum = 0;
+			};
+			mock.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == property.PropertyName)
+				{
+					Assert.Equal(expected, mock.GetValue(property));
+					changes++;
+				}
+			};
+
+			mock.SetValue(property, 5);
+
+			Assert.Equal(expected, mock.GetValue(property));
+			Assert.Equal(expectedCoercions, coercions);
+			Assert.Equal(expectedChanges, changes);
+		}
+
 		[Fact]
 		public void InvalidValueNotApplied()
 		{

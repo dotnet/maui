@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 			if (FlyoutPage == null)
 				return;
 
-			FlyoutPage.IsGestureEnabled = (sender as CheckBox)!.IsChecked;
+			FlyoutPage.IsGestureEnabled = (sender as CheckBox)!.IsChecked == true;
 		}
 
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)

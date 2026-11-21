@@ -614,6 +614,8 @@ namespace Microsoft.Maui.Controls
 				text = tp.Time.ToString();
 			else if (element is IDatePicker dp)
 				text = dp.Date.ToString();
+			else if (element is ICheckBox2 nullableCheckBox)
+				text = nullableCheckBox.IsChecked?.ToString() ?? "Indeterminate";
 			else if (element is ICheckBox cb)
 				text = cb.IsChecked.ToString();
 			else if (element is ISwitch sw)

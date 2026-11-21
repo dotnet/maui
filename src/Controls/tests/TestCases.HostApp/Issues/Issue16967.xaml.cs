@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void OnCheckBoxChanged(object sender, CheckedChangedEventArgs e)
 		{
-			label.TextDecorations = checkBox.IsChecked ? TextDecorations.Strikethrough : TextDecorations.Underline;
+			label.TextDecorations = checkBox.IsChecked == true ? TextDecorations.Strikethrough : TextDecorations.Underline;
 		}
 	}
 }

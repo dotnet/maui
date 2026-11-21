@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 #if MONOANDROID
 			[nameof(ICheckBox.Background)] = MapBackground,
 #endif
+			[nameof(ICheckBox2.IsThreeState)] = MapIsThreeState,
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 			[nameof(ICheckBox.Foreground)] = MapForeground,
 		};
@@ -49,6 +50,18 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView ICheckBoxHandler.PlatformView => PlatformView;
 
+		internal static void SetCheckedState(ICheckBox checkBox, bool? value)
+		{
+			if (checkBox is ICheckBox2 checkBox2)
+			{
+				checkBox2.IsChecked = value;
+			}
+			else if (value.HasValue)
+			{
+				checkBox.IsChecked = value.Value;
+			}
+		}
+
 #if MONOANDROID
 		/// <summary>
 		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
@@ -64,6 +77,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
 		public static partial void MapIsChecked(ICheckBoxHandler handler, ICheckBox check);
+
+		/// <summary>Maps whether user interaction cycles through three states.</summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="check">The associated checkbox.</param>
+		public static partial void MapIsThreeState(ICheckBoxHandler handler, ICheckBox check);
 
 		/// <summary>
 		/// Maps the abstract <see cref="ICheckBox.Foreground"/> property to the platform-specific implementations.

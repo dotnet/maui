@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.CheckBox;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -12,6 +14,57 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(RunInNewWindowCollection)]
 	public partial class CheckBoxTests
 	{
+		public class Material3CheckBoxHandler : CheckBoxHandler
+		{
+			protected override AppCompatCheckBox CreatePlatformView() =>
+				new MauiMaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context, useMaterial3: true));
+		}
+
+		bool? GetNativeCheckedState(CheckBoxHandler handler) =>
+			Assert.IsAssignableFrom<MaterialCheckBox>(handler.PlatformView).CheckedState switch
+			{
+				MaterialCheckBox.StateChecked => true,
+				MaterialCheckBox.StateUnchecked => false,
+				MaterialCheckBox.StateIndeterminate => null,
+				var state => throw new InvalidOperationException($"Unexpected checked state: {state}")
+			};
+
+		void ActivateNativeCheckBox(CheckBoxHandler handler) =>
+			handler.PlatformView.PerformClick();
+
+		[Theory]
+		[InlineData(false, false, true)]
+		[InlineData(false, true, false)]
+		[InlineData(true, false, true)]
+		[InlineData(true, true, null)]
+		[InlineData(true, null, false)]
+		public Task ActivationDispatchesNativeClick(bool threeState, bool? initial, bool? expected)
+		{
+			SetupBuilder();
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var checkBox = new CheckBox { IsThreeState = threeState, IsChecked = initial };
+				var handler = CreateThreeStateHandler(checkBox);
+				var clicks = 0;
+				EventHandler onClick = (_, _) =>
+				{
+					Assert.Equal(expected, checkBox.IsChecked);
+					Assert.Equal(checkBox.IsChecked, GetNativeCheckedState(handler));
+					clicks++;
+				};
+				handler.PlatformView.Click += onClick;
+				try
+				{
+					Assert.True(handler.PlatformView.PerformClick());
+					Assert.Equal(1, clicks);
+				}
+				finally
+				{
+					handler.PlatformView.Click -= onClick;
+				}
+			});
+		}
+
 		AppCompatCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
 

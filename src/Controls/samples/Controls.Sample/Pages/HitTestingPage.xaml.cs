@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void RectangleSelectionCheckBox_CheckedChanged(object? sender, Microsoft.Maui.Controls.CheckedChangedEventArgs e)
 		{
-			_state = RectangleSelectionCheckBox.IsChecked ? State.RectangleSelectionPickFirst : State.SingleSelection;
+			_state = RectangleSelectionCheckBox.IsChecked == true ? State.RectangleSelectionPickFirst : State.SingleSelection;
 		}
 
 		private void ContentPage_Loaded(object? sender, EventArgs e)
