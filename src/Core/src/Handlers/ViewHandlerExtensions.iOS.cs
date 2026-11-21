@@ -91,11 +91,11 @@ namespace Microsoft.Maui
 
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint), default, widthIsExplicit, heightIsExplicit);
 			}
-			else if (platformView is LayoutView || platformView is MauiLabel)
+			else if (platformView is LayoutView || platformView is MauiLabel || platformView is MauiContentButton)
 			{
 				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-			   	heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
-				
+				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
 			else if (platformView is WrapperView wrapper)
