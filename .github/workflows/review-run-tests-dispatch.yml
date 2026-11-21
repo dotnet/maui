@@ -138,6 +138,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          AZDO_TRIGGER_PAT: ${{ secrets.AZDO_TRIGGER_PAT }}
           PR_NUMBER: ${{ inputs.pr_number }}
           REQUESTER: ${{ steps.source.outputs.requester }}
           PROPOSAL_PATHS: ${{ steps.proposals.outputs.paths }}
