@@ -317,6 +317,141 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ItemTappedEnablesSelectionInputAndButtonTraitInSelectionModeNone()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new List<Grid>();
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "A", "B" },
+				SelectionMode = SelectionMode.None,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					// The Button trait goes on the item's accessibility element
+					var accessibilityElement = new Grid();
+					accessibilityElement.SetBinding(SemanticProperties.DescriptionProperty, ".");
+					accessibilityElement.Add(new Label { Text = "Item" });
+					items.Add(accessibilityElement);
+					return accessibilityElement;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+
+				// The template is also instantiated outside of cells (for example to measure items), so only
+				// look at the items shown in the collection view's cells
+				UIView[] CellItems() => items
+					.Select(l => l.Handler?.PlatformView as UIView)
+					.Where(v => v is not null && v.IsDescendantOfView(uiCollectionView))
+					.ToArray();
+				bool AllHaveButtonTrait(bool expected) =>
+					CellItems().All(v => ((v.AccessibilityTraits & UIAccessibilityTrait.Button) != 0) == expected);
+
+				await AssertHelpers.AssertEventually(() => CellItems() is { Length: 2 } cellItems && cellItems.All(v => v.IsAccessibilityElement),
+					message: "The items were not realized in cells as accessibility elements.");
+
+				Assert.False(uiCollectionView.AllowsSelection);
+				Assert.True(AllHaveButtonTrait(false));
+
+				var taps = new List<ItemTappedEventArgs>();
+				void OnItemTapped(object sender, ItemTappedEventArgs e) => taps.Add(e);
+				collectionView.ItemTapped += OnItemTapped;
+
+				Assert.True(uiCollectionView.AllowsSelection);
+				Assert.True(AllHaveButtonTrait(true), "Items that report taps should have the Button trait.");
+
+				// A tap asks the delegate first; in None mode the tap is reported and the selection refused
+				var shouldSelect = ((UICollectionViewDelegate)uiCollectionView.Delegate).ShouldSelectItem(uiCollectionView, NSIndexPath.FromItemSection(1, 0));
+
+				Assert.False(shouldSelect);
+				await AssertHelpers.AssertEventually(() => taps.Count == 1, message: "The tap was not reported.");
+				Assert.Equal("B", Assert.Single(taps).Item);
+				Assert.Empty(uiCollectionView.GetIndexPathsForSelectedItems());
+
+				collectionView.ItemTapped -= OnItemTapped;
+
+				Assert.False(uiCollectionView.AllowsSelection);
+				Assert.True(AllHaveButtonTrait(false), "The Button trait should be removed with the last ItemTapped handler.");
+			});
+		}
+
+		[Theory]
+		[InlineData(SelectionMode.Single)]
+		[InlineData(SelectionMode.Multiple)]
+		public async Task ItemTappedReportsOnlyTheTappedItem(SelectionMode selectionMode)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "A", "B" },
+				SelectionMode = selectionMode,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+			var taps = new List<object>();
+			collectionView.ItemTapped += (s, e) => taps.Add(e.Item);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+				var collectionViewDelegate = (UICollectionViewDelegate)uiCollectionView.Delegate;
+				var a = NSIndexPath.FromItemSection(0, 0);
+				var b = NSIndexPath.FromItemSection(1, 0);
+
+				// Each block is the sequence of callbacks UIKit makes for one tap or click
+				async Task Tap(object expected, params Action[] callbacks)
+				{
+					var count = taps.Count;
+					foreach (var callback in callbacks)
+					{
+						callback();
+					}
+
+					await AssertHelpers.AssertEventually(() => taps.Count > count, message: $"The tap on {expected} was not reported.");
+					await Task.Delay(100);
+					Assert.Equal(new[] { expected }, taps.Skip(count));
+				}
+
+				await Tap("A", () => collectionViewDelegate.ItemSelected(uiCollectionView, a));
+
+				// Selecting another item also deselects the previous one: in Single mode, and on Mac Catalyst in
+				// Multiple mode, where a plain click replaces the selection
+				await Tap("B",
+					() => collectionViewDelegate.ItemDeselected(uiCollectionView, a),
+					() => collectionViewDelegate.ItemSelected(uiCollectionView, b));
+
+				if (selectionMode == SelectionMode.Single)
+				{
+					// Tapping the selected item again
+					await Tap("B", () => collectionViewDelegate.ItemSelected(uiCollectionView, b));
+				}
+				else
+				{
+					// Tapping a selected item deselects it
+					await Tap("B", () => collectionViewDelegate.ItemDeselected(uiCollectionView, b));
+				}
+			});
+		}
+
+		[Fact]
 		public async Task ChangingSelectionModeToNoneClearsButtonTraitFromNestedAccessibilityElement()
 		{
 			EnsureHandlerCreated(builder =>

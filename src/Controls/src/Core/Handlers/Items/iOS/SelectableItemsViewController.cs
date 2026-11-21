@@ -30,7 +30,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
+
+			var tap = CreateItemTappedEventArgs(indexPath);
 			FormsSelectItem(indexPath);
+			QueueItemTapped(tap, selected: true);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
@@ -40,7 +43,92 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
+
+			var tap = CreateItemTappedEventArgs(indexPath);
 			FormsDeselectItem(indexPath);
+			QueueItemTapped(tap, selected: false);
+		}
+
+		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
+		internal bool ShouldSelectItemCore(NSIndexPath indexPath)
+		{
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
+			{
+				return false;
+			}
+
+			if (ItemsView.SelectionMode != SelectionMode.None)
+			{
+				return true;
+			}
+
+			// Selection is only allowed in None mode so that taps are reported; the item itself never becomes selected
+			QueueItemTapped(CreateItemTappedEventArgs(indexPath), selected: true);
+			return false;
+		}
+
+		ItemTappedEventArgs _pendingTap;
+		bool _pendingTapSelected;
+		bool _isTapQueued;
+
+		// One click or tap can make UIKit deselect other items besides selecting the tapped one: the previous item in
+		// Single mode, and on Mac Catalyst every other item in Multiple mode, because a plain click replaces the
+		// selection. Collect the callbacks of one event and report a single tap: the selected item if there is one,
+		// otherwise the deselected item (a tap that deselects it in Multiple mode).
+		void QueueItemTapped(ItemTappedEventArgs tap, bool selected)
+		{
+			if (tap is null)
+			{
+				return;
+			}
+
+			if (_pendingTap is null || selected || !_pendingTapSelected)
+			{
+				_pendingTap = tap;
+				_pendingTapSelected = selected;
+			}
+
+			if (!_isTapQueued)
+			{
+				_isTapQueued = true;
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(SendPendingItemTapped);
+			}
+		}
+
+		void SendPendingItemTapped()
+		{
+			var tap = _pendingTap;
+			_pendingTap = null;
+			_isTapQueued = false;
+
+			ItemsView?.SendItemTapped(tap);
+		}
+
+		ItemTappedEventArgs CreateItemTappedEventArgs(NSIndexPath indexPath)
+		{
+			if (!ItemsView.IsItemTapEnabled)
+			{
+				return null;
+			}
+
+			var item = GetItemAtIndex(indexPath);
+
+			if (ItemsView is GroupableItemsView { IsGrouped: true })
+			{
+				return ItemsView.CreateItemTappedEventArgs(item, ItemsSource.Group(indexPath), (int)indexPath.Section, (int)indexPath.Item);
+			}
+
+			return ItemsView.CreateItemTappedEventArgs(item, null, -1, (int)indexPath.Item);
+		}
+
+		internal void UpdateItemTapEnabled()
+		{
+			if (ItemsView.SelectionMode == SelectionMode.None)
+			{
+				CollectionView.AllowsSelection = ItemsView.IsEnabled && ItemsView.IsItemTapEnabled;
+			}
+
+			CollectionView.UpdateAccessibilityTraits(ItemsView);
 		}
 
 		// Called by Forms to mark an item selected 
@@ -162,6 +250,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (mode)
 			{
 				case SelectionMode.None:
+					// Selection can stay enabled in None mode to report taps, so clear any selection left from a previous mode
+					ClearSelection();
 					return;
 				case SelectionMode.Single:
 					var selectedItem = ItemsView.SelectedItem;
@@ -191,7 +281,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (mode)
 			{
 				case SelectionMode.None:
-					CollectionView.AllowsSelection = false;
+					// Selection stays enabled while item taps are observed; ShouldSelectItemCore reports the tap and refuses the selection
+					CollectionView.AllowsSelection = isEnabled && ItemsView.IsItemTapEnabled;
 					CollectionView.AllowsMultipleSelection = false;
 					ClearsSelectionOnViewWillAppear = true;
 					break;

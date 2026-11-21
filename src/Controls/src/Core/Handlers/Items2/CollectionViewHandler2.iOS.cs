@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			[SelectableItemsView.IsItemTapEnabledMapperKey] = MapIsItemTapEnabled,
 			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
@@ -152,6 +153,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
 			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
+		}
+
+		internal static void MapIsItemTapEnabled(CollectionViewHandler2 handler, SelectableItemsView itemsView)
+		{
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateItemTapEnabled();
 		}
 
 

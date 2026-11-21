@@ -36,7 +36,7 @@ internal static class AccessibilityExtensions
 			traitState.AccessibilityRoot = accessibilityRoot;
 		}
 
-		if (selectionMode == SelectionMode.None)
+		if (selectionMode == SelectionMode.None && itemsView is SelectableItemsView { IsItemTapEnabled: false })
 		{
 			ClearButtonTrait(traitState);
 			return;

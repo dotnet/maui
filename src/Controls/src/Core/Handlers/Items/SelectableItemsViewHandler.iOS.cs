@@ -35,5 +35,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			(handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateSelectionMode();
 		}
+
+		partial void UpdateIsItemTapEnabled(SelectableItemsView itemsView)
+		{
+			(Controller as SelectableItemsViewController<TItemsView>)?.UpdateItemTapEnabled();
+		}
 	}
 }

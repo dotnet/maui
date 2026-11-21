@@ -28,6 +28,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+		[SelectableItemsView.IsItemTapEnabledMapperKey] = MapIsItemTapEnabled,
 		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 
 	};
@@ -39,6 +40,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	bool _selectionUpdateQueued;
 	bool _platformSelectionUpdateQueued;
 	Action<int>? _containerPreparedHandler;
+	UI.Xaml.Input.KeyEventHandler? _keyDownHandler;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -93,13 +95,211 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	internal static readonly WThickness MultiSelectContentMargin = new WThickness(32, 0, 0, 0);
 	static readonly WThickness ZeroMargin = new WThickness(0);
 
+	internal static void MapIsItemTapEnabled(CollectionViewHandler2 handler, SelectableItemsView itemsView)
+	{
+		handler.UpdateItemInvokedEnabled();
+	}
+
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdateItemInvokedEnabled();
 		handler.UpdatePlatformSelection();
 		handler.UpdateMultiSelectContentMargin();
 		// The margin change affects item sizes, so invalidate the MeasureFirstItem cache
 		// to avoid stale sizes being applied to items realized after the mode switch.
 		handler.InvalidateFirstItemSize();
+	}
+
+	/// <summary>
+	/// WinUI raises ItemInvoked for the Enter key and UI Automation invoke in every mode; for taps and the Space key
+	/// only in <see cref="SelectionMode.None"/>; and for double taps only when selection is enabled. The remaining
+	/// cases are reported by <see cref="PlatformTapped"/>, <see cref="PlatformDoubleTapped"/> and
+	/// <see cref="PlatformKeyDown"/>. Taps that a control inside the item handled are not reported.
+	/// </summary>
+	void UpdateItemInvokedEnabled()
+	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
+		PlatformView.IsItemInvokedEnabled = ItemsView.IsItemTapEnabled;
+	}
+
+	// The rows shown by the platform view, indexed like its item containers (see UpdatePlatformSelection)
+	ICollectionView? PlatformRows => PlatformView?.ItemsSource as ICollectionView;
+
+	void PlatformItemInvoked(WItemsView sender, ItemsViewItemInvokedEventArgs args)
+	{
+		if (ItemsView is null || !ItemsView.IsItemTapEnabled || PlatformRows is not ICollectionView rows)
+			return;
+
+		var index = -1;
+
+		// Without an item template the items themselves are shown, so prefer the invoked row, which WinUI makes current;
+		// item contexts are unique per row, so matching them is exact even when the items repeat
+		var current = sender.CurrentItemIndex;
+		if (current >= 0 && current < rows.Count && IsSameRow(rows[current], args.InvokedItem))
+		{
+			index = current;
+		}
+		else
+		{
+			for (var row = 0; row < rows.Count; row++)
+			{
+				if (IsSameRow(rows[row], args.InvokedItem))
+				{
+					index = row;
+					break;
+				}
+			}
+		}
+
+		ReportItemTapped(index);
+
+		static bool IsSameRow(object row, object invokedItem) =>
+			row is ItemTemplateContext2 ? ReferenceEquals(row, invokedItem) : Equals(row, invokedItem);
+	}
+
+	void PlatformTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+	{
+		// In None mode ItemInvoked reports single taps
+		if (ItemsView?.SelectionMode != SelectionMode.None)
+		{
+			ReportItemTapped(e.OriginalSource);
+		}
+	}
+
+	void PlatformDoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+	{
+		// The second tap of a double tap raises DoubleTapped instead of Tapped. ItemInvoked reports it when
+		// selection is enabled, but not in None mode.
+		if (ItemsView?.SelectionMode == SelectionMode.None)
+		{
+			ReportItemTapped(e.OriginalSource);
+		}
+	}
+
+	void PlatformKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+	{
+		// With selection enabled, Space selects the focused item without raising ItemInvoked; the item container
+		// has already handled the key, so this handler also runs for handled events
+		if (e.Key == global::Windows.System.VirtualKey.Space && !e.KeyStatus.WasKeyDown && e.OriginalSource is ItemContainer &&
+			ItemsView is not null && ItemsView.SelectionMode != SelectionMode.None)
+		{
+			ReportItemTapped(e.OriginalSource);
+		}
+	}
+
+	void ReportItemTapped(object? originalSource)
+	{
+		if (ItemsView is null || !ItemsView.IsItemTapEnabled ||
+			PlatformView is not MauiItemsView platformView || platformView.ItemsRepeaterControl is not ItemsRepeater repeater)
+		{
+			return;
+		}
+
+		// Only items count, not the header, footer or empty view
+		for (var current = originalSource as Microsoft.UI.Xaml.DependencyObject;
+			current is not null && !ReferenceEquals(current, platformView);
+			current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+		{
+			if (current is ItemContainer container)
+			{
+				ReportItemTapped(repeater.GetElementIndex(container));
+				return;
+			}
+		}
+	}
+
+	void ReportItemTapped(int index)
+	{
+		if (ItemsView is not SelectableItemsView itemsView || PlatformRows is not ICollectionView rows ||
+			index < 0 || index >= rows.Count)
+		{
+			return;
+		}
+
+		var entry = rows[index];
+
+		if (entry is ItemTemplateContext2 { IsHeader: true } or ItemTemplateContext2 { IsFooter: true })
+		{
+			return;
+		}
+
+		var item = entry is ItemTemplateContext2 context ? context.Item : entry;
+		var tap = TryGetItemPosition(itemsView, index, out var groupIndex, out var indexInGroup)
+			? itemsView.CreateItemTappedEventArgs(item, null, groupIndex, indexInGroup)
+			: itemsView.CreateItemTappedEventArgs(item, null, -1, -1);
+
+		// The platform selection is synced to the MAUI selection on the dispatcher; report the tap after that
+		var dispatcherQueue = PlatformView?.DispatcherQueue;
+		if (dispatcherQueue is null || !dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+			{
+				if (itemsView.Handler is not null)
+					itemsView.SendItemTapped(tap);
+			}))
+		{
+			itemsView.SendItemTapped(tap);
+		}
+	}
+
+	/// <summary>
+	/// Maps a row of the flattened platform list to the item's position in the items source. When grouped,
+	/// the list holds each group's header (if there is a header template), its items and its footer (if there is a
+	/// footer template); without an item template only the items are shown.
+	/// </summary>
+	static bool TryGetItemPosition(SelectableItemsView itemsView, int flatIndex, out int groupIndex, out int indexInGroup)
+	{
+		groupIndex = -1;
+		indexInGroup = flatIndex;
+
+		if (itemsView is not GroupableItemsView { IsGrouped: true } groupable)
+		{
+			return true;
+		}
+
+		indexInGroup = -1;
+
+		if (groupable.ItemsSource is not System.Collections.IEnumerable groups)
+		{
+			return false;
+		}
+
+		var templated = groupable.ItemTemplate is not null;
+		var hasHeader = templated && groupable.GroupHeaderTemplate is not null;
+		var hasFooter = templated && groupable.GroupFooterTemplate is not null;
+		var position = 0;
+		var currentGroup = 0;
+
+		foreach (var group in groups)
+		{
+			if (group is string || group is not System.Collections.IEnumerable groupItems)
+			{
+				continue;
+			}
+
+			if (hasHeader)
+			{
+				position++;
+			}
+
+			var count = 0;
+			foreach (var _ in groupItems)
+			{
+				count++;
+			}
+
+			if (flatIndex >= position && flatIndex < position + count)
+			{
+				groupIndex = currentGroup;
+				indexInGroup = flatIndex - position;
+				return true;
+			}
+
+			position += count + (hasFooter ? 1 : 0);
+			currentGroup++;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -176,6 +376,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 					});
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
+			PlatformView.ItemInvoked += PlatformItemInvoked;
+			PlatformView.Tapped += PlatformTapped;
+			PlatformView.DoubleTapped += PlatformDoubleTapped;
+			PlatformView.AddHandler(UI.Xaml.UIElement.KeyDownEvent, _keyDownHandler ??= new UI.Xaml.Input.KeyEventHandler(PlatformKeyDown), true);
 			PlatformView.Loaded += OnPlatformViewLoaded;
 
 			if (PlatformView is MauiItemsView mauiItemsViewConnect)
@@ -231,6 +435,13 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		}
 
 		platformView.SelectionChanged -= PlatformSelectionChanged;
+		platformView.ItemInvoked -= PlatformItemInvoked;
+		platformView.Tapped -= PlatformTapped;
+		platformView.DoubleTapped -= PlatformDoubleTapped;
+		if (_keyDownHandler is not null)
+		{
+			platformView.RemoveHandler(UI.Xaml.UIElement.KeyDownEvent, _keyDownHandler);
+		}
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
 		if (platformView is MauiItemsView mauiItemsView)
