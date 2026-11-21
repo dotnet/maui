@@ -420,6 +420,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         protected virtual void OnTabReselected(ShellSection shellSection)
         {
+            VirtualView?.SendTabReselectedAsync(shellSection).FireAndForget(this);
         }
 
         /// <summary>
