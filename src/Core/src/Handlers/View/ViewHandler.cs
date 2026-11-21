@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
 				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
-#if WINDOWS || MACCATALYST
+#if WINDOWS || MACCATALYST || IOS || ANDROID
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
 
