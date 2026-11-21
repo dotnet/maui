@@ -1,0 +1,80 @@
+# Template for the DevSkim banned-API analysis stage. See eng/automation/devskim/README.md.
+parameters:
+- name: pool
+  type: object
+- name: dependsOn
+  type: object
+  default: []
+- name: condition
+  type: string
+  default: succeeded()
+- name: is1ESPipeline
+  type: boolean
+  default: false
+
+stages:
+- stage: DevSkim
+  displayName: DevSkim banned-API analysis
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  jobs:
+  - job: devskim
+    displayName: Scan for banned APIs
+    pool: ${{ parameters.pool }}
+    timeoutInMinutes: 30
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      clean: true
+      fetchTags: false
+
+    # The reports are published even when a later step fails, so the directory has to exist first.
+    - pwsh: $null = New-Item -ItemType Directory -Force -Path '$(Build.ArtifactStagingDirectory)/devskim'
+      displayName: Create the DevSkim output directory
+
+    - task: UseDotNet@2
+      displayName: Install .NET 10 for DevSkim
+      retryCountOnTaskFailure: 3
+      inputs:
+        packageType: sdk
+        version: 10.0.x
+
+    # Install DevSkim from the repository's NuGet.config, because the official agents can't reach nuget.org.
+    # Install it outside the checkout, so that dotnet ignores the repository's global.json.
+    # When changing the version, follow the steps in eng/automation/devskim/README.md.
+    - pwsh: |
+        dotnet tool install Microsoft.CST.DevSkim.CLI `
+          --version 1.0.100 `
+          --tool-path '$(Agent.TempDirectory)/devskim-tool' `
+          --configfile '$(Build.SourcesDirectory)/NuGet.config' *>&1 |
+          Tee-Object -FilePath '$(Build.ArtifactStagingDirectory)/devskim/install.log'
+        if ($LASTEXITCODE -ne 0) {
+          throw "dotnet tool install failed with exit code $LASTEXITCODE."
+        }
+      displayName: Install DevSkim
+      retryCountOnTaskFailure: 3
+      workingDirectory: $(Agent.TempDirectory)
+      env:
+        DOTNET_ROOT: $(Agent.ToolsDirectory)/dotnet
+
+    - pwsh: >-
+        ./eng/automation/devskim/Invoke-DevSkimScan.ps1
+        -DevSkim '$(Agent.TempDirectory)/devskim-tool/devskim'
+        -OutputDirectory '$(Build.ArtifactStagingDirectory)/devskim'
+      displayName: Run DevSkim and fail on banned APIs
+      workingDirectory: $(Build.SourcesDirectory)
+      env:
+        DOTNET_ROOT: $(Agent.ToolsDirectory)/dotnet
+
+    - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        args:
+          targetPath: $(Build.ArtifactStagingDirectory)/devskim
+          artifactName: DevSkim-$(System.JobAttempt)
+          displayName: Publish DevSkim reports
+          condition: always()
+          # Analysis output, not a release input.
+          isProduction: false
