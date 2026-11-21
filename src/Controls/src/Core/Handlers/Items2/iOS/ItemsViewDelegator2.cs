@@ -37,6 +37,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
+			if (scrollView is UICollectionView scrolledCollectionView && ViewController is { ScrollAnchor: { } scrollAnchor } controller)
+			{
+				scrollAnchor.Scrolled(scrolledCollectionView, controller.ItemsView as StructuredItemsView,
+					controller.GetScrollDirection() == UICollectionViewScrollDirection.Vertical);
+			}
+
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			var contentInset = scrollView.ContentInset;
@@ -85,15 +91,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-#if MACCATALYST
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
+#if MACCATALYST
 			if (scrollView is MauiCollectionView mauiCV)
 			{
 				mauiCV.ClearPendingScrollRestore();
 			}
-		}
 #endif
+
+			// The user takes over: an animated scroll a drag stops never reports ending, so nothing waits for it to.
+			ViewController?.ScrollingToEdge(null);
+		}
+
+		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
+		{
+			if (!willDecelerate && scrollView is UICollectionView collectionView)
+			{
+				ViewController?.ScrollAnchor?.UserScrollEnded(collectionView);
+			}
+		}
+
+		public override void DecelerationEnded(UIScrollView scrollView)
+		{
+			if (scrollView is UICollectionView collectionView)
+			{
+				ViewController?.ScrollAnchor?.UserScrollEnded(collectionView);
+			}
+		}
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
