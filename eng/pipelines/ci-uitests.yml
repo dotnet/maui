@@ -1,558 +1,217 @@
-trigger:
-  batch: true
-  branches:
-    include:
-    - main
-    - net11
-    - release/*
-    - net*.0
-    - inflight/*
-    - candidate/*
-    - darc-*
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
-
-pr:
-  branches:
-    include:
-    - automation/release/*
-    - main
-    - net11
-    - release/*
-    - net*.0
-    - inflight/*
-    - candidate/*
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+# Temporary probe for runtime UI-test selection mechanics. Not for merge.
+trigger: none
+pr: none
 
 variables:
-  - template: /eng/pipelines/common/variables.yml@self
-  - name: IosUITestImageOverride
-    value: ACES_VM_SharedPool_Tahoe
-
-parameters:
-
-  - name: selectedRun
-    type: boolean
-    default: false
-
-  # /review run-tests selection: on which platforms each UI test category runs. Every value comes
-  # from a fixed list, because Azure DevOps lets an identity with only 'Queue builds' set such
-  # parameters, while free-text or object parameters need 'Edit queue build configuration'.
-  # Platforms are joined with '+'; uitestPlatform* say which platforms build and run at all.
-  # One uitest_<Category> per category in eng/pipelines/common/ui-tests.yml (RunTests.Tests.ps1
-  # checks they stay in sync).
-  - name: uitestPlatformAndroid
-    type: boolean
-    default: false
-  - name: uitestPlatformIos
-    type: boolean
-    default: false
-  - name: uitestPlatformCatalyst
-    type: boolean
-    default: false
-  - name: uitestPlatformWindows
-    type: boolean
-    default: false
-  - name: uitest_Accessibility
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ActionSheet
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ActivityIndicator
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Animation
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_AppLinks
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Border
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_BoxView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Brush
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Button
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CarouselView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView1
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView2
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView3
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView4
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView5
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView6
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CollectionView7
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Cells
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CheckBox
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ContextActions
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_CustomRenderers
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_DatePicker
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Dispatcher
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_DisplayAlert
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_DisplayPrompt
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_DragAndDrop
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Entry
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Editor
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Effects
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Essentials
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_FlyoutPage
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Focus
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Fonts
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Frame
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Gestures
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_GraphicsView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Image
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ImageButton
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_IndicatorView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_InputTransparent
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_IsEnabled
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_IsVisible
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Label
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Layout
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Lifecycle
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ManualReview
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Maps
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Navigation
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Page
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Performance
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Picker
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ProgressBar
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_RadioButton
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_RefreshView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_SafeAreaEdges
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Shadow
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ScrollView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_SearchBar
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Shape
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Slider
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_SoftInput
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Stepper
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Switch
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_SwipeView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Shell1
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Shell2
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_TabbedPage
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_TableView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_TimePicker
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_TitleView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ToolbarItem
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Triggers
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_ViewBaseTests
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_VisualStateManager
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Window
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_WebView
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-  - name: uitest_Material3
-    type: string
-    default: none
-    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
-
-  - name: BuildEverything
-    type: boolean
-    default: false
-
-  - name: BuildNativeAOT
-    displayName: 'Build NativeAOT artifacts'
-    type: boolean
-    default: false
-
-  - name: RunNativeAOT
-    displayName: 'Run NativeAOT UI Tests'
-    type: boolean
-    default: false
-
-  - name: iosXcodeVersion
-    type: string
-    default: '26.5'
-
-  # Compile Apple apps on GoldenGate with Xcode 27; execute prebuilt apps on
-  # Tahoe until GoldenGate supports Simulator UI and Mac2.
-  # Internal pools (dnceng)
-  - name: androidPoolInternal
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
-  
-  - name: androidPoolLinuxInternal
-    type: object
-    default:
-      name: MAUI-DNCENG
-      demands:
-        - ImageOverride -equals 1ESPT-Ubuntu22.04
-
-  - name: iosPoolInternal
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(IosUITestImageOverride)
-  
-  - name: windowsBuildPoolInternal
-    type: object
-    default:
-      name: NetCore1ESPool-Internal
-      demands:
-        - ImageOverride -equals 1es-windows-2022
-    
-  - name: windowsPoolInternal
-    type: object
-    default:
-      name: NetCore1ESPool-Internal
-      demands:
-        - ImageOverride -equals 1es-windows-2022
-
-  - name: macosPoolInternal
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
-
-  # Public pools (dnceng-public)
-  - name: androidPoolPublic
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
-  
-  - name: androidPoolLinuxPublic
-    type: object
-    default:
-      name: MAUI-DNCENG
-      demands:
-        - ImageOverride -equals 1ESPT-Ubuntu22.04
-
-  - name: iosPoolPublic
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(IosUITestImageOverride)
-  
-  - name: windowsBuildPoolPublic
-    type: object
-    default:
-      name: NetCore-Public
-      demands:
-        - ImageOverride -equals 1es-windows-2022-open
-    
-  - name: windowsPoolPublic
-    type: object
-    default:
-      name: NetCore-Public
-      demands:
-        - ImageOverride -equals 1es-windows-2022-open
-
-  - name: macosPoolPublic
-    type: object
-    default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+  probeSha: 85ec75d5adf6d971020107b5d0549dd2a789e486
 
 stages:
+- stage: sel
+  dependsOn: []
+  jobs:
+  - job: select
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    timeoutInMinutes: 15
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      fetchTags: false
+      sparseCheckoutDirectories: eng/scripts
+    - pwsh: |
+        Write-Host "Reason=$env:BUILD_REASON Branch=$env:BUILD_SOURCEBRANCH Version=$env:BUILD_SOURCEVERSION PRSource=$env:SYSTEM_PULLREQUEST_SOURCECOMMITID PRNumber=$env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER Agent=$env:AGENT_VERSION"
+        git cat-file -p HEAD | Select-Object -First 4
+        Write-Host "Top-level entries:"; Get-ChildItem -Force -Name
+        Write-Host "eng/scripts present: $(Test-Path eng/scripts) src present: $(Test-Path src)"
+        $url = "https://api.github.com/repos/dotnet/maui/commits/$(probeSha)/check-runs?check_name=$([uri]::EscapeDataString('maui-pr-uitests (test selection)'))&filter=latest"
+        for ($i = 0; $i -lt 2; $i++) {
+          $r = Invoke-WebRequest -Uri $url -SkipHttpErrorCheck -Headers @{ Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+          Write-Host "GitHub status $($r.StatusCode) limit $($r.Headers['X-RateLimit-Limit']) remaining $($r.Headers['X-RateLimit-Remaining']) reset $($r.Headers['X-RateLimit-Reset']) total_count $((($r.Content | ConvertFrom-Json).total_count))"
+        }
+        Write-Host '##vso[task.setvariable variable=applies;isOutput=true]true'
+        Write-Host '##vso[task.setvariable variable=lane;isOutput=true]{"Button":{"CATEGORYGROUP":"Button"},"Label":{"CATEGORYGROUP":"Label"}}'
+        Write-Host '##vso[task.setvariable variable=buildA;isOutput=true]false'
+      name: selection
+      displayName: Probe selection
 
-  - template: common/ui-tests.yml
-    parameters:
-      # A selection (/review run-tests) only narrows pull-request builds. Branch, scheduled and
-      # manual builds of main, release/*, candidate/* and the other CI branches always run the
-      # full suite, whatever parameters they were queued with.
-      ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
-        selectedRun: ${{ parameters.selectedRun }}
-        ${{ if eq(parameters.selectedRun, true) }}:
-          # Platforms with at least one selected category, and every selection as <platform>:<Category>.
-          selectedPlatforms:
-            - ${{ if eq(parameters.uitestPlatformAndroid, true) }}:
-              - android
-            - ${{ if eq(parameters.uitestPlatformIos, true) }}:
-              - ios
-            - ${{ if eq(parameters.uitestPlatformCatalyst, true) }}:
-              - catalyst
-            - ${{ if eq(parameters.uitestPlatformWindows, true) }}:
-              - windows
-          selectedCategories:
-            # Never empty: an empty list means every category. 'none:none' matches no stage or job.
-            - none:none
-            - ${{ each selection in parameters }}:
-              - ${{ if and(startsWith(selection.key, 'uitest_'), ne(selection.value, 'none')) }}:
-                - ${{ each platform in split(selection.value, '+') }}:
-                  - ${{ format('{0}:{1}', platform, replace(selection.key, 'uitest_', '')) }}
-      iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
-      # Select pools based on pipeline - internal vs public
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        androidPool: ${{ parameters.androidPoolInternal }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
-        iosPool: ${{ parameters.iosPoolInternal }}
-        windowsPool: ${{ parameters.windowsPoolInternal }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
-        macosPool: ${{ parameters.macosPoolInternal }}
-      ${{ else }}:
-        androidPool: ${{ parameters.androidPoolPublic }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
-        iosPool: ${{ parameters.iosPoolPublic }}
-        windowsPool: ${{ parameters.windowsPoolPublic }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
-        macosPool: ${{ parameters.macosPoolPublic }}
-      # BuildNativeAOT is false by default, but true in devdiv environment
-      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
-      RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '18.5', 'latest' ]
-      ${{ else }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
-      projects:
-        - name: controls
-          desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
-          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+- stage: t_cross
+  dependsOn: sel
+  condition: and(not(canceled()), eq(dependencies.sel.outputs['select.selection.applies'], 'true'))
+  jobs:
+  - job: selected
+    condition: eq(stageDependencies.sel.select.outputs['selection.applies'], 'true')
+    strategy:
+      matrix: $[ stageDependencies.sel.select.outputs['selection.lane'] ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "leg CATEGORYGROUP=[$env:CATEGORYGROUP]"
+  - job: static
+    condition: ne(stageDependencies.sel.select.outputs['selection.applies'], 'true')
+    strategy:
+      matrix:
+        'Border,BoxView':
+          CATEGORYGROUP: Border,BoxView
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "static CATEGORYGROUP=[$env:CATEGORYGROUP]"
+
+- stage: t_missing_false
+  dependsOn: sel
+  jobs:
+  - job: missing
+    condition: eq(stageDependencies.sel.select.outputs['selection.applies'], 'false')
+    strategy:
+      matrix: $[ stageDependencies.sel.select.outputs['selection.missing'] ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "missing leg [$env:CATEGORYGROUP]"
+  - job: sibling
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host sibling
+
+- stage: t_coalesce
+  dependsOn: sel
+  jobs:
+  - job: placeholder
+    strategy:
+      matrix: $[ coalesce(stageDependencies.sel.select.outputs['selection.missing'], '{"none":{"CATEGORYGROUP":"none"}}') ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "placeholder leg [$env:CATEGORYGROUP]"
+
+- stage: t_gen
+  dependsOn: sel
+  jobs:
+  - job: gen
+    variables:
+      laneJson: $[ stageDependencies.sel.select.outputs['selection.lane'] ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "##vso[task.setvariable variable=lane;isOutput=true]$env:LANEJSON"
+      name: emit
+  - job: use
+    dependsOn: gen
+    strategy:
+      matrix: $[ dependencies.gen.outputs['emit.lane'] ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "gen leg [$env:CATEGORYGROUP]"
+
+- stage: build_skipped
+  dependsOn: sel
+  condition: and(not(canceled()), or(ne(dependencies.sel.outputs['select.selection.applies'], 'true'), eq(dependencies.sel.outputs['select.selection.buildA'], 'true')))
+  jobs:
+  - job: b
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "should not run"
+
+- stage: test_after_skipped
+  dependsOn: [build_skipped, sel]
+  condition: and(not(canceled()), succeeded('build_skipped'), or(ne(dependencies.sel.outputs['select.selection.applies'], 'true'), eq(dependencies.sel.outputs['select.selection.buildA'], 'true')))
+  jobs:
+  - job: t
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "should not run"
+
+- stage: sel_fail
+  dependsOn: []
+  jobs:
+  - job: select
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: exit 1
+      name: selection
+
+- stage: full_on_fail
+  dependsOn: sel_fail
+  condition: and(not(canceled()), ne(dependencies.sel_fail.outputs['select.selection.applies'], 'true'))
+  jobs:
+  - job: static
+    condition: ne(stageDependencies.sel_fail.select.outputs['selection.applies'], 'true')
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "full run after failed selection"
+  - job: selected
+    condition: eq(stageDependencies.sel_fail.select.outputs['selection.applies'], 'true')
+    strategy:
+      matrix: $[ coalesce(stageDependencies.sel_fail.select.outputs['selection.lane'], '{"none":{"CATEGORYGROUP":"none"}}') ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "should not run"
+
+- stage: full_on_fail_nocoalesce
+  dependsOn: sel_fail
+  condition: and(not(canceled()), ne(dependencies.sel_fail.outputs['select.selection.applies'], 'true'))
+  jobs:
+  - job: static
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "full run"
+  - job: selected
+    condition: eq(stageDependencies.sel_fail.select.outputs['selection.applies'], 'true')
+    strategy:
+      matrix: $[ stageDependencies.sel_fail.select.outputs['selection.lane'] ]
+    pool:
+      name: MAUI-DNCENG
+      demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    steps:
+    - checkout: none
+    - pwsh: Write-Host "should not run"
