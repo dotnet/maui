@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Handlers
 
 		public new TPlatformView PlatformView
 		{
-			get => (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			get
+			{
+				// base.PlatformView (ElementHandler.PlatformView) is the single canonical flush
+				// barrier; it already flushes pending property updates before returning. Do not
+				// duplicate that call here.
+				return (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			}
 			private set => base.PlatformView = value;
 		}
 
