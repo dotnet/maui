@@ -10,14 +10,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
 	{
+		bool _selectionClearedWhileOpen;
+
 		protected override ComboBox CreatePlatformView()
 		{
-			var platformPicker = new ComboBox();
+			var platformPicker = new MauiPicker();
 			return platformPicker;
 		}
 
 		protected override void ConnectHandler(ComboBox platformView)
 		{
+			base.ConnectHandler(platformView);
+			if (platformView is MauiPicker picker)
+				picker.ClearSelectionRequested = OnClearSelectionRequested;
+
 			platformView.SelectionChanged += OnControlSelectionChanged;
 			platformView.DropDownOpened += OnMauiComboBoxDropDownOpened;
 			platformView.DropDownClosed += OnMauiComboBoxDropDownClosed;
@@ -25,9 +31,34 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ComboBox platformView)
 		{
+			if (platformView is MauiPicker picker)
+				picker.DisconnectClearButtons();
+			_selectionClearedWhileOpen = false;
 			platformView.SelectionChanged -= OnControlSelectionChanged;
 			platformView.DropDownOpened -= OnMauiComboBoxDropDownOpened;
 			platformView.DropDownClosed -= OnMauiComboBoxDropDownClosed;
+			base.DisconnectHandler(platformView);
+		}
+
+		partial void UpdateClearButton()
+		{
+			if (VirtualView is null || PlatformView is null)
+				return;
+
+			if (PlatformView is MauiPicker picker)
+				picker.UpdateClearButtons(VirtualView);
+			else if (VirtualView is IPickerClearButton { IsClearButtonVisible: true })
+				throw new NotSupportedException("The Windows clear-selection button requires the default Picker platform view.");
+		}
+
+		void OnClearSelectionRequested()
+		{
+			if (VirtualView is null || PlatformView is null || !VirtualView.IsEnabled ||
+				!VirtualView.ShouldShowClearButton())
+				return;
+
+			_selectionClearedWhileOpen = PlatformView.IsDropDownOpen;
+			VirtualView.ClearSelection();
 		}
 
 		// Updating ItemSource Resets the SelectedIndex.
@@ -80,7 +111,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
+			if (handler is PickerHandler pickerHandler && picker.SelectedIndex >= 0)
+				pickerHandler._selectionClearedWhileOpen = false;
 			handler.PlatformView?.UpdateSelectedIndex(picker);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
@@ -120,6 +154,15 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView == null)
 				return;
 
+			// WinUI restores the value saved on opening when Escape or light dismiss
+			// cancels the popup. An explicit clear replaces that cancellation baseline.
+			if (_selectionClearedWhileOpen && !PlatformView.IsDropDownOpen &&
+				VirtualView?.SelectedIndex == -1 && PlatformView.SelectedIndex >= 0)
+			{
+				UpdateValue(nameof(IPicker.SelectedIndex));
+				return;
+			}
+
 			if (VirtualView != null && !UpdatingItemSource)
 				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
 
@@ -130,7 +173,8 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.ApplyCharacterSpacingToSelectedItem(VirtualView.CharacterSpacing.ToEm());
 			}
 
-			PlatformView.MinWidth = 0;
+			if (!_selectionClearedWhileOpen)
+				PlatformView.MinWidth = 0;
 		}
 
 		void OnMauiComboBoxDropDownOpened(object? sender, object e)
@@ -168,6 +212,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnMauiComboBoxDropDownClosed(object? sender, object e)
 		{
+			_selectionClearedWhileOpen = false;
 			if (VirtualView is null)
 				return;
 

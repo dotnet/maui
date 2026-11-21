@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.Controls.Picker.IsClearButtonVisible.get -> bool
+Microsoft.Maui.Controls.Picker.IsClearButtonVisible.set -> void
+~static readonly Microsoft.Maui.Controls.Picker.IsClearButtonVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
