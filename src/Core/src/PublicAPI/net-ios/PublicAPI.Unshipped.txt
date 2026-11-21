@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Handlers.ViewHandler.MapShowContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view, object? args) -> void

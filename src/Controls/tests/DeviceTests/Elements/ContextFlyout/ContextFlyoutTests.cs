@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.MenuFlyout)]
 	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(Action<IMauiHandlersCollection> configureHandlers = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
+					configureHandlers?.Invoke(handlers);
 				});
 			});
 		}
