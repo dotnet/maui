@@ -13,6 +13,18 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 1. HostApp page in `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`
 2. NUnit test in `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
 
+## CI Coverage on .NET 11
+
+Regular CI retains CoreCLR Android/iOS and Windows coverage. Mono Android/iOS
+device-test build and run stages, MacCatalyst device/UI test stages, and the
+iOS 18.5 UI-test jobs are restricted to `release/*` and `inflight/candidate`.
+Pull requests use their target branch for this decision; other builds use their
+source branch.
+
+`BuildEverything` cannot enable the restricted lanes on other branches. On
+eligible branches, the iOS version matrix keeps its existing behavior: iOS 18.5
+runs for non-PR builds, or when `BuildEverything` is enabled.
+
 ## Prerequisites
 
 ### All Platforms
