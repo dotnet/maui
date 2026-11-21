@@ -635,8 +635,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var item in rightItems)
 			{
 				item.TintColor = platformColor;
+
+				// A bar button item with a null tint draws in the label color, but a UIView with a null tint
+				// inherits the navigation bar's tint. Give custom views (such as the secondary items' overflow
+				// button) the label color in that case so they match the items next to them.
 				if (item.CustomView is UIView customView)
-					customView.TintColor = platformColor;
+					customView.TintColor = platformColor ?? UIColor.Label;
 			}
 		}
 
