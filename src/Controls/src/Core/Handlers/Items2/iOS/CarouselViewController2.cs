@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
 		bool _isRotating = false;
+		bool _isResizing = false;
+		CGSize _lastBoundsSize = CGSize.Empty;
+		int _positionBeforeBoundsChange = -1;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -82,44 +85,109 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void DeviceOrientationChanged(NSNotification notification)
 		{
-			if (InitialPositionSet)
+			if (InitialPositionSet && !_isUpdating)
 			{
+				CapturePositionBeforeBoundsChange();
 				_isRotating = true;
+			}
+		}
+
+		void CapturePositionBeforeBoundsChange()
+		{
+			if (_positionBeforeBoundsChange < 0)
+			{
+				_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
 			}
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
+			UpdateResizeState();
 			base.ViewWillLayoutSubviews();
+
 			UpdateVisualStates();
 		}
 
+		internal void UpdateResizeState()
+		{
+			var boundsSize = CollectionView.Bounds.Size;
+			// Bounds can change without an orientation notification, so detect resizing here as well.
+			if (InitialPositionSet && !_isUpdating && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
+			{
+				CapturePositionBeforeBoundsChange();
+				_isResizing = true;
+			}
+
+			_lastBoundsSize = boundsSize;
+		}
 
 		public override async void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
 			await UpdateInitialPosition();
 
-			if (_isRotating)
+			if (_isRotating || _isResizing)
 			{
 				BoundsSizeChanged();
 				_isRotating = false;
+				_isResizing = false;
 			}
 		}
 
 		void BoundsSizeChanged()
 		{
-			// Re-center the current item after bounds change to ensure proper positioning
-			// This is especially important during device rotation to maintain the correct scroll position
-			if (ItemsView is CarouselView carousel && carousel.Position >= 0)
+			if (IsScrollInteractionActive())
 			{
-				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
+				CancelBoundsChangeRestoration();
+				return;
 			}
+
+			if (ItemsView is not CarouselView carousel || ItemsSource is null || ItemsSource.ItemCount == 0)
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
+			var position = _positionBeforeBoundsChange >= 0
+				? _positionBeforeBoundsChange
+				: carousel.Position;
+			if (position < 0 || position >= ItemsSource.ItemCount)
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
+			var indexPath = GetScrollToIndexPath(position);
+			if (!LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+
+#if MACCATALYST
+			// Don't let the native observer treat this intentional offset change as a reset.
+			var mauiCollectionView = CollectionView as Items.MauiCollectionView;
+			mauiCollectionView?.ClearPendingScrollRestore();
+#endif
+
+			CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+
+#if MACCATALYST
+			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
+#endif
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			DragStartPosition = ItemsView?.Position ?? -1;
+			//	_isDragging = true;
+			_isRotating = false;
+			_isResizing = false;
+			_positionBeforeBoundsChange = -1;
 			ItemsView?.SetIsDragging(true);
 		}
 
@@ -133,7 +201,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_isUpdating = true;
-			// Pending scroll target belongs to the old source; clear it.
+			// Pending scroll and restoration targets belong to the old source.
+			CancelBoundsChangeRestoration();
 			_gotoPosition = -1;
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
@@ -239,6 +308,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
+			_isResizing = false;
+			_lastBoundsSize = CGSize.Empty;
+			_positionBeforeBoundsChange = -1;
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
@@ -473,9 +545,97 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return _isUpdating;
 		}
 
-		internal bool IsRotating()
+		internal bool IsRotatingOrResizing()
 		{
-			return _isRotating;
+			if (!_isRotating && !_isResizing)
+			{
+				return false;
+			}
+
+			if (IsScrollInteractionActive())
+			{
+				CancelBoundsChangeRestoration();
+				return false;
+			}
+
+			return _isRotating || _isResizing;
+		}
+
+		internal int PositionBeforeBoundsChange => _positionBeforeBoundsChange;
+
+		internal bool ShouldIgnorePositionUpdateAfterBoundsChange(int position, bool isRestoredItemVisible)
+		{
+			if (_positionBeforeBoundsChange < 0)
+			{
+				return false;
+			}
+
+			if (ItemsSource is null || _positionBeforeBoundsChange >= ItemsSource.ItemCount || IsScrollInteractionActive())
+			{
+				CancelBoundsChangeRestoration();
+				return false;
+			}
+
+			if (position == _positionBeforeBoundsChange && isRestoredItemVisible)
+			{
+				_positionBeforeBoundsChange = -1;
+				// Let the confirming callback synchronize CurrentItem and complete any pending scroll.
+				return false;
+			}
+
+			return true;
+		}
+
+		internal bool IsScrollInteractionActive()
+		{
+			if (IsScrollViewInteractionActive(CollectionView))
+			{
+				return true;
+			}
+
+			return IsHorizontal && HasActiveEmbeddedScrollView(CollectionView);
+		}
+
+		static bool HasActiveEmbeddedScrollView(UIView view)
+		{
+			var subviews = view.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				var subview = subviews[i];
+				// Item content can contain unrelated scroll views; only inspect the paging container.
+				if (subview is UICollectionReusableView || subview is UICollectionView)
+				{
+					continue;
+				}
+
+				if (subview is UIScrollView scrollView
+					? IsScrollViewInteractionActive(scrollView)
+					: HasActiveEmbeddedScrollView(subview))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		static bool IsScrollViewInteractionActive(UIScrollView scrollView)
+		{
+			var panState = scrollView.PanGestureRecognizer?.State;
+			return scrollView.Tracking || scrollView.Dragging || scrollView.Decelerating ||
+				panState is UIGestureRecognizerState.Began or UIGestureRecognizerState.Changed;
+		}
+
+		void CancelBoundsChangeRestoration()
+		{
+			_isRotating = false;
+			_isResizing = false;
+			_positionBeforeBoundsChange = -1;
+		}
+
+		internal void CancelPendingBoundsChangeRestoration()
+		{
+			CancelBoundsChangeRestoration();
 		}
 
 		internal void UpdateLoop()
@@ -531,6 +691,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
+			}
+
+			if (_positionBeforeBoundsChange >= 0 && goToPosition != _positionBeforeBoundsChange)
+			{
+				_positionBeforeBoundsChange = -1;
 			}
 
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))

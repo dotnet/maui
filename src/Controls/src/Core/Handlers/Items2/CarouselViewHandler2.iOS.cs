@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			carouselViewController2.CancelPendingBoundsChangeRestoration();
+
 			if (VirtualView?.Loop == true)
 			{
 				var goToIndexPath = carouselViewController2.GetScrollToIndexPath(args.Index);
