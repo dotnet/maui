@@ -97,11 +97,22 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Public CI Apple toolchains
 
-The macOS template `Build` category uses separate toolchains without removing
-coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
-with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
-retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
-filters use single-quoted arguments in the shared PowerShell runner.
+The macOS template `Build` and `AOT` categories separate current- and
+previous-framework cases. Previous-framework iOS-only jobs select Xcode 27.0,
+matching the .NET 11 iOS compatibility SDK. Template `Build` cases can target
+multiple platforms and use the default compilation pool: the .NET 11
+MacCatalyst compatibility SDK recommends Xcode 27.1, as does the .NET 12 iOS
+SDK. The pool must provide the Xcode 27.1 SDK for .NET 12 iOS builds; Xcode 27.0
+is not sufficient. Apple SDK version validation is currently bypassed in the
+integration tests. Compound test filters use single-quoted arguments in the
+shared PowerShell runner.
+
+Internal jobs that install the pinned Xcode Universal Package select that exact
+application and verify its build version before compiling.
+
+The iOS simulator x64 NativeAOT cases target .NET 11 because the .NET 12 Apple
+workload no longer provides an x64 simulator runtime pack. They do not provide
+.NET 12 x64 simulator coverage.
 
 Internal (dnceng `internal`) macOS jobs install the Xcode Universal Package that
 dotnet/macios pins (`xcodePackageVersion` in `eng/pipelines/common/provision.yml`,
