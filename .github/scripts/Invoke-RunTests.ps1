@@ -85,7 +85,7 @@ function Select-ProposalFields {
 function Get-Proposals {
     # model id -> proposal, in a stable model order.
     $proposals = [ordered]@{}
-    if ($ProposalJson) { $proposals['gpt-6.1-sol'] = Select-ProposalFields ($ProposalJson | ConvertFrom-Json -AsHashtable) }
+    if ($ProposalJson) { $proposals['gpt-6.2-sol'] = Select-ProposalFields ($ProposalJson | ConvertFrom-Json -AsHashtable) }
     foreach ($path in @($ProposalPath | Where-Object { $_ })) {
         if (-not (Test-Path -LiteralPath $path)) { throw "Proposal file $path does not exist." }
         if ((Get-Item -LiteralPath $path).Length -gt 65536) { throw 'The proposal file is unexpectedly large.' }
@@ -98,7 +98,7 @@ function Get-Proposals {
         $output = Get-Content -LiteralPath $AgentOutputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 20
         $items = @($output.items | Where-Object { $_.type -eq 'run_selected_ui_tests' })
         # The tool is documented as call-once; use the last call if the agent corrected itself.
-        if ($items.Count) { $proposals['gpt-6.1-sol'] = Select-ProposalFields $items[-1] }
+        if ($items.Count) { $proposals['gpt-6.2-sol'] = Select-ProposalFields $items[-1] }
     }
     $ordered = [ordered]@{}
     foreach ($model in $script:RunTestsModels.Keys) { if ($proposals.Contains($model)) { $ordered[$model] = $proposals[$model] } }

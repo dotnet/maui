@@ -437,7 +437,7 @@ Describe 'Two-model selection' {
     BeforeAll {
         function Resolve-Pair($gpt, $opus) {
             $resolved = [ordered]@{}
-            if ($gpt) { $resolved['gpt-6.1-sol'] = Resolve-RunTestsSelection $gpt $inventory }
+            if ($gpt) { $resolved['gpt-6.2-sol'] = Resolve-RunTestsSelection $gpt $inventory }
             if ($opus) { $resolved['claude-opus-5.5'] = Resolve-RunTestsSelection $opus $inventory }
             Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
         }
@@ -490,25 +490,25 @@ Describe 'Two-model selection' {
     It 'shows what each model chose and who selected the tests' {
         $s = Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('android', 'ios') @('Label'))
         $body = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
-        $body | Should -Match 'AI-selected UI tests \(GPT-6.1 Sol \+ Claude Opus 5.5\)'
-        $body | Should -Match '\| Platform \| GPT-6.1 Sol \| Claude Opus 5.5 \|'
+        $body | Should -Match 'AI-selected UI tests \(GPT-6.2 Sol \+ Claude Opus 5.5\)'
+        $body | Should -Match '\| Platform \| GPT-6.2 Sol \| Claude Opus 5.5 \|'
         $body | Should -Match '\| Android \| `Button` \| `Label` \|'
         $body | Should -Match '\| iOS \| &#x2014; \| `Label` \|'
-        $body | Should -Match '\*\*GPT-6.1 Sol\*\*'
+        $body | Should -Match '\*\*GPT-6.2 Sol\*\*'
         $body | Should -Not -Match 'Full UI test suite'
     }
 
-    It 'wires GPT-6.1 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
+    It 'wires GPT-6.2 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
         $workflows = Join-Path $PSScriptRoot '../workflows'
         $gpt = Get-Content (Join-Path $workflows 'copilot-review-run-tests.md') -Raw
         $opus = Get-Content (Join-Path $workflows 'copilot-review-run-tests-opus.md') -Raw
-        $gpt | Should -Match '(?m)^model: gpt-6.1-sol$'
+        $gpt | Should -Match '(?m)^model: gpt-6.2-sol$'
         $opus | Should -Match '(?m)^model: claude-opus-5.5$'
         foreach ($workflow in $gpt, $opus) { $workflow | Should -Match '- shared/run-tests-selection.md' }
         $gpt | Should -Match 'gh workflow run copilot-review-run-tests-opus.lock.yml'
         $gpt | Should -Not -Match 'gh workflow run review-run-tests-dispatch.yml'
         $opus | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
-        $gpt | Should -Match "proposal\['model'\] = 'gpt-6.1-sol'"
+        $gpt | Should -Match "proposal\['model'\] = 'gpt-6.2-sol'"
         $opus | Should -Match "proposal\['model'\] = 'claude-opus-5.5'"
         $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
         foreach ($workflow in $gpt, $opus) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
