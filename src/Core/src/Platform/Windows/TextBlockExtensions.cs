@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateIsTextSelectable(this TextBlock platformControl, ILabel label) =>
-			platformControl.IsTextSelectionEnabled = label.IsTextSelectable;
+			platformControl.IsTextSelectionEnabled = label.IsTextSelectable && label.IsEnabled;
 
 		public static void UpdateLineHeight(this TextBlock platformControl, ILabel label)
 		{

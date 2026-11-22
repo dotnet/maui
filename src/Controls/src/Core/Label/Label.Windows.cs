@@ -20,6 +20,14 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ILabelHandler handler, Label label) =>
 			Platform.TextBlockExtensions.UpdateText(handler.PlatformView, label);
 
+		static void MapIsEnabledForSelection(ILabelHandler handler, Label label)
+		{
+			if (handler.PlatformView is TextBlock textBlock)
+			{
+				global::Microsoft.Maui.Platform.TextBlockExtensions.UpdateIsTextSelectable(textBlock, label);
+			}
+		}
+
 		public static void MapLineBreakMode(ILabelHandler handler, Label label) =>
 			handler.PlatformView?.UpdateLineBreakMode(label);
 

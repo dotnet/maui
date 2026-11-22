@@ -193,6 +193,9 @@ namespace Microsoft.Maui.Platform
 			var result = new NSMutableAttributedString(source);
 			var fullRange = new NSRange(0, source.Length);
 
+			// UILabel never opens links, so do not let the text view start doing it for HTML text.
+			result.RemoveAttribute(UIStringAttributeKey.Link, fullRange);
+
 			FillMissingAttribute(source, result, UIStringAttributeKey.Font, Font);
 			FillMissingAttribute(source, result, UIStringAttributeKey.ForegroundColor, TextColor);
 
