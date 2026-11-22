@@ -907,12 +907,12 @@ function Get-RunTestsRunnableCategories {
 
 
 # Models allowed to select tests, with the names shown in comments.
-$script:RunTestsModels = [ordered]@{ 'gpt-6.1-sol' = 'GPT-6.1 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
+$script:RunTestsModels = [ordered]@{ 'gpt-6.2-sol' = 'GPT-6.2 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
 
 function Get-RunTestsSelectedByText {
     <#
     .SYNOPSIS
-    "AI-selected UI tests (GPT-6.1 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
+    "AI-selected UI tests (GPT-6.2 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
     #>
     param([Parameter(Mandatory)]$Selection, [switch]$Short)
     $names = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ } | ForEach-Object { $_.displayName })
