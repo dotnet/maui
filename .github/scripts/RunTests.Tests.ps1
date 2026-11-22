@@ -213,6 +213,8 @@ Describe 'Pipeline support checks' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
         $contextScript | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
         $contextScript | Should -Match 'ready=false'
+        # Only when the default branch cannot run it either: servicing branches use its pipeline.
+        $contextScript | Should -Match 'Test-RunTestsDispatchAt \$pr\.base\.repo\.default_branch'
         Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
     }
 
@@ -227,6 +229,11 @@ Describe 'Pipeline support checks' {
         $invoke | Should -Match "path = 'eng/pipelines'; mode = '040000'; type = 'tree'"
         $invoke | Should -Match 'parents = @\(\$sourceSha\)'
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
+    }
+
+    It "falls back to the default branch's pipeline when the target branch cannot run a dispatch" {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match '@\(\$PullRequest\.base\.ref, \$PullRequest\.base\.repo\.default_branch\)'
     }
 }
 
