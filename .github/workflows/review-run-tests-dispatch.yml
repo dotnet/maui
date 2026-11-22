@@ -2,13 +2,14 @@
 # context and selects; copilot-review-run-tests-opus.md (Claude Opus 5.5) selects from the same
 # context and dispatches this workflow with both runs. Only the union of the two selections runs.
 #
-# The agentic workflow runs in the `copilot-pat-pool` environment for its Copilot
-# tokens. A job in an environment gets the OIDC subject
-# `repo:dotnet/maui:environment:copilot-pat-pool`, but the Azure DevOps federated
-# credential trusts only `repo:dotnet/maui:ref:refs/heads/main` (the same subject
-# review-trigger.yml uses). So the agentic workflow hands its validated inputs over
-# to this environment-free workflow, which queues maui-pr-uitests, publishes the
-# Skipped checks and posts the PR comment.
+# The agentic workflows run in the `copilot-pat-pool` environment for their Copilot tokens, so
+# they hand their validated inputs over to this environment-free workflow on the default branch.
+#
+# GitHub Actions cannot queue Azure DevOps builds: Microsoft Entra refuses the federated identity
+# (AADSTS53003, Conditional Access) and Azure Pipelines ignores `/azp run` from bots. This workflow
+# therefore pushes a dispatch commit to a run-tests/* branch; the CI trigger of maui-pr-uitests
+# builds it with only the selected tests. It also publishes the Skipped checks, a check that
+# follows the run, and the PR comment. See .github/scripts/Invoke-RunTests.ps1.
 
 name: Review run-tests dispatch
 
@@ -43,8 +44,8 @@ jobs:
     permissions:
       actions: read
       checks: write
-      contents: read
-      id-token: write
+      # Creates the run-tests/* dispatch branch (Git Data API; no checkout is pushed).
+      contents: write
       issues: write
       pull-requests: write
     steps:
@@ -133,17 +134,14 @@ jobs:
           }
           "paths=$($paths -join ';')" >> $env:GITHUB_OUTPUT
 
-      - name: Validate, queue maui-pr-uitests, publish checks and comment
+      - name: Validate, dispatch maui-pr-uitests, publish checks and comment
         env:
           GH_TOKEN: ${{ github.token }}
-          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          AZDO_TRIGGER_PAT: ${{ secrets.AZDO_TRIGGER_PAT }}
           PR_NUMBER: ${{ inputs.pr_number }}
           REQUESTER: ${{ steps.source.outputs.requester }}
           PROPOSAL_PATHS: ${{ steps.proposals.outputs.paths }}
           SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
-          # Forks have no Azure DevOps identity: publish the selection only.
+          # Forks of the repository have no maui-pr-uitests to dispatch to: publish the selection only.
           SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
         shell: pwsh
         run: |

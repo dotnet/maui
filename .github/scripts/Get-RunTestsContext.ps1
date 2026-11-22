@@ -33,11 +33,11 @@ function Invoke-GhJson {
 $pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
 if ($pr.state -ne 'open') { throw "PR #$PrNumber is not open." }
 
-# The build runs the target branch's pipeline. Without the selection parameters there, Azure DevOps
-# rejects the request, so say so now instead of running both models for nothing.
+# The dispatch commit carries the target branch's pipeline. Unless that pipeline builds run-tests/*
+# dispatch branches, nothing would run, so say so now instead of running both models for nothing.
 $basePipeline = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$([uri]::EscapeDataString($pr.base.ref))" 2>$null
-if ($LASTEXITCODE -eq 0 -and -not (Test-RunTestsPipelineSupportsSelection ($basePipeline -join "`n"))) {
-    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: that branch's maui-pr-uitests pipeline has no selected-run parameters. Use ``/azp run maui-pr-uitests`` for the full suite."
+if ($LASTEXITCODE -eq 0 -and -not (Test-RunTestsPipelineSupportsDispatch ($basePipeline -join "`n"))) {
+    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: that branch's maui-pr-uitests pipeline does not build run-tests/* dispatches. Use ``/azp run maui-pr-uitests`` for the full suite."
     Write-Host $message
     if ($PostUnsupportedComment) {
         $body = @{ body = "<!-- review-run-tests-unsupported -->`n$message" } | ConvertTo-Json

@@ -3,13 +3,14 @@
 # The flow is:
 #   1. Get-RunTestsContext.ps1   collects the PR diff and the UI test inventory (trusted).
 #   2. The agent proposes platforms + categories (copilot-review-run-tests.md).
-#   3. Invoke-RunTests.ps1       validates the proposal, queues maui-pr-uitests as a
-#                                pull-request build (so Azure Pipelines reports native
-#                                checks on the PR head), adds "skipped" check runs for
-#                                everything that was not selected, and posts a comment.
+#   3. Invoke-RunTests.ps1       validates the proposal, pushes a dispatch commit (the PR's
+#                                test merge plus the selection) to a run-tests/* branch, whose
+#                                CI trigger runs maui-pr-uitests with only the selected tests,
+#                                adds "skipped" check runs for everything that was not selected,
+#                                a check that follows the run, and posts a comment.
 #   4. Update-RunTestsResults.ps1 refreshes the comment when the build finishes.
 #
-# Everything here except Get-RunTestsAzdoToken is pure (no network) so it can be unit tested.
+# Everything here is pure (no network) so it can be unit tested.
 
 $script:RunTestsPlatforms = [ordered]@{
     android     = 'Android'
@@ -38,6 +39,12 @@ $script:RunTestsCommentMarker = '<!-- review-run-tests -->'
 $script:RunTestsCheckPrefix = 'maui-pr-uitests'
 $script:RunTestsSelectionCheckName = 'maui-pr-uitests (test selection)'
 $script:RunTestsSkippedCheckPrefix = 'maui-pr-uitests (skipped)'
+# Check run on the PR head that follows the dispatched maui-pr-uitests build (whose own checks
+# report on the dispatch commit, not on the PR).
+$script:RunTestsRunCheckName = 'maui-pr-uitests (selected run)'
+# Branches maui-pr-uitests builds as `/review run-tests` dispatches (its CI trigger includes run-tests/*).
+$script:RunTestsDispatchBranchPrefix = 'run-tests/'
+$script:RunTestsRequestPath = 'eng/pipelines/common/run-tests-request.yml'
 
 function Get-RunTestsPlatformIds { return @($script:RunTestsPlatforms.Keys) }
 
@@ -292,62 +299,83 @@ function Get-RunTestsTemplateParameters {
     return $parameters
 }
 
-function New-RunTestsQueueRequest {
+function Get-RunTestsDispatchBranch {
     <#
     .SYNOPSIS
-    Build API request that queues maui-pr-uitests as a pull-request build.
-
-    .DESCRIPTION
-    reason=pullRequest plus triggerInfo.pr.sourceSha makes Azure Pipelines report the
-    build and every job as check runs on the PR head commit, so they show up in the
-    PR's checks section exactly like an `/azp run` build. (The Runs API, or queuing a
-    branch build, reports against a different commit and never appears on the PR.)
+    Branch name of one `/review run-tests` dispatch: unique per request, one path segment under run-tests/.
     #>
-    param(
-        [Parameter(Mandatory)]$PullRequest,
-        [Parameter(Mandatory)]$Selection,
-        [int]$DefinitionId = 313
-    )
-    $isFork = "$($PullRequest.head.repo.full_name -cne $PullRequest.base.repo.full_name)"
-    $request = [ordered]@{
-        definition    = [ordered]@{ id = $DefinitionId }
-        reason        = 'pullRequest'
-        sourceBranch  = "refs/pull/$($PullRequest.number)/merge"
-        sourceVersion = $PullRequest.merge_commit_sha
-        triggerInfo   = [ordered]@{
-            'pr.sourceBranch' = $PullRequest.head.ref
-            'pr.sourceSha'    = $PullRequest.head.sha
-            'pr.targetBranch' = $PullRequest.base.ref
-            'pr.id'           = "$($PullRequest.id)"
-            'pr.title'        = $PullRequest.title
-            'pr.number'       = "$($PullRequest.number)"
-            'pr.isFork'       = $isFork
-            'pr.draft'        = "$([bool]$PullRequest.draft)"
-            'pr.providerId'   = 'github'
-            'pr.autoCancel'   = 'false'
-        }
-    }
-    $parameters = Get-RunTestsTemplateParameters $Selection
-    if ($parameters.Count) { $request.templateParameters = $parameters }
-    return $request
+    param([Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$PrNumber, [Parameter(Mandatory)][string]$RunId)
+    if ($RunId -cnotmatch '^[1-9][0-9]{0,19}$') { throw "Invalid run id '$RunId'." }
+    return "$($script:RunTestsDispatchBranchPrefix)pr$PrNumber-$RunId"
 }
 
-function Test-RunTestsQueuedSelection {
+function New-RunTestsRequestYaml {
     <#
     .SYNOPSIS
-    True when Azure DevOps applied the requested runtime parameters to the queued build.
+    Content of eng/pipelines/common/run-tests-request.yml for a dispatch commit.
+
+    .DESCRIPTION
+    Carries exactly what the uitestPlatform* / uitest_<Category> parameters would: the platforms
+    that run anything, and every selection as <platform>:<Category>. eng/pipelines/ci-uitests.yml
+    turns these into the selectedPlatforms / selectedCategories of eng/pipelines/common/ui-tests.yml.
+    Every value comes from the validated selection and is checked again here, because it is
+    written into pipeline YAML.
     #>
-    param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Selection)
-    $expected = Get-RunTestsTemplateParameters $Selection
-    if (-not $expected.Count) { return $true }
-    $actual = $Build.templateParameters
-    if ($null -eq $actual) { return $false }
-    foreach ($key in $expected.Keys) {
-        $value = if ($actual -is [System.Collections.IDictionary]) { $actual[$key] } else { $actual.PSObject.Properties[$key]?.Value }
-        if ($null -eq $value) { return $false }
-        if ("$value" -ine $expected[$key]) { return $false }
+    param(
+        [Parameter(Mandatory)]$Selection,
+        [Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$PrNumber,
+        [Parameter(Mandatory)][string]$HeadSha
+    )
+    if ($HeadSha -cnotmatch '^[0-9a-f]{40}$') { throw 'The head SHA must be a full commit SHA.' }
+    $mode = [string]$Selection.mode
+    if ($mode -cnotin @('selected', 'full')) { throw "A '$mode' selection is not dispatched." }
+    $platforms = @()
+    $categories = @()
+    if ($mode -eq 'selected') {
+        $parameters = Get-RunTestsTemplateParameters $Selection
+        foreach ($platform in Get-RunTestsPlatformIds) {
+            if ($parameters["uitestPlatform$($script:RunTestsPlatformParameterSuffix[$platform])"] -eq 'true') {
+                $platforms += $script:RunTestsPipelinePlatform[$platform]
+            }
+        }
+        foreach ($key in @($parameters.Keys | Where-Object { $_ -like 'uitest_*' })) {
+            foreach ($platform in ($parameters[$key] -split '\+')) { $categories += "$($platform):$($key.Substring(7))" }
+        }
+        if (-not $platforms.Count -or -not $categories.Count) { throw 'A selected run needs at least one platform and category.' }
+    } else {
+        $platforms = @(Get-RunTestsPlatformIds | ForEach-Object { $script:RunTestsPipelinePlatform[$_] })
     }
-    return $true
+    $known = @($script:RunTestsPipelinePlatform.Values)
+    foreach ($platform in $platforms) { if ($platform -cnotin $known) { throw "Unexpected platform '$platform'." } }
+    foreach ($category in $categories) {
+        if ($category -cnotmatch '^(android|ios|catalyst|windows):[A-Za-z0-9_]{1,64}$') { throw "Unexpected category '$category'." }
+    }
+    return @(
+        "# Generated by ``/review run-tests`` for pull request #$PrNumber at $HeadSha. Do not edit."
+        '# See the checked-in eng/pipelines/common/run-tests-request.yml for the format.'
+        'variables:'
+        '  - name: RunTestsMode'
+        "    value: '$mode'"
+        '  - name: RunTestsPullRequest'
+        "    value: '$PrNumber'"
+        '  - name: RunTestsHeadSha'
+        "    value: '$HeadSha'"
+        '  - name: RunTestsPlatforms'
+        "    value: '$($platforms -join ',')'"
+        '  - name: RunTestsCategories'
+        "    value: '$($categories -join ',')'"
+        ''
+    ) -join "`n"
+}
+
+function Test-RunTestsPipelineSupportsDispatch {
+    <#
+    .SYNOPSIS
+    True when a ci-uitests.yml builds run-tests/* branches and reads the dispatch request.
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Content)
+    if (-not $Content) { return $false }
+    return ($Content -match '(?m)^\s*-\s*run-tests/\*\s*$') -and $Content.Contains('/eng/pipelines/common/run-tests-request.yml')
 }
 
 function New-RunTestsCheckPlan {
@@ -423,6 +451,8 @@ function New-RunTestsComment {
         [string]$QueueError,
         [string]$Requester,
         [AllowNull()]$Results,
+        # The dispatch commit ({ sha; checkRunId }) maui-pr-uitests builds for this request.
+        [AllowNull()]$Dispatch,
         [switch]$SelectionOnly
     )
 
@@ -449,6 +479,10 @@ function New-RunTestsComment {
     $lines.Add($script:RunTestsCommentMarker)
     $lines.Add("<!-- review-run-tests-head: $sha -->")
     if ($Build) { $lines.Add("<!-- review-run-tests-build: $($Build.id) -->") }
+    if ($Dispatch) {
+        $lines.Add("<!-- review-run-tests-dispatch: $($Dispatch.sha) -->")
+        if ($Dispatch.checkRunId) { $lines.Add("<!-- review-run-tests-check: $($Dispatch.checkRunId) -->") }
+    }
     $lines.Add("<!-- review-run-tests-state: $($status.state) -->")
     $lines.Add('')
     $lines.Add('## Selected UI Tests')
@@ -647,6 +681,26 @@ function Update-RunTestsComment {
     return $updated
 }
 
+function New-RunTestsRunCheckUpdate {
+    <#
+    .SYNOPSIS
+    PATCH body for the "maui-pr-uitests (selected run)" check from the build's current state.
+    #>
+    param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
+    $title = "maui-pr-uitests #$($Build.id): $($Results.headline)"
+    $failed = @($Results.jobs | Where-Object { $_.result -eq 'failed' } | ForEach-Object { "- $($_.name)" })
+    $summary = @("[maui-pr-uitests #$($Build.id)]($($Build._links.web.href))", '') + $(if ($failed.Count) { @('Failed jobs:') + $failed } else { @() })
+    $update = [ordered]@{ output = [ordered]@{ title = (Format-RunTestsText $title 200); summary = ($summary -join "`n") } }
+    if ($Results.completed) {
+        $update.status = 'completed'
+        $update.conclusion = switch ($Results.result) { 'succeeded' { 'success' } 'canceled' { 'cancelled' } 'partiallySucceeded' { 'failure' } default { 'failure' } }
+        $update.completed_at = (Get-Date).ToUniversalTime().ToString('o')
+    } else {
+        $update.status = 'in_progress'
+    }
+    return $update
+}
+
 function Get-RunTestsStatus {
     param($Selection, $Build, [string]$QueueError, $Results)
     if ($QueueError) {
@@ -666,7 +720,7 @@ function Get-RunTestsStatus {
             default { return @{ state = 'done'; badge = 'FAILED'; color = 'cf222e'; line = "&#x274C; $link $($Results.result). See the failing checks below or the run for details." } }
         }
     }
-    return @{ state = 'running'; badge = 'RUNNING'; color = '9a6700'; line = "&#x23F3; $link is running. Its jobs appear as `maui-pr-uitests (…)` checks on this PR; this comment updates when it finishes." }
+    return @{ state = 'running'; badge = 'RUNNING'; color = '9a6700'; line = "&#x23F3; $link is running. The ``$($script:RunTestsRunCheckName)`` check on this PR follows it, and this comment updates when it finishes." }
 }
 
 function ConvertTo-RunTestsResults {
@@ -703,49 +757,6 @@ function ConvertTo-RunTestsResults {
     }
 }
 
-function Get-RunTestsAzdoToken {
-    <#
-    .SYNOPSIS
-    Exchanges the workflow's GitHub OIDC token for an Azure DevOps bearer token (no PAT).
-    Uses the same federated identity as review-trigger.yml and the CI-fix dispatcher.
-    #>
-    $tenantId = $env:AZDO_TRIGGER_TENANT_ID
-    $clientId = $env:AZDO_TRIGGER_CLIENT_ID
-    if (-not $tenantId -or -not $clientId) { throw 'AZDO_TRIGGER_TENANT_ID and AZDO_TRIGGER_CLIENT_ID must be set.' }
-    if (-not $env:ACTIONS_ID_TOKEN_REQUEST_URL -or -not $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
-        throw 'GitHub OIDC is unavailable; the job needs id-token: write.'
-    }
-    $oidc = Invoke-RestMethod -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange" `
-        -Headers @{ Authorization = "Bearer $($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN)" } -TimeoutSec 30
-    Write-Host "::add-mask::$($oidc.value)"
-    # Entra sometimes refuses the exchange for a while (e.g. AADSTS53003, Conditional Access), so
-    # retry a few times; if it still fails, report Entra's own reason instead of a bare HTTP status.
-    $reason = ''
-    for ($attempt = 1; $attempt -le 4; $attempt++) {
-        try {
-            $token = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" `
-                -ContentType 'application/x-www-form-urlencoded' -TimeoutSec 30 -Body @{
-                    grant_type = 'client_credentials'
-                    client_id = $clientId
-                    client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
-                    client_assertion = $oidc.value
-                    scope = '499b84ac-1321-427f-aa17-267ca6975798/.default'
-                }
-            Write-Host "::add-mask::$($token.access_token)"
-            return $token.access_token
-        } catch {
-            $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
-            if (-not $reason) { $reason = $_.Exception.Message }
-            Write-Warning "Microsoft Entra sign-in failed (attempt $attempt): $reason"
-            if ($attempt -lt 4) { Start-Sleep -Seconds (15 * $attempt) }
-        }
-    }
-    $record = [System.Management.Automation.ErrorRecord]::new(
-        [System.InvalidOperationException]::new($reason), 'RunTestsEntraSignInFailed',
-        [System.Management.Automation.ErrorCategory]::AuthenticationError, $null)
-    throw $record
-}
-
 # ---------------------------------------------------------------------------
 # Which categories have at least one enabled UI test on each platform.
 # Shared UI tests are compiled into every platform project; each project defines the
@@ -766,6 +777,7 @@ $script:RunTestsPlatformProjects = @{
     maccatalyst = 'TestCases.Mac.Tests'
     windows     = 'TestCases.WinUI.Tests'
 }
+
 
 function Test-RunTestsPreprocessorExpression {
     <#
@@ -936,37 +948,6 @@ function ConvertTo-RunTestsPipelineCategories {
 }
 
 $script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
-
-function Test-RunTestsPipelineSupportsSelection {
-    <#
-    .SYNOPSIS
-    True when a ci-uitests.yml accepts the selectedRun, uitestPlatform* and uitest_<Category> parameters,
-    plus every name in -Parameters (the ones a queue request will send).
-    Azure DevOps rejects a queue request whose template parameters the built commit does not declare.
-    #>
-    param([AllowNull()][AllowEmptyString()][string]$Content, [string[]]$Parameters = @())
-    if (-not $Content) { return $false }
-    foreach ($name in @('selectedRun', 'uitestPlatformAndroid', 'uitestPlatformWindows', 'uitest_Button') + @($Parameters)) {
-        $name = [regex]::Escape($name)
-        if ($Content -notmatch "(?m)^\s*-\s*name:\s*$name\s*$") { return $false }
-    }
-    return $true
-}
-
-function Get-RunTestsAzdoErrorText {
-    <#
-    .SYNOPSIS
-    Extracts Azure DevOps' own reason (validation results or message) from a failed REST call.
-    #>
-    param([AllowNull()][AllowEmptyString()][string]$Body)
-    if (-not $Body) { return '' }
-    try { $json = $Body | ConvertFrom-Json -Depth 20 } catch { return (Format-RunTestsText $Body 300) }
-    $messages = @($json.customProperties.ValidationResults | ForEach-Object { $_.message } | Where-Object { $_ } | Select-Object -Unique -First 3)
-    if (-not $messages.Count -and $json.message) { $messages = @($json.message) }
-    # Microsoft Entra token errors: keep the AADSTS code and text, drop the trace/correlation ids.
-    if (-not $messages.Count -and $json.error_description) { $messages = @((([string]$json.error_description) -split ' Trace ID:')[0]) }
-    return (Format-RunTestsText ($messages -join '; ') 300)
-}
 
 function Get-RunTestsMergeState {
     <#

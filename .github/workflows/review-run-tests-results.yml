@@ -1,6 +1,7 @@
-# Updates `/review run-tests` comments when their maui-pr-uitests build finishes.
-# Azure Pipelines reports the result as checks on the PR itself; this keeps the
-# comment's Result badge and per-job table in sync with it.
+# Updates `/review run-tests` comments and their "maui-pr-uitests (selected run)" check when the
+# maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
+# Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
+# check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
 
 name: Review run-tests results
 
@@ -32,7 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: read
+      checks: write
+      # Deletes expired run-tests/* dispatch branches.
+      contents: write
       issues: write
       pull-requests: write
     steps:

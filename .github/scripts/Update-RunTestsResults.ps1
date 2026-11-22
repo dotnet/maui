@@ -10,6 +10,10 @@ comment's Result badge, status line and results in place.
 
 With -HeadSha (a maui-pr-uitests check completed on that commit) finished comments for the
 commit are refreshed too, so a build whose failed jobs were re-run reports its final result.
+-HeadSha may be the PR head or the dispatch commit the build ran on (run-tests/* branch).
+
+The "maui-pr-uitests (selected run)" check on the PR head follows the build, and the sweep (no
+-HeadSha) deletes run-tests/* dispatch branches once they are older than -DispatchRetentionDays.
 #>
 [CmdletBinding()]
 param(
@@ -18,6 +22,8 @@ param(
     [int]$LookbackDays = 7,
     # Comments are normally posted by the workflow's bot; set this to refresh a manual trial's comments.
     [string]$CommentAuthor,
+    # Dispatch branches stay this long so failed jobs can still be re-run from the build.
+    [int]$DispatchRetentionDays = 3,
     [switch]$DryRun
 )
 
@@ -33,7 +39,8 @@ $comments = @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { 
     $_.body -match '<!-- review-run-tests-state: (running|done) -->'
 }
 if ($HeadSha) {
-    $comments = @($comments | Where-Object { $_.body.Contains("<!-- review-run-tests-head: $HeadSha -->") })
+    $comments = @($comments | Where-Object {
+            $_.body.Contains("<!-- review-run-tests-head: $HeadSha -->") -or $_.body.Contains("<!-- review-run-tests-dispatch: $HeadSha -->") })
 } else {
     # The periodic sweep only finishes builds still marked running.
     $comments = @($comments | Where-Object { $_.body -match '<!-- review-run-tests-state: running -->' })
@@ -68,4 +75,25 @@ foreach ($comment in $comments) {
     $payload = @{ body = $updated } | ConvertTo-Json
     $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
+    if ($comment.body -match '<!-- review-run-tests-check: (\d{1,20}) -->') {
+        $check = New-RunTestsRunCheckUpdate -Build $build -Results $results
+        $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($Matches[1])" --input - | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($Matches[1])." }
+    }
+}
+
+if (-not $HeadSha) {
+    # Delete expired dispatch branches. Their builds have finished; the comments keep the links.
+    $raw = & gh api --paginate --slurp "repos/$Repository/git/matching-refs/heads/$($script:RunTestsDispatchBranchPrefix)"
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not list dispatch branches.'; return }
+    $cutoff = [DateTimeOffset]::UtcNow.AddDays(-$DispatchRetentionDays)
+    foreach ($ref in @(($raw -join "`n") | ConvertFrom-Json -Depth 10 | ForEach-Object { $_ })) {
+        if ($ref.ref -cnotmatch '^refs/heads/run-tests/pr[0-9]+-[0-9]+$') { continue }
+        $commit = & gh api "repos/$Repository/git/commits/$($ref.object.sha)" | ConvertFrom-Json
+        if ($LASTEXITCODE -ne 0 -or [DateTimeOffset]$commit.committer.date -gt $cutoff) { continue }
+        Write-Host "Deleting expired dispatch branch $($ref.ref)."
+        if ($DryRun) { continue }
+        & gh api -X DELETE "repos/$Repository/$($ref.ref -replace '^refs/', 'git/refs/')" | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $($ref.ref)." }
+    }
 }
