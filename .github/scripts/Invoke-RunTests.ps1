@@ -214,19 +214,42 @@ if (-not $queueError -and $selection.mode -ne 'none') {
     } elseif ($SkipQueue) {
         Write-Host 'Azure DevOps dispatch is not available in this repository; publishing the selection only.'
     } else {
+        $signInHelp = 'Nothing was queued. Comment `/azp run maui-pr-uitests` to run the full suite now; targeted `/review run-tests` runs resume once the trigger identity can sign in to Azure DevOps again.'
         try {
-            if ($env:AZDO_TRIGGER_PAT -and -not $AzdoToken) {
+            $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
+            $body = $request | ConvertTo-Json -Depth 10 -Compress
+            $pat = ([string]$env:AZDO_TRIGGER_PAT).Trim()
+            $headers = $null
+            if ($pat -and -not $AzdoToken) {
                 # Fallback while Conditional Access blocks the federated identity: a personal access token.
-                Write-Host "::add-mask::$($env:AZDO_TRIGGER_PAT)"
-                $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:AZDO_TRIGGER_PAT)"))
+                Write-Host "::add-mask::$pat"
+                $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat"))
                 $headers = @{ Authorization = "Basic $basic" }
-            } else {
+                try {
+                    $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
+                        -ContentType 'application/json' -Body $body -TimeoutSec 60 -StatusCodeVariable patStatus
+                    # Azure DevOps answers an unusable PAT with 203 and its HTML sign-in page.
+                    if ($patStatus -eq 203 -or -not $build.id) { throw [System.UnauthorizedAccessException]::new("HTTP $patStatus") }
+                } catch {
+                    $status = [int]$_.Exception.Response?.StatusCode
+                    if ($_.Exception -isnot [System.UnauthorizedAccessException] -and $status -ne 401) { throw }
+                    Write-Warning "Azure DevOps rejected AZDO_TRIGGER_PAT ($($_.Exception.Message)); it is invalid, expired, not for dnceng-public, lacks Build (Read & execute), or is blocked by policy. Trying the federated identity."
+                    $build = $null
+                    $headers = $null
+                }
+            }
+            if (-not $build) {
                 if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
                 $headers = @{ Authorization = "Bearer $AzdoToken" }
+                $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
+                    -ContentType 'application/json' -Body $body -TimeoutSec 60 -StatusCodeVariable tokenStatus
+                if ($tokenStatus -eq 203 -or -not $build.id) {
+                    $build = $null
+                    throw [System.Management.Automation.ErrorRecord]::new(
+                        [System.InvalidOperationException]::new("Azure DevOps did not accept the token (HTTP $tokenStatus)."), 'RunTestsEntraSignInFailed',
+                        [System.Management.Automation.ErrorCategory]::AuthenticationError, $null)
+                }
             }
-            $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
-            $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
-                -ContentType 'application/json' -Body ($request | ConvertTo-Json -Depth 10 -Compress) -TimeoutSec 60
             if (-not (Test-RunTestsQueuedSelection -Build $build -Selection $selection) -or $build.sourceVersion -cne $pr.merge_commit_sha) {
                 # Never leave an unexpected full run behind a "targeted" comment.
                 Invoke-RestMethod -Method Patch -Uri "$base/$($build.id)?api-version=7.1" -Headers $headers `
@@ -239,7 +262,10 @@ if (-not $queueError -and $selection.mode -ne 'none') {
         } catch {
             if ($_.FullyQualifiedErrorId -like 'RunTestsEntraSignInFailed*') {
                 Write-Warning "Signing in to Azure DevOps failed: $($_.Exception.Message)"
-                $queueError = "Could not sign in to Azure DevOps: Microsoft Entra refused the token ($(Format-RunTestsText $_.Exception.Message 250)). Nothing was queued; comment ``/review run-tests`` again later."
+                $queueError = "Could not sign in to Azure DevOps ($(Format-RunTestsText $_.Exception.Message 250)). $signInHelp"
+            } elseif ([int]$_.Exception.Response?.StatusCode -eq 401) {
+                Write-Warning "Azure DevOps refused the credentials: $($_.Exception.Message)"
+                $queueError = "Azure DevOps refused the trigger credentials (HTTP 401). $signInHelp"
             } else {
                 $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
                 if ([int]$_.Exception.Response?.StatusCode -eq 403) {

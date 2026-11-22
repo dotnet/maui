@@ -300,6 +300,8 @@ fires after direct issue-free PR creation and follow-up pushes.
 | `403` from AzDO REST API | Missing permissions | Ensure the identity has "Queue builds" on the specific pipeline AND Basic access level. |
 | `OIDC environment variables not available` | Missing `id-token: write` permission | Add `permissions: { id-token: write }` at the **job** level (not workflow level). |
 | `Failed to get Azure AD token` | Wrong client_id/tenant_id or federated credential mismatch | Verify secrets match the MI's Client ID and Tenant ID. Check federated credential subject matches the actual OIDC claim. |
+| `AADSTS53003: Access has been blocked by Conditional Access policies` | A tenant Conditional Access policy refuses token issuance to the identity from GitHub-hosted runners (seen from 2026-11-20 for `/review`, `/review gate` and `/review run-tests`). Retrying or changing the request does not help. | A tenant admin must exempt the identity (`AZDO_TRIGGER_CLIENT_ID`) from the policy. Meanwhile `/azp run maui-pr-uitests` (Azure Pipelines app) runs the full UI suite. |
+| `AZDO_TRIGGER_PAT` gets `401`, or `203` with a sign-in page | The optional PAT fallback used by `/review run-tests` is invalid, expired, not for `dnceng-public`, lacks Build (Read & execute), or is refused by the same policy (a 401 for a well-formed PAT) | Recreate it for `dnceng-public` with only Build (Read & execute) and set it with `printf '%s' "$PAT" \| gh secret set AZDO_TRIGGER_PAT`. A rejected PAT falls back to the federated identity. |
 
 ## Lessons Learned
 
