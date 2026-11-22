@@ -1,0 +1,20 @@
+# TEMPORARY probe (do not merge): does Azure Pipelines honor `/azp run` posted by github-actions[bot]?
+name: zz azp bot probe
+on:
+  pull_request:
+    types: [opened, synchronize]
+permissions:
+  pull-requests: write
+  issues: write
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" -f body='/azp run maui-nonexistent-probe-pipeline'
+          sleep 90
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --jq '.[] | "\(.user.login): \(.body)"'
