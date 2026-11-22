@@ -5,20 +5,25 @@ Trusted half of `/review run-tests`: validates the AI selection, queues maui-pr-
 publishes "skipped" check runs and posts the PR comment.
 
 .DESCRIPTION
-Runs in an isolated safe-output job (never in the agent's sandbox). The agent's output
-is only a proposal: platforms and categories are validated against the inventory from
-the trusted checkout, the caller's permission and the PR head are re-checked, and only
-then is the Azure DevOps build queued.
+Runs in an isolated job (never in the agent's sandbox). The agent's output is only a proposal:
+platforms and categories are validated against the inventory from the trusted checkout, the
+caller's permission and the PR head are re-checked, and only then is maui-pr-uitests started.
 
-maui-pr-uitests is queued through the Build API as a pull-request build
-(reason=pullRequest + triggerInfo.pr.sourceSha), so Azure Pipelines reports the run and
-each job as native checks on the PR head commit. Anything not selected is published as a
-GitHub check run with conclusion "skipped", so the checks list shows both what ran and
-what was skipped.
+GitHub Actions has no way to queue an Azure DevOps build: Microsoft Entra refuses the federated
+identity (AADSTS53003, Conditional Access) and Azure Pipelines ignores `/azp run` from bots. So
+the run is dispatched through the pipeline's CI trigger instead: a commit pushed to a
+run-tests/* branch, made of the PR's test-merge tree with eng/pipelines and .github replaced by the
+target branch's trusted copies, plus eng/pipelines/common/run-tests-request.yml carrying the
+validated selection. maui-pr-uitests builds it with only the selected tests and without the
+MAUI variable group, like a pull-request build from a fork (see eng/pipelines/ci-uitests.yml).
 
-.PARAMETER AzdoToken
-Optional bearer token for local testing. In the workflow the token comes from GitHub OIDC
-federated with the Azure DevOps service identity (see .github/docs/trigger-azdo-pipeline-setup.md).
+That build reports its checks on the dispatch commit, so a "maui-pr-uitests (selected run)"
+check on the PR head follows it (Update-RunTestsResults.ps1 completes it), and anything not
+selected is published as a check run with conclusion "skipped".
+
+.PARAMETER PipelineSource
+For trials only: build with the pipeline and workflows of this commit instead of the target
+branch tip (for example a branch that adds dispatch support before it is merged).
 #>
 [CmdletBinding()]
 param(
@@ -35,13 +40,17 @@ param(
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$Actor = $env:GITHUB_ACTOR,
     [string]$PipelineYamlPath = "$PSScriptRoot/../../eng/pipelines/common/ui-tests.yml",
-    [string]$AzdoToken = $env:RUN_TESTS_AZDO_TOKEN,
     [int]$DefinitionId = 313,
+    # Names the dispatch branch; unique per request.
+    [string]$DispatchRunId = $(if ($env:GITHUB_RUN_ID) { $env:GITHUB_RUN_ID } else { [string][DateTimeOffset]::UtcNow.ToUnixTimeSeconds() }),
+    # How long to wait for Azure Pipelines to start the build of the dispatch branch.
+    [int]$DispatchWaitSeconds = 600,
+    [string]$PipelineSource,
     # Do not queue, create checks or comment; write the planned outputs to OutputDirectory.
     [switch]$DryRun,
     # Queue and comment but do not create check runs (the Checks API needs a GitHub App token).
     [switch]$SkipChecks,
-    # Do not queue Azure DevOps (e.g. a fork without the federated identity); still publish checks and comment.
+    # Do not dispatch maui-pr-uitests (e.g. a fork of the repository); still publish checks and comment.
     [switch]$SkipQueue
 )
 
@@ -140,25 +149,14 @@ function Get-RunTestsPipelineAt([string]$Ref) {
     return ($raw -join "`n")
 }
 
-# Parameters the queue request will send; the pipeline in the built commit must declare all of them.
-$requiredParameters = @((Get-RunTestsTemplateParameters $selection).Keys)
-$checkPipeline = $selection.mode -eq 'selected' -and -not $DryRun
-
 function Get-VerifiedPullRequest {
     <#
     .SYNOPSIS
-    Reads the PR and confirms GitHub's test-merge commit really merges the selected head and that
-    its maui-pr-uitests pipeline accepts the selection.
+    Reads the PR and confirms GitHub's test-merge commit really merges the selected head.
     After a push GitHub recomputes the merge asynchronously; until then merge_commit_sha can
     still point at a merge of the previous head, so wait for it rather than trusting it.
-    GitHub also refreshes the test merge lazily after the target branch moves (a PR comment or
-    read nudges it), so a merge of an older base whose pipeline cannot take the selection yet is
-    waited on too, for longer.
     #>
-    $deadline = [DateTime]::UtcNow.AddMinutes(10)
     $attempt = 0
-    $current = $null
-    $pipelineReady = $true
     while ($true) {
         $attempt++
         $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
@@ -167,26 +165,77 @@ function Get-VerifiedPullRequest {
             $mergeCommit = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
         }
         $state = Get-RunTestsMergeState -PullRequest $current -MergeCommit $mergeCommit -HeadSha $context.headSha -BaseRef $context.baseRef
-        if ($state -eq 'moved') { return @{ pr = $current; merge = $false; pipelineReady = $true } }
-        if ($state -eq 'ready') {
-            if (-not $checkPipeline) { return @{ pr = $current; merge = $true; pipelineReady = $true } }
-            $pipelineReady = Test-RunTestsPipelineSupportsSelection (Get-RunTestsPipelineAt $current.merge_commit_sha) -Parameters $requiredParameters
-            if ($pipelineReady) { return @{ pr = $current; merge = $true; pipelineReady = $true } }
-            Write-Host "Test-merge commit $($current.merge_commit_sha.Substring(0, 8)) merges an older $($current.base.ref) whose pipeline cannot take this selection; waiting for GitHub to refresh it (attempt $attempt)..."
-        } else {
-            Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
-            # A missing or outdated merge of the head itself normally settles within a minute or two.
-            if ($attempt -ge 12) { return @{ pr = $current; merge = $false; pipelineReady = $true } }
-        }
-        if ([DateTime]::UtcNow -ge $deadline) { break }
+        if ($state -ne 'wait') { return @{ pr = $current; merge = ($state -eq 'ready'); mergeCommit = $mergeCommit } }
+        # A missing or outdated merge of the head itself normally settles within a minute or two.
+        if ($attempt -ge 12) { return @{ pr = $current; merge = $false; mergeCommit = $null } }
+        Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
         Start-Sleep -Seconds 15
     }
-    return @{ pr = $current; merge = ($state -eq 'ready'); pipelineReady = $pipelineReady }
+}
+
+function New-RunTestsDispatch {
+    <#
+    .SYNOPSIS
+    Pushes the dispatch commit for this request and returns { sha; branch } (or { error }).
+    #>
+    param([Parameter(Mandatory)]$PullRequest, [Parameter(Mandatory)]$MergeCommit, [Parameter(Mandatory)]$Selection)
+    # The trusted half: pipeline and workflows of the target branch (or the trial's pipeline source).
+    $sourceSha = if ($PipelineSource) { $PipelineSource } else {
+        (Invoke-GhJson @("repos/$Repository/git/ref/heads/$($PullRequest.base.ref)")).object.sha
+    }
+    if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
+    if (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
+        return @{ error = "``$($PullRequest.base.ref)`` cannot run ``/review run-tests`` dispatches yet (its eng/pipelines/ci-uitests.yml does not build run-tests/* branches). Use ``/azp run maui-pr-uitests`` for the full suite." }
+    }
+    $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
+    $sourceRoot = Invoke-GhJson @("repos/$Repository/git/trees/$($source.tree.sha)")
+    $githubTree = @($sourceRoot.tree | Where-Object { $_.path -ceq '.github' -and $_.type -eq 'tree' })[0].sha
+    $engTree = @($sourceRoot.tree | Where-Object { $_.path -ceq 'eng' -and $_.type -eq 'tree' })[0].sha
+    $pipelinesTree = @((Invoke-GhJson @("repos/$Repository/git/trees/$engTree")).tree | Where-Object { $_.path -ceq 'pipelines' -and $_.type -eq 'tree' })[0].sha
+    if (-not $githubTree -or -not $pipelinesTree) { throw 'The trusted commit has no .github or eng/pipelines directory.' }
+
+    # PR code with the trusted pipeline and workflows. Taking .github from the parent also means the
+    # commit changes no workflow, which GITHUB_TOKEN may not do.
+    $overlay = @{ base_tree = $MergeCommit.tree.sha; tree = @(
+            @{ path = '.github'; mode = '040000'; type = 'tree'; sha = $githubTree },
+            @{ path = 'eng/pipelines'; mode = '040000'; type = 'tree'; sha = $pipelinesTree }) } | ConvertTo-Json -Depth 5
+    $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $overlay
+    $yaml = New-RunTestsRequestYaml -Selection $Selection -PrNumber $PrNumber -HeadSha $PullRequest.head.sha
+    $request = @{ base_tree = $tree.sha; tree = @(@{ path = $script:RunTestsRequestPath; mode = '100644'; type = 'blob'; content = $yaml }) } | ConvertTo-Json -Depth 5
+    $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $request
+
+    $message = "/review run-tests dispatch for #$PrNumber at $($PullRequest.head.sha.Substring(0, 8))`n`n" +
+        "Test-merge $($MergeCommit.sha) with eng/pipelines and .github from $sourceSha.`nRequested in $runUrl"
+    $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($sourceSha) } | ConvertTo-Json)
+    $branch = Get-RunTestsDispatchBranch -PrNumber $PrNumber -RunId $DispatchRunId
+    Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
+    Write-Host "Pushed dispatch commit $($commit.sha) to $branch."
+    return @{ sha = $commit.sha; branch = $branch }
+}
+
+function Wait-RunTestsDispatchBuild {
+    <#
+    .SYNOPSIS
+    The maui-pr-uitests build Azure Pipelines started for the dispatch commit (public API, no credentials).
+    #>
+    param([Parameter(Mandatory)][string]$Branch, [Parameter(Mandatory)][string]$Sha)
+    $deadline = [DateTime]::UtcNow.AddSeconds($DispatchWaitSeconds)
+    $uri = "https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=$DefinitionId&branchName=$([uri]::EscapeDataString("refs/heads/$Branch"))&api-version=7.1"
+    while ($true) {
+        try {
+            $found = @((Invoke-RestMethod -Uri $uri -TimeoutSec 30).value | Where-Object { $_.sourceVersion -ceq $Sha })
+            if ($found.Count) { return $found[0] }
+        } catch {
+            Write-Warning "Could not list maui-pr-uitests builds: $($_.Exception.Message)"
+        }
+        if ([DateTime]::UtcNow -ge $deadline) { return $null }
+        Write-Host "Waiting for Azure Pipelines to start maui-pr-uitests for $Branch..."
+        Start-Sleep -Seconds 15
+    }
 }
 
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
-$pipelineReady = $verified.pipelineReady
 $queueError = $null
 if ($selectionError) {
     $queueError = $selectionError
@@ -201,58 +250,38 @@ if ($selectionError) {
     $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review run-tests`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
-} elseif (-not $pipelineReady) {
-    $queueError = "GitHub's test-merge commit for this PR ($($pr.merge_commit_sha.Substring(0, 8))) still merges an older ``$($pr.base.ref)`` whose maui-pr-uitests pipeline cannot run this selection, and GitHub did not refresh it within 10 minutes. Comment ``/review run-tests`` again later, or update the branch / push to the PR to make GitHub refresh it now."
 }
 
 $build = $null
+$dispatch = $null
 if (-not $queueError -and $selection.mode -ne 'none') {
-    $request = New-RunTestsQueueRequest -PullRequest $pr -Selection $selection -DefinitionId $DefinitionId
-    $request | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'queue-request.json') -Encoding utf8
+    New-RunTestsRequestYaml -Selection $selection -PrNumber $PrNumber -HeadSha $pr.head.sha |
+        Set-Content (Join-Path $OutputDirectory 'run-tests-request.yml') -Encoding utf8
     if ($DryRun) {
-        Write-Host 'Dry run: queue request written; nothing queued.'
+        Write-Host 'Dry run: dispatch request written; nothing pushed.'
     } elseif ($SkipQueue) {
-        Write-Host 'Azure DevOps dispatch is not available in this repository; publishing the selection only.'
+        Write-Host 'maui-pr-uitests dispatch is not available in this repository; publishing the selection only.'
     } else {
         try {
-            if ($env:AZDO_TRIGGER_PAT -and -not $AzdoToken) {
-                # Fallback while Conditional Access blocks the federated identity: a personal access token.
-                Write-Host "::add-mask::$($env:AZDO_TRIGGER_PAT)"
-                $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:AZDO_TRIGGER_PAT)"))
-                $headers = @{ Authorization = "Basic $basic" }
+            $dispatch = New-RunTestsDispatch -PullRequest $pr -MergeCommit $verified.mergeCommit -Selection $selection
+            if ($dispatch.error) {
+                $queueError = $dispatch.error
+                $dispatch = $null
             } else {
-                if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
-                $headers = @{ Authorization = "Bearer $AzdoToken" }
-            }
-            $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
-            $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
-                -ContentType 'application/json' -Body ($request | ConvertTo-Json -Depth 10 -Compress) -TimeoutSec 60
-            if (-not (Test-RunTestsQueuedSelection -Build $build -Selection $selection) -or $build.sourceVersion -cne $pr.merge_commit_sha) {
-                # Never leave an unexpected full run behind a "targeted" comment.
-                Invoke-RestMethod -Method Patch -Uri "$base/$($build.id)?api-version=7.1" -Headers $headers `
-                    -ContentType 'application/json' -Body '{"status":"cancelling"}' -TimeoutSec 30 | Out-Null
-                $build = $null
-                $queueError = 'Azure DevOps did not apply the selection to the verified test-merge commit; the run was cancelled.'
-            } else {
-                Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
+                $build = Wait-RunTestsDispatchBuild -Branch $dispatch.branch -Sha $dispatch.sha
+                if ($build) {
+                    Write-Host "maui-pr-uitests build $($build.id) is building the dispatch commit: $($build._links.web.href)"
+                } else {
+                    $queueError = "Azure Pipelines did not start maui-pr-uitests for the dispatch branch ``$($dispatch.branch)`` within $([int]($DispatchWaitSeconds / 60)) minutes. Comment ``/review run-tests`` again, or use ``/azp run maui-pr-uitests`` for the full suite."
+                    & gh api -X DELETE "repos/$Repository/git/refs/heads/$($dispatch.branch)" 2>$null | Out-Null
+                    $dispatch = $null
+                }
             }
         } catch {
-            if ($_.FullyQualifiedErrorId -like 'RunTestsEntraSignInFailed*') {
-                Write-Warning "Signing in to Azure DevOps failed: $($_.Exception.Message)"
-                $queueError = "Could not sign in to Azure DevOps: Microsoft Entra refused the token ($(Format-RunTestsText $_.Exception.Message 250)). Nothing was queued; comment ``/review run-tests`` again later."
-            } else {
-                $reason = Get-RunTestsAzdoErrorText ([string]$_.ErrorDetails?.Message)
-                if ([int]$_.Exception.Response?.StatusCode -eq 403) {
-                    # Queueing with template parameters needs 'Edit queue build configuration' on the
-                    # pipeline, on top of 'Queue builds'; a full run without parameters needs only the latter.
-                    $reason = "the trigger identity may queue maui-pr-uitests but not with parameters (it needs 'Edit queue build configuration' on that pipeline). $reason".Trim()
-                }
-                Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message) $reason"
-                $queueError = if ($reason) { "Azure DevOps rejected the request: $reason" } else { 'The Azure DevOps request failed; see the workflow log.' }
-            }
+            Write-Warning "Dispatching maui-pr-uitests failed: $($_.Exception.Message)"
+            $queueError = 'Pushing the maui-pr-uitests dispatch commit failed; see the workflow log.'
             $build = $null
-        } finally {
-            $AzdoToken = $null
+            $dispatch = $null
         }
     }
 }
@@ -307,11 +336,20 @@ if (-not $DryRun -and -not $SkipChecks) {
         output = [ordered]@{ title = $title; summary = $selectionSummary; text = $selection.rationale }
     } | ConvertTo-Json -Depth 5
     Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+    if ($build -and $dispatch) {
+        # maui-pr-uitests reports its own checks on the dispatch commit; this one follows it on the PR.
+        $body = [ordered]@{
+            name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
+            started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
+            output = [ordered]@{ title = "maui-pr-uitests #$($build.id) is running"; summary = $selectionSummary }
+        } | ConvertTo-Json -Depth 5
+        $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
+    }
     Write-Host "Published $($checks.Count) skipped check runs and the selection check on $sha."
 }
 
 $comment = New-RunTestsComment -Selection $selection -Inventory $inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
-    -Build $build -QueueError $queueError -Requester $Actor -SelectionOnly:$SkipQueue
+    -Build $build -QueueError $queueError -Requester $Actor -Dispatch $dispatch -SelectionOnly:$SkipQueue
 $commentPath = Join-Path $OutputDirectory 'comment.md'
 $comment | Set-Content -LiteralPath $commentPath -Encoding utf8
 if ($DryRun) {

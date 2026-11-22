@@ -95,53 +95,75 @@ Describe 'Resolve-RunTestsSelection' {
     }
 }
 
-Describe 'New-RunTestsQueueRequest' {
-    It 'queues a pull-request build so checks report on the PR head' {
-        $s = Resolve-RunTestsSelection (New-Proposal @('maccatalyst', 'android') @('Label')) $inventory
-        $r = New-RunTestsQueueRequest -PullRequest $pr -Selection $s
-        $r.reason | Should -Be 'pullRequest'
-        $r.sourceBranch | Should -Be 'refs/pull/1234/merge'
-        $r.triggerInfo['pr.sourceSha'] | Should -Be ('a' * 40)
-        $r.triggerInfo['pr.isFork'] | Should -Be 'True'
-        $r.templateParameters.selectedRun | Should -Be 'true'
-        $r.templateParameters.uitestPlatformAndroid | Should -Be 'true'
-        $r.templateParameters.uitestPlatformCatalyst | Should -Be 'true'
-        $r.templateParameters.uitestPlatformIos | Should -Be 'false'
-        $r.templateParameters.uitest_Label | Should -Be 'android+catalyst'
-        # Nothing free-text: Azure DevOps refuses those from an identity with only 'Queue builds'.
-        @($r.templateParameters.Keys | Where-Object { $_ -notmatch '^(selectedRun|uitestPlatform(Android|Ios|Catalyst|Windows)|uitest_[A-Za-z0-9_]+)$' }) | Should -BeNullOrEmpty
-    }
-
-    It 'only sends values the pipeline declares' {
-        $ci = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
-        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios', 'maccatalyst', 'windows') @()) $inventory
-        $parameters = Get-RunTestsTemplateParameters $s
-        foreach ($key in $parameters.Keys) {
-            $block = [regex]::Match($ci, "(?ms)^  - name: $key\s*\n(.*?)(?=^  - name: |^\S)")
-            $block.Success | Should -BeTrue -Because "$key must be a declared parameter"
-            if ($key -like 'uitest_*') {
-                $block.Groups[1].Value | Should -Match ('values: \[[^\]]*(?<=[\[ ])' + [regex]::Escape($parameters[$key]) + '[,\]]')
-            } else {
-                $block.Groups[1].Value | Should -Match 'type: boolean'
-            }
+Describe 'Dispatch request' {
+    BeforeAll {
+        function Get-RequestValue([string]$Yaml, [string]$Name) {
+            [regex]::Match($Yaml, "(?m)^  - name: $Name\n    value: '([^']*)'$").Groups[1].Value
         }
-        $parameters['uitest_Button'] | Should -Be 'android+ios+catalyst+windows'
     }
 
-    It 'uses pipeline defaults for a full run' {
-        $s = Resolve-RunTestsSelection (New-Proposal @() @() $true) $inventory
-        (New-RunTestsQueueRequest -PullRequest $pr -Selection $s).Contains('templateParameters') | Should -BeFalse
+    It 'carries what the selection parameters would, as <platform>:<Category>' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('maccatalyst', 'android') @('Label')) $inventory
+        $yaml = New-RunTestsRequestYaml -Selection $s -PrNumber 1234 -HeadSha ('a' * 40)
+        Get-RequestValue $yaml 'RunTestsMode' | Should -Be 'selected'
+        Get-RequestValue $yaml 'RunTestsPullRequest' | Should -Be '1234'
+        Get-RequestValue $yaml 'RunTestsHeadSha' | Should -Be ('a' * 40)
+        Get-RequestValue $yaml 'RunTestsPlatforms' | Should -Be 'android,catalyst'
+        Get-RequestValue $yaml 'RunTestsCategories' | Should -Be 'android:Label,catalyst:Label'
+        # Same encoding ci-uitests.yml builds from the uitest_<Category> parameters.
+        (Get-RunTestsTemplateParameters $s)['uitest_Label'] | Should -Be 'android+catalyst'
     }
 
-    It 'detects when Azure DevOps dropped the selection' {
+    It 'limits a category to the platforms where it was selected' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios', 'maccatalyst', 'windows') @('Material3', 'Button')) $inventory
+        $categories = (Get-RequestValue (New-RunTestsRequestYaml -Selection $s -PrNumber 1 -HeadSha ('a' * 40)) 'RunTestsCategories') -split ','
+        $categories | Should -Contain 'android:Material3'
+        $categories | Should -Not -Contain 'ios:Material3'
+        $categories | Should -Contain 'windows:Button'
+    }
+
+    It 'runs the whole suite for a full run and refuses to dispatch nothing' {
+        $full = Resolve-RunTestsSelection (New-Proposal @() @() $true) $inventory
+        $yaml = New-RunTestsRequestYaml -Selection $full -PrNumber 1 -HeadSha ('a' * 40)
+        Get-RequestValue $yaml 'RunTestsMode' | Should -Be 'full'
+        Get-RequestValue $yaml 'RunTestsCategories' | Should -Be ''
+        $none = Resolve-RunTestsSelection (New-Proposal @() @()) $inventory
+        { New-RunTestsRequestYaml -Selection $none -PrNumber 1 -HeadSha ('a' * 40) } | Should -Throw
+    }
+
+    It 'never writes unvalidated text into pipeline YAML' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Label')) $inventory
-        $good = [pscustomobject]@{ templateParameters = [pscustomobject]@{
-                selectedRun = 'True'; uitestPlatformAndroid = 'True'; uitestPlatformIos = 'False'; uitestPlatformCatalyst = 'False'; uitestPlatformWindows = 'False'; uitest_Label = 'android' } }
-        $bad = [pscustomobject]@{ templateParameters = [pscustomobject]@{ selectedRun = 'False' } }
-        Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeTrue
-        Test-RunTestsQueuedSelection -Build $bad -Selection $s | Should -BeFalse
-        $good.templateParameters.uitest_Label = 'android+ios'
-        Test-RunTestsQueuedSelection -Build $good -Selection $s | Should -BeFalse
+        { New-RunTestsRequestYaml -Selection $s -PrNumber 1 -HeadSha "main'`n- evil" } | Should -Throw
+        $s.platformCategories['android'] = @("Label'`n  - name: x")
+        $s.expandedCategories = @("Label'`n  - name: x")
+        { New-RunTestsRequestYaml -Selection $s -PrNumber 1 -HeadSha ('a' * 40) } | Should -Throw
+    }
+
+    It 'names one dispatch branch per request under run-tests/' {
+        Get-RunTestsDispatchBranch -PrNumber 1234 -RunId '44944982443' | Should -Be 'run-tests/pr1234-44944982443'
+        { Get-RunTestsDispatchBranch -PrNumber 1234 -RunId '1/../main' } | Should -Throw
+    }
+
+    It 'matches the request the pipeline reads' {
+        $checkedIn = Get-Content -Raw (Join-Path $PSScriptRoot "../../$($script:RunTestsRequestPath)")
+        foreach ($name in 'RunTestsMode', 'RunTestsPullRequest', 'RunTestsHeadSha', 'RunTestsPlatforms', 'RunTestsCategories') {
+            $checkedIn | Should -Match "(?m)^  - name: $name$"
+        }
+        # The checked-in copy must never run anything.
+        Get-RequestValue $checkedIn 'RunTestsMode' | Should -Be 'none'
+    }
+
+    It 'follows the build with a check on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/7' } } }
+        $running = New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $false; result = ''; jobs = @(); headline = 'running' })
+        $running.status | Should -Be 'in_progress'
+        $failed = New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{
+                completed = $true; result = 'failed'; headline = 'failed'
+                jobs = @([pscustomobject]@{ name = 'Android Label'; result = 'failed' }) })
+        $failed.status | Should -Be 'completed'
+        $failed.conclusion | Should -Be 'failure'
+        $failed.output.summary | Should -Match 'Android Label'
+        (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
 }
 
@@ -179,74 +201,32 @@ Describe 'Get-RunTestsMergeState' {
 }
 
 Describe 'Pipeline support checks' {
-    It 'recognises a pipeline that declares the selection parameters' {
+    It 'recognises a pipeline that builds run-tests dispatch branches' {
         $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
-        Test-RunTestsPipelineSupportsSelection $current | Should -BeTrue
-        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: BuildConfigurations`n" | Should -BeFalse
-        Test-RunTestsPipelineSupportsSelection "parameters:`n  - name: selectedRun`n  - name: selectedPlatforms`n  - name: selectedCategories`n" | Should -BeFalse
-        Test-RunTestsPipelineSupportsSelection '' | Should -BeFalse
+        Test-RunTestsPipelineSupportsDispatch $current | Should -BeTrue
+        Test-RunTestsPipelineSupportsDispatch ($current -replace '(?m)^\s*-\s*run-tests/\*\s*$', '') | Should -BeFalse
+        Test-RunTestsPipelineSupportsDispatch "trigger:`n  branches:`n    include:`n    - main`n" | Should -BeFalse
+        Test-RunTestsPipelineSupportsDispatch '' | Should -BeFalse
     }
 
-    It 'requires every parameter the queue request sends' {
-        $current = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-uitests.yml')
-        Test-RunTestsPipelineSupportsSelection $current -Parameters @('selectedRun', 'uitestPlatformIos', 'uitest_Label') | Should -BeTrue
-        # A category added on the target branch after GitHub last computed the test merge.
-        Test-RunTestsPipelineSupportsSelection $current -Parameters @('uitest_SomeNewCategory') | Should -BeFalse
-        Test-RunTestsPipelineSupportsSelection $current -Parameters @('uitest_Label.*') | Should -BeFalse
-    }
-
-    It "reports Azure DevOps' own validation messages" {
-        $body = '{"customProperties":{"ValidationResults":[{"result":"error","message":"Unexpected parameter ''selectedRun''"},{"result":"error","message":"Unexpected parameter ''selectedPlatforms''"}]},"message":"Could not queue the build because there were validation errors or warnings."}'
-        Get-RunTestsAzdoErrorText $body | Should -Be "Unexpected parameter 'selectedRun'; Unexpected parameter 'selectedPlatforms'"
-        Get-RunTestsAzdoErrorText '{"message":"TF401019: not found"}' | Should -Be 'TF401019: not found'
-        Get-RunTestsAzdoErrorText '' | Should -Be ''
-    }
-
-    It "reports Microsoft Entra's reason without trace ids" {
-        $body = '{"error":"invalid_request","error_description":"AADSTS53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance. Trace ID: 6bbd Correlation ID: 4618 Timestamp: 2026-11-20 19:57:12Z","error_codes":[53003]}'
-        Get-RunTestsAzdoErrorText $body | Should -Be 'AADSTS53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance.'
-    }
-
-    It 'retries the Entra sign-in and then fails with a sign-in error id' {
-        $env:AZDO_TRIGGER_TENANT_ID = 'tenant'; $env:AZDO_TRIGGER_CLIENT_ID = 'client'
-        $env:ACTIONS_ID_TOKEN_REQUEST_URL = 'https://token.example/?x=1'; $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'request'
-        try {
-            Mock Start-Sleep {}
-            Mock Write-Warning {}
-            Mock Invoke-RestMethod { [pscustomobject]@{ value = 'oidc' } } -ParameterFilter { $Uri -like 'https://token.example/*' }
-            Mock Invoke-RestMethod { throw 'AADSTS53003: Access has been blocked by Conditional Access policies.' } -ParameterFilter { $Uri -like 'https://login.microsoftonline.com/*' }
-            $caught = $null
-            try { Get-RunTestsAzdoToken } catch { $caught = $_ }
-            $caught.FullyQualifiedErrorId | Should -BeLike 'RunTestsEntraSignInFailed*'
-            $caught.Exception.Message | Should -Match 'AADSTS53003'
-            Should -Invoke Invoke-RestMethod -Times 4 -Exactly -ParameterFilter { $Uri -like 'https://login.microsoftonline.com/*' }
-        } finally {
-            'AZDO_TRIGGER_TENANT_ID', 'AZDO_TRIGGER_CLIENT_ID', 'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN' | ForEach-Object { Remove-Item "env:$_" -ErrorAction SilentlyContinue }
-        }
-    }
-
-    It 'says when Azure DevOps sign-in, not the queue request, failed' {
-        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
-        $invoke | Should -Match "FullyQualifiedErrorId -like 'RunTestsEntraSignInFailed\*'"
-        $invoke | Should -Match 'Could not sign in to Azure DevOps'
-    }
-
-    It 'stops before the models run when the target branch cannot run a selection' {
+    It 'stops before the models run when the target branch cannot run a dispatch' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
-        $contextScript | Should -Match 'Test-RunTestsPipelineSupportsSelection'
+        $contextScript | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
         $contextScript | Should -Match 'ready=false'
         Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
     }
 
-    It 'checks the test-merge commit pipeline before queueing' {
+    It 'dispatches without Azure DevOps credentials' {
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
-        $invoke | Should -Match 'Test-RunTestsPipelineSupportsSelection \(Get-RunTestsPipelineAt \$current\.merge_commit_sha\) -Parameters \$requiredParameters'
-        # GitHub refreshes a test merge of an older target branch lazily: wait for it, don't fail at once.
-        $invoke | Should -Match 'AddMinutes\(10\)'
-        $invoke | Should -Match 'pipelineReady = \$verified\.pipelineReady'
-        Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/review-run-tests-dispatch.yml') | Should -Match 'timeout-minutes: 25'
-        $invoke | Should -Match 'Get-RunTestsAzdoErrorText'
-        $invoke | Should -Match "Edit queue build configuration"
+        $workflow = Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/review-run-tests-dispatch.yml')
+        $invoke | Should -Not -Match 'login\.microsoftonline\.com|AZDO_TRIGGER|Authorization'
+        $workflow | Should -Not -Match 'AZDO_TRIGGER|id-token'
+        $workflow | Should -Match 'contents: write'
+        # The PR code is built with the target branch's pipeline and workflows, never its own.
+        $invoke | Should -Match "path = '\.github'; mode = '040000'; type = 'tree'"
+        $invoke | Should -Match "path = 'eng/pipelines'; mode = '040000'; type = 'tree'"
+        $invoke | Should -Match 'parents = @\(\$sourceSha\)'
+        $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
     }
 }
 
@@ -551,12 +531,27 @@ Describe 'Pipeline templates' {
         $values | Should -Be @('${{ eq(parameters.selectedRun, true) }}')
     }
 
-    It 'only lets pull-request builds narrow the suite' {
+    It 'only lets pull-request builds and run-tests dispatches narrow the suite' {
         $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
         $ci | Should -Match ([regex]::Escape("`${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:") + '\s+selectedRun: \$\{\{ parameters\.selectedRun \}\}\s+\$\{\{ if eq\(parameters\.selectedRun, true\) \}\}:')
-        ([regex]::Matches($ci, '(?m)^\s+selectedCategories:')).Count | Should -Be 1
+        # A dispatch branch narrows unless its request says 'full', so an unfilled request runs nothing.
+        $ci | Should -Match ([regex]::Escape("`${{ if and(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/'), ne(variables['RunTestsMode'], 'full')) }}:") + '\s+selectedRun: true')
+        ([regex]::Matches($ci, '(?m)^\s+selectedCategories:')).Count | Should -Be 2
         # An empty list would mean every category, so a selected run always carries a sentinel.
-        $ci | Should -Match 'selectedCategories:\s+#[^\n]*\n\s+- none:none'
+        ([regex]::Matches($ci, 'selectedCategories:\s+#[^\n]*\n\s+- none:none')).Count | Should -Be 2
+    }
+
+    It 'builds run-tests dispatch branches without the MAUI variable group secrets' {
+        $ci = Get-Content (Join-Path $pipelines '../ci-uitests.yml') -Raw
+        $ci | Should -Match '(?m)^    - run-tests/\*\s*$'
+        $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:") + '\s+- template: /eng/pipelines/common/run-tests-request\.yml@self')
+        $variables = Get-Content (Join-Path $pipelines 'variables.yml') -Raw
+        $variables | Should -Match ([regex]::Escape("- `${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:") + '\s+- group: MAUI')
+        # No other pipeline builds run-tests/* branches.
+        foreach ($other in 'ci.yml', 'ci-device-tests.yml', 'ci-official.yml') {
+            $path = Join-Path $pipelines "../$other"
+            if (Test-Path $path) { Get-Content $path -Raw | Should -Not -Match 'run-tests/' }
+        }
     }
 
     It 'declares one fixed-value parameter per UI test category' {
