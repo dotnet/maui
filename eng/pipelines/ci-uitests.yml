@@ -1,6 +1,9 @@
 # TEMPORARY probe (do not merge): can the maui-pr-uitests job token queue maui-pr-uitests?
 trigger: none
-pr: none
+pr:
+  branches:
+    include:
+    - main
 parameters:
   - name: selectedRun
     type: boolean
