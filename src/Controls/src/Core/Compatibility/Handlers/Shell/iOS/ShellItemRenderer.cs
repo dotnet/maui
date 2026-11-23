@@ -165,6 +165,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 			RegisterTabBar();
 
+			// PageTransitions.TabTransition. A null animator keeps UIKit's unanimated switch.
+			GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
+				Animations.TabPageTransitions.GetAnimator(
+					tabController,
+					fromViewController,
+					toViewController,
+					vc => RendererForViewController(vc)?.ShellSection)!;
+
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
 				// Prevent UIKit from popping the active tab to root while its navigation transition is in progress.
