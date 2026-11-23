@@ -60,6 +60,26 @@ public partial class BlazorWebViewTests
 	}
 
 	[Fact]
+	public Task MjsStaticAssetCanBeImported_Issue40493() => RunBlazorStartupTest(async platformWebView =>
+	{
+		// Use a unique URL so a response cached by a previous device test run cannot hide the MIME regression.
+		var nonce = Guid.NewGuid().ToString("N");
+
+		var result = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<string>(platformWebView,
+			$$"""
+			const url = '/issue40493.mjs?nonce={{nonce}}';
+			try {
+				const module = await import(url);
+				return module.message;
+			} catch (error) {
+				return 'Module import failed: ' + error.message;
+			}
+			""");
+
+		Assert.Equal("Module imported successfully", result);
+	});
+
+	[Fact]
 	public async Task StaticContentCacheControlProviderAllowsRepeatedRequestToUseWebViewCache()
 	{
 		var nonce = Guid.NewGuid().ToString("N");
