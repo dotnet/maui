@@ -1,6 +1,7 @@
 #if IOS || MACCATALYST
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 				var item = new MenuFlyoutItem { Text = "Action" };
 				item.Clicked += (_, _) => clicks++;
 				FlyoutBase.SetContextFlyout(label, new MenuFlyout { item });
-				await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
+				await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
 				{
 					try
 					{
@@ -108,6 +109,20 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.True(action.Attributes.HasFlag(UIMenuElementAttributes.Disabled));
 						button.SendAction(action);
 						Assert.Equal(0, clicks);
+
+						ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+						await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
+						var originalHandler = item.Handler;
+						item.Text = "Changed action";
+						item.IconImageSource = "blue.png";
+						FlyoutBase.ShowContextFlyout(label);
+						button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+						section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+						action = Assert.IsType<UIAction>(Assert.Single(section.Children));
+						Assert.Same(originalHandler, item.Handler);
+						Assert.Equal("Customized action", action.Title);
+						Assert.NotNull(action.Image);
+						Assert.True(action.Attributes.HasFlag(UIMenuElementAttributes.Disabled));
 					}
 					finally
 					{
@@ -119,6 +134,110 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				MenuFlyoutItemHandler.Mapper = originalMapper;
 			}
+		}
+
+		[Theory]
+		[InlineData("File")]
+		[InlineData("Edit")]
+		public async Task ProgrammaticNativeMenuOpensReservedSubmenuAndRefreshesMetadata(string title)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			SetupBuilder();
+			var item = new MenuFlyoutItem { Text = "Before", IconImageSource = "blue.png" };
+			var submenu = new MenuFlyoutSubItem { Text = title, IconImageSource = "blue.png" };
+			submenu.Add(item);
+			var label = CreateContextFlyoutTarget();
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { submenu });
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				try
+				{
+					Assert.Null(submenu.Handler);
+					FlyoutBase.ShowContextFlyout(label);
+					var presenter = Assert.Single(handler.PlatformView.Interactions.OfType<ProgrammaticContextFlyoutPresenter>());
+					await AssertEventually(() => presenter.IsNativeMenuPresented,
+						message: "UIKit must report native menu presentation.");
+					var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+					var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+					var nativeSubmenu = Assert.IsType<UIMenu>(Assert.Single(section.Children));
+					Assert.Equal(title, nativeSubmenu.Title);
+					Assert.NotNull(nativeSubmenu.Image);
+					var nestedSection = Assert.IsType<UIMenu>(Assert.Single(nativeSubmenu.Children));
+					var action = Assert.IsType<UIAction>(Assert.Single(nestedSection.Children));
+					Assert.Equal("Before", action.Title);
+					Assert.NotNull(action.Image);
+
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any(),
+						message: "Explicit dismissal must remove the native menu host before reopening.");
+					var itemHandler = item.Handler;
+					var submenuHandler = submenu.Handler;
+					item.Text = "After";
+					item.IconImageSource = null;
+					submenu.Text = "Renamed";
+					submenu.IconImageSource = null;
+
+					FlyoutBase.ShowContextFlyout(label);
+					presenter = Assert.Single(handler.PlatformView.Interactions.OfType<ProgrammaticContextFlyoutPresenter>());
+					await AssertEventually(() => presenter.IsNativeMenuPresented);
+					Assert.Same(itemHandler, item.Handler);
+					Assert.Same(submenuHandler, submenu.Handler);
+					button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+					section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+					nativeSubmenu = Assert.IsType<UIMenu>(Assert.Single(section.Children));
+					Assert.Equal("Renamed", nativeSubmenu.Title);
+					Assert.Null(nativeSubmenu.Image);
+					nestedSection = Assert.IsType<UIMenu>(Assert.Single(nativeSubmenu.Children));
+					action = Assert.IsType<UIAction>(Assert.Single(nestedSection.Children));
+					Assert.Equal("After", action.Title);
+					Assert.Null(action.Image);
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task ProgrammaticNativeMenuDoesNotRetainDetachedItems()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			SetupBuilder();
+			var label = CreateContextFlyoutTarget();
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				var probe = CreateNativeMenuRetentionProbe(label);
+				try
+				{
+					FlyoutBase.SetContextFlyout(label, null);
+					await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
+					await AssertionExtensions.WaitForGC(probe.References);
+					GC.KeepAlive(probe.Action);
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					probe.Action.Dispose();
+				}
+			});
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (UIAction Action, WeakReference[] References) CreateNativeMenuRetentionProbe(Label target)
+		{
+			var page = new ContentPage();
+			var item = new MenuFlyoutItem { Text = "Action" };
+			item.Clicked += (_, _) => page.Title = "Selected";
+			var flyout = new MenuFlyout { item };
+			FlyoutBase.SetContextFlyout(target, flyout);
+			FlyoutBase.ShowContextFlyout(target);
+			return (Assert.IsType<UIAction>(item.Handler.PlatformView),
+				new[] { new WeakReference(item), new WeakReference(item.Handler), new WeakReference(page) });
 		}
 
 		[Theory]

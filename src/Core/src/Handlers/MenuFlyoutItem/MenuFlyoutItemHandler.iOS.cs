@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers
 	public partial class MenuFlyoutItemHandler
 	{
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
+		string? _contextText;
+		IImageSource? _contextSource;
 
 		bool IsInContextFlyout()
 		{
@@ -30,12 +32,19 @@ namespace Microsoft.Maui.Handlers
 			if (IsInContextFlyout())
 			{
 				UIImage? contextUiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
+				_contextText = VirtualView.Text;
+				_contextSource = VirtualView.Source;
+				var owner = new WeakReference<IMenuFlyoutItem>(VirtualView);
 
 				var uiAction = UIAction.Create(
 					title: VirtualView.Text,
 					image: contextUiImage,
 					identifier: null,
-					handler: (_) => VirtualView?.Clicked());
+					handler: (_) =>
+					{
+						if (owner.TryGetTarget(out var item))
+							item.Clicked();
+					});
 
 				return uiAction;
 			}
@@ -48,9 +57,27 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsEnabled(view);
 		}
 
-		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		internal static void MapContextText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			handler.PlatformView?.UpdateImageSource(view, handler.MauiContext);
+			if (handler is MenuFlyoutItemHandler menuHandler && handler.PlatformView is UIAction action &&
+				!string.Equals(menuHandler._contextText, view.Text, StringComparison.Ordinal))
+			{
+				menuHandler._contextText = view.Text;
+				action.Title = view.Text;
+				menuHandler._mapper.UpdateProperties(menuHandler, view);
+			}
+		}
+
+		internal static void MapContextSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			if (handler is MenuFlyoutItemHandler menuHandler && handler.PlatformView is UIAction action &&
+				menuHandler._contextSource != view.Source)
+			{
+				menuHandler._contextSource = view.Source;
+				action.Image = view.Source.GetPlatformMenuImage(handler.MauiContext
+					?? throw new InvalidOperationException("The menu item handler must have a MauiContext."));
+				menuHandler._mapper.UpdateProperties(menuHandler, view);
+			}
 		}
 
 		internal static void Execute(UICommand uICommand)

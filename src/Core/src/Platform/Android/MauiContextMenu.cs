@@ -143,13 +143,26 @@ namespace Microsoft.Maui.Platform
 				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } virtualView ||
 				virtualView is not IContextFlyoutElement contextFlyoutElement || contextFlyoutElement.ContextFlyout != _flyout ||
 				!_items.TryGetValue(item.ItemId, out var element) ||
-				!element.IsEnabled)
+				!element.IsEnabled || !ContainsEnabledItem(_flyout, element))
 				return false;
 
 			element.Clicked();
 			return true;
 		}
 
+		static bool ContainsEnabledItem(IList<IMenuElement> elements, IMenuElement item)
+		{
+			for (int i = 0; i < elements.Count; i++)
+			{
+				var element = elements[i];
+				if (!element.IsEnabled)
+					continue;
+				if (ReferenceEquals(element, item) ||
+					element is IMenuFlyoutSubItem submenu && ContainsEnabledItem(submenu, item))
+					return true;
+			}
+			return false;
+		}
 		void ClearItems()
 		{
 			for (int i = 0; i < _platformItems.Count; i++)

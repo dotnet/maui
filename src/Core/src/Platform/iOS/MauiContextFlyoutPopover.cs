@@ -25,9 +25,12 @@ namespace Microsoft.Maui.Platform
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The native menu button is released after menu dismissal.")]
 		NativeMenuButton? _nativeButton;
 		WeakReference<IMenuFlyout>? _nativeFlyout;
+		List<List<MenuEntry>>? _nativeSections;
 		bool _nativeDismissing;
 		bool _nativeActionInvoked;
 		bool _closing;
+
+		internal bool IsNativeMenuPresented { get; private set; }
 
 		MauiContextFlyoutPopover(IViewHandler handler) => _handler = new(handler);
 
@@ -129,6 +132,7 @@ namespace Microsoft.Maui.Platform
 		void ShowNative(UIView target, IMenuFlyout flyout, List<List<MenuEntry>> sections, IMauiContext context)
 		{
 			_nativeFlyout = new(flyout);
+			_nativeSections = sections;
 			var button = new NativeMenuButton(this, target.Bounds)
 			{
 				Menu = CreateNativeMenu(sections, context),
@@ -163,7 +167,10 @@ namespace Microsoft.Maui.Platform
 				for (int row = 0; row < entries.Count; row++)
 				{
 					var entry = entries[row];
-					var mappedElement = entry.Element.ToHandler(context).PlatformView;
+					var itemHandler = entry.Element.ToHandler(context);
+					itemHandler.UpdateValue(nameof(IMenuElement.Text));
+					itemHandler.UpdateValue(nameof(IMenuElement.Source));
+					var mappedElement = itemHandler.PlatformView;
 					if (entry.Children is { } submenu)
 					{
 						if (mappedElement is not UIMenu mappedMenu)
@@ -176,12 +183,16 @@ namespace Microsoft.Maui.Platform
 						if (mappedElement is not UIAction mappedAction)
 							throw new InvalidOperationException("The menu item handler must provide a native UIAction.");
 
+						var entryReference = new WeakReference<MenuEntry>(entry);
+						var actionReference = new WeakReference<UIAction>(mappedAction);
 						// Keep the registered handler's action and customizations behind the presentation guards.
 						var action = UIAction.Create(mappedAction.Title,
 							mappedAction.Image, mappedAction.Identifier, _ =>
 						{
-							if (owner.TryGetTarget(out var presenter))
-								presenter.ActivateNative(entry, mappedAction);
+							if (owner.TryGetTarget(out var presenter) &&
+								entryReference.TryGetTarget(out var currentEntry) &&
+								actionReference.TryGetTarget(out var currentAction))
+								presenter.ActivateNative(currentEntry, currentAction);
 						});
 						action.Attributes = mappedAction.Attributes |
 							(entry.IsEnabled ? 0 : UIMenuElementAttributes.Disabled);
@@ -198,7 +209,7 @@ namespace Microsoft.Maui.Platform
 
 		void ActivateNative(MenuEntry entry, UIAction? action)
 		{
-			if (_closing || _nativeActionInvoked || !entry.IsEnabled || entry.Children is not null || action is null ||
+			if (_closing || _nativeSections is null || _nativeActionInvoked || !entry.IsEnabled || entry.Children is not null || action is null ||
 				entry.Element.Handler?.PlatformView != action ||
 				(action.Attributes & (UIMenuElementAttributes.Disabled | UIMenuElementAttributes.Hidden)) != 0 ||
 				!_handler.TryGetTarget(out var handler) ||
@@ -241,23 +252,25 @@ namespace Microsoft.Maui.Platform
 			if (_nativeButton is { Held: true } button && !_nativeDismissing)
 			{
 				button.ContextMenuInteraction?.DismissMenu();
-				// A detached host may never receive UIKit's dismissal completion.
-				if (_nativeButton is { Window: null })
-					CompleteNativeClose();
 			}
-			else if (!_nativeDismissing)
-				CompleteNativeClose();
+			// Explicit removal must not depend on UIKit delivering a dismissal completion.
+			CompleteNativeClose();
 		}
 
 		void CompleteNativeClose()
 		{
-			CloseNative();
+			if (!_closing)
+			{
+				CloseNative();
+				return;
+			}
 			var button = _nativeButton;
 			if (button is null)
 				return;
 
 			_nativeButton = null;
 			_nativeFlyout = null;
+			_nativeSections = null;
 			var target = button.Superview;
 			var menu = button.Menu;
 			button.Menu = null;
@@ -451,6 +464,14 @@ namespace Microsoft.Maui.Platform
 			internal NativeMenuButton(MauiContextFlyoutPopover owner, CGRect frame) : base(frame) =>
 				_owner = new(owner);
 
+			public override void WillDisplayMenu(UIContextMenuInteraction interaction, UIContextMenuConfiguration configuration,
+				IUIContextMenuInteractionAnimating? animator)
+			{
+				base.WillDisplayMenu(interaction, configuration, animator);
+				if (_owner.TryGetTarget(out var owner))
+					owner.IsNativeMenuPresented = true;
+			}
+
 			public override void WillEnd(UIContextMenuInteraction interaction, UIContextMenuConfiguration configuration,
 				IUIContextMenuInteractionAnimating? animator)
 			{
@@ -459,6 +480,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				owner._nativeDismissing = true;
+				owner.IsNativeMenuPresented = false;
 				if (animator is not null)
 					animator.AddCompletion(owner.CompleteNativeClose);
 				else
