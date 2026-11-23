@@ -159,7 +159,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		[InlineData(84, 0, 0)]
 		[InlineData(0, 0, 40)] // No safe area: the layout's own Padding mirrors as before
 		[InlineData(0, 84, 40)]
-		public async Task RtlChildrenMirrorWithinTheSafeArea(double safeLeft, double safeRight, double paddingLeft)
+		[InlineData(0, 84, 0, true)] // CollectionView cell: no native safe-area adjustments, insets come from the cell override
+		public async Task RtlChildrenMirrorWithinTheSafeArea(double safeLeft, double safeRight, double paddingLeft, bool cellOverride = false)
 		{
 			var layout = new VerticalStackLayoutStub { Padding = new Thickness(paddingLeft, 0, 0, 0) };
 			var label = new LabelStub { Text = "Test" };
@@ -170,7 +171,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				var labelView = CreateHandler<LabelHandler>(label).PlatformView;
 				var parent = new SafeAreaLayoutView
 				{
-					Insets = new UIEdgeInsets(0, (nfloat)safeLeft, 0, (nfloat)safeRight),
+					Insets = cellOverride ? UIEdgeInsets.Zero : new UIEdgeInsets(0, (nfloat)safeLeft, 0, (nfloat)safeRight),
+					CellSafeAreaOverride = cellOverride ? new SafeAreaPadding(safeLeft, safeRight, 0, 0) : SafeAreaPadding.Empty,
 					Frame = new CGRect(0, 0, 400, 200),
 					SemanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft,
 					View = layout,
