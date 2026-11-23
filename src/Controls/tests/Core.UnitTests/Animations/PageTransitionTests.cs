@@ -513,9 +513,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			page.NavigatedTo += (_, _) => navigatedTo++;
 
 			var push = nav.Navigation.PushAsync(page, new FadeTransition());
-			await Task.Delay(50);
+			await handler.WaitForHoldAsync().WaitAsync(TimeSpan.FromSeconds(5));
 
-			Assert.True(handler.IsHolding);
 			Assert.False(push.IsCompleted);
 			Assert.Equal(0, navigatedTo);
 

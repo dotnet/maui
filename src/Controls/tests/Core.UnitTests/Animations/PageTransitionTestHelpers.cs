@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 		IReadOnlyList<IView> _stack = Array.Empty<IView>();
 		TaskCompletionSource<bool> _hold;
+		readonly TaskCompletionSource<bool> _holdStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		public TransitionRecordingNavigationHandler() : base(new PropertyMapper<IStackNavigationView, TransitionRecordingNavigationHandler>(), CommandMapper)
 		{
@@ -38,6 +39,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		public bool IsHolding => _hold is not null;
 
 		public void FinishTransition() => _hold?.TrySetResult(true);
+
+		/// <summary>Completes once a navigation is being held open.</summary>
+		public Task WaitForHoldAsync() => _holdStarted.Task;
 
 		protected override object CreatePlatformView() => new object();
 
@@ -66,6 +70,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 				if (HoldTransitions)
 				{
 					_hold = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+					_holdStarted.TrySetResult(true);
 					await _hold.Task;
 					_hold = null;
 				}

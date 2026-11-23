@@ -32,6 +32,13 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Layout, LayoutHandler>();
+#if ANDROID
+					// The Shell handlers an app registers by default on Android (SetupShellHandlers maps Shell to
+					// the legacy renderer).
+					handlers.AddHandler<Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>();
+					handlers.AddHandler<ShellItem, Microsoft.Maui.Controls.Handlers.ShellItemHandler>();
+					handlers.AddHandler<ShellSection, Microsoft.Maui.Controls.Handlers.ShellSectionHandler>();
+#endif
 					SetupShellHandlers(handlers);
 				});
 
