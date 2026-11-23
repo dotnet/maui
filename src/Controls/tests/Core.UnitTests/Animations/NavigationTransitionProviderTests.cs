@@ -178,6 +178,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void OnlySharedElementsUnderReducedMotionKeepThePlatformTransition()
+		{
+			PageTransitionResolver.ReducedMotionOverride = true;
+			var (from, to) = SharedTransitionTests.PagesWith("photo", "photo");
+			var request = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, from, to, true).Request;
+
+			Assert.Null(BuiltInNavigationTransitions.GetEffectiveTransition(request, out var heroes));
+			Assert.Empty(heroes);
+		}
+
+		[Fact]
 		public void SharedElementsDontFlyForModals()
 		{
 			var (from, to) = SharedTransitionTests.PagesWith("photo", "photo");

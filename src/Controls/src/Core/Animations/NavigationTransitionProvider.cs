@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls.Animations
 	/// <b>suppress</b> its animation by returning <see cref="PlatformNavigationTransition.Suppress"/>,
 	/// keep the platform's own animation by returning <see cref="PlatformNavigationTransition.Platform"/>,
 	/// or <b>decline</b> it by returning <see langword="null"/>, which passes it to the next provider.</para>
+	/// <para>Providers are consulted for stack navigations, modals and tab switches. Replacing a window's root page
+	/// (<see cref="PageTransitions.ReplacePageAsync"/>) has no platform animation for a provider to supply, so it always
+	/// runs MAUI's own motion.</para>
 	/// <para>Overrides of the navigation virtual methods on MAUI's handlers (for example
 	/// <c>StackNavigationManager.OnCreateNavigationAnimation</c> on Android or
 	/// <c>StackNavigationManager.GetNavigationTransition</c> on Windows) keep working and take precedence:
@@ -48,8 +51,6 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>A switch between Shell sections or tabs, or between the pages of a <see cref="TabbedPage"/>.</summary>
 		TabSwitch,
 
-		/// <summary>The window's root page replaced.</summary>
-		ReplaceRoot,
 	}
 
 	/// <summary>
@@ -57,9 +58,10 @@ namespace Microsoft.Maui.Controls.Animations
 	/// </summary>
 	public sealed class NavigationTransitionRequest
 	{
-		internal NavigationTransitionRequest(NavigationTransitionKind kind, Page? from, Page? to, PageTransition transition, bool isInteractive, bool isBack)
+		internal NavigationTransitionRequest(NavigationTransitionKind kind, Page? from, Page? to, PageTransition transition, bool isInteractive, bool isBack, FlowDirection flowDirection)
 		{
 			IsBack = isBack;
+			FlowDirection = flowDirection;
 			Kind = kind;
 			From = from;
 			To = to;
@@ -96,11 +98,11 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		public bool IsInteractive { get; }
 
-		/// <summary>The flow direction the transition is laid out in, taken from the page being shown.</summary>
-		public FlowDirection FlowDirection
-			=> ((To ?? From) as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true
-				? FlowDirection.RightToLeft
-				: FlowDirection.LeftToRight;
+		/// <summary>
+		/// The flow direction the transition is laid out in: the page being shown's, or for a back navigation the
+		/// direction the page was shown in, so it leaves the way it came.
+		/// </summary>
+		public FlowDirection FlowDirection { get; }
 	}
 
 	/// <summary>

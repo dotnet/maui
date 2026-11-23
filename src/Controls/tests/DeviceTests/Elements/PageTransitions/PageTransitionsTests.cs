@@ -185,6 +185,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(SlideEdge.Bottom, Assert.IsType<SlideTransition>(_requests[1].Transition).From);
 		}
 
+#if !WINDOWS
+		// Windows modals keep their platform presentation; modal transitions are wired on iOS, Mac Catalyst and Android.
 		[Fact(DisplayName = "Modal present and dismiss with a transition complete")]
 		public async Task ModalPresentAndDismissComplete()
 		{
@@ -217,6 +219,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(NavigationTransitionKind.PopModal, _requests[1].Kind);
 			Assert.IsType<SlideTransition>(_requests[1].Transition);
 		}
+
+#endif
 
 		[Fact(DisplayName = "Shell GoToAsync with a transition pushes and pops")]
 		public async Task ShellGoToAsyncWithATransition()

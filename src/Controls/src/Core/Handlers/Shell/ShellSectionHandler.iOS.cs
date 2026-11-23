@@ -423,7 +423,22 @@ namespace Microsoft.Maui.Controls.Handlers
                 return (section.CurrentItem as IShellContentController)?.Page;
             }
 
-            return element as IView;
+            if (element is IView view)
+            {
+                return view;
+            }
+
+            // Shell takes a popped page off its stack before the native pop runs, so the outgoing controller is only
+            // found among the trackers, which are kept until the pop completes.
+            foreach (var tracker in _trackers)
+            {
+                if (tracker.Value.ViewController == viewController)
+                {
+                    return tracker.Key as IView;
+                }
+            }
+
+            return null;
         }
 
         #endregion

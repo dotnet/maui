@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	/// </summary>
 	/// <remarks>
 	/// Once a navigation controller's delegate returns an animator of its own, UIKit stops driving the
-	/// swipe-back itself. The driver listens to the system edge recognizer (so every rule already set on
+	/// swipe-back itself. The driver listens to the system swipe-back recognizers (the edge pan, and on iOS 26+ the content pan) (so every rule already set on
 	/// it, such as MAUI's back-button behaviour, still decides whether it begins) and feeds its progress to
 	/// a percent-driven interaction controller, which scrubs any animator built from UIView animations.
 	/// </remarks>
@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Platform
 		UIPercentDrivenInteractiveTransition? _interaction;
 		IUIViewControllerInteractiveTransitioning? _customInteraction;
 		UIPanGestureRecognizer? _edge;
+		UIPanGestureRecognizer? _content;
+		UIPanGestureRecognizer? _driving;
 
 		public NavigationTransitionDriver(UINavigationController navigationController)
 		{
@@ -42,16 +44,32 @@ namespace Microsoft.Maui.Platform
 			if (navigationController.InteractivePopGestureRecognizer is UIPanGestureRecognizer edge)
 			{
 				_edge = edge;
-				var weakSelf = new WeakReference<NavigationTransitionDriver>(this);
-				edge.AddTarget(() =>
-				{
-					if (weakSelf.TryGetTarget(out var driver))
-					{
-						driver.OnEdgePan(edge);
-					}
-				});
+				Observe(edge);
+			}
+
+			// iOS 26 adds a swipe-back that starts anywhere on the content.
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				&& navigationController.InteractiveContentPopGestureRecognizer is UIPanGestureRecognizer content)
+			{
+				_content = content;
+				Observe(content);
 			}
 		}
+
+		void Observe(UIPanGestureRecognizer recognizer)
+		{
+			var weakSelf = new WeakReference<NavigationTransitionDriver>(this);
+			recognizer.AddTarget(() =>
+			{
+				if (weakSelf.TryGetTarget(out var driver))
+				{
+					driver.OnPopPan(recognizer);
+				}
+			});
+		}
+
+		static bool IsActive(UIPanGestureRecognizer? recognizer)
+			=> recognizer is not null && recognizer.State is UIGestureRecognizerState.Began or UIGestureRecognizerState.Changed;
 
 		/// <summary>
 		/// The animator for a push or pop, or <see langword="null"/> to let UIKit animate (and drive the swipe-back) itself.
@@ -64,6 +82,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_interaction = null;
 			_customInteraction = null;
+			_driving = null;
 
 			if (NavigationTransitionHooks.Current is not { } hooks
 				|| operation is not (UINavigationControllerOperation.Push or UINavigationControllerOperation.Pop))
@@ -71,9 +90,14 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			var isInteractive = operation == UINavigationControllerOperation.Pop
-				&& _edge is { } edge
-				&& edge.State is UIGestureRecognizerState.Began or UIGestureRecognizerState.Changed;
+			// Whichever swipe-back started this pop drives it.
+			UIPanGestureRecognizer? driving = null;
+			if (operation == UINavigationControllerOperation.Pop)
+			{
+				driving = IsActive(_edge) ? _edge : IsActive(_content) ? _content : null;
+			}
+
+			var isInteractive = driving is not null;
 
 			var animator = hooks.GetAnimationController(navigationView, operation, from, to, isInteractive, out var interaction);
 			if (animator is not null && isInteractive)
@@ -85,6 +109,7 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					_interaction = new UIPercentDrivenInteractiveTransition();
+					_driving = driving;
 				}
 			}
 
@@ -95,9 +120,9 @@ namespace Microsoft.Maui.Platform
 		public IUIViewControllerInteractiveTransitioning? GetInteractionController()
 			=> _customInteraction ?? _interaction;
 
-		void OnEdgePan(UIPanGestureRecognizer pan)
+		void OnPopPan(UIPanGestureRecognizer pan)
 		{
-			if (_interaction is not { } interaction || pan.View is not { } view)
+			if (_interaction is not { } interaction || !ReferenceEquals(pan, _driving) || pan.View is not { } view)
 			{
 				return;
 			}
@@ -136,12 +161,14 @@ namespace Microsoft.Maui.Platform
 					}
 
 					_interaction = null;
+					_driving = null;
 					break;
 
 				case UIGestureRecognizerState.Cancelled:
 				case UIGestureRecognizerState.Failed:
 					interaction.CancelInteractiveTransition();
 					_interaction = null;
+					_driving = null;
 					break;
 			}
 		}

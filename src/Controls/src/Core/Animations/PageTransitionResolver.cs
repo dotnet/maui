@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,12 +37,12 @@ namespace Microsoft.Maui.Controls.Animations
 	/// </summary>
 	internal static class PageTransitionResolver
 	{
-		// What actually ran when a page was shown. Going back from the page reverses it.
-		static readonly ConditionalWeakTable<Page, PageTransition> s_shown = new();
+		// What actually ran when a page was shown, and the flow direction it ran in. Going back from the page reverses it.
+		static readonly ConditionalWeakTable<Page, ShownTransition> s_shown = new();
 
-		// One-shot overrides from the per-navigation overloads, consumed by the next navigation of that page.
-		static readonly ConditionalWeakTable<Page, PageTransition> s_pendingForward = new();
-		static readonly ConditionalWeakTable<Page, PageTransition> s_pendingBack = new();
+		// One-shot overrides from the per-navigation overloads, consumed only by the navigation of that page and kind
+		// they were staged for. The overload removes an entry the navigation didn't consume once its task ends.
+		static readonly ConditionalWeakTable<Page, PendingTransition> s_pending = new();
 
 		// GoToAsync(state, transition) applies to every page that navigation pushes or pops.
 		static readonly ConditionalWeakTable<Shell, ShellOverride> s_shellOverrides = new();
@@ -58,11 +59,41 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		internal static INavigationTransitionProvider? BuiltInOverride { get; set; }
 
-		internal static void SetPendingForward(Page page, PageTransition transition)
-			=> s_pendingForward.Put(page, transition.Snapshot());
+		/// <summary>
+		/// Stages <paramref name="transition"/> for the next <paramref name="kind"/> navigation of <paramref name="page"/>.
+		/// Returns a token for <see cref="ClearPending"/>.
+		/// </summary>
+		internal static object SetPending(Page page, NavigationTransitionKind kind, PageTransition transition)
+		{
+			var entry = new PendingTransition(kind, transition.Snapshot());
+			s_pending.Put(page, entry);
+			return entry;
+		}
 
-		internal static void SetPendingBack(Page page, PageTransition transition)
-			=> s_pendingBack.Put(page, transition.Snapshot());
+		/// <summary>
+		/// Removes a staged transition the navigation didn't consume (it was a no-op, failed, or the platform never asked),
+		/// unless a newer navigation has staged its own since.
+		/// </summary>
+		internal static void ClearPending(Page page, object token)
+		{
+			if (s_pending.TryGetValue(page, out var current) && ReferenceEquals(current, token))
+			{
+				s_pending.Remove(page);
+			}
+		}
+
+		internal static bool HasPending(Page page) => s_pending.TryGetValue(page, out _);
+
+		static PageTransition? TakePending(Page? page, NavigationTransitionKind kind)
+		{
+			if (page is not null && s_pending.TryGetValue(page, out var pending) && pending.Kind == kind)
+			{
+				s_pending.Remove(page);
+				return pending.Transition;
+			}
+
+			return null;
+		}
 
 		internal static object BeginShellOverride(Shell shell, PageTransition transition)
 		{
@@ -82,23 +113,32 @@ namespace Microsoft.Maui.Controls.Animations
 
 		/// <summary>The transition recorded for <paramref name="page"/> when it was last shown.</summary>
 		internal static PageTransition? GetShownTransition(Page page)
-			=> s_shown.TryGetValue(page, out var transition) ? transition : null;
+			=> s_shown.TryGetValue(page, out var shown) ? shown.Transition : null;
 
 		/// <summary>
-		/// Resolves a push, pop, modal push or pop, or root replacement, then runs the provider chain.
+		/// Resolves a push, pop, or modal push or pop, then runs the provider chain.
 		/// Call it once per navigation: it consumes per-navigation overrides and records what ran.
 		/// </summary>
 		internal static ResolvedNavigationTransition Resolve(NavigationTransitionKind kind, Page? from, Page? to, bool animated, bool isInteractive = false)
 		{
+			var request = ResolveRequest(kind, from, to, animated, isInteractive);
+			return new ResolvedNavigationTransition(request, ResolvePlatform(request));
+		}
+
+		/// <summary>
+		/// Resolves which transition a navigation runs, without consulting providers (root replacement has no platform
+		/// animation for a provider to supply).
+		/// </summary>
+		internal static NavigationTransitionRequest ResolveRequest(NavigationTransitionKind kind, Page? from, Page? to, bool animated, bool isInteractive = false)
+		{
 			bool isBack = kind is NavigationTransitionKind.Pop or NavigationTransitionKind.PopModal;
 			bool isModal = kind is NavigationTransitionKind.PushModal or NavigationTransitionKind.PopModal;
 
-			PageTransition transition = isBack
-				? ResolveBack(from, to, isModal, animated)
-				: ResolveForward(to, isModal, animated);
+			var (transition, flowDirection) = isBack
+				? ResolveBack(kind, from, to, isModal, animated)
+				: ResolveForward(kind, to, isModal, animated);
 
-			var request = new NavigationTransitionRequest(kind, from, to, transition, isInteractive, isBack);
-			return new ResolvedNavigationTransition(request, ResolvePlatform(request));
+			return new NavigationTransitionRequest(kind, from, to, transition, isInteractive, isBack, flowDirection);
 		}
 
 		/// <summary>
@@ -118,50 +158,46 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			transition = ApplyReducedMotion(transition);
-			var request = new NavigationTransitionRequest(NavigationTransitionKind.TabSwitch, from, to, transition, false, reverse);
+			var request = new NavigationTransitionRequest(NavigationTransitionKind.TabSwitch, from, to, transition, false, reverse, FlowDirectionOf(to ?? from));
 			return new ResolvedNavigationTransition(request, ResolvePlatform(request));
 		}
 
-		static PageTransition ResolveForward(Page? to, bool isModal, bool animated)
+		/// <summary>The flow direction a page lays out in.</summary>
+		internal static FlowDirection FlowDirectionOf(Element? page)
+			=> (page as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true
+				? FlowDirection.RightToLeft
+				: FlowDirection.LeftToRight;
+
+		static (PageTransition, FlowDirection) ResolveForward(NavigationTransitionKind kind, Page? to, bool isModal, bool animated)
 		{
-			PageTransition? chosen = null;
-
-			if (to is not null && s_pendingForward.TryGetValue(to, out var pending))
-			{
-				s_pendingForward.Remove(to);
-				chosen = pending;
-			}
-
+			PageTransition? chosen = TakePending(to, kind);
 			chosen ??= FindShellOverride(to);
 			chosen ??= FindAttached(to, isModal ? PageTransitions.ModalTransitionProperty : PageTransitions.TransitionProperty);
 
 			var ran = (chosen ?? PageTransition.Platform).Snapshot();
+			var flowDirection = FlowDirectionOf(to);
 
 			// What going back reverses. An explicit "don't animate" isn't recorded as None: a page pushed
 			// without animation still leaves with its own transition when it is popped with animation.
 			if (to is not null)
 			{
-				s_shown.Put(to, ran);
+				s_shown.Put(to, new ShownTransition(ran, flowDirection));
 			}
 
-			return ApplyReducedMotion(animated ? ran : PageTransition.None);
+			return (ApplyReducedMotion(animated ? ran : PageTransition.None), flowDirection);
 		}
 
-		static PageTransition ResolveBack(Page? from, Page? to, bool isModal, bool animated)
+		static (PageTransition, FlowDirection) ResolveBack(NavigationTransitionKind kind, Page? from, Page? to, bool isModal, bool animated)
 		{
-			PageTransition? chosen = null;
-
-			if (from is not null && s_pendingBack.TryGetValue(from, out var pending))
-			{
-				s_pendingBack.Remove(from);
-				chosen = pending;
-			}
-
+			PageTransition? chosen = TakePending(from, kind);
 			chosen ??= FindShellOverride(from) ?? FindShellOverride(to);
 
-			if (chosen is null && from is not null && s_shown.TryGetValue(from, out var shown))
+			// Going back runs in the flow direction the page was shown in, whatever the destination uses.
+			var flowDirection = FlowDirectionOf(from);
+			if (from is not null && s_shown.TryGetValue(from, out var shown))
 			{
-				chosen = shown;
+				chosen ??= shown.Transition;
+				flowDirection = shown.FlowDirection;
 			}
 
 			// A page that was never shown through a navigation (the root, or one inserted below the top)
@@ -169,7 +205,7 @@ namespace Microsoft.Maui.Controls.Animations
 			chosen ??= FindAttached(from, isModal ? PageTransitions.ModalTransitionProperty : PageTransitions.TransitionProperty);
 
 			var transition = (chosen ?? PageTransition.Platform).Snapshot();
-			return ApplyReducedMotion(animated ? transition : PageTransition.None);
+			return (ApplyReducedMotion(animated ? transition : PageTransition.None), flowDirection);
 		}
 
 		static PageTransition ApplyReducedMotion(PageTransition transition)
@@ -287,6 +323,32 @@ namespace Microsoft.Maui.Controls.Animations
 			return list.ToArray();
 		}
 
+		sealed class ShownTransition
+		{
+			public ShownTransition(PageTransition transition, FlowDirection flowDirection)
+			{
+				Transition = transition;
+				FlowDirection = flowDirection;
+			}
+
+			public PageTransition Transition { get; }
+
+			public FlowDirection FlowDirection { get; }
+		}
+
+		sealed class PendingTransition
+		{
+			public PendingTransition(NavigationTransitionKind kind, PageTransition transition)
+			{
+				Kind = kind;
+				Transition = transition;
+			}
+
+			public NavigationTransitionKind Kind { get; }
+
+			public PageTransition Transition { get; }
+		}
+
 		sealed class ShellOverride
 		{
 			public ShellOverride(PageTransition transition) => Transition = transition;
@@ -298,7 +360,7 @@ namespace Microsoft.Maui.Controls.Animations
 	static class ConditionalWeakTableExtensions
 	{
 		// ConditionalWeakTable.AddOrUpdate doesn't exist on netstandard2.0.
-		internal static void Put<TKey, TValue>(this ConditionalWeakTable<TKey, TValue> table, TKey key, TValue value)
+		internal static void Put<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue>(this ConditionalWeakTable<TKey, TValue> table, TKey key, TValue value)
 			where TKey : class
 			where TValue : class
 		{

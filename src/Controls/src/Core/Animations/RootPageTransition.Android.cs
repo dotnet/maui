@@ -58,13 +58,36 @@ namespace Microsoft.Maui.Controls.Animations
 			animator.SetDuration((long)transition.Duration.TotalMilliseconds);
 			animator.SetInterpolator(PageTransitionAnimations.CreateInterpolator(transition.Easing));
 			animator.Update += (_, e) => Apply(e.Animation.AnimatedFraction);
-			animator.AnimationEnd += (_, _) =>
+
+			var finished = false;
+			RunningTransition? running = null;
+			void Cleanup()
 			{
+				if (finished)
+				{
+					return;
+				}
+
+				finished = true;
 				overlay.Remove(picture);
 				Pose(content, PageTransitionCurves.Pose.Identity, width, height);
 				bitmap.Recycle();
+				if (running is not null)
+				{
+					Untrack(window, running);
+				}
+
 				tcs.TrySetResult();
-			};
+			}
+
+			animator.AnimationEnd += (_, _) => Cleanup();
+
+			// A later ReplacePageAsync on this window ends this one first: the content view is shared.
+			running = Track(window, () =>
+			{
+				animator.End();
+				Cleanup();
+			});
 
 			Apply(0);
 			animator.Start();

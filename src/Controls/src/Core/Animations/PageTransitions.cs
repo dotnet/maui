@@ -74,12 +74,7 @@ namespace Microsoft.Maui.Controls.Animations
 			_ = page ?? throw new ArgumentNullException(nameof(page));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
-			// An unanimated navigation is never asked for a transition, so None leaves nothing pending.
-			if (!transition.IsNone)
-			{
-				PageTransitionResolver.SetPendingForward(page, transition);
-			}
-			return navigation.PushAsync(page, !transition.IsNone);
+			return NavigateAsync(page, NavigationTransitionKind.Push, transition, () => navigation.PushAsync(page, !transition.IsNone));
 		}
 
 		/// <summary>Pops the top page with <paramref name="transition"/> instead of reversing the one it was shown with.</summary>
@@ -88,13 +83,10 @@ namespace Microsoft.Maui.Controls.Animations
 			_ = navigation ?? throw new ArgumentNullException(nameof(navigation));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
+			// The root page can't be popped, so nothing is staged for it.
 			var stack = navigation.NavigationStack;
-			if (!transition.IsNone && stack.Count > 0 && stack[stack.Count - 1] is Page top)
-			{
-				PageTransitionResolver.SetPendingBack(top, transition);
-			}
-
-			return navigation.PopAsync(!transition.IsNone);
+			var top = stack.Count > 1 ? stack[stack.Count - 1] : null;
+			return NavigateAsync(top, NavigationTransitionKind.Pop, transition, () => navigation.PopAsync(!transition.IsNone));
 		}
 
 		/// <summary>Presents <paramref name="page"/> modally with <paramref name="transition"/>.</summary>
@@ -104,12 +96,7 @@ namespace Microsoft.Maui.Controls.Animations
 			_ = page ?? throw new ArgumentNullException(nameof(page));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
-			// An unanimated navigation is never asked for a transition, so None leaves nothing pending.
-			if (!transition.IsNone)
-			{
-				PageTransitionResolver.SetPendingForward(page, transition);
-			}
-			return navigation.PushModalAsync(page, !transition.IsNone);
+			return NavigateAsync(page, NavigationTransitionKind.PushModal, transition, () => navigation.PushModalAsync(page, !transition.IsNone));
 		}
 
 		/// <summary>Dismisses the top modal page with <paramref name="transition"/> instead of reversing the one it was presented with.</summary>
@@ -119,12 +106,44 @@ namespace Microsoft.Maui.Controls.Animations
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
 			var stack = navigation.ModalStack;
-			if (!transition.IsNone && stack.Count > 0 && stack[stack.Count - 1] is Page top)
-			{
-				PageTransitionResolver.SetPendingBack(top, transition);
-			}
+			var top = stack.Count > 0 ? stack[stack.Count - 1] : null;
+			return NavigateAsync(top, NavigationTransitionKind.PopModal, transition, () => navigation.PopModalAsync(!transition.IsNone));
+		}
 
-			return navigation.PopModalAsync(!transition.IsNone);
+		// Stages the transition for this page and kind only, runs the navigation, and removes the staged value if the
+		// platform never consumed it (a no-op or failed navigation, or a platform that doesn't animate this kind),
+		// without touching a value a newer navigation has staged since. An unanimated navigation is never asked for a
+		// transition, so None stages nothing.
+		static async Task NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task> navigate)
+		{
+			var token = page is null || transition.IsNone ? null : PageTransitionResolver.SetPending(page, kind, transition);
+			try
+			{
+				await navigate().ConfigureAwait(true);
+			}
+			finally
+			{
+				if (token is not null)
+				{
+					PageTransitionResolver.ClearPending(page!, token);
+				}
+			}
+		}
+
+		static async Task<Page> NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task<Page>> navigate)
+		{
+			var token = page is null || transition.IsNone ? null : PageTransitionResolver.SetPending(page, kind, transition);
+			try
+			{
+				return await navigate().ConfigureAwait(true);
+			}
+			finally
+			{
+				if (token is not null)
+				{
+					PageTransitionResolver.ClearPending(page!, token);
+				}
+			}
 		}
 
 		/// <summary>

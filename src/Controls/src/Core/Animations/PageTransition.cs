@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Animations
 		double _fromScale = 0.92;
 
 		/// <summary>
-		/// The scale the incoming page starts at. Defaults to 0.92.
+		/// The scale the incoming page starts at: a finite number, zero or greater. Defaults to 0.92.
 		/// </summary>
 		public double FromScale
 		{
@@ -194,9 +194,9 @@ namespace Microsoft.Maui.Controls.Animations
 			set
 			{
 				ThrowIfFrozen();
-				if (double.IsNaN(value) || value < 0)
+				if (double.IsNaN(value) || double.IsInfinity(value) || value < 0)
 				{
-					throw new ArgumentOutOfRangeException(nameof(value), value, "FromScale must be zero or greater.");
+					throw new ArgumentOutOfRangeException(nameof(value), value, "FromScale must be a finite number, zero or greater.");
 				}
 
 				_fromScale = value;

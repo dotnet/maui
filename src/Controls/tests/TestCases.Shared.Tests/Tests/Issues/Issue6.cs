@@ -20,8 +20,10 @@ public class Issue6 : _IssuesUITest
 
 		// NavigatedTo is raised once the transition has finished, so this text means the flight is over.
 		Assert.That(App.WaitForTextToBePresentInElement("DetailStatus", "Arrived at 2"), Is.True);
+		// GetRect is in physical pixels on Android, so the landed size is compared as a ratio to the source tile
+		// (HeightRequest 240 over 80), which is the same in any unit.
 		var hero = App.WaitForElement("DetailTile").GetRect();
-		Assert.That(hero.Height, Is.EqualTo(240).Within(2), "The shared element should be laid out at its own size once it lands, not at the source's.");
+		Assert.That(hero.Height / (double)before.Height, Is.EqualTo(3.0).Within(0.1), "The shared element should be laid out at its own size once it lands, not at the source's.");
 
 		App.WaitForElement("BackButton");
 		App.Tap("BackButton");

@@ -8,7 +8,6 @@ Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Pop = 1 -> Microsoft
 Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PopModal = 3 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
 Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Push = 0 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
 Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PushModal = 2 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
-Microsoft.Maui.Controls.Animations.NavigationTransitionKind.ReplaceRoot = 5 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
 Microsoft.Maui.Controls.Animations.NavigationTransitionKind.TabSwitch = 4 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
 Microsoft.Maui.Controls.Animations.NavigationTransitionRequest
 Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.FlowDirection.get -> Microsoft.Maui.FlowDirection

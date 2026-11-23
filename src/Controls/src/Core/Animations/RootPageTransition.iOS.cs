@@ -42,6 +42,36 @@ namespace Microsoft.Maui.Controls.Animations
 				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
 			}
 
+			var finished = false;
+			RunningTransition? running = null;
+			void Cleanup()
+			{
+				if (finished)
+				{
+					return;
+				}
+
+				finished = true;
+				picture.Layer.RemoveAllAnimations();
+				picture.RemoveFromSuperview();
+				if (incoming is not null)
+				{
+					incoming.Layer.RemoveAllAnimations();
+					incoming.Transform = CGAffineTransform.MakeIdentity();
+					incoming.Alpha = 1;
+				}
+
+				if (running is not null)
+				{
+					Untrack(window, running);
+				}
+
+				tcs.TrySetResult();
+			}
+
+			// A later ReplacePageAsync on this window ends this one first: the root view is shared.
+			running = Track(window, Cleanup);
+
 			Apply(0);
 			UIView.AnimateKeyframes(
 				transition.Duration.TotalSeconds,
@@ -55,17 +85,7 @@ namespace Microsoft.Maui.Controls.Animations
 						UIView.AddKeyframeWithRelativeStartTime((i - 1) / (double)Samples, 1.0 / Samples, () => Apply(progress));
 					}
 				},
-				_ =>
-				{
-					picture.RemoveFromSuperview();
-					if (incoming is not null)
-					{
-						incoming.Transform = CGAffineTransform.MakeIdentity();
-						incoming.Alpha = 1;
-					}
-
-					tcs.TrySetResult();
-				});
+				_ => Cleanup());
 
 			return tcs.Task;
 		}

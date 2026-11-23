@@ -52,6 +52,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Throws<ArgumentOutOfRangeException>(() => new ScaleTransition { FromScale = -0.5 });
 		}
 
+		[Theory]
+		[InlineData(double.PositiveInfinity)]
+		[InlineData(double.NegativeInfinity)]
+		[InlineData(double.NaN)]
+		[InlineData(-0.01)]
+		public void FromScaleMustBeFiniteAndNotNegative(double value)
+		{
+			var scale = new ScaleTransition();
+			Assert.Throws<ArgumentOutOfRangeException>(() => scale.FromScale = value);
+			Assert.Equal(0.92, scale.FromScale);
+		}
+
+		[Theory]
+		[InlineData(0.0)]
+		[InlineData(1.5)]
+		public void FromScaleAcceptsFiniteValues(double value)
+		{
+			Assert.Equal(value, new ScaleTransition { FromScale = value }.FromScale);
+		}
+
 		[Fact]
 		public void SnapshotIsIsolatedFromLaterChanges()
 		{
@@ -359,6 +379,103 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.IsType<ScaleTransition>(resolved.Transition);
 		}
 
+		// ---- Flow direction ----
+
+		[Fact]
+		public async Task PopRunsInTheFlowDirectionThePageWasShownIn()
+		{
+			var (nav, handler) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage { FlowDirection = FlowDirection.LeftToRight });
+			var page = new ContentPage { FlowDirection = FlowDirection.RightToLeft };
+			PageTransitions.SetTransition(page, new SlideTransition());
+
+			await nav.PushAsync(page);
+			page.FlowDirection = FlowDirection.LeftToRight;
+			await nav.PopAsync();
+
+			Assert.Equal(FlowDirection.RightToLeft, handler.Resolved[0].Request.FlowDirection);
+			Assert.Equal(FlowDirection.RightToLeft, handler.Resolved[1].Request.FlowDirection);
+		}
+
+		[Fact]
+		public void PopOfAPageNeverShownUsesTheOutgoingPagesFlowDirection()
+		{
+			var outgoing = new ContentPage { FlowDirection = FlowDirection.RightToLeft };
+			var destination = new ContentPage { FlowDirection = FlowDirection.LeftToRight };
+
+			var pop = PageTransitionResolver.Resolve(NavigationTransitionKind.Pop, outgoing, destination, true);
+
+			Assert.Equal(FlowDirection.RightToLeft, pop.Request.FlowDirection);
+		}
+
+		// ---- Scoping of per-navigation arguments ----
+
+		[Fact]
+		public void StagedTransitionIsOnlyUsedByItsKindOfNavigation()
+		{
+			var page = new ContentPage();
+			PageTransitions.SetTransition(page, new SlideTransition());
+			PageTransitionResolver.SetPending(page, NavigationTransitionKind.PushModal, new ScaleTransition());
+
+			var push = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, page, true);
+			var modal = PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, null, page, true);
+
+			Assert.IsType<SlideTransition>(push.Transition);
+			Assert.IsType<ScaleTransition>(modal.Transition);
+			Assert.False(PageTransitionResolver.HasPending(page));
+		}
+
+		[Fact]
+		public async Task PopOnTheRootPageStagesNothing()
+		{
+			var root = new ContentPage();
+			var (nav, handler) = PageTransitionTestHelpers.CreateNavigationPage(root);
+
+			await nav.Navigation.PopAsync(new FadeTransition());
+
+			Assert.False(PageTransitionResolver.HasPending(root));
+			Assert.Empty(handler.Resolved);
+		}
+
+		[Fact]
+		public async Task UnconsumedArgumentIsClearedWhenTheNavigationEnds()
+		{
+			// No platform runs this modal, so nothing consumes the staged transition.
+			var root = new ContentPage();
+			_ = new TestWindow(root);
+			var modal = new ContentPage();
+
+			await root.Navigation.PushModalAsync(modal, new FadeTransition());
+
+			Assert.False(PageTransitionResolver.HasPending(modal));
+			Assert.True(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, modal, true).IsPlatformDefault);
+		}
+
+		[Fact]
+		public void ClearingAnOldStagingKeepsANewerOne()
+		{
+			var page = new ContentPage();
+			var first = PageTransitionResolver.SetPending(page, NavigationTransitionKind.Push, new FadeTransition());
+			PageTransitionResolver.SetPending(page, NavigationTransitionKind.Push, new ScaleTransition());
+
+			PageTransitionResolver.ClearPending(page, first);
+
+			Assert.True(PageTransitionResolver.HasPending(page));
+			Assert.IsType<ScaleTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, page, true).Transition);
+		}
+
+		[Fact]
+		public async Task FailedNavigationClearsItsArgument()
+		{
+			var (nav, _) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
+			var page = new ContentPage();
+			await nav.PushAsync(page);
+
+			// Pushing a page that is already on the stack throws.
+			await Assert.ThrowsAnyAsync<Exception>(() => nav.Navigation.PushAsync(page, new FadeTransition()));
+
+			Assert.False(PageTransitionResolver.HasPending(page));
+		}
+
 		// ---- Modals ----
 
 		[Fact]
@@ -400,7 +517,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		public void ModalDismissReversesThePresentation()
 		{
 			var modal = new ContentPage();
-			PageTransitionResolver.SetPendingForward(modal, new SlideTransition { From = SlideEdge.Bottom });
+			PageTransitionResolver.SetPending(modal, NavigationTransitionKind.PushModal, new SlideTransition { From = SlideEdge.Bottom });
 
 			PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, null, modal, true);
 			var pop = PageTransitionResolver.Resolve(NavigationTransitionKind.PopModal, modal, null, true);

@@ -745,7 +745,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (element is ShellSection section)
 				return (section.CurrentItem as IShellContentController)?.Page;
 
-			return element as Page;
+			if (element is Page page)
+				return page;
+
+			// Shell takes a popped page off its stack before the native pop runs, so the outgoing controller is only
+			// found among the trackers, which are kept until the pop completes.
+			foreach (var tracker in _trackers)
+			{
+				if (tracker.Value.ViewController == viewController)
+					return tracker.Key as Page;
+			}
+
+			return null;
 		}
 
 		Element ElementForViewController(UIViewController viewController)

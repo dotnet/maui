@@ -33,7 +33,10 @@ namespace Microsoft.Maui.Controls.Animations
 		internal static PageTransition? GetEffectiveTransition(NavigationTransitionRequest request, out List<(VisualElement From, VisualElement To)> heroes)
 		{
 			var transition = request.Transition;
-			heroes = request.Kind is NavigationTransitionKind.Push or NavigationTransitionKind.Pop
+
+			// Nothing morphs under reduced motion; a page that only sets shared elements keeps the platform's own
+			// transition, which follows the platform's reduced-motion handling.
+			heroes = (request.Kind is NavigationTransitionKind.Push or NavigationTransitionKind.Pop) && !PageTransitionResolver.IsReducedMotion
 				? SharedTransition.FindPairs(request.From, request.To)
 				: new List<(VisualElement From, VisualElement To)>();
 
