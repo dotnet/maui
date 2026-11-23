@@ -252,6 +252,17 @@ namespace Microsoft.Maui.Platform
 		// Reuses MauiView's safe-area, keyboard and measure-cache behavior for the presented content.
 		sealed class ContentContainer : MauiView
 		{
+			internal override void ArrangeAdjustedBounds(CGRect bounds)
+			{
+				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+				{
+					// Child arrangement mirrors within the full container; keep safe-area edges physical.
+					bounds.X = 2 * Bounds.X + Bounds.Width - bounds.X - bounds.Width;
+				}
+
+				base.ArrangeAdjustedBounds(bounds);
+			}
+
 			internal void InvalidateContentMeasure()
 			{
 				InvalidateConstraintsCache();

@@ -660,8 +660,11 @@ namespace Microsoft.Maui.Platform
 				bounds = CellSafeAreaOverride.InsetRect(bounds);
 			}
 
-			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
+			ArrangeAdjustedBounds(bounds);
 		}
+
+		internal virtual void ArrangeAdjustedBounds(CGRect bounds) =>
+			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
 
 		/// <summary>
 		/// iOS method called to determine the size that fits within the given constraints.

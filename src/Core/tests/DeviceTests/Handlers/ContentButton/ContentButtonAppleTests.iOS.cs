@@ -61,6 +61,50 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Theory]
+		[InlineData(false, 30, 0, 0, 0)]
+		[InlineData(true, 30, 0, 0, 0)]
+		[InlineData(true, 0, 30, 0, 0)]
+		[InlineData(true, 10, 30, 0, 0)]
+		[InlineData(true, 0, 0, 0, 0)]
+		[InlineData(false, 10, 30, 5, 15)]
+		[InlineData(true, 10, 30, 5, 15)]
+		public async Task SimulatedSafeAreaInsetsRemainOnPhysicalEdges(
+			bool rtl, double left, double right, double paddingLeft, double paddingRight)
+		{
+			var content = new LabelStub { Text = "Content" };
+			var button = new ContentButtonStub
+			{
+				Content = content,
+				Padding = new Thickness(paddingLeft, 0, paddingRight, 0),
+			};
+
+			await AttachAndRun(button, handler =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var container = Assert.IsAssignableFrom<MauiView>(platformView.ContentContainerView);
+				platformView.Frame = new CoreGraphics.CGRect(0, 0, 200, 100);
+				platformView.SetNeedsLayout();
+				platformView.LayoutIfNeeded();
+				container.CellSafeAreaOverride = new SafeAreaPadding(left, right, 0, 0);
+				container.SemanticContentAttribute = rtl
+					? UISemanticContentAttribute.ForceRightToLeft
+					: UISemanticContentAttribute.ForceLeftToRight;
+				Assert.Equal(rtl
+					? UIUserInterfaceLayoutDirection.RightToLeft
+					: UIUserInterfaceLayoutDirection.LeftToRight,
+					container.EffectiveUserInterfaceLayoutDirection);
+				container.SetNeedsLayout();
+				container.LayoutIfNeeded();
+
+				var nativeContent = Assert.IsAssignableFrom<UIView>(content.Handler.PlatformView);
+				Assert.Equal(left + (rtl ? paddingRight : paddingLeft), (double)nativeContent.Frame.X, 2);
+				Assert.Equal(200 - right - (rtl ? paddingLeft : paddingRight),
+					(double)(nativeContent.Frame.X + nativeContent.Frame.Width), 2);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task LiveVirtualViewReplacementReleasesPreviousPress()
 		{
