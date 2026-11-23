@@ -258,6 +258,13 @@ namespace Microsoft.Maui.Controls.Animations
 					return entry.Transition;
 				}
 
+				// A modal (and a stack inside a modal NavigationPage) is a child of the window, not of the Shell that
+				// routed to it: the override of the Shell that is this window's page applies.
+				if (current is Window { Page: Shell windowShell } && s_shellOverrides.TryGetValue(windowShell, out var windowEntry))
+				{
+					return windowEntry.Transition;
+				}
+
 				current = current.Parent;
 			}
 

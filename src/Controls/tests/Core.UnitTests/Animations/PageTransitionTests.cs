@@ -237,6 +237,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public async Task NoneArgumentIsWhatThePopReverses()
+		{
+			var (nav, handler) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
+			var page = new ContentPage();
+			PageTransitions.SetTransition(page, new FadeTransition());
+
+			await nav.Navigation.PushAsync(page, PageTransition.None);
+			await nav.Navigation.PopAsync(true);
+
+			Assert.Same(PageTransition.None, PageTransitionResolver.GetShownTransition(page));
+			Assert.Same(PageTransition.None, handler.Resolved[1].Transition);
+			Assert.True(handler.Resolved[1].IsSuppressed);
+		}
+
+		[Fact]
+		public void NoneArgumentForAModalIsWhatTheDismissReverses()
+		{
+			var modal = new ContentPage();
+			PageTransitions.SetModalTransition(modal, new FadeTransition());
+			var token = PageTransitionResolver.SetPending(modal, NavigationTransitionKind.PushModal, PageTransition.None);
+
+			var push = PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, null, modal, animated: false);
+			PageTransitionResolver.ClearPending(modal, token);
+			var pop = PageTransitionResolver.Resolve(NavigationTransitionKind.PopModal, modal, null, animated: true);
+
+			Assert.True(push.IsSuppressed);
+			Assert.Same(PageTransition.None, pop.Transition);
+		}
+
+		[Fact]
 		public async Task PerNavigationArgumentIsUsedOnce()
 		{
 			var (nav, handler) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
@@ -624,6 +654,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			{
 				PageTransitionResolver.EndShellOverride(shell, token);
 				Application.Current = null;
+			}
+		}
+
+		[Fact]
+		public void GoToAsyncOverrideReachesARoutedModalAndAStackInsideIt()
+		{
+			var shell = new Shell();
+			shell.Items.Add(new ShellContent { Content = new ContentPage() });
+			var window = new Window(shell);
+
+			// Modals are children of the window, not of the Shell that routed to them.
+			var modal = new ContentPage { Parent = window };
+			var nestedRoot = new ContentPage();
+			var modalNavigation = new NavigationPage(nestedRoot) { Parent = window };
+			var nested = new ContentPage();
+
+			var token = PageTransitionResolver.BeginShellOverride(shell, new ScaleTransition());
+			try
+			{
+				Assert.IsType<ScaleTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, null, modal, true).Transition);
+				Assert.IsType<ScaleTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, nested, nestedRoot, true).Transition);
+			}
+			finally
+			{
+				PageTransitionResolver.EndShellOverride(shell, token);
+			}
+		}
+
+		[Fact]
+		public void GoToAsyncOverrideDoesntReachAModalInAnotherWindow()
+		{
+			var shell = new Shell();
+			shell.Items.Add(new ShellContent { Content = new ContentPage() });
+			_ = new Window(shell);
+			var otherWindow = new Window(new ContentPage());
+			var modal = new ContentPage { Parent = otherWindow };
+
+			var token = PageTransitionResolver.BeginShellOverride(shell, new ScaleTransition());
+			try
+			{
+				Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, null, modal, true).Transition);
+			}
+			finally
+			{
+				PageTransitionResolver.EndShellOverride(shell, token);
 			}
 		}
 

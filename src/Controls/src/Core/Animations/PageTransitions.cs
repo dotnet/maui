@@ -112,11 +112,11 @@ namespace Microsoft.Maui.Controls.Animations
 
 		// Stages the transition for this page and kind only, runs the navigation, and removes the staged value if the
 		// platform never consumed it (a no-op or failed navigation, or a platform that doesn't animate this kind),
-		// without touching a value a newer navigation has staged since. An unanimated navigation is never asked for a
-		// transition, so None stages nothing.
+		// without touching a value a newer navigation has staged since. None is staged too: the navigation runs without
+		// animation, and None is what it records, so going back from the page doesn't animate either.
 		static async Task NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task> navigate)
 		{
-			var token = page is null || transition.IsNone ? null : PageTransitionResolver.SetPending(page, kind, transition);
+			var token = page is null ? null : PageTransitionResolver.SetPending(page, kind, transition);
 			try
 			{
 				await navigate().ConfigureAwait(true);
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		static async Task<Page> NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task<Page>> navigate)
 		{
-			var token = page is null || transition.IsNone ? null : PageTransitionResolver.SetPending(page, kind, transition);
+			var token = page is null ? null : PageTransitionResolver.SetPending(page, kind, transition);
 			try
 			{
 				return await navigate().ConfigureAwait(true);
