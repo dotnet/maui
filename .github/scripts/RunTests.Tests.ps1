@@ -731,6 +731,7 @@ Describe '/review run-device-tests' {
         $yaml | Should -Match "RunDeviceTestsControlsSkip\s+value: 'Accessibility\+"
         $yaml | Should -Not -Match "RunDeviceTestsControlsSkip\s+value: '[^']*\bLabel\b"
         $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: ''"
         $checks = @((New-RunTestsCheckPlan -Selection $selection -Inventory $deviceInventory).name)
         $checks | Should -Contain 'maui-pr-devicetests (skipped) iOS DeviceTests'
         $checks | Should -Contain 'maui-pr-devicetests (skipped) Core.DeviceTests'
@@ -742,6 +743,10 @@ Describe '/review run-device-tests' {
         $yaml = New-RunTestsDeviceRequestYaml -Selection $core -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
         $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Core'"
         $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: ''"
+        $label = New-DeviceSelection @('windows') @('Core.Label', 'Core.Button')
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $label -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: 'Button\+Label'"
         $full = New-DeviceSelection @() @() -Full
         $yaml = New-RunTestsDeviceRequestYaml -Selection $full -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
         $yaml | Should -Match "RunTestsMode\s+value: 'full'"
@@ -781,6 +786,15 @@ Describe '/review run-device-tests' {
         $request | Should -Match "RunTestsMode\s+value: 'none'"
         $helix = Get-Content (Join-Path $PSScriptRoot '../../eng/helix_xharness.proj') -Raw
         $helix | Should -Match ([regex]::Escape('<Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="''$(RunDeviceTestsProjects)'' != ''''">'))
+        # Windows runs only the listed categories of both projects; the script loops categories when given a filter.
+        foreach ($project in 'Controls', 'Core') {
+            $helix | Should -Match ([regex]::Escape("StartsWith('$project.DeviceTests-'))"">") + '\s+' + [regex]::Escape("<Command>%(Command) ""`$(RunDeviceTests${project}Run)""</Command>"))
+            $ci | Should -Match ([regex]::Escape("/p:RunDeviceTests${project}Run=`${{ variables['RunDeviceTests${project}Run'] }}"))
+        }
+        $windows = Get-Content (Join-Path $PSScriptRoot '../../eng/devices/run-windows-devicetests.cmd') -Raw
+        $windows | Should -Match 'if defined CATEGORY_FILTER set USE_CATEGORY_RUNS=1'
+        ([regex]::Matches($windows, 'if %USE_CATEGORY_RUNS%==1 \(')).Count | Should -Be 2
+        $windows | Should -Not -Match 'if %IS_CONTROLS_TEST%==1'
         Test-RunTestsPipelineSupportsDispatch (Get-Content (Join-Path $pipelines 'ci-uitests.yml') -Raw) | Should -BeFalse
     }
 }

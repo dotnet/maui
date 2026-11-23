@@ -233,8 +233,9 @@
           RunDeviceTestsControlsSkip  Controls.DeviceTests categories to skip, '+'-separated (empty: run all)
           RunDeviceTestsCoreSkip      Core.DeviceTests categories to skip, '+'-separated (empty: run all)
           RunDeviceTestsControlsRun   Controls.DeviceTests categories to run on Windows, '+'-separated (empty: all)
+          RunDeviceTestsCoreRun       Core.DeviceTests categories to run on Windows, '+'-separated (empty: all)
         The test apps read TestFilter=SkipCategories=... (DeviceTestSharedHelpers.GetExcludedTestCategories);
-        on Windows, Controls.DeviceTests runs category by category (eng/devices/run-windows-devicetests.cmd).
+        on Windows, eng/devices/run-windows-devicetests.cmd runs the listed categories one by one.
     -->
     <Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="'$(RunDeviceTestsProjects)' != ''">
         <PropertyGroup>
@@ -303,10 +304,15 @@
                 <Arguments>--arg TestFilter=$(_RunDeviceTestsCoreFilter)</Arguments>
             </XHarnessApkToTest>
         </ItemGroup>
-        <!-- Windows: Controls.DeviceTests runs only the selected categories. -->
+        <!-- Windows: Controls.DeviceTests and Core.DeviceTests run only the selected categories. -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows' and '$(RunDeviceTestsControlsRun)' != ''">
             <HelixWorkItem Condition="$([System.String]::Copy('%(Identity)').StartsWith('Controls.DeviceTests-'))">
                 <Command>%(Command) "$(RunDeviceTestsControlsRun)"</Command>
+            </HelixWorkItem>
+        </ItemGroup>
+        <ItemGroup Condition="'$(TargetOS)' == 'windows' and '$(RunDeviceTestsCoreRun)' != ''">
+            <HelixWorkItem Condition="$([System.String]::Copy('%(Identity)').StartsWith('Core.DeviceTests-'))">
+                <Command>%(Command) "$(RunDeviceTestsCoreRun)"</Command>
             </HelixWorkItem>
         </ItemGroup>
 

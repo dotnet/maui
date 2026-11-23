@@ -250,7 +250,8 @@ function New-RunTestsDeviceRequestYaml {
     $platforms = @($platformIds | ForEach-Object { $script:RunTestsPipelinePlatform[$_] })
     $scenarios = [System.Collections.Generic.List[string]]::new()
     $skip = @{ Controls = @(); Core = @() }
-    $controlsRun = @()
+    # On Windows the categories to run (the test script runs them one by one).
+    $run = @{ Controls = @(); Core = @() }
     foreach ($project in $script:RunTestsDeviceProjects.Keys) {
         $units = @($Inventory.projects[$project])
         $on = if ($mode -eq 'full') { $units } else { @($units | Where-Object { $_ -cin $running }) }
@@ -258,12 +259,12 @@ function New-RunTestsDeviceRequestYaml {
         $scenarios.Add($script:RunTestsDeviceProjects[$project].scenario)
         if ($skip.Contains($project) -and $on.Count -lt $units.Count) {
             $skip[$project] = @($units | Where-Object { $_ -cnotin $on } | ForEach-Object { $_.Substring($project.Length + 1) })
-            if ($project -eq 'Controls') { $controlsRun = @($on | ForEach-Object { $_.Substring($project.Length + 1) }) }
+            $run[$project] = @($on | ForEach-Object { $_.Substring($project.Length + 1) })
         }
     }
     if (-not $platforms.Count -or -not $scenarios.Count) { throw 'A device test run needs at least one platform and project.' }
     foreach ($platform in $platforms) { if ($platform -cnotin @($script:RunTestsPipelinePlatform.Values)) { throw "Unexpected platform '$platform'." } }
-    foreach ($value in @($scenarios) + $skip.Controls + $skip.Core + $controlsRun) {
+    foreach ($value in @($scenarios) + $skip.Controls + $skip.Core + $run.Controls + $run.Core) {
         if ($value -cnotmatch '^[A-Za-z0-9_]{1,64}$') { throw "Unexpected device test name '$value'." }
     }
     return @(
@@ -285,7 +286,9 @@ function New-RunTestsDeviceRequestYaml {
         '  - name: RunDeviceTestsCoreSkip'
         "    value: '$($skip.Core -join '+')'"
         '  - name: RunDeviceTestsControlsRun'
-        "    value: '$($controlsRun -join '+')'"
+        "    value: '$($run.Controls -join '+')'"
+        '  - name: RunDeviceTestsCoreRun'
+        "    value: '$($run.Core -join '+')'"
         ''
     ) -join "`n"
 }

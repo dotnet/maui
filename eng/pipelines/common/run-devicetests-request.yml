@@ -24,6 +24,8 @@ variables:
     value: ''
   - name: RunDeviceTestsCoreSkip
     value: ''
-  # Controls.DeviceTests categories to run on Windows, '+'-separated; empty runs all of them.
+  # Controls.DeviceTests / Core.DeviceTests categories to run on Windows, '+'-separated; empty runs all of them.
   - name: RunDeviceTestsControlsRun
+    value: ''
+  - name: RunDeviceTestsCoreRun
     value: ''

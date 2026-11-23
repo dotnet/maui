@@ -151,7 +151,7 @@ stages:
         selectedPlatforms:
         - ${{ each platform in split(variables['RunDeviceTestsPlatforms'], ',') }}:
           - ${{ platform }}
-        extraHelixArguments: /p:RunDeviceTestsProjects=${{ variables['RunDeviceTestsProjects'] }} /p:RunDeviceTestsControlsSkip=${{ variables['RunDeviceTestsControlsSkip'] }} /p:RunDeviceTestsCoreSkip=${{ variables['RunDeviceTestsCoreSkip'] }} /p:RunDeviceTestsControlsRun=${{ variables['RunDeviceTestsControlsRun'] }}
+        extraHelixArguments: /p:RunDeviceTestsProjects=${{ variables['RunDeviceTestsProjects'] }} /p:RunDeviceTestsControlsSkip=${{ variables['RunDeviceTestsControlsSkip'] }} /p:RunDeviceTestsCoreSkip=${{ variables['RunDeviceTestsCoreSkip'] }} /p:RunDeviceTestsControlsRun=${{ variables['RunDeviceTestsControlsRun'] }} /p:RunDeviceTestsCoreRun=${{ variables['RunDeviceTestsCoreRun'] }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:

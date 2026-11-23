@@ -43,6 +43,9 @@ if /i "%DEVICE%"=="packaged" set IS_PACKAGED=1
 
 set IS_CONTROLS_TEST=0
 echo %SCENARIO_NAME% | findstr /i "Controls.DeviceTests" >nul && set IS_CONTROLS_TEST=1
+REM Controls.DeviceTests always runs category by category; any app does when a category filter is given.
+set USE_CATEGORY_RUNS=%IS_CONTROLS_TEST%
+if defined CATEGORY_FILTER set USE_CATEGORY_RUNS=1
 
 REM Set up paths
 set SCENARIO_DIR=%HELIX_WORKITEM_PAYLOAD%
@@ -55,6 +58,7 @@ echo Scenario directory: %SCENARIO_DIR%
 echo Test results file: %TEST_RESULTS_FILE%
 echo Is packaged: %IS_PACKAGED%
 echo Is Controls test: %IS_CONTROLS_TEST%
+echo Category runs: %USE_CATEGORY_RUNS%
 
 REM ========================================
 REM Install Windows App SDK Runtime
@@ -198,7 +202,7 @@ if %IS_PACKAGED%==1 (
     REM NOTE: Labels cannot be inside if blocks in cmd.exe - causes "... was unexpected" error
     REM Using goto to jump to labels that are outside the if block
     
-    if %IS_CONTROLS_TEST%==1 (
+    if %USE_CATEGORY_RUNS%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
         echo App URI: !APP_URI!
@@ -267,7 +271,7 @@ if %IS_PACKAGED%==1 (
     
     pushd "!EXE_DIR!"
     
-    if %IS_CONTROLS_TEST%==1 (
+    if %USE_CATEGORY_RUNS%==1 (
         REM Category discovery
         echo Starting app for category discovery...
         echo Command: "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
