@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -57,6 +60,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(InvalidStateName, groups1[0].CurrentState.Name);
 			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
+		}
+
+		[Fact]
+		public void SynchronousTransitionSupersedesQueuedTransition()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			var group = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState { Name = "Off", Setters = { new Setter { Property = Label.TextProperty, Value = "off" } } },
+					new VisualState { Name = "On", Setters = { new Setter { Property = Label.TextProperty, Value = "on" } } }
+				}
+			};
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			VisualStateManager.GoToState(label, "Off");
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			Assert.True(VisualStateManager.GoToState(label, "On"));
+			dispatchRequired = false;
+			Assert.True(VisualStateManager.GoToState(label, "Off"));
+			while (queue.Count > 0)
+				queue.Dequeue()();
+
+			Assert.Equal("off", label.Text);
+		}
+
+		[Fact]
+		public void TriggerUpdateEvaluatesStateAfterItIsDispatched()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			var higherPriorityTrigger = new TestStateTrigger();
+			var fallbackTrigger = new TestStateTrigger();
+			fallbackTrigger.Activate(true);
+			var higherPriorityState = new VisualState { Name = "HigherPriority", StateTriggers = { higherPriorityTrigger } };
+			var fallbackState = new VisualState { Name = "Fallback", StateTriggers = { fallbackTrigger } };
+			var group = new VisualStateGroup { States = { higherPriorityState, fallbackState } };
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			higherPriorityTrigger.Activate(true);
+			higherPriorityTrigger.Activate(false);
+			dispatchRequired = false;
+
+			while (queue.Count > 0)
+				queue.Dequeue()();
+
+			Assert.Same(fallbackState, group.CurrentState);
+		}
+
+		static DispatcherStub CreateDispatcher(Queue<Action> queue, Func<bool> isDispatchRequired) =>
+			new DispatcherStub(isDispatchRequired, action => queue.Enqueue(action));
+
+		static IMauiContext CreateContext(IDispatcher dispatcher)
+		{
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IDispatcher)).Returns(dispatcher);
+			var context = Substitute.For<IMauiContext>();
+			context.Services.Returns(services);
+			return context;
+		}
+
+		static IViewHandler CreateHandler(IMauiContext context)
+		{
+			var handler = Substitute.For<IViewHandler>();
+			handler.MauiContext.Returns(context);
+			return handler;
 		}
 
 		[Fact]
@@ -547,8 +625,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		sealed class TestStateTrigger : StateTriggerBase
 		{
+			public void Activate(bool active) => SetActive(active);
 		}
-
 
 		public VisualStateManagerTests()
 		{

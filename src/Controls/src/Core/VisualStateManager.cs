@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,6 +18,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public static class VisualStateManager
 	{
+		static readonly ConditionalWeakTable<VisualElement, StateRequestVersion> s_stateRequestVersions = new();
+
 		public class CommonStates
 		{
 			public const string Normal = "Normal";
@@ -94,19 +99,35 @@ namespace Microsoft.Maui.Controls
 
 		internal static bool GoToState(VisualElement visualElement, string name, bool force)
 		{
-			var context = visualElement.Handler?.MauiContext;
-			var dispatcher = context?.GetOptionalDispatcher();
+			if (!TryGetDispatcher(visualElement, out var context, out var dispatcher))
+				return false;
+
+			var stateRequestVersion = s_stateRequestVersions.GetValue(visualElement, static _ => new StateRequestVersion());
+			var requestVersion = stateRequestVersion.Next();
 			if (dispatcher?.IsDispatchRequired == true)
 			{
+				ILogger logger;
+				try
+				{
+					logger = context?.CreateLogger(nameof(VisualStateManager));
+				}
+				catch (ObjectDisposedException) when (IsWindowScopeDisposed(context))
+				{
+					return false;
+				}
+
 				if (!dispatcher.Dispatch(() =>
 				{
+					if (IsWindowScopeDisposed(context) || !stateRequestVersion.IsCurrent(requestVersion))
+						return;
+
 					try
 					{
 						GoToStateCore(visualElement, name, force);
 					}
 					catch (Exception exception)
 					{
-						context.CreateLogger(nameof(VisualStateManager))?.LogError(
+						logger?.LogError(
 							exception,
 							"Failed to transition to visual state '{VisualState}' on the UI thread.",
 							name);
@@ -120,6 +141,61 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return GoToStateCore(visualElement, name, force);
+		}
+
+		internal static void UpdateStateTriggers(VisualStateGroup group)
+		{
+			if (group.VisualElement is not { } visualElement ||
+				!TryGetDispatcher(visualElement, out var context, out var dispatcher))
+				return;
+
+			var stateRequestVersion = s_stateRequestVersions.GetValue(visualElement, static _ => new StateRequestVersion());
+			var requestVersion = stateRequestVersion.Next();
+			if (dispatcher?.IsDispatchRequired == true)
+			{
+				if (!dispatcher.Dispatch(() =>
+				{
+					if (!IsWindowScopeDisposed(context) && stateRequestVersion.IsCurrent(requestVersion))
+						group.UpdateStateTriggersCore();
+				}))
+				{
+					throw new InvalidOperationException("The visual state trigger update could not be dispatched to the element's dispatcher.");
+				}
+
+				return;
+			}
+
+			group.UpdateStateTriggersCore();
+		}
+
+		static bool TryGetDispatcher(VisualElement visualElement, out IMauiContext context, out IDispatcher dispatcher)
+		{
+			context = visualElement.Handler?.MauiContext;
+			dispatcher = null;
+			if (IsWindowScopeDisposed(context))
+				return false;
+
+			try
+			{
+				dispatcher = context?.GetOptionalDispatcher();
+				return true;
+			}
+			catch (ObjectDisposedException) when (IsWindowScopeDisposed(context))
+			{
+				return false;
+			}
+		}
+
+		static bool IsWindowScopeDisposed(IMauiContext context) =>
+			context is MauiContext { IsWindowScopeDisposed: true };
+
+		sealed class StateRequestVersion
+		{
+			long _value;
+
+			public long Next() => Interlocked.Increment(ref _value);
+
+			public bool IsCurrent(long value) => Interlocked.Read(ref _value) == value;
 		}
 
 		static bool GoToStateCore(VisualElement visualElement, string name, bool force)
@@ -752,6 +828,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal void UpdateStateTriggers()
+		{
+			VisualStateManager.UpdateStateTriggers(this);
+		}
+
+		internal void UpdateStateTriggersCore()
 		{
 			if (VisualElement == null)
 				return;
