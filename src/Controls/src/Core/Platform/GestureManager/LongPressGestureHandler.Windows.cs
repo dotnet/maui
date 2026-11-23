@@ -16,9 +16,19 @@ namespace Microsoft.Maui.Controls.Platform
 		WinPoint _startPosition;
 		readonly HashSet<LongPressGestureRecognizer> _firedRecognizers = new();
 
+		readonly PointerEventHandler _pointerPressedHandler;
+		readonly PointerEventHandler _pointerReleasedHandler;
+		readonly PointerEventHandler _pointerCanceledHandler;
+		readonly PointerEventHandler _pointerMovedHandler;
+		FrameworkElement? _subscribedContainer;
+
 		public LongPressGestureHandler(IPlatformViewHandler handler)
 		{
 			_handler = handler;
+			_pointerPressedHandler = OnPointerPressed;
+			_pointerReleasedHandler = OnPointerReleased;
+			_pointerCanceledHandler = OnPointerCanceled;
+			_pointerMovedHandler = OnPointerMoved;
 		}
 
 		public void SubscribeEvents()
@@ -27,21 +37,30 @@ namespace Microsoft.Maui.Controls.Platform
 			if (container == null)
 				return;
 
-			container.PointerPressed += OnPointerPressed;
-			container.PointerReleased += OnPointerReleased;
-			container.PointerCanceled += OnPointerCanceled;
-			container.PointerMoved += OnPointerMoved;
+			if (_subscribedContainer == container)
+				return;
+
+			UnsubscribeEvents();
+
+			// Controls such as Button mark pointer events as handled internally,
+			// so handledEventsToo is required for the long press to be detected.
+			container.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			container.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+			container.AddHandler(UIElement.PointerCanceledEvent, _pointerCanceledHandler, true);
+			container.AddHandler(UIElement.PointerMovedEvent, _pointerMovedHandler, true);
+			_subscribedContainer = container;
 		}
 
 		public void UnsubscribeEvents()
 		{
-			var container = GetContainer();
+			var container = _subscribedContainer;
 			if (container != null)
 			{
-				container.PointerPressed -= OnPointerPressed;
-				container.PointerReleased -= OnPointerReleased;
-				container.PointerCanceled -= OnPointerCanceled;
-				container.PointerMoved -= OnPointerMoved;
+				container.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+				container.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
+				container.RemoveHandler(UIElement.PointerCanceledEvent, _pointerCanceledHandler);
+				container.RemoveHandler(UIElement.PointerMovedEvent, _pointerMovedHandler);
+				_subscribedContainer = null;
 			}
 			CancelTimers();
 		}
