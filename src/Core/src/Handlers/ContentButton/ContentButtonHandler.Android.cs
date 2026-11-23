@@ -254,11 +254,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var elementHandler = (IElementHandler)this;
-			var virtualView = elementHandler.VirtualView as IContentButton;
 			platformView.Post(() =>
 			{
+				var virtualView = elementHandler.VirtualView as IContentButton;
 				if (!ReferenceEquals(elementHandler.PlatformView, platformView) ||
-					!ReferenceEquals(elementHandler.VirtualView, virtualView) ||
 					!ReferenceEquals(platformView.CrossPlatformLayout, virtualView) ||
 					virtualView is null)
 				{

@@ -132,6 +132,31 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task PostedThemeChangeRefreshesReplacementView()
+		{
+			await AttachAndRun(new ContentButtonStub(), async handler =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				using var themedCard = new MaterialCardView(platformView.Context!);
+				var expectedRadius = themedCard.Radius;
+				using var configuration = new Configuration(platformView.Resources!.Configuration!);
+				var nightMode = configuration.UiMode & UiMode.NightMask;
+				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+					(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+
+				platformView.DispatchConfigurationChanged(configuration);
+				var replacement = new ContentButtonStub();
+				handler.SetVirtualView(replacement);
+				platformView.Radius = 99;
+
+				await DrainPostedWork(platformView);
+
+				Assert.Same(replacement, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(expectedRadius, platformView.Radius);
+			});
+		}
+
+		[Fact]
 		public async Task HandlerProvidedNativeRadiusSurvivesAttachmentAndThemeRefresh()
 		{
 			var button = new ContentButtonStub { CornerRadius = -1 };

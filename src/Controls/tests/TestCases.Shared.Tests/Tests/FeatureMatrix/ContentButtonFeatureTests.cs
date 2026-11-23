@@ -139,18 +139,32 @@ public class ContentButtonFeatureTests : _GalleryUITest
 				new Dictionary<string, object> { ["virtualKeyCode"] = virtualKey, ["down"] = true },
 			}
 		});
-		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
-		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(1));
-		Assert.That(GetStatusValue("Released"), Is.Zero);
-		Assert.That(Status, Does.Contain("IsPressed=True"));
-
-		((AppiumApp)App).Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
+		try
 		{
-			["actions"] = new[]
+			if (virtualKey == 0x20)
 			{
-				new Dictionary<string, object> { ["virtualKeyCode"] = virtualKey, ["down"] = false },
+				Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+				Assert.That(GetStatusValue("Pressed"), Is.EqualTo(1));
+				Assert.That(GetStatusValue("Released"), Is.Zero);
+				Assert.That(Status, Does.Contain("IsPressed=True"));
 			}
-		});
+			else
+			{
+				Assert.That(Status, Does.Contain("Commands=1; Clicks=1"));
+				Assert.That(Status, Does.Contain("Pressed=1; Released=1"));
+				Assert.That(Status, Does.Contain("IsPressed=False"));
+			}
+		}
+		finally
+		{
+			((AppiumApp)App).Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
+			{
+				["actions"] = new[]
+				{
+					new Dictionary<string, object> { ["virtualKeyCode"] = virtualKey, ["down"] = false },
+				}
+			});
+		}
 		Assert.That(Status, Does.Contain("Commands=1; Clicks=1"));
 		Assert.That(Status, Does.Contain("Pressed=1; Released=1"));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
