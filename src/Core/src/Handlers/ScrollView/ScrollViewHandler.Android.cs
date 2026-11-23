@@ -18,9 +18,6 @@ namespace Microsoft.Maui.Handlers
 				FillViewport = true
 			};
 
-			// Safe-area insets arrive as native padding; let the content scroll under them, as on iOS.
-			scrollView.SetClipToPadding(false);
-
 			return scrollView;
 		}
 
