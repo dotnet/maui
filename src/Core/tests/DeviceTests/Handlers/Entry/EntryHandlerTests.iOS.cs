@@ -780,6 +780,93 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Turning IsPassword On While Focused Masks Every Character")]
+		public async Task TurningIsPasswordOnWhileFocusedMasksEveryCharacter()
+		{
+			var entry = new EntryStub
+			{
+				Text = "DemoTest1",
+				IsPassword = false,
+				Font = Font.SystemFontOfSize(32),
+				TextColor = Colors.Red,
+				Width = 400, // wide enough to show every character
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				var textField = GetNativeEntry(handler);
+				await AssertEventually(() => textField.IsLoaded());
+				Assert.True(textField.BecomeFirstResponder());
+				await AssertEventually(() => textField.IsFirstResponder);
+
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				// UIKit shows a typed character for about 2 seconds before masking it, so a reveal is still on screen here
+				await Wait(() => GetRenderedGlyphs(textField).StartsWith("••••••••", StringComparison.Ordinal));
+				Assert.Equal("•••••••••", GetRenderedGlyphs(textField));
+
+				// Typing next must still add to the text rather than replace it (https://github.com/dotnet/maui/issues/30085)
+				textField.InsertText("x");
+				Assert.Equal("DemoTest1x", textField.Text);
+			});
+		}
+
+		// One character per glyph drawn in the text color: '•' for a filled dot, '?' for anything else.
+		static string GetRenderedGlyphs(UITextField textField)
+		{
+			var size = textField.Bounds.Size;
+			using var image = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat { Scale = 3 })
+				.CreateImage(context => textField.Layer.RenderInContext(context.CGContext));
+			var cgImage = image.CGImage!;
+			var width = (int)cgImage.Width;
+			var height = (int)cgImage.Height;
+			var pixels = new byte[width * height * 4];
+			using (var colorSpace = CGColorSpace.CreateDeviceRGB())
+			using (var bitmap = new CGBitmapContext(pixels, width, height, 8, width * 4, colorSpace, CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast))
+				bitmap.DrawImage(new CGRect(0, 0, width, height), cgImage);
+
+			// The text is red; the caret and the border aren't.
+			bool IsText(int x, int y)
+			{
+				var i = (y * width + x) * 4;
+				return pixels[i + 3] > 128 && pixels[i] > 128 && pixels[i + 1] < 100 && pixels[i + 2] < 100;
+			}
+
+			var glyphs = new System.Text.StringBuilder();
+			var x0 = -1;
+			int top = height, bottom = -1, count = 0;
+			for (var x = 0; x <= width; x++)
+			{
+				var columnHasText = false;
+				for (var y = 0; x < width && y < height; y++)
+				{
+					if (!IsText(x, y))
+						continue;
+					columnHasText = true;
+					top = Math.Min(top, y);
+					bottom = Math.Max(bottom, y);
+					count++;
+				}
+
+				if (columnHasText && x0 < 0)
+					x0 = x;
+				else if (!columnHasText && x0 >= 0)
+				{
+					// A filled dot is about as wide as it is tall and covers about π/4 of its box.
+					double w = x - x0, h = bottom - top + 1;
+					var isDot = w / h is > 0.8 and < 1.25 && count / (w * h) > 0.65;
+					glyphs.Append(isDot ? '•' : '?');
+					x0 = -1;
+					top = height;
+					bottom = -1;
+					count = 0;
+				}
+			}
+
+			return glyphs.ToString();
+		}
+
 		async Task ScrollHelper(Func<Task> func, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>
