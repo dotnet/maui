@@ -25,12 +25,10 @@ namespace Microsoft.Maui.Layouts
 				Math.Max(0, LayoutManager.ResolveConstraints(heightConstraint, button.Height, size.Height, button.MinimumHeight, button.MaximumHeight)));
 		}
 
-		// Explicit sizes resolve with the same minimum and maximum used for the final size,
-		// so content is measured at the width or height where it will be arranged.
+		// Use the same constraint precedence as the final size when measuring content.
 		static double GetContentMeasureConstraint(double externalConstraint, double explicitLength, double minimum, double maximum) =>
-			Dimension.IsExplicitSet(explicitLength)
-				? LayoutManager.ResolveConstraints(externalConstraint, explicitLength, explicitLength, minimum, maximum)
-				: Math.Min(externalConstraint, maximum);
+			LayoutManager.ResolveConstraints(externalConstraint, explicitLength,
+				Dimension.IsExplicitSet(explicitLength) ? explicitLength : externalConstraint, minimum, maximum);
 
 		internal static Size Arrange(IContentButton button, Rect bounds)
 		{

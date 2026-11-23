@@ -119,6 +119,39 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			child.Received().Arrange(new Rect(0, 0, 200, 20));
 		}
 
+		[Theory]
+		[InlineData(300, 200, 20)]
+		[InlineData(150, 150, 40)]
+		public void ConflictingMinimumAndMaximumMeasureWrappedContentAtResolvedWidth(
+			double constraint, double resolvedWidth, double wrappedHeight)
+		{
+			var button = CreateButton();
+			var child = Substitute.For<IView>();
+			button.PresentedContent.Returns(child);
+			button.MinimumWidth.Returns(200);
+			button.MaximumWidth.Returns(100);
+			child.Measure(resolvedWidth, double.PositiveInfinity).Returns(new Size(resolvedWidth, wrappedHeight));
+
+			var size = ContentButtonLayout.Measure(button, constraint, double.PositiveInfinity);
+
+			Assert.Equal(new Size(resolvedWidth, wrappedHeight), size);
+			child.Received().Measure(resolvedWidth, double.PositiveInfinity);
+		}
+
+		[Fact]
+		public void ConflictingMinimumAndMaximumHeightConstrainChildToResolvedHeight()
+		{
+			var button = CreateButton();
+			var child = Substitute.For<IView>();
+			button.PresentedContent.Returns(child);
+			button.MinimumHeight.Returns(120);
+			button.MaximumHeight.Returns(80);
+
+			ContentButtonLayout.Measure(button, double.PositiveInfinity, 300);
+
+			child.Received().Measure(double.PositiveInfinity, 120);
+		}
+
 		[Fact]
 		public void ExternalConstraintsLimitRequestedSize()
 		{
