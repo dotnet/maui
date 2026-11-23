@@ -560,7 +560,9 @@ Describe 'Two-model selection' {
         $opus | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
         $gpt | Should -Match "proposal\['model'\] = 'gpt-6.2-sol'"
         $opus | Should -Match "proposal\['model'\] = 'claude-opus-5.5'"
-        $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
+        # Exactly `/review run-tests` (UI tests) or `/review run-devicetests` (device tests).
+        $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-(device)?tests\s*$/i'))
+        $gpt | Should -Match ([regex]::Escape('-Suite "$SUITE"'))
         foreach ($workflow in $gpt, $opus) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
     }
 }
