@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface.</remarks>
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents)]
-	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
+	public abstract partial class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
 
@@ -250,7 +250,10 @@ namespace Microsoft.Maui.Controls
 				return false;
 			if ((bpcontext.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
 				return true;
-			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+			var specificity = bpcontext.Values.GetSpecificity();
+			if (specificity == SetterSpecificity.Animation)
+				specificity = bpcontext.Values.GetClearedSpecificity();
+			return specificity != SetterSpecificity.DefaultValue;
 		}
 
 		/// <summary>
@@ -315,9 +318,12 @@ namespace Microsoft.Maui.Controls
 
 			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
 			var currentSpecificity = context.Values.GetSpecificity();
+			if (currentSpecificity == SetterSpecificity.Animation)
+				currentSpecificity = PrepareBindingUnderAnimation(context, binding);
+
 			if (currentSpecificity > SetterSpecificity.FromBinding)
 			{
-				var currentValue = context.Values.GetValue();
+				var currentValue = context.Values.GetValue(currentSpecificity);
 
 				context.Values.Remove(currentSpecificity);
 				// Also remove any ManualValueSetter entries that might interfere with binding value comparison.
@@ -718,6 +724,27 @@ namespace Microsoft.Maui.Controls
 			var original = specificityAndValue.Value;
 			var originalSpecificity = specificityAndValue.Key;
 
+			// Guarded: only while an animation holds this property (see BindableObject.Animations.cs).
+			bool holdLostToHandler = false;
+			if (originalSpecificity == SetterSpecificity.Animation && specificity != SetterSpecificity.Animation)
+			{
+				if (specificity != SetterSpecificity.FromHandler)
+				{
+					SetValueBeneathAnimation(context, value, currentlyApplying, attributes, specificity);
+					return;
+				}
+
+				// A handler echoing the displayed value back neither ends the hold nor is stored.
+				if (Equals(value, original))
+					return;
+
+				// User input beats animation: the hold ends and the handler's value stands. The change is
+				// raised against the animated value, which is what was on screen.
+				context.Values.Remove(SetterSpecificity.Animation);
+				originalSpecificity = context.Values.GetSpecificity();
+				holdLostToHandler = true;
+			}
+
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
 				&& originalSpecificity == SetterSpecificity.FromHandler)
@@ -769,7 +796,8 @@ namespace Microsoft.Maui.Controls
 
 			if (!silent && (!sameValue || raiseOnEqual))
 			{
-				if (binding != null && !currentlyApplying)
+				// Animated values are presentation only: they never reach a binding source.
+				if (binding != null && !currentlyApplying && specificity != SetterSpecificity.Animation)
 				{
 					_applying = true;
 					binding.Apply(true);
@@ -782,6 +810,9 @@ namespace Microsoft.Maui.Controls
 			{
 				OnBindablePropertySet(property, original, value, !sameValue, false);
 			}
+
+			if (holdLostToHandler)
+				OnAnimationHoldLost(context, Microsoft.Maui.Controls.Animations.AnimationHoldLossReason.HandlerWrite);
 		}
 
 		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
@@ -976,6 +1007,9 @@ namespace Microsoft.Maui.Controls
 			public Queue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
 			public SetterSpecificityList<object> Values;
+
+			// The run holding SetterSpecificity.Animation on this property, if any. One owner, enforced here.
+			public Microsoft.Maui.Controls.Animations.IAnimationHoldOwner AnimationOwner;
 		}
 
 

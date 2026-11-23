@@ -1,1 +1,5 @@
 #nullable enable
+static Microsoft.Maui.Easing.CubicBezier(double x1, double y1, double x2, double y2) -> Microsoft.Maui.Easing!
+static Microsoft.Maui.Easing.Spring(double bounce = 0.2) -> Microsoft.Maui.Easing!
+static Microsoft.Maui.Easing.Steps(int count, bool jumpAtStart = false) -> Microsoft.Maui.Easing!
+static readonly Microsoft.Maui.Easing.Hold -> Microsoft.Maui.Easing!

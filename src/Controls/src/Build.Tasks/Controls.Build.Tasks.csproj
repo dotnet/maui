@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
@@ -27,6 +27,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+    <Compile Include="..\..\..\Core\src\Animations\EasingSyntax.cs" Link="EasingSyntax.cs" />
+  </ItemGroup>
+  <ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="all" GeneratePathProperty="true" />
 		<PackageReference Include="System.CodeDom" PrivateAssets="all" GeneratePathProperty="true" />
 		<PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />

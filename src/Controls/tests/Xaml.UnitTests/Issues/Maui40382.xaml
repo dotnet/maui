@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40382">
+	<ContentPage.Resources>
+		<anim:Storyboard x:Key="PopIn"
+		                 Duration="0:0:0.4"
+		                 RepeatBehavior="2x"
+		                 Direction="Alternate"
+		                 FillMode="Both"
+		                 IterationDelay="0:0:0.1"
+		                 SpeedRatio="1.5"
+		                 ReducedMotion="Play"
+		                 Easing="cubic-bezier(0.25, 0.1, 0.25, 1)">
+			<anim:KeyFrame Cue="0%">
+				<Setter Property="VisualElement.Opacity" Value="0" />
+				<Setter Property="VisualElement.Scale" Value="0.9" />
+			</anim:KeyFrame>
+			<anim:KeyFrame Cue="60%" Easing="CubicBezier(0.34, 1.56, 0.64, 1)">
+				<Setter Property="VisualElement.Opacity" Value="1" />
+				<Setter Property="VisualElement.Scale" Value="1.05" />
+				<Setter Property="VisualElement.BackgroundColor" Value="HotPink" />
+			</anim:KeyFrame>
+			<anim:KeyFrame Cue="0:0:0.4" Easing="Spring(0.4)">
+				<Setter Property="VisualElement.Scale" Value="1" />
+			</anim:KeyFrame>
+		</anim:Storyboard>
+
+		<anim:Storyboard x:Key="Pulse" Duration="0:0:1" RepeatBehavior="Forever">
+			<anim:KeyFrame Easing="Steps(4, jump-start)">
+				<Setter Property="VisualElement.Opacity" Value="0.5" />
+			</anim:KeyFrame>
+			<anim:KeyFrame Easing="Hold">
+				<Setter Property="VisualElement.Opacity" Value="1" />
+			</anim:KeyFrame>
+		</anim:Storyboard>
+
+		<anim:Storyboard x:Key="Container" RepeatBehavior="0:0:3">
+			<anim:Storyboard.Children>
+				<anim:Storyboard BeginTime="0:0:0.5" Duration="0:0:1" TargetName="badge">
+					<anim:KeyFrame Cue="1">
+						<Setter Property="VisualElement.TranslationY" Value="12" />
+					</anim:KeyFrame>
+				</anim:Storyboard>
+			</anim:Storyboard.Children>
+		</anim:Storyboard>
+	</ContentPage.Resources>
+
+	<VerticalStackLayout>
+		<Border x:Name="card" anim:Storyboard.PlayOnLoaded="{StaticResource PopIn}" />
+		<Label x:Name="badge" Text="badge" />
+		<Button x:Name="button" Text="Save">
+			<Button.Triggers>
+				<DataTrigger TargetType="Button" Binding="{Binding IsBusy}" Value="True">
+					<DataTrigger.EnterActions>
+						<anim:BeginStoryboard Storyboard="{StaticResource Pulse}" FillCompletion="Hold" HandoffBehavior="Ignore" SpeedRatio="2" />
+					</DataTrigger.EnterActions>
+					<DataTrigger.ExitActions>
+						<anim:StopStoryboard Storyboard="{StaticResource Pulse}" Behavior="ApplyFill" />
+					</DataTrigger.ExitActions>
+				</DataTrigger>
+			</Button.Triggers>
+		</Button>
+	</VerticalStackLayout>
+</ContentPage>
