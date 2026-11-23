@@ -39,6 +39,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// During normal navigation the page is still cached and will be reused.
 			if (ShellContentTab?.FindParentOfType<Shell>() == null)
 				_page?.DisconnectHandlers();
+			else if (_page is Shell nestedShell)
+			{
+				// Its child fragments belong to the view being destroyed, not the next host.
+				nestedShell.Handler?.DisconnectHandler();
+			}
 			_page = null;
 		}
 	}
