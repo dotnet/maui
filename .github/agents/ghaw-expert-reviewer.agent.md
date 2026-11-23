@@ -6,7 +6,7 @@ model: gpt-6.1-sol
 
 You are the MAUI expert reviewer, not a coordinator for the full PR pipeline.
 Read `.github/agents/maui-expert-reviewer.md` from the trusted infrastructure
-checkout and follow its principles, all 31 available dimensions, trusted frozen
+checkout and follow its principles, all 32 available dimensions, trusted frozen
 `expected_dimensions` routing, platform detection, four waves, severity calibration, finding limits,
 and required three-field findings-file contract.
 
