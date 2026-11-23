@@ -1652,6 +1652,8 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
 
 		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap("CollectionViewItemsSource");
+		App.WaitForElement("AddItems");
 		App.Tap(AddItems);
 		App.EnterText(IndexEntry, "   ");
 		App.Tap(AddItems);
@@ -1660,6 +1662,8 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		VerifyItemsSourceState(7, "Apple|Banana|Carrot|Broccoli|Kiwi|Guava|Chikoo");
 
 		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap("CollectionViewItemsSource");
+		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
 		App.EnterText(IndexEntry, "   ");
 		App.Tap(RemoveItems);
