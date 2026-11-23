@@ -40,8 +40,20 @@ namespace Microsoft.Maui.Controls
 				return;
 
 #if IOS || MACCATALYST || WINDOWS
-			// Any transform mapper reads every transform property and rebuilds the platform transform.
-			handler.UpdateValue(nameof(IView.TranslationX));
+			// MAUI's own transform mappings each read every transform property and rebuild the platform transform, so
+			// one of them is enough. A property whose mapping was replaced or appended to still gets its own update.
+			var mapper = (handler as ElementHandler)?._mapper;
+			var rebuilt = false;
+			FlushCoalesced(handler, mapper, deferred, TranslationXBit, nameof(IView.TranslationX), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, TranslationYBit, nameof(IView.TranslationY), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleBit, nameof(IView.Scale), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleXBit, nameof(IView.ScaleX), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleYBit, nameof(IView.ScaleY), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationBit, nameof(IView.Rotation), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationXBit, nameof(IView.RotationX), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationYBit, nameof(IView.RotationY), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, AnchorXBit, nameof(IView.AnchorX), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, AnchorYBit, nameof(IView.AnchorY), ref rebuilt);
 #else
 			Flush(handler, deferred, TranslationXBit, nameof(IView.TranslationX));
 			Flush(handler, deferred, TranslationYBit, nameof(IView.TranslationY));
@@ -56,7 +68,20 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-#if !(IOS || MACCATALYST || WINDOWS)
+#if IOS || MACCATALYST || WINDOWS
+		static void FlushCoalesced(IViewHandler handler, IPropertyMapper? mapper, int deferred, int bit, string property, ref bool rebuilt)
+		{
+			if ((deferred & bit) == 0)
+				return;
+
+			var isBuiltIn = mapper is not null && ReferenceEquals(mapper.GetProperty(property), Microsoft.Maui.Handlers.ViewHandler.ViewMapper.GetProperty(property));
+			if (isBuiltIn && rebuilt)
+				return;
+
+			handler.UpdateValue(property);
+			rebuilt |= isBuiltIn;
+		}
+#else
 		static void Flush(IViewHandler handler, int deferred, int bit, string property)
 		{
 			if ((deferred & bit) != 0)

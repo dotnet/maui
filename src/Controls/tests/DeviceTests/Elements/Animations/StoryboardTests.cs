@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<MappedLabel>(_ => new LabelHandler(MappedLabel.Mapper));
 				});
 			});
 		}
@@ -82,6 +83,41 @@ namespace Microsoft.Maui.DeviceTests
 				label.EndAnimationFrame();
 
 				AssertNativeTransform(handler, translationX: 12, scale: 1.25);
+				return Task.CompletedTask;
+			});
+		}
+
+		class MappedLabel : Label
+		{
+			public static int ScaleMappings;
+
+			public static readonly PropertyMapper<ILabel, ILabelHandler> Mapper = CreateMapper();
+
+			static PropertyMapper<ILabel, ILabelHandler> CreateMapper()
+			{
+				var mapper = new PropertyMapper<ILabel, ILabelHandler>(LabelHandler.Mapper);
+				mapper.AppendToMapping(nameof(IView.Scale), (_, _) => ScaleMappings++);
+				return mapper;
+			}
+		}
+
+		[Fact]
+		public async Task CoalescingStillRunsCustomTransformMappings()
+		{
+			SetupBuilder();
+			var label = new MappedLabel { Text = "Storyboard" };
+
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
+			{
+				MappedLabel.ScaleMappings = 0;
+
+				label.BeginAnimationFrame();
+				label.TranslationX = 8;
+				label.Scale = 1.5;
+				label.EndAnimationFrame();
+
+				Assert.Equal(1, MappedLabel.ScaleMappings);
+				AssertNativeTransform(handler, translationX: 8, scale: 1.5);
 				return Task.CompletedTask;
 			});
 		}

@@ -70,12 +70,13 @@ namespace Microsoft.Maui.Controls.Animations
 				if (!property.ReturnType.IsAssignableFrom(typeof(T)) && property.ReturnType != typeof(T))
 					throw new InvalidOperationException($"AddTrack<{typeof(T).Name}> doesn't match {property.PropertyName}, which is {property.ReturnType.Name}.");
 
+				// Each track keeps its own keyframes, so its easings never leak into another track at the same cue.
+				// Build sorts every keyframe by cue once the final duration is known.
 				foreach (var key in keys)
 				{
-					var keyFrame = FindOrAddKeyFrame(storyboard, key.Cue);
+					var keyFrame = new KeyFrame { Cue = key.Cue, Easing = key.Easing };
 					keyFrame.Setters.Add(new Setter { Property = property, Value = key.Value, TargetName = targetName });
-					if (key.Easing is not null)
-						keyFrame.Easing = key.Easing;
+					storyboard.KeyFrames.Add(keyFrame);
 				}
 			});
 		}
@@ -156,38 +157,43 @@ namespace Microsoft.Maui.Controls.Animations
 			var storyboard = new Storyboard();
 			foreach (var step in _steps)
 				step(storyboard);
+
+			SortKeyFrames(storyboard);
 			return storyboard;
+		}
+
+		// Cues must not decrease in declaration order. Tracks add their keyframes independently, so order them by their
+		// resolved cue (stable, so keyframes at one cue keep the order they were added in), against the final duration.
+		static void SortKeyFrames(Storyboard storyboard)
+		{
+			var keyFrames = storyboard.KeyFrames;
+			if (keyFrames.Count < 2 || storyboard.Duration <= TimeSpan.Zero)
+				return;
+
+			var duration = storyboard.Duration;
+			var sorted = new List<KeyFrame>(keyFrames);
+			for (var i = 1; i < sorted.Count; i++)
+			{
+				var current = sorted[i];
+				var cue = current.Cue.Resolve(duration);
+				var j = i - 1;
+				while (j >= 0 && sorted[j].Cue.Resolve(duration) > cue)
+				{
+					sorted[j + 1] = sorted[j];
+					j--;
+				}
+				sorted[j + 1] = current;
+			}
+
+			keyFrames.Clear();
+			foreach (var keyFrame in sorted)
+				keyFrames.Add(keyFrame);
 		}
 
 		StoryboardBuilder Add(Action<Storyboard> step)
 		{
 			_steps.Add(step);
 			return this;
-		}
-
-		static KeyFrame FindOrAddKeyFrame(Storyboard storyboard, Cue cue)
-		{
-			foreach (var keyFrame in storyboard.KeyFrames)
-			{
-				if (keyFrame.Cue == cue)
-					return keyFrame;
-			}
-
-			var added = new KeyFrame { Cue = cue };
-
-			// Keep keyframes in cue order, so cues set by different tracks never decrease in declaration order.
-			var index = storyboard.KeyFrames.Count;
-			while (index > 0 && Compare(storyboard.KeyFrames[index - 1].Cue, cue, storyboard.Duration) > 0)
-				index--;
-
-			storyboard.KeyFrames.Insert(index, added);
-			return added;
-		}
-
-		static int Compare(Cue left, Cue right, TimeSpan duration)
-		{
-			var d = duration > TimeSpan.Zero ? duration : TimeSpan.FromTicks(1);
-			return left.Resolve(d).CompareTo(right.Resolve(d));
 		}
 
 		static TimeSpan EffectiveEnd(Storyboard storyboard)

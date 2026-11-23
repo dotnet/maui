@@ -103,11 +103,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		[InlineData(false, 0.25, 0.25)]
 		[InlineData(false, 0.99, 0.75)]
 		[InlineData(false, 1.0, 1.0)]
+		[InlineData(true, 0.0, 0.25)]
 		[InlineData(true, 0.01, 0.25)]
 		[InlineData(true, 0.25, 0.5)]
 		[InlineData(true, 0.8, 1.0)]
 		public void StepsFollowCssJumpPositions(bool jumpAtStart, double x, double expected)
 			=> Assert.Equal(expected, Easing.Steps(4, jumpAtStart).Ease(x), 10);
+
+		[Fact]
+		public void StepStartKeywordIsAtTheEndFromTheStart()
+			=> Assert.Equal(1.0, ((Easing)new Microsoft.Maui.Converters.EasingTypeConverter().ConvertFromInvariantString("step-start")).Ease(0));
 
 		[Fact]
 		public void StepsRejectsFewerThanOneStep()

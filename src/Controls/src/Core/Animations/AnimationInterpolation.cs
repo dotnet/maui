@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Animations
 			public GridLength Interpolate(GridLength from, GridLength to, double p)
 			{
 				if (from.GridUnitType != to.GridUnitType || from.IsAuto)
-					return p >= 1 ? to : from;
+					return from;
 
 				return new GridLength(Math.Max(0, Lerp(from.Value, to.Value, p)), from.GridUnitType);
 			}
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Animations
 			public Color? Interpolate(Color? from, Color? to, double p)
 			{
 				if (from is null || to is null)
-					return p >= 1 ? to : from;
+					return from;
 
 				var alpha = Lerp(from.Alpha, to.Alpha, p);
 				if (alpha <= 0)
@@ -246,13 +246,13 @@ namespace Microsoft.Maui.Controls.Animations
 				if (from is SolidColorBrush fromSolid && to is SolidColorBrush toSolid)
 					return Interpolate(fromSolid, toSolid, p);
 
-				return p >= 1 ? to : from;
+				return from;
 			}
 
 			public SolidColorBrush? Interpolate(SolidColorBrush? from, SolidColorBrush? to, double p)
 			{
 				if (from is null || to is null)
-					return p >= 1 ? to : from;
+					return from;
 
 				return new SolidColorBrush(ColorInterpolator.Instance.Interpolate(from.Color, to.Color, p));
 			}
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Animations
 			public DoubleCollection? Interpolate(DoubleCollection? from, DoubleCollection? to, double p)
 			{
 				if (from is null || to is null || from.Count != to.Count)
-					return p >= 1 ? to : from;
+					return from;
 
 				var values = new double[from.Count];
 				for (var i = 0; i < values.Length; i++)
@@ -277,11 +277,16 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 	}
 
-	/// <summary>Values that don't blend change at the keyframe.</summary>
+	/// <summary>
+	/// Values that don't blend change at the keyframe. A hold always returns the segment's start value: the track
+	/// writes the destination itself once the keyframe is reached, so an overshooting easing can't switch it early.
+	/// The conditional holds above (mismatched units, non-solid brushes, collections of different lengths) follow the
+	/// same rule.
+	/// </summary>
 	internal sealed class HoldInterpolator<T> : IValueInterpolator<T>
 	{
 		public static readonly HoldInterpolator<T> Instance = new();
 
-		public T Interpolate(T from, T to, double progress) => progress >= 1 ? to : from;
+		public T Interpolate(T from, T to, double progress) => from;
 	}
 }

@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Animations
 				CompositionTarget.Rendering -= OnRendering;
 			}
 
+			protected override void ReleaseFrames() => StopFrames();
+
 			void OnRendering(object? sender, object e)
 			{
 				// RenderingTime has its own origin; OnFrame maps it onto the clock's time line.

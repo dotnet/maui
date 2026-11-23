@@ -54,10 +54,11 @@ namespace Microsoft.Maui.Controls
 
 			var previousOwner = context.AnimationOwner;
 			context.AnimationOwner = owner;
-			context.Values.SetValue(SetterSpecificity.Animation, value);
 
-			if (!Equals(top.Value, value))
-				RaiseAnimationChange(context, top.Value, value);
+			if (Equals(top.Value, value))
+				context.Values.SetValue(SetterSpecificity.Animation, value);
+			else
+				RaiseAnimationChange(context, top.Value, value, static (c, v) => c.Values.SetValue(SetterSpecificity.Animation, v));
 
 			// The owner's own handler may have ended the hold it just stored; leave nothing behind.
 			if (!ReferenceEquals(context.AnimationOwner, owner))
@@ -84,14 +85,15 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var animated = context.Values.GetValue();
-			context.Values.Remove(SetterSpecificity.Animation);
-			var shown = context.Values.GetValue();
+			var shown = context.Values.GetClearedValue();
 
 			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
 			property.CoerceValue?.Invoke(this, shown);
 
-			if (!Equals(animated, shown))
-				RaiseAnimationChange(context, animated, shown);
+			if (Equals(animated, shown))
+				context.Values.Remove(SetterSpecificity.Animation);
+			else
+				RaiseAnimationChange(context, animated, shown, static (c, _) => c.Values.Remove(SetterSpecificity.Animation));
 		}
 
 		/// <summary>
@@ -114,6 +116,8 @@ namespace Microsoft.Maui.Controls
 
 			if (!property.TryConvert(ref value))
 				throw new ArgumentException($"Cannot convert {value} to type '{property.ReturnType}'", nameof(value));
+			if (property.ValidateValue != null && !property.ValidateValue(this, value))
+				throw new ArgumentException($"Value is an invalid value for {property.PropertyName}", nameof(value));
 			if (property.CoerceValue != null)
 				value = property.CoerceValue(this, value);
 
@@ -245,10 +249,12 @@ namespace Microsoft.Maui.Controls
 			owner?.OnHoldLost(this, context.Property, reason);
 		}
 
-		// Raises a change made by the animation layer. The property is marked as being set while its handlers
-		// run, so writes they make are queued and applied afterwards, as for any write; the mark is cleared even
-		// when a handler throws, so the property stays usable (the stock path leaves it set).
-		void RaiseAnimationChange(BindablePropertyContext context, object oldValue, object newValue)
+		// Raises a change made by the animation layer. The store is mutated between PropertyChanging and
+		// PropertyChanged, so observers of PropertyChanging still read the old value. The property is marked as being
+		// set while its handlers run, so writes they make are queued and applied afterwards, as for any write, and the
+		// queue stays attached while it drains so writes queued by the drain itself are applied too. The mark is
+		// cleared even when a handler throws, so the property stays usable (the stock path leaves it set).
+		void RaiseAnimationChange(BindablePropertyContext context, object oldValue, object newValue, Action<BindablePropertyContext, object> mutate)
 		{
 			var property = context.Property;
 			context.Attributes |= BindableContextAttributes.IsBeingSet;
@@ -256,27 +262,27 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, oldValue, newValue);
 				NotifyPropertyChanging(property);
+				mutate(context, newValue);
 				OnBindablePropertySet(property, oldValue, newValue, true, true);
-			}
-			finally
-			{
-				context.Attributes &= ~BindableContextAttributes.IsBeingSet;
-			}
 
-			Queue<SetValueArgs> delayQueue = context.DelayedSetters;
-			if (delayQueue is null)
-				return;
-
-			context.DelayedSetters = null;
-			context.Attributes |= BindableContextAttributes.IsBeingSet;
-			try
-			{
-				while (delayQueue.Count > 0)
+				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
+				if (delayQueue != null)
 				{
-					SetValueArgs s = delayQueue.Dequeue();
-					if (s != null)
-						SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity);
+					while (delayQueue.Count > 0)
+					{
+						SetValueArgs s = delayQueue.Dequeue();
+						if (s != null)
+							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity);
+					}
+
+					context.DelayedSetters = null;
 				}
+			}
+			catch
+			{
+				// Writes queued behind a throwing handler would otherwise land, stale, after some later write.
+				context.DelayedSetters = null;
+				throw;
 			}
 			finally
 			{

@@ -49,6 +49,19 @@ namespace Microsoft.Maui.Controls.Animations
 					_link.Paused = true;
 			}
 
+			// The main run loop retains a registered display link; a destroyed window's clock must not leave one behind.
+			protected override void ReleaseFrames()
+			{
+				var link = _link;
+				_link = null;
+				if (link is null)
+					return;
+
+				link.RemoveFromRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+				link.Invalidate();
+				link.Dispose();
+			}
+
 			void OnLink()
 			{
 				if (_link is { } link)

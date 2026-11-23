@@ -28,14 +28,15 @@ namespace Microsoft.Maui.Controls.Animations
 			if (Storyboard is not Storyboard storyboard)
 				return;
 
-			StoryboardRuns.Stop(sender, storyboard, StopBehavior.Release);
+			// The new run starts while the previous one still holds its values, so the engine applies the handoff:
+			// SnapshotAndReplace continues from the value on screen, Ignore leaves the previous run in charge.
 			var player = storyboard.Begin(sender, new PlaybackOptions
 			{
 				HandoffBehavior = HandoffBehavior,
 				SpeedRatio = SpeedRatio,
 				FillCompletion = FillCompletion,
 			});
-			StoryboardRuns.Add(sender, player);
+			StoryboardRuns.Replace(sender, storyboard, player);
 		}
 	}
 
@@ -121,6 +122,31 @@ namespace Microsoft.Maui.Controls.Animations
 
 			Prune(runs);
 			runs.Add(player);
+		}
+
+		/// <summary>
+		/// Records a run that has just started for <paramref name="storyboard"/>. Earlier runs of the same storyboard
+		/// that it took over are forgotten; one it was ignored in favour of keeps running and stays registered.
+		/// </summary>
+		public static void Replace(VisualElement element, Storyboard storyboard, StoryboardPlayer player)
+		{
+			if (player.State != PlaybackState.Stopped || player.HoldsAnything())
+			{
+				if (element.GetValue(RunsProperty) is List<StoryboardPlayer> runs)
+				{
+					foreach (var run in runs.ToArray())
+					{
+						if (ReferenceEquals(run.Storyboard, storyboard) && !ReferenceEquals(run, player))
+						{
+							// Whatever the previous run still holds (nothing, after a full takeover) is released.
+							run.Stop(StopBehavior.Release);
+							runs.Remove(run);
+						}
+					}
+				}
+			}
+
+			Add(element, player);
 		}
 
 		public static StoryboardPlayer? Find(VisualElement element, Storyboard? storyboard)

@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Animations
 			UpdateRunning();
 			_tick = null;
 			_subscribers = 0;
+			ReleaseFrames();
 
 			var destroyed = Destroyed;
 			Destroyed = null;
@@ -149,6 +150,11 @@ namespace Microsoft.Maui.Controls.Animations
 		protected abstract void StartFrames();
 
 		protected abstract void StopFrames();
+
+		/// <summary>Releases the platform frame source for good, when the clock is destroyed with its window.</summary>
+		protected virtual void ReleaseFrames()
+		{
+		}
 
 		static AnimationFrameClock? s_applicationClock;
 

@@ -401,6 +401,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(AnimationWriteResult.Excluded, label.SetAnimationValue(VisualElement.WidthProperty, 10.0, new TestOwner()));
 		}
 
+		class ValidatedView : View
+		{
+			public static readonly BindableProperty LevelProperty =
+				BindableProperty.Create(nameof(Level), typeof(double), typeof(ValidatedView), 0.0, validateValue: (_, v) => (double)v <= 1.0);
+
+			public double Level
+			{
+				get => (double)GetValue(LevelProperty);
+				set => SetValue(LevelProperty, value);
+			}
+		}
+
+		[Fact]
+		public void CommitValidatesTheValueBeforeChangingAnything()
+		{
+			var view = new ValidatedView();
+			var owner = new TestOwner();
+			view.SetAnimationValue(ValidatedView.LevelProperty, 0.5, owner);
+
+			Assert.Throws<System.ArgumentException>(() => view.CommitAnimationValue(ValidatedView.LevelProperty, 2.0, owner));
+
+			Assert.Equal(0.5, view.Level);
+			Assert.Equal(0.0, view.GetAnimationBaseValue(ValidatedView.LevelProperty));
+		}
+
+		[Fact]
+		public void PropertyChangingObserversStillReadTheOldValue()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var owner = new TestOwner();
+			var seen = new System.Collections.Generic.List<double>();
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					seen.Add(label.Opacity);
+			};
+
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, owner);
+			label.ClearAnimationValue(VisualElement.OpacityProperty, owner);
+
+			Assert.Equal(new[] { 0.9, 0.2 }, seen);
+		}
+
+		[Fact]
+		public void WritesQueuedWhileDrainingAreApplied()
+		{
+			var label = new Label();
+			var owner = new TestOwner();
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName != nameof(Label.Opacity))
+					return;
+
+				// The animated change queues a renderer write, whose own notification queues a normalizing write.
+				if (label.Opacity == 0.2)
+					label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.7);
+				else if (label.Opacity == 0.7)
+					label.Opacity = 0.75;
+			};
+
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, owner);
+
+			Assert.Equal(0.75, label.Opacity);
+			Assert.Equal(AnimationHoldLossReason.HandlerWrite, owner.LostReason);
+		}
+
 		[Fact]
 		public void PlainWritesAreUnchangedWithoutAHold()
 		{

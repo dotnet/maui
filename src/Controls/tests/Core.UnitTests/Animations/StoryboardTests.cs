@@ -897,6 +897,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void DiscreteValuesIgnoreAnOvershootingEasing()
+		{
+			var label = new Label { Text = "a" };
+			var overshoot = Easing.CubicBezier(0.3, 1.8, 0.6, 1);
+			Assert.True(overshoot.Ease(0.6) > 1);
+			Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<string>(Label.TextProperty, t => t.At(0, "a").At(1, "b", overshoot))
+				.Build()
+				.Begin(label);
+
+			Advance(60);
+			Assert.Equal("a", label.Text);
+
+			Advance(50);
+			Assert.Equal("b", label.Text);
+		}
+
+		[Fact]
+		public void TracksSharingACueKeepTheirOwnEasing()
+		{
+			var label = new Label();
+			Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0, Easing.CubicIn))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 2.0, Easing.Linear))
+				.AddTrack<double>(VisualElement.RotationProperty, t => t.At(0, 0.0).At(1, 100.0))
+				.Build()
+				.Begin(label);
+
+			Advance(50);
+
+			Assert.Equal(0.125, label.Opacity, 10);
+			Assert.Equal(1.5, label.Scale, 10);
+			Assert.Equal(50, label.Rotation, 10);
+		}
+
+		[Fact]
+		public void BuilderOrdersCuesAgainstTheFinalDuration()
+		{
+			var label = new Label();
+			Storyboard.Create()
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(Ms(50), 0.4).At(1, 1.0).At(0, 0.0))
+				.WithDuration(Ms(100))
+				.Build()
+				.Begin(label);
+
+			Advance(25);
+			Assert.Equal(0.2, label.Opacity, 10);
+
+			Advance(50);
+			Assert.Equal(0.7, label.Opacity, 10);
+		}
+
+		[Fact]
 		public void BindingKeyFrameValuesAreSampledAgainstThePlayTarget()
 		{
 			var vm = new ViewModel { Value = 0.6 };
@@ -1050,6 +1103,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Advance(10);
 
 			Assert.Equal(0.1, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void RestartingFromATriggerContinuesFromTheValueOnScreen()
+		{
+			var label = new Label { Opacity = 0 };
+			var storyboard = Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0))
+				.Build();
+			var begin = new BeginStoryboard { Storyboard = storyboard };
+
+			((TriggerAction)begin).DoInvoke(label);
+			Advance(50);
+			((TriggerAction)begin).DoInvoke(label);
+
+			Assert.Equal(0.5, label.Opacity, 10);
+
+			Advance(50);
+			Assert.Equal(0.75, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void IgnoreHandoffFromATriggerLeavesTheRunningRunInCharge()
+		{
+			var label = new Label();
+			var storyboard = Fade(0, 1, 200);
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			Advance(50);
+
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard, HandoffBehavior = StoryboardHandoffBehavior.Ignore }).DoInvoke(label);
+			Advance(50);
+
+			Assert.Equal(0.5, label.Opacity, 10);
 		}
 
 		[Fact]

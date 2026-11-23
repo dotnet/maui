@@ -226,7 +226,12 @@ namespace Microsoft.Maui.Controls.Animations
 					player.Completion.ContinueWith(t =>
 					{
 						registration.Dispose();
-						if (t.IsFaulted)
+
+						// Cancelling stops the player first (so the task completes after its cleanup); that stop must
+						// not be published as an ordinary Stopped result.
+						if (cancellationToken.IsCancellationRequested)
+							completion.TrySetCanceled(cancellationToken);
+						else if (t.IsFaulted)
 							completion.TrySetException(t.Exception!.InnerExceptions);
 						else
 							completion.TrySetResult(t.Result);

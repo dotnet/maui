@@ -143,7 +143,7 @@ namespace Microsoft.Maui
 				throw new ArgumentOutOfRangeException(nameof(count), count, "count must be at least 1.");
 
 			Func<double, double> steps = jumpAtStart
-				? x => x <= 0 ? 0 : x >= 1 ? 1 : Math.Min(1.0, Math.Floor(x * count + 1) / count)
+				? x => x < 0 ? 0 : x >= 1 ? 1 : Math.Min(1.0, Math.Floor(x * count + 1) / count)
 				: x => x <= 0 ? 0 : x >= 1 ? 1 : Math.Floor(x * count) / count;
 
 			return new Easing(steps) { _syntax = EasingSyntax.FormatSteps(count, jumpAtStart) };

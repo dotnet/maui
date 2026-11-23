@@ -55,8 +55,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		static void Play(VisualElement element, Storyboard storyboard)
 		{
-			StoryboardRuns.Stop(element, storyboard, StopBehavior.Release);
-			StoryboardRuns.Add(element, storyboard.Begin(element));
+			StoryboardRuns.Replace(element, storyboard, storyboard.Begin(element));
 		}
 	}
 }
