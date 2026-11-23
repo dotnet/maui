@@ -11,8 +11,11 @@ namespace Microsoft.Maui.Handlers
 	{
 		ButtonClickListener ClickListener { get; } = new();
 		ButtonTouchListener TouchListener { get; } = new();
+		ButtonKeyListener KeyListener { get; } = new();
 		bool _isPressed;
 		IContentButton? _touchTarget;
+		IContentButton? _keyTarget;
+		Keycode? _activationKey;
 
 		protected override MaterialCardView CreatePlatformView()
 		{
@@ -63,6 +66,9 @@ namespace Microsoft.Maui.Handlers
 			TouchListener.Handler = this;
 			contentButton.SetOnTouchListener(TouchListener);
 
+			KeyListener.Handler = this;
+			contentButton.SetOnKeyListener(KeyListener);
+
 			contentButton.FocusChange += OnNativeViewFocusChange;
 			contentButton.LayoutChange += OnPlatformViewLayoutChange;
 			contentButton.DetachedFromWindow += OnPlatformViewDetached;
@@ -86,6 +92,9 @@ namespace Microsoft.Maui.Handlers
 
 				TouchListener.Handler = null;
 				contentButton.SetOnTouchListener(null);
+
+				KeyListener.Handler = null;
+				contentButton.SetOnKeyListener(null);
 
 				contentButton.FocusChange -= OnNativeViewFocusChange;
 				contentButton.LayoutChange -= OnPlatformViewLayoutChange;
@@ -210,9 +219,51 @@ namespace Microsoft.Maui.Handlers
 				button.Clicked();
 		}
 
+		static bool OnKey(ContentButtonHandler? handler, AView? platformView, Keycode keyCode, KeyEvent? e)
+		{
+			if (handler is null || platformView is null || e is null || !keyCode.IsConfirmKey())
+				return false;
+
+			if (e.Action == KeyEventActions.Down)
+			{
+				if (handler._isPressed)
+					return handler._activationKey == keyCode;
+
+				if (((IElementHandler)handler).VirtualView is not IContentButton { IsEnabled: true } button)
+					return false;
+
+				handler._keyTarget = button;
+				handler._activationKey = keyCode;
+				handler._isPressed = true;
+				platformView.Pressed = true;
+				button.Pressed();
+				return true;
+			}
+
+			if (e.Action == KeyEventActions.Up && handler._activationKey == keyCode)
+			{
+				var keyTarget = handler._keyTarget;
+				handler.ReleasePressed();
+				if (!e.IsCanceled && keyTarget is { IsEnabled: true } &&
+					IsConnectedTo(handler, keyTarget) &&
+					ReferenceEquals(((IElementHandler)handler).PlatformView, platformView))
+				{
+					platformView.PerformClick();
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
 		void ReleasePressed()
 		{
 			_touchTarget = null;
+			if (_activationKey is not null && ((IElementHandler)this).PlatformView is AView platformView)
+				platformView.Pressed = false;
+			_keyTarget = null;
+			_activationKey = null;
 
 			if (!_isPressed)
 				return;
@@ -224,7 +275,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
 		{
-			if (((IElementHandler)this).VirtualView is IView view)
+			var view = ((IElementHandler)this).VirtualView as IView;
+			if (!e.HasFocus && _activationKey is not null)
+				ReleasePressed();
+
+			if (view is not null && ReferenceEquals(((IElementHandler)this).VirtualView, view))
 				view.IsFocused = e.HasFocus;
 		}
 
@@ -294,6 +349,13 @@ namespace Microsoft.Maui.Handlers
 			public ContentButtonHandler? Handler { get; set; }
 
 			public bool OnTouch(AView? v, MotionEvent? e) => ContentButtonHandler.OnTouch(Handler, v, e);
+		}
+
+		sealed class ButtonKeyListener : Java.Lang.Object, AView.IOnKeyListener
+		{
+			public ContentButtonHandler? Handler { get; set; }
+
+			public bool OnKey(AView? v, Keycode keyCode, KeyEvent? e) => ContentButtonHandler.OnKey(Handler, v, keyCode, e);
 		}
 	}
 }

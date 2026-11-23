@@ -443,6 +443,169 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(Keycode.Enter)]
+		[InlineData(Keycode.DpadCenter)]
+		[InlineData(Keycode.NumpadEnter)]
+		[InlineData(Keycode.Space)]
+		public async Task KeyboardActivationRaisesPressAndRelease(Keycode key)
+		{
+			var pressed = 0;
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => pressed++,
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				using var down = new KeyEvent(KeyEventActions.Down, key);
+				using var up = new KeyEvent(KeyEventActions.Up, key);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(down);
+				Assert.Equal(1, pressed);
+				Assert.Equal(0, released);
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+
+				Assert.Equal(1, released);
+				Assert.Equal(1, clicked);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task KeyboardActivationDoesNotClickReplacement(bool replaceOnPress)
+		{
+			var firstClicks = 0;
+			var secondClicks = 0;
+			var first = new ContentButtonStub { Clicked = () => firstClicks++ };
+			var second = new ContentButtonStub { Clicked = () => secondClicks++ };
+
+			await AttachAndRun(first, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				if (replaceOnPress)
+					first.Pressed = () => handler.SetVirtualView(second);
+				else
+					first.Released = () => handler.SetVirtualView(second);
+
+				using var down = new KeyEvent(KeyEventActions.Down, Keycode.Enter);
+				using var up = new KeyEvent(KeyEventActions.Up, Keycode.Enter);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+
+				Assert.Same(second, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(0, firstClicks);
+				Assert.Equal(0, secondClicks);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+				Assert.Equal(1, secondClicks);
+			});
+		}
+
+		[Fact]
+		public async Task DisablingDuringKeyboardPressCancelsActivation()
+		{
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				button.Pressed = () =>
+				{
+					button.IsEnabled = false;
+					handler.UpdateValue(nameof(IView.IsEnabled));
+				};
+				using var down = new KeyEvent(KeyEventActions.Down, Keycode.Enter);
+				using var up = new KeyEvent(KeyEventActions.Up, Keycode.Enter);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+
+				Assert.Equal(1, released);
+				Assert.Equal(0, clicked);
+				Assert.False(platformView.Pressed);
+			});
+		}
+
+		[Fact]
+		public async Task LosingFocusDuringKeyboardPressCancelsActivation()
+		{
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				using var down = new KeyEvent(KeyEventActions.Down, Keycode.Enter);
+				using var up = new KeyEvent(KeyEventActions.Up, Keycode.Enter);
+				platformView.DispatchKeyEvent(down);
+				platformView.ClearFocus();
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+
+				Assert.Equal(1, released);
+				Assert.Equal(0, clicked);
+				Assert.False(platformView.Pressed);
+			});
+		}
+
+		[Fact]
+		public async Task CanceledKeyboardReleaseDoesNotActivate()
+		{
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				using var down = new KeyEvent(KeyEventActions.Down, Keycode.Enter);
+				using var up = new KeyEvent(KeyEventActions.Up, Keycode.Enter);
+				using var canceled = KeyEvent.ChangeFlags(up, KeyEventFlags.Canceled);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(canceled);
+				await DrainPostedWork(platformView);
+
+				Assert.Equal(1, released);
+				Assert.Equal(0, clicked);
+				Assert.False(platformView.Pressed);
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task TouchDoesNotActivateReplacementView(bool replaceOnPress)
