@@ -342,6 +342,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(SafeAreaRegions.SoftInput, true, 80, 20, 80)]
+		[InlineData(SafeAreaRegions.All, true, 10, 40, 10)]
+		[InlineData(SafeAreaRegions.All, false, 10, 40, 40)]
+		[InlineData(SafeAreaRegions.SoftInput, false, 0, 40, 0)]
+		public async Task AnimatedKeyboardInsetsUpdateContentLayout(
+			SafeAreaRegions bottomRegion, bool opening, int keyboardBottom, int containerBottom, int expectedBottom)
+		{
+			var content = new ButtonStub();
+			var button = new ExplicitSafeAreaContentButtonStub
+			{
+				Content = content,
+				BottomRegion = bottomRegion,
+			};
+
+			await AttachAndRun(button, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var width = platformView.Resources!.DisplayMetrics!.WidthPixels;
+				var widthSpec = AView.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly);
+				var heightSpec = AView.MeasureSpec.MakeMeasureSpec(400, MeasureSpecMode.Exactly);
+				platformView.Measure(widthSpec, heightSpec);
+				platformView.Layout(0, 0, width, 400);
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var initial = builder
+					.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 30, 0))
+					.Build();
+				((IHandleWindowInsets)platformView).HandleWindowInsets(platformView, initial);
+
+				using var animatedBuilder = new WindowInsetsCompat.Builder();
+				using var animated = animatedBuilder
+					.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 30, containerBottom))
+					.SetInsets(WindowInsetsCompat.Type.Ime(), AInsets.Of(0, 0, 0, keyboardBottom))
+					.SetVisible(WindowInsetsCompat.Type.Ime(), true)
+					.Build();
+				Assert.Equal(expectedBottom > 0, SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
+					animated, button, MauiContext.Context, platformView, opening));
+				platformView.Measure(widthSpec, heightSpec);
+				platformView.Layout(0, 0, width, 400);
+
+				var nativeContent = Assert.IsAssignableFrom<AView>(content.Handler.PlatformView);
+				Assert.Equal(20, nativeContent.Left);
+				Assert.Equal(width - 30, nativeContent.Right);
+				Assert.Equal(400 - expectedBottom, nativeContent.Bottom);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task DisabledPressedViewIsNotRetainedAfterReplacement()
 		{
@@ -911,11 +960,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class ExplicitSafeAreaContentButtonStub : ContentButtonStub, ISafeAreaView2
 		{
+			internal SafeAreaRegions BottomRegion { get; set; } = SafeAreaRegions.Container;
+
 			public bool HasExplicitSafeAreaEdges => true;
 
 			Thickness ISafeAreaView2.SafeAreaInsets { set { } }
 
-			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Container;
+			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) =>
+				edge == 3 ? BottomRegion : SafeAreaRegions.Container;
 		}
 	}
 }

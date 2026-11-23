@@ -428,6 +428,14 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			SetSafeAreaPadding(left, top, right, bottom);
+		}
+
+		internal void SetAnimatedSafeAreaBottom(int bottom) =>
+			SetSafeAreaPadding(_safeAreaPadding.left, _safeAreaPadding.top, _safeAreaPadding.right, bottom);
+
+		void SetSafeAreaPadding(int left, int top, int right, int bottom)
+		{
 			var safeAreaPadding = (left, top, right, bottom);
 			if (_safeAreaPadding != safeAreaPadding)
 			{

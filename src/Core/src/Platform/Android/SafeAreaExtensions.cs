@@ -359,7 +359,10 @@ internal static class SafeAreaExtensions
 			? keyboardBottom
 			: Math.Max(containerBottom, keyboardBottom);
 
-		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+		if (view is MauiContentButton contentButton)
+			contentButton.SetAnimatedSafeAreaBottom((int)bottom);
+		else
+			view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
 		return bottom > 0;
 	}
 
