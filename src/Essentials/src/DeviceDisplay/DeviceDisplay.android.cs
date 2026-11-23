@@ -89,8 +89,9 @@ namespace Microsoft.Maui.Devices
 		{
 			try
 			{
-				using var service = Application.Context.GetSystemService(Context.WindowService);
-				using var windowManager = service?.JavaCast<IWindowManager>();
+				// Don't dispose: GetSystemService returns a managed peer shared with every other caller.
+				var service = Application.Context.GetSystemService(Context.WindowService);
+				var windowManager = service?.JavaCast<IWindowManager>();
 				return windowManager?.DefaultDisplay;
 			}
 			catch (Exception ex)
