@@ -123,6 +123,80 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ScrolledSourceChangeUsesCurrentSourceForThreshold(bool replaceSource)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				RemainingItemsThreshold = 5,
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 40 })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var controller = handler.Controller;
+				var nativeView = controller.CollectionView;
+				var originalSource = controller.ItemsSource;
+				var nativeDelegate = nativeView.Delegate;
+				var scrolledCount = 0;
+				var thresholdCount = 0;
+
+				collectionView.Scrolled += (_, _) =>
+				{
+					scrolledCount++;
+					if (replaceSource)
+						collectionView.ItemsSource = new ObservableCollection<string>(items);
+					else
+						items.Add("Added item");
+				};
+				collectionView.RemainingItemsThresholdReached += (_, _) => thresholdCount++;
+
+				// Isolate the callback under test from UIKit scrolls caused by the source update.
+				nativeView.Delegate = null;
+				try
+				{
+					using var delegator = new ThresholdTestDelegator(nativeView.CollectionViewLayout, controller);
+					delegator.Scrolled(nativeView);
+
+					Assert.Equal(1, scrolledCount);
+					if (replaceSource)
+					{
+						Assert.NotSame(originalSource, controller.ItemsSource);
+						Assert.Equal(0, thresholdCount);
+					}
+					else
+					{
+						Assert.Same(originalSource, controller.ItemsSource);
+						Assert.Equal(11, controller.ItemsSource.ItemCount);
+						Assert.Equal(1, thresholdCount);
+					}
+				}
+				finally
+				{
+					nativeView.Delegate = nativeDelegate;
+				}
+			});
+		}
+
+		class ThresholdTestDelegator : ItemsViewDelegator2<ReorderableItemsView, ItemsViewController2<ReorderableItemsView>>
+		{
+			public ThresholdTestDelegator(UICollectionViewLayout layout, ItemsViewController2<ReorderableItemsView> controller)
+				: base(layout, controller)
+			{
+			}
+
+			protected override (bool VisibleItems, int First, int Center, int Last) GetVisibleItemsIndex()
+				=> (true, 0, 4, 9);
+		}
+
+		[Theory]
 		[InlineData(false, true)]
 		[InlineData(true, true)]
 		[InlineData(false, false)]
