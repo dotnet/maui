@@ -129,17 +129,26 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_ended)
 				return;
 
-			if (!_started && !Start())
-				return;
+			try
+			{
+				if (!_started && !Start())
+					return;
 
-			if (_state == PlaybackState.Running)
-				return;
+				if (_state == PlaybackState.Running)
+					return;
 
-			if (ApplyMotionPolicy())
-				return;
+				if (ApplyMotionPolicy())
+					return;
 
-			SetState(PlaybackState.Running);
-			StartTicking();
+				SetState(PlaybackState.Running);
+				StartTicking();
+			}
+			catch (Exception ex)
+			{
+				// A synchronous call propagates its fault, but never leaves values or ownership behind.
+				FaultSynchronously(ex);
+				throw;
+			}
 		}
 
 		/// <summary>Pauses the run. Its values stay on screen.</summary>
@@ -182,16 +191,24 @@ namespace Microsoft.Maui.Controls.Animations
 			if (!_started && !Start())
 				return;
 
-			if (_compiled.IsForever)
+			try
 			{
-				ReleaseAll();
-				End(AnimationResult.Stopped);
-				return;
-			}
+				if (_compiled.IsForever)
+				{
+					ReleaseAll();
+					End(AnimationResult.Stopped);
+					return;
+				}
 
-			_timeTicks = _compiled.EndTicks;
-			ApplyEndFill();
-			End(AnimationResult.Completed, finished: true);
+				_timeTicks = _compiled.EndTicks;
+				ApplyEndFill();
+				End(AnimationResult.Completed, finished: true);
+			}
+			catch (Exception ex)
+			{
+				FaultSynchronously(ex);
+				throw;
+			}
 		}
 
 		/// <summary>Ends the run without an exception. By default the animated values are removed.</summary>
@@ -203,6 +220,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_ended && !HoldsAnything())
 				return;
 
+			try
+			{
 			switch (behavior)
 			{
 				case StopBehavior.ApplyFill:
@@ -219,6 +238,12 @@ namespace Microsoft.Maui.Controls.Animations
 				default:
 					ReleaseAll();
 					break;
+			}
+			}
+			catch (Exception ex)
+			{
+				FaultSynchronously(ex);
+				throw;
 			}
 
 			if (!_ended)
@@ -249,7 +274,7 @@ namespace Microsoft.Maui.Controls.Animations
 		internal static void VerifyAccess(BindableObject target)
 		{
 			// In a process with no dispatcher (a unit test), affinity isn't checked.
-			if (target.TryFindDispatcher() is IDispatcher dispatcher && dispatcher.IsDispatchRequired)
+			if (target.GetAnimationDispatcher() is IDispatcher dispatcher && dispatcher.IsDispatchRequired)
 				throw new InvalidOperationException("Storyboard players must be created and used on the target's UI thread.");
 		}
 
@@ -540,7 +565,7 @@ namespace Microsoft.Maui.Controls.Animations
 			Write(_scratch, commit: false);
 		}
 
-		void Write(Contribution[] values, bool commit)
+		void Write(Contribution[] values, bool commit, bool final = false)
 		{
 			VisualElement? batched = null;
 			try
@@ -557,7 +582,7 @@ namespace Microsoft.Maui.Controls.Animations
 							batched?.BeginAnimationFrame();
 						}
 
-						WriteSlot(slot, target, ref values[i], commit);
+						WriteSlot(slot, target, ref values[i], commit, final);
 					}
 				}
 			}
@@ -567,7 +592,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		void WriteSlot(SlotState slot, BindableObject target, ref Contribution contribution, bool commit)
+		void WriteSlot(SlotState slot, BindableObject target, ref Contribution contribution, bool commit, bool final)
 		{
 			var property = slot.Slot.Property;
 
@@ -584,6 +609,15 @@ namespace Microsoft.Maui.Controls.Animations
 
 			if (contribution.Kind == ContributionKind.None)
 			{
+				if (final)
+				{
+					// The run has ended and contributes nothing here: give the property up entirely.
+					target.ClearAnimationValue(property, this);
+					slot.Held = false;
+					slot.Owned = false;
+					return;
+				}
+
 				// Before the node starts (no backward fill) or after it ends (no forward fill): show the base value,
 				// but keep owning the property.
 				if (slot.Held)
@@ -631,7 +665,8 @@ namespace Microsoft.Maui.Controls.Animations
 
 		void ApplyFill(bool start)
 		{
-			var fill = Storyboard.FillMode;
+			// The fill compiled when the run started: later edits to the definition affect only later runs.
+			var fill = _compiled.Root.Fill;
 			var keeps = start
 				? fill == AnimationFillMode.Backward || fill == AnimationFillMode.Both
 				: fill == AnimationFillMode.Forward || fill == AnimationFillMode.Both;
@@ -644,9 +679,9 @@ namespace Microsoft.Maui.Controls.Animations
 
 			_compiled.EvaluateEdge(start, _scratch);
 			if (_options.FillCompletion == FillCompletion.Hold)
-				Write(_scratch, commit: false);
+				Write(_scratch, commit: false, final: true);
 			else
-				Write(_scratch, commit: true);
+				Write(_scratch, commit: true, final: true);
 		}
 
 		void CommitShown()
@@ -659,7 +694,7 @@ namespace Microsoft.Maui.Controls.Animations
 					: default;
 			}
 
-			Write(_scratch, commit: true);
+			Write(_scratch, commit: true, final: true);
 			ReleaseAll();
 		}
 
@@ -687,6 +722,28 @@ namespace Microsoft.Maui.Controls.Animations
 
 			if (errors is not null)
 				throw new AggregateException(errors);
+		}
+
+		void FaultSynchronously(Exception exception)
+		{
+			if (!_ended)
+				Fault(exception);
+			else
+				ReleaseQuietly();
+		}
+
+		void ReleaseQuietly()
+		{
+			try
+			{
+				ReleaseAll();
+			}
+			catch (Exception ex)
+			{
+				Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(ex, "MAUIA1005: A storyboard run faulted while releasing.");
+			}
+
+			StopObservingLifetime();
 		}
 
 		void Fault(Exception exception)
@@ -851,14 +908,17 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class PlaybackStateChangedEventArgs : EventArgs
 	{
+		/// <summary>Creates the event data.</summary>
 		public PlaybackStateChangedEventArgs(PlaybackState oldState, PlaybackState newState)
 		{
 			OldState = oldState;
 			NewState = newState;
 		}
 
+		/// <summary>The state before the change.</summary>
 		public PlaybackState OldState { get; }
 
+		/// <summary>The state after the change.</summary>
 		public PlaybackState NewState { get; }
 	}
 
@@ -866,6 +926,7 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class StoryboardCompletedEventArgs : EventArgs
 	{
+		/// <summary>Creates the event data.</summary>
 		public StoryboardCompletedEventArgs(AnimationResult result, IReadOnlyList<BindableProperty> replacedTracks)
 		{
 			Result = result;

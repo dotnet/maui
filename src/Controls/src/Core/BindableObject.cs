@@ -320,6 +320,8 @@ namespace Microsoft.Maui.Controls
 			var currentSpecificity = context.Values.GetSpecificity();
 			if (currentSpecificity == SetterSpecificity.Animation)
 				currentSpecificity = PrepareBindingUnderAnimation(context, binding);
+			else if (context.AnimationOwner is not null)
+				RelinquishClaimForBinding(context, binding);
 
 			if (currentSpecificity > SetterSpecificity.FromBinding)
 			{

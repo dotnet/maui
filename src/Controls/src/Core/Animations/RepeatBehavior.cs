@@ -52,8 +52,10 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>Repeats until stopped.</summary>
 		public static RepeatBehavior Forever => new(3);
 
+		/// <summary>Whether this is a number of iterations (the default, once, included).</summary>
 		public bool HasCount => _kind <= 1;
 
+		/// <summary>Whether this is a total duration.</summary>
 		public bool HasDuration => _kind == 2;
 
 		internal bool IsForever => _kind == 3;
@@ -64,16 +66,21 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>The total duration.</summary>
 		public TimeSpan Duration => _kind == 2 ? _duration : throw new InvalidOperationException("This repeat behavior is not a duration.");
 
+		/// <inheritdoc/>
 		public bool Equals(RepeatBehavior other)
 			=> (HasCount && other.HasCount && Count.Equals(other.Count))
 				|| (_kind == other._kind && _kind != 0 && _kind != 1 && _duration == other._duration);
 
+		/// <inheritdoc/>
 		public override bool Equals(object? obj) => obj is RepeatBehavior other && Equals(other);
 
+		/// <inheritdoc/>
 		public override int GetHashCode() => HasCount ? Count.GetHashCode() : (_kind, _duration).GetHashCode();
 
+		/// <summary>Whether two repeat behaviors are equal.</summary>
 		public static bool operator ==(RepeatBehavior left, RepeatBehavior right) => left.Equals(right);
 
+		/// <summary>Whether two repeat behaviors differ.</summary>
 		public static bool operator !=(RepeatBehavior left, RepeatBehavior right) => !left.Equals(right);
 
 		/// <summary>The invariant text that parses back to this value: <c>"3x"</c>, <c>"0:0:10"</c> or <c>"Forever"</c>.</summary>
@@ -121,10 +128,13 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class RepeatBehaviorTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var text = value as string ?? value?.ToString();
@@ -134,6 +144,7 @@ namespace Microsoft.Maui.Controls.Animations
 			throw new FormatException($"Cannot convert \"{text}\" into {typeof(RepeatBehavior)}. Use a count (\"3x\"), a duration (\"0:0:10\") or \"Forever\".");
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 			=> value is RepeatBehavior repeat ? repeat.ToString() : throw new NotSupportedException();
 	}

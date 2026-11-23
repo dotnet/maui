@@ -728,6 +728,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void SequenceEndsOnTheLastStepsValue()
+		{
+			var label = new Label();
+			var player = Storyboard.Create()
+				.Sequence(
+					a => a.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.5)),
+					b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0)))
+				.Build()
+				.Begin(label);
+
+			Advance(250);
+
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+			Assert.Equal(1.0, label.Opacity);
+		}
+
+		[Fact]
+		public void ImplicitStartsFollowDependenciesNotDeclarationOrder()
+		{
+			var label = new Label { Opacity = 0 };
+			var storyboard = new Storyboard();
+			Storyboard Step(TimeSpan begin, double repeat, double to)
+			{
+				var step = new Storyboard { BeginTime = begin, Duration = Ms(100), RepeatBehavior = new RepeatBehavior(repeat) };
+				step.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = to } } });
+				return step;
+			}
+
+			// A is declared first but continues from B, which ends (half way, at 0.25) before A starts.
+			storyboard.Children.Add(Step(Ms(50), 1, 1.0));
+			storyboard.Children.Add(Step(TimeSpan.Zero, 0.5, 0.5));
+			storyboard.Begin(label);
+
+			Advance(100);
+
+			Assert.Equal(0.625, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void OverlapsInLaterIterationsOfARepeatingParentAreAnError()
+		{
+			var storyboard = Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(2))
+					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
+				.AddChild(Ms(250), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
+				.Build();
+
+			var ex = Assert.Throws<InvalidOperationException>(() => storyboard.Begin(new Label()));
+			Assert.Contains("MAUIX2307", ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void NonOverlappingIterationsOfARepeatingParentAreAllowed()
+		{
+			var storyboard = Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(2))
+					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
+				.AddChild(Ms(450), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
+				.Build();
+
+			var player = storyboard.Begin(new Label());
+
+			Assert.Equal(PlaybackState.Running, player.State);
+		}
+
+		[Fact]
 		public void StaggerOffsetsEachNamedTarget()
 		{
 			var (root, badge, title) = CreateNamedTree();
@@ -794,6 +860,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			var ex = Assert.Throws<InvalidOperationException>(() => storyboard.Begin(new Label()));
 			Assert.Contains("MAUIX2303", ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void FillModeIsSnapshottedWhenARunStarts()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var storyboard = Fade(0, 0.2);
+			storyboard.Begin(label);
+
+			storyboard.FillMode = AnimationFillMode.None;
+			Advance(110);
+
+			Assert.Equal(0.2, label.Opacity);
+		}
+
+		[Fact]
+		public void AFinishedRunGivesUpPropertiesItNoLongerContributesTo()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var player = Storyboard.Create().WithDuration(Ms(200))
+				.AddChild(TimeSpan.Zero, child => child.WithDuration(Ms(100)).WithFillMode(AnimationFillMode.None)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.Build()
+				.Begin(label);
+
+			Advance(250);
+
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+			Assert.Equal(0.9, label.Opacity);
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public async Task ASynchronousStartFaultReleasesEverything()
+		{
+			MotionPolicy.TestOverride = MotionPolicy.Instant;
+			var label = new Label { Opacity = 0.9 };
+			var throwing = true;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (throwing && e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("boom");
+			};
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => Fade(0, 0.2).PlayAsync(label));
+			throwing = false;
+
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+			label.Opacity = 0.5;
+			Assert.Equal(0.5, label.Opacity);
+		}
+
+		[Fact]
+		public void SourceWritingBindingsAreSampledReadOnly()
+		{
+			var vm = new ViewModel { Value = 0.6 };
+			var label = new Label { BindingContext = vm };
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame
+			{
+				Cue = Cue.FromFraction(1),
+				Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = new Binding(nameof(ViewModel.Value), BindingMode.OneWayToSource) } },
+			});
+
+			storyboard.Begin(label);
+			Advance(110);
+
+			Assert.Equal(0.6, vm.Value);
+			Assert.Equal(0.6, label.Opacity, 10);
 		}
 
 		[Fact]
@@ -1189,6 +1325,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			// The first run still drives Scale (100 ms in); the Ignore run took only the free Opacity (50 ms in).
 			Assert.Equal(2.0, label.Scale, 10);
+			Assert.Equal(0.25, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void AFullyIgnoredRestartDoesNotHijackTheRunActions()
+		{
+			var label = new Label();
+			var storyboard = Fade(0, 1, 200);
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			Advance(50);
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard, HandoffBehavior = StoryboardHandoffBehavior.Ignore }).DoInvoke(label);
+
+			((TriggerAction)new PauseStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			Advance(100);
+
 			Assert.Equal(0.25, label.Opacity, 10);
 		}
 

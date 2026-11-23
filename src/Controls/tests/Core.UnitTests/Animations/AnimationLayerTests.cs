@@ -537,6 +537,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void WritesQueuedByACallbackThatStopsTheRunAreStillApplied()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var owner = new TestOwner();
+			var once = false;
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && !once)
+				{
+					once = true;
+					label.Opacity = 0.6; // queued: the property is being set
+					label.ClearAnimationValue(VisualElement.OpacityProperty, owner);
+				}
+			};
+
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, owner);
+
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Equal(0.6, label.Opacity);
+		}
+
+		[Fact]
+		public void TwoWayBindingDuringABeginDelayEndsTheClaim()
+		{
+			var vm = new ViewModel { Value = 0.5 };
+			var label = new Label { BindingContext = vm };
+			var owner = new TestOwner();
+			label.ClaimAnimation(VisualElement.OpacityProperty, owner);
+
+			label.SetBinding(VisualElement.OpacityProperty, new Binding(nameof(ViewModel.Value), BindingMode.TwoWay));
+
+			Assert.Equal(AnimationHoldLossReason.Excluded, owner.LostReason);
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
 		public void PlainWritesAreUnchangedWithoutAHold()
 		{
 			var label = new Label();

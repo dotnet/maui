@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -158,6 +159,27 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// The dispatcher animation runs must use: the one captured when this object was created, else one found in its
+		/// hierarchy or on the current thread. Unlike <see cref="Dispatcher"/>, returns null instead of throwing.
+		/// </summary>
+		internal IDispatcher GetAnimationDispatcher() => _dispatcher ?? this.TryFindDispatcher();
+
+		/// <summary>
+		/// A TwoWay or OneWayToSource binding attached while a run owns the property without showing a value (its begin
+		/// delay): the run gives the property up, as it would if it were showing one.
+		/// </summary>
+		void RelinquishClaimForBinding(BindablePropertyContext context, BindingBase binding)
+		{
+			var mode = binding?.GetRealizedMode(context.Property) ?? BindingMode.Default;
+			if (mode != BindingMode.TwoWay && mode != BindingMode.OneWayToSource)
+				return;
+
+			var owner = context.AnimationOwner;
+			context.AnimationOwner = null;
+			owner?.OnHoldLost(this, context.Property, AnimationHoldLossReason.Excluded);
+		}
+
 		/// <summary>The value the property would have without the animation (WPF's GetAnimationBaseValue).</summary>
 		internal object GetAnimationBaseValue(BindableProperty property)
 		{
@@ -289,18 +311,18 @@ namespace Microsoft.Maui.Controls
 				{
 					// A PropertyChanging callback stopped (or replaced) the run before its value was stored: store nothing,
 					// so no ownerless value hides later writes. A value the run was taking over from a previous owner is
-					// now owned by no one either, so it goes too, and the base value shows.
+					// now owned by no one either, so it goes too, and the base value shows. Writes the callbacks queued
+					// are still applied below.
+					newValue = oldValue;
 					if (context.AnimationOwner is null && context.Values.GetSpecificity() == SetterSpecificity.Animation)
 					{
-						var shown = context.Values.GetClearedValue();
 						context.Values.Remove(SetterSpecificity.Animation);
-						if (!Equals(oldValue, shown))
-							OnBindablePropertySet(property, oldValue, shown, true, true);
+						newValue = context.Values.GetValue();
 					}
-					return;
 				}
 
-				OnBindablePropertySet(property, oldValue, newValue, true, true);
+				if (!Equals(oldValue, newValue) || mutation == AnimationMutation.Remove || ReferenceEquals(context.AnimationOwner, owner))
+					OnBindablePropertySet(property, oldValue, newValue, true, true);
 
 				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue != null)

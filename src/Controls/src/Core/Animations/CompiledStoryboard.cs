@@ -288,7 +288,11 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			var probe = new BindingProbe { BindingContext = bindingContext };
 			var probeProperty = BindingProbe.For(property);
-			probe.SetBinding(probeProperty, binding.Clone());
+
+			// Sampled read-only: a TwoWay or OneWayToSource clone would write the probe's default into the source.
+			var clone = binding.Clone();
+			clone.Mode = BindingMode.OneWay;
+			probe.SetBinding(probeProperty, clone);
 			var result = probe.GetValue(probeProperty);
 			probe.RemoveBinding(probeProperty);
 			return result;
@@ -502,12 +506,14 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 			}
 
-			// Inside a parent that is filling, everything below it is a fill too.
+			// Inside a parent that is filling, everything below it is a fill too. The parent's key orders it against
+			// other nodes; the child's own key (0 when it is active at the parent's frozen time) still orders siblings
+			// inside it, so of two completed steps in a sequence the later one wins.
 			var kind = phase;
 			if (inheritedKind != ContributionKind.None && inheritedKind != ContributionKind.Active)
 			{
 				kind = inheritedKind;
-				key = inheritedKey;
+				key = inheritedKey + (phase == ContributionKind.Active ? 0 : key);
 			}
 
 			Contribute(tau, kind, key, results);
@@ -525,6 +531,8 @@ namespace Microsoft.Maui.Controls.Animations
 				Contribute(tau, ContributionKind.AfterFill, 0, results);
 			}
 		}
+
+		bool _implicitStartsSet;
 
 		void Contribute(double tau, ContributionKind kind, double key, Contribution[] results)
 		{
@@ -561,10 +569,16 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public void SnapshotImplicitStarts(Func<TrackSlot, object?> currentValue, Contribution[] scratch)
 		{
+			// A predecessor's end value depends on its own implicit starts, so they are set first (on demand), whatever
+			// the declaration order. The flag also guards against revisiting a node.
+			if (_implicitStartsSet)
+				return;
+
+			_implicitStartsSet = true;
 			foreach (var (slot, track) in Tracks)
 			{
 				if (track.HasImplicitStart)
-					track.SetImplicitStart(PredecessorEndValue(slot, scratch, out var value) ? value : currentValue(slot));
+					track.SetImplicitStart(PredecessorEndValue(slot, currentValue, scratch, out var value) ? value : currentValue(slot));
 			}
 
 			foreach (var child in Children)
@@ -572,7 +586,7 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 
 		// The END value of the latest-ending earlier sibling that animates the same slot.
-		bool PredecessorEndValue(TrackSlot slot, Contribution[] scratch, out object? value)
+		bool PredecessorEndValue(TrackSlot slot, Func<TrackSlot, object?> currentValue, Contribution[] scratch, out object? value)
 		{
 			value = null;
 			if (Parent is null)
@@ -588,6 +602,8 @@ namespace Microsoft.Maui.Controls.Animations
 
 			if (best is null)
 				return false;
+
+			best.SnapshotImplicitStarts(currentValue, scratch);
 
 			for (var i = 0; i < scratch.Length; i++)
 				scratch[i] = default;
@@ -614,7 +630,12 @@ namespace Microsoft.Maui.Controls.Animations
 			return false;
 		}
 
-		// Active intervals in root time, for the first iteration of every ancestor.
+		// The most iterations of an ancestor expanded when checking for overlaps; past it a child is treated as active
+		// from its first start onwards, which is conservative (it can only report more overlaps).
+		const int MaxExpandedIterations = 256;
+
+		// Active intervals in root time, including every iteration of every repeating ancestor (a reversed iteration
+		// mirrors a child's interval within the iteration).
 		public void CollectIntervals(double offset, double scale, List<(double Start, double End)>[] intervals)
 		{
 			var start = offset + Begin * scale;
@@ -623,9 +644,57 @@ namespace Microsoft.Maui.Controls.Animations
 			foreach (var (slot, _) in Tracks)
 				(intervals[slot.Index] ??= new List<(double, double)>()).Add((start, end));
 
+			if (Children.Count == 0)
+				return;
+
 			var childScale = scale / Speed;
+			var span = Duration + IterationDelay;
+			var iterations = double.IsPositiveInfinity(Active) || span <= 0 ? double.PositiveInfinity : Math.Ceiling(CompiledStoryboard.SnapCount(Active / span));
+
+			if (iterations > MaxExpandedIterations)
+			{
+				foreach (var child in Children)
+					child.CollectOpenEnded(start + child.Begin * childScale, intervals);
+				return;
+			}
+
+			var children = new List<(double Start, double End)>[intervals.Length];
 			foreach (var child in Children)
-				child.CollectIntervals(start, childScale, intervals);
+				child.CollectIntervals(0, 1, children);
+
+			for (var i = 0; i < children.Length; i++)
+			{
+				if (children[i] is { } list)
+				{
+					foreach (var (childStart, childEnd) in list)
+						AddIterations(childStart, childEnd, (long)iterations, span, start, childScale, intervals[i] ??= new List<(double, double)>());
+				}
+			}
+		}
+
+		void AddIterations(double childStart, double childEnd, long iterations, double span, double start, double childScale, List<(double Start, double End)> target)
+		{
+			for (long k = 0; k < iterations; k++)
+			{
+				var iterationStart = k * span;
+				var iterationEnd = Math.Min(iterationStart + Duration, Active);
+				var forward = Forward(k);
+				var localStart = forward ? childStart : Duration - Math.Min(childEnd, Duration);
+				var localEnd = forward ? childEnd : Duration - childStart;
+				var from = Math.Max(iterationStart, iterationStart + localStart);
+				var to = Math.Min(iterationEnd, iterationStart + localEnd);
+				if (to > from)
+					target.Add((start + from * childScale, start + to * childScale));
+			}
+		}
+
+		void CollectOpenEnded(double start, List<(double Start, double End)>[] intervals)
+		{
+			foreach (var (slot, _) in Tracks)
+				(intervals[slot.Index] ??= new List<(double, double)>()).Add((start, double.PositiveInfinity));
+
+			foreach (var child in Children)
+				child.CollectOpenEnded(start, intervals);
 		}
 	}
 }

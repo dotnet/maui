@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Animations
 				return Task.FromCanceled<AnimationResult>(cancellationToken);
 
 			var completion = new TaskCompletionSource<AnimationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var dispatcher = target.TryFindDispatcher();
+			var dispatcher = target.GetAnimationDispatcher();
 
 			void Start()
 			{

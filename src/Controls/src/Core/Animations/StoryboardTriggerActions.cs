@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>How a forward fill is kept. <see cref="FillCompletion.Hold"/> keeps it until a <see cref="StopStoryboard"/>.</summary>
 		public FillCompletion FillCompletion { get; set; }
 
+		/// <inheritdoc/>
 		protected override void Invoke(VisualElement sender)
 		{
 			if (Storyboard is not Storyboard storyboard)
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>What the stop leaves on the properties. Defaults to removing the animated values.</summary>
 		public StopBehavior Behavior { get; set; }
 
+		/// <inheritdoc/>
 		protected override void Invoke(VisualElement sender)
 		{
 			if (Storyboard is Storyboard storyboard)
@@ -61,8 +63,10 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class PauseStoryboard : TriggerAction<VisualElement>
 	{
+		/// <summary>The storyboard whose run to control.</summary>
 		public Storyboard? Storyboard { get; set; }
 
+		/// <inheritdoc/>
 		protected override void Invoke(VisualElement sender) => StoryboardRuns.Find(sender, Storyboard)?.Pause();
 	}
 
@@ -70,8 +74,10 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class ResumeStoryboard : TriggerAction<VisualElement>
 	{
+		/// <summary>The storyboard whose run to control.</summary>
 		public Storyboard? Storyboard { get; set; }
 
+		/// <inheritdoc/>
 		protected override void Invoke(VisualElement sender) => StoryboardRuns.Find(sender, Storyboard)?.Resume();
 	}
 
@@ -79,8 +85,10 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class SkipStoryboardToFill : TriggerAction<VisualElement>
 	{
+		/// <summary>The storyboard whose run to control.</summary>
 		public Storyboard? Storyboard { get; set; }
 
+		/// <inheritdoc/>
 		protected override void Invoke(VisualElement sender) => StoryboardRuns.Find(sender, Storyboard)?.SkipToFill();
 	}
 
@@ -113,6 +121,11 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public static void Add(VisualElement element, StoryboardPlayer player)
 		{
+			// A run that has already ended holding nothing (fully ignored, say) is never registered: the run actions
+			// would otherwise find it instead of the run that is actually playing.
+			if ((player.State == PlaybackState.Finished || player.State == PlaybackState.Stopped) && !player.HoldsAnything())
+				return;
+
 			var runs = (List<StoryboardPlayer>?)element.GetValue(RunsProperty);
 			if (runs is null)
 			{

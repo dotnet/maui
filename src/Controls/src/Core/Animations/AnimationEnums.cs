@@ -28,10 +28,19 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public enum PlaybackState
 	{
+		/// <summary>Created and not yet started or sought.</summary>
 		Created,
+
+		/// <summary>Advancing with its clock.</summary>
 		Running,
+
+		/// <summary>Paused; its values stay on screen.</summary>
 		Paused,
+
+		/// <summary>Ended by reaching its end (or skipping to its fill).</summary>
 		Finished,
+
+		/// <summary>Ended early: stopped, replaced, faulted, or its target went away.</summary>
 		Stopped,
 	}
 
@@ -104,7 +113,10 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public enum AnimationDirection
 	{
+		/// <summary>Every iteration runs forward.</summary>
 		Normal,
+
+		/// <summary>Every iteration runs backward.</summary>
 		Reverse,
 
 		/// <summary>Even iterations forward, odd ones backward. Not WPF's AutoReverse: n× Alternate is n passes.</summary>

@@ -49,8 +49,10 @@ namespace Microsoft.Maui.Controls.Animations
 			return new Cue(2, 0, value);
 		}
 
+		/// <summary>Whether the engine places this keyframe.</summary>
 		public bool IsUnspecified => _kind == 0;
 
+		/// <summary>Whether the cue is a time rather than a fraction.</summary>
 		public bool HasTimeSpan => _kind == 2;
 
 		/// <summary>The fraction of the duration.</summary>
@@ -107,14 +109,19 @@ namespace Microsoft.Maui.Controls.Animations
 			_ => string.Empty,
 		};
 
+		/// <inheritdoc/>
 		public bool Equals(Cue other) => _kind == other._kind && _fraction.Equals(other._fraction) && _time == other._time;
 
+		/// <inheritdoc/>
 		public override bool Equals(object? obj) => obj is Cue other && Equals(other);
 
+		/// <inheritdoc/>
 		public override int GetHashCode() => (_kind, _fraction, _time).GetHashCode();
 
+		/// <summary>Whether two cues are equal.</summary>
 		public static bool operator ==(Cue left, Cue right) => left.Equals(right);
 
+		/// <summary>Whether two cues differ.</summary>
 		public static bool operator !=(Cue left, Cue right) => !left.Equals(right);
 
 		internal double Resolve(TimeSpan duration)
@@ -125,10 +132,13 @@ namespace Microsoft.Maui.Controls.Animations
 	[Experimental(AnimationDiagnostics.Experimental, UrlFormat = AnimationDiagnostics.ExperimentalUrl)]
 	public sealed class CueTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var text = value as string ?? value?.ToString();
@@ -141,6 +151,7 @@ namespace Microsoft.Maui.Controls.Animations
 			throw new FormatException($"Cannot convert \"{text}\" into {typeof(Cue)}. Use a percentage (\"60%\"), a fraction between 0 and 1 (\"0.6\") or a time (\"0:0:0.24\").");
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 			=> value is Cue cue ? cue.ToString() : throw new NotSupportedException();
 	}
