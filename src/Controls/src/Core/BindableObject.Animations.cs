@@ -58,16 +58,14 @@ namespace Microsoft.Maui.Controls
 			if (Equals(top.Value, value))
 				context.Values.SetValue(SetterSpecificity.Animation, value);
 			else
-				RaiseAnimationChange(context, top.Value, value, static (c, v) => c.Values.SetValue(SetterSpecificity.Animation, v));
+				RaiseAnimationChange(context, top.Value, value, AnimationMutation.Store, owner);
 
-			// The owner's own handler may have ended the hold it just stored; leave nothing behind.
-			if (!ReferenceEquals(context.AnimationOwner, owner))
-				return AnimationWriteResult.Lost;
-
+			// Either way, a previous owner has lost the property.
 			if (previousOwner is not null && !ReferenceEquals(previousOwner, owner))
 				previousOwner.OnHoldLost(this, property, AnimationHoldLossReason.TakenOver);
 
-			return AnimationWriteResult.Written;
+			// The owner's own handler may have ended the hold it just stored; leave nothing behind.
+			return ReferenceEquals(context.AnimationOwner, owner) ? AnimationWriteResult.Written : AnimationWriteResult.Lost;
 		}
 
 		/// <summary>
@@ -86,14 +84,24 @@ namespace Microsoft.Maui.Controls
 
 			var animated = context.Values.GetValue();
 			var shown = context.Values.GetClearedValue();
+			try
+			{
+				//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
+				property.CoerceValue?.Invoke(this, shown);
 
-			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
-			property.CoerceValue?.Invoke(this, shown);
-
-			if (Equals(animated, shown))
-				context.Values.Remove(SetterSpecificity.Animation);
-			else
-				RaiseAnimationChange(context, animated, shown, static (c, _) => c.Values.Remove(SetterSpecificity.Animation));
+				if (Equals(animated, shown))
+					context.Values.Remove(SetterSpecificity.Animation);
+				else
+					RaiseAnimationChange(context, animated, shown, AnimationMutation.Remove, null);
+			}
+			finally
+			{
+				// Exception-safe: a throwing coercion or PropertyChanging callback must not leave an animated value that no
+				// owner can release (it would hide every later write). A run that claimed the property meanwhile keeps its
+				// ownership; the released value is still removed.
+				if (context.Values.GetSpecificity() == SetterSpecificity.Animation && ReferenceEquals(context.Values.GetValue(), animated))
+					context.Values.Remove(SetterSpecificity.Animation);
+			}
 		}
 
 		/// <summary>
@@ -249,12 +257,18 @@ namespace Microsoft.Maui.Controls
 			owner?.OnHoldLost(this, context.Property, reason);
 		}
 
+		enum AnimationMutation
+		{
+			Store,
+			Remove,
+		}
+
 		// Raises a change made by the animation layer. The store is mutated between PropertyChanging and
 		// PropertyChanged, so observers of PropertyChanging still read the old value. The property is marked as being
 		// set while its handlers run, so writes they make are queued and applied afterwards, as for any write, and the
 		// queue stays attached while it drains so writes queued by the drain itself are applied too. The mark is
 		// cleared even when a handler throws, so the property stays usable (the stock path leaves it set).
-		void RaiseAnimationChange(BindablePropertyContext context, object oldValue, object newValue, Action<BindablePropertyContext, object> mutate)
+		void RaiseAnimationChange(BindablePropertyContext context, object oldValue, object newValue, AnimationMutation mutation, IAnimationHoldOwner owner)
 		{
 			var property = context.Property;
 			context.Attributes |= BindableContextAttributes.IsBeingSet;
@@ -262,7 +276,30 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, oldValue, newValue);
 				NotifyPropertyChanging(property);
-				mutate(context, newValue);
+
+				if (mutation == AnimationMutation.Remove)
+				{
+					context.Values.Remove(SetterSpecificity.Animation);
+				}
+				else if (ReferenceEquals(context.AnimationOwner, owner))
+				{
+					context.Values.SetValue(SetterSpecificity.Animation, newValue);
+				}
+				else
+				{
+					// A PropertyChanging callback stopped (or replaced) the run before its value was stored: store nothing,
+					// so no ownerless value hides later writes. A value the run was taking over from a previous owner is
+					// now owned by no one either, so it goes too, and the base value shows.
+					if (context.AnimationOwner is null && context.Values.GetSpecificity() == SetterSpecificity.Animation)
+					{
+						var shown = context.Values.GetClearedValue();
+						context.Values.Remove(SetterSpecificity.Animation);
+						if (!Equals(oldValue, shown))
+							OnBindablePropertySet(property, oldValue, shown, true, true);
+					}
+					return;
+				}
+
 				OnBindablePropertySet(property, oldValue, newValue, true, true);
 
 				Queue<SetValueArgs> delayQueue = context.DelayedSetters;

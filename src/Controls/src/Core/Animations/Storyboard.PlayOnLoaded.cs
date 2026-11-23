@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		static void Play(VisualElement element, Storyboard storyboard)
 		{
-			StoryboardRuns.Replace(element, storyboard, storyboard.Begin(element));
+			StoryboardRuns.Replace(element, storyboard, storyboard.Begin(element), StoryboardHandoffBehavior.SnapshotAndReplace);
 		}
 	}
 }

@@ -468,6 +468,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void RunStoppedByPropertyChangingLeavesNoOwnerlessValue()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var owner = new TestOwner();
+			var stopped = false;
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && !stopped)
+				{
+					stopped = true;
+					label.ClearAnimationValue(VisualElement.OpacityProperty, owner);
+				}
+			};
+
+			var result = label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, owner);
+
+			Assert.Equal(AnimationWriteResult.Lost, result);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Equal(0.9, label.Opacity);
+
+			label.Opacity = 0.5;
+			Assert.Equal(0.5, label.Opacity);
+		}
+
+		[Fact]
+		public void TakeOverStoppedByPropertyChangingReleasesThePreviousValueAndTellsItsOwner()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var first = new TestOwner();
+			var second = new TestOwner();
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.4, first);
+			var stopped = false;
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && !stopped)
+				{
+					stopped = true;
+					label.ClearAnimationValue(VisualElement.OpacityProperty, second);
+				}
+			};
+
+			var result = label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, second);
+
+			Assert.Equal(AnimationWriteResult.Lost, result);
+			Assert.Equal(AnimationHoldLossReason.TakenOver, first.LostReason);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Equal(0.9, label.Opacity);
+		}
+
+		[Fact]
+		public void ThrowingPropertyChangingDuringReleaseLeavesNoOwnerlessValue()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var owner = new TestOwner();
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, owner);
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					throw new System.InvalidOperationException("changing");
+			};
+
+			Assert.Throws<System.InvalidOperationException>(() => label.ClearAnimationValue(VisualElement.OpacityProperty, owner));
+
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+			Assert.Equal(0.9, label.Opacity);
+		}
+
+		[Fact]
 		public void PlainWritesAreUnchangedWithoutAHold()
 		{
 			var label = new Label();

@@ -993,6 +993,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void CustomizedTransformMappingsAreNotTreatedAsBuiltIn()
+		{
+			var scale = Array.IndexOf(Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys, nameof(IView.Scale));
+			var chained = new PropertyMapper<IView, IViewHandler>(Microsoft.Maui.Handlers.ViewHandler.ViewMapper);
+			Assert.True(VisualElement.IsBuiltInTransformMapping(chained, scale));
+
+			var appended = new PropertyMapper<IView, IViewHandler>(Microsoft.Maui.Handlers.ViewHandler.ViewMapper);
+			appended.AppendToMapping(nameof(IView.Scale), (_, _) => { });
+			Assert.False(VisualElement.IsBuiltInTransformMapping(appended, scale));
+		}
+
+		[Fact]
+		public void AGloballyAppendedTransformMappingIsNotTreatedAsBuiltIn()
+		{
+			// ViewMapper is global and mutable; appending to it changes the live entry that a naive comparison would use.
+			var field = typeof(PropertyMapper).GetField("_mapper", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+			var entries = (System.Collections.Generic.Dictionary<string, Action<IElementHandler, IElement>>)field.GetValue(Microsoft.Maui.Handlers.ViewHandler.ViewMapper);
+			var original = entries[nameof(IView.Scale)];
+			var scale = Array.IndexOf(Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys, nameof(IView.Scale));
+			try
+			{
+				Microsoft.Maui.Handlers.ViewHandler.ViewMapper.AppendToMapping(nameof(IView.Scale), (_, _) => { });
+
+				Assert.False(VisualElement.IsBuiltInTransformMapping(Microsoft.Maui.Handlers.ViewHandler.ViewMapper, scale));
+				Assert.False(VisualElement.IsBuiltInTransformMapping(new PropertyMapper<IView, IViewHandler>(Microsoft.Maui.Handlers.ViewHandler.ViewMapper), scale));
+			}
+			finally
+			{
+				entries[nameof(IView.Scale)] = original;
+			}
+		}
+
+		[Fact]
 		public void TransformWritesOutsideAFrameAreUnchanged()
 		{
 			var label = new Label();
@@ -1136,6 +1169,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Advance(50);
 
 			Assert.Equal(0.5, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void IgnoreHandoffFromATriggerDoesNotReleaseWhatEarlierRunsStillOwn()
+		{
+			var label = new Label();
+			var storyboard = Storyboard.Create().WithDuration(Ms(200))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 3.0))
+				.Build();
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			Advance(50);
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.9); // the first run loses Opacity, keeps Scale
+			label.Opacity = 0.9; // an ordinary write replaces the platform value, so Opacity can animate again
+
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard, HandoffBehavior = StoryboardHandoffBehavior.Ignore }).DoInvoke(label);
+			Advance(50);
+
+			// The first run still drives Scale (100 ms in); the Ignore run took only the free Opacity (50 ms in).
+			Assert.Equal(2.0, label.Scale, 10);
+			Assert.Equal(0.25, label.Opacity, 10);
 		}
 
 		[Fact]

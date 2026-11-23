@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Animations
 				SpeedRatio = SpeedRatio,
 				FillCompletion = FillCompletion,
 			});
-			StoryboardRuns.Replace(sender, storyboard, player);
+			StoryboardRuns.Replace(sender, storyboard, player, HandoffBehavior);
 		}
 	}
 
@@ -128,9 +128,10 @@ namespace Microsoft.Maui.Controls.Animations
 		/// Records a run that has just started for <paramref name="storyboard"/>. Earlier runs of the same storyboard
 		/// that it took over are forgotten; one it was ignored in favour of keeps running and stays registered.
 		/// </summary>
-		public static void Replace(VisualElement element, Storyboard storyboard, StoryboardPlayer player)
+		public static void Replace(VisualElement element, Storyboard storyboard, StoryboardPlayer player, StoryboardHandoffBehavior handoff)
 		{
-			if (player.State != PlaybackState.Stopped || player.HoldsAnything())
+			// An Ignore run leaves earlier runs in charge of whatever they still own; only a takeover replaces them.
+			if (handoff == StoryboardHandoffBehavior.SnapshotAndReplace && (player.State != PlaybackState.Stopped || player.HoldsAnything()))
 			{
 				if (element.GetValue(RunsProperty) is List<StoryboardPlayer> runs)
 				{

@@ -44,16 +44,16 @@ namespace Microsoft.Maui.Controls
 			// one of them is enough. A property whose mapping was replaced or appended to still gets its own update.
 			var mapper = (handler as ElementHandler)?._mapper;
 			var rebuilt = false;
-			FlushCoalesced(handler, mapper, deferred, TranslationXBit, nameof(IView.TranslationX), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, TranslationYBit, nameof(IView.TranslationY), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, ScaleBit, nameof(IView.Scale), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, ScaleXBit, nameof(IView.ScaleX), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, ScaleYBit, nameof(IView.ScaleY), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, RotationBit, nameof(IView.Rotation), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, RotationXBit, nameof(IView.RotationX), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, RotationYBit, nameof(IView.RotationY), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, AnchorXBit, nameof(IView.AnchorX), ref rebuilt);
-			FlushCoalesced(handler, mapper, deferred, AnchorYBit, nameof(IView.AnchorY), ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, TranslationXBit, 0, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, TranslationYBit, 1, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleBit, 2, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleXBit, 3, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, ScaleYBit, 4, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationBit, 5, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationXBit, 6, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, RotationYBit, 7, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, AnchorXBit, 8, ref rebuilt);
+			FlushCoalesced(handler, mapper, deferred, AnchorYBit, 9, ref rebuilt);
 #else
 			Flush(handler, deferred, TranslationXBit, nameof(IView.TranslationX));
 			Flush(handler, deferred, TranslationYBit, nameof(IView.TranslationY));
@@ -69,12 +69,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if IOS || MACCATALYST || WINDOWS
-		static void FlushCoalesced(IViewHandler handler, IPropertyMapper? mapper, int deferred, int bit, string property, ref bool rebuilt)
+		static void FlushCoalesced(IViewHandler handler, IPropertyMapper? mapper, int deferred, int bit, int index, ref bool rebuilt)
 		{
 			if ((deferred & bit) == 0)
 				return;
 
-			var isBuiltIn = mapper is not null && ReferenceEquals(mapper.GetProperty(property), Microsoft.Maui.Handlers.ViewHandler.ViewMapper.GetProperty(property));
+			var property = Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys[index];
+			var isBuiltIn = IsBuiltInTransformMapping(mapper, index);
 			if (isBuiltIn && rebuilt)
 				return;
 
@@ -88,6 +89,18 @@ namespace Microsoft.Maui.Controls
 				handler.UpdateValue(property);
 		}
 #endif
+
+		/// <summary>
+		/// Whether <paramref name="mapper"/> maps the transform property at <paramref name="index"/> (of
+		/// <c>ViewHandler.TransformMappingKeys</c>) to MAUI's own mapping, compared with the mapping captured when
+		/// ViewMapper was created: ViewMapper is mutable, so appending to or replacing it globally changes it too.
+		/// </summary>
+		internal static bool IsBuiltInTransformMapping(IPropertyMapper? mapper, int index)
+		{
+			var builtIn = Microsoft.Maui.Handlers.ViewHandler.BuiltInTransformMappings[index];
+			return builtIn is not null && mapper is not null
+				&& ReferenceEquals(mapper.GetProperty(Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys[index]), builtIn);
+		}
 
 		bool DeferTransformUpdate(string property)
 		{
