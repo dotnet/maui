@@ -837,7 +837,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
 				}
-				HandleMoreNavigationCompletionTasks(viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController.MoreNavigationController, viewController);
 			}
 			else
 			{
@@ -858,11 +858,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
-				HandleMoreNavigationCompletionTasks(viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController.MoreNavigationController, viewController);
 				return viewController;
 			}
 
 			return base.PopViewController(animated);
+		}
+
+		// The navigation task completes when the More controller's transition (a page transition included) has
+		// finished, not as soon as it starts.
+		void CompleteMoreNavigationAfterTransition(UINavigationController moreNavigationController, UIViewController viewController)
+		{
+			// AnimateAlongsideTransition returns false when no transition is running; complete straight away then.
+			if (moreNavigationController.GetTransitionCoordinator() is { } coordinator
+				&& coordinator.AnimateAlongsideTransition(null, _ => HandleMoreNavigationCompletionTasks(viewController)))
+			{
+				return;
+			}
+
+			HandleMoreNavigationCompletionTasks(viewController);
 		}
 
 		private void HandleMoreNavigationCompletionTasks(UIViewController viewController)

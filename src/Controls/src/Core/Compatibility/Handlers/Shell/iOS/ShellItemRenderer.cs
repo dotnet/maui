@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (ReferenceEquals(value, MoreNavigationController))
 				{
 					MoreNavigationController.WeakDelegate = this;
+					EnsureMoreTransitionDriver();
 				}
 
 				UpdateMoreCellsEnabled();
@@ -126,13 +127,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
 				return null;
 
-			_moreTransitionDriver ??= new Microsoft.Maui.Platform.NavigationTransitionDriver(navigationController);
+			EnsureMoreTransitionDriver();
 			var section = (CurrentRenderer as ShellSectionRenderer)?.ShellSection;
 			return _moreTransitionDriver.GetAnimationController(
 				section as IView,
 				operation,
 				MorePageForViewController(fromViewController),
 				MorePageForViewController(toViewController));
+		}
+
+		// The More controller's swipe-back follows the finger with a custom transition too.
+		[Export("navigationController:interactionControllerForAnimationController:")]
+		[Foundation.Preserve(Conditional = true)]
+		internal IUIViewControllerInteractiveTransitioning MoreGetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+		{
+			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
+				return null;
+
+			return _moreTransitionDriver?.GetInteractionController();
+		}
+
+		void EnsureMoreTransitionDriver()
+		{
+			if (_moreTransitionDriver is not null)
+				return;
+
+			_moreTransitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(MoreNavigationController);
+			_moreTransitionDriver.AttachInteractivePop();
 		}
 
 		Page MorePageForViewController(UIViewController viewController)
@@ -152,6 +173,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_disposed || _disconnected)
 				return;
+
+			if (ReferenceEquals(navigationController, MoreNavigationController))
+				_moreTransitionDriver?.TransitionEnded();
 
 			var renderer = RendererForViewController(this.SelectedViewController);
 			if (renderer != null)
@@ -324,6 +348,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_moreTableView = null;
 			if (ReferenceEquals(MoreNavigationController.WeakDelegate, this))
 				MoreNavigationController.WeakDelegate = null;
+
+			_moreTransitionDriver?.Detach();
+			_moreTransitionDriver = null;
 
 			if (_sectionRenderers != null)
 			{
