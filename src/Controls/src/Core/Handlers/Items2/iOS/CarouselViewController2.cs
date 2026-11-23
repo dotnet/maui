@@ -96,7 +96,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (_positionBeforeBoundsChange < 0)
 			{
-				_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
+				// CurrentItem changes leave Position unchanged until the animated scroll completes.
+				_positionBeforeBoundsChange = _gotoPosition >= 0
+					? _gotoPosition
+					: (ItemsView as CarouselView)?.Position ?? -1;
 			}
 		}
 
@@ -216,6 +219,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// UpdateFromPosition -> ScrollToPosition(0, oldPos, ...); clear it so later
 				// programmatic Position/CurrentItem changes aren't suppressed.
 				_gotoPosition = -1;
+				ScrollToFirstLoopItemAfterSourceReset();
 
 				// A new items source means a fresh baseline. Reset the tracked position so the next
 				// re-attach treats a subsequent source swap as a reset (Position 0) rather than a
@@ -225,6 +229,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_isUpdating = false;
+		}
+
+		void ScrollToFirstLoopItemAfterSourceReset()
+		{
+			// The base reset moves to offset zero, which is the leading loop placeholder. Position is
+			// already 0, so the loop correction would not move to the real first item.
+			if (LoopItemsSource?.Loop != true || ItemsSource is null || ItemsSource.ItemCount == 0)
+			{
+				return;
+			}
+
+			var indexPath = GetScrollToIndexPath(0);
+			if (!LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+			{
+				return;
+			}
+
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+
+#if MACCATALYST
+			var mauiCollectionView = CollectionView as Items.MauiCollectionView;
+			mauiCollectionView?.ClearPendingScrollRestore();
+#endif
+
+			CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+
+#if MACCATALYST
+			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
+#endif
 		}
 
 		protected override bool IsHorizontal => ItemsView?.ItemsLayout?.Orientation == ItemsLayoutOrientation.Horizontal;

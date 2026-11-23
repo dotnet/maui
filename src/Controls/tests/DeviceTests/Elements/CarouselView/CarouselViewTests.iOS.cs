@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -120,9 +122,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task ConfirmedBoundsRestorationCompletesPendingAnimatedPositionChange(bool loop)
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task ConfirmedBoundsRestorationCompletesPendingAnimatedSelectionChange(bool loop, bool useCurrentItem)
 		{
 			SetupBuilder();
 
@@ -148,10 +152,19 @@ namespace Microsoft.Maui.DeviceTests
 				var pendingScroll = typeof(CarouselViewController2).GetField("_gotoPosition", BindingFlags.Instance | BindingFlags.NonPublic);
 				Assert.NotNull(pendingScroll);
 
-				carousel.Position = 3;
-				// Observe the actual in-flight scroll, including the deferred start on iOS 26.
-				await AssertEventually(() => (int)pendingScroll.GetValue(controller) == 3 && carousel.CurrentItem is "First",
-					interval: 1, message: "The animated Position change did not enter the pending-scroll state.");
+				if (useCurrentItem)
+				{
+					carousel.CurrentItem = items[3];
+				}
+				else
+				{
+					carousel.Position = 3;
+				}
+				// Observe the actual in-flight scroll, including the deferred Position start on iOS 26.
+				await AssertEventually(() => (int)pendingScroll.GetValue(controller) == 3 &&
+					carousel.Position == (useCurrentItem ? 0 : 3) &&
+					ReferenceEquals(carousel.CurrentItem, items[useCurrentItem ? 3 : 0]),
+					interval: 1, message: "The animated selection change did not enter the pending-scroll state.");
 
 				controller.UpdateResizeState();
 				var bounds = collectionView.Bounds;
@@ -160,7 +173,8 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, resizedWidth, bounds.Height);
 				controller.UpdateResizeState();
 				Assert.Equal(3, controller.PositionBeforeBoundsChange);
-				Assert.Equal("First", carousel.CurrentItem);
+				Assert.Equal(useCurrentItem ? 0 : 3, carousel.Position);
+				Assert.Same(items[useCurrentItem ? 3 : 0], carousel.CurrentItem);
 				Assert.Equal(3, (int)pendingScroll.GetValue(controller));
 
 				Assert.True(controller.ShouldIgnorePositionUpdateAfterBoundsChange(2, true));
@@ -244,6 +258,198 @@ namespace Microsoft.Maui.DeviceTests
 					indicator.Position == 2 &&
 					Array.Exists(collectionView.IndexPathsForVisibleItems, path => path.Equals(targetIndexPath)),
 					message: "The explicit ScrollTo target did not replace the saved resize position.");
+			});
+		}
+
+#if MACCATALYST
+		[Fact]
+		public async Task VerticalBoundsRestorationRearmsNativeScrollRestoreForSelectedItem()
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
+			var indicator = new IndicatorView();
+			var carousel = new CarouselView
+			{
+				Loop = false,
+				Position = 0,
+				WidthRequest = 300,
+				HeightRequest = 300,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+				{
+					SnapPointsType = SnapPointsType.MandatorySingle,
+					SnapPointsAlignment = SnapPointsAlignment.Center
+				},
+				ItemsSource = items,
+				IndicatorView = indicator,
+				IsScrollAnimated = false,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				var collectionView = Assert.IsAssignableFrom<Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView>(controller.CollectionView);
+				var trackingField = typeof(Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView).GetField("_isTrackingScrollRestore", BindingFlags.Instance | BindingFlags.NonPublic);
+				var pendingItemField = typeof(Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView).GetField("_pendingScrollRestoreItem", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(trackingField);
+				Assert.NotNull(pendingItemField);
+
+				// Store plain item numbers: small NSIndexPath values can share a managed wrapper that
+				// MauiCollectionView disposes when it runs a queued restore.
+				var firstItem = (int)controller.GetScrollToIndexPath(0).Item;
+				var selectedItem = (int)controller.GetScrollToIndexPath(2).Item;
+				await AssertEventually(() => controller.InitialPositionSet && carousel.CurrentItem is "First" &&
+					(bool)trackingField.GetValue(collectionView) &&
+					(int)pendingItemField.GetValue(collectionView) == firstItem,
+					message: "The initial position did not arm the native scroll restore for the first item.");
+
+				// The carousel delegator does not clear the native restore on drag, so the item-0 target stays armed.
+				var delegator = Assert.IsAssignableFrom<CarouselViewDelegator2>(collectionView.Delegate);
+				delegator.DraggingStarted(collectionView);
+				collectionView.ScrollToItem(Foundation.NSIndexPath.FromItemSection(selectedItem, 0), UICollectionViewScrollPosition.CenteredVertically, false);
+				delegator.DraggingEnded(collectionView, false);
+				collectionView.LayoutIfNeeded();
+
+				await AssertEventually(() => carousel.Position == 2 && carousel.CurrentItem is "Third" && indicator.Position == 2,
+					message: "The simulated swipe did not select the third item.");
+				Assert.True((bool)trackingField.GetValue(collectionView));
+				Assert.Equal(firstItem, (int)pendingItemField.GetValue(collectionView));
+
+				int positionChanges = 0;
+				carousel.PositionChanged += (_, _) => positionChanges++;
+
+				controller.UpdateResizeState();
+				carousel.HeightRequest = 260;
+				var bounds = collectionView.Bounds;
+				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, bounds.Width, 260);
+				controller.UpdateResizeState();
+				Assert.True(controller.IsRotatingOrResizing());
+				Assert.Equal(2, controller.PositionBeforeBoundsChange);
+
+				collectionView.SetNeedsLayout();
+				collectionView.LayoutIfNeeded();
+				controller.ViewDidLayoutSubviews();
+
+				bool IsSelectedItemVisible()
+				{
+					// Locate the cell by its bound item: the runtime can hand back an already-disposed
+					// wrapper for this NSIndexPath after MauiCollectionView's queued restore disposes it.
+					var cell = collectionView.VisibleCells.OfType<TemplatedCell2>().FirstOrDefault(c =>
+						c.PlatformHandler?.VirtualView is View view && Equals(view.BindingContext, "Third"));
+					if (cell is null || cell.Hidden)
+					{
+						return false;
+					}
+
+					var frame = cell.ConvertRectToView(cell.Bounds, collectionView);
+					var visibleBounds = collectionView.Bounds;
+					var centerY = frame.Y + frame.Height / 2;
+					return Math.Abs((double)(centerY - (visibleBounds.Y + visibleBounds.Height / 2))) <= 1;
+				}
+
+				bool IsSettled() => collectionView.Bounds.Height == 260 &&
+					!controller.IsRotatingOrResizing() &&
+					carousel.Position == 2 &&
+					carousel.CurrentItem is "Third" &&
+					indicator.Position == 2 &&
+					IsSelectedItemVisible();
+
+				await AssertEventually(IsSettled, message: "The selected item was not restored after shrinking the vertical carousel.");
+
+				// Let queued native restore callbacks run; a stale item-0 target would roll the carousel back here.
+				await Task.Delay(500);
+				collectionView.LayoutIfNeeded();
+				await AssertEventually(IsSettled, message: "A queued native restore rolled the vertical carousel back to an older target.");
+
+				Assert.Equal(selectedItem, (int)pendingItemField.GetValue(collectionView));
+				Assert.Equal(0, positionChanges);
+			});
+		}
+#endif
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AttachedItemsSourceReplacementClearsPendingBoundsRestoration(bool loop)
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
+			var indicator = new IndicatorView();
+			var carousel = new CarouselView
+			{
+				Loop = loop,
+				Position = 4,
+				WidthRequest = 300,
+				HeightRequest = 200,
+				ItemsSource = items,
+				IndicatorView = indicator,
+				IsScrollAnimated = false,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				var collectionView = controller.CollectionView;
+				await AssertEventually(() => controller.InitialPositionSet && ReferenceEquals(carousel.CurrentItem, items[4]));
+
+				controller.UpdateResizeState();
+				var bounds = collectionView.Bounds;
+				var resizedWidth = bounds.Width - 40;
+				carousel.WidthRequest = (double)resizedWidth;
+				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, resizedWidth, bounds.Height);
+				controller.UpdateResizeState();
+				Assert.True(controller.IsRotatingOrResizing());
+				Assert.Equal(4, controller.PositionBeforeBoundsChange);
+
+				// Replace the source while still attached, before layout consumes the saved target.
+				var replacement = new ObservableCollection<string> { "Only" };
+				carousel.ItemsSource = replacement;
+
+				Assert.Equal(-1, controller.PositionBeforeBoundsChange);
+				Assert.False(controller.IsRotatingOrResizing());
+				Assert.False(controller.ShouldIgnorePositionUpdateAfterBoundsChange(0, true));
+
+				collectionView.LayoutIfNeeded();
+				controller.ViewDidLayoutSubviews();
+
+				var pendingScroll = typeof(CarouselViewController2).GetField("_gotoPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(pendingScroll);
+
+				// Match the cell by its bound item instead of holding NSIndexPath wrappers, which
+				// MauiCollectionView's queued restore can dispose. Requiring the cell center to sit on the
+				// viewport midpoint excludes partially visible loop placeholder copies.
+				bool IsItemCentered(string item) => collectionView.VisibleCells.OfType<TemplatedCell2>().Any(cell =>
+				{
+					if (cell.Hidden || cell.PlatformHandler?.VirtualView is not View view || !Equals(view.BindingContext, item))
+					{
+						return false;
+					}
+
+					var frame = cell.ConvertRectToView(cell.Bounds, collectionView);
+					var visibleBounds = collectionView.Bounds;
+					var centerX = frame.X + frame.Width / 2;
+					return Math.Abs((double)(centerX - (visibleBounds.X + visibleBounds.Width / 2))) <= 1;
+				});
+
+				await AssertEventually(() => carousel.Position == 0 &&
+					carousel.CurrentItem is "Only" &&
+					indicator.Position == 0 &&
+					(int)pendingScroll.GetValue(controller) == -1 &&
+					IsItemCentered("Only"),
+					message: "The replacement source's first item was not synchronized after clearing the saved resize target.");
+				Assert.Equal(-1, controller.PositionBeforeBoundsChange);
+
+				replacement.Add("Second");
+				replacement.Add("Third");
+				carousel.Position = 2;
+				await AssertEventually(() => carousel.Position == 2 &&
+					carousel.CurrentItem is "Third" &&
+					indicator.Position == 2 &&
+					IsItemCentered("Third"),
+					message: "A subsequent selection was blocked after replacing the source during resize restoration.");
 			});
 		}
 
