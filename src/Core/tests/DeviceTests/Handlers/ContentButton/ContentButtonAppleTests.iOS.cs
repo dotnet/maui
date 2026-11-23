@@ -360,6 +360,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(80, 200, 500, 400, false, 200)]
+		[InlineData(80, 200, 500, 400, true, 200)]
+		[InlineData(200, 0, 500, 100, true, 200)]
+		[InlineData(300, 0, 100, 400, false, 100)]
+		[InlineData(300, 0, 100, 400, true, 100)]
+		public async Task MeasurementUsesResolvedWidthForWrappedContent(double width, double minimumWidth, double maximumWidth, double parentWidth, bool wrapped, double expectedWidth)
+		{
+			var content = new LabelStub
+			{
+				Text = new string('W', 80),
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
+			};
+			var button = new ContentButtonStub
+			{
+				Width = width,
+				MinimumWidth = minimumWidth,
+				MaximumWidth = maximumWidth,
+				Height = Dimension.Unset,
+				Content = content,
+				Padding = new Thickness(5),
+				Clip = wrapped ? new PathShapeStub() : null,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var size = handler.GetDesiredSize(parentWidth, double.PositiveInfinity);
+
+				Assert.Equal(expectedWidth, size.Width, 1);
+				Assert.Equal(expectedWidth - 10, content.DesiredSize.Width, 1);
+			});
+		}
+
 		[Fact]
 		public async Task EnablingWrappedButtonRestoresContainerInteraction()
 		{
