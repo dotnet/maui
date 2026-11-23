@@ -534,7 +534,8 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 _rootPage?.DisconnectHandlers();
             }
-            else if (_rootPage is Shell nestedShell)
+            else if (_rootPage is Shell nestedShell &&
+                HandlerProperties.GetDisconnectPolicy(nestedShell) != HandlerDisconnectPolicy.Manual)
             {
                 // Its child fragments belong to the view being destroyed, not the next host.
                 nestedShell.Handler?.DisconnectHandler();
