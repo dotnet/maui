@@ -365,6 +365,7 @@ if ($DryRun) {
     Write-Host "Dry run complete. Outputs are in $OutputDirectory."
     return
 }
-Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json) | Out-Null
+$posted = Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json)
 Write-Host "Posted the run-tests comment on #$PrNumber."
+Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId $posted.id
 if ($queueError) { Write-Host "::warning::$queueError" }

@@ -24,6 +24,8 @@ param(
     [string]$CommentAuthor,
     # Dispatch branches stay this long so failed jobs can still be re-run from the build.
     [int]$DispatchRetentionDays = 3,
+    # Failed test results read individually for their exact name, error message and link.
+    [int]$MaxTestResultDetails = 60,
     [switch]$DryRun
 )
 
@@ -61,8 +63,14 @@ foreach ($comment in $comments) {
     $failedTests = $null
     if ($build.status -eq 'completed' -and $build.result -ne 'succeeded') {
         try {
-            $testResults = Invoke-RestMethod -Uri "https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbybuild?buildId=$buildId&outcomes=Failed&`$top=1000&api-version=7.1-preview.1" -TimeoutSec 60
-            $failedTests = ConvertTo-RunTestsFailedTests $testResults.value
+            $testResults = @((Invoke-RestMethod -Uri "https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbybuild?buildId=$buildId&outcomes=Failed&`$top=1000&api-version=7.1-preview.1" -TimeoutSec 60).value)
+            # resultsbybuild only reliably identifies each result; read the name and error from the result itself.
+            $detailed = @($testResults | Select-Object -First $MaxTestResultDetails | ForEach-Object {
+                    $entry = $_
+                    try { Invoke-RestMethod -Uri "https://dev.azure.com/dnceng-public/public/_apis/test/Runs/$($entry.runId)/results/$($entry.id)?api-version=7.1" -TimeoutSec 30 }
+                    catch { Write-Warning "Could not read test result $($entry.runId)/$($entry.id)."; $entry }
+                })
+            $failedTests = ConvertTo-RunTestsFailedTests ($detailed + @($testResults | Select-Object -Skip $MaxTestResultDetails)) -BuildUrl $build._links.web.href
         } catch {
             Write-Warning "Could not read failed tests of build $($buildId): $($_.Exception.Message)"
         }
