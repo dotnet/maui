@@ -81,6 +81,8 @@ written and read back. The trusted publisher chooses the PR, pinned commit,
 inline anchors and command completion. The envelope is internal: publication
 contains inline findings and a compact finding-count/commit receipt, with no
 detailed summary, recommendation, author ping or failure-status
-comment. A completed zero-finding review still submits this envelope and the
+comment. The receipt also counts Behavioral Change Disclosure findings as
+breaking changes and links their locations, never their text. A completed
+zero-finding review still submits this envelope and the
 trusted publisher posts its compact zero-findings receipt. Never publish directly or
 claim that a source review proves test success.

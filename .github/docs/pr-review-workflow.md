@@ -555,7 +555,14 @@ finding text into the receipt. Deduplication requires the exact sanitized body,
 RIGHT side, path, line and reviewed commit, not a substring match.
 Its compact receipt says **Expert Review - N findings** and links the
 reviewed commit, including when there are zero findings. The count includes
-already-reported findings; those are not duplicated inline. Findings without
+already-reported findings; those are not duplicated inline. Behavioral Change
+Disclosure findings (dimension 32: existing apps would look or behave
+differently without opting in) are also counted as breaking changes in the
+heading, and a warning callout links each location in the reviewed commit; the
+publisher matches the dimension's label and never copies finding text into the
+receipt. The Azure DevOps lane's
+`post-inline-review.ps1` adds the same count and links when no
+`review-summary.md` is supplied. Findings without
 valid anchors remain in artifacts, with a short receipt note instead of their
 details. Incomplete source assessments are identified explicitly, never
 presented as completed zero-finding reviews.
@@ -860,7 +867,8 @@ The canonical layout lives in the skill rather than a separate caller template.
 
 `/review expert-review` posts a consolidated PR review, not the full pipeline's
 `AI Summary` or a test-failure report. Read its reviewed commit, completed
-dimension count, inline findings, body-only findings and evidence gaps. An
+dimension count, breaking-change warning, inline findings, body-only findings
+and evidence gaps. An
 empty incomplete review is not a clean result. Request a fresh command after
 new commits; history/source review is never a test pass or human approval.
 

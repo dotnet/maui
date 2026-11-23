@@ -7,7 +7,10 @@
     Reads inline-findings.json (produced by the maui-expert-reviewer agent) and posts
     them as a GitHub PR review with inline file:line comments.
 
-    Also posts review-summary.md as the review body.
+    Posts review-summary.md as the review body when present. Otherwise it generates a
+    compact body with the finding count and, for Behavioral Change Disclosure findings
+    (breaking changes for existing apps), a warning that counts them and links their
+    locations.
 
     Uses the GitHub Pulls Review API to create a single review with all inline comments
     attached at their exact file:line locations.
@@ -105,6 +108,63 @@ function Test-InlineReviewMarkerExists {
         }
     }
     return $false
+}
+
+function Get-InlineFindingBody {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [object]$Finding
+    )
+
+    if ($Finding.body) { return [string]$Finding.body }
+    if ($Finding.message) { return [string]$Finding.message }
+    if ($Finding.content) { return [string]$Finding.content }
+    return "(no description)"
+}
+
+function New-InlineReviewSummary {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$FindingBodies,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Comments,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[0-9a-fA-F]{40}$')]
+        [string]$CommitSha
+    )
+
+    # Behavioral Change Disclosure findings; grouped findings start that label on its own line.
+    $breakingPattern = '(?m)^\*\*\[(?:critical|major|moderate|minor)\]\s+Behavioral Change Disclosure\*\*'
+    $breakingCount = @($FindingBodies | Where-Object { $_ -cmatch $breakingPattern }).Count
+    $noun = if ($FindingBodies.Count -eq 1) { 'finding' } else { 'findings' }
+    $summary = "## Expert Review — $($FindingBodies.Count) $noun"
+    if ($breakingCount -gt 0) {
+        $breakingNoun = if ($breakingCount -eq 1) { 'breaking change' } else { 'breaking changes' }
+        $summary += " · ⚠️ $breakingCount $breakingNoun"
+        # Locations only: finding text stays in the inline comments.
+        $summary += "`n`n> [!WARNING]`n> Existing apps would look or behave differently without opting in. See the ``Behavioral Change Disclosure`` findings at:"
+        $linked = 0
+        foreach ($c in $Comments) {
+            if ([string]$c.body -cnotmatch $breakingPattern) { continue }
+            $path = [string]$c.path
+            $target = @($path -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+            $label = if ($path -cmatch '^[A-Za-z0-9._/+-]+$') { "``$path``" } else { 'changed file' }
+            $summary += "`n> - [$label line $([int]$c.line)](https://github.com/dotnet/maui/blob/$($CommitSha.ToLowerInvariant())/$($target)?plain=1#L$([int]$c.line))"
+            $linked++
+        }
+        $unattached = $breakingCount - $linked
+        if ($unattached -gt 0) {
+            $more = if ($linked -gt 0) { 'more ' } else { '' }
+            $summary += "`n> - $unattached $($more)could not be attached inline."
+        }
+    }
+    $summary += "`n`nSee inline comments for details."
+    return $summary
 }
 
 # ============================================================================
@@ -206,13 +266,11 @@ Write-Host "  Found $($findings.Count) inline findings" -ForegroundColor Gray
 $findingKeys = ($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', '
 Write-Host "  First finding keys: $(ConvertTo-AzdoSafeConsole $findingKeys)" -ForegroundColor Gray
 
-# Load summary if available
-$summaryBody = ""
+# Load summary if available; otherwise one is generated after diff validation.
+$summaryBody = $null
 if (Test-Path $SummaryFile) {
     $summaryBody = Get-Content -Path $SummaryFile -Raw -Encoding UTF8
     Write-Host "  Loaded summary ($($summaryBody.Length) chars)" -ForegroundColor Gray
-} else {
-    $summaryBody = "## Expert Review — $($findings.Count) findings`n`nSee inline comments for details."
 }
 
 # ============================================================================
@@ -259,7 +317,7 @@ foreach ($f in $findings) {
         continue
     }
 
-    $rawBody = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
+    $rawBody = Get-InlineFindingBody $f
     $aiMarker = "> 🔍 **AI-Generated Review** (multi-model)`n`n"
     
     $comment = @{
@@ -335,6 +393,11 @@ if ($LASTEXITCODE -ne 0) {
 if ($comments.Count -eq 0) {
     Write-Host "No inline-commentable findings remain after diff validation. Skipping review post." -ForegroundColor Yellow
     exit 0
+}
+
+if ([string]::IsNullOrWhiteSpace($summaryBody)) {
+    $findingBodies = @($findings | ForEach-Object { Get-InlineFindingBody $_ })
+    $summaryBody = New-InlineReviewSummary -FindingBodies $findingBodies -Comments $comments -CommitSha $commitSha
 }
 
 $reviewMarker = New-InlineReviewMarker -ReviewedHead $commitSha -Comments $comments

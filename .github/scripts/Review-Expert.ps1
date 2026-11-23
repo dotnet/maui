@@ -695,15 +695,22 @@ function Invoke-ExpertPrepare {
             $lineMap[$file.filename] = $lines
         }
         $findingCount = $findings.Count + $unplaced.Count
+        # Findings that start with (or, when grouped, contain a line starting with) the Behavioral
+        # Change Disclosure label are counted as breaking changes and located in the receipt.
+        $breakingPattern = '(?m)^\*\*\[(?:critical|major|moderate|minor)\]\s+Behavioral Change Disclosure\*\*'
+        $breakingLocations = [Collections.Generic.List[object]]::new()
+        $breakingWithheld = @($unplaced | Where-Object { $_ -cmatch $breakingPattern }).Count
         $inline = [Collections.Generic.List[object]]::new()
         foreach ($finding in $findings) {
             $expectedBody = Get-ExpertPublicationBody $finding.body
+            $isBreaking = $finding.body -cmatch $breakingPattern
             $alreadyPosted = @($feedback.inline | Where-Object {
                 $_.path -ceq $finding.path -and $_.line -eq $finding.line -and
                 $_.commit_id -ceq $context.head_sha -and
                 $_.side -ceq 'RIGHT' -and $_.body -ceq $expectedBody
             })
             if ($alreadyPosted.Count) {
+                if ($isBreaking) { $breakingLocations.Add($finding) }
                 continue
             }
             if ($lineMap.ContainsKey($finding.path) -and $lineMap[$finding.path].Contains($finding.line)) {
@@ -711,10 +718,13 @@ function Invoke-ExpertPrepare {
                     path = $finding.path; line = $finding.line
                     body = $expectedBody; canonical_body = $finding.body
                 })
+                if ($isBreaking) { $breakingLocations.Add($finding) }
             } else {
                 $unplaced.Add("``$($finding.path):$($finding.line)`` - $($finding.body)")
+                if ($isBreaking) { $breakingWithheld++ }
             }
         }
+        $breakingCount = $breakingLocations.Count + $breakingWithheld
         $receipt.inline_comments = $inline.ToArray()
         $receipt.withheld_findings = $unplaced.ToArray()
         $receipt.coverage = "$completed/$($dimensions.Count)"
@@ -733,7 +743,24 @@ function Invoke-ExpertPrepare {
         }
         $noun = if ($findingCount -eq 1) { 'finding' } else { 'findings' }
         $body = "## Expert Review $([char]0x2014) $findingCount $noun"
+        if ($breakingCount) {
+            $breakingNoun = if ($breakingCount -eq 1) { 'breaking change' } else { 'breaking changes' }
+            $body += " $([char]0x00B7) $([char]0x26A0)$([char]0xFE0F) $breakingCount $breakingNoun"
+        }
         $body += "`n`nReviewed commit [``$($context.head_sha.Substring(0, 7))``]($env:GITHUB_SERVER_URL/$Repository/commit/$($context.head_sha))."
+        if ($breakingCount) {
+            # Locations only: finding text stays in the inline comments and run artifacts.
+            $body += "`n`n> [!WARNING]`n> Existing apps would look or behave differently without opting in. See the ``Behavioral Change Disclosure`` findings at:"
+            foreach ($location in $breakingLocations) {
+                $target = @($location.path -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+                $label = if ($location.path -cmatch '^[A-Za-z0-9._/+-]+$') { "``$($location.path)``" } else { 'changed file' }
+                $body += "`n> - [$label line $($location.line)]($env:GITHUB_SERVER_URL/$Repository/blob/$($context.head_sha)/$($target)?plain=1#L$($location.line))"
+            }
+            if ($breakingWithheld) {
+                $more = if ($breakingLocations.Count) { 'more ' } else { '' }
+                $body += "`n> - $breakingWithheld $($more)could not be attached inline; retained in [run artifacts]($runUrl)."
+            }
+        }
         if ($gaps.Count) {
             $body += "`n`nSource assessment incomplete ($completed/$($dimensions.Count) dimensions); finding count is partial."
         }
@@ -746,6 +773,7 @@ function Invoke-ExpertPrepare {
         }
         $receipt.review_body = Get-ExpertPublicationBody $body
         $receipt.finding_count = $findingCount
+        $receipt.breaking_change_count = $breakingCount
         $items.Add(@{ type = 'submit_pull_request_review'; event = 'COMMENT'; body = $receipt.review_body })
         $output.items = $items.ToArray()
     }

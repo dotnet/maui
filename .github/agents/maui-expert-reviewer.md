@@ -637,7 +637,8 @@ Each entry has exactly 3 fields matching the GitHub Pull Request Review API:
 
 Rules:
 - Group related findings on adjacent lines into a single entry
-- Limit to ≤15 findings — prioritize by severity
+- Behavioral Change Disclosure (#32) findings are counted as breaking changes in the review's summary comment, which links their locations; a finding counts only when its `**[major] Behavioral Change Disclosure**` label starts a line, so in a grouped entry start the #32 part on its own line
+- Limit to ≤15 findings — prioritize by severity; at equal severity keep Behavioral Change Disclosure (#32) findings first
 - Exception to the ≤15 cap: from Input and Path Correctness (#31), if present among validated findings, retain at least one representative committed-credential finding and one archive/path-escape finding — these are posted **in addition to** the top-15 (the set may reach 17); they are never swapped in for, and never displace, a higher-severity finding from another dimension
 - Exclude findings already present in existing PR comments (checked in Wave 0 step 5)
 
