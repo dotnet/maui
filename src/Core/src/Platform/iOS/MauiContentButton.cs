@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		nfloat _defaultCornerRadius;
 
 		bool _isFocusedSetByUs;
+		bool _isNativeFocused;
 		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<UIView>? _contentView;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayout;
@@ -68,17 +69,31 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetVirtualView(IContentButton? virtualView)
 		{
-			if (!ReferenceEquals(VirtualView, virtualView))
+			var previousView = VirtualView;
+			var clearPreviousFocus = !ReferenceEquals(previousView, virtualView) && _isFocusedSetByUs;
+
+			if (!ReferenceEquals(previousView, virtualView))
 				_isFocusedSetByUs = false;
 
 			((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = virtualView;
+
+			if (clearPreviousFocus && previousView is IView { IsFocused: true } previous)
+				previous.IsFocused = false;
+
+			if (_isNativeFocused && ReferenceEquals(VirtualView, virtualView) &&
+				virtualView is IView { IsFocused: false } current)
+			{
+				_isFocusedSetByUs = true;
+				current.IsFocused = true;
+			}
 		}
 
 		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
 		{
 			base.DidUpdateFocus(context, coordinator);
 
-			if (context.NextFocusedView == this)
+			_isNativeFocused = context.NextFocusedView == this;
+			if (_isNativeFocused)
 			{
 				if (VirtualView is IView { IsFocused: false } view)
 				{

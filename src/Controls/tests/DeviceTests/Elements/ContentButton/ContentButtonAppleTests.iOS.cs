@@ -234,6 +234,88 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task NativeFocusTransfersWhenVirtualViewIsReplaced(bool alreadyFocused, bool replacementAlreadyFocused)
+		{
+			var first = new ContentButton();
+			var second = new ContentButton();
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				using var otherView = new UIView();
+				using var coordinator = new UIFocusAnimationCoordinator();
+				using var focused = new TestFocusUpdateContext(platformView, otherView);
+				using var unfocused = new TestFocusUpdateContext(otherView, platformView);
+
+				if (alreadyFocused)
+					((IView)first).IsFocused = true;
+				if (replacementAlreadyFocused)
+					((IView)second).IsFocused = true;
+
+				platformView.DidUpdateFocus(focused, coordinator);
+				handler.SetVirtualView(second);
+
+				Assert.Equal(alreadyFocused, first.IsFocused);
+				Assert.True(second.IsFocused);
+
+				platformView.DidUpdateFocus(unfocused, coordinator);
+				Assert.Equal(replacementAlreadyFocused, second.IsFocused);
+			});
+		}
+
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task FocusTransferHandlesReentrantReplacementOrDisconnect(bool disconnect, bool onIncomingFocus)
+		{
+			var first = new ContentButton();
+			var second = new ContentButton();
+			var third = new ContentButton();
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				using var otherView = new UIView();
+				using var coordinator = new UIFocusAnimationCoordinator();
+				using var focused = new TestFocusUpdateContext(platformView, otherView);
+				platformView.DidUpdateFocus(focused, coordinator);
+
+				void ReplaceOrDisconnect(object? sender, FocusEventArgs args)
+				{
+					if (disconnect)
+						((IElementHandler)handler).DisconnectHandler();
+					else
+						handler.SetVirtualView(third);
+				}
+
+				if (onIncomingFocus)
+					second.Focused += ReplaceOrDisconnect;
+				else
+					first.Unfocused += ReplaceOrDisconnect;
+
+				handler.SetVirtualView(second);
+
+				Assert.False(first.IsFocused);
+				Assert.False(second.IsFocused);
+				if (disconnect)
+					Assert.Null(((IElementHandler)handler).PlatformView);
+				else
+				{
+					Assert.Same(third, ((IElementHandler)handler).VirtualView);
+					Assert.True(third.IsFocused);
+				}
+			});
+		}
+
 		[Fact]
 		public async Task GradientStrokeAndRadiusUpdateToDefaults()
 		{

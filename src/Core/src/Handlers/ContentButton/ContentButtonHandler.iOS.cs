@@ -28,10 +28,13 @@ namespace Microsoft.Maui.Handlers
 
 			base.SetVirtualView(view);
 
-			if (PlatformView is MauiContentButton platformView)
+			if (elementHandler.PlatformView is MauiContentButton platformView &&
+				elementHandler.VirtualView is IContentButton currentView)
 			{
-				platformView.SetVirtualView(VirtualView);
-				_proxy.UpdateVirtualView(VirtualView);
+				platformView.SetVirtualView(currentView);
+				if (ReferenceEquals(elementHandler.PlatformView, platformView) &&
+					elementHandler.VirtualView is IContentButton connectedView)
+					_proxy.UpdateVirtualView(connectedView);
 			}
 		}
 
