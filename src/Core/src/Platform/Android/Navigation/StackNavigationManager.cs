@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Platform
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
+
+		// The navigation's resolved transition (see NavigationTransitionHooks), until the navigation finishes.
+		object? _preparedTransition;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
@@ -156,6 +159,16 @@ namespace Microsoft.Maui.Platform
 
 			IsAnimated = animated;
 
+			// Resolve the transition once for the whole navigation; both fragments' animations come from it.
+			_preparedTransition = IsPopping is null || NavigationTransitionHooks.Current is not { } hooks
+				? null
+				: hooks.PrepareNavigation(
+					NavigationView as IView,
+					previousNavigationStack[previousNavigationStackCount - 1],
+					newPageStack[newPageStack.Count - 1],
+					IsPopping.Value,
+					animated);
+
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
 
@@ -267,6 +280,15 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The animation to use, or null to skip animation.</returns>
 		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
 		{
+			// Page transitions and navigation-transition providers. An override of this method that doesn't
+			// call the base keeps precedence over both.
+			if (_preparedTransition is { } prepared
+				&& NavigationTransitionHooks.Current is { } hooks
+				&& hooks.TryCreateAnimation(prepared, context, enter, out var transition))
+			{
+				return transition;
+			}
+
 			int id;
 			if (isPopping)
 			{
@@ -288,6 +310,7 @@ namespace Microsoft.Maui.Platform
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
+			_preparedTransition = null;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
 

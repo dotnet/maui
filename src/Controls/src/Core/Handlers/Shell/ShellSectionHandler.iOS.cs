@@ -412,6 +412,20 @@ namespace Microsoft.Maui.Controls.Handlers
             // Layout is handled by ShellSectionRootViewController.ViewDidLayoutSubviews → LayoutRootSubviews().
         }
 
+        IView? INavigationManagerDelegate.NavigationView => VirtualView;
+
+        IView? INavigationManagerDelegate.GetViewForViewController(UIViewController viewController)
+        {
+            // The section's root view controller shows its current content page.
+            var element = ElementForViewController(viewController);
+            if (element is ShellSection section)
+            {
+                return (section.CurrentItem as IShellContentController)?.Page;
+            }
+
+            return element as IView;
+        }
+
         #endregion
 
         #region Root Content Loading (from ShellSectionRootRenderer)

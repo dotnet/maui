@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
 		// until it completes (success or cancel).
 		bool _sendPopPending;
+		Microsoft.Maui.Platform.NavigationTransitionDriver _transitionDriver;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
 		int _tabRegistrationGeneration;
@@ -122,6 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
+			_transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(this);
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
@@ -132,6 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType)
 			: base(navigationBarType, toolbarType)
 		{
+			_transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(this);
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
@@ -385,6 +388,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NativeElementDiscriminators.RealizedView);
 			}
 			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this);
+			_transitionDriver.AttachInteractivePop();
 			UpdateFlowDirection();
 		}
 
@@ -735,6 +739,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			page?.DisconnectHandlers();
 		}
 
+		Page PageForViewController(UIViewController viewController)
+		{
+			var element = ElementForViewController(viewController);
+			if (element is ShellSection section)
+				return (section.CurrentItem as IShellContentController)?.Page;
+
+			return element as Page;
+		}
+
 		Element ElementForViewController(UIViewController viewController)
 		{
 			if (_renderer.ViewController == viewController)
@@ -1009,7 +1022,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			[Foundation.Preserve(Conditional = true)]
 			public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
 			{
-				return null;
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return null;
+
+				// The page-transition properties and the provider chain; null keeps UIKit's own animation.
+				return self._transitionDriver.GetAnimationController(
+					self.ShellSection,
+					operation,
+					self.PageForViewController(fromViewController),
+					self.PageForViewController(toViewController));
+			}
+
+			[Export("navigationController:interactionControllerForAnimationController:")]
+			[Foundation.Preserve(Conditional = true)]
+			public new IUIViewControllerInteractiveTransitioning GetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+			{
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return null;
+
+				return self._transitionDriver.GetInteractionController();
 			}
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)

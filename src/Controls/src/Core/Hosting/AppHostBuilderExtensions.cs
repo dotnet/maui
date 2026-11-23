@@ -363,6 +363,8 @@ public static partial class AppHostBuilderExtensions
 		NavigationPage.RemapForControls();
 #endif
 
+		Animations.ControlsNavigationTransitionHooks.Install();
+
 		return builder;
 	}
 }
