@@ -137,6 +137,45 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData("Ion", "\uF20F")]
+		[InlineData("FA", "\uF432")]
+		public async Task GlyphOutlineIsCenteredWhenStoredGlyphBoundsDiffer(string fontFamily, string glyph)
+		{
+			// The bounding boxes these fonts store for the glyphs don't match the outlines,
+			// as in the Fluent System Icons font from https://github.com/dotnet/maui/issues/40494.
+			using var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont("ionicons.ttf", "Ion");
+					fonts.AddFont("FontAwesome.ttf", "FA");
+				})
+				.Build();
+
+			var fontManager = mauiApp.Services.GetRequiredService<IFontManager>();
+			var imageSource = new FontImageSourceStub
+			{
+				Glyph = glyph,
+				Font = Font.OfSize(fontFamily, 200),
+				Color = Colors.Red
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var image = imageSource.GetPlatformImage(fontManager, 3);
+				Assert.NotNull(image);
+
+				var ink = GetGlyphInkBounds(image);
+				Assert.True(ink.Width > 0 && ink.Height > 0, "The glyph must contain visible ink.");
+
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
+				{
+					Assert.InRange(Math.Abs((double)ink.GetMidX() - image.CGImage.Width / 2d), 0, 1);
+					Assert.InRange(Math.Abs((double)ink.GetMidY() - image.CGImage.Height / 2d), 0, 1);
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task RenderingModeIsPreserved(bool hasColor)
