@@ -232,6 +232,8 @@ Describe 'Pipeline support checks' {
         $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
         Set-RunTestsSuite ui
         $invoke | Should -Match 'parents = @\(\$sourceSha\)'
+        # A PR GitHub reports as conflicting is told so plainly.
+        $invoke | Should -Match ([regex]::Escape('-not $verified.merge -and $pr.mergeable -eq $false'))
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
     }
 

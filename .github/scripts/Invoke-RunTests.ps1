@@ -281,6 +281,8 @@ if ($selectionError) {
 } elseif ($context.baseRef -and $pr.base.ref -cne $context.baseRef) {
     # Retargeting keeps the head SHA, but the models selected tests for the diff against the old base.
     $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review $($script:RunTestsCommand)`` again."
+} elseif ($selection.mode -ne 'none' -and -not $verified.merge -and $pr.mergeable -eq $false) {
+    $queueError = "This PR has merge conflicts with ``$($pr.base.ref)``, so there is no test-merge commit to build. Resolve the conflicts, then comment ``/review $($script:RunTestsCommand)`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
     $queueError = "GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry ``/review $($script:RunTestsCommand)``."
 }
