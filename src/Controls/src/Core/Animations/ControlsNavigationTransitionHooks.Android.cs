@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Animations
 		private static partial bool IsReducedMotionEnabledPlatform()
 		{
 			// "Remove animations" in the accessibility settings sets the animator duration scale to 0.
-			var resolver = Android.App.Application.Context?.ContentResolver;
+			var resolver = global::Android.App.Application.Context?.ContentResolver;
 			if (resolver is null)
 			{
 				return false;

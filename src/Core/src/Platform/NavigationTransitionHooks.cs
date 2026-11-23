@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 		/// The fragment animation for one side of a prepared navigation. Returns <see langword="false"/> to
 		/// use the platform default; <see langword="true"/> with a <see langword="null"/> animation suppresses it.
 		/// </summary>
-		bool TryCreateAnimation(object prepared, Android.Content.Context context, bool enter, out Android.Views.Animations.Animation? animation);
+		bool TryCreateAnimation(object prepared, global::Android.Content.Context context, bool enter, out global::Android.Views.Animations.Animation? animation);
 #elif WINDOWS
 		/// <summary>
 		/// The WinUI transition for a stack navigation. Returns <see langword="false"/> to use the platform default.

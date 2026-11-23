@@ -1027,7 +1027,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// The page-transition properties and the provider chain; null keeps UIKit's own animation.
 				return self._transitionDriver.GetAnimationController(
-					self.ShellSection,
+					self.ShellSection as IView,
 					operation,
 					self.PageForViewController(fromViewController),
 					self.PageForViewController(toViewController));

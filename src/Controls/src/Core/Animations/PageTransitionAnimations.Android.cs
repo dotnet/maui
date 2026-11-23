@@ -52,14 +52,14 @@ namespace Microsoft.Maui.Controls.Animations
 			// drawn first for the length of the transition.
 			if (!enter && container is FragmentContainerView fragmentContainer)
 			{
-				fragmentContainer.SetDrawDisappearingViewsLast(isBack);
-				animation.AnimationEnd += (_, _) => fragmentContainer.SetDrawDisappearingViewsLast(true);
+				SetDrawDisappearingViewsLast(fragmentContainer, isBack);
+				animation.AnimationEnd += (_, _) => SetDrawDisappearingViewsLast(fragmentContainer, true);
 			}
 
 			if (!enter && container is not null && _transition.Background is { } background)
 			{
 				var previous = container.Background;
-				container.UpdateBackground((Paint)background);
+				container.UpdateBackground((Microsoft.Maui.Graphics.Paint)background);
 				animation.AnimationEnd += (_, _) => container.Background = previous;
 			}
 
@@ -69,6 +69,28 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			return animation;
+		}
+
+		// FragmentContainerView.setDrawDisappearingViewsLast isn't in the AndroidX binding.
+		static IntPtr s_setDrawDisappearingViewsLast;
+
+		static void SetDrawDisappearingViewsLast(FragmentContainerView container, bool value)
+		{
+			try
+			{
+				if (s_setDrawDisappearingViewsLast == IntPtr.Zero)
+				{
+					var type = global::Android.Runtime.JNIEnv.GetObjectClass(container.Handle);
+					s_setDrawDisappearingViewsLast = global::Android.Runtime.JNIEnv.GetMethodID(type, "setDrawDisappearingViewsLast", "(Z)V");
+					global::Android.Runtime.JNIEnv.DeleteLocalRef(type);
+				}
+
+				global::Android.Runtime.JNIEnv.CallVoidMethod(container.Handle, s_setDrawDisappearingViewsLast, new global::Android.Runtime.JValue(value));
+			}
+			catch (Java.Lang.Throwable)
+			{
+				// An AndroidX version without the method keeps its default drawing order.
+			}
 		}
 
 		internal static IInterpolator CreateInterpolator(Easing? easing)
@@ -156,7 +178,7 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 				}
 
-				var overlay = Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
+				var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
 
 				var flights = new List<(AView Source, VisualElement To, ImageView Picture, int[] Start, float SourceAlpha)>();
 				for (int i = 0; i < heroes.Count; i++)

@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			// Page transitions: the modal's own dismissal, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window?.Page;
+			var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
 			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PopModal, modal, presenter, animated);
 			if (resolved.IsSuppressed)
 			{
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var parentView = GetModalParentView();
 
 			// Page transitions: the modal's own presentation, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window?.Page;
+			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
 			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PushModal, presenter, modal, animated);
 			AAnimation? enterAnimation = null;
 			if (resolved.IsSuppressed)

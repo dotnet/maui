@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Animations
 	{
 		static Task ReplacePlatformAsync(Window window, Page page, NavigationTransitionRequest request, PageTransition transition)
 		{
-			var activity = (window.Handler?.PlatformView as Android.App.Activity) ?? window.Handler?.MauiContext?.Context?.GetActivity();
+			var activity = (window.Handler?.PlatformView as global::Android.App.Activity) ?? window.Handler?.MauiContext?.Context?.GetActivity();
 			var decor = activity?.Window?.DecorView as ViewGroup;
-			var content = decor?.FindViewById(Android.Resource.Id.Content);
+			var content = decor?.FindViewById(global::Android.Resource.Id.Content);
 			var config = Bitmap.Config.Argb8888;
 			if (decor?.Overlay is null || content is not { Width: > 0, Height: > 0 } || config is null)
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Animations
 				AView.MeasureSpec.MakeMeasureSpec(content.Height, MeasureSpecMode.Exactly));
 			picture.Layout(location[0], location[1], location[0] + content.Width, location[1] + content.Height);
 
-			var overlay = Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
+			var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
 			overlay.Add(picture);
 			window.Page = page;
 

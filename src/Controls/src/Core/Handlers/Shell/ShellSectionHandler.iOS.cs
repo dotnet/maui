@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Layout is handled by ShellSectionRootViewController.ViewDidLayoutSubviews → LayoutRootSubviews().
         }
 
-        IView? INavigationManagerDelegate.NavigationView => VirtualView;
+        IView? INavigationManagerDelegate.NavigationView => VirtualView as IView;
 
         IView? INavigationManagerDelegate.GetViewForViewController(UIViewController viewController)
         {
