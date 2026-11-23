@@ -44,6 +44,8 @@ namespace Microsoft.Maui.Platform
 					{
 						textField.Text = string.Empty;
 						textField.InsertText(currentText);
+						// UIKit treats InsertText as typing and briefly shows the last character; setting the text again masks it.
+						textField.Text = currentText;
 					}
 					finally
 					{
