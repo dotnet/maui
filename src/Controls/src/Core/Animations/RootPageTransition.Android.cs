@@ -41,26 +41,15 @@ namespace Microsoft.Maui.Controls.Animations
 
 			var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
 			overlay.Add(picture);
-			window.Page = page;
 
 			var width = content.Width;
 			var height = content.Height;
 			var flowDirection = request.FlowDirection;
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-			void Apply(float progress)
-			{
-				Pose(content, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
-				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
-			}
-
-			var animator = ValueAnimator.OfFloat(0f, 1f)!;
-			animator.SetDuration((long)transition.Duration.TotalMilliseconds);
-			animator.SetInterpolator(PageTransitionAnimations.CreateInterpolator(transition.Easing));
-			animator.Update += (_, e) => Apply(e.Animation.AnimatedFraction);
-
+			ValueAnimator? animator = null;
 			var finished = false;
 			RunningTransition? running = null;
+
 			void Cleanup()
 			{
 				if (finished)
@@ -80,14 +69,31 @@ namespace Microsoft.Maui.Controls.Animations
 				tcs.TrySetResult();
 			}
 
-			animator.AnimationEnd += (_, _) => Cleanup();
-
-			// A later ReplacePageAsync on this window ends this one first: the content view is shared.
+			// This replacement owns the window's root (the content view is shared) before the page is assigned: a
+			// replacement started from the assignment's own callbacks finishes this one rather than racing it.
 			running = Track(window, () =>
 			{
-				animator.End();
+				animator?.End();
 				Cleanup();
 			});
+
+			window.Page = page;
+			if (running.IsSuperseded)
+			{
+				return tcs.Task;
+			}
+
+			void Apply(float progress)
+			{
+				Pose(content, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
+				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
+			}
+
+			animator = ValueAnimator.OfFloat(0f, 1f)!;
+			animator.SetDuration((long)transition.Duration.TotalMilliseconds);
+			animator.SetInterpolator(PageTransitionAnimations.CreateInterpolator(transition.Easing));
+			animator.Update += (_, e) => Apply(e.Animation.AnimatedFraction);
+			animator.AnimationEnd += (_, _) => Cleanup();
 
 			Apply(0);
 			animator.Start();

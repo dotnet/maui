@@ -62,7 +62,8 @@ public class Issue6DetailPage : ContentPage
 		Title = "Detail " + id;
 		SharedTransition.SetGroup(this, id);
 
-		var hero = new BoxView { AutomationId = "DetailTile", Color = Colors.SteelBlue, HeightRequest = 240 };
+		// A Label rather than a BoxView, so Appium finds it on every platform (a textless BoxView isn't exposed on WinUI).
+		var hero = new Label { AutomationId = "DetailTile", Text = "Detail", BackgroundColor = Colors.SteelBlue, TextColor = Colors.White, HeightRequest = 240 };
 		SharedTransition.SetName(hero, "tile");
 
 		_status = new Label { AutomationId = "DetailStatus", Text = "Arriving" };

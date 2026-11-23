@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -25,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		UIPanGestureRecognizer? _edge;
 		UIPanGestureRecognizer? _content;
 		UIPanGestureRecognizer? _driving;
+		readonly List<(UIPanGestureRecognizer Recognizer, UIGestureRecognizer.Token Token)> _targets = new();
 
 		public NavigationTransitionDriver(UINavigationController navigationController)
 		{
@@ -58,14 +61,41 @@ namespace Microsoft.Maui.Platform
 
 		void Observe(UIPanGestureRecognizer recognizer)
 		{
+			// The action holds neither the recognizer nor the driver strongly; Detach removes it.
 			var weakSelf = new WeakReference<NavigationTransitionDriver>(this);
-			recognizer.AddTarget(() =>
+			var token = recognizer.AddTarget(sender =>
 			{
-				if (weakSelf.TryGetTarget(out var driver))
+				if (sender is UIPanGestureRecognizer pan && weakSelf.TryGetTarget(out var driver))
 				{
-					driver.OnPopPan(recognizer);
+					driver.OnPopPan(pan);
 				}
 			});
+			_targets.Add((recognizer, token));
+		}
+
+		/// <summary>Stops following the swipe-back recognizers and releases any interaction. Call when the owner is torn down.</summary>
+		public void Detach()
+		{
+			for (int i = 0; i < _targets.Count; i++)
+			{
+				_targets[i].Recognizer.RemoveTarget(_targets[i].Token);
+			}
+
+			_targets.Clear();
+			_edge = null;
+			_content = null;
+			TransitionEnded();
+		}
+
+		/// <summary>
+		/// Releases the interaction controller of the transition that just finished or was cancelled, so a provider's
+		/// controller (and whatever pages it holds) isn't kept until the next navigation.
+		/// </summary>
+		public void TransitionEnded()
+		{
+			_interaction = null;
+			_customInteraction = null;
+			_driving = null;
 		}
 
 		static bool IsActive(UIPanGestureRecognizer? recognizer)

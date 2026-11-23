@@ -377,6 +377,7 @@ namespace Microsoft.Maui.Platform
 
             _disposed = true;
             _interactivePopGesturePending = false;
+            _transitionDriver.Detach();
 
             // Clear native delegates to prevent late callbacks (DidShowViewController,
             // WillShowViewController) from firing after the handler disconnects.
@@ -431,6 +432,7 @@ namespace Microsoft.Maui.Platform
                 }
 
                 manager._interactivePopGesturePending = false;
+                manager._transitionDriver.TransitionEnded();
 
                 // Resolve completion tasks
                 if (manager._completionTasks.TryGetValue(viewController, out var source))
@@ -532,6 +534,11 @@ namespace Microsoft.Maui.Platform
             if (_disposed)
             {
                 return;
+            }
+
+            if (context.IsCancelled)
+            {
+                _transitionDriver.TransitionEnded();
             }
 
             if (!context.IsCancelled)

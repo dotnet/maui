@@ -29,7 +29,12 @@ namespace Microsoft.Maui.Controls.Animations
 
 			// Root replacement isn't part of the provider contract: there is no platform animation to supply, so only
 			// MAUI's own motion runs (and Platform, as nothing to animate, swaps without one).
-			var request = PageTransitionResolver.ResolveRequest(NavigationTransitionKind.Push, from, page, animated);
+			// The page lays out in the window's direction once it is the window's page (when it doesn't set its own), and
+			// it isn't yet, so the direction is worked out from the window.
+			var flowDirection = page.FlowDirection == FlowDirection.MatchParent
+				? PageTransitionResolver.FlowDirectionOf(window)
+				: page.FlowDirection;
+			var request = PageTransitionResolver.ResolveRequest(NavigationTransitionKind.Push, from, page, animated, forwardFlowDirection: flowDirection);
 			if (token is not null)
 			{
 				PageTransitionResolver.ClearPending(page, token);
@@ -55,7 +60,11 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		/// <summary>Records the root replacement now running on <paramref name="window"/>; <paramref name="finish"/> must be idempotent.</summary>
+		/// <summary>
+		/// Records the root replacement now starting on <paramref name="window"/>, before anything (the page assignment
+		/// included) can start another; <paramref name="finish"/> must be idempotent. A replacement started meanwhile
+		/// finishes this one, which <see cref="RunningTransition.IsSuperseded"/> then reports.
+		/// </summary>
 		static RunningTransition Track(Window window, Action finish)
 		{
 			var running = new RunningTransition(finish);
@@ -77,7 +86,13 @@ namespace Microsoft.Maui.Controls.Animations
 
 			public RunningTransition(Action finish) => _finish = finish;
 
-			public void Finish() => _finish();
+			public bool IsSuperseded { get; private set; }
+
+			public void Finish()
+			{
+				IsSuperseded = true;
+				_finish();
+			}
 		}
 
 #if !(IOS || MACCATALYST || ANDROID)

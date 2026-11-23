@@ -31,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
 					handlers.AddHandler<Layout, LayoutHandler>();
 #if ANDROID
 					// The Shell handlers an app registers by default on Android (SetupShellHandlers maps Shell to
@@ -184,6 +185,59 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(SlideEdge.Bottom, Assert.IsType<SlideTransition>(_requests[0].Transition).From);
 			Assert.Equal(SlideEdge.Bottom, Assert.IsType<SlideTransition>(_requests[1].Transition).From);
 		}
+
+#if IOS || MACCATALYST || ANDROID
+		// Shared elements fly on iOS, Mac Catalyst and Android; WinUI's navigation transitions don't host them.
+		[Fact(DisplayName = "A shared element flies during the transition and is restored after it")]
+		public async Task SharedElementFliesAndIsRestored()
+		{
+			SetupBuilder();
+			var source = new BoxView { Color = Graphics.Colors.SteelBlue, HeightRequest = 80 };
+			var target = new BoxView { Color = Graphics.Colors.SteelBlue, HeightRequest = 200 };
+			SharedTransition.SetName(source, "photo");
+			SharedTransition.SetName(target, "photo");
+			var root = new ContentPage { Content = new VerticalStackLayout { source } };
+			var detail = new ContentPage { Content = new VerticalStackLayout { target } };
+			PageTransitions.SetTransition(detail, new SlideTransition { Duration = TimeSpan.FromSeconds(1) });
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (_) =>
+			{
+				await OnLoadedAsync(source);
+
+				var push = navPage.PushAsync(detail);
+
+				// While it flies, the real source is hidden under its snapshot.
+				var hidden = false;
+				var watch = Stopwatch.StartNew();
+				while (!hidden && watch.Elapsed < TimeSpan.FromMilliseconds(800))
+				{
+					hidden = NativeAlpha(source) == 0;
+					if (!hidden)
+					{
+						await Task.Yield();
+					}
+				}
+
+				await push.WaitAsync(TimeSpan.FromSeconds(10));
+
+				Assert.True(hidden, "The source element was never hidden: no shared-element flight ran.");
+				Assert.Equal(1, NativeAlpha(source), 3);
+				Assert.Equal(1, NativeAlpha(target), 3);
+			});
+		}
+
+		static double NativeAlpha(VisualElement element)
+		{
+			var handler = (IPlatformViewHandler)element.Handler;
+			var view = handler.ContainerView ?? handler.PlatformView;
+#if IOS || MACCATALYST
+			return (double)view.Alpha;
+#else
+			return view.Alpha;
+#endif
+		}
+#endif
 
 		[Fact(DisplayName = "An unanimated push is recorded, so an animated pop reverses what the page was shown with")]
 		public async Task UnanimatedPushIsRecordedForThePop()

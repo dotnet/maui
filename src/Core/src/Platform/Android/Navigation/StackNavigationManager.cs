@@ -36,6 +36,10 @@ namespace Microsoft.Maui.Platform
 
 		// The navigation's resolved transition (see NavigationTransitionHooks), until the navigation finishes.
 		object? _preparedTransition;
+
+		// The incoming page's transition animation: the navigation isn't finished until it has run.
+		Animation? _enteringAnimation;
+		int _navigationGeneration;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
@@ -286,6 +290,12 @@ namespace Microsoft.Maui.Platform
 				&& NavigationTransitionHooks.Current is { } hooks
 				&& hooks.TryCreateAnimation(prepared, context, enter, out var transition))
 			{
+				// The navigation completes when the outgoing fragment goes, which can be before a longer entrance ends.
+				if (enter)
+				{
+					_enteringAnimation = transition;
+				}
+
 				return transition;
 			}
 
@@ -311,6 +321,8 @@ namespace Microsoft.Maui.Platform
 			IsInitialNavigation = false;
 			IsPopping = null;
 			_preparedTransition = null;
+			_enteringAnimation = null;
+			_navigationGeneration++;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
 
@@ -566,8 +578,40 @@ namespace Microsoft.Maui.Platform
 
 			if (IsNavigating)
 			{
+				// A transition's entrance can outlast the outgoing page: finish when it has run, not before.
+				var remaining = RemainingEntranceMilliseconds();
+				if (remaining > 0 && _navHost?.View is { } host)
+				{
+					var generation = _navigationGeneration;
+					host.PostDelayed(() =>
+					{
+						if (generation == _navigationGeneration && IsNavigating)
+						{
+							NavigationFinished(NavigationView);
+						}
+					}, remaining);
+					return;
+				}
+
 				NavigationFinished(NavigationView);
 			}
+		}
+
+		long RemainingEntranceMilliseconds()
+		{
+			if (_enteringAnimation is not { } entrance)
+			{
+				return 0;
+			}
+
+			var length = entrance.ComputeDurationHint();
+			var started = entrance.StartTime;
+			var remaining = started <= 0
+				? length
+				: started + length - AnimationUtils.CurrentAnimationTimeMillis();
+
+			// Within a frame of the end is the end.
+			return remaining > 16 ? remaining : 0;
 		}
 
 		protected virtual void OnNavigationViewFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)

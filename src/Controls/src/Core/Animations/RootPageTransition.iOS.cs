@@ -21,29 +21,16 @@ namespace Microsoft.Maui.Controls.Animations
 			// The outgoing root as a picture above everything, while the new root goes in underneath it.
 			picture.Frame = uiWindow.Bounds;
 			uiWindow.AddSubview(picture);
-			window.Page = page;
-
-			var incoming = uiWindow.RootViewController?.View;
-			incoming?.LayoutIfNeeded();
 
 			var width = (double)uiWindow.Bounds.Width;
 			var height = (double)uiWindow.Bounds.Height;
 			var easing = PageTransitionCurves.For(transition);
 			var flowDirection = request.FlowDirection;
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-			void Apply(double progress)
-			{
-				if (incoming is not null)
-				{
-					Pose(incoming, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
-				}
-
-				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
-			}
-
+			UIView? incoming = null;
 			var finished = false;
 			RunningTransition? running = null;
+
 			void Cleanup()
 			{
 				if (finished)
@@ -69,8 +56,28 @@ namespace Microsoft.Maui.Controls.Animations
 				tcs.TrySetResult();
 			}
 
-			// A later ReplacePageAsync on this window ends this one first: the root view is shared.
+			// This replacement owns the window's root before the page is assigned: a replacement started from the
+			// assignment's own callbacks finishes this one rather than racing it.
 			running = Track(window, Cleanup);
+
+			window.Page = page;
+			if (running.IsSuperseded)
+			{
+				return tcs.Task;
+			}
+
+			incoming = uiWindow.RootViewController?.View;
+			incoming?.LayoutIfNeeded();
+
+			void Apply(double progress)
+			{
+				if (incoming is not null)
+				{
+					Pose(incoming, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
+				}
+
+				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
+			}
 
 			Apply(0);
 			UIView.AnimateKeyframes(

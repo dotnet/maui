@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Animations
 		static readonly ConditionalWeakTable<Page, PendingTransition> s_pending = new();
 
 		// GoToAsync(state, transition) applies to every page that navigation pushes or pops.
-		static readonly ConditionalWeakTable<Shell, ShellOverride> s_shellOverrides = new();
+		// Kept as a stack per Shell: a GoToAsync suspended in Navigating keeps its override while a later one runs
+		// (or fails), and each removes only its own entry.
+		static readonly ConditionalWeakTable<Shell, ShellOverrides> s_shellOverrides = new();
 
 		static readonly ConditionalWeakTable<IServiceProvider, INavigationTransitionProvider[]> s_providers = new();
 
@@ -84,6 +86,24 @@ namespace Microsoft.Maui.Controls.Animations
 
 		internal static bool HasPending(Page page) => s_pending.TryGetValue(page, out _);
 
+		/// <summary>
+		/// Takes the transition staged for <paramref name="page"/>'s <paramref name="kind"/> navigation, for a navigation the
+		/// platform runs later (a modal request deferred until the window is ready). Stage it again with
+		/// <see cref="Restage"/> just before the platform runs it.
+		/// </summary>
+		internal static PageTransition? TakePendingTransition(Page page, NavigationTransitionKind kind) => TakePending(page, kind);
+
+		/// <summary>Drops a restaged transition the platform didn't consume.</summary>
+		internal static void DropPending(Page page, NavigationTransitionKind kind) => TakePending(page, kind);
+
+		internal static void Restage(Page page, NavigationTransitionKind kind, PageTransition? transition)
+		{
+			if (transition is not null)
+			{
+				s_pending.Put(page, new PendingTransition(kind, transition));
+			}
+		}
+
 		static PageTransition? TakePending(Page? page, NavigationTransitionKind kind)
 		{
 			if (page is not null && s_pending.TryGetValue(page, out var pending) && pending.Kind == kind)
@@ -98,18 +118,30 @@ namespace Microsoft.Maui.Controls.Animations
 		internal static object BeginShellOverride(Shell shell, PageTransition transition)
 		{
 			var entry = new ShellOverride(transition.Snapshot());
-			s_shellOverrides.Put(shell, entry);
+			s_shellOverrides.GetValue(shell, static _ => new ShellOverrides()).Entries.Add(entry);
 			return entry;
 		}
 
 		internal static void EndShellOverride(Shell shell, object token)
 		{
-			// A later GoToAsync may have replaced the entry; only remove our own.
-			if (s_shellOverrides.TryGetValue(shell, out var current) && ReferenceEquals(current, token))
+			if (s_shellOverrides.TryGetValue(shell, out var overrides) && token is ShellOverride entry)
 			{
-				s_shellOverrides.Remove(shell);
+				overrides.Entries.Remove(entry);
+				if (overrides.Entries.Count == 0)
+				{
+					s_shellOverrides.Remove(shell);
+				}
 			}
 		}
+
+		static PageTransition? LatestOverride(Shell shell)
+			=> s_shellOverrides.TryGetValue(shell, out var overrides) && overrides.Entries.Count > 0
+				? overrides.Entries[overrides.Entries.Count - 1].Transition
+				: null;
+
+		/// <summary>The flow direction recorded for <paramref name="page"/> when it was last shown.</summary>
+		internal static FlowDirection? GetShownFlowDirection(Page page)
+			=> s_shown.TryGetValue(page, out var shown) ? shown.FlowDirection : null;
 
 		/// <summary>The transition recorded for <paramref name="page"/> when it was last shown.</summary>
 		internal static PageTransition? GetShownTransition(Page page)
@@ -126,17 +158,25 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 
 		/// <summary>
+		/// Resolves which transition a navigation runs now (consuming per-navigation arguments and recording what ran), and
+		/// leaves the provider chain until <see cref="PreparedNavigationTransition.Platform"/> is first read, so a platform
+		/// override that owns the animation and never asks the base keeps providers out of the navigation.
+		/// </summary>
+		internal static PreparedNavigationTransition Prepare(NavigationTransitionKind kind, Page? from, Page? to, bool animated)
+			=> new PreparedNavigationTransition(ResolveRequest(kind, from, to, animated));
+
+		/// <summary>
 		/// Resolves which transition a navigation runs, without consulting providers (root replacement has no platform
 		/// animation for a provider to supply).
 		/// </summary>
-		internal static NavigationTransitionRequest ResolveRequest(NavigationTransitionKind kind, Page? from, Page? to, bool animated, bool isInteractive = false)
+		internal static NavigationTransitionRequest ResolveRequest(NavigationTransitionKind kind, Page? from, Page? to, bool animated, bool isInteractive = false, FlowDirection? forwardFlowDirection = null)
 		{
 			bool isBack = kind is NavigationTransitionKind.Pop or NavigationTransitionKind.PopModal;
 			bool isModal = kind is NavigationTransitionKind.PushModal or NavigationTransitionKind.PopModal;
 
 			var (transition, flowDirection) = isBack
 				? ResolveBack(kind, from, to, isModal, animated)
-				: ResolveForward(kind, to, isModal, animated);
+				: ResolveForward(kind, to, isModal, animated, forwardFlowDirection);
 
 			return new NavigationTransitionRequest(kind, from, to, transition, isInteractive, isBack, flowDirection);
 		}
@@ -164,18 +204,25 @@ namespace Microsoft.Maui.Controls.Animations
 
 		/// <summary>The flow direction a page lays out in.</summary>
 		internal static FlowDirection FlowDirectionOf(Element? page)
-			=> (page as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true
-				? FlowDirection.RightToLeft
-				: FlowDirection.LeftToRight;
+		{
+			var effective = page switch
+			{
+				IVisualElementController visual => visual.EffectiveFlowDirection,
+				IFlowDirectionController window => window.EffectiveFlowDirection,
+				_ => default,
+			};
 
-		static (PageTransition, FlowDirection) ResolveForward(NavigationTransitionKind kind, Page? to, bool isModal, bool animated)
+			return effective.IsRightToLeft() ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+		}
+
+		static (PageTransition, FlowDirection) ResolveForward(NavigationTransitionKind kind, Page? to, bool isModal, bool animated, FlowDirection? flowDirectionOverride)
 		{
 			PageTransition? chosen = TakePending(to, kind);
 			chosen ??= FindShellOverride(to);
 			chosen ??= FindAttached(to, isModal ? PageTransitions.ModalTransitionProperty : PageTransitions.TransitionProperty);
 
 			var ran = (chosen ?? PageTransition.Platform).Snapshot();
-			var flowDirection = FlowDirectionOf(to);
+			var flowDirection = flowDirectionOverride ?? FlowDirectionOf(to);
 
 			// What going back reverses. An explicit "don't animate" isn't recorded as None: a page pushed
 			// without animation still leaves with its own transition when it is popped with animation.
@@ -253,16 +300,16 @@ namespace Microsoft.Maui.Controls.Animations
 			var current = element;
 			while (current is not null)
 			{
-				if (current is Shell shell && s_shellOverrides.TryGetValue(shell, out var entry))
+				if (current is Shell shell && LatestOverride(shell) is { } fromShell)
 				{
-					return entry.Transition;
+					return fromShell;
 				}
 
 				// A modal (and a stack inside a modal NavigationPage) is a child of the window, not of the Shell that
 				// routed to it: the override of the Shell that is this window's page applies.
-				if (current is Window { Page: Shell windowShell } && s_shellOverrides.TryGetValue(windowShell, out var windowEntry))
+				if (current is Window { Page: Shell windowShell } && LatestOverride(windowShell) is { } fromWindowShell)
 				{
-					return windowEntry.Transition;
+					return fromWindowShell;
 				}
 
 				current = current.Parent;
@@ -353,12 +400,31 @@ namespace Microsoft.Maui.Controls.Animations
 			public PageTransition Transition { get; }
 		}
 
+		sealed class ShellOverrides
+		{
+			public List<ShellOverride> Entries { get; } = new();
+		}
+
 		sealed class ShellOverride
 		{
 			public ShellOverride(PageTransition transition) => Transition = transition;
 
 			public PageTransition Transition { get; }
 		}
+	}
+
+	/// <summary>A navigation whose transition is resolved and whose provider-chain result is computed on first use.</summary>
+	internal sealed class PreparedNavigationTransition
+	{
+		PlatformNavigationTransition? _platform;
+
+		public PreparedNavigationTransition(NavigationTransitionRequest request) => Request = request;
+
+		public NavigationTransitionRequest Request { get; }
+
+		public bool HasResolvedPlatform => _platform is not null;
+
+		public PlatformNavigationTransition Platform => _platform ??= PageTransitionResolver.ResolvePlatform(Request);
 	}
 
 	static class ConditionalWeakTableExtensions

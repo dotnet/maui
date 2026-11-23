@@ -72,6 +72,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void RootReplacementKeepsTheIncomingRootOpaque()
+		{
+			var fade = new FadeTransition();
+			var scale = new ScaleTransition { FromScale = 0.8 };
+
+			for (var p = 0.0; p <= 1.0; p += 0.25)
+			{
+				Assert.Equal(1, PageTransitionCurves.GetRootPose(fade, true, p, FlowDirection.LeftToRight).Opacity, Tolerance);
+				Assert.Equal(1, PageTransitionCurves.GetRootPose(scale, true, p, FlowDirection.LeftToRight).Opacity, Tolerance);
+				Assert.Equal(1 - p, PageTransitionCurves.GetRootPose(fade, false, p, FlowDirection.LeftToRight).Opacity, Tolerance);
+			}
+
+			// The incoming root still grows in; only its fade is dropped.
+			Assert.Equal(0.8, PageTransitionCurves.GetRootPose(scale, true, 0, FlowDirection.LeftToRight).Scale, Tolerance);
+		}
+
+		[Fact]
 		public void IncomingPageIsOnTopGoingForwardOnly()
 		{
 			Assert.True(PageTransitionCurves.IncomingOnTop(isBack: false));

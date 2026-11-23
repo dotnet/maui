@@ -115,6 +115,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		Microsoft.Maui.Platform.NavigationTransitionDriver _moreTransitionDriver;
+
+		// The overflow ("More") tab's navigation controller pushes the section's pages itself, with this renderer as
+		// its delegate, so page transitions are resolved here for it.
+		[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+		[Foundation.Preserve(Conditional = true)]
+		internal IUIViewControllerAnimatedTransitioning MoreGetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+		{
+			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
+				return null;
+
+			_moreTransitionDriver ??= new Microsoft.Maui.Platform.NavigationTransitionDriver(navigationController);
+			var section = (CurrentRenderer as ShellSectionRenderer)?.ShellSection;
+			return _moreTransitionDriver.GetAnimationController(
+				section as IView,
+				operation,
+				MorePageForViewController(fromViewController),
+				MorePageForViewController(toViewController));
+		}
+
+		Page MorePageForViewController(UIViewController viewController)
+		{
+			foreach (var renderer in _sectionRenderers.Values)
+			{
+				if (renderer is ShellSectionRenderer section && section.PageForViewController(viewController) is { } page)
+					return page;
+			}
+
+			return null;
+		}
+
 		[Export("navigationController:didShowViewController:animated:")]
 		[Preserve(AllMembers = true)]
 		public virtual void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
@@ -165,13 +196,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 			RegisterTabBar();
 
-			// PageTransitions.TabTransition. A null animator keeps UIKit's unanimated switch.
+			// PageTransitions.TabTransition. An animator a subclass already installed keeps running whenever the tab's
+			// transition is the platform's, so existing custom tab animations are unchanged; null keeps UIKit's
+			// unanimated switch.
+			var existingAnimator = GetAnimationControllerForTransition;
 			GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
 				Animations.TabPageTransitions.GetAnimator(
 					tabController,
 					fromViewController,
 					toViewController,
-					vc => RendererForViewController(vc)?.ShellSection)!;
+					vc => RendererForViewController(vc)?.ShellSection)
+				?? existingAnimator?.Invoke(tabController, fromViewController, toViewController)!;
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{

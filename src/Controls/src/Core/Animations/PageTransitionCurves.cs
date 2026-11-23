@@ -120,9 +120,12 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		internal static Pose GetRootPose(PageTransition transition, bool incoming, double progress, FlowDirection flowDirection)
 		{
+			// The outgoing picture is drawn on top, so the incoming root stays opaque: its motion is kept, but only the
+			// picture fades, which crossfades the two instead of letting the window background show through both.
 			if (incoming)
 			{
-				return GetPose(transition, false, true, progress, flowDirection);
+				var pose = GetPose(transition, false, true, progress, flowDirection);
+				return new Pose(pose.TranslationX, pose.TranslationY, pose.Scale, 1);
 			}
 
 			switch (transition)

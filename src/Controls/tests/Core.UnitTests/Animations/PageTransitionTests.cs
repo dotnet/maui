@@ -703,6 +703,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void AFailedLaterGoToAsyncDoesntEraseASuspendedOne()
+		{
+			var shell = new Shell();
+			var root = new ContentPage();
+			shell.Items.Add(new ShellContent { Content = root });
+
+			// The first navigation is suspended (deferred in Navigating) while a second one runs and fails.
+			var first = PageTransitionResolver.BeginShellOverride(shell, new FadeTransition());
+			var second = PageTransitionResolver.BeginShellOverride(shell, new ScaleTransition());
+			PageTransitionResolver.EndShellOverride(shell, second);
+
+			try
+			{
+				Assert.IsType<FadeTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+			}
+			finally
+			{
+				PageTransitionResolver.EndShellOverride(shell, first);
+			}
+
+			Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+		}
+
+		[Fact]
+		public async Task ADeferredModalKeepsItsPerNavigationTransition()
+		{
+			// The window has no platform yet, so the modal is queued for the sync to present later.
+			var root = new ContentPage();
+			var window = new TestWindow(root);
+			var modal = new ContentPage();
+
+			await root.Navigation.PushModalAsync(modal, new FadeTransition());
+
+			Assert.IsType<FadeTransition>(window.ModalNavigationManager.GetDeferredTransition(modal));
+		}
+
+		[Fact]
+		public async Task RootReplacementTakesTheWindowsFlowDirection()
+		{
+			var window = new TestWindow(new ContentPage()) { FlowDirection = FlowDirection.RightToLeft };
+			var page = new ContentPage();
+
+			await window.ReplacePageAsync(page, new SlideTransition());
+
+			// Recorded before the page joined the window, from the direction it lays out in once it has.
+			Assert.Equal(FlowDirection.RightToLeft, PageTransitionResolver.GetShownFlowDirection(page));
+		}
+
+		[Fact]
+		public void ProvidersRunOnlyWhenThePlatformResultIsRead()
+		{
+			var provider = new RecordingProvider(_ => PlatformNavigationTransition.Suppress);
+			var root = new ContentPage();
+			var (nav, _) = PageTransitionTestHelpers.CreateNavigationPage(root, provider);
+			var prepared = PageTransitionResolver.Prepare(NavigationTransitionKind.Push, null, root, true);
+
+			// An override that owns the animation never reads it, so no provider runs.
+			Assert.Empty(provider.Requests);
+			Assert.False(prepared.HasResolvedPlatform);
+
+			Assert.True(prepared.Platform.IsSuppress);
+			Assert.True(prepared.Platform.IsSuppress);
+			Assert.Single(provider.Requests);
+		}
+
+		[Fact]
 		public void TabTransitionNearestSettingWins()
 		{
 			var content = new ShellContent { Content = new ContentPage() };

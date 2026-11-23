@@ -58,7 +58,10 @@ namespace Microsoft.Maui.Controls.Animations
 
 			if (!enter && container is not null && _transition.Background is { } background)
 			{
+				// Detach the container's own drawable before painting the transition background, so it is neither
+				// recolored nor disposed, and put that same, untouched drawable back afterwards.
 				var previous = container.Background;
+				container.Background = null;
 				container.UpdateBackground((Microsoft.Maui.Graphics.Paint)background);
 				animation.AnimationEnd += (_, _) => container.Background = previous;
 			}
@@ -234,12 +237,12 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 				}
 
-				new HeroFlights(root, overlay, flights).WaitForIncoming(incomingView, duration, interpolator);
+				new HeroFlights(root, overlay, flights).WaitForIncoming(incomingView, firstSource, duration, interpolator);
 			}
 
 			// The incoming page isn't laid out yet: measure the landing spots just before the window next draws. The
 			// listener is on the window's own observer, kept so it is removed from the observer it was added to.
-			void WaitForIncoming(AView incomingView, long duration, IInterpolator interpolator)
+			void WaitForIncoming(AView incomingView, AView outgoingView, long duration, IInterpolator interpolator)
 			{
 				var observer = _root.ViewTreeObserver;
 				if (observer is null || !observer.IsAlive)
@@ -251,6 +254,7 @@ namespace Microsoft.Maui.Controls.Animations
 				_observer = observer;
 				EventHandler<ViewTreeObserver.PreDrawEventArgs>? onPreDraw = null;
 				EventHandler<AView.ViewDetachedFromWindowEventArgs>? onDetached = null;
+				Java.Lang.Runnable? timeout = null;
 
 				void Unsubscribe()
 				{
@@ -263,6 +267,12 @@ namespace Microsoft.Maui.Controls.Animations
 					if (onDetached is not null)
 					{
 						_root.ViewDetachedFromWindow -= onDetached;
+						outgoingView.ViewDetachedFromWindow -= onDetached;
+					}
+
+					if (timeout is not null)
+					{
+						_root.RemoveCallbacks(timeout);
 					}
 				}
 
@@ -284,16 +294,27 @@ namespace Microsoft.Maui.Controls.Animations
 					}
 				};
 
-				// The window going away before the flight starts (the root page replaced, the modal closed): nothing flies,
-				// and the pictures and hidden sources are put back.
+				// The navigation being interrupted before the flight starts (the outgoing page removed, say by a root page
+				// replacement that keeps the window, or the window itself going away): nothing flies, and the pictures and
+				// hidden sources are put back.
 				onDetached = (_, _) =>
 				{
 					Unsubscribe();
 					Cancel();
 				};
 
+				// The incoming page never reaching the window (removed before it drew) cancels too, once the transition
+				// would have finished.
+				timeout = new Java.Lang.Runnable(() =>
+				{
+					Unsubscribe();
+					Cancel();
+				});
+
 				observer.PreDraw += onPreDraw;
 				_root.ViewDetachedFromWindow += onDetached;
+				outgoingView.ViewDetachedFromWindow += onDetached;
+				_root.PostDelayed(timeout, duration + 500);
 			}
 
 			void Cancel()

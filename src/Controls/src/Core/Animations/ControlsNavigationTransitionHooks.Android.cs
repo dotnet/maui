@@ -9,22 +9,29 @@ namespace Microsoft.Maui.Controls.Animations
 	{
 		public object? PrepareNavigation(IView? navigationView, IView? from, IView? to, bool isPopping, bool animated)
 		{
+			// Resolves which transition runs (and records it for going back) now; providers run only when the base
+			// OnCreateNavigationAnimation asks, so an override that doesn't call it keeps them out.
 			var kind = isPopping ? NavigationTransitionKind.Pop : NavigationTransitionKind.Push;
-			var resolved = PageTransitionResolver.Resolve(kind, from as Page, to as Page, animated);
-			return resolved.IsPlatformDefault ? null : resolved;
+			return PageTransitionResolver.Prepare(kind, from as Page, to as Page, animated);
 		}
 
 		public bool TryCreateAnimation(object prepared, Context context, bool enter, out AAnimation? animation)
 		{
 			animation = null;
-			if (prepared is not ResolvedNavigationTransition resolved || resolved.IsPlatformDefault)
+			if (prepared is not PreparedNavigationTransition navigation)
 			{
 				return false;
 			}
 
-			if (!resolved.IsSuppressed)
+			var platform = navigation.Platform;
+			if (platform.IsPlatform)
 			{
-				animation = resolved.Platform.CreateAnimation(enter);
+				return false;
+			}
+
+			if (!platform.IsSuppress)
+			{
+				animation = platform.CreateAnimation(enter);
 			}
 
 			return true;

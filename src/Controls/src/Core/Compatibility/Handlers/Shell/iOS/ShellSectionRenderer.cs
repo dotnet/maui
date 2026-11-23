@@ -442,6 +442,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				this.RemoveFromParentViewController();
 				_disposed = true;
+				_transitionDriver.Detach();
 				_renderer.Dispose();
 				_appearanceTracker.Dispose();
 				(this as IDisconnectable).Disconnect();
@@ -739,7 +740,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			page?.DisconnectHandlers();
 		}
 
-		Page PageForViewController(UIViewController viewController)
+		internal Page PageForViewController(UIViewController viewController)
 		{
 			var element = ElementForViewController(viewController);
 			if (element is ShellSection section)
@@ -1075,6 +1076,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				self._interactivePopGesturePending = false;
+				self._transitionDriver.TransitionEnded();
 				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
 
 				var tasks = self._completionTasks;
@@ -1142,6 +1144,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void OnInteractionChanged(IUIViewControllerTransitionCoordinatorContext context)
 			{
+				if (context.IsCancelled && _self.TryGetTarget(out var cancelled) && !cancelled._disposed)
+					cancelled._transitionDriver.TransitionEnded();
+
 				if (!context.IsCancelled)
 				{
 					if (!_self.TryGetTarget(out var self) || self._disposed)
