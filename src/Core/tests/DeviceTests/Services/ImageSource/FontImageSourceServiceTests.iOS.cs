@@ -175,6 +175,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task GlyphWithoutOutlineIsNotClipped()
+		{
+			// The emoji is a bitmap with no outline: centering only the outline of "X" pushes it past the right edge.
+			using var mauiApp = MauiApp.CreateBuilder().ConfigureFonts().Build();
+			var fontManager = mauiApp.Services.GetRequiredService<IFontManager>();
+			var imageSource = new FontImageSourceStub
+			{
+				Glyph = "X\U0001F600",
+				Font = Font.Default.WithSize(100),
+				Color = Colors.Red
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var image = imageSource.GetPlatformImage(fontManager, 3);
+				Assert.NotNull(image);
+
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
+				{
+					var ink = GetGlyphInkBounds(image);
+					var size = new CGSize(image.CGImage.Width, image.CGImage.Height);
+					Assert.True(ink.Left > 0 && ink.Top > 0 && ink.Right < size.Width && ink.Bottom < size.Height,
+						$"The ink {ink} must not touch the edges of the {size} image.");
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
