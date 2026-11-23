@@ -89,13 +89,16 @@ namespace Microsoft.Maui
 				var positions = run.GetPositions();
 				for (var i = 0; i < glyphs.Length; i++)
 				{
+					var position = CGAffineTransform.MakeTranslation(positions[i].X, positions[i].Y);
 					using var glyph = font?.GetPathForGlyph(glyphs[i]);
 					if (glyph is not null)
-						outlines.AddPath(CGAffineTransform.MakeTranslation(positions[i].X, positions[i].Y), glyph);
+						outlines.AddPath(position, glyph);
+					// Bitmap glyphs, such as emoji, have no outlines, so use the box stored in the font (empty for spaces).
+					else if (font?.GetBoundingRects(CTFontOrientation.Default, new[] { glyphs[i] }) is { IsEmpty: false } storedBounds)
+						outlines.AddRect(position, storedBounds);
 				}
 			}
 
-			// Bitmap glyphs, such as emoji, have no outlines.
 			return outlines.IsEmpty ? line.GetBounds(CTLineBoundsOptions.UseGlyphPathBounds) : outlines.PathBoundingBox;
 		}
 
