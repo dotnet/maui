@@ -216,10 +216,14 @@ namespace Microsoft.Maui.Controls.Animations
 								completion.TrySetCanceled(cancellationToken);
 							}
 
-							if (dispatcher is not null && dispatcher.IsDispatchRequired)
-								dispatcher.Dispatch(Cancel);
-							else
+							if (dispatcher is null || !dispatcher.IsDispatchRequired)
 								Cancel();
+							else if (!dispatcher.Dispatch(Cancel))
+							{
+								// The UI thread refused the work (it is shutting down), so the run can't be stopped from
+								// here; the caller's task still reaches its terminal state.
+								completion.TrySetCanceled(cancellationToken);
+							}
 						});
 					}
 

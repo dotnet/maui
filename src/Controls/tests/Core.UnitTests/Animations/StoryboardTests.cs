@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using Xunit;
@@ -634,6 +635,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 			Assert.True(task.IsCanceled);
 			Assert.Equal(0.9, label.Opacity);
+		}
+
+		sealed class RefusingDispatcher : IDispatcher
+		{
+			bool _dispatching;
+
+			public bool Refuse { get; set; }
+
+			public bool IsDispatchRequired => !_dispatching;
+
+			public bool Dispatch(Action action)
+			{
+				if (Refuse)
+					return false;
+
+				_dispatching = true;
+				try
+				{
+					action();
+				}
+				finally
+				{
+					_dispatching = false;
+				}
+				return true;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => false;
+
+			public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+		}
+
+		sealed class SingleDispatcherProvider : IDispatcherProvider
+		{
+			readonly IDispatcher _dispatcher;
+
+			public SingleDispatcherProvider(IDispatcher dispatcher) => _dispatcher = dispatcher;
+
+			public IDispatcher GetForCurrentThread() => _dispatcher;
+		}
+
+		[Fact]
+		public async Task CancellingWhenTheDispatcherRefusesStillCancelsTheTask()
+		{
+			var dispatcher = new RefusingDispatcher();
+			DispatcherProvider.SetCurrent(new SingleDispatcherProvider(dispatcher));
+			var label = new Label();
+			using var cts = new CancellationTokenSource();
+			var task = Fade(0, 1, 1000).PlayAsync(label, cancellationToken: cts.Token);
+			Assert.False(task.IsCompleted);
+
+			dispatcher.Refuse = true;
+			cts.Cancel();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task).WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.True(task.IsCanceled);
 		}
 
 		[Fact]
