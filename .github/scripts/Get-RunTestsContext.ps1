@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-Collects the evidence the `/review run-tests` agent uses to pick UI tests.
+Collects the evidence the `/review run-ui-tests` agent uses to pick UI tests.
 
 .DESCRIPTION
 Runs from the trusted default-branch checkout before the agent starts. Writes
@@ -18,7 +18,7 @@ param(
     [int]$MaxPatchCharsTotal = 200000,
     # Tell the requester on the PR when its target branch cannot run a selection.
     [switch]$PostUnsupportedComment,
-    # 'ui' (/review run-tests, maui-pr-uitests) or 'device' (/review run-devicetests, maui-pr-devicetests).
+    # 'ui' (/review run-ui-tests, maui-pr-uitests) or 'device' (/review run-device-tests, maui-pr-devicetests).
     [ValidateSet('ui', 'device')][string]$Suite = 'ui'
 )
 

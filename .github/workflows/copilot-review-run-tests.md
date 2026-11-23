@@ -1,5 +1,5 @@
 ---
-description: "/review run-tests and /review run-devicetests: GPT-6.2 Sol and Claude Opus 5.5 each pick the UI tests (maui-pr-uitests) or device tests (maui-pr-devicetests) a PR affects; only the union of their selections runs."
+description: "/review run-ui-tests and /review run-device-tests: GPT-6.2 Sol and MAI Code 2 each pick the UI tests (maui-pr-uitests) or device tests (maui-pr-devicetests) a PR affects; only the union of their selections runs."
 
 imports:
   - shared/gpt-6.2-sol.md
@@ -28,7 +28,7 @@ on:
     issues: write
     pull-requests: write
   steps:
-    - name: Authorize exact /review run-tests or /review run-devicetests command
+    - name: Authorize exact /review run-ui-tests or /review run-device-tests command
       id: command
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
@@ -37,9 +37,9 @@ on:
           core.setOutput('authorized', 'false');
           let suite = 'ui';
           if (context.eventName === 'issue_comment') {
-            const command = /^\s*\/review\s+run-(device)?tests\s*$/i.exec(context.payload.comment?.body ?? '');
+            const command = /^\s*\/review\s+run-(?:(ui|device)-)?tests\s*$/i.exec(context.payload.comment?.body ?? '');
             if (context.payload.action !== 'created' || !context.payload.issue?.pull_request || !command) return;
-            if (command[1]) suite = 'device';
+            if (command[1]?.toLowerCase() === 'device') suite = 'device';
           } else if (context.eventName === 'workflow_dispatch') {
             if (context.payload.inputs?.suite === 'device') suite = 'device';
           } else {
@@ -49,7 +49,7 @@ on:
           const { owner, repo } = context.repo;
           const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: context.actor });
           if (!['admin', 'maintain', 'write'].includes(data.permission)) {
-            core.info(`${context.actor} has ${data.permission} access; /review run-tests and run-devicetests need write.`);
+            core.info(`${context.actor} has ${data.permission} access; /review run-ui-tests and run-device-tests need write.`);
             return;
           }
           core.setOutput('authorized', 'true');
@@ -90,7 +90,7 @@ on:
         type: number
         required: false
       suite:
-        description: "ui (/review run-tests) or device (/review run-devicetests)"
+        description: "ui (/review run-ui-tests) or device (/review run-device-tests)"
         type: choice
         options: [ui, device]
         default: ui
@@ -113,7 +113,7 @@ jobs:
   pre-activation:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
-  # If this model fails, Claude Opus 5.5 still selects. An agent can emit its proposal and then
+  # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.
   run-tests-fallback:
@@ -124,13 +124,13 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Hand over to the Claude Opus 5.5 selection without a proposal
+      - name: Hand over to the MAI Code 2 selection without a proposal
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          gh workflow run copilot-review-run-tests-opus.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+          gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
             -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
 
 safe-outputs:
@@ -144,11 +144,11 @@ safe-outputs:
     run-selected-ui-tests:
       description: >-
         Propose the platforms and test categories to run for the triggering PR: UI test categories for
-        maui-pr-uitests (/review run-tests) or device test units for maui-pr-devicetests (/review run-devicetests).
+        maui-pr-uitests (/review run-ui-tests) or device test units for maui-pr-devicetests (/review run-device-tests).
         Call exactly once. Trusted code validates the selection, combines it with the other model's and queues the run.
       runs-on: ubuntu-latest
       # This job inherits the copilot-pat-pool environment, whose OIDC subject Azure DevOps does not
-      # trust. It only hands over to the Claude Opus 5.5 selection, which hands both proposals to
+      # trust. It only hands over to the MAI Code 2 selection, which hands both proposals to
       # review-run-tests-dispatch.yml (no environment).
       permissions:
         actions: write
@@ -194,13 +194,13 @@ safe-outputs:
             path: ${{ runner.temp }}/run-tests-proposal/proposal.json
             retention-days: 7
             if-no-files-found: error
-        - name: Hand over to the Claude Opus 5.5 selection
+        - name: Hand over to the MAI Code 2 selection
           env:
             GH_TOKEN: ${{ github.token }}
             PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
             DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           run: |
-            gh workflow run copilot-review-run-tests-opus.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+            gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
               -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
 
 tools:
@@ -223,4 +223,4 @@ steps:
       path: /tmp/gh-aw/agent/run-tests
 ---
 
-Follow the shared `/review run-tests` selection instructions.
+Follow the shared `/review run-ui-tests` / `/review run-device-tests` selection instructions.

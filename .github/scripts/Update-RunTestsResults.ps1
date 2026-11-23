@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-Refreshes `/review run-tests` comments with the outcome of their maui-pr-uitests build.
+Refreshes `/review run-ui-tests` comments with the outcome of their maui-pr-uitests build.
 
 .DESCRIPTION
 Finds recent run-tests comments that are still "running", reads the build, its job timeline
@@ -50,7 +50,7 @@ if ($HeadSha) {
 Write-Host "Found $(@($comments).Count) run-tests comment(s) to refresh."
 
 foreach ($comment in $comments) {
-    # /review run-tests (maui-pr-uitests) or /review run-devicetests (maui-pr-devicetests).
+    # /review run-ui-tests (maui-pr-uitests) or /review run-device-tests (maui-pr-devicetests).
     Set-RunTestsSuite (Get-RunTestsCommentSuite $comment.body)
     if ($comment.body -notmatch '<!-- review-run-tests-build: (\d{1,12}) -->') { continue }
     $buildId = $Matches[1]

@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-Trusted half of `/review run-tests`: validates the AI selection, queues maui-pr-uitests,
+Trusted half of `/review run-ui-tests`: validates the AI selection, queues maui-pr-uitests,
 publishes "skipped" check runs and posts the PR comment.
 
 .DESCRIPTION
@@ -34,7 +34,7 @@ param(
     # proposal.json files handed over by the agentic workflows, one per model
     # (one run_selected_ui_tests item each, plus the trusted `model` id).
     [string[]]$ProposalPath,
-    # The /review run-tests run to credit in the comment and checks.
+    # The /review run-ui-tests run to credit in the comment and checks.
     [string]$WorkflowRunUrl,
     [string]$OutputDirectory = $(if ($env:RUNNER_TEMP) { Join-Path $env:RUNNER_TEMP 'run-tests' } else { Join-Path ([IO.Path]::GetTempPath()) 'run-tests' }),
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
@@ -108,7 +108,7 @@ function Get-Proposals {
 
 $context = Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json -Depth 30
 if ([int]$context.prNumber -ne $PrNumber) { throw 'The collected context belongs to a different PR.' }
-# /review run-tests (UI tests) or /review run-devicetests (device tests); the trusted context says which.
+# /review run-ui-tests (UI tests) or /review run-device-tests (device tests); the trusted context says which.
 $suite = if ($context.PSObject.Properties['suite'] -and $context.suite -ceq 'device') { 'device' } else { 'ui' }
 Set-RunTestsSuite $suite
 if (-not $DefinitionId) { $DefinitionId = $script:RunTestsDefinitionId }

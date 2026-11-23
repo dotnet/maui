@@ -227,7 +227,7 @@
     </Target>
 
     <!--
-        `/review run-devicetests` selection (eng/pipelines/common/run-devicetests-request.yml). Only set for
+        `/review run-device-tests` selection (eng/pipelines/common/run-devicetests-request.yml). Only set for
         run-devicetests/* dispatch builds; every other build runs the work items above unchanged.
           RunDeviceTestsProjects      scenarios to run, '+'-separated (Controls+Core+Graphics+Essentials+MauiBlazorWebView)
           RunDeviceTestsControlsSkip  Controls.DeviceTests categories to skip, '+'-separated (empty: run all)
@@ -310,7 +310,7 @@
             </HelixWorkItem>
         </ItemGroup>
 
-        <Message Text="/review run-devicetests: $(RunDeviceTestsProjects); work items: @(XHarnessAppBundleToTest->Count()) apple, @(XHarnessApkToTest->Count()) android, @(HelixWorkItem->Count()) windows" Importance="high" />
+        <Message Text="/review run-device-tests: $(RunDeviceTestsProjects); work items: @(XHarnessAppBundleToTest->Count()) apple, @(XHarnessApkToTest->Count()) android, @(HelixWorkItem->Count()) windows" Importance="high" />
     </Target>
 
 

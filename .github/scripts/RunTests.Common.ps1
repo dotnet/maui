@@ -1,4 +1,4 @@
-# Shared helpers for `/review run-tests`: AI-selected UI tests for a PR.
+# Shared helpers for `/review run-ui-tests`: AI-selected UI tests for a PR.
 #
 # The flow is:
 #   1. Get-RunTestsContext.ps1   collects the PR diff and the UI test inventory (trusted).
@@ -35,13 +35,13 @@ $script:RunTestsUmbrellas = [ordered]@{
 }
 
 
-# `/review run-tests` selects UI tests (maui-pr-uitests); `/review run-devicetests` selects device
+# `/review run-ui-tests` selects UI tests (maui-pr-uitests); `/review run-device-tests` selects device
 # tests (maui-pr-devicetests). Both share this flow; Set-RunTestsSuite switches the names, markers,
 # branches and pipeline files below. Comment markers and check names are suite-specific, so a new
 # request only supersedes (minimizes, retires) results of its own suite.
 $script:RunTestsSuites = @{
     ui = [ordered]@{
-        Command = 'run-tests'; Pipeline = 'maui-pr-uitests'; Kind = 'UI tests'; DefinitionId = 313
+        Command = 'run-ui-tests'; Pipeline = 'maui-pr-uitests'; Kind = 'UI tests'; DefinitionId = 313
         CommentMarker = '<!-- review-run-tests -->'; UnsupportedMarker = '<!-- review-run-tests-unsupported -->'
         DispatchBranchPrefix = 'run-tests/'; RequestPath = 'eng/pipelines/common/run-tests-request.yml'
         PipelinePath = 'eng/pipelines/ci-uitests.yml'
@@ -49,7 +49,7 @@ $script:RunTestsSuites = @{
         TrustedPaths = @('.github', 'eng/pipelines')
     }
     device = [ordered]@{
-        Command = 'run-devicetests'; Pipeline = 'maui-pr-devicetests'; Kind = 'device tests'; DefinitionId = 314
+        Command = 'run-device-tests'; Pipeline = 'maui-pr-devicetests'; Kind = 'device tests'; DefinitionId = 314
         CommentMarker = '<!-- review-run-devicetests -->'; UnsupportedMarker = '<!-- review-run-devicetests-unsupported -->'
         DispatchBranchPrefix = 'run-devicetests/'; RequestPath = 'eng/pipelines/common/run-devicetests-request.yml'
         PipelinePath = 'eng/pipelines/ci-device-tests.yml'
@@ -96,7 +96,7 @@ function Get-RunTestsCommentSuite {
 function Select-RunTestsOutdatedComments {
     <#
     .SYNOPSIS
-    The earlier `/review run-tests` comments on a PR that a newly posted one supersedes.
+    The earlier `/review run-ui-tests` comments on a PR that a newly posted one supersedes.
     #>
     param([AllowNull()]$Comments, [Parameter(Mandatory)][long]$KeepId)
     $outdated = foreach ($comment in @($Comments | Where-Object { $_ })) {
@@ -110,7 +110,7 @@ function Select-RunTestsOutdatedComments {
 function Hide-RunTestsOutdatedComments {
     <#
     .SYNOPSIS
-    Minimizes, as outdated, the earlier `/review run-tests` comments on a PR once a new one is posted.
+    Minimizes, as outdated, the earlier `/review run-ui-tests` comments on a PR once a new one is posted.
     A failure only warns: the new comment is already up.
     #>
     param([Parameter(Mandatory)][string]$Repository, [Parameter(Mandatory)][string]$PrNumber, [Parameter(Mandatory)][long]$KeepId)
@@ -201,7 +201,7 @@ function Get-RunTestsDeviceCategories {
 function Get-RunTestsDeviceInventory {
     <#
     .SYNOPSIS
-    The device test units `/review run-devicetests` can select, in the same shape as the UI inventory:
+    The device test units `/review run-device-tests` can select, in the same shape as the UI inventory:
     Controls.<Category> and Core.<Category> (umbrellas Controls and Core run all of a project), plus
     Graphics, Essentials and BlazorWebView, which run whole.
     .PARAMETER Categories
@@ -509,7 +509,7 @@ function Get-RunTestsTemplateParameters {
 function Get-RunTestsDispatchBranch {
     <#
     .SYNOPSIS
-    Branch name of one `/review run-tests` dispatch: unique per request, one path segment under run-tests/.
+    Branch name of one `/review run-ui-tests` dispatch: unique per request, one path segment under run-tests/.
     #>
     param([Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$PrNumber, [Parameter(Mandatory)][string]$RunId)
     if ($RunId -cnotmatch '^[1-9][0-9]{0,19}$') { throw "Invalid run id '$RunId'." }
@@ -1192,12 +1192,12 @@ function Get-RunTestsRunnableCategories {
 
 
 # Models allowed to select tests, with the names shown in comments.
-$script:RunTestsModels = [ordered]@{ 'gpt-6.2-sol' = 'GPT-6.2 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
+$script:RunTestsModels = [ordered]@{ 'gpt-6.2-sol' = 'GPT-6.2 Sol'; 'mai-code-2' = 'MAI Code 2' }
 
 function Get-RunTestsSelectedByText {
     <#
     .SYNOPSIS
-    "AI-selected UI tests (GPT-6.2 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
+    "AI-selected UI tests (GPT-6.2 Sol + MAI Code 2)" for the comment header; -Short for the rationale heading.
     #>
     param([Parameter(Mandatory)]$Selection, [switch]$Short)
     $names = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ } | ForEach-Object { $_.displayName })

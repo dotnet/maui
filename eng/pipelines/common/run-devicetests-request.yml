@@ -1,4 +1,4 @@
-# `/review run-devicetests` request for maui-pr-devicetests (eng/pipelines/ci-device-tests.yml).
+# `/review run-device-tests` request for maui-pr-devicetests (eng/pipelines/ci-device-tests.yml).
 #
 # GitHub Actions cannot queue Azure DevOps builds, so .github/scripts/Invoke-RunTests.ps1 pushes a
 # dispatch commit to a refs/heads/run-devicetests/* branch and the CI trigger of maui-pr-devicetests

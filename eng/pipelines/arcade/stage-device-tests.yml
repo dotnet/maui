@@ -61,7 +61,7 @@ parameters:
 - name: runWindowsTests
   type: boolean
   default: false
-# `/review run-devicetests`: run only selectedPlatforms (android, ios, catalyst, windows), CoreCLR only.
+# `/review run-device-tests`: run only selectedPlatforms (android, ios, catalyst, windows), CoreCLR only.
 - name: selectedRun
   type: boolean
   default: false

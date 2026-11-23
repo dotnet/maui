@@ -1,14 +1,14 @@
 ---
-description: Shared instructions for the /review run-tests and /review run-devicetests models (GPT-6.2 Sol and Claude Opus 5.5).
+description: Shared instructions for the /review run-ui-tests and /review run-device-tests models (GPT-6.2 Sol and MAI Code 2).
 ---
 
 # Select the tests this PR needs
 
 First read `suite` in `/tmp/gh-aw/agent/run-tests/context.json`:
 
-- `"ui"` (`/review run-tests`): select UI tests. Follow the UI test sections below.
-- `"device"` (`/review run-devicetests`): select device tests. Skip to
-  **Device tests (`/review run-devicetests`)** at the end; the UI rules do not apply.
+- `"ui"` (`/review run-ui-tests`): select UI tests. Follow the UI test sections below.
+- `"device"` (`/review run-device-tests`): select device tests. Skip to
+  **Device tests (`/review run-device-tests`)** at the end; the UI rules do not apply.
 
 The output tool, `run_selected_ui_tests`, is the same for both.
 
@@ -107,7 +107,7 @@ two runs.
 Do not post comments or claim tests passed; the trusted job queues the run,
 publishes the checks and comments on the PR.
 
-## Device tests (`/review run-devicetests`)
+## Device tests (`/review run-device-tests`)
 
 You decide which .NET MAUI device tests (the `maui-pr-devicetests` pipeline, run on
 Helix devices and simulators) must run for this PR. The whole suite takes hours.
