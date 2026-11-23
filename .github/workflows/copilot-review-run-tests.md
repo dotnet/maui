@@ -1,5 +1,5 @@
 ---
-description: "/review run-tests: GPT-6.2 Sol and Claude Opus 5.5 each pick the UI test categories and platforms a PR affects; only the union of their selections runs in maui-pr-uitests."
+description: "/review run-tests and /review run-devicetests: GPT-6.2 Sol and Claude Opus 5.5 each pick the UI tests (maui-pr-uitests) or device tests (maui-pr-devicetests) a PR affects; only the union of their selections runs."
 
 imports:
   - shared/gpt-6.2-sol.md
@@ -28,23 +28,28 @@ on:
     issues: write
     pull-requests: write
   steps:
-    - name: Authorize exact /review run-tests command
+    - name: Authorize exact /review run-tests or /review run-devicetests command
       id: command
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ github.token }}
         script: |
           core.setOutput('authorized', 'false');
+          let suite = 'ui';
           if (context.eventName === 'issue_comment') {
-            if (context.payload.action !== 'created' || !context.payload.issue?.pull_request ||
-                !/^\s*\/review\s+run-tests\s*$/i.test(context.payload.comment?.body ?? '')) return;
-          } else if (context.eventName !== 'workflow_dispatch') {
+            const command = /^\s*\/review\s+run-(device)?tests\s*$/i.exec(context.payload.comment?.body ?? '');
+            if (context.payload.action !== 'created' || !context.payload.issue?.pull_request || !command) return;
+            if (command[1]) suite = 'device';
+          } else if (context.eventName === 'workflow_dispatch') {
+            if (context.payload.inputs?.suite === 'device') suite = 'device';
+          } else {
             return;
           }
+          core.setOutput('suite', suite);
           const { owner, repo } = context.repo;
           const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: context.actor });
           if (!['admin', 'maintain', 'write'].includes(data.permission)) {
-            core.info(`${context.actor} has ${data.permission} access; /review run-tests needs write.`);
+            core.info(`${context.actor} has ${data.permission} access; /review run-tests and run-devicetests need write.`);
             return;
           }
           core.setOutput('authorized', 'true');
@@ -62,13 +67,14 @@ on:
       with:
         ref: ${{ github.event.repository.default_branch }}
         persist-credentials: false
-    - name: Collect PR changes and the UI test inventory
+    - name: Collect PR changes and the test inventory
       id: context
       if: steps.command.outputs.authorized == 'true'
       env:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-      run: pwsh -NoProfile -File .github/scripts/Get-RunTestsContext.ps1 -PrNumber "$PR_NUMBER" -OutputDirectory "$RUNNER_TEMP/run-tests" -PostUnsupportedComment
+        SUITE: ${{ steps.command.outputs.suite }}
+      run: pwsh -NoProfile -File .github/scripts/Get-RunTestsContext.ps1 -PrNumber "$PR_NUMBER" -Suite "$SUITE" -OutputDirectory "$RUNNER_TEMP/run-tests" -PostUnsupportedComment
     - name: Upload context
       if: steps.context.outputs.ready == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -80,8 +86,14 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: PR to select UI tests for
+        description: PR to select tests for
         type: number
+        required: false
+      suite:
+        description: "ui (/review run-tests) or device (/review run-devicetests)"
+        type: choice
+        options: [ui, device]
+        default: ui
         required: false
 
 if: needs.pre_activation.outputs.context_ready == 'true'
@@ -131,7 +143,8 @@ safe-outputs:
   jobs:
     run-selected-ui-tests:
       description: >-
-        Propose the platforms and UI test categories maui-pr-uitests should run for the triggering PR.
+        Propose the platforms and test categories to run for the triggering PR: UI test categories for
+        maui-pr-uitests (/review run-tests) or device test units for maui-pr-devicetests (/review run-devicetests).
         Call exactly once. Trusted code validates the selection, combines it with the other model's and queues the run.
       runs-on: ubuntu-latest
       # This job inherits the copilot-pat-pool environment, whose OIDC subject Azure DevOps does not
@@ -141,11 +154,11 @@ safe-outputs:
         actions: write
       inputs:
         platforms:
-          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no UI test is affected.'
+          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no test is affected.'
           type: string
           required: true
         categories:
-          description: 'JSON array string of UI test categories from the inventory. "[]" means every category on the selected platforms.'
+          description: 'JSON array string of categories from the inventory (UI test categories, or device test units such as "Controls.Button" or "Graphics"). "[]" means everything on the selected platforms.'
           type: string
           required: true
         full_run:

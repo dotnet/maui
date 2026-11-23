@@ -117,7 +117,8 @@ safe-outputs:
   jobs:
     run-selected-ui-tests:
       description: >-
-        Propose the platforms and UI test categories maui-pr-uitests should run for the triggering PR.
+        Propose the platforms and test categories to run for the triggering PR: UI test categories for
+        maui-pr-uitests (/review run-tests) or device test units for maui-pr-devicetests (/review run-devicetests).
         Call exactly once. Trusted code validates the selection, combines it with the other model's and queues the run.
       runs-on: ubuntu-latest
       # Inherits the copilot-pat-pool environment; it only hands both proposals to
@@ -126,11 +127,11 @@ safe-outputs:
         actions: write
       inputs:
         platforms:
-          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no UI test is affected.'
+          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no test is affected.'
           type: string
           required: true
         categories:
-          description: 'JSON array string of UI test categories from the inventory. "[]" means every category on the selected platforms.'
+          description: 'JSON array string of categories from the inventory (UI test categories, or device test units such as "Controls.Button" or "Graphics"). "[]" means everything on the selected platforms.'
           type: string
           required: true
         full_run:

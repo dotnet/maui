@@ -35,19 +35,63 @@ $script:RunTestsUmbrellas = [ordered]@{
 }
 
 
-$script:RunTestsCommentMarker = '<!-- review-run-tests -->'
-$script:RunTestsCheckPrefix = 'maui-pr-uitests'
-$script:RunTestsSelectionCheckName = 'maui-pr-uitests (test selection)'
-$script:RunTestsSkippedCheckPrefix = 'maui-pr-uitests (skipped)'
-# Check run on the PR head that follows the dispatched maui-pr-uitests build (whose own checks
-# report on the dispatch commit, not on the PR).
-$script:RunTestsRunCheckName = 'maui-pr-uitests (selected run)'
-# Branches maui-pr-uitests builds as `/review run-tests` dispatches (its CI trigger includes run-tests/*).
-$script:RunTestsDispatchBranchPrefix = 'run-tests/'
-$script:RunTestsRequestPath = 'eng/pipelines/common/run-tests-request.yml'
+# `/review run-tests` selects UI tests (maui-pr-uitests); `/review run-devicetests` selects device
+# tests (maui-pr-devicetests). Both share this flow; Set-RunTestsSuite switches the names, markers,
+# branches and pipeline files below. Comment markers and check names are suite-specific, so a new
+# request only supersedes (minimizes, retires) results of its own suite.
+$script:RunTestsSuites = @{
+    ui = [ordered]@{
+        Command = 'run-tests'; Pipeline = 'maui-pr-uitests'; Kind = 'UI tests'; DefinitionId = 313
+        CommentMarker = '<!-- review-run-tests -->'; UnsupportedMarker = '<!-- review-run-tests-unsupported -->'
+        DispatchBranchPrefix = 'run-tests/'; RequestPath = 'eng/pipelines/common/run-tests-request.yml'
+        PipelinePath = 'eng/pipelines/ci-uitests.yml'
+        # Trusted paths of the dispatch commit: the pipeline and the workflows.
+        TrustedPaths = @('.github', 'eng/pipelines')
+    }
+    device = [ordered]@{
+        Command = 'run-devicetests'; Pipeline = 'maui-pr-devicetests'; Kind = 'device tests'; DefinitionId = 314
+        CommentMarker = '<!-- review-run-devicetests -->'; UnsupportedMarker = '<!-- review-run-devicetests-unsupported -->'
+        DispatchBranchPrefix = 'run-devicetests/'; RequestPath = 'eng/pipelines/common/run-devicetests-request.yml'
+        PipelinePath = 'eng/pipelines/ci-device-tests.yml'
+        # The Helix project and Windows runner apply the selection, so they come from the trusted side too.
+        TrustedPaths = @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
+    }
+}
 
-# Earlier bot comments of these kinds are minimized as outdated when a new run-tests comment is posted.
-$script:RunTestsOutdatedMarkers = @($script:RunTestsCommentMarker, '<!-- review-run-tests-unsupported -->')
+function Set-RunTestsSuite {
+    param([Parameter(Mandatory)][ValidateSet('ui', 'device')][string]$Suite)
+    $profile = $script:RunTestsSuites[$Suite]
+    $script:RunTestsSuite = $Suite
+    $script:RunTestsCommand = $profile.Command
+    $script:RunTestsPipelineName = $profile.Pipeline
+    $script:RunTestsKind = $profile.Kind
+    $script:RunTestsDefinitionId = $profile.DefinitionId
+    $script:RunTestsCommentMarker = $profile.CommentMarker
+    $script:RunTestsUnsupportedMarker = $profile.UnsupportedMarker
+    $script:RunTestsCheckPrefix = $profile.Pipeline
+    $script:RunTestsSelectionCheckName = "$($profile.Pipeline) (test selection)"
+    $script:RunTestsSkippedCheckPrefix = "$($profile.Pipeline) (skipped)"
+    # Check run on the PR head that follows the dispatched build (whose own checks report on the
+    # dispatch commit, not on the PR).
+    $script:RunTestsRunCheckName = "$($profile.Pipeline) (selected run)"
+    $script:RunTestsDispatchBranchPrefix = $profile.DispatchBranchPrefix
+    $script:RunTestsRequestPath = $profile.RequestPath
+    $script:RunTestsPipelinePath = $profile.PipelinePath
+    $script:RunTestsTrustedPaths = $profile.TrustedPaths
+    # Earlier bot comments of these kinds are minimized as outdated when a new comment is posted.
+    $script:RunTestsOutdatedMarkers = @($profile.CommentMarker, $profile.UnsupportedMarker)
+}
+
+function Get-RunTestsCommentSuite {
+    <#
+    .SYNOPSIS
+    The suite a bot comment belongs to ('ui' or 'device'), or $null for any other comment.
+    #>
+    param([AllowNull()][string]$Body)
+    if (-not $Body) { return $null }
+    foreach ($suite in 'ui', 'device') { if ($Body.StartsWith($script:RunTestsSuites[$suite].CommentMarker)) { return $suite } }
+    return $null
+}
 
 function Select-RunTestsOutdatedComments {
     <#
@@ -129,6 +173,133 @@ function Get-RunTestsInventory {
     }
 }
 
+# Device test projects (eng/helix_xharness.proj MAUIScenario names) and their TestCategory sources.
+# Controls and Core filter by category (TestFilter=SkipCategories=...); the others run whole.
+$script:RunTestsDeviceProjects = [ordered]@{
+    Controls      = @{ scenario = 'Controls'; categories = 'src/Controls/tests/DeviceTests/TestCategory.cs' }
+    Core          = @{ scenario = 'Core'; categories = 'src/Core/tests/DeviceTests/TestCategory.cs' }
+    Graphics      = @{ scenario = 'Graphics' }
+    Essentials    = @{ scenario = 'Essentials' }
+    BlazorWebView = @{ scenario = 'MauiBlazorWebView' }
+}
+
+function Get-RunTestsDeviceCategories {
+    <#
+    .SYNOPSIS
+    Category values declared in a device test TestCategory.cs ("X" or nameof(X)).
+    #>
+    param([AllowNull()][AllowEmptyString()][string]$Content)
+    if (-not $Content) { return @() }
+    $values = foreach ($match in [regex]::Matches($Content, 'const\s+string\s+(\w+)\s*=\s*(?:"([^"]+)"|nameof\(\s*(\w+)\s*\))')) {
+        $value = if ($match.Groups[2].Success) { $match.Groups[2].Value } else { $match.Groups[3].Value }
+        # Category values end up in pipeline variables: identifiers only.
+        if ($value -cmatch '^[A-Za-z0-9_]{1,64}$') { $value }
+    }
+    return @($values | Sort-Object -Unique)
+}
+
+function Get-RunTestsDeviceInventory {
+    <#
+    .SYNOPSIS
+    The device test units `/review run-devicetests` can select, in the same shape as the UI inventory:
+    Controls.<Category> and Core.<Category> (umbrellas Controls and Core run all of a project), plus
+    Graphics, Essentials and BlazorWebView, which run whole.
+    .PARAMETER Categories
+    Project name -> category values (Get-RunTestsDeviceCategories) for the projects that filter by category.
+    #>
+    param([Parameter(Mandatory)][System.Collections.IDictionary]$Categories)
+    $units = [System.Collections.Generic.List[string]]::new()
+    $umbrellas = [ordered]@{}
+    $projects = [ordered]@{}
+    foreach ($project in $script:RunTestsDeviceProjects.Keys) {
+        if ($script:RunTestsDeviceProjects[$project].categories) {
+            $names = @($Categories[$project] | Where-Object { $_ } | ForEach-Object { "$project.$_" })
+            if ($names.Count -lt 5) { throw "Could not read the $project device test categories." }
+            $umbrellas[$project] = $names
+            $projects[$project] = $names
+            foreach ($name in $names) { $units.Add($name) }
+        } else {
+            $projects[$project] = @($project)
+            $units.Add($project)
+        }
+    }
+    return [pscustomobject]@{ categories = @($units); extraCategories = @(); umbrellas = $umbrellas; projects = $projects }
+}
+
+function New-RunTestsDeviceRequestYaml {
+    <#
+    .SYNOPSIS
+    Content of eng/pipelines/common/run-devicetests-request.yml for a dispatch commit.
+    .DESCRIPTION
+    Turns a validated device selection into the variables eng/pipelines/ci-device-tests.yml and
+    eng/helix_xharness.proj read: platforms, the scenarios to run, and per filtered project the
+    categories to skip (or, on Windows, to run). Every value is checked again because it is
+    written into pipeline YAML and MSBuild properties.
+    #>
+    param(
+        [Parameter(Mandatory)]$Selection,
+        [Parameter(Mandatory)]$Inventory,
+        [Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$PrNumber,
+        [Parameter(Mandatory)][string]$HeadSha
+    )
+    if ($HeadSha -cnotmatch '^[0-9a-f]{40}$') { throw 'The head SHA must be a full commit SHA.' }
+    $mode = [string]$Selection.mode
+    if ($mode -cnotin @('selected', 'full')) { throw "A '$mode' selection is not dispatched." }
+    $running = @($Selection.expandedCategories)
+    $platformIds = if ($mode -eq 'full') { Get-RunTestsPlatformIds } else { @($Selection.platforms) }
+    $platforms = @($platformIds | ForEach-Object { $script:RunTestsPipelinePlatform[$_] })
+    $scenarios = [System.Collections.Generic.List[string]]::new()
+    $skip = @{ Controls = @(); Core = @() }
+    $controlsRun = @()
+    foreach ($project in $script:RunTestsDeviceProjects.Keys) {
+        $units = @($Inventory.projects[$project])
+        $on = if ($mode -eq 'full') { $units } else { @($units | Where-Object { $_ -cin $running }) }
+        if (-not $on.Count) { continue }
+        $scenarios.Add($script:RunTestsDeviceProjects[$project].scenario)
+        if ($skip.Contains($project) -and $on.Count -lt $units.Count) {
+            $skip[$project] = @($units | Where-Object { $_ -cnotin $on } | ForEach-Object { $_.Substring($project.Length + 1) })
+            if ($project -eq 'Controls') { $controlsRun = @($on | ForEach-Object { $_.Substring($project.Length + 1) }) }
+        }
+    }
+    if (-not $platforms.Count -or -not $scenarios.Count) { throw 'A device test run needs at least one platform and project.' }
+    foreach ($platform in $platforms) { if ($platform -cnotin @($script:RunTestsPipelinePlatform.Values)) { throw "Unexpected platform '$platform'." } }
+    foreach ($value in @($scenarios) + $skip.Controls + $skip.Core + $controlsRun) {
+        if ($value -cnotmatch '^[A-Za-z0-9_]{1,64}$') { throw "Unexpected device test name '$value'." }
+    }
+    return @(
+        "# Generated by ``/review $($script:RunTestsCommand)`` for pull request #$PrNumber at $HeadSha. Do not edit."
+        '# See the checked-in eng/pipelines/common/run-devicetests-request.yml for the format.'
+        'variables:'
+        '  - name: RunTestsMode'
+        "    value: '$mode'"
+        '  - name: RunTestsPullRequest'
+        "    value: '$PrNumber'"
+        '  - name: RunTestsHeadSha'
+        "    value: '$HeadSha'"
+        '  - name: RunDeviceTestsPlatforms'
+        "    value: '$($platforms -join ',')'"
+        '  - name: RunDeviceTestsProjects'
+        "    value: '$($scenarios -join '+')'"
+        '  - name: RunDeviceTestsControlsSkip'
+        "    value: '$($skip.Controls -join '+')'"
+        '  - name: RunDeviceTestsCoreSkip'
+        "    value: '$($skip.Core -join '+')'"
+        '  - name: RunDeviceTestsControlsRun'
+        "    value: '$($controlsRun -join '+')'"
+        ''
+    ) -join "`n"
+}
+
+function New-RunTestsSuiteRequestYaml {
+    <#
+    .SYNOPSIS
+    The dispatch request file of the current suite.
+    #>
+    param([Parameter(Mandatory)]$Selection, [Parameter(Mandatory)]$Inventory, [Parameter(Mandatory)][int]$PrNumber, [Parameter(Mandatory)][string]$HeadSha)
+    if ($script:RunTestsSuite -eq 'device') { return New-RunTestsDeviceRequestYaml -Selection $Selection -Inventory $Inventory -PrNumber $PrNumber -HeadSha $HeadSha }
+    return New-RunTestsRequestYaml -Selection $Selection -PrNumber $PrNumber -HeadSha $HeadSha
+}
+
 function Get-RunTestsAllCategories {
     param([Parameter(Mandatory)]$Inventory)
     return @($Inventory.categories) + @($Inventory.extraCategories)
@@ -145,7 +316,8 @@ function ConvertFrom-RunTestsJsonArray {
     }
     $items = @($Value)
     foreach ($item in $items) {
-        if ($item -isnot [string] -or $item -cnotmatch '^[A-Za-z0-9_]{1,64}$') {
+        # Device test units are Project.Category (Controls.Button); UI categories are plain identifiers.
+        if ($item -isnot [string] -or $item -cnotmatch '^[A-Za-z0-9_]{1,64}(\.[A-Za-z0-9_]{1,64})?$') {
             throw "$Name must contain only identifier strings."
         }
     }
@@ -260,7 +432,7 @@ function Resolve-RunTestsSelection {
         if ($validCategories.Count -gt 0) {
             foreach ($c in @($expanded)) {
                 if (-not @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] }).Count) {
-                    $notes.Add("``$c`` has no enabled UI tests on the selected platforms, so it does not run.")
+                    $notes.Add("``$c`` has no enabled $($script:RunTestsKind) on the selected platforms, so it does not run.")
                 }
             }
             $kept = @($orderedPlatforms | Where-Object { $platformCategories[$_].Count -gt 0 })
@@ -386,7 +558,7 @@ function New-RunTestsRequestYaml {
         if ($category -cnotmatch '^(android|ios|catalyst|windows):[A-Za-z0-9_]{1,64}$') { throw "Unexpected category '$category'." }
     }
     return @(
-        "# Generated by ``/review run-tests`` for pull request #$PrNumber at $HeadSha. Do not edit."
+        "# Generated by ``/review $($script:RunTestsCommand)`` for pull request #$PrNumber at $HeadSha. Do not edit."
         '# See the checked-in eng/pipelines/common/run-tests-request.yml for the format.'
         'variables:'
         '  - name: RunTestsMode'
@@ -406,11 +578,13 @@ function New-RunTestsRequestYaml {
 function Test-RunTestsPipelineSupportsDispatch {
     <#
     .SYNOPSIS
-    True when a ci-uitests.yml builds run-tests/* branches and reads the dispatch request.
+    True when the suite's pipeline (ci-uitests.yml, ci-device-tests.yml) builds its dispatch
+    branches and reads the dispatch request.
     #>
     param([AllowNull()][AllowEmptyString()][string]$Content)
     if (-not $Content) { return $false }
-    return ($Content -match '(?m)^\s*-\s*run-tests/\*\s*$') -and $Content.Contains('/eng/pipelines/common/run-tests-request.yml')
+    $prefix = [regex]::Escape($script:RunTestsDispatchBranchPrefix)
+    return ($Content -match "(?m)^\s*-\s*$($prefix)\*\s*$") -and $Content.Contains("/$($script:RunTestsRequestPath)")
 }
 
 function New-RunTestsCheckPlan {
@@ -433,19 +607,30 @@ function New-RunTestsCheckPlan {
         if ($platform -in $Selection.platforms) { continue }
         $name = Get-RunTestsPlatformName $platform
         $checks.Add([pscustomobject]@{
-            name = "$($script:RunTestsSkippedCheckPrefix) $name UITests"
-            title = "$name UI tests were not selected"
+            name = "$($script:RunTestsSkippedCheckPrefix) $name $(if ($script:RunTestsSuite -eq 'device') { 'DeviceTests' } else { 'UITests' })"
+            title = "$name $($script:RunTestsKind) were not selected"
             kind = 'platform'
             key = $platform
         })
     }
-    if ($Selection.mode -eq 'selected') {
+    if ($Selection.mode -eq 'selected' -and $script:RunTestsSuite -eq 'device') {
+        # One check per device test project that runs nothing (per-category checks would be ~100).
+        foreach ($project in $Inventory.projects.Keys) {
+            if (@($Inventory.projects[$project] | Where-Object { $_ -cin @($Selection.expandedCategories) }).Count) { continue }
+            $checks.Add([pscustomobject]@{
+                name = "$($script:RunTestsSkippedCheckPrefix) $project.DeviceTests"
+                title = "$project device tests were not selected"
+                kind = 'category'
+                key = $project
+            })
+        }
+    } elseif ($Selection.mode -eq 'selected') {
         $running = $Selection.expandedCategories
         foreach ($category in Get-RunTestsAllCategories $Inventory) {
             if ($category -in $running) { continue }
             $checks.Add([pscustomobject]@{
                 name = "$($script:RunTestsSkippedCheckPrefix) $category"
-                title = "$category UI tests were not selected"
+                title = "$category $($script:RunTestsKind) were not selected"
                 kind = 'category'
                 key = $category
             })
@@ -504,7 +689,7 @@ function New-RunTestsComment {
 
     $status = Get-RunTestsStatus -Selection $Selection -Build $Build -QueueError $QueueError -Results $Results
     if ($SelectionOnly -and -not $QueueError -and $Selection.mode -ne 'none') {
-        $status = @{ state = 'selection-only'; badge = 'SELECTION ONLY'; color = '6e7681'; line = '&#x2139;&#xFE0F; Selection only &#x2014; Azure DevOps dispatch is not available in this repository, so `maui-pr-uitests` was not queued.' }
+        $status = @{ state = 'selection-only'; badge = 'SELECTION ONLY'; color = '6e7681'; line = "&#x2139;&#xFE0F; Selection only &#x2014; Azure DevOps dispatch is not available in this repository, so ``$($script:RunTestsPipelineName)`` was not queued." }
     }
     $who = if ($Requester -cmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}$') { "@$Requester" } else { 'Requested' }
 
@@ -520,7 +705,7 @@ function New-RunTestsComment {
     }
     $lines.Add("<!-- review-run-tests-state: $($status.state) -->")
     $lines.Add('')
-    $lines.Add('## Selected UI Tests')
+    $lines.Add($(if ($script:RunTestsSuite -eq 'device') { '## Selected Device Tests' } else { '## Selected UI Tests' }))
     $lines.Add('')
     $lines.Add("> $who &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
     $lines.Add('')
@@ -549,8 +734,8 @@ function New-RunTestsComment {
     $lines.Add("#### <strong>$($script:RunTestsRunHeading['running'])</strong> &#x2014; $runningText")
     $lines.Add('')
     switch ($Selection.mode) {
-        'full' { $lines.Add('The complete `maui-pr-uitests` suite runs on every platform (same as `/azp run`).') }
-        'none' { $lines.Add('No UI tests run for this PR.') }
+        'full' { $lines.Add("The complete ``$($script:RunTestsPipelineName)`` suite runs on every platform (same as ``/azp run``).") }
+        'none' { $lines.Add("No $($script:RunTestsKind) run for this PR.") }
         default {
             $lines.Add('| Platform | Categories |')
             $lines.Add('| --- | --- |')
@@ -586,7 +771,7 @@ function New-RunTestsComment {
             $lines.Add("**Categories not run:** $(Format-RunTestsCategoryList $skippedCategories)")
             $lines.Add('')
         }
-        $lines.Add('Each skipped platform and category is listed as a **Skipped** `maui-pr-uitests (skipped) …` check on this commit. Use `/azp run maui-pr-uitests` for the full suite.')
+        $lines.Add("Each skipped platform and $(if ($script:RunTestsSuite -eq 'device') { 'project' } else { 'category' }) is listed as a **Skipped** ``$($script:RunTestsSkippedCheckPrefix) …`` check on this commit. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite.")
         $lines.Add('')
         $lines.Add('</details>')
         $lines.Add('')
@@ -624,7 +809,7 @@ function New-RunTestsComment {
     $lines.Add('')
     $lines.Add('</details>')
     $lines.Add('')
-    $lines.Add("<sub>Generated by [/review run-tests]($WorkflowRunUrl). A targeted run is a fast signal, not full-suite certification.</sub>")
+    $lines.Add("<sub>Generated by [/review $($script:RunTestsCommand)]($WorkflowRunUrl). A targeted run is a fast signal, not full-suite certification.</sub>")
     $lines.Add('')
     $lines.Add('</details>')
     return ($lines -join "`n")
@@ -720,7 +905,13 @@ function ConvertTo-RunTestsFailedTests {
         $class = (($fixture -replace '\([^()]*\)$', '') -split '\.')[-1]
         $name = if ($class -and $title -and $class -ne $title) { "$class.$title" } elseif ($title) { $title } else { $class }
         if (-not $name) { continue }
-        $platform = if ([string]$result.automatedTestStorage -match 'testcases\.(\w+)\.tests') { $script:RunTestsTestAssemblyPlatforms[$Matches[1]] ?? $Matches[1] } else { 'Unknown' }
+        $runName = [string]$(if ($result.PSObject.Properties['testRun']) { $result.testRun.name } else { '' })
+        $platform = if ([string]$result.automatedTestStorage -match 'testcases\.(\w+)\.tests') { $script:RunTestsTestAssemblyPlatforms[$Matches[1]] ?? $Matches[1] }
+        # Device test runs are named DeviceTests<Platform>_<Runtime>_<queue>... (eng/pipelines/arcade/stage-device-tests.yml).
+        elseif ($runName -match '^DeviceTests(Android|IOS|MacCatalyst|Windows)(?:_(CoreCLR|Mono))?') {
+            $platformName = @{ Android = 'Android'; IOS = 'iOS'; MacCatalyst = 'MacCatalyst'; Windows = 'Windows' }[$Matches[1]]
+            if ($Matches[2] -eq 'Mono') { "$platformName (Mono)" } else { $platformName }
+        } else { 'Unknown' }
         if (-not $groups.Contains($name)) { $groups[$name] = [ordered]@{ links = [System.Collections.Generic.SortedDictionary[string, string]]::new(); error = '' } }
         $runId = [string]$(if ($result.PSObject.Properties['testRun']) { $result.testRun.id } else { $result.PSObject.Properties['runId']?.Value })
         # Later results (re-runs) replace earlier ones for the same platform.
@@ -763,14 +954,14 @@ function New-RunTestsRunCheckUpdate {
     PATCH body for the "maui-pr-uitests (selected run)" check from the build's current state.
     #>
     param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
-    $title = "maui-pr-uitests #$($Build.id): $($Results.headline)"
+    $title = "$($script:RunTestsPipelineName) #$($Build.id): $($Results.headline)"
     $webUrl = [string]$Build._links.web.href
     $failed = @($Results.jobs | Where-Object { $_.result -eq 'failed' } | ForEach-Object {
             $url = [string]$_.PSObject.Properties['url']?.Value
             if ($url) { "- [$($_.name)]($url)" } else { "- $($_.name)" } })
     $tests = @($Results.PSObject.Properties['failedTests']?.Value | Where-Object { $_ } | Select-Object -First $script:RunTestsMaxFailedTests |
         ForEach-Object { "- ``$(Format-RunTestsText $_.name)`` on $(Format-RunTestsFailedTestPlatforms $_)" })
-    $summary = @("[maui-pr-uitests #$($Build.id)]($webUrl) &#xB7; [All test results]($(Get-RunTestsResultUrl $webUrl))", '')
+    $summary = @("[$($script:RunTestsPipelineName) #$($Build.id)]($webUrl) &#xB7; [All test results]($(Get-RunTestsResultUrl $webUrl))", '')
     if ($tests.Count) { $summary += @('Failed tests:') + $tests + @('') }
     if ($failed.Count) { $summary += @('Failed jobs:') + $failed }
     $update = [ordered]@{ output = [ordered]@{ title = (Format-RunTestsText $title 200); summary = ($summary -join "`n") } }
@@ -787,15 +978,15 @@ function New-RunTestsRunCheckUpdate {
 function Get-RunTestsStatus {
     param($Selection, $Build, [string]$QueueError, $Results)
     if ($QueueError) {
-        return @{ state = 'error'; badge = 'NOT QUEUED'; color = 'cf222e'; line = "&#x274C; **Could not queue `maui-pr-uitests`:** $(Format-RunTestsText $QueueError 400)" }
+        return @{ state = 'error'; badge = 'NOT QUEUED'; color = 'cf222e'; line = "&#x274C; **Could not queue ``$($script:RunTestsPipelineName)``:** $(Format-RunTestsText $QueueError 400)" }
     }
     if ($Selection.mode -eq 'none') {
-        return @{ state = 'done'; badge = 'NOTHING TO RUN'; color = '6e7681'; line = '&#x2139;&#xFE0F; The AI found no UI-test-relevant changes, so no `maui-pr-uitests` run was queued.' }
+        return @{ state = 'done'; badge = 'NOTHING TO RUN'; color = '6e7681'; line = "&#x2139;&#xFE0F; The AI found no changes relevant to $($script:RunTestsKind), so no ``$($script:RunTestsPipelineName)`` run was queued." }
     }
     if (-not $Build) {
         return @{ state = 'dry-run'; badge = 'DRY RUN'; color = '6e7681'; line = '&#x2139;&#xFE0F; Dry run &#x2014; nothing was queued.' }
     }
-    $link = "[maui-pr-uitests #$($Build.id)]($($Build._links.web.href))"
+    $link = "[$($script:RunTestsPipelineName) #$($Build.id)]($($Build._links.web.href))"
     if ($Results -and $Results.completed) {
         switch ($Results.result) {
             'succeeded' { return @{ state = 'done'; badge = 'PASSED'; color = '2da44e'; line = "&#x2705; $link passed." } }
@@ -1011,7 +1202,7 @@ function Get-RunTestsSelectedByText {
     param([Parameter(Mandatory)]$Selection, [switch]$Short)
     $names = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ } | ForEach-Object { $_.displayName })
     if ($Short) { return $(if ($names.Count) { "AI rationale ($($names -join ' + '))" } else { 'AI rationale' }) }
-    return $(if ($names.Count) { "AI-selected UI tests ($($names -join ' + '))" } else { 'AI-selected UI tests' })
+    return $(if ($names.Count) { "AI-selected $($script:RunTestsKind) ($($names -join ' + '))" } else { "AI-selected $($script:RunTestsKind)" })
 }
 
 function ConvertTo-RunTestsPipelineCategories {
@@ -1041,7 +1232,6 @@ function ConvertTo-RunTestsPipelineCategories {
     return @($qualified)
 }
 
-$script:RunTestsPipelinePath = 'eng/pipelines/ci-uitests.yml'
 
 function Get-RunTestsMergeState {
     <#
@@ -1117,3 +1307,5 @@ function Merge-RunTestsSelections {
     $base.pipelineCategories = @($pipeline)
     return [pscustomobject]$base
 }
+
+Set-RunTestsSuite 'ui'

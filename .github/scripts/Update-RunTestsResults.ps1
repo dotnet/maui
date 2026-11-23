@@ -37,7 +37,7 @@ $raw = & gh api --paginate --slurp "repos/$Repository/issues/comments?since=$sin
 if ($LASTEXITCODE -ne 0) { throw 'Could not list recent comments.' }
 $comments = @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_ }) | Where-Object {
     $(if ($CommentAuthor) { $_.user.login -eq $CommentAuthor } else { $_.user.type -eq 'Bot' }) -and
-    $_.body -and $_.body.StartsWith($script:RunTestsCommentMarker) -and
+    $_.body -and (Get-RunTestsCommentSuite $_.body) -and
     $_.body -match '<!-- review-run-tests-state: (running|done) -->'
 }
 if ($HeadSha) {
@@ -50,6 +50,8 @@ if ($HeadSha) {
 Write-Host "Found $(@($comments).Count) run-tests comment(s) to refresh."
 
 foreach ($comment in $comments) {
+    # /review run-tests (maui-pr-uitests) or /review run-devicetests (maui-pr-devicetests).
+    Set-RunTestsSuite (Get-RunTestsCommentSuite $comment.body)
     if ($comment.body -notmatch '<!-- review-run-tests-build: (\d{1,12}) -->') { continue }
     $buildId = $Matches[1]
     $base = "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId"
@@ -92,16 +94,18 @@ foreach ($comment in $comments) {
 
 if (-not $HeadSha) {
     # Delete expired dispatch branches. Their builds have finished; the comments keep the links.
-    $raw = & gh api --paginate --slurp "repos/$Repository/git/matching-refs/heads/$($script:RunTestsDispatchBranchPrefix)"
-    if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not list dispatch branches.'; return }
     $cutoff = [DateTimeOffset]::UtcNow.AddDays(-$DispatchRetentionDays)
-    foreach ($ref in @(($raw -join "`n") | ConvertFrom-Json -Depth 10 | ForEach-Object { $_ })) {
-        if ($ref.ref -cnotmatch '^refs/heads/run-tests/pr[0-9]+-[0-9]+$') { continue }
-        $commit = & gh api "repos/$Repository/git/commits/$($ref.object.sha)" | ConvertFrom-Json
-        if ($LASTEXITCODE -ne 0 -or [DateTimeOffset]$commit.committer.date -gt $cutoff) { continue }
-        Write-Host "Deleting expired dispatch branch $($ref.ref)."
-        if ($DryRun) { continue }
-        & gh api -X DELETE "repos/$Repository/$($ref.ref -replace '^refs/', 'git/refs/')" | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $($ref.ref)." }
+    foreach ($prefix in @($script:RunTestsSuites.Values | ForEach-Object { $_.DispatchBranchPrefix })) {
+        $raw = & gh api --paginate --slurp "repos/$Repository/git/matching-refs/heads/$prefix"
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list $prefix* dispatch branches."; continue }
+        foreach ($ref in @(($raw -join "`n") | ConvertFrom-Json -Depth 10 | ForEach-Object { $_ })) {
+            if ($ref.ref -cnotmatch "^refs/heads/$([regex]::Escape($prefix))pr[0-9]+-[0-9]+$") { continue }
+            $commit = & gh api "repos/$Repository/git/commits/$($ref.object.sha)" | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0 -or [DateTimeOffset]$commit.committer.date -gt $cutoff) { continue }
+            Write-Host "Deleting expired dispatch branch $($ref.ref)."
+            if ($DryRun) { continue }
+            & gh api -X DELETE "repos/$Repository/$($ref.ref -replace '^refs/', 'git/refs/')" | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $($ref.ref)." }
+        }
     }
 }

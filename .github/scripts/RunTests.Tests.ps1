@@ -225,8 +225,12 @@ Describe 'Pipeline support checks' {
         $workflow | Should -Not -Match 'AZDO_TRIGGER|id-token'
         $workflow | Should -Match 'contents: write'
         # The PR code is built with the target branch's pipeline and workflows, never its own.
-        $invoke | Should -Match "path = '\.github'; mode = '040000'; type = 'tree'"
-        $invoke | Should -Match "path = 'eng/pipelines'; mode = '040000'; type = 'tree'"
+        $invoke | Should -Match 'foreach \(\$path in \$script:RunTestsTrustedPaths\)'
+        Set-RunTestsSuite ui
+        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines')
+        Set-RunTestsSuite device
+        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
+        Set-RunTestsSuite ui
         $invoke | Should -Match 'parents = @\(\$sourceSha\)'
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
     }
@@ -590,7 +594,7 @@ Describe 'Pipeline templates' {
         $ci | Should -Match '(?m)^    - run-tests/\*\s*$'
         $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:") + '\s+- template: /eng/pipelines/common/run-tests-request\.yml@self')
         $variables = Get-Content (Join-Path $pipelines 'variables.yml') -Raw
-        $variables | Should -Match ([regex]::Escape("- `${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:") + '\s+- group: MAUI')
+        $variables | Should -Match ([regex]::Escape("- `${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:") + '\s+- group: MAUI')
         # No other pipeline builds run-tests/* branches.
         foreach ($other in 'ci.yml', 'ci-device-tests.yml', 'ci-official.yml') {
             $path = Join-Path $pipelines "../$other"
@@ -678,3 +682,101 @@ Describe 'Rebalance skill' {
     }
 }
 
+
+Describe '/review run-devicetests' {
+    BeforeAll {
+        Set-RunTestsSuite device
+        $root = Join-Path $PSScriptRoot '../..'
+        $script:deviceInventory = Get-RunTestsDeviceInventory ([ordered]@{
+                Controls = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Controls/tests/DeviceTests/TestCategory.cs'))
+                Core = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Core/tests/DeviceTests/TestCategory.cs'))
+            })
+        $script:sha = 'a' * 40
+        function New-DeviceSelection($Platforms, $Categories, [switch]$Full) {
+            $proposal = @{ platforms = (ConvertTo-Json @($Platforms) -Compress); categories = (ConvertTo-Json @($Categories) -Compress); full_run = [bool]$Full; summary = 's'; rationale = 'r' }
+            return Resolve-RunTestsSelection -Proposal $proposal -Inventory $deviceInventory
+        }
+    }
+    AfterAll { Set-RunTestsSuite ui }
+
+    It 'switches names, markers and branches with the suite' {
+        $script:RunTestsPipelineName | Should -Be 'maui-pr-devicetests'
+        $script:RunTestsRunCheckName | Should -Be 'maui-pr-devicetests (selected run)'
+        $script:RunTestsDispatchBranchPrefix | Should -Be 'run-devicetests/'
+        $script:RunTestsDefinitionId | Should -Be 314
+        Get-RunTestsCommentSuite "<!-- review-run-devicetests -->`nx" | Should -Be 'device'
+        Get-RunTestsCommentSuite "<!-- review-run-tests -->`nx" | Should -Be 'ui'
+        Get-RunTestsCommentSuite '<!-- AI Gate -->' | Should -BeNullOrEmpty
+    }
+
+    It 'reads both forms of device test categories' {
+        Get-RunTestsDeviceCategories 'public const string Button = "Button"; public const string Lifecycle = nameof(Lifecycle); const string Bad = "a b";' |
+            Should -Be @('Button', 'Lifecycle')
+        $deviceInventory.categories | Should -Contain 'Controls.Button'
+        $deviceInventory.categories | Should -Contain 'Graphics'
+        $deviceInventory.umbrellas['Core'] | Should -Contain 'Core.Button'
+    }
+
+    It 'filters Controls and Core by category and drops unselected projects' {
+        $selection = New-DeviceSelection @('android', 'windows') @('Controls.Label', 'Controls.Button', 'Graphics')
+        $selection.mode | Should -Be 'selected'
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $selection -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsPlatforms\s+value: 'android,windows'"
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Controls\+Graphics'"
+        $yaml | Should -Match "RunDeviceTestsControlsRun\s+value: 'Button\+Label'"
+        $yaml | Should -Match "RunDeviceTestsControlsSkip\s+value: 'Accessibility\+"
+        $yaml | Should -Not -Match "RunDeviceTestsControlsSkip\s+value: '[^']*\bLabel\b"
+        $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $checks = @((New-RunTestsCheckPlan -Selection $selection -Inventory $deviceInventory).name)
+        $checks | Should -Contain 'maui-pr-devicetests (skipped) iOS DeviceTests'
+        $checks | Should -Contain 'maui-pr-devicetests (skipped) Core.DeviceTests'
+        $checks | Should -Not -Contain 'maui-pr-devicetests (skipped) Controls.DeviceTests'
+    }
+
+    It 'runs a whole project for its umbrella and everything for a full run' {
+        $core = New-DeviceSelection @('ios') @('Core')
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $core -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Core'"
+        $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $full = New-DeviceSelection @() @() -Full
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $full -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunTestsMode\s+value: 'full'"
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Controls\+Core\+Graphics\+Essentials\+MauiBlazorWebView'"
+        { New-RunTestsDeviceRequestYaml -Selection (New-DeviceSelection @() @()) -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha } | Should -Throw
+    }
+
+    It 'renders the comment for device tests' {
+        $selection = New-DeviceSelection @('android') @('Controls.Label')
+        $pr = [pscustomobject]@{ head = [pscustomobject]@{ sha = $sha }; base = [pscustomobject]@{ repo = [pscustomobject]@{ full_name = 'dotnet/maui' } } }
+        $body = New-RunTestsComment -Selection $selection -Inventory $deviceInventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
+        $body | Should -Match '^<!-- review-run-devicetests -->'
+        $body | Should -Match '## Selected Device Tests'
+        $body | Should -Match 'AI-selected device tests'
+        $body | Should -Not -Match 'maui-pr-uitests|UI tests'
+    }
+
+    It 'names the platform of a failed device test from its test run' {
+        $failed = ConvertTo-RunTestsFailedTests -BuildUrl 'https://x/_build/results?buildId=1' @(
+            [pscustomobject]@{ id = 5; testRun = [pscustomobject]@{ id = '9'; name = 'DeviceTestsAndroid_CoreCLR_ubuntu.2204_Release_CoreCLR' }; automatedTestName = 'Gesture Does Not Leak'; testCaseTitle = 'Gesture Does Not Leak'; automatedTestStorage = 'com.microsoft.maui.controls.devicetests-Signed' },
+            [pscustomobject]@{ id = 6; testRun = [pscustomobject]@{ id = '10'; name = 'DeviceTestsIOS_Mono_osx_Release_Mono' }; automatedTestName = 'Gesture Does Not Leak'; testCaseTitle = 'Gesture Does Not Leak'; automatedTestStorage = 'x' }
+        )
+        $failed[0].platforms | Should -Be @('Android', 'iOS (Mono)')
+    }
+
+    It 'gates the device test pipeline on the dispatch request' {
+        $pipelines = Join-Path $PSScriptRoot '../../eng/pipelines'
+        $ci = Get-Content (Join-Path $pipelines 'ci-device-tests.yml') -Raw
+        Test-RunTestsPipelineSupportsDispatch $ci | Should -BeTrue
+        $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/') }}:") + '\s+- template: /eng/pipelines/common/run-devicetests-request\.yml@self')
+        $stage = Get-Content (Join-Path $pipelines 'arcade/stage-device-tests.yml') -Raw
+        foreach ($name in 'devicetests_build_mono', 'devicetests_android_mono', 'devicetests_ios_mono') {
+            $stage | Should -Match ("- \$\{\{ if not\(parameters\.selectedRun\) \}\}:\s+(#[^\n]*\s+)?- stage: $name")
+        }
+        @([regex]::Matches($stage, 'HelixProjectArguments: [^\n]*\$\{\{ parameters\.extraHelixArguments \}\}')).Count | Should -Be 12
+        $request = Get-Content (Join-Path $pipelines 'common/run-devicetests-request.yml') -Raw
+        $request | Should -Match "RunTestsMode\s+value: 'none'"
+        $helix = Get-Content (Join-Path $PSScriptRoot '../../eng/helix_xharness.proj') -Raw
+        $helix | Should -Match ([regex]::Escape('<Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="''$(RunDeviceTestsProjects)'' != ''''">'))
+        Test-RunTestsPipelineSupportsDispatch (Get-Content (Join-Path $pipelines 'ci-uitests.yml') -Raw) | Should -BeFalse
+    }
+}

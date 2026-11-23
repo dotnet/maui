@@ -40,7 +40,8 @@ param(
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$Actor = $env:GITHUB_ACTOR,
     [string]$PipelineYamlPath = "$PSScriptRoot/../../eng/pipelines/common/ui-tests.yml",
-    [int]$DefinitionId = 313,
+    # Azure DevOps definition of the suite's pipeline (maui-pr-uitests 313, maui-pr-devicetests 314).
+    [int]$DefinitionId,
     # Names the dispatch branch; unique per request.
     [string]$DispatchRunId = $(if ($env:GITHUB_RUN_ID) { $env:GITHUB_RUN_ID } else { [string][DateTimeOffset]::UtcNow.ToUnixTimeSeconds() }),
     # How long to wait for Azure Pipelines to start the build of the dispatch branch.
@@ -107,19 +108,36 @@ function Get-Proposals {
 
 $context = Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json -Depth 30
 if ([int]$context.prNumber -ne $PrNumber) { throw 'The collected context belongs to a different PR.' }
-$inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
+# /review run-tests (UI tests) or /review run-devicetests (device tests); the trusted context says which.
+$suite = if ($context.PSObject.Properties['suite'] -and $context.suite -ceq 'device') { 'device' } else { 'ui' }
+Set-RunTestsSuite $suite
+if (-not $DefinitionId) { $DefinitionId = $script:RunTestsDefinitionId }
 
 $proposals = Get-Proposals
-# Which categories have enabled tests on each platform, from this trusted checkout, plus the
-# categories the PR's own changed tests enable (evaluated per platform at the PR head).
-$runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
-if ($context.PSObject.Properties['changedTestRunnable'] -and $context.changedTestRunnable) {
+$runnable = $null
+if ($suite -eq 'device') {
+    # Device test categories were read by the trusted context step (base checkout plus the PR head);
+    # Get-RunTestsDeviceCategories keeps identifiers only.
+    $deviceCategories = [ordered]@{}
+    foreach ($project in $script:RunTestsDeviceProjects.Keys) {
+        if (-not $script:RunTestsDeviceProjects[$project].categories) { continue }
+        $names = @($context.inventory.projects.$project | Where-Object { $_ -is [string] -and $_.StartsWith("$project.") } | ForEach-Object { $_.Substring($project.Length + 1) })
+        $deviceCategories[$project] = @(Get-RunTestsDeviceCategories (($names | ForEach-Object { "const string $_ = `"$_`";" }) -join "`n"))
+    }
+    $inventory = Get-RunTestsDeviceInventory $deviceCategories
+} else {
+    $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
+    # Which categories have enabled tests on each platform, from this trusted checkout, plus the
+    # categories the PR's own changed tests enable (evaluated per platform at the PR head).
+    $runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
+}
+if ($suite -eq 'ui' -and $context.PSObject.Properties['changedTestRunnable'] -and $context.changedTestRunnable) {
     foreach ($platform in Get-RunTestsPlatformIds) {
         $extra = @($context.changedTestRunnable.$platform | Where-Object { $_ -is [string] -and $_ -cmatch '^[A-Za-z0-9_]{1,64}$' })
         if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
     }
 }
-if ($context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
+if ($suite -eq 'ui' -and $context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
     # Some changed UI test files were not inspected, so an AI-selected category may be enabled only
     # by them. Keep every AI-selected category rather than pruning it as "no enabled tests".
     Write-Host 'Not every changed UI test file was inspected; keeping all AI-selected categories.'
@@ -132,7 +150,7 @@ foreach ($model in $proposals.Keys) {
 }
 $selection = Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
 $selectionError = if ($proposals.Count -eq 0) {
-    'No AI model produced a test selection, so nothing was queued. Comment `/review run-tests` again, or use `/azp run maui-pr-uitests` for the full suite.'
+    "No AI model produced a test selection, so nothing was queued. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
 }
 $selection | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'selection.json') -Encoding utf8
 
@@ -187,34 +205,40 @@ function New-RunTestsDispatch {
         foreach ($ref in @($PullRequest.base.ref, $PullRequest.base.repo.default_branch) | Where-Object { $_ } | Select-Object -Unique) {
             $sha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$ref")).object.sha
             if (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sha)) { $sourceSha = $sha; break }
-            Write-Host "``$ref`` cannot build run-tests/* dispatches; trying the default branch's pipeline."
+            Write-Host "``$ref`` cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches; trying the default branch's pipeline."
         }
         if (-not $sourceSha) {
-            return @{ error = "Neither ``$($PullRequest.base.ref)`` nor the default branch can build ``/review run-tests`` dispatches (eng/pipelines/ci-uitests.yml does not build run-tests/* branches). Use ``/azp run maui-pr-uitests`` for the full suite." }
+            return @{ error = "Neither ``$($PullRequest.base.ref)`` nor the default branch can build ``/review $($script:RunTestsCommand)`` dispatches ($($script:RunTestsPipelinePath) does not build $($script:RunTestsDispatchBranchPrefix)* branches). Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite." }
         }
     } elseif (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
-        return @{ error = "The pipeline source $sourceSha cannot build run-tests/* dispatches." }
+        return @{ error = "The pipeline source $sourceSha cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches." }
     }
     if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
     $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
     $sourceRoot = Invoke-GhJson @("repos/$Repository/git/trees/$($source.tree.sha)")
-    $githubTree = @($sourceRoot.tree | Where-Object { $_.path -ceq '.github' -and $_.type -eq 'tree' })[0].sha
-    $engTree = @($sourceRoot.tree | Where-Object { $_.path -ceq 'eng' -and $_.type -eq 'tree' })[0].sha
-    $pipelinesTree = @((Invoke-GhJson @("repos/$Repository/git/trees/$engTree")).tree | Where-Object { $_.path -ceq 'pipelines' -and $_.type -eq 'tree' })[0].sha
-    if (-not $githubTree -or -not $pipelinesTree) { throw 'The trusted commit has no .github or eng/pipelines directory.' }
-
-    # PR code with the trusted pipeline and workflows. Taking .github from the parent also means the
-    # commit changes no workflow, which GITHUB_TOKEN may not do.
-    $overlay = @{ base_tree = $MergeCommit.tree.sha; tree = @(
-            @{ path = '.github'; mode = '040000'; type = 'tree'; sha = $githubTree },
-            @{ path = 'eng/pipelines'; mode = '040000'; type = 'tree'; sha = $pipelinesTree }) } | ConvertTo-Json -Depth 5
+    # PR code with the trusted pipeline, workflows (and for device tests the Helix project and
+    # Windows runner that apply the selection). Taking .github from the parent also means the commit
+    # changes no workflow, which GITHUB_TOKEN may not do.
+    $entries = foreach ($path in $script:RunTestsTrustedPaths) {
+        $parentTree = $source.tree.sha
+        $segments = $path -split '/'
+        $entry = $null
+        foreach ($segment in $segments) {
+            $entry = @((Invoke-GhJson @("repos/$Repository/git/trees/$parentTree")).tree | Where-Object { $_.path -ceq $segment })[0]
+            if (-not $entry) { break }
+            $parentTree = $entry.sha
+        }
+        if (-not $entry) { throw "The trusted commit has no $path." }
+        @{ path = $path; mode = $entry.mode; type = $entry.type; sha = $entry.sha }
+    }
+    $overlay = @{ base_tree = $MergeCommit.tree.sha; tree = @($entries) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $overlay
-    $yaml = New-RunTestsRequestYaml -Selection $Selection -PrNumber $PrNumber -HeadSha $PullRequest.head.sha
+    $yaml = New-RunTestsSuiteRequestYaml -Selection $Selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $PullRequest.head.sha
     $request = @{ base_tree = $tree.sha; tree = @(@{ path = $script:RunTestsRequestPath; mode = '100644'; type = 'blob'; content = $yaml }) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $request
 
-    $message = "/review run-tests dispatch for #$PrNumber at $($PullRequest.head.sha.Substring(0, 8))`n`n" +
-        "Test-merge $($MergeCommit.sha) with eng/pipelines and .github from $sourceSha.`nRequested in $runUrl"
+    $message = "/review $($script:RunTestsCommand) dispatch for #$PrNumber at $($PullRequest.head.sha.Substring(0, 8))`n`n" +
+        "Test-merge $($MergeCommit.sha) with $($script:RunTestsTrustedPaths -join ', ') from $sourceSha.`nRequested in $runUrl"
     $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($sourceSha) } | ConvertTo-Json)
     $branch = Get-RunTestsDispatchBranch -PrNumber $PrNumber -RunId $DispatchRunId
     Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
@@ -235,10 +259,10 @@ function Wait-RunTestsDispatchBuild {
             $found = @((Invoke-RestMethod -Uri $uri -TimeoutSec 30).value | Where-Object { $_.sourceVersion -ceq $Sha })
             if ($found.Count) { return $found[0] }
         } catch {
-            Write-Warning "Could not list maui-pr-uitests builds: $($_.Exception.Message)"
+            Write-Warning "Could not list $($script:RunTestsPipelineName) builds: $($_.Exception.Message)"
         }
         if ([DateTime]::UtcNow -ge $deadline) { return $null }
-        Write-Host "Waiting for Azure Pipelines to start maui-pr-uitests for $Branch..."
+        Write-Host "Waiting for Azure Pipelines to start $($script:RunTestsPipelineName) for $Branch..."
         Start-Sleep -Seconds 15
     }
 }
@@ -251,25 +275,25 @@ if ($selectionError) {
 } elseif ($pr.state -ne 'open') {
     $queueError = 'The PR is no longer open.'
 } elseif ($pr.head.sha -cne $context.headSha) {
-    $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review run-tests`` again."
+    $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review $($script:RunTestsCommand)`` again."
     # Report against the commit the selection was made for.
     $pr.head.sha = $context.headSha
 } elseif ($context.baseRef -and $pr.base.ref -cne $context.baseRef) {
     # Retargeting keeps the head SHA, but the models selected tests for the diff against the old base.
-    $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review run-tests`` again."
+    $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review $($script:RunTestsCommand)`` again."
 } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
-    $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
+    $queueError = "GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry ``/review $($script:RunTestsCommand)``."
 }
 
 $build = $null
 $dispatch = $null
 if (-not $queueError -and $selection.mode -ne 'none') {
-    New-RunTestsRequestYaml -Selection $selection -PrNumber $PrNumber -HeadSha $pr.head.sha |
-        Set-Content (Join-Path $OutputDirectory 'run-tests-request.yml') -Encoding utf8
+    New-RunTestsSuiteRequestYaml -Selection $selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $pr.head.sha |
+        Set-Content (Join-Path $OutputDirectory (Split-Path -Leaf $script:RunTestsRequestPath)) -Encoding utf8
     if ($DryRun) {
         Write-Host 'Dry run: dispatch request written; nothing pushed.'
     } elseif ($SkipQueue) {
-        Write-Host 'maui-pr-uitests dispatch is not available in this repository; publishing the selection only.'
+        Write-Host "$($script:RunTestsPipelineName) dispatch is not available in this repository; publishing the selection only."
     } else {
         try {
             $dispatch = New-RunTestsDispatch -PullRequest $pr -MergeCommit $verified.mergeCommit -Selection $selection
@@ -279,16 +303,16 @@ if (-not $queueError -and $selection.mode -ne 'none') {
             } else {
                 $build = Wait-RunTestsDispatchBuild -Branch $dispatch.branch -Sha $dispatch.sha
                 if ($build) {
-                    Write-Host "maui-pr-uitests build $($build.id) is building the dispatch commit: $($build._links.web.href)"
+                    Write-Host "$($script:RunTestsPipelineName) build $($build.id) is building the dispatch commit: $($build._links.web.href)"
                 } else {
-                    $queueError = "Azure Pipelines did not start maui-pr-uitests for the dispatch branch ``$($dispatch.branch)`` within $([int]($DispatchWaitSeconds / 60)) minutes. Comment ``/review run-tests`` again, or use ``/azp run maui-pr-uitests`` for the full suite."
+                    $queueError = "Azure Pipelines did not start $($script:RunTestsPipelineName) for the dispatch branch ``$($dispatch.branch)`` within $([int]($DispatchWaitSeconds / 60)) minutes. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
                     & gh api -X DELETE "repos/$Repository/git/refs/heads/$($dispatch.branch)" 2>$null | Out-Null
                     $dispatch = $null
                 }
             }
         } catch {
-            Write-Warning "Dispatching maui-pr-uitests failed: $($_.Exception.Message)"
-            $queueError = 'Pushing the maui-pr-uitests dispatch commit failed; see the workflow log.'
+            Write-Warning "Dispatching $($script:RunTestsPipelineName) failed: $($_.Exception.Message)"
+            $queueError = "Pushing the $($script:RunTestsPipelineName) dispatch commit failed; see the workflow log."
             $build = $null
             $dispatch = $null
         }
@@ -311,7 +335,7 @@ $selectionSummary = @(
     '',
     $selection.summary,
     '',
-    $(if ($build) { "Azure DevOps run: [maui-pr-uitests #$($build.id)]($buildUrl)" } elseif ($queueError) { "Not queued: $queueError" } elseif ($SkipQueue) { 'Selection only: Azure DevOps dispatch is not available in this repository.' } else { '' })
+    $(if ($build) { "Azure DevOps run: [$($script:RunTestsPipelineName) #$($build.id)]($buildUrl)" } elseif ($queueError) { "Not queued: $queueError" } elseif ($SkipQueue) { 'Selection only: Azure DevOps dispatch is not available in this repository.' } else { '' })
 ) -join "`n"
 
 if (-not $DryRun -and -not $SkipChecks) {
@@ -322,13 +346,13 @@ if (-not $DryRun -and -not $SkipChecks) {
         $_.app.slug -eq 'github-actions' -and $_.name.StartsWith($script:RunTestsSkippedCheckPrefix) })
     $planned = @($checks | ForEach-Object { $_.name })
     foreach ($stale in $existingRuns | Where-Object { $_.name -notin $planned }) {
-        $body = @{ conclusion = 'neutral'; output = @{ title = 'Selected by a later /review run-tests'; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
+        $body = @{ conclusion = 'neutral'; output = @{ title = "Selected by a later /review $($script:RunTestsCommand)"; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
         Invoke-GhJson @('-X', 'PATCH', "repos/$Repository/check-runs/$($stale.id)") -InputJson $body | Out-Null
     }
 
     $now = (Get-Date).ToUniversalTime().ToString('o')
     foreach ($check in $checks) {
-        $summary = "Not selected by ``/review run-tests`` for this commit.`n`n$selectionSummary"
+        $summary = "Not selected by ``/review $($script:RunTestsCommand)`` for this commit.`n`n$selectionSummary"
         $body = [ordered]@{
             name = $check.name; head_sha = $sha; status = 'completed'; conclusion = 'skipped'
             started_at = $now; completed_at = $now; details_url = $buildUrl
@@ -338,7 +362,7 @@ if (-not $DryRun -and -not $SkipChecks) {
     }
 
     $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
-    $title = if ($queueError) { 'UI tests were not queued' } elseif ($selection.mode -eq 'none') { 'No UI tests selected' } elseif ($selection.mode -eq 'full') { 'Full UI test suite selected' } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
+    $title = if ($queueError) { "$($script:RunTestsKind) were not queued" } elseif ($selection.mode -eq 'none') { "No $($script:RunTestsKind) selected" } elseif ($selection.mode -eq 'full') { "Full $($script:RunTestsPipelineName) suite selected" } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
     $body = [ordered]@{
         name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
         started_at = $now; completed_at = $now; details_url = $buildUrl
@@ -350,7 +374,7 @@ if (-not $DryRun -and -not $SkipChecks) {
         $body = [ordered]@{
             name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
             started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
-            output = [ordered]@{ title = "maui-pr-uitests #$($build.id) is running"; summary = $selectionSummary }
+            output = [ordered]@{ title = "$($script:RunTestsPipelineName) #$($build.id) is running"; summary = $selectionSummary }
         } | ConvertTo-Json -Depth 5
         $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
     }
@@ -366,6 +390,6 @@ if ($DryRun) {
     return
 }
 $posted = Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json)
-Write-Host "Posted the run-tests comment on #$PrNumber."
+Write-Host "Posted the $($script:RunTestsCommand) comment on #$PrNumber."
 Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId $posted.id
 if ($queueError) { Write-Host "::warning::$queueError" }

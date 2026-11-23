@@ -17,11 +17,14 @@ param(
     [int]$MaxPatchCharsPerFile = 6000,
     [int]$MaxPatchCharsTotal = 200000,
     # Tell the requester on the PR when its target branch cannot run a selection.
-    [switch]$PostUnsupportedComment
+    [switch]$PostUnsupportedComment,
+    # 'ui' (/review run-tests, maui-pr-uitests) or 'device' (/review run-devicetests, maui-pr-devicetests).
+    [ValidateSet('ui', 'device')][string]$Suite = 'ui'
 )
 
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/RunTests.Common.ps1"
+Set-RunTestsSuite $Suite
 
 function Invoke-GhJson {
     param([string[]]$Arguments)
@@ -43,10 +46,10 @@ function Test-RunTestsDispatchAt([string]$Ref) {
     return ($LASTEXITCODE -ne 0) -or (Test-RunTestsPipelineSupportsDispatch ($pipeline -join "`n"))
 }
 if (-not (Test-RunTestsDispatchAt $pr.base.ref) -and -not (Test-RunTestsDispatchAt $pr.base.repo.default_branch)) {
-    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: neither that branch's nor the default branch's maui-pr-uitests pipeline builds run-tests/* dispatches. Use ``/azp run maui-pr-uitests`` for the full suite."
+    $message = "``/review $($script:RunTestsCommand)`` can't run on PRs that target ``$($pr.base.ref)`` yet: neither that branch's nor the default branch's $($script:RunTestsPipelineName) pipeline builds $($script:RunTestsDispatchBranchPrefix)* dispatches. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
     Write-Host $message
     if ($PostUnsupportedComment) {
-        $body = @{ body = "<!-- review-run-tests-unsupported -->`n$message" } | ConvertTo-Json
+        $body = @{ body = "$($script:RunTestsUnsupportedMarker)`n$message" } | ConvertTo-Json
         $posted = $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input -
         if ($LASTEXITCODE -eq 0) { Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId (($posted -join "`n") | ConvertFrom-Json).id }
     }
@@ -74,6 +77,56 @@ $changed = foreach ($file in $files) {
         patch = $patch
         patchTruncated = $truncated
     }
+}
+
+if ($Suite -eq 'device') {
+    # Device test categories at the PR head (a PR may add one) and in this trusted checkout.
+    $deviceCategories = [ordered]@{}
+    $deviceHints = [System.Collections.Generic.List[object]]::new()
+    foreach ($project in $script:RunTestsDeviceProjects.Keys) {
+        $source = $script:RunTestsDeviceProjects[$project].categories
+        if (-not $source) { continue }
+        $local = Join-Path "$PSScriptRoot/../.." $source
+        $text = if (Test-Path -LiteralPath $local) { Get-Content -LiteralPath $local -Raw } else { '' }
+        $head = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($source)?ref=$($pr.head.sha)" 2>$null
+        if ($LASTEXITCODE -eq 0) { $text += "`n" + ($head -join "`n") }
+        $deviceCategories[$project] = @(Get-RunTestsDeviceCategories $text)
+    }
+    $deviceInventory = Get-RunTestsDeviceInventory $deviceCategories
+    # Categories referenced by changed device tests ([Category(TestCategory.X)]): a strong hint.
+    foreach ($entry in $changed) {
+        if ($entry.path -notmatch '(?i)^src/(Controls|Core)/tests/DeviceTests/') { continue }
+        $project = $Matches[1]
+        $found = @([regex]::Matches([string]$entry.patch, 'TestCategory\.(\w+)') | ForEach-Object { "$project.$($_.Groups[1].Value)" } |
+            Where-Object { $_ -cin $deviceInventory.categories } | Sort-Object -Unique)
+        if ($found.Count) { $deviceHints.Add([ordered]@{ path = $entry.path; categories = $found }) }
+    }
+    $context = [ordered]@{
+        suite = 'device'
+        repository = $Repository
+        prNumber = $PrNumber
+        title = $pr.title
+        body = $(if ($pr.body) { ([string]$pr.body).Substring(0, [Math]::Min(4000, ([string]$pr.body).Length)) } else { '' })
+        labels = @($pr.labels | ForEach-Object { $_.name })
+        headSha = $pr.head.sha
+        baseRef = $pr.base.ref
+        baseSha = $pr.base.sha
+        changedFileCount = $files.Count
+        changedFiles = @($changed)
+        testCategoryHints = @($deviceHints)
+        inventory = [ordered]@{
+            platforms = @(Get-RunTestsPlatformIds)
+            categories = @($deviceInventory.categories)
+            umbrellas = $deviceInventory.umbrellas
+            projects = $deviceInventory.projects
+        }
+    }
+    New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+    $path = Join-Path $OutputDirectory 'context.json'
+    $context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $path -Encoding utf8
+    Write-Host "Collected $($files.Count) changed files and $($deviceInventory.categories.Count) device test units for PR #$PrNumber at $($pr.head.sha)."
+    if ($env:GITHUB_OUTPUT) { "ready=true" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }
+    return
 }
 
 $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
@@ -123,6 +176,7 @@ foreach ($file in @($changedTestFiles | Select-Object -First $maxChangedTestFile
 }
 
 $context = [ordered]@{
+    suite = 'ui'
     repository = $Repository
     prNumber = $PrNumber
     title = $pr.title
