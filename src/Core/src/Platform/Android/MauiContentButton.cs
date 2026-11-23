@@ -362,8 +362,12 @@ namespace Microsoft.Maui.Platform
 			var paddingTop = _context.FromPixels(_safeAreaPadding.top);
 			var paddingRight = _context.FromPixels(_safeAreaPadding.right);
 			var paddingBottom = _context.FromPixels(_safeAreaPadding.bottom);
+			// Child arrangement is mirrored in RTL, but window insets are physical.
+			var contentOffset = _contentContainer?.LayoutDirection == global::Android.Views.LayoutDirection.Rtl
+				? paddingRight
+				: paddingLeft;
 			destination = new Rect(
-				destination.X + paddingLeft,
+				destination.X + contentOffset,
 				destination.Y + paddingTop,
 				Math.Max(0, destination.Width - paddingLeft - paddingRight),
 				Math.Max(0, destination.Height - paddingTop - paddingBottom));

@@ -302,6 +302,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false, 40, 0)]
+		[InlineData(false, 0, 40)]
+		[InlineData(true, 40, 0)]
+		[InlineData(true, 0, 40)]
+		[InlineData(true, 20, 40)]
+		[InlineData(true, 0, 0)]
+		public async Task SafeAreaInsetsStayOnPhysicalEdgeInRtl(bool rtl, int leftInset, int rightInset)
+		{
+			var content = new ButtonStub();
+			var button = new ExplicitSafeAreaContentButtonStub
+			{
+				Content = content,
+				FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+			};
+
+			await AttachAndRun(button, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var width = platformView.Resources!.DisplayMetrics!.WidthPixels;
+				var widthSpec = AView.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly);
+				var heightSpec = AView.MeasureSpec.MakeMeasureSpec(100, MeasureSpecMode.Exactly);
+				platformView.Measure(widthSpec, heightSpec);
+				platformView.Layout(0, 0, width, 100);
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var insets = builder
+					.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(leftInset, 0, rightInset, 0))
+					.Build();
+				((IHandleWindowInsets)platformView).HandleWindowInsets(platformView, insets);
+				platformView.Measure(widthSpec, heightSpec);
+				platformView.Layout(0, 0, width, 100);
+
+				var nativeContent = Assert.IsAssignableFrom<AView>(content.Handler.PlatformView);
+				Assert.Equal(leftInset, nativeContent.Left);
+				Assert.Equal(width - rightInset, nativeContent.Right);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task DisabledPressedViewIsNotRetainedAfterReplacement()
 		{
