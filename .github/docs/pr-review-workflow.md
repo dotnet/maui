@@ -488,7 +488,7 @@ The gh-aw source is
 its generated `.lock.yml`. The hosted adapter
 [`ghaw-expert-reviewer.agent.md`](../agents/ghaw-expert-reviewer.agent.md) reuses
 the canonical [`maui-expert-reviewer.md`](../agents/maui-expert-reviewer.md);
-the 31-dimension rulebook is not duplicated. The primary expert, its fresh
+the 32-dimension rulebook is not duplicated. The primary expert, its fresh
 single-level dimension workers, and the separately configured threat detector
 all use **`gpt-6.1-sol`**. The primary review sandbox's inference-proxy
 allowlist rejects other model IDs, including worker requests. The shared

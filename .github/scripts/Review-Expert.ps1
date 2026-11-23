@@ -261,6 +261,9 @@ function Get-ExpertFindings {
         if ($finding.body -match '^\*\*\[(?!major\])[^\]]+\]\s+Input and Path Correctness\*\*') {
             throw 'Input and Path Correctness findings must retain their major severity cap.'
         }
+        if ($finding.body -match '^\*\*\[(?!major\])[^\]]+\]\s+Behavioral Change Disclosure\*\*') {
+            throw 'Behavioral Change Disclosure findings must retain their major severity cap.'
+        }
         $entry = [ordered]@{ path = $finding.path; line = [int]$finding.line; body = $finding.body }
         $key = ConvertTo-Json -InputObject $entry -Compress
         if (-not $seen.Add($key)) { throw 'The expert output contains duplicate findings.' }
@@ -293,13 +296,13 @@ function Test-ExpertJsonEqual {
 function Get-ExpertDimensions {
     param([object]$Value)
 
-    if ($Value -isnot [array] -or -not $Value.Count -or $Value.Count -gt 31) {
+    if ($Value -isnot [array] -or -not $Value.Count -or $Value.Count -gt 32) {
         throw 'The routed dimension list must be a nonempty bounded array.'
     }
     $ids = [Collections.Generic.HashSet[int]]::new()
     foreach ($id in $Value) {
-        if (($id -isnot [long] -and $id -isnot [int]) -or $id -lt 1 -or $id -gt 31 -or -not $ids.Add($id)) {
-            throw 'Routed dimensions must be distinct integers from 1 through 31.'
+        if (($id -isnot [long] -and $id -isnot [int]) -or $id -lt 1 -or $id -gt 32 -or -not $ids.Add($id)) {
+            throw 'Routed dimensions must be distinct integers from 1 through 32.'
         }
     }
     foreach ($id in @(5, 6, 16)) {
@@ -313,12 +316,12 @@ function Get-ExpertDimensionNames {
     $names = @{}
     foreach ($heading in [regex]::Matches($rulebook, '(?m)^### ([1-9][0-9]?)\. (.+?) `\[(?:critical|major|moderate|minor)\]`\r?$')) {
         $id = [int]$heading.Groups[1].Value
-        if ($id -gt 31 -or $names.ContainsKey($id)) {
+        if ($id -gt 32 -or $names.ContainsKey($id)) {
             throw 'The trusted expert rulebook contains an invalid or duplicate dimension heading.'
         }
         $names.Add($id, $heading.Groups[2].Value)
     }
-    if ($names.Count -ne 31) { throw 'The trusted expert rulebook must name all 31 dimensions.' }
+    if ($names.Count -ne 32) { throw 'The trusted expert rulebook must name all 32 dimensions.' }
     return $names
 }
 
@@ -331,7 +334,7 @@ function Get-ExpertExpectedDimensions {
     if ($start -lt 0 -or $end -le $start) { throw 'Canonical dimension routing is missing.' }
     $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
         [Text.Encoding]::UTF8.GetBytes($rulebook.Substring($start, $end - $start)))).ToLowerInvariant()
-    if ($hash -cne 'b1cf5130da65a379d80222d68eef1dd6db69abdcf08a9ecc672315eedcbbcb44') {
+    if ($hash -cne 'f565395e12e0814f60273f6dbfa05e9051949972f6eb2630721f8078570688b6') {
         throw 'Canonical routing changed; update the trusted dimension mapping before reviewing.'
     }
     $rules = @(
@@ -360,6 +363,8 @@ function Get-ExpertExpectedDimensions {
         @{ pattern = '^src/Essentials/src/(FilePicker|MediaPicker|FileSystem)/'; ids = @(31) }
         @{ pattern = '^src/Essentials/src/(AppActions|Launcher|WebAuthenticator)/|^src/Controls/src/Core/AppLinkEntry\.cs$'; ids = @(31, 5) }
         @{ pattern = '^src/Controls/src/Core/Shell/(ShellUriHandler|ShellNavigationManager)\.cs$'; ids = @(31, 5) }
+        @{ pattern = '^src/(Core|Controls|Essentials)/src/'; ids = @(32) }
+        @{ pattern = '^src/Controls/tests/[^/]+/snapshots/.+\.(png|jpe?g)$'; ids = @(32, 6) }
     )
     $ids = [Collections.Generic.HashSet[int]]::new()
     foreach ($id in @(5, 6, 16)) { [void]$ids.Add($id) }
