@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Dispatch because this is going to be async, and we want to catch any errors
 				var dispatchTask = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
-					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
-					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
+					var newItems = eventArgs.NewItems?.Cast<RootComponent>() ?? Enumerable.Empty<RootComponent>();
+					var oldItems = eventArgs.OldItems?.Cast<RootComponent>() ?? Enumerable.Empty<RootComponent>();
 
 					foreach (var item in newItems.Except(oldItems))
 					{

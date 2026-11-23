@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -10,6 +11,75 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 public partial class BlazorWebViewTests
 {
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task RootComponentsCanBeAddedAndRemovedAfterInitialization(bool initiallyPresent)
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+
+		var bwv = new BlazorWebViewWithCustomFiles
+		{
+			HostPage = "wwwroot/index.html",
+			CustomFiles = new Dictionary<string, string>
+			{
+				{
+					"index.html",
+					TestStaticFilesContents.DefaultMauiIndexHtmlContent.Replace(
+						"<div id=\"app\"></div>",
+						"<div id=\"app\"></div><div id=\"dynamic-app\"></div>",
+						StringComparison.Ordinal)
+				},
+			},
+		};
+		bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(NoOpComponent), Selector = "#app" });
+		var component = new RootComponent { ComponentType = typeof(NoOpComponent), Selector = "#dynamic-app" };
+		if (initiallyPresent)
+		{
+			bwv.RootComponents.Add(component);
+		}
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(bwv);
+			try
+			{
+				var platformWebView = handler.PlatformView;
+				await WebViewHelpers.WaitForWebViewReady(platformWebView);
+				await WebViewHelpers.WaitForCondition(platformWebView,
+					"document.querySelector('#app #controlDiv')?.innerText === 'Static'");
+				if (initiallyPresent)
+				{
+					await WebViewHelpers.WaitForCondition(platformWebView,
+						"document.querySelector('#dynamic-app #controlDiv')?.innerText === 'Static'");
+				}
+
+				for (var i = 0; i < 4; i++)
+				{
+					if (bwv.RootComponents.Contains(component))
+					{
+						bwv.RootComponents.Remove(component);
+						await WebViewHelpers.WaitForCondition(platformWebView,
+							"document.getElementById('dynamic-app').textContent.trim() === ''");
+					}
+					else
+					{
+						bwv.RootComponents.Add(component);
+						await WebViewHelpers.WaitForCondition(platformWebView,
+							"document.querySelector('#dynamic-app #controlDiv')?.innerText === 'Static'");
+					}
+				}
+			}
+			finally
+			{
+				((IElementHandler)handler).DisconnectHandler();
+			}
+		});
+	}
+
 	[Fact]
 	public async Task BasicRazorComponentClick()
 	{
