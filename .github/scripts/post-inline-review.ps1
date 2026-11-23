@@ -10,7 +10,8 @@
     Posts review-summary.md as the review body when present. Otherwise it generates a
     compact body with the finding count and, for Behavioral Change Disclosure findings
     (breaking changes for existing apps), a warning that counts them and links their
-    locations.
+    locations. When only breaking-change findings that can't be attached inline remain,
+    it posts that summary as a review without inline comments.
 
     Uses the GitHub Pulls Review API to create a single review with all inline comments
     attached at their exact file:line locations.
@@ -70,7 +71,12 @@ function New-InlineReviewMarker {
         [string]$ReviewedHead,
 
         [Parameter(Mandatory = $true)]
-        [object[]]$Comments
+        [AllowEmptyCollection()]
+        [object[]]$Comments,
+
+        # Findings that could not be attached inline still change the summary, so they change the marker.
+        [AllowEmptyCollection()]
+        [string[]]$UnattachedFindingBodies = @()
     )
 
     $normalized = @($Comments | ForEach-Object {
@@ -80,7 +86,11 @@ function New-InlineReviewMarker {
             body = [string]$_.body
         }
     } | Sort-Object path, line, body)
-    $canonicalJson = $normalized | ConvertTo-Json -Depth 5 -Compress
+    $canonicalJson = if ($normalized.Count -gt 0) { $normalized | ConvertTo-Json -Depth 5 -Compress } else { '[]' }
+    if ($UnattachedFindingBodies.Count -gt 0) {
+        $unattachedJson = ConvertTo-Json -InputObject @($UnattachedFindingBodies | Sort-Object) -Compress
+        $canonicalJson = "$canonicalJson`n$unattachedJson"
+    }
     $sha256 = [Security.Cryptography.SHA256]::Create()
     try {
         $hashBytes = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonicalJson))
@@ -123,6 +133,13 @@ function Get-InlineFindingBody {
     return "(no description)"
 }
 
+function Test-BreakingFindingBody {
+    param([AllowNull()][string]$Body)
+
+    # Behavioral Change Disclosure findings; grouped findings start that label on its own line.
+    return [string]$Body -cmatch '(?m)^\*\*\[(?:critical|major|moderate|minor)\]\s+Behavioral Change Disclosure\*\*'
+}
+
 function New-InlineReviewSummary {
     param(
         [Parameter(Mandatory = $true)]
@@ -138,9 +155,7 @@ function New-InlineReviewSummary {
         [string]$CommitSha
     )
 
-    # Behavioral Change Disclosure findings; grouped findings start that label on its own line.
-    $breakingPattern = '(?m)^\*\*\[(?:critical|major|moderate|minor)\]\s+Behavioral Change Disclosure\*\*'
-    $breakingCount = @($FindingBodies | Where-Object { $_ -cmatch $breakingPattern }).Count
+    $breakingCount = @($FindingBodies | Where-Object { Test-BreakingFindingBody $_ }).Count
     $noun = if ($FindingBodies.Count -eq 1) { 'finding' } else { 'findings' }
     $summary = "## Expert Review — $($FindingBodies.Count) $noun"
     if ($breakingCount -gt 0) {
@@ -150,7 +165,7 @@ function New-InlineReviewSummary {
         $summary += "`n`n> [!WARNING]`n> Existing apps would look or behave differently without opting in. See the ``Behavioral Change Disclosure`` findings at:"
         $linked = 0
         foreach ($c in $Comments) {
-            if ([string]$c.body -cnotmatch $breakingPattern) { continue }
+            if (-not (Test-BreakingFindingBody ([string]$c.body))) { continue }
             $path = [string]$c.path
             $target = @($path -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
             $label = if ($path -cmatch '^[A-Za-z0-9._/+-]+$') { "``$path``" } else { 'changed file' }
@@ -163,7 +178,9 @@ function New-InlineReviewSummary {
             $summary += "`n> - $unattached $($more)could not be attached inline."
         }
     }
-    $summary += "`n`nSee inline comments for details."
+    if ($Comments.Count -gt 0) {
+        $summary += "`n`nSee inline comments for details."
+    }
     return $summary
 }
 
@@ -390,22 +407,34 @@ if ($LASTEXITCODE -ne 0) {
     $comments = $kept
 }
 
-if ($comments.Count -eq 0) {
+$findingBodies = @($findings | ForEach-Object { Get-InlineFindingBody $_ })
+$unattachedBodies = [System.Collections.Generic.List[string]]::new()
+foreach ($b in $findingBodies) { $unattachedBodies.Add($b) }
+foreach ($c in $comments) {
+    [void]$unattachedBodies.Remove(([string]$c.body).Substring($aiMarker.Length))
+}
+$unattachedBodies = @($unattachedBodies)
+
+if ($comments.Count -eq 0 -and -not @($unattachedBodies | Where-Object { Test-BreakingFindingBody $_ })) {
     Write-Host "No inline-commentable findings remain after diff validation. Skipping review post." -ForegroundColor Yellow
     exit 0
 }
+if ($comments.Count -eq 0) {
+    Write-Host "Only unattachable breaking-change findings remain; posting a summary-only review." -ForegroundColor Yellow
+}
 
 if ([string]::IsNullOrWhiteSpace($summaryBody)) {
-    $findingBodies = @($findings | ForEach-Object { Get-InlineFindingBody $_ })
     $summaryBody = New-InlineReviewSummary -FindingBodies $findingBodies -Comments $comments -CommitSha $commitSha
 }
 
-$reviewMarker = New-InlineReviewMarker -ReviewedHead $commitSha -Comments $comments
+$reviewMarker = New-InlineReviewMarker -ReviewedHead $commitSha -Comments $comments -UnattachedFindingBodies $unattachedBodies
 $reviewPayload = @{
     commit_id = $commitSha
     body      = "$reviewMarker`n$summaryBody"
     event     = "COMMENT"  # Never APPROVE or REQUEST_CHANGES — that's a human decision
-    comments  = $comments
+}
+if ($comments.Count -gt 0) {
+    $reviewPayload['comments'] = $comments
 }
 
 $payloadJson = $reviewPayload | ConvertTo-Json -Depth 10
