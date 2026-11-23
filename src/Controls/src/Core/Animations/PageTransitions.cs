@@ -155,7 +155,8 @@ namespace Microsoft.Maui.Controls.Animations
 
 		/// <summary>
 		/// Navigates to <paramref name="state"/> with <paramref name="transition"/> and query
-		/// <paramref name="parameters"/> for every page the navigation pushes or pops.
+		/// <paramref name="parameters"/> for every page the navigation pushes or pops. A
+		/// <see cref="ShellNavigationQueryParameters"/> stays single-use, as with <see cref="Shell.GoToAsync(ShellNavigationState, bool, ShellNavigationQueryParameters)"/>.
 		/// </summary>
 		public static async Task GoToAsync(this Shell shell, ShellNavigationState state, PageTransition transition, IDictionary<string, object>? parameters)
 		{
@@ -169,6 +170,11 @@ namespace Microsoft.Maui.Controls.Animations
 				if (parameters is null)
 				{
 					await shell.GoToAsync(state, animate).ConfigureAwait(true);
+				}
+				else if (parameters is ShellNavigationQueryParameters singleUse)
+				{
+					// Keep single-use parameters single-use: the IDictionary overload would retain them for back navigation.
+					await shell.GoToAsync(state, animate, singleUse).ConfigureAwait(true);
 				}
 				else
 				{

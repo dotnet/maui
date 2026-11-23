@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			await root.Navigation.PushModalAsync(modal, new FadeTransition());
 
 			Assert.False(PageTransitionResolver.HasPending(modal));
-			Assert.True(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, modal, true).IsPlatformDefault);
+			Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, modal, true).Transition);
 		}
 
 		[Fact]
@@ -498,7 +498,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			var push = PageTransitionResolver.Resolve(NavigationTransitionKind.PushModal, new ContentPage(), modal, true);
 
-			Assert.True(push.IsPlatformDefault);
+			Assert.Same(PageTransition.Platform, push.Transition);
 		}
 
 		[Fact]
@@ -547,7 +547,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			}
 
 			var after = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, root, root, true);
-			Assert.True(after.IsPlatformDefault);
+			Assert.Same(PageTransition.Platform, after.Transition);
 		}
 
 		[Fact]
@@ -565,7 +565,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.IsType<ScaleTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
 
 			PageTransitionResolver.EndShellOverride(shell, second);
-			Assert.True(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).IsPlatformDefault);
+			Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+		}
+
+		[Fact]
+		public async Task NavigationPagesInSeveralWindowsDontConsultShellCurrent()
+		{
+			// With two windows and no Shell, Shell.Current can't pick one; an ordinary push must not depend on it.
+			var app = new TestApp();
+			Application.Current = app;
+			try
+			{
+				var (first, firstHandler) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
+				var (second, _) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
+				app.AddWindow(first.Window);
+				app.AddWindow(second.Window);
+
+				var page = new ContentPage();
+				PageTransitions.SetTransition(page, new FadeTransition());
+				await first.PushAsync(page).WaitAsync(TimeSpan.FromSeconds(5));
+				await first.PopAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.IsType<FadeTransition>(firstHandler.Resolved[0].Transition);
+				Assert.IsType<FadeTransition>(firstHandler.Resolved[1].Transition);
+			}
+			finally
+			{
+				Application.Current = null;
+			}
+		}
+
+		[Fact]
+		public void AShellOverrideInAnotherWindowDoesntReachANavigationPage()
+		{
+			var shellRoot = new ContentPage();
+			var shell = new Shell();
+			shell.Items.Add(new ShellContent { Content = shellRoot });
+			var app = new TestApp();
+			Application.Current = app;
+			var token = PageTransitionResolver.BeginShellOverride(shell, new ScaleTransition());
+			try
+			{
+				app.AddWindow(new Window(shell));
+				Assert.Same(shell, Shell.Current);
+
+				// A page popped off an unrelated NavigationPage is already detached from it.
+				var root = new ContentPage();
+				_ = new NavigationPage(root);
+				var detached = new ContentPage();
+
+				var push = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, root, detached, true);
+				var pop = PageTransitionResolver.Resolve(NavigationTransitionKind.Pop, detached, root, true);
+
+				Assert.Same(PageTransition.Platform, push.Transition);
+				Assert.Same(PageTransition.Platform, pop.Transition);
+			}
+			finally
+			{
+				PageTransitionResolver.EndShellOverride(shell, token);
+				Application.Current = null;
+			}
 		}
 
 		[Fact]
@@ -615,6 +674,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			await nav.PushAsync(new ContentPage());
 
+			Assert.Same(PageTransition.Platform, handler.Last.Transition);
 			Assert.True(handler.Last.IsPlatformDefault);
 		}
 

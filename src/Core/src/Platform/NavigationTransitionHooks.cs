@@ -30,6 +30,12 @@ namespace Microsoft.Maui.Platform
 			IView? to,
 			bool isInteractive,
 			out UIKit.IUIViewControllerInteractiveTransitioning? interaction);
+
+		/// <summary>
+		/// Called for a push or pop made without animation, for which UIKit never asks for an animator, so the
+		/// navigation is still resolved and recorded (going back reverses what the page was shown with).
+		/// </summary>
+		void OnUnanimatedNavigation(IView? navigationView, UIKit.UINavigationControllerOperation operation, IView? from, IView? to);
 #elif ANDROID
 		/// <summary>
 		/// Called once per stack navigation, before the fragment transaction, to resolve its transition.

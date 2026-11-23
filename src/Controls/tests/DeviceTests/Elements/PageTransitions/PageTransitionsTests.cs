@@ -185,6 +185,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(SlideEdge.Bottom, Assert.IsType<SlideTransition>(_requests[1].Transition).From);
 		}
 
+		[Fact(DisplayName = "An unanimated push is recorded, so an animated pop reverses what the page was shown with")]
+		public async Task UnanimatedPushIsRecordedForThePop()
+		{
+			SetupBuilder();
+			var root = CreatePage("Root");
+			var detail = CreatePage("Detail");
+			PageTransitions.SetTransition(detail, new FadeTransition { Duration = TransitionDuration });
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (_) =>
+			{
+				await OnNavigatedToAsync(root);
+				await navPage.PushAsync(detail, false);
+				await OnNavigatedToAsync(detail);
+
+				// Changed after the push: the pop still reverses the Fade the page was shown with.
+				PageTransitions.SetTransition(detail, new SlideTransition());
+				await navPage.PopAsync(true);
+				Assert.Same(root, navPage.CurrentPage);
+			});
+
+			var pop = Assert.Single(_requests, r => r.Kind == NavigationTransitionKind.Pop);
+			Assert.IsType<FadeTransition>(pop.Transition);
+		}
+
 #if !WINDOWS
 		// Windows modals keep their platform presentation; modal transitions are wired on iOS, Mac Catalyst and Android.
 		[Fact(DisplayName = "Modal present and dismiss with a transition complete")]

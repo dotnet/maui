@@ -453,6 +453,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task SingleUseParametersStaySingleUseWithAPageTransition()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			var obj = new object();
+			var parameter = new ShellNavigationQueryParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{"ComplexObject", obj}
+			};
+
+			await Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(shell, new ShellNavigationState("details"), new Microsoft.Maui.Controls.Animations.FadeTransition(), parameter);
+			var testPage = shell.CurrentPage as ShellTestPage;
+
+			await shell.Navigation.PushAsync(new ContentPage());
+			testPage.DoubleQueryParameter = -1d;
+			testPage.ComplexObject = null;
+
+			await shell.GoToAsync("..");
+
+			// Going back doesn't deliver the single-use parameters again.
+			Assert.Equal(-1d, testPage.DoubleQueryParameter);
+			Assert.Null(testPage.ComplexObject);
+			Assert.Single(testPage.AppliedQueryAttributes);
+			Assert.True(testPage.AppliedQueryAttributes[0].IsReadOnly);
+		}
+
+		[Fact]
 		public async Task ExtraParametersArentReAppliedWhenNavigatingBackToShellContent()
 		{
 			var shell = new Shell();

@@ -116,6 +116,13 @@ namespace Microsoft.Maui.Platform
 			return animator;
 		}
 
+		/// <summary>
+		/// Reports a push or pop made without animation. UIKit doesn't ask the delegate for an animator then, so the
+		/// transition is resolved here instead.
+		/// </summary>
+		public static void OnUnanimatedNavigation(IView? navigationView, UINavigationControllerOperation operation, IView? from, IView? to)
+			=> NavigationTransitionHooks.Current?.OnUnanimatedNavigation(navigationView, operation, from, to);
+
 		/// <summary>The interaction controller for the animator just returned, when a swipe-back drives it.</summary>
 		public IUIViewControllerInteractiveTransitioning? GetInteractionController()
 			=> _customInteraction ?? _interaction;

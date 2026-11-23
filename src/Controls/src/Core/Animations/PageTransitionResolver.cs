@@ -261,12 +261,9 @@ namespace Microsoft.Maui.Controls.Animations
 				current = current.Parent;
 			}
 
-			// A page being popped is often already detached from its section.
-			if (Shell.Current is { } active && s_shellOverrides.TryGetValue(active, out var activeEntry))
-			{
-				return activeEntry.Transition;
-			}
-
+			// Only a Shell that owns the page counts: never Shell.Current, which throws with several windows and may
+			// belong to another window entirely. A popped page detached from its section is resolved through the
+			// destination page instead (the caller tries both).
 			return null;
 		}
 

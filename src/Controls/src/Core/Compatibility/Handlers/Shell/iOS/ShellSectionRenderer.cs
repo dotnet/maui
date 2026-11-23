@@ -820,6 +820,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
+
+			// UIKit asks for no animator for an unanimated push, so its transition is resolved and recorded here.
+			if (!animated && TopViewController is { } top)
+			{
+				Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
+					ShellSection as IView, UINavigationControllerOperation.Push, PageForViewController(top), PageForViewController(viewController));
+			}
+
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
@@ -839,6 +847,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+
+			if (!animated && ViewControllers is { Length: > 1 } stack)
+			{
+				Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
+					ShellSection as IView, UINavigationControllerOperation.Pop, PageForViewController(stack[stack.Length - 1]), PageForViewController(stack[stack.Length - 2]));
+			}
+
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);

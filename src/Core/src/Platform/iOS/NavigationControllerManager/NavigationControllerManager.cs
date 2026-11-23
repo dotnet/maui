@@ -89,6 +89,17 @@ namespace Microsoft.Maui.Platform
             var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingViewControllers = null;
             _completionTasks[viewController] = completionSource;
+
+            if (!animated)
+            {
+                var top = _navigationController.TopViewController;
+                NavigationTransitionDriver.OnUnanimatedNavigation(
+                    _delegate.NavigationView,
+                    UINavigationControllerOperation.Push,
+                    top is null ? null : _delegate.GetViewForViewController(top),
+                    _delegate.GetViewForViewController(viewController));
+            }
+
             (_navigationController as MauiNavigationController)?.UpdateCurrentTopVC(viewController);
             _navigationController.PushViewController(viewController, animated);
             return completionSource;
@@ -102,6 +113,16 @@ namespace Microsoft.Maui.Platform
         {
             _pendingViewControllers = null;
             _popCompletionTask = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (!animated && _navigationController.ViewControllers is { Length: > 1 } stack)
+            {
+                NavigationTransitionDriver.OnUnanimatedNavigation(
+                    _delegate.NavigationView,
+                    UINavigationControllerOperation.Pop,
+                    _delegate.GetViewForViewController(stack[stack.Length - 1]),
+                    _delegate.GetViewForViewController(stack[stack.Length - 2]));
+            }
+
             _navigationController.PopViewController(animated);
             return _popCompletionTask.Task;
         }

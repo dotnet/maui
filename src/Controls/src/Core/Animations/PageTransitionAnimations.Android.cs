@@ -161,37 +161,70 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 
 		/// <summary>
-		/// Shared elements on Android: pictures of the element on both pages, flown in the window's overlay
-		/// from the source to the destination while the real elements are hidden.
+		/// Shared elements on Android: pictures of the element on both pages, flown in the overlay of the window the pages
+		/// are in (the activity's, or a modal dialog's) from the source to the destination while the real elements are hidden.
 		/// </summary>
-		static class HeroFlights
+		sealed class HeroFlights
 		{
+			readonly ViewGroup _root;
+			readonly ViewGroupOverlay _overlay;
+			readonly List<Flight> _flights;
+			ViewTreeObserver? _observer;
+			bool _started;
+			bool _cancelled;
+
+			HeroFlights(ViewGroup root, ViewGroupOverlay overlay, List<Flight> flights)
+			{
+				_root = root;
+				_overlay = overlay;
+				_flights = flights;
+			}
+
+			sealed class Flight
+			{
+				public Flight(AView source, VisualElement to, ImageView picture, int[] start, float sourceAlpha)
+				{
+					Source = source;
+					To = to;
+					Picture = picture;
+					Start = start;
+					SourceAlpha = sourceAlpha;
+				}
+
+				public AView Source { get; }
+				public VisualElement To { get; }
+				public ImageView Picture { get; }
+				public int[] Start { get; }
+				public float SourceAlpha { get; }
+			}
+
 			internal static void Start(AView incomingView, List<(VisualElement From, VisualElement To)> heroes, long duration, IInterpolator interpolator)
 			{
-				if (incomingView.Context?.GetActivity()?.Window?.DecorView is not ViewGroup decor)
+				// The outgoing page is on screen, so its window is the one both pages are in; locations are in its coordinates.
+				AView? firstSource = null;
+				for (int i = 0; i < heroes.Count && firstSource is null; i++)
+				{
+					firstSource = PlatformView(heroes[i].From);
+				}
+
+				if (firstSource is not { IsAttachedToWindow: true } || firstSource.RootView is not ViewGroup root || root.Overlay is null)
 				{
 					return;
 				}
 
-				if (decor.Overlay is null)
-				{
-					return;
-				}
-
-				var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
-
-				var flights = new List<(AView Source, VisualElement To, ImageView Picture, int[] Start, float SourceAlpha)>();
+				var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(root.Overlay);
+				var flights = new List<Flight>();
 				for (int i = 0; i < heroes.Count; i++)
 				{
 					var (from, to) = heroes[i];
 					var source = PlatformView(from);
-					var bitmap = source is { Width: > 0, Height: > 0 } ? Snapshot(source) : null;
+					var bitmap = source is { IsAttachedToWindow: true, Width: > 0, Height: > 0 } && ReferenceEquals(source.RootView, root) ? Snapshot(source) : null;
 					if (source is not null && bitmap is not null)
 					{
 						var start = new int[2];
 						source.GetLocationInWindow(start);
-						var picture = Picture(decor, overlay, bitmap, start[0], start[1], source.Width, source.Height);
-						flights.Add((source, to, picture, start, source.Alpha));
+						var picture = Picture(root, overlay, bitmap, start[0], start[1], source.Width, source.Height);
+						flights.Add(new Flight(source, to, picture, start, source.Alpha));
 						source.Alpha = 0;
 					}
 				}
@@ -201,29 +234,94 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 				}
 
-				// The incoming page isn't laid out yet: measure the landing spots just before it draws.
-				EventHandler<ViewTreeObserver.PreDrawEventArgs>? handler = null;
-				handler = (_, e) =>
-				{
-					incomingView.ViewTreeObserver!.PreDraw -= handler;
-					e.Handled = true;
-					for (int i = 0; i < flights.Count; i++)
-					{
-						Fly(decor, overlay, flights[i], duration, interpolator);
-					}
-				};
-				incomingView.ViewTreeObserver!.PreDraw += handler;
+				new HeroFlights(root, overlay, flights).WaitForIncoming(incomingView, duration, interpolator);
 			}
 
-			static void Fly(ViewGroup decor, ViewGroupOverlay overlay, (AView Source, VisualElement To, ImageView Picture, int[] Start, float SourceAlpha) flight, long duration, IInterpolator interpolator)
+			// The incoming page isn't laid out yet: measure the landing spots just before the window next draws. The
+			// listener is on the window's own observer, kept so it is removed from the observer it was added to.
+			void WaitForIncoming(AView incomingView, long duration, IInterpolator interpolator)
 			{
-				var (source, to, picture, start, sourceAlpha) = flight;
-				var target = PlatformView(to);
-				if (target is not { Width: > 0, Height: > 0 })
+				var observer = _root.ViewTreeObserver;
+				if (observer is null || !observer.IsAlive)
 				{
-					// No landing spot: no morph, the page transition runs alone.
-					overlay.Remove(picture);
-					source.Alpha = sourceAlpha;
+					Cancel();
+					return;
+				}
+
+				_observer = observer;
+				EventHandler<ViewTreeObserver.PreDrawEventArgs>? onPreDraw = null;
+				EventHandler<AView.ViewDetachedFromWindowEventArgs>? onDetached = null;
+
+				void Unsubscribe()
+				{
+					if (_observer is { IsAlive: true } subscribed && onPreDraw is not null)
+					{
+						subscribed.PreDraw -= onPreDraw;
+					}
+
+					_observer = null;
+					if (onDetached is not null)
+					{
+						_root.ViewDetachedFromWindow -= onDetached;
+					}
+				}
+
+				onPreDraw = (_, e) =>
+				{
+					// Still waiting for the incoming page to reach the window.
+					if (!incomingView.IsAttachedToWindow)
+					{
+						e.Handled = true;
+						return;
+					}
+
+					Unsubscribe();
+					e.Handled = true;
+					_started = true;
+					for (int i = 0; i < _flights.Count; i++)
+					{
+						Fly(_flights[i], duration, interpolator);
+					}
+				};
+
+				// The window going away before the flight starts (the root page replaced, the modal closed): nothing flies,
+				// and the pictures and hidden sources are put back.
+				onDetached = (_, _) =>
+				{
+					Unsubscribe();
+					Cancel();
+				};
+
+				observer.PreDraw += onPreDraw;
+				_root.ViewDetachedFromWindow += onDetached;
+			}
+
+			void Cancel()
+			{
+				if (_started || _cancelled)
+				{
+					return;
+				}
+
+				_cancelled = true;
+				for (int i = 0; i < _flights.Count; i++)
+				{
+					_overlay.Remove(_flights[i].Picture);
+					_flights[i].Source.Alpha = _flights[i].SourceAlpha;
+				}
+			}
+
+			void Fly(Flight flight, long duration, IInterpolator interpolator)
+			{
+				var source = flight.Source;
+				var picture = flight.Picture;
+				var start = flight.Start;
+				var target = PlatformView(flight.To);
+				if (target is not { IsAttachedToWindow: true, Width: > 0, Height: > 0 } || !ReferenceEquals(target.RootView, _root))
+				{
+					// No landing spot in this window: no morph, the page transition runs alone.
+					_overlay.Remove(picture);
+					source.Alpha = flight.SourceAlpha;
 					return;
 				}
 
@@ -231,11 +329,12 @@ namespace Microsoft.Maui.Controls.Animations
 				target.GetLocationInWindow(end);
 				var targetAlpha = target.Alpha;
 				var targetBitmap = Snapshot(target);
-				ImageView? landing = targetBitmap is null ? null : Picture(decor, overlay, targetBitmap, start[0], start[1], source.Width, source.Height);
+				ImageView? landing = targetBitmap is null ? null : Picture(_root, _overlay, targetBitmap, start[0], start[1], source.Width, source.Height);
 				target.Alpha = 0;
 
 				var scaleX = target.Width / (float)source.Width;
 				var scaleY = target.Height / (float)source.Height;
+				var overlay = _overlay;
 
 				picture.PivotX = 0;
 				picture.PivotY = 0;
@@ -260,7 +359,7 @@ namespace Microsoft.Maui.Controls.Animations
 							overlay.Remove(landing);
 						}
 
-						source.Alpha = sourceAlpha;
+						source.Alpha = flight.SourceAlpha;
 						target.Alpha = targetAlpha;
 					}))!
 					.Start();
@@ -280,9 +379,9 @@ namespace Microsoft.Maui.Controls.Animations
 				return bitmap;
 			}
 
-			static ImageView Picture(ViewGroup decor, ViewGroupOverlay overlay, Bitmap bitmap, int x, int y, int width, int height)
+			static ImageView Picture(ViewGroup root, ViewGroupOverlay overlay, Bitmap bitmap, int x, int y, int width, int height)
 			{
-				var picture = new ImageView(decor.Context);
+				var picture = new ImageView(root.Context);
 				picture.SetImageBitmap(bitmap);
 				picture.SetScaleType(ImageView.ScaleType.FitXy!);
 				picture.Measure(
