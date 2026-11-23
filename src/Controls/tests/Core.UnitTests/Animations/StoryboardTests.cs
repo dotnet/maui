@@ -1438,6 +1438,324 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			}
 		}
 
+		sealed class TestFrameClock : AnimationFrameClock
+		{
+			TimeSpan _now;
+
+			protected override void StartFrames()
+			{
+			}
+
+			protected override void StopFrames()
+			{
+			}
+
+			public void Frame(double milliseconds)
+			{
+				_now += TimeSpan.FromMilliseconds(milliseconds);
+				OnFrame(_now);
+			}
+
+			public int DestroyedSubscribers
+			{
+				get
+				{
+					var destroyed = typeof(AnimationFrameClock).GetField("Destroyed", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+					return (destroyed.GetValue(this) as Delegate)?.GetInvocationList().Length ?? 0;
+				}
+			}
+		}
+
+		static int UnloadedSubscribers(VisualElement element)
+		{
+			var unloaded = typeof(VisualElement).GetField("_unloaded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+			return (unloaded.GetValue(element) as Delegate)?.GetInvocationList().Length ?? 0;
+		}
+
+		[Fact]
+		public void TurningReducedMotionOnWhenTheFinalWriteThrowsFaultsTheRunWithoutEscaping()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var throwing = false;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (throwing && e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("boom");
+			};
+			var player = Fade(0, 0.8, 1000).Begin(label);
+			Advance(100);
+
+			throwing = true;
+			var thrown = Record.Exception(() => Motion.IsReducedMotionRequested = true);
+			throwing = false;
+
+			Assert.Null(thrown);
+			Assert.True(player.Completion.IsFaulted);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void StoppingFromTheFirstPropertysCallbackLeavesTheRestAlone()
+		{
+			var label = new Label();
+			StoryboardPlayer player = null;
+			var stopped = false;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (!stopped && e.PropertyName == nameof(Label.Opacity) && label.Opacity > 0.1)
+				{
+					stopped = true;
+					player.Stop();
+				}
+			};
+			player = Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 2.0))
+				.Build()
+				.Begin(label);
+
+			Advance(50);
+
+			Assert.Equal(AnimationResult.Stopped, player.Completion.Result);
+			Assert.False(label.HasAnimationValue(VisualElement.ScaleProperty));
+			Assert.Null(label.GetAnimationOwner(VisualElement.ScaleProperty));
+			label.Scale = 3;
+			Assert.Equal(3, label.Scale);
+		}
+
+		[Fact]
+		public void UserInputDuringABeginDelayReplacesTheRun()
+		{
+			var label = new Label();
+			var player = Storyboard.Create().WithDuration(Ms(100)).WithBeginTime(Ms(100))
+				.AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(0, 0.0).At(1, 50.0))
+				.Build()
+				.Begin(label);
+			Advance(50);
+
+			label.SetValueFromRenderer(VisualElement.TranslationXProperty, 7.0);
+			Advance(200);
+
+			Assert.Equal(AnimationResult.Replaced, player.Completion.Result);
+			Assert.Equal(7.0, label.TranslationX);
+		}
+
+		[Fact]
+		public void ACompletedStepBeatsOneThatNeverStartedInsideAFillingParent()
+		{
+			var label = new Label { Opacity = 0.2 };
+			var storyboard = new Storyboard { Duration = Ms(200) };
+			var first = new Storyboard { Duration = Ms(100) };
+			first.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(0), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = 0.0 } } });
+			first.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = 0.5 } } });
+			var later = new Storyboard { Duration = Ms(100), BeginTime = Ms(250), FillMode = AnimationFillMode.Both };
+			later.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(0), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = 0.8 } } });
+			later.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = 1.0 } } });
+			storyboard.Children.Add(first);
+			storyboard.Children.Add(later);
+
+			storyboard.Begin(label);
+			Advance(250);
+
+			Assert.Equal(0.5, label.Opacity);
+		}
+
+		[Fact]
+		public void SequentialChildrenOfAForeverContainerAreNotAnOverlap()
+		{
+			var storyboard = Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(RepeatBehavior.Forever)
+					.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0)))
+					.AddChild(Ms(100), b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 0.0))))
+				.Build();
+
+			var player = storyboard.Begin(new Label());
+
+			Assert.Equal(PlaybackState.Running, player.State);
+		}
+
+		[Fact]
+		public void ASiblingAfterAManyTimesRepeatedContainerIsNotAnOverlap()
+		{
+			var storyboard = Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(10)).WithRepeat(new RepeatBehavior(300))
+					.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(5)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
+				.AddChild(Ms(3001), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
+				.Build();
+
+			var player = storyboard.Begin(new Label());
+
+			Assert.Equal(PlaybackState.Running, player.State);
+		}
+
+		[Fact]
+		public void AnExplicitRepeatDurationBoundsAContainerOfAForeverChild()
+		{
+			var label = new Label();
+			var player = Storyboard.Create().WithRepeat(new RepeatBehavior(Ms(300)))
+				.AddChild(TimeSpan.Zero, child => child.WithDuration(Ms(100)).WithRepeat(RepeatBehavior.Forever)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.Build()
+				.Begin(label);
+
+			Advance(350);
+
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+		}
+
+		[Fact]
+		public void PausingFromTheRunningNotificationKeepsTheRunPaused()
+		{
+			var label = new Label();
+			var player = Fade(0, 1).CreatePlayer(label);
+			player.StateChanged += (_, e) =>
+			{
+				if (e.NewState == PlaybackState.Running)
+					player.Pause();
+			};
+
+			player.Resume();
+			Advance(50);
+
+			Assert.Equal(PlaybackState.Paused, player.State);
+			Assert.Equal(1.0, label.Opacity);
+		}
+
+		[Fact]
+		public void PauseAndResumeCyclesObserveTheClockOnce()
+		{
+			var clock = new TestFrameClock();
+			AnimationFrameClock.TestClock = clock;
+			var player = Fade(0, 1, 1000).Begin(new Label());
+			player.Pause();
+			player.Resume();
+			player.Pause();
+			player.Resume();
+
+			Assert.Equal(1, clock.DestroyedSubscribers);
+
+			player.Stop();
+			Assert.Equal(0, clock.DestroyedSubscribers);
+		}
+
+		[Fact]
+		public void AFaultedRunStopsObservingItsTarget()
+		{
+			var label = new Label();
+			var before = UnloadedSubscribers(label);
+			var throwing = true;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (throwing && e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("boom");
+			};
+			var player = Fade(0, 1).Begin(label);
+
+			Advance(50);
+			throwing = false;
+
+			Assert.True(player.Completion.IsFaulted);
+			Assert.Equal(before, UnloadedSubscribers(label));
+		}
+
+		[Fact]
+		public void WindowDestructionEndsTheRunEvenWhenReleaseThrows()
+		{
+			var clock = new TestFrameClock();
+			AnimationFrameClock.TestClock = clock;
+			var label = new Label();
+			var player = Fade(0, 1, 1000).Begin(label);
+			clock.Frame(16);
+			clock.Frame(100);
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("release");
+			};
+
+			clock.Destroy();
+
+			Assert.True(player.Completion.IsCompleted);
+			Assert.Equal(AnimationResult.Stopped, player.Completion.Result);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void ALowerPriorityTwoWayBindingDoesNotVetoAHold()
+		{
+			var vm = new ViewModel { Value = 0.5 };
+			var label = new Label { BindingContext = vm };
+			label.SetBinding(VisualElement.OpacityProperty, new Binding(nameof(ViewModel.Value)));
+			var player = Fade(0, 1, 1000).Begin(label);
+			Advance(100);
+
+			label.Style = new Style(typeof(Label))
+			{
+				Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = new Binding(nameof(ViewModel.Value), BindingMode.TwoWay) } },
+			};
+			Advance(100);
+
+			Assert.Equal(PlaybackState.Running, player.State);
+			Assert.Equal(0.2, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void MultiBindingChildrenAreSampledReadOnly()
+		{
+			var vm = new LabelModel { Text = "kept" };
+			var label = new Label { BindingContext = vm };
+			var multi = new MultiBinding
+			{
+				StringFormat = "{0}",
+				Bindings = { new Binding(nameof(LabelModel.Text), BindingMode.OneWayToSource) },
+			};
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = Label.TextProperty, Value = multi } } });
+
+			storyboard.Begin(label);
+
+			Assert.Equal("kept", vm.Text);
+		}
+
+		class LabelModel : INotifyPropertyChanged
+		{
+			string _text;
+
+			public string Text
+			{
+				get => _text;
+				set
+				{
+					_text = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+				}
+			}
+
+			public event PropertyChangedEventHandler PropertyChanged;
+		}
+
+		[Fact]
+		public void FindSkipsARunThatEndedHoldingNothing()
+		{
+			var label = new Label();
+			var storyboard = Storyboard.Create().WithDuration(Ms(400))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 3.0))
+				.Build();
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			Advance(100);
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.9);
+			label.Opacity = 0.9;
+			((TriggerAction)new BeginStoryboard { Storyboard = storyboard, HandoffBehavior = StoryboardHandoffBehavior.Ignore }).DoInvoke(label);
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.4); // the newer run loses its only property
+
+			((TriggerAction)new PauseStoryboard { Storyboard = storyboard }).DoInvoke(label);
+			var scale = label.Scale;
+			Advance(100);
+
+			Assert.Equal(scale, label.Scale);
+		}
+
 		static (ContentView Root, Label Badge, Label Title) CreateNamedTree()
 		{
 			var badge = new Label();

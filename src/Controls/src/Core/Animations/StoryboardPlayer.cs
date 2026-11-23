@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Animations
 		bool _observingLifetime;
 		bool _observingPolicy;
 		bool _waitingForWindow;
+		bool _observingClock;
 		bool _ended;
 		double _rate = 1;
 		double _timeTicks;
@@ -141,7 +142,10 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 
 				SetState(PlaybackState.Running);
-				StartTicking();
+
+				// A StateChanged handler may have paused or stopped the run.
+				if (!_ended && _state == PlaybackState.Running)
+					StartTicking();
 			}
 			catch (Exception ex)
 			{
@@ -430,7 +434,15 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_ended || _state != PlaybackState.Running)
 				return;
 
-			ApplyMotionPolicy();
+			// No caller: a fault here ends this run like a frame failure and never escapes into the policy's event.
+			try
+			{
+				ApplyMotionPolicy();
+			}
+			catch (Exception ex)
+			{
+				Fault(ex);
+			}
 		}
 
 		void StartTicking()
@@ -450,8 +462,12 @@ namespace Microsoft.Maui.Controls.Animations
 			_ticking = true;
 			_lastClock = _clock.Elapsed;
 			_clock.Tick += OnTick;
-			if (_clock is AnimationFrameClock frameClock)
+			if (!_observingClock && _clock is AnimationFrameClock frameClock)
+			{
+				// Once per run, however often it pauses and resumes; removed when the run ends.
+				_observingClock = true;
 				frameClock.Destroyed += OnClockDestroyed;
+			}
 		}
 
 		void StopTicking()
@@ -499,7 +515,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		void OnTick(object? sender, EventArgs e)
 		{
-			if (_ended || _clock is null)
+			if (_ended || _clock is null || _state != PlaybackState.Running)
 				return;
 
 			var target = Target;
@@ -553,8 +569,20 @@ namespace Microsoft.Maui.Controls.Animations
 
 		void OnClockDestroyed(object? sender, EventArgs e)
 		{
-			ReleaseAll();
-			End(AnimationResult.Stopped);
+			// Teardown with no caller: the run reaches its terminal state even when a release throws.
+			try
+			{
+				ReleaseAll();
+			}
+			catch (Exception ex)
+			{
+				Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(ex, "MAUIA1005: A storyboard run faulted while its window was destroyed.");
+			}
+			finally
+			{
+				End(AnimationResult.Stopped);
+				StopObservingLifetime();
+			}
 		}
 
 		// Writes every slot's value at the current time. Writes to one target are batched so transform changes reach
@@ -570,10 +598,15 @@ namespace Microsoft.Maui.Controls.Animations
 			VisualElement? batched = null;
 			try
 			{
+				var wasEnded = _ended;
 				for (var i = 0; i < _slots.Length; i++)
 				{
+					// A property callback stopped the run (Stop, Dispose, a fault): leave the remaining slots alone.
+					if (_ended && !wasEnded)
+						break;
+
 					var slot = _slots[i];
-					if (!slot.Lost && slot.Slot.Target is BindableObject target)
+					if (!slot.Lost && (slot.Owned || slot.Excluded) && slot.Slot.Target is BindableObject target)
 					{
 						if (!ReferenceEquals(target, batched))
 						{
@@ -759,6 +792,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(exception, "MAUIA1005: A storyboard run faulted.");
 			EndCore(PlaybackState.Stopped);
+			StopObservingLifetime();
 			_completion.TrySetException(exception);
 		}
 
@@ -782,8 +816,11 @@ namespace Microsoft.Maui.Controls.Animations
 			_ended = true;
 			StopTicking();
 
-			if (_clock is AnimationFrameClock frameClock)
+			if (_observingClock && _clock is AnimationFrameClock frameClock)
+			{
+				_observingClock = false;
 				frameClock.Destroyed -= OnClockDestroyed;
+			}
 
 			if (_observingPolicy && _policy is not null)
 			{

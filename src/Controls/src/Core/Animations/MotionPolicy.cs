@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Animations
 {
@@ -106,7 +107,25 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		void RaiseChanged() => _changed?.Invoke(this, EventArgs.Empty);
+		// Each subscriber is isolated, so one that throws doesn't stop the others from hearing the change.
+		void RaiseChanged()
+		{
+			var changed = _changed;
+			if (changed is null)
+				return;
+
+			foreach (EventHandler handler in changed.GetInvocationList())
+			{
+				try
+				{
+					handler(this, EventArgs.Empty);
+				}
+				catch (Exception ex)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<PlatformMotionPolicy>()?.LogError(ex, "A reduced-motion change handler threw.");
+				}
+			}
+		}
 
 		bool ReadReducedMotion()
 		{

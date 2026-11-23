@@ -318,9 +318,12 @@ namespace Microsoft.Maui.Controls
 
 			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
 			var currentSpecificity = context.Values.GetSpecificity();
+			// Only a binding that will actually become effective can end a hold or a claim; one stored beneath a
+			// higher-priority binding must not veto the animation.
+			var bindingWillApply = context.Bindings.Count == 0 || specificity >= context.Bindings.GetSpecificity();
 			if (currentSpecificity == SetterSpecificity.Animation)
-				currentSpecificity = PrepareBindingUnderAnimation(context, binding);
-			else if (context.AnimationOwner is not null)
+				currentSpecificity = bindingWillApply ? PrepareBindingUnderAnimation(context, binding) : context.Values.GetClearedSpecificity();
+			else if (context.AnimationOwner is not null && bindingWillApply)
 				RelinquishClaimForBinding(context, binding);
 
 			if (currentSpecificity > SetterSpecificity.FromBinding)
@@ -728,6 +731,11 @@ namespace Microsoft.Maui.Controls
 
 			// Guarded: only while an animation holds this property (see BindableObject.Animations.cs).
 			bool holdLostToHandler = false;
+
+			// User input during a run's begin delay (owned, nothing shown yet) ends the run's claim as well.
+			if (specificity == SetterSpecificity.FromHandler && context.AnimationOwner is not null && originalSpecificity != SetterSpecificity.Animation)
+				holdLostToHandler = true;
+
 			if (originalSpecificity == SetterSpecificity.Animation && specificity != SetterSpecificity.Animation)
 			{
 				if (specificity != SetterSpecificity.FromHandler)

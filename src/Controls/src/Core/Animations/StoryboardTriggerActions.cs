@@ -168,10 +168,14 @@ namespace Microsoft.Maui.Controls.Animations
 			if (storyboard is null || element.GetValue(RunsProperty) is not List<StoryboardPlayer> runs)
 				return null;
 
+			// The latest run of the storyboard that is still playing or still holds values; a run that ended holding
+			// nothing (taken over after it was registered) is skipped.
 			for (var i = runs.Count - 1; i >= 0; i--)
 			{
-				if (ReferenceEquals(runs[i].Storyboard, storyboard))
-					return runs[i];
+				var run = runs[i];
+				var inert = (run.State == PlaybackState.Finished || run.State == PlaybackState.Stopped) && !run.HoldsAnything();
+				if (ReferenceEquals(run.Storyboard, storyboard) && !inert)
+					return run;
 			}
 
 			return null;

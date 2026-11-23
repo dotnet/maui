@@ -291,11 +291,22 @@ namespace Microsoft.Maui.Controls.Animations
 
 			// Sampled read-only: a TwoWay or OneWayToSource clone would write the probe's default into the source.
 			var clone = binding.Clone();
-			clone.Mode = BindingMode.OneWay;
+			MakeReadOnly(clone);
 			probe.SetBinding(probeProperty, clone);
 			var result = probe.GetValue(probeProperty);
 			probe.RemoveBinding(probeProperty);
 			return result;
+		}
+
+		// Every binding in the tree reads only: a MultiBinding's clone keeps its children's modes.
+		static void MakeReadOnly(BindingBase binding)
+		{
+			binding.Mode = BindingMode.OneWay;
+			if (binding is MultiBinding multi)
+			{
+				foreach (var child in multi.Bindings)
+					MakeReadOnly(child);
+			}
 		}
 
 		/// <summary>Evaluates every slot at root time <paramref name="ticks"/>.</summary>
@@ -329,7 +340,11 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			var intervals = new List<(double Start, double End)>[slotCount];
 			root.CollectIntervals(0, 1, intervals);
+			CheckIntervals(intervals);
+		}
 
+		internal static void CheckIntervals(List<(double Start, double End)>[] intervals)
+		{
 			foreach (var list in intervals)
 			{
 				if (list is not null && list.Count > 1)
@@ -418,13 +433,15 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public void ComputeActive()
 		{
-			if (Repeat.IsForever || double.IsPositiveInfinity(Duration))
-			{
-				Active = double.PositiveInfinity;
-			}
-			else if (Repeat.HasDuration)
+			// An explicit repeat duration bounds the run even when its iteration is open-ended (a container of a
+			// forever child).
+			if (Repeat.HasDuration)
 			{
 				Active = Repeat.Duration.Ticks * Speed;
+			}
+			else if (Repeat.IsForever || double.IsPositiveInfinity(Duration))
+			{
+				Active = double.PositiveInfinity;
 			}
 			else
 			{
@@ -494,6 +511,9 @@ namespace Microsoft.Maui.Controls.Animations
 			return (tau, endIteration, ContributionKind.AfterFill, (a - Active) / Speed);
 		}
 
+		// Larger than any real fill key (ticks), so it only orders "not started" below "started or completed".
+		const double BeforeFillRank = 1e18;
+
 		public void Evaluate(double parentTicks, Contribution[] results, ContributionKind inheritedKind, double inheritedKey)
 		{
 			var (tau, _, phase, key) = Locate(parentTicks);
@@ -509,11 +529,18 @@ namespace Microsoft.Maui.Controls.Animations
 			// Inside a parent that is filling, everything below it is a fill too. The parent's key orders it against
 			// other nodes; the child's own key (0 when it is active at the parent's frozen time) still orders siblings
 			// inside it, so of two completed steps in a sequence the later one wins.
+			// A descendant that had not started yet at the parent's frozen time ranks below every descendant that had
+			// (BeforeFillRank), so a completed step beats one still waiting to begin.
 			var kind = phase;
 			if (inheritedKind != ContributionKind.None && inheritedKind != ContributionKind.Active)
 			{
 				kind = inheritedKind;
-				key = inheritedKey + (phase == ContributionKind.Active ? 0 : key);
+				key = inheritedKey + phase switch
+				{
+					ContributionKind.Active => 0,
+					ContributionKind.BeforeFill => BeforeFillRank + key,
+					_ => key,
+				};
 			}
 
 			Contribute(tau, kind, key, results);
@@ -653,8 +680,19 @@ namespace Microsoft.Maui.Controls.Animations
 
 			if (iterations > MaxExpandedIterations)
 			{
+				// Too many iterations to expand: check the children against each other within one iteration (an
+				// iteration clips them, so they can't reach into the next), then let whatever they animate occupy the
+				// container's whole active interval for siblings outside it.
+				var single = new List<(double Start, double End)>[intervals.Length];
 				foreach (var child in Children)
-					child.CollectOpenEnded(start + child.Begin * childScale, intervals);
+					child.CollectIntervals(0, 1, single);
+				CompiledStoryboard.CheckIntervals(single);
+
+				for (var i = 0; i < single.Length; i++)
+				{
+					if (single[i] is not null)
+						(intervals[i] ??= new List<(double, double)>()).Add((start, end));
+				}
 				return;
 			}
 
@@ -688,13 +726,5 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		void CollectOpenEnded(double start, List<(double Start, double End)>[] intervals)
-		{
-			foreach (var (slot, _) in Tracks)
-				(intervals[slot.Index] ??= new List<(double, double)>()).Add((start, double.PositiveInfinity));
-
-			foreach (var child in Children)
-				child.CollectOpenEnded(start, intervals);
-		}
 	}
 }
