@@ -26,15 +26,19 @@ namespace Microsoft.Maui
 			{
 				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken).ConfigureAwait(false);
 
-				using var cgImageSource = imageData.GetPlatformImageSource();
-				if (cgImageSource is null)
+				UIImage image;
+				try
+				{
+					using var cgImageSource = imageData.GetPlatformImageSource()
+						?? throw new InvalidOperationException("Unable to load image file.");
+					image = cgImageSource.GetPlatformImage();
+				}
+				catch (Exception)
 				{
 					// Do not keep showing (or caching) data that cannot be decoded.
 					Loader.Invalidate(imageSource.Uri);
-					throw new InvalidOperationException("Unable to load image file.");
+					throw;
 				}
-
-				var image = cgImageSource.GetPlatformImage();
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 

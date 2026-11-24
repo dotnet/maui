@@ -52,8 +52,12 @@ namespace Microsoft.Maui.Platform
 		{
 			SourceManager.Reset();
 #if IOS || ANDROID || WINDOWS
+			_fallbackGeneration++;
 			ReleaseFallback();
 #endif
+
+			// The cancelled load does not report that it stopped loading.
+			Setter.ImageSourcePart?.UpdateIsLoading(false);
 		}
 
 		public async Task UpdateImageSourceAsync()
@@ -65,8 +69,11 @@ namespace Microsoft.Maui.Platform
 
 			var token = SourceManager.BeginLoad();
 			var imageSource = Setter.ImageSourcePart;
+#if IOS || ANDROID || WINDOWS
+			var fallbackGeneration = ++_fallbackGeneration;
+#endif
 
-			if (imageSource?.Source is not null)
+			if (imageSource?.Source is { IsEmpty: false })
 			{
 #if IOS || ANDROID || WINDOWS
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
@@ -75,7 +82,7 @@ namespace Microsoft.Maui.Platform
 				var errorSource = fallbacks?.ErrorSource;
 				Action<Exception>? onFailed = errorSource is null
 					? null
-					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, token, () => true).FireAndForget();
+					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => true).FireAndForget();
 #endif
 
 #if IOS || WINDOWS
@@ -89,7 +96,7 @@ namespace Microsoft.Maui.Platform
 				// Only show the placeholder when the image is not available right away (for example from a memory cache).
 				if (!loadTask.IsCompleted && fallbacks?.PlaceholderSource is { } placeholderSource)
 				{
-					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, token, () => !loadTask.IsCompleted)
+					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => !loadTask.IsCompleted)
 						.FireAndForget();
 				}
 
@@ -128,11 +135,19 @@ namespace Microsoft.Maui.Platform
 #if IOS || ANDROID || WINDOWS
 		IDisposable? _fallbackResult;
 
+		// Identifies the load that a placeholder or error image belongs to. It changes whenever a new load
+		// starts or the loader is reset, even after the load itself has completed.
+		int _fallbackGeneration;
+
 		/// <summary>
 		/// Shows a placeholder or error image without changing the loading state.
 		/// </summary>
-		async Task ShowFallbackAsync(IImageSource source, IImageSourceServiceProvider provider, PlatformView platformView, CancellationToken token, Func<bool> isStillNeeded)
+		async Task ShowFallbackAsync(IImageSource source, IImageSourceServiceProvider provider, PlatformView platformView, int generation, Func<bool> isStillNeeded)
 		{
+			// Fallback images are not cancelled; a result that is no longer needed is discarded below.
+			var token = CancellationToken.None;
+			bool IsCurrent() => generation == _fallbackGeneration && isStillNeeded();
+
 			IDisposable? result = null;
 			PlatformImage? image = null;
 
@@ -157,14 +172,10 @@ namespace Microsoft.Maui.Platform
 				image = platformResult?.Value;
 #endif
 			}
-			catch (Exception) when (token.IsCancellationRequested)
-			{
-				return;
-			}
 			catch (Exception)
 			{
 				// The fallback image could not be loaded either: show nothing.
-				if (!token.IsCancellationRequested && isStillNeeded())
+				if (IsCurrent())
 				{
 					Setter.SetImageSource(null);
 					ReleaseFallback();
@@ -172,7 +183,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (token.IsCancellationRequested || !isStillNeeded() || image is null)
+			if (!IsCurrent() || image is null)
 			{
 				// The fallback was never shown.
 				result?.Dispose();

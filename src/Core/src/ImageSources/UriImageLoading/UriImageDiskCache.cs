@@ -24,6 +24,8 @@ namespace Microsoft.Maui
 		const string MetadataHeader = "maui-uri-image-v1";
 
 		readonly object _lock = new();
+		readonly object _indexBuildLock = new();
+		readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _keyLocks = new(StringComparer.Ordinal);
 		readonly long _sizeLimit;
 		readonly Func<DateTimeOffset> _utcNow;
 		Dictionary<string, Entry>? _index;
@@ -50,12 +52,39 @@ namespace Microsoft.Maui
 			}
 		}
 
+		/// <summary>
+		/// Whether <paramref name="fileName"/> is a file this cache writes: <c>{crc64}{extension}</c>, its <c>.meta</c> file, or a temporary file for either.
+		/// </summary>
+		/// <remarks>Other files in the directory are never indexed, evicted or deleted.</remarks>
+		internal static bool IsCacheFileName(string fileName)
+		{
+			const int HashLength = 16;
+
+			if (fileName.Length < HashLength)
+				return false;
+
+			for (var i = 0; i < HashLength; i++)
+			{
+				var c = fileName[i];
+				if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')))
+					return false;
+			}
+
+			return fileName.Length == HashLength || fileName[HashLength] == '.';
+		}
+
 		internal static string GetFileName(Uri uri)
 		{
 			var hash = Crc64.ComputeHashString(uri.OriginalString);
 			var extension = Path.GetExtension(uri.AbsolutePath);
-			if (extension.Length > 10 || extension.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+			if (extension.Length > 10 ||
+				extension.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+				extension.Equals(MetadataExtension, StringComparison.OrdinalIgnoreCase) ||
+				extension.Equals(TempExtension, StringComparison.OrdinalIgnoreCase))
+			{
+				// Keep image files distinguishable from the cache's own metadata and temporary files.
 				extension = string.Empty;
+			}
 			return hash + extension;
 		}
 
@@ -117,7 +146,7 @@ namespace Microsoft.Maui
 		{
 			try
 			{
-#if NETSTANDARD
+				// Allow the file to be replaced or deleted while it is read (Windows locks it otherwise).
 				using var stream = new FileStream(entry.DataPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, useAsync: true);
 				var buffer = new byte[stream.Length];
 				var read = 0;
@@ -129,9 +158,6 @@ namespace Microsoft.Maui
 					read += count;
 				}
 				return read == buffer.Length ? buffer : null;
-#else
-				return await File.ReadAllBytesAsync(entry.DataPath, cancellationToken).ConfigureAwait(false);
-#endif
 			}
 			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 			{
@@ -148,6 +174,7 @@ namespace Microsoft.Maui
 			var fileName = GetFileName(uri);
 			var dataPath = Path.Combine(Directory!, fileName);
 
+			lock (GetKeyLock(fileName))
 			try
 			{
 				System.IO.Directory.CreateDirectory(Directory!);
@@ -189,13 +216,22 @@ namespace Microsoft.Maui
 		/// </summary>
 		public bool Renew(Entry entry, string? eTag, string? lastModified, DateTimeOffset now)
 		{
-			if (!File.Exists(entry.DataPath))
+			lock (GetKeyLock(entry.FileName))
 			{
-				Remove(entry);
-				return false;
-			}
+				if (!IsCurrent(entry) || !File.Exists(entry.DataPath))
+				{
+					Remove(entry);
+					return false;
+				}
 
-			lock (_lock)
+				RenewLocked(entry, eTag, lastModified, now);
+				return true;
+			}
+		}
+
+		static void RenewLocked(Entry entry, string? eTag, string? lastModified, DateTimeOffset now)
+		{
+			lock (entry)
 			{
 				entry.ValidatedUtcTicks = now.UtcTicks;
 				entry.LastAccessUtcTicks = now.UtcTicks;
@@ -213,9 +249,16 @@ namespace Microsoft.Maui
 			{
 				// The in-memory index is still renewed; the file is renewed again on the next validation.
 			}
-
-			return true;
 		}
+
+		bool IsCurrent(Entry entry)
+		{
+			lock (_lock)
+				return _index is null || !_index.TryGetValue(entry.FileName, out var current) || current == entry;
+		}
+
+		object GetKeyLock(string fileName) =>
+			_keyLocks.GetOrAdd(fileName, static _ => new object());
 
 		public void Remove(Uri uri)
 		{
@@ -223,33 +266,45 @@ namespace Microsoft.Maui
 				return;
 
 			var fileName = GetFileName(uri);
-			lock (_lock)
+			lock (GetKeyLock(fileName))
 			{
-				if (_index is not null && _index.TryGetValue(fileName, out var entry))
+				lock (_lock)
 				{
-					_index.Remove(fileName);
-					_size -= entry.Length;
+					if (_index is not null && _index.TryGetValue(fileName, out var entry))
+					{
+						_index.Remove(fileName);
+						_size -= entry.Length;
+					}
 				}
-			}
 
-			var dataPath = Path.Combine(Directory!, fileName);
-			TryDelete(dataPath);
-			TryDelete(dataPath + MetadataExtension);
+				var dataPath = Path.Combine(Directory!, fileName);
+				TryDelete(dataPath);
+				TryDelete(dataPath + MetadataExtension);
+			}
 		}
 
+		/// <summary>
+		/// Removes <paramref name="entry"/>, unless it was already replaced by a newer download of the same image.
+		/// </summary>
 		public void Remove(Entry entry)
 		{
-			lock (_lock)
+			lock (GetKeyLock(entry.FileName))
 			{
-				if (_index is not null && _index.TryGetValue(entry.FileName, out var existing) && existing == entry)
+				lock (_lock)
 				{
-					_index.Remove(entry.FileName);
-					_size -= entry.Length;
-				}
-			}
+					if (_index is not null && _index.TryGetValue(entry.FileName, out var existing))
+					{
+						if (existing != entry)
+							return;
 
-			TryDelete(entry.DataPath);
-			TryDelete(entry.DataPath + MetadataExtension);
+						_index.Remove(entry.FileName);
+						_size -= entry.Length;
+					}
+				}
+
+				TryDelete(entry.DataPath);
+				TryDelete(entry.DataPath + MetadataExtension);
+			}
 		}
 
 		public void Clear()
@@ -268,7 +323,10 @@ namespace Microsoft.Maui
 				if (System.IO.Directory.Exists(Directory))
 				{
 					foreach (var file in System.IO.Directory.EnumerateFiles(Directory))
-						TryDelete(file);
+					{
+						if (IsCacheFileName(Path.GetFileName(file)))
+							TryDelete(file);
+					}
 				}
 			}
 			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -278,6 +336,19 @@ namespace Microsoft.Maui
 		}
 
 		void EnsureIndex()
+		{
+			lock (_lock)
+			{
+				if (_index is not null)
+					return;
+			}
+
+			// Only one thread scans the directory; the others wait for its result.
+			lock (_indexBuildLock)
+				BuildIndex();
+		}
+
+		void BuildIndex()
 		{
 			lock (_lock)
 			{
@@ -297,6 +368,8 @@ namespace Microsoft.Maui
 					foreach (var info in new DirectoryInfo(Directory!).EnumerateFiles())
 					{
 						var name = info.Name;
+						if (!IsCacheFileName(name))
+							continue;
 
 						if (name.EndsWith(TempExtension, StringComparison.Ordinal))
 						{
@@ -368,10 +441,22 @@ namespace Microsoft.Maui
 				if (entry.FileName == keep)
 					continue;
 
-				_index.Remove(entry.FileName);
-				_size -= entry.Length;
-				TryDelete(entry.DataPath);
-				TryDelete(entry.DataPath + MetadataExtension);
+				// Skip images that are being written or renewed right now; they are evicted later if needed.
+				var keyLock = GetKeyLock(entry.FileName);
+				if (!Monitor.TryEnter(keyLock))
+					continue;
+
+				try
+				{
+					_index.Remove(entry.FileName);
+					_size -= entry.Length;
+					TryDelete(entry.DataPath);
+					TryDelete(entry.DataPath + MetadataExtension);
+				}
+				finally
+				{
+					Monitor.Exit(keyLock);
+				}
 			}
 		}
 
@@ -480,13 +565,30 @@ namespace Microsoft.Maui
 
 			public long Length { get; set; }
 
+			// Read on other threads without locks, so updated atomically (also on 32-bit devices).
+			long _downloadedUtcTicks;
+			long _validatedUtcTicks;
+			long _lastAccessUtcTicks;
+
 			/// <summary>When the content was downloaded. Changes only when the content changes.</summary>
-			public long DownloadedUtcTicks { get; set; }
+			public long DownloadedUtcTicks
+			{
+				get => Interlocked.Read(ref _downloadedUtcTicks);
+				set => Interlocked.Exchange(ref _downloadedUtcTicks, value);
+			}
 
 			/// <summary>When the content was downloaded or last confirmed unchanged by the server.</summary>
-			public long ValidatedUtcTicks { get; set; }
+			public long ValidatedUtcTicks
+			{
+				get => Interlocked.Read(ref _validatedUtcTicks);
+				set => Interlocked.Exchange(ref _validatedUtcTicks, value);
+			}
 
-			public long LastAccessUtcTicks { get; set; }
+			public long LastAccessUtcTicks
+			{
+				get => Interlocked.Read(ref _lastAccessUtcTicks);
+				set => Interlocked.Exchange(ref _lastAccessUtcTicks, value);
+			}
 
 			public string? ETag { get; set; }
 

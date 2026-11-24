@@ -462,7 +462,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SettingErrorSourceAfterAFailureReloads()
+		public void SettingErrorSourceAfterAFailureDoesNotReload()
 		{
 			var sourceMapped = 0;
 			var mapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper)
@@ -472,12 +472,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = "https://example.com/image.png", Handler = new SizedHandler(mapper) };
 			sourceMapped = 0;
 
-			image.ErrorSource = "error.png";
-			Assert.Equal(0, sourceMapped);
-
+			// For example from an ImageFailed handler: must not start another download (and possibly another failure).
 			((IImageSourcePartEvents)image).LoadingFailed(new InvalidOperationException());
-			image.ErrorSource = "other_error.png";
-			Assert.Equal(1, sourceMapped);
+			image.ErrorSource = "error.png";
+
+			Assert.Equal(0, sourceMapped);
+		}
+
+		[Fact]
+		public void FallbackSourcesInheritTheBindingContext()
+		{
+			var context = new object();
+			var image = new Image { PlaceholderSource = new FontImageSource(), ErrorSource = new FontImageSource() };
+
+			image.BindingContext = context;
+			Assert.Same(context, image.PlaceholderSource.BindingContext);
+			Assert.Same(context, image.ErrorSource.BindingContext);
+
+			image.ErrorSource = new FontImageSource();
+			Assert.Same(context, image.ErrorSource.BindingContext);
 		}
 
 		[Fact]

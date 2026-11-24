@@ -23,10 +23,21 @@ namespace Microsoft.Maui.DeviceTests
 		static readonly Uri RedUri = new("https://images.test/red.png");
 
 		readonly FakeImageServer _server = new();
-		readonly string _cacheDirectory = Path.Combine(Path.GetTempPath(), "maui-image-loading-tests", Guid.NewGuid().ToString("N"));
+		static readonly string CacheRoot = Path.Combine(Path.GetTempPath(), "maui-image-loading-tests");
+
+		readonly string _cacheDirectory = Path.Combine(CacheRoot, Guid.NewGuid().ToString("N"));
 
 		void SetupBuilder()
 		{
+			// Remove the caches of earlier tests.
+			try
+			{
+				Directory.Delete(CacheRoot, recursive: true);
+			}
+			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+			{
+			}
+
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
@@ -183,6 +194,85 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal("\"red\"", ifNoneMatch);
 			Assert.Equal(2, _server.RequestCount);
+		}
+
+		[Fact]
+		public async Task LateErrorImageDoesNotReplaceANewerImage()
+		{
+			SetupBuilder();
+			var releaseErrorImage = new TaskCompletionSource<bool>();
+			var errorImageRequested = false;
+			var sourceFails = true;
+			_server.Respond(async request =>
+			{
+				if (request.RequestUri.AbsolutePath.EndsWith("error.png", StringComparison.Ordinal))
+				{
+					errorImageRequested = true;
+					await releaseErrorImage.Task;
+					return Png(Colors.Lime);
+				}
+
+				return sourceFails ? new HttpResponseMessage(HttpStatusCode.NotFound) : Png(Colors.Red);
+			});
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.ErrorSource = new UriImageSource { Uri = new Uri("https://images.test/error.png") };
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed && errorImageRequested);
+
+				sourceFails = false;
+				image.Reload();
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+				await AssertColor(image, Colors.Red);
+
+				// The error image of the earlier, failed load arrives after the image was reloaded.
+				releaseErrorImage.SetResult(true);
+				await Task.Delay(500);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+			}, image);
+		}
+
+		[Fact]
+		public async Task ReloadWhileLoadingKeepsLoading()
+		{
+			SetupBuilder();
+			var release = new TaskCompletionSource<bool>();
+			_server.Respond(async _ =>
+			{
+				await release.Task;
+				return Png(Colors.Red);
+			});
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => _server.RequestCount == 1);
+				image.Reload();
+				await Task.Delay(200);
+				Assert.True(image.IsLoading);
+				Assert.Equal(ImageLoadingState.Loading, image.LoadingState);
+
+				release.SetResult(true);
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded && !image.IsLoading);
+			}, image);
+		}
+
+		[Fact]
+		public async Task EmptyUriImageSourceStaysIdle()
+		{
+			SetupBuilder();
+			var image = CreateImage(new UriImageSource());
+			image.ErrorSource = "green.png";
+
+			await RunWithImages(async () =>
+			{
+				await Task.Delay(500);
+				Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
+				Assert.Empty(_failures);
+			}, image);
 		}
 
 		[Fact]

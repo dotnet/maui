@@ -34,11 +34,12 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsAnimationPlayingProperty = ImageElement.IsAnimationPlayingProperty;
 
 		/// <summary>Bindable property for <see cref="PlaceholderSource"/>.</summary>
-		public static readonly BindableProperty PlaceholderSourceProperty = BindableProperty.Create(nameof(PlaceholderSource), typeof(ImageSource), typeof(Image), default(ImageSource));
+		public static readonly BindableProperty PlaceholderSourceProperty = BindableProperty.Create(nameof(PlaceholderSource), typeof(ImageSource), typeof(Image), default(ImageSource),
+			propertyChanged: OnFallbackSourceChanged);
 
 		/// <summary>Bindable property for <see cref="ErrorSource"/>.</summary>
 		public static readonly BindableProperty ErrorSourceProperty = BindableProperty.Create(nameof(ErrorSource), typeof(ImageSource), typeof(Image), default(ImageSource),
-			propertyChanged: (bindable, oldValue, newValue) => ((Image)bindable).OnErrorSourceChanged());
+			propertyChanged: OnFallbackSourceChanged);
 
 		static readonly BindablePropertyKey LoadingStatePropertyKey = BindableProperty.CreateReadOnly(nameof(LoadingState), typeof(ImageLoadingState), typeof(Image), ImageLoadingState.Idle);
 
@@ -110,6 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets or sets the image shown when <see cref="Source"/> fails to load. This is a bindable property.</summary>
 		/// <value>The error image, or <see langword="null"/> (the default) to show nothing when loading fails.</value>
+		/// <remarks>Changes take effect the next time <see cref="Source"/> fails to load.</remarks>
 		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource ErrorSource
 		{
@@ -156,16 +158,19 @@ namespace Microsoft.Maui.Controls
 				LoadingState = ImageLoadingState.Idle;
 		}
 
-		void OnErrorSourceChanged()
+		static void OnFallbackSourceChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			// Show the new error image for a load that already failed.
-			if (LoadingState == ImageLoadingState.Failed)
-				Reload();
+			if (newValue is ImageSource source)
+				SetInheritedBindingContext(source, bindable.BindingContext);
 		}
 
 		protected override void OnBindingContextChanged()
 		{
 			ImageElement.OnBindingContextChanged(this, this);
+			if (PlaceholderSource is ImageSource placeholderSource)
+				SetInheritedBindingContext(placeholderSource, BindingContext);
+			if (ErrorSource is ImageSource errorSource)
+				SetInheritedBindingContext(errorSource, BindingContext);
 			base.OnBindingContextChanged();
 		}
 

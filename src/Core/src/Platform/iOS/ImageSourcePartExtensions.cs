@@ -46,6 +46,13 @@ namespace Microsoft.Maui.Platform
 
 				events?.LoadingCompleted(applied);
 
+				if (!applied)
+				{
+					// The image was never shown.
+					result?.Dispose();
+					return null;
+				}
+
 				return result;
 			}
 			catch (OperationCanceledException)
@@ -74,8 +81,9 @@ namespace Microsoft.Maui.Platform
 			}
 			finally
 			{
-				// only mark as finished if we are still working on the same image
-				if (imageSource == image.Source)
+				// only mark as finished if we are still working on the same image (a newer load,
+				// including a reload of the same source, cancels this one and reports its own state)
+				if (imageSource == image.Source && !cancellationToken.IsCancellationRequested)
 				{
 					image.UpdateIsLoading(false);
 				}

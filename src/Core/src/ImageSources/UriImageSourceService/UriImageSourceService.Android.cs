@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
@@ -18,7 +19,8 @@ namespace Microsoft.Maui
 			{
 				try
 				{
-					if (UriImageLoader.CanLoad(uriImageSource))
+					// Glide keeps resolving other schemes (content://, file://, android.resource://) as before.
+					if (UriImageLoader.CanLoad(uriImageSource.Uri))
 					{
 						// A valid cached file is handed to Glide right away so that Glide's memory cache can show it in the same frame.
 						if (uriImageSource.CachingEnabled && Loader.TryGetCachedFile(uriImageSource.Uri, uriImageSource.CacheValidity, out var cached))
@@ -50,7 +52,7 @@ namespace Microsoft.Maui
 			{
 				try
 				{
-					if (UriImageLoader.CanLoad(uriImageSource))
+					if (UriImageLoader.CanLoad(uriImageSource.Uri))
 						return GetDownloadedDrawableAsync(uriImageSource, context, cancellationToken);
 
 					var drawableCallback = new ImageLoaderResultCallback();
@@ -69,13 +71,19 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
+		static bool CanStillLoadInto(ImageView imageView, CancellationToken cancellationToken) =>
+			!cancellationToken.IsCancellationRequested &&
+			imageView.IsAlive() &&
+			imageView.Context is { } context &&
+			!PlatformInterop.IsContextDestroyed(context);
+
 		async Task<IImageSourceServiceResult?> LoadCachedDrawableAsync(IUriImageSource imageSource, UriImageResult cached, ImageView imageView, CancellationToken cancellationToken)
 		{
 			var callback = new ImageLoaderCallback();
 			PlatformInterop.LoadImageFromCachedFile(imageView, cached.FilePath!, cached.Version, callback);
 
 			var result = await callback.Result;
-			if (result is not null)
+			if (result is not null || !CanStillLoadInto(imageView, cancellationToken))
 				return result;
 
 			// The cached file could not be decoded (or was removed); download it again.
@@ -87,6 +95,10 @@ namespace Microsoft.Maui
 		{
 			try
 			{
+				// Like starting a Glide load, stop any previous load into this view (for example a recycled cell)
+				// so that it cannot show its image while this one downloads.
+				PlatformInterop.ClearImageView(imageView);
+
 				// Resumes on the UI thread, where Glide loads must be started.
 				var image = await Loader.LoadFileAsync(
 					imageSource.Uri,
@@ -96,6 +108,8 @@ namespace Microsoft.Maui
 					cancellationToken);
 
 				cancellationToken.ThrowIfCancellationRequested();
+				if (!imageView.IsAlive())
+					return null;
 
 				var callback = new ImageLoaderCallback();
 				if (image.FilePath is not null)
@@ -104,7 +118,9 @@ namespace Microsoft.Maui
 					PlatformInterop.LoadImageFromBytes(imageView, image.Data!, callback);
 
 				var result = await callback.Result;
-				if (result is null)
+
+				// Only a decoding failure means the cached data is bad (not a cancelled load or a destroyed view).
+				if (result is null && CanStillLoadInto(imageView, cancellationToken))
 					Loader.Invalidate(imageSource.Uri);
 
 				return result;
@@ -136,7 +152,9 @@ namespace Microsoft.Maui
 					PlatformInterop.LoadImageFromBytes(context, image.Data!, callback);
 
 				var result = await callback.Result;
-				if (result is null)
+
+				// Only a decoding failure means the cached data is bad (not a cancelled load or a destroyed context).
+				if (result is null && !cancellationToken.IsCancellationRequested && !PlatformInterop.IsContextDestroyed(context))
 					Loader.Invalidate(imageSource.Uri);
 
 				return result;

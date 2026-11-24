@@ -126,6 +126,144 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.Equal(2, _handler.RequestCount);
 		}
 
+		[Theory]
+		[InlineData(HttpStatusCode.NotFound)]
+		[InlineData(HttpStatusCode.Forbidden)]
+		public async Task ExpiredImageIsNotUsedWhenTheServerRejectsIt(HttpStatusCode status)
+		{
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader();
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			_now = _now.AddHours(2);
+			_handler.Respond(_ => new HttpResponseMessage(status));
+
+			var ex = await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+			Assert.Equal(status, ex.StatusCode);
+			Assert.Null(loader.DiskCache.GetEntry(ImageUri));
+		}
+
+		[Fact]
+		public async Task NotModifiedWithNoStoreDoesNotRenew()
+		{
+			_handler.Respond(_ => Ok(Png, etag: "\"v1\""));
+			var loader = CreateLoader(o => o.MemoryCacheSizeLimit = 0);
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			_now = _now.AddHours(2);
+			_handler.Respond(_ =>
+			{
+				var response = new HttpResponseMessage(HttpStatusCode.NotModified);
+				response.Headers.CacheControl = new CacheControlHeaderValue { NoStore = true };
+				return response;
+			});
+
+			Assert.Equal(Png, await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+			Assert.Equal(Png, await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+			Assert.Equal(3, _handler.RequestCount);
+		}
+
+		[Fact]
+		public async Task LoadAfterClearAsyncDoesNotShareADownloadStartedBeforeIt()
+		{
+			var release = new TaskCompletionSource<bool>();
+			_handler.Respond(async _ =>
+			{
+				await release.Task;
+				return Ok(Png);
+			});
+			var loader = CreateLoader();
+
+			var before = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+			await WaitUntil(() => _handler.RequestCount == 1);
+			await loader.ClearAsync();
+			var after = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+			await WaitUntil(() => _handler.RequestCount == 2);
+
+			release.SetResult(true);
+			await Task.WhenAll(before, after);
+			Assert.Equal(2, _handler.RequestCount);
+		}
+
+		[Fact]
+		public async Task ClearAsyncKeepsFilesTheCacheDidNotWrite()
+		{
+			Directory.CreateDirectory(_cacheDirectory);
+			var sentinel = Path.Combine(_cacheDirectory, "settings.json");
+			File.WriteAllText(sentinel, "{}");
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 1);
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+
+			await loader.ClearAsync();
+
+			Assert.True(File.Exists(sentinel));
+			Assert.Equal(new[] { sentinel }, Directory.GetFiles(_cacheDirectory));
+		}
+
+		[Fact]
+		public async Task SlowDownloadsThatKeepProgressingDoNotTimeOut()
+		{
+			_handler.Respond(_ =>
+			{
+				var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new SlowStream(Png, TimeSpan.FromMilliseconds(40))) };
+				response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+				return response;
+			});
+			var loader = CreateLoader(o =>
+			{
+				o.RequestTimeout = TimeSpan.FromMilliseconds(150);
+				o.MaxRetryCount = 0;
+			});
+
+			// 12 bytes, one byte per read, 40 ms each: about 500 ms in total, but never 150 ms without progress.
+			Assert.Equal(Png, await loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1)));
+		}
+
+		[Fact]
+		public async Task StalledDownloadsTimeOutEvenIfTheStreamIgnoresCancellation()
+		{
+			_handler.Respond(_ =>
+			{
+				var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new SlowStream(Png, Timeout.InfiniteTimeSpan)) };
+				response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+				return response;
+			});
+			var loader = CreateLoader(o =>
+			{
+				o.RequestTimeout = TimeSpan.FromMilliseconds(100);
+				o.MaxRetryCount = 0;
+			});
+
+			var load = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+			Assert.Same(load, await Task.WhenAny(load, Task.Delay(5000)));
+			await Assert.ThrowsAsync<TimeoutException>(() => load);
+		}
+
+		[Fact]
+		public async Task ImagesLabeledAsPlainTextAreAccepted()
+		{
+			_handler.Respond(_ =>
+			{
+				var response = Ok(Png);
+				response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+				return response;
+			});
+
+			Assert.Equal(Png, await CreateLoader().LoadAsync(ImageUri, true, TimeSpan.FromDays(1)));
+		}
+
+		[Fact]
+		public async Task ImageUrlsEndingInCacheFileExtensionsAreCached()
+		{
+			_handler.Respond(_ => Ok(Png));
+			var uri = new Uri("https://example.com/images/photo.meta");
+			await CreateLoader().LoadAsync(uri, true, TimeSpan.FromDays(1));
+
+			Assert.Equal(Png, await CreateLoader().LoadAsync(uri, true, TimeSpan.FromDays(1)));
+			Assert.Equal(1, _handler.RequestCount);
+		}
+
 		[Fact]
 		public async Task CachingDisabledAlwaysDownloadsAndStoresNothing()
 		{
@@ -558,6 +696,50 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 				if (DateTime.UtcNow > timeout)
 					throw new TimeoutException("Condition was not met.");
 				await Task.Delay(5);
+			}
+		}
+
+		/// <summary>A stream that returns one byte per read after a delay, ignoring cancellation.</summary>
+		sealed class SlowStream : Stream
+		{
+			readonly byte[] _data;
+			readonly TimeSpan _delay;
+			int _position;
+
+			public SlowStream(byte[] data, TimeSpan delay)
+			{
+				_data = data;
+				_delay = delay;
+			}
+
+			public override bool CanRead => true;
+			public override bool CanSeek => false;
+			public override bool CanWrite => false;
+			public override long Length => throw new NotSupportedException();
+			public override long Position { get => _position; set => throw new NotSupportedException(); }
+			public override void Flush() { }
+			public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+			public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+			public override void SetLength(long value) => throw new NotSupportedException();
+			public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+			public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			{
+				await Task.Delay(_delay, CancellationToken.None);
+				if (_position >= _data.Length)
+					return 0;
+				buffer[offset] = _data[_position++];
+				return 1;
+			}
+
+			public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				var array = new byte[buffer.Length];
+				return new ValueTask<int>(ReadAsync(array, 0, array.Length, cancellationToken).ContinueWith(t =>
+				{
+					array.AsSpan(0, t.Result).CopyTo(buffer.Span);
+					return t.Result;
+				}, TaskScheduler.Default));
 			}
 		}
 

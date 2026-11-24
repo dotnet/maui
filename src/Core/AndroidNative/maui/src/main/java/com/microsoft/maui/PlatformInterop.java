@@ -362,6 +362,10 @@ public class PlatformInterop {
      * The version changes whenever the file content changes, so a refreshed file is never shown from Glide's memory cache.
      */
     public static void loadImageFromCachedFile(ImageView imageView, String file, long version, ImageLoaderCallback callback) {
+        if (isContextDestroyed(imageView.getContext())) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(new File(file))
@@ -371,9 +375,29 @@ public class PlatformInterop {
     }
 
     /**
+     * Cancels the image load that is in progress for the view (and clears its image), as starting a new load would.
+     * Used before waiting for a download, so that a previous load cannot complete into the view in the meantime.
+     */
+    public static void clearImageView(ImageView imageView) {
+        if (isContextDestroyed(imageView.getContext())) {
+            return;
+        }
+        // Glide does not allow clearing from inside one of its target callbacks; the next load clears it instead.
+        Object invokingCallbacks = imageView.getTag(microsoft.maui.R.id.maui_custom_view_target_running_callbacks_tag);
+        if (invokingCallbacks instanceof Boolean && (Boolean) invokingCallbacks) {
+            return;
+        }
+        Glide.with(imageView).clear(imageView);
+    }
+
+    /**
      * Loads an image from bytes that must not be cached.
      */
     public static void loadImageFromBytes(ImageView imageView, byte[] data, ImageLoaderCallback callback) {
+        if (isContextDestroyed(imageView.getContext())) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(data);
