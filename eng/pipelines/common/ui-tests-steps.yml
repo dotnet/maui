@@ -21,12 +21,37 @@ parameters:
   requirePinnedXcodeVersion: false
 
 steps:
-# Tag-free shallow checkout: the implicit checkout fetches every tag (~6x the objects), and
-# those heavy anonymous PR-merge fetches intermittently fail with "could not read Username".
+# GitHub intermittently rejects the pipeline's checkout credential for short windows ("could not
+# read Username"), failing every job that starts then. The repository is public, so fall back to an
+# anonymous fetch of the same commit instead of failing the job.
 - checkout: self
   fetchDepth: 1
   fetchTags: false
   clean: true
+  continueOnError: true
+
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $PSNativeCommandUseErrorActionPreference = $false
+    $sha = '$(Build.SourceVersion)'
+    $url = 'https://github.com/$(Build.Repository.Name)'
+    $dir = '$(Build.SourcesDirectory)'
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    Set-Location $dir
+    if (-not (Test-Path .git)) { git init -q . }
+    $env:GIT_TERMINAL_PROMPT = '0'
+    for ($attempt = 1; $attempt -le 5; $attempt++) {
+      git -c http.extraheader= fetch --force --no-tags --depth=1 $url "+${sha}:refs/remotes/origin/checkout-fallback"
+      if ($LASTEXITCODE -eq 0) { break }
+      if ($attempt -eq 5) { throw "Anonymous fetch of $sha from $url failed." }
+      Start-Sleep -Seconds (15 * $attempt)
+    }
+    git checkout --force --detach $sha
+    if ($LASTEXITCODE -ne 0) { throw "Checkout of $sha failed." }
+    git clean -ffdx -q
+    Write-Host "Checked out $(git rev-parse HEAD) anonymously after the credentialed checkout failed."
+  displayName: Retry checkout anonymously
+  condition: and(eq(variables['Agent.JobStatus'], 'SucceededWithIssues'), eq(variables['Build.Repository.Provider'], 'GitHub'))
 
 - task: DownloadPipelineArtifact@2
   retryCountOnTaskFailure: 4
