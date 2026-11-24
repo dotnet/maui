@@ -53,8 +53,12 @@ namespace Microsoft.Maui
 		internal static string GetFileVersion(string file)
 		{
 			// Files in the app package do not change.
-			var info = new System.IO.FileInfo(file);
-			return info.Exists ? $"{info.Length}:{info.LastWriteTimeUtc.Ticks}" : string.Empty;
+			var attributes = Foundation.NSFileManager.DefaultManager.GetAttributes(file);
+			if (attributes is null)
+				return string.Empty;
+
+			// The file number changes when the file is replaced (the usual way files are updated).
+			return $"{attributes.SystemFileNumber}:{attributes.Size}:{attributes.ModificationDate?.SecondsSinceReferenceDate}";
 		}
 
 		/// <summary>

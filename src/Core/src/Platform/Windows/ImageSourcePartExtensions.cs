@@ -46,6 +46,9 @@ namespace Microsoft.Maui.Platform
 					setImage(uiImage);
 				}
 
+				// Setting the image runs mappers (such as IsAnimationPlaying), which may have started a newer load.
+				applied = applied && !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+
 				// The image is shown before that is reported (which may start another load).
 				if (applied && result is not null)
 					onImageShown?.Invoke(result);
