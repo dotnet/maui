@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
 
-		// Cached result of IsLargeTitleTrackedScrollView's hierarchy search, and the controller view it was computed for.
 		bool _isFirstScrollViewInController;
 		WeakReference<UIView>? _firstScrollViewRoot;
 
@@ -639,10 +638,6 @@ namespace Microsoft.Maui.Platform
 			{
 				var inflateWidth = width <= Bounds.Width &&
 					(_safeArea.HorizontalThickness + width) > Bounds.Width;
-				// The scroll view a large-title navigation bar tracks keeps its UIKit inset whether or
-				// not it can scroll, so it doesn't need inflating. Inflating it would also make the
-				// decision depend on the title's expanded/collapsed state (the safe area changes by
-				// the title height), flipping ContentSize and making the content bounce (issue #40277).
 				var inflateHeight = height <= Bounds.Height &&
 					(_safeArea.VerticalThickness + height) > Bounds.Height &&
 					!IsLargeTitleTrackedScrollView();
@@ -740,8 +735,6 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					// The controller hosting this view may be nested inside the one the navigation
-					// controller manages; the navigation bar reads the item of the latter.
 					while (controller.ParentViewController is { } parent && parent != navigationController)
 					{
 						controller = parent;
@@ -753,10 +746,6 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					// Searching the controller's view tree is costly and this runs on every eligible
-					// arrange (collapsing the title changes the insets, so the frame-changed guard doesn't
-					// skip it). Cache the result per controller view; it is cleared when this view moves
-					// in the hierarchy.
 					if (_firstScrollViewRoot is not { } cachedRoot || !cachedRoot.TryGetTarget(out var root) || root != controller.View)
 					{
 						_isFirstScrollViewInController = FindFirstScrollView(controller.View) == this;
@@ -772,8 +761,6 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		// The root is part of the search: a native host can set this scroll view directly as the
-		// controller's view.
 		static UIScrollView? FindFirstScrollView(UIView view)
 		{
 			if (view is UIScrollView rootScrollView)
@@ -965,12 +952,10 @@ namespace Microsoft.Maui.Platform
 			remove => _movedToWindow -= value;
 		}
 
-		/// <inheritdoc/>
 		public override void MovedToSuperview()
 		{
 			base.MovedToSuperview();
 
-			// The controller-wide search result depends on where this view sits in the hierarchy.
 			_firstScrollViewRoot = null;
 		}
 
