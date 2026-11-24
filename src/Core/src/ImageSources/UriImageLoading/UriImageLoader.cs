@@ -298,16 +298,13 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Removes <paramref name="entry"/> (and the memory copy) if the cache was not cleared since <paramref name="version"/>.
+		/// Removes <paramref name="entry"/> (if it is still the cached version) and the memory copy.
 		/// </summary>
-		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry)
+		void InvalidateEntry(Uri uri, UriImageDiskCache.Entry? entry)
 		{
 			// Same gate as publishing to memory, so a load that already checked its entry cannot put it back.
 			lock (_memoryPublishLock)
 			{
-				if (version != GetVersion(uri))
-					return;
-
 				MemoryCache.Remove(uri.OriginalString);
 				if (entry is not null)
 					DiskCache.Remove(entry);
@@ -315,18 +312,15 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Forgets the image after the server rejected it (for example 404 or 403), unless the cache was cleared since <paramref name="version"/>:
-		/// whatever is cached for it, including copies stored by overlapping loads, and what loads that are still in progress get.
+		/// Forgets the image after the server rejected it (for example 404 or 403): whatever is cached for it, including copies
+		/// stored by overlapping loads, and what loads that are still in progress get.
 		/// </summary>
-		void Reject(Uri uri, long version)
+		void Reject(Uri uri)
 		{
 			var key = uri.OriginalString;
 			lock (_memoryPublishLock)
 			{
-				if (version != GetVersion(uri))
-					return;
-
-				DiskCache.Remove(uri, () => ChangeVersion(key));
+				DiskCache.RemoveIfCached(uri, () => ChangeVersion(key));
 				MemoryCache.Remove(key);
 			}
 		}
@@ -524,7 +518,7 @@ namespace Microsoft.Maui
 			{
 				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it,
 				// including a copy that is only in memory.
-				Reject(uri, version);
+				Reject(uri);
 				throw;
 			}
 			catch (Exception ex) when (cached is not null && IsTransient(ex, cancellationToken) && File.Exists(cached.DataPath))
@@ -541,7 +535,7 @@ namespace Microsoft.Maui
 				{
 					// The server confirmed the copy but does not allow storing it: use it once, then forget it.
 					var copy = await DiskCache.TryReadAsync(cached, cancellationToken).ConfigureAwait(false);
-					InvalidateIfCurrent(uri, version, cached);
+					InvalidateEntry(uri, cached);
 					if (copy is not null)
 						return new UriImageResult(copy, null, cacheable: false);
 				}
@@ -571,7 +565,7 @@ namespace Microsoft.Maui
 			}
 			else if (cachingEnabled && response.NoStore)
 			{
-				InvalidateIfCurrent(uri, version, cached);
+				InvalidateEntry(uri, cached);
 			}
 
 			return new UriImageResult(data, entry, cacheable && version == GetVersion(uri));

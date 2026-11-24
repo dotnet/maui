@@ -24,6 +24,13 @@ namespace Microsoft.Maui
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken);
 
+					// A newer load into the view may have started while waiting for the stream; do not replace it.
+					if (cancellationToken.IsCancellationRequested)
+					{
+						stream?.Dispose();
+						cancellationToken.ThrowIfCancellationRequested();
+					}
+
 					var callback = new ImageLoaderCallback();
 
 					PlatformInterop.LoadImageFromStream(imageView, stream, callback);

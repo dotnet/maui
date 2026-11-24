@@ -209,6 +209,49 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public async Task RejectionDoesNotDeleteFilesTheCacheDidNotWrite()
+		{
+			// The test loader uses a custom cache directory, where files without metadata are not the cache's.
+			Directory.CreateDirectory(_cacheDirectory);
+			var unrelated = Path.Combine(_cacheDirectory, UriImageDiskCache.GetFileName(ImageUri));
+			File.WriteAllText(unrelated, "{}");
+			_handler.Respond(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+			await Assert.ThrowsAsync<HttpRequestException>(() => CreateLoader().LoadAsync(ImageUri, true, TimeSpan.FromDays(1)));
+
+			Assert.True(File.Exists(unrelated));
+		}
+
+		[Fact]
+		public async Task RejectionIsAppliedWhenManyOtherImagesWereRemovedMeanwhile()
+		{
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader();
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_handler.Respond(async _ =>
+			{
+				started.TrySetResult(true);
+				await release.Task;
+				return new HttpResponseMessage(HttpStatusCode.Forbidden);
+			});
+			var revalidation = loader.LoadAsync(ImageUri, true, TimeSpan.Zero);
+			await started.Task;
+
+			// Enough removals of other images to exceed the number of images whose versions are tracked.
+			for (var i = 0; i <= UriImageLoader.MaxTrackedRemovals; i++)
+				await loader.RemoveAsync(new Uri($"https://example.com/other/{i}.png"));
+
+			release.SetResult(true);
+			await Assert.ThrowsAsync<HttpRequestException>(() => revalidation);
+
+			Assert.Null(loader.DiskCache.GetEntry(ImageUri));
+			await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+		}
+
+		[Fact]
 		public async Task NotModifiedWithNoStoreDoesNotRenew()
 		{
 			_handler.Respond(_ => Ok(Png, etag: "\"v1\""));

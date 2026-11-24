@@ -362,6 +362,47 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Removes the image cached for <paramref name="uri"/>, if the cache has one. Unlike <see cref="Remove(Uri, Action?)"/>,
+		/// files the cache does not know about are left alone.
+		/// </summary>
+		/// <param name="uri">The URI of the image.</param>
+		/// <param name="whileLocked">Invoked atomically with the removal, also when nothing is cached.</param>
+		public void RemoveIfCached(Uri uri, Action whileLocked)
+		{
+			if (!IsEnabled)
+			{
+				lock (_lock)
+					whileLocked();
+				return;
+			}
+
+			var fileName = GetFileName(uri);
+			lock (GetKeyLock(fileName))
+			{
+				EnsureIndex();
+
+				Entry? removed = null;
+				lock (_lock)
+				{
+					if (_index!.TryGetValue(fileName, out var entry))
+					{
+						_index.Remove(fileName);
+						_size -= entry.Length;
+						removed = entry;
+					}
+
+					whileLocked();
+				}
+
+				if (removed is not null)
+				{
+					TryDelete(removed.DataPath);
+					TryDelete(removed.DataPath + MetadataExtension);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Removes <paramref name="entry"/>, unless it was already replaced by a newer download of the same image.
 		/// </summary>
 		public void Remove(Entry entry)
