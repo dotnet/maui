@@ -38,6 +38,12 @@ namespace Microsoft.Maui.Controls
 			if (property.IsReadOnly)
 				return AnimationWriteResult.Excluded;
 
+			// Refused before conversion and coercion: coercion has side effects (IsEnabled, InputTransparent) that must
+			// not happen for a write that won't land. Checked again afterwards, for reentrancy during those callbacks.
+			var context = GetOrCreateContext(property);
+			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0)
+				return AnimationWriteResult.Refused;
+
 			if (!property.TryConvert(ref value))
 				throw new ArgumentException($"Cannot convert {value} to type '{property.ReturnType}'", nameof(value));
 			if (property.ValidateValue != null && !property.ValidateValue(this, value))
@@ -45,7 +51,6 @@ namespace Microsoft.Maui.Controls
 			if (property.CoerceValue != null)
 				value = property.CoerceValue(this, value);
 
-			var context = GetOrCreateContext(property);
 			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0)
 				return AnimationWriteResult.Refused;
 

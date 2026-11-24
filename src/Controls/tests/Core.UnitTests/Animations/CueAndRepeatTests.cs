@@ -54,6 +54,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(cue, (Cue)converter.ConvertFromInvariantString(cue.ToString()));
 		}
 
+		[Theory]
+		[InlineData(0.007)]
+		[InlineData(0.1)]
+		[InlineData(1.0 / 3.0)]
+		[InlineData(0.29)]
+		public void FractionsRoundTripExactly(double fraction)
+		{
+			var cue = Cue.FromFraction(fraction);
+
+			Assert.Equal(cue, (Cue)new CueTypeConverter().ConvertFromInvariantString(cue.ToString()));
+		}
+
 		[Fact]
 		public void FactoriesValidate()
 		{

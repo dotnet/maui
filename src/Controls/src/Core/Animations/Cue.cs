@@ -101,10 +101,11 @@ namespace Microsoft.Maui.Controls.Animations
 			return true;
 		}
 
-		/// <summary>The invariant text that parses back to this cue; empty when unspecified.</summary>
+		/// <summary>The invariant text that parses back to this exact cue: the fraction itself (a percentage would not
+		/// survive the multiply and divide by 100 exactly), a time, or empty when unspecified.</summary>
 		public override string ToString() => _kind switch
 		{
-			1 => (_fraction * 100).ToString("R", CultureInfo.InvariantCulture) + "%",
+			1 => _fraction.ToString("R", CultureInfo.InvariantCulture),
 			2 => _time.ToString("c", CultureInfo.InvariantCulture),
 			_ => string.Empty,
 		};

@@ -17,13 +17,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(expected, ease.Ease(x), 6);
 		}
 
-		[Fact]
-		public void CubicBezierIsAccurateNearAFlatSpotInX()
+		[Theory]
+		[InlineData(0.52)]
+		[InlineData(0.48)]
+		[InlineData(0.5005)]
+		public void CubicBezierIsAccurateNearAFlatSpotInX(double x)
 		{
-			// x barely moves near t = 0.5; judged on x alone the solver lands far off in y.
-			var ease = Easing.CubicBezier(0, 0.9, 1, 0.1);
+			// With x1 = 1 and x2 = 0, dx/dt is 0 at t = 0.5: a tiny error in x there is a large error in t (and y), and the
+			// solver's first guess (t = x) is not the answer. The expected value is solved independently by bisection.
+			const double y1 = 0.1, y2 = 0.9;
+			var ease = Easing.CubicBezier(1, y1, 0, y2);
 
-			Assert.Equal(0.5, ease.Ease(0.5), 3);
+			Assert.Equal(Reference(x), ease.Ease(x), 6);
+
+			static double Reference(double x)
+			{
+				static double Bezier(double a, double b, double t) => 3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t;
+				double lo = 0, hi = 1;
+				for (var i = 0; i < 200; i++)
+				{
+					var mid = (lo + hi) / 2;
+					if (Bezier(1, 0, mid) < x)
+						lo = mid;
+					else
+						hi = mid;
+				}
+				return Bezier(y1, y2, (lo + hi) / 2);
+			}
 		}
 
 		[Fact]

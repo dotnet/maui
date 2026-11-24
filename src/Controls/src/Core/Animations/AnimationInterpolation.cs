@@ -156,6 +156,31 @@ namespace Microsoft.Maui.Controls.Animations
 			return (long)rounded;
 		}
 
+		// 64-bit values lose precision in a double above 2^53, so they interpolate in decimal (28-29 significant digits,
+		// enough for any long difference), rounding half away from zero and clamping to the type's range.
+		static long Lerp64(long from, long to, double progress)
+		{
+			if (double.IsNaN(progress))
+				return from;
+
+			decimal value;
+			try
+			{
+				value = from + ((decimal)to - from) * (decimal)progress;
+			}
+			catch (OverflowException)
+			{
+				return progress < 0 ? (to >= from ? long.MinValue : long.MaxValue) : (to >= from ? long.MaxValue : long.MinValue);
+			}
+
+			value = Math.Round(value, MidpointRounding.AwayFromZero);
+			if (value <= long.MinValue)
+				return long.MinValue;
+			if (value >= long.MaxValue)
+				return long.MaxValue;
+			return (long)value;
+		}
+
 		sealed class Numeric : IValueInterpolator<double>, IValueInterpolator<float>, IValueInterpolator<int>, IValueInterpolator<long>,
 			IValueInterpolator<short>, IValueInterpolator<byte>, IValueInterpolator<uint>, IValueInterpolator<TimeSpan>
 		{
@@ -167,7 +192,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			public int Interpolate(int from, int to, double progress) => (int)Round(Lerp(from, to, progress), int.MinValue, int.MaxValue);
 
-			public long Interpolate(long from, long to, double progress) => Round(Lerp(from, to, progress), long.MinValue, long.MaxValue);
+			public long Interpolate(long from, long to, double progress) => Lerp64(from, to, progress);
 
 			public short Interpolate(short from, short to, double progress) => (short)Round(Lerp(from, to, progress), short.MinValue, short.MaxValue);
 
@@ -176,7 +201,7 @@ namespace Microsoft.Maui.Controls.Animations
 			public uint Interpolate(uint from, uint to, double progress) => (uint)Round(Lerp(from, to, progress), uint.MinValue, uint.MaxValue);
 
 			public TimeSpan Interpolate(TimeSpan from, TimeSpan to, double progress)
-				=> TimeSpan.FromTicks(Round(Lerp(from.Ticks, to.Ticks, progress), TimeSpan.MinValue.Ticks, TimeSpan.MaxValue.Ticks));
+				=> TimeSpan.FromTicks(Lerp64(from.Ticks, to.Ticks, progress));
 		}
 
 		sealed class Geometry : IValueInterpolator<Point>, IValueInterpolator<PointF>, IValueInterpolator<Size>, IValueInterpolator<SizeF>,

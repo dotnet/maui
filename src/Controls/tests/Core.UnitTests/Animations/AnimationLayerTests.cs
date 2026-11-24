@@ -594,6 +594,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void ARefusedWriteHasNoCoercionSideEffects()
+		{
+			var button = new Button { IsEnabled = false };
+			var layout = new VerticalStackLayout { Children = { button } };
+			var owner = new TestOwner();
+			AnimationWriteResult? result = null;
+			button.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Button.IsEnabled) && result is null)
+					result = button.SetAnimationValue(VisualElement.IsEnabledProperty, false, owner);
+			};
+
+			button.IsEnabled = true;
+			layout.IsEnabled = false;
+			layout.IsEnabled = true;
+
+			// IsEnabled's coercion records the explicit value; a refused write must not have changed it to false.
+			Assert.Equal(AnimationWriteResult.Refused, result);
+			Assert.True(button.IsEnabled);
+		}
+
+		[Fact]
 		public void PlainWritesAreUnchangedWithoutAHold()
 		{
 			var label = new Label();

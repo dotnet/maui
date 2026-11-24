@@ -199,10 +199,22 @@ namespace Microsoft.Maui.Controls.Animations
 					{
 						registration = cancellationToken.Register(() =>
 						{
+							// Cancellation never throws back into CancellationTokenSource.Cancel or the dispatched callback: a fault
+							// while releasing is the run's (Completion records it), and the caller's task is canceled regardless.
 							void Cancel()
 							{
-								player.Stop(StopBehavior.Release);
-								completion.TrySetCanceled(cancellationToken);
+								try
+								{
+									player.Stop(StopBehavior.Release);
+								}
+								catch (Exception)
+								{
+									// Already logged and recorded on player.Completion by the player's own fault handling.
+								}
+								finally
+								{
+									completion.TrySetCanceled(cancellationToken);
+								}
 							}
 
 							if (dispatcher is null || !dispatcher.IsDispatchRequired)

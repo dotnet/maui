@@ -694,6 +694,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public async Task CancellingWhenAReleaseThrowsStillCancelsAndDoesNotThrow()
+		{
+			var label = new Label { Opacity = 0.9 };
+			using var cts = new CancellationTokenSource();
+			var task = Fade(0, 1).PlayAsync(label, cancellationToken: cts.Token);
+			Advance(30);
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("release");
+			};
+
+			var thrown = Record.Exception(() => cts.Cancel());
+
+			Assert.Null(thrown);
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+		}
+
+		class WideView : View
+		{
+			public static readonly BindableProperty BigProperty = BindableProperty.Create(nameof(Big), typeof(long), typeof(WideView), 0L);
+			public static readonly BindableProperty SpanProperty = BindableProperty.Create(nameof(Span), typeof(TimeSpan), typeof(WideView), TimeSpan.Zero);
+
+			public long Big
+			{
+				get => (long)GetValue(BigProperty);
+				set => SetValue(BigProperty, value);
+			}
+
+			public TimeSpan Span
+			{
+				get => (TimeSpan)GetValue(SpanProperty);
+				set => SetValue(SpanProperty, value);
+			}
+		}
+
+		[Fact]
+		public void SixtyFourBitValuesInterpolateWithoutLosingPrecision()
+		{
+			var view = new WideView();
+			Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<long>(WideView.BigProperty, t => t.At(0, long.MaxValue - 10).At(1, long.MaxValue - 2))
+				.AddTrack<TimeSpan>(WideView.SpanProperty, t => t.At(0, TimeSpan.FromTicks(TimeSpan.MaxValue.Ticks - 10)).At(1, TimeSpan.FromTicks(TimeSpan.MaxValue.Ticks - 2)))
+				.Build()
+				.Begin(view);
+
+			Advance(50);
+
+			Assert.Equal(long.MaxValue - 6, view.Big);
+			Assert.Equal(TimeSpan.MaxValue.Ticks - 6, view.Span.Ticks);
+		}
+
+		[Fact]
 		public void PlayAsyncWithAnAlreadyCancelledTokenDoesNothing()
 		{
 			var label = new Label { Opacity = 0.9 };
