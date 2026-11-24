@@ -58,11 +58,24 @@ $script:RunTestsSuites = @{
     }
 }
 
+# `/review run-tests` runs both suites and reports them in one comment, one section per suite.
+$script:RunTestsCombined = [ordered]@{
+    Command = 'run-tests'
+    CommentMarker = '<!-- review-run-tests-all -->'
+    UnsupportedMarker = '<!-- review-run-tests-all-unsupported -->'
+}
+
 function Set-RunTestsSuite {
-    param([Parameter(Mandatory)][ValidateSet('ui', 'device')][string]$Suite)
+    param(
+        [Parameter(Mandatory)][ValidateSet('ui', 'device')][string]$Suite,
+        # Part of `/review run-tests` (both suites): messages name that command, and a new comment
+        # supersedes every earlier run-tests comment of either suite.
+        [switch]$Combined
+    )
     $profile = $script:RunTestsSuites[$Suite]
     $script:RunTestsSuite = $Suite
-    $script:RunTestsCommand = $profile.Command
+    $script:RunTestsCombinedRun = [bool]$Combined
+    $script:RunTestsCommand = if ($Combined) { $script:RunTestsCombined.Command } else { $profile.Command }
     $script:RunTestsPipelineName = $profile.Pipeline
     $script:RunTestsKind = $profile.Kind
     $script:RunTestsDefinitionId = $profile.DefinitionId
@@ -79,16 +92,23 @@ function Set-RunTestsSuite {
     $script:RunTestsPipelinePath = $profile.PipelinePath
     $script:RunTestsTrustedPaths = $profile.TrustedPaths
     # Earlier bot comments of these kinds are minimized as outdated when a new comment is posted.
-    $script:RunTestsOutdatedMarkers = @($profile.CommentMarker, $profile.UnsupportedMarker)
+    $script:RunTestsOutdatedMarkers = if ($Combined) {
+        @($script:RunTestsCombined.CommentMarker, $script:RunTestsCombined.UnsupportedMarker) +
+            @($script:RunTestsSuites.Values | ForEach-Object { $_.CommentMarker, $_.UnsupportedMarker })
+    } else {
+        @($profile.CommentMarker, $profile.UnsupportedMarker)
+    }
 }
 
 function Get-RunTestsCommentSuite {
     <#
     .SYNOPSIS
-    The suite a bot comment belongs to ('ui' or 'device'), or $null for any other comment.
+    The suite a bot comment belongs to ('ui', 'device', or 'all' for a `/review run-tests` comment
+    with a section per suite), or $null for any other comment.
     #>
     param([AllowNull()][string]$Body)
     if (-not $Body) { return $null }
+    if ($Body.StartsWith($script:RunTestsCombined.CommentMarker)) { return 'all' }
     foreach ($suite in 'ui', 'device') { if ($Body.StartsWith($script:RunTestsSuites[$suite].CommentMarker)) { return $suite } }
     return $null
 }
@@ -676,7 +696,10 @@ function New-RunTestsComment {
         [AllowNull()]$Results,
         # The dispatch commit ({ sha; checkRunId }) maui-pr-uitests builds for this request.
         [AllowNull()]$Dispatch,
-        [switch]$SelectionOnly
+        [switch]$SelectionOnly,
+        # One suite's section of the combined `/review run-tests` comment (New-RunTestsCombinedComment):
+        # no comment marker, requester line or commit badge, which the combined header carries.
+        [switch]$Section
     )
 
     $sha = [string]$PullRequest.head.sha
@@ -699,7 +722,7 @@ function New-RunTestsComment {
     # Same layout as the PR Test Gate comment: title, requester line and badges up front;
     # everything else in one collapsed section.
     $lines = [System.Collections.Generic.List[string]]::new()
-    $lines.Add($script:RunTestsCommentMarker)
+    if (-not $Section) { $lines.Add($script:RunTestsCommentMarker) }
     $lines.Add("<!-- review-run-tests-head: $sha -->")
     if ($Build) { $lines.Add("<!-- review-run-tests-build: $($Build.id) -->") }
     if ($Dispatch) {
@@ -708,16 +731,21 @@ function New-RunTestsComment {
     }
     $lines.Add("<!-- review-run-tests-state: $($status.state) -->")
     $lines.Add('')
-    $lines.Add($(if ($script:RunTestsSuite -eq 'device') { '## Selected Device Tests' } else { '## Selected UI Tests' }))
-    $lines.Add('')
-    $lines.Add("> $who &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
+    $title = if ($script:RunTestsSuite -eq 'device') { 'Device Tests' } else { 'UI Tests' }
+    if ($Section) {
+        $lines.Add("### $title &#x2014; ``$($script:RunTestsPipelineName)``")
+    } else {
+        $lines.Add("## Selected $title")
+        $lines.Add('')
+        $lines.Add("> $who &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
+    }
     $lines.Add('')
     $lines.Add('<p align="left">')
     $lines.Add((Get-RunTestsBadge 'Result' $status.badge $status.color))
     $lines.Add((Get-RunTestsBadge 'Platforms' $platformText))
     $categoryBadge = if ($Selection.mode -eq 'full') { "All $($allCategories.Count)" } else { "$runCount of $($allCategories.Count)" }
     $lines.Add((Get-RunTestsBadge 'Categories' $categoryBadge $scopeColor))
-    $lines.Add((Get-RunTestsBadge 'Commit' $short))
+    if (-not $Section) { $lines.Add((Get-RunTestsBadge 'Commit' $short)) }
     $lines.Add('</p>')
     $lines.Add('')
     $lines.Add('---')
@@ -816,6 +844,70 @@ function New-RunTestsComment {
     $lines.Add('')
     $lines.Add('</details>')
     return ($lines -join "`n")
+}
+
+function New-RunTestsCombinedComment {
+    <#
+    .SYNOPSIS
+    The `/review run-tests` comment: one header, then each suite's section (New-RunTestsComment -Section)
+    between `<!-- run-tests-section: <suite> -->` markers, so Update-RunTestsResults.ps1 can refresh
+    each suite's build on its own.
+    .PARAMETER Sections
+    Ordered suite id ('ui', 'device') -> rendered section text.
+    .PARAMETER Notes
+    Lines shown under the header, e.g. a suite that could not run on this PR's target branch.
+    #>
+    param(
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Sections,
+        [Parameter(Mandatory)]$PullRequest,
+        [Parameter(Mandatory)][string[]]$ModelNames,
+        [string]$Requester,
+        [string[]]$Notes
+    )
+    $sha = [string]$PullRequest.head.sha
+    $repo = [string]$PullRequest.base.repo.full_name
+    $who = if ($Requester -cmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}$') { "@$Requester" } else { 'Requested' }
+    $kinds = @($Sections.Keys | ForEach-Object { $script:RunTestsSuites[$_].Kind })
+    $by = if ($ModelNames.Count) { " ($($ModelNames -join ' + '))" } else { '' }
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add($script:RunTestsCombined.CommentMarker)
+    $lines.Add("<!-- review-run-tests-head: $sha -->")
+    $lines.Add('')
+    $lines.Add('## Selected Tests')
+    $lines.Add('')
+    $lines.Add("> $who &#x2014; AI-selected $($kinds -join ' and ')$by for commit [``$($sha.Substring(0, 8))``](https://github.com/$repo/commit/$sha).")
+    foreach ($note in @($Notes | Where-Object { $_ })) { $lines.Add(''); $lines.Add("> [!NOTE]`n> $(Format-RunTestsText $note 400)") }
+    foreach ($suite in $Sections.Keys) {
+        $lines.Add('')
+        $lines.Add("<!-- run-tests-section: $suite -->")
+        $lines.Add([string]$Sections[$suite])
+        $lines.Add("<!-- /run-tests-section: $suite -->")
+    }
+    return ($lines -join "`n")
+}
+
+function Get-RunTestsCommentSections {
+    <#
+    .SYNOPSIS
+    The suite sections of a run-tests comment: one { suite; body } per section of a combined
+    `/review run-tests` comment, or the whole body as one section for a single-suite comment.
+    #>
+    param([Parameter(Mandatory)][string]$Body)
+    $suite = Get-RunTestsCommentSuite $Body
+    if ($suite -ne 'all') { return @(if ($suite) { [pscustomobject]@{ suite = $suite; body = $Body } }) }
+    return @([regex]::Matches($Body, '(?s)<!-- run-tests-section: (ui|device) -->\n(.*?)\n<!-- /run-tests-section: \1 -->') |
+        ForEach-Object { [pscustomobject]@{ suite = $_.Groups[1].Value; body = $_.Groups[2].Value } })
+}
+
+function Set-RunTestsCommentSection {
+    <#
+    .SYNOPSIS
+    Replaces one suite's section of a combined comment (or the whole body of a single-suite comment).
+    #>
+    param([Parameter(Mandatory)][string]$Body, [Parameter(Mandatory)][string]$Suite, [Parameter(Mandatory)][string]$Section)
+    if ((Get-RunTestsCommentSuite $Body) -ne 'all') { return $Section }
+    $pattern = "(?s)(<!-- run-tests-section: $Suite -->\n).*?(\n<!-- /run-tests-section: $Suite -->)"
+    return [regex]::Replace($Body, $pattern, { param($m) $m.Groups[1].Value + $Section + $m.Groups[2].Value })
 }
 
 function Format-RunTestsFailedTestPlatforms {
@@ -1252,6 +1344,29 @@ function Get-RunTestsMergeState {
     $parents = @($MergeCommit.parents)
     if ($parents.Count -eq 2 -and $parents[1].sha -ceq $HeadSha) { return 'ready' }
     return 'wait'
+}
+
+# The fields of a model's run_selected_ui_tests proposal.
+$script:RunTestsProposalKeys = 'platforms', 'categories', 'full_run', 'summary', 'rationale'
+
+function Get-RunTestsSuiteProposal {
+    <#
+    .SYNOPSIS
+    One suite's part of a model's proposal. In a `/review run-tests` request the UI selection is in
+    platforms/categories/full_run and the device selection in device_platforms/device_categories/
+    device_full_run; a model that left the device half out selected no device tests.
+    #>
+    param([System.Collections.IDictionary]$Proposal, [string]$Suite, [switch]$Combined)
+    if (-not $Combined -or $Suite -eq 'ui') {
+        $selected = @{}
+        foreach ($key in $script:RunTestsProposalKeys) { if ($Proposal.Contains($key)) { $selected[$key] = $Proposal[$key] } }
+        return $selected
+    }
+    $selected = @{ platforms = '[]'; categories = '[]'; full_run = $false }
+    foreach ($key in $script:RunTestsProposalKeys) { if ($Proposal.Contains("device_$key")) { $selected[$key] = $Proposal["device_$key"] } }
+    # Without its own summary or rationale the device half shares the request's.
+    foreach ($key in 'summary', 'rationale') { if (-not $selected.Contains($key) -and $Proposal.Contains($key)) { $selected[$key] = $Proposal[$key] } }
+    return $selected
 }
 
 function Merge-RunTestsSelections {

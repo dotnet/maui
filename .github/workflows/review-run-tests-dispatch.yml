@@ -1,4 +1,4 @@
-# Last step of `/review run-ui-tests`. copilot-review-run-tests.md (GPT-6.2 Sol) collects the
+# Last step of `/review run-tests` (and run-ui-tests / run-device-tests). copilot-review-run-tests.md (GPT-6.2 Sol) collects the
 # context and selects; copilot-review-run-tests-mai.md (MAI Code 2) selects from the same
 # context and dispatches this workflow with both runs. Only the union of the two selections runs.
 #
@@ -40,7 +40,8 @@ jobs:
     # Credentialed dispatch only from the trusted default branch.
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Up to two dispatches (UI and device tests), each waiting up to 10 minutes for its build.
+    timeout-minutes: 40
     permissions:
       actions: read
       checks: write
@@ -77,10 +78,10 @@ jobs:
               $run.head_branch -ne $env:DEFAULT_BRANCH -or
               $run.repository.full_name -ne $env:REPO -or
               $run.event -notin @('issue_comment', 'workflow_dispatch')) {
-            throw "Run $env:SOURCE_RUN_ID is not a /review run-ui-tests run on $env:DEFAULT_BRANCH."
+            throw "Run $env:SOURCE_RUN_ID is not a /review run-tests run on $env:DEFAULT_BRANCH."
           }
           if (([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($run.created_at)).TotalHours -gt 3) {
-            throw 'The source run is too old; request /review run-ui-tests again.'
+            throw 'The source run is too old; request /review run-tests again.'
           }
           # The MAI Code 2 run must be the second model for this same request.
           $second = gh api "repos/$env:REPO/actions/runs/$env:SECOND_RUN_ID" | ConvertFrom-Json
@@ -134,7 +135,7 @@ jobs:
           }
           "paths=$($paths -join ';')" >> $env:GITHUB_OUTPUT
 
-      - name: Validate, dispatch maui-pr-uitests, publish checks and comment
+      - name: Validate, dispatch maui-pr-uitests / maui-pr-devicetests, publish checks and comment
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}

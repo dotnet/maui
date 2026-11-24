@@ -1,5 +1,5 @@
 ---
-description: Shared instructions for the /review run-ui-tests and /review run-device-tests models (GPT-6.2 Sol and MAI Code 2).
+description: Shared instructions for the /review run-tests, run-ui-tests and run-device-tests models (GPT-6.2 Sol and MAI Code 2).
 ---
 
 # Select the tests this PR needs
@@ -9,8 +9,10 @@ First read `suite` in `/tmp/gh-aw/agent/run-tests/context.json`:
 - `"ui"` (`/review run-ui-tests`): select UI tests. Follow the UI test sections below.
 - `"device"` (`/review run-device-tests`): select device tests. Skip to
   **Device tests (`/review run-device-tests`)** at the end; the UI rules do not apply.
+- `"all"` (`/review run-tests`): select both, independently. See **Both suites
+  (`/review run-tests`)** at the end.
 
-The output tool, `run_selected_ui_tests`, is the same for both.
+The output tool, `run_selected_ui_tests`, is the same for all three.
 
 
 You decide which .NET MAUI UI tests (the `maui-pr-uitests` pipeline) must run to
@@ -149,3 +151,22 @@ Call `run_selected_ui_tests` once with `platforms`, `categories` (units from
 `inventory.categories`, e.g. `"[\"Core.Button\",\"Controls.Button\"]"`), `full_run`,
 `summary` and `rationale`, as described above. Unknown units are dropped, not widened.
 
+## Both suites (`/review run-tests`)
+
+When `suite` is `"all"`, context.json keeps the shared PR data (title, body,
+`changedFiles`) at the top level, and each suite's own data under `ui` and `device`
+(`testCategoryHints`, `inventory`, and for UI `changedTestRunnable`).
+`suites` lists the suites that can run on this PR; `notes` says why any other cannot.
+
+Make two independent selections from the same diff, each by its own rules above:
+UI tests from `ui.inventory`, device tests from `device.inventory`. A PR often needs
+only one of them (for example UI test changes need no device tests, and a
+`src/Graphics` change may need no UI tests); use `"[]"` platforms for the other.
+
+Call `run_selected_ui_tests` once with:
+
+- `platforms`, `categories`, `full_run`, `summary`, `rationale`: the UI test selection.
+- `device_platforms`, `device_categories`, `device_full_run`, `device_summary`,
+  `device_rationale`: the device test selection.
+
+If a suite is missing from `suites`, leave its platforms as `"[]"`.

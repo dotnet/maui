@@ -1,5 +1,5 @@
 ---
-description: "/review run-ui-tests and /review run-device-tests: GPT-6.2 Sol and MAI Code 2 each pick the UI tests (maui-pr-uitests) or device tests (maui-pr-devicetests) a PR affects; only the union of their selections runs."
+description: "/review run-tests (both), /review run-ui-tests and /review run-device-tests: GPT-6.2 Sol and MAI Code 2 each pick the UI tests (maui-pr-uitests) and/or device tests (maui-pr-devicetests) a PR affects; only the union of their selections runs."
 
 imports:
   - shared/gpt-6.2-sol.md
@@ -28,20 +28,21 @@ on:
     issues: write
     pull-requests: write
   steps:
-    - name: Authorize exact /review run-ui-tests or /review run-device-tests command
+    - name: Authorize exact /review run-tests, run-ui-tests or run-device-tests command
       id: command
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ github.token }}
         script: |
           core.setOutput('authorized', 'false');
-          let suite = 'ui';
+          // run-tests: both suites in one comment; run-ui-tests / run-device-tests: one suite.
+          let suite = 'all';
           if (context.eventName === 'issue_comment') {
             const command = /^\s*\/review\s+run-(?:(ui|device)-)?tests\s*$/i.exec(context.payload.comment?.body ?? '');
             if (context.payload.action !== 'created' || !context.payload.issue?.pull_request || !command) return;
-            if (command[1]?.toLowerCase() === 'device') suite = 'device';
+            if (command[1]) suite = command[1].toLowerCase();
           } else if (context.eventName === 'workflow_dispatch') {
-            if (context.payload.inputs?.suite === 'device') suite = 'device';
+            if (['ui', 'device'].includes(context.payload.inputs?.suite)) suite = context.payload.inputs.suite;
           } else {
             return;
           }
@@ -49,7 +50,7 @@ on:
           const { owner, repo } = context.repo;
           const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: context.actor });
           if (!['admin', 'maintain', 'write'].includes(data.permission)) {
-            core.info(`${context.actor} has ${data.permission} access; /review run-ui-tests and run-device-tests need write.`);
+            core.info(`${context.actor} has ${data.permission} access; /review run-tests needs write.`);
             return;
           }
           core.setOutput('authorized', 'true');
@@ -90,10 +91,10 @@ on:
         type: number
         required: false
       suite:
-        description: "ui (/review run-ui-tests) or device (/review run-device-tests)"
+        description: "all (/review run-tests), ui (/review run-ui-tests) or device (/review run-device-tests)"
         type: choice
-        options: [ui, device]
-        default: ui
+        options: [all, ui, device]
+        default: all
         required: false
 
 if: needs.pre_activation.outputs.context_ready == 'true'
@@ -144,7 +145,8 @@ safe-outputs:
     run-selected-ui-tests:
       description: >-
         Propose the platforms and test categories to run for the triggering PR: UI test categories for
-        maui-pr-uitests (/review run-ui-tests) or device test units for maui-pr-devicetests (/review run-device-tests).
+        maui-pr-uitests (/review run-ui-tests), device test units for maui-pr-devicetests (/review run-device-tests),
+        or both (/review run-tests: UI in platforms/categories/full_run, device in the device_* inputs).
         Call exactly once. Trusted code validates the selection, combines it with the other model's and queues the run.
       runs-on: ubuntu-latest
       # This job inherits the copilot-pat-pool environment, whose OIDC subject Azure DevOps does not
@@ -172,6 +174,21 @@ safe-outputs:
           description: Short markdown bullet list mapping the changed areas to the chosen platforms and categories, and why the rest is not needed.
           type: string
           required: true
+        device_platforms:
+          description: 'Only when context.json suite is "all": JSON array string of platforms for device tests. "[]" when no device test is affected.'
+          type: string
+        device_categories:
+          description: 'Only when context.json suite is "all": JSON array string of device test units from device.inventory.categories. "[]" means every unit on device_platforms.'
+          type: string
+        device_full_run:
+          description: 'Only when context.json suite is "all": true to run the complete device test suite on every platform'
+          type: boolean
+        device_summary:
+          description: 'Only when context.json suite is "all": one sentence on the device test selection.'
+          type: string
+        device_rationale:
+          description: 'Only when context.json suite is "all": short markdown bullets for the device test selection.'
+          type: string
       steps:
         - name: Extract the proposal
           shell: pwsh
@@ -182,7 +199,8 @@ safe-outputs:
             # Keep only the declared inputs; the dispatch workflow validates every value again.
             $item = $items[-1]
             $proposal = [ordered]@{}
-            foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale') {
+            foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale',
+                'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
               if ($item.PSObject.Properties[$key]) { $proposal[$key] = $item.$key }
             }
             $proposal['model'] = 'gpt-6.2-sol'
@@ -223,4 +241,4 @@ steps:
       path: /tmp/gh-aw/agent/run-tests
 ---
 
-Follow the shared `/review run-ui-tests` / `/review run-device-tests` selection instructions.
+Follow the shared `/review run-tests` / `/review run-ui-tests` / `/review run-device-tests` selection instructions.

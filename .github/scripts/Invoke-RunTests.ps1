@@ -73,13 +73,15 @@ function Invoke-GhJson {
     return ($raw -join "`n") | ConvertFrom-Json -Depth 50
 }
 
-$script:ProposalKeys = 'platforms', 'categories', 'full_run', 'summary', 'rationale'
-
 function Select-ProposalFields {
-    # Only the fields the agent may set; anything else in its output is ignored.
+    # Only the fields the agent may set; anything else in its output is ignored. The device_* fields
+    # carry the device test half of a `/review run-tests` (both suites) proposal.
     param([System.Collections.IDictionary]$Item)
     $proposal = @{}
-    foreach ($key in $script:ProposalKeys) { if ($Item.Contains($key)) { $proposal[$key] = $Item[$key] } }
+    foreach ($key in $script:RunTestsProposalKeys) {
+        if ($Item.Contains($key)) { $proposal[$key] = $Item[$key] }
+        if ($Item.Contains("device_$key")) { $proposal["device_$key"] = $Item["device_$key"] }
+    }
     return $proposal
 }
 
@@ -108,51 +110,74 @@ function Get-Proposals {
 
 $context = Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json -Depth 30
 if ([int]$context.prNumber -ne $PrNumber) { throw 'The collected context belongs to a different PR.' }
-# /review run-ui-tests (UI tests) or /review run-device-tests (device tests); the trusted context says which.
-$suite = if ($context.PSObject.Properties['suite'] -and $context.suite -ceq 'device') { 'device' } else { 'ui' }
-Set-RunTestsSuite $suite
-if (-not $DefinitionId) { $DefinitionId = $script:RunTestsDefinitionId }
-
+# /review run-ui-tests (UI tests), /review run-device-tests (device tests) or /review run-tests
+# (both, in one comment); the trusted context says which.
+$combined = $context.PSObject.Properties['suite'] -and $context.suite -ceq 'all'
+$suites = if ($combined) {
+    @($context.suites | Where-Object { $_ -cin @('ui', 'device') } | Select-Object -Unique)
+} elseif ($context.PSObject.Properties['suite'] -and $context.suite -ceq 'device') { @('device') } else { @('ui') }
+if (-not $suites.Count) { throw 'The collected context names no test suite to run.' }
+$definitionOverride = $DefinitionId
 $proposals = Get-Proposals
-$runnable = $null
-if ($suite -eq 'device') {
-    # Device test categories were read by the trusted context step (base checkout plus the PR head);
-    # Get-RunTestsDeviceCategories keeps identifiers only.
-    $deviceCategories = [ordered]@{}
-    foreach ($project in $script:RunTestsDeviceProjects.Keys) {
-        if (-not $script:RunTestsDeviceProjects[$project].categories) { continue }
-        $names = @($context.inventory.projects.$project | Where-Object { $_ -is [string] -and $_.StartsWith("$project.") } | ForEach-Object { $_.Substring($project.Length + 1) })
-        $deviceCategories[$project] = @(Get-RunTestsDeviceCategories (($names | ForEach-Object { "const string $_ = `"$_`";" }) -join "`n"))
-    }
-    $inventory = Get-RunTestsDeviceInventory $deviceCategories
-} else {
-    $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
-    # Which categories have enabled tests on each platform, from this trusted checkout, plus the
-    # categories the PR's own changed tests enable (evaluated per platform at the PR head).
-    $runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
+
+function Get-SuiteContext([string]$Suite) {
+    # A combined context keeps each suite's inventory and hints under `ui` / `device`.
+    if (-not $combined) { return $context }
+    $suiteContext = [ordered]@{}
+    foreach ($property in $context.PSObject.Properties) { if ($property.Name -notin 'ui', 'device') { $suiteContext[$property.Name] = $property.Value } }
+    foreach ($property in $context.$Suite.PSObject.Properties) { $suiteContext[$property.Name] = $property.Value }
+    $suiteContext.suite = $Suite
+    return [pscustomobject]$suiteContext
 }
-if ($suite -eq 'ui' -and $context.PSObject.Properties['changedTestRunnable'] -and $context.changedTestRunnable) {
-    foreach ($platform in Get-RunTestsPlatformIds) {
-        $extra = @($context.changedTestRunnable.$platform | Where-Object { $_ -is [string] -and $_ -cmatch '^[A-Za-z0-9_]{1,64}$' })
-        if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
-    }
-}
-if ($suite -eq 'ui' -and $context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
-    # Some changed UI test files were not inspected, so an AI-selected category may be enabled only
-    # by them. Keep every AI-selected category rather than pruning it as "no enabled tests".
-    Write-Host 'Not every changed UI test file was inspected; keeping all AI-selected categories.'
+
+function Resolve-SuiteSelection([string]$Suite) {
+    <#
+    .SYNOPSIS
+    Validates each model's proposal for one suite and returns { inventory; selection; selectionError }.
+    #>
+    $context = Get-SuiteContext $Suite
     $runnable = $null
+    if ($Suite -eq 'device') {
+        # Device test categories were read by the trusted context step (base checkout plus the PR head);
+        # Get-RunTestsDeviceCategories keeps identifiers only.
+        $deviceCategories = [ordered]@{}
+        foreach ($project in $script:RunTestsDeviceProjects.Keys) {
+            if (-not $script:RunTestsDeviceProjects[$project].categories) { continue }
+            $names = @($context.inventory.projects.$project | Where-Object { $_ -is [string] -and $_.StartsWith("$project.") } | ForEach-Object { $_.Substring($project.Length + 1) })
+            $deviceCategories[$project] = @(Get-RunTestsDeviceCategories (($names | ForEach-Object { "const string $_ = `"$_`";" }) -join "`n"))
+        }
+        $inventory = Get-RunTestsDeviceInventory $deviceCategories
+    } else {
+        $inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
+        # Which categories have enabled tests on each platform, from this trusted checkout, plus the
+        # categories the PR's own changed tests enable (evaluated per platform at the PR head).
+        $runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
+    }
+    if ($Suite -eq 'ui' -and $context.PSObject.Properties['changedTestRunnable'] -and $context.changedTestRunnable) {
+        foreach ($platform in Get-RunTestsPlatformIds) {
+            $extra = @($context.changedTestRunnable.$platform | Where-Object { $_ -is [string] -and $_ -cmatch '^[A-Za-z0-9_]{1,64}$' })
+            if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
+        }
+    }
+    if ($Suite -eq 'ui' -and $context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
+        # Some changed UI test files were not inspected, so an AI-selected category may be enabled only
+        # by them. Keep every AI-selected category rather than pruning it as "no enabled tests".
+        Write-Host 'Not every changed UI test file was inspected; keeping all AI-selected categories.'
+        $runnable = $null
+    }
+    # Only AI-selected tests run: each model's proposal is validated on its own, then the union is taken.
+    $resolved = [ordered]@{}
+    foreach ($model in $proposals.Keys) {
+        $proposal = Get-RunTestsSuiteProposal -Proposal $proposals[$model] -Suite $Suite -Combined:$combined
+        $resolved[$model] = Resolve-RunTestsSelection -Proposal $proposal -Inventory $inventory -Runnable $runnable
+    }
+    $selection = Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
+    $selectionError = if ($proposals.Count -eq 0) {
+        "No AI model produced a test selection, so nothing was queued. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
+    }
+    $selection | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory $(if ($combined) { "selection-$Suite.json" } else { 'selection.json' })) -Encoding utf8
+    return @{ inventory = $inventory; selection = $selection; selectionError = $selectionError }
 }
-# Only AI-selected tests run: each model's proposal is validated on its own, then the union is taken.
-$resolved = [ordered]@{}
-foreach ($model in $proposals.Keys) {
-    $resolved[$model] = Resolve-RunTestsSelection -Proposal $proposals[$model] -Inventory $inventory -Runnable $runnable
-}
-$selection = Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
-$selectionError = if ($proposals.Count -eq 0) {
-    "No AI model produced a test selection, so nothing was queued. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
-}
-$selection | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'selection.json') -Encoding utf8
 
 # Re-check the caller and the PR: the agent may have taken minutes and the PR may have moved.
 if (-not $DryRun -and $Actor) {
@@ -269,122 +294,155 @@ function Wait-RunTestsDispatchBuild {
 
 $verified = Get-VerifiedPullRequest
 $pr = $verified.pr
-$queueError = $null
-if ($selectionError) {
-    $queueError = $selectionError
-} elseif ($pr.state -ne 'open') {
-    $queueError = 'The PR is no longer open.'
-} elseif ($pr.head.sha -cne $context.headSha) {
-    $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review $($script:RunTestsCommand)`` again."
-    # Report against the commit the selection was made for.
-    $pr.head.sha = $context.headSha
-} elseif ($context.baseRef -and $pr.base.ref -cne $context.baseRef) {
-    # Retargeting keeps the head SHA, but the models selected tests for the diff against the old base.
-    $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review $($script:RunTestsCommand)`` again."
-} elseif ($selection.mode -ne 'none' -and -not $verified.merge -and $pr.mergeable -eq $false) {
-    $queueError = "This PR has merge conflicts with ``$($pr.base.ref)``, so there is no test-merge commit to build. Resolve the conflicts, then comment ``/review $($script:RunTestsCommand)`` again."
-} elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
-    $queueError = "GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry ``/review $($script:RunTestsCommand)``."
-}
 
-$build = $null
-$dispatch = $null
-if (-not $queueError -and $selection.mode -ne 'none') {
-    New-RunTestsSuiteRequestYaml -Selection $selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $pr.head.sha |
-        Set-Content (Join-Path $OutputDirectory (Split-Path -Leaf $script:RunTestsRequestPath)) -Encoding utf8
-    if ($DryRun) {
-        Write-Host 'Dry run: dispatch request written; nothing pushed.'
-    } elseif ($SkipQueue) {
-        Write-Host "$($script:RunTestsPipelineName) dispatch is not available in this repository; publishing the selection only."
-    } else {
-        try {
-            $dispatch = New-RunTestsDispatch -PullRequest $pr -MergeCommit $verified.mergeCommit -Selection $selection
-            if ($dispatch.error) {
-                $queueError = $dispatch.error
-                $dispatch = $null
-            } else {
-                $build = Wait-RunTestsDispatchBuild -Branch $dispatch.branch -Sha $dispatch.sha
-                if ($build) {
-                    Write-Host "$($script:RunTestsPipelineName) build $($build.id) is building the dispatch commit: $($build._links.web.href)"
-                } else {
-                    $queueError = "Azure Pipelines did not start $($script:RunTestsPipelineName) for the dispatch branch ``$($dispatch.branch)`` within $([int]($DispatchWaitSeconds / 60)) minutes. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
-                    & gh api -X DELETE "repos/$Repository/git/refs/heads/$($dispatch.branch)" 2>$null | Out-Null
+function Invoke-SuiteRun {
+    <#
+    .SYNOPSIS
+    Dispatches one suite's selection and publishes its checks. Returns what its comment shows.
+    #>
+    param([Parameter(Mandatory)][string]$Suite)
+    Set-RunTestsSuite $Suite -Combined:$combined
+    $DefinitionId = if ($definitionOverride) { $definitionOverride } else { $script:RunTestsDefinitionId }
+    $resolvedSuite = Resolve-SuiteSelection $Suite
+    $inventory = $resolvedSuite.inventory
+    $selection = $resolvedSuite.selection
+    $selectionError = $resolvedSuite.selectionError
+    $queueError = $null
+    if ($selectionError) {
+        $queueError = $selectionError
+    } elseif ($pr.state -ne 'open') {
+        $queueError = 'The PR is no longer open.'
+    } elseif ($pr.head.sha -cne $context.headSha) {
+        $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review $($script:RunTestsCommand)`` again."
+        # Report against the commit the selection was made for.
+        $pr.head.sha = $context.headSha
+    } elseif ($context.baseRef -and $pr.base.ref -cne $context.baseRef) {
+        # Retargeting keeps the head SHA, but the models selected tests for the diff against the old base.
+        $queueError = "The PR's target branch changed while tests were being selected (selected against ``$($context.baseRef)``, now ``$($pr.base.ref)``). Comment ``/review $($script:RunTestsCommand)`` again."
+    } elseif ($selection.mode -ne 'none' -and -not $verified.merge -and $pr.mergeable -eq $false) {
+        $queueError = "This PR has merge conflicts with ``$($pr.base.ref)``, so there is no test-merge commit to build. Resolve the conflicts, then comment ``/review $($script:RunTestsCommand)`` again."
+    } elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
+        $queueError = "GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry ``/review $($script:RunTestsCommand)``."
+    }
+
+    $build = $null
+    $dispatch = $null
+    if (-not $queueError -and $selection.mode -ne 'none') {
+        New-RunTestsSuiteRequestYaml -Selection $selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $pr.head.sha |
+            Set-Content (Join-Path $OutputDirectory (Split-Path -Leaf $script:RunTestsRequestPath)) -Encoding utf8
+        if ($DryRun) {
+            Write-Host 'Dry run: dispatch request written; nothing pushed.'
+        } elseif ($SkipQueue) {
+            Write-Host "$($script:RunTestsPipelineName) dispatch is not available in this repository; publishing the selection only."
+        } else {
+            try {
+                $dispatch = New-RunTestsDispatch -PullRequest $pr -MergeCommit $verified.mergeCommit -Selection $selection
+                if ($dispatch.error) {
+                    $queueError = $dispatch.error
                     $dispatch = $null
+                } else {
+                    $build = Wait-RunTestsDispatchBuild -Branch $dispatch.branch -Sha $dispatch.sha
+                    if ($build) {
+                        Write-Host "$($script:RunTestsPipelineName) build $($build.id) is building the dispatch commit: $($build._links.web.href)"
+                    } else {
+                        $queueError = "Azure Pipelines did not start $($script:RunTestsPipelineName) for the dispatch branch ``$($dispatch.branch)`` within $([int]($DispatchWaitSeconds / 60)) minutes. Comment ``/review $($script:RunTestsCommand)`` again, or use ``/azp run $($script:RunTestsPipelineName)`` for the full suite."
+                        & gh api -X DELETE "repos/$Repository/git/refs/heads/$($dispatch.branch)" 2>$null | Out-Null
+                        $dispatch = $null
+                    }
                 }
+            } catch {
+                Write-Warning "Dispatching $($script:RunTestsPipelineName) failed: $($_.Exception.Message)"
+                $queueError = "Pushing the $($script:RunTestsPipelineName) dispatch commit failed; see the workflow log."
+                $build = $null
+                $dispatch = $null
             }
-        } catch {
-            Write-Warning "Dispatching $($script:RunTestsPipelineName) failed: $($_.Exception.Message)"
-            $queueError = "Pushing the $($script:RunTestsPipelineName) dispatch commit failed; see the workflow log."
-            $build = $null
-            $dispatch = $null
         }
     }
-}
 
-# Check runs: everything that will not run is listed as Skipped, plus one summary check.
-$checks = @()
-if (-not $queueError) {
-    $checks = New-RunTestsCheckPlan -Selection $selection -Inventory $inventory
-}
-$checks | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'checks.json') -Encoding utf8
-
-$platformText = if ($selection.platforms.Count) { ($selection.platforms | ForEach-Object { Get-RunTestsPlatformName $_ }) -join ', ' } else { 'none' }
-$buildUrl = if ($build) { [string]$build._links.web.href } else { $runUrl }
-$selectionSummary = @(
-    "**Mode:** $($selection.mode)  ",
-    "**Platforms:** $platformText  ",
-    "**Categories:** $(if ($selection.mode -eq 'full') { 'all' } elseif ($selection.mode -eq 'none') { 'none' } else { Format-RunTestsCategoryList $selection.expandedCategories })",
-    '',
-    $selection.summary,
-    '',
-    $(if ($build) { "Azure DevOps run: [$($script:RunTestsPipelineName) #$($build.id)]($buildUrl)" } elseif ($queueError) { "Not queued: $queueError" } elseif ($SkipQueue) { 'Selection only: Azure DevOps dispatch is not available in this repository.' } else { '' })
-) -join "`n"
-
-if (-not $DryRun -and -not $SkipChecks) {
-    $sha = $pr.head.sha
-    # A later run on the same commit may select something an earlier run skipped: retire those.
-    $existing = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/commits/$sha/check-runs?per_page=100&filter=latest")
-    $existingRuns = @($existing | ForEach-Object { $_.check_runs } | Where-Object {
-        $_.app.slug -eq 'github-actions' -and $_.name.StartsWith($script:RunTestsSkippedCheckPrefix) })
-    $planned = @($checks | ForEach-Object { $_.name })
-    foreach ($stale in $existingRuns | Where-Object { $_.name -notin $planned }) {
-        $body = @{ conclusion = 'neutral'; output = @{ title = "Selected by a later /review $($script:RunTestsCommand)"; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
-        Invoke-GhJson @('-X', 'PATCH', "repos/$Repository/check-runs/$($stale.id)") -InputJson $body | Out-Null
+    # Check runs: everything that will not run is listed as Skipped, plus one summary check.
+    $checks = @()
+    if (-not $queueError) {
+        $checks = New-RunTestsCheckPlan -Selection $selection -Inventory $inventory
     }
+    $checks | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory $(if ($combined) { "checks-$Suite.json" } else { 'checks.json' })) -Encoding utf8
 
-    $now = (Get-Date).ToUniversalTime().ToString('o')
-    foreach ($check in $checks) {
-        $summary = "Not selected by ``/review $($script:RunTestsCommand)`` for this commit.`n`n$selectionSummary"
+    $platformText = if ($selection.platforms.Count) { ($selection.platforms | ForEach-Object { Get-RunTestsPlatformName $_ }) -join ', ' } else { 'none' }
+    $buildUrl = if ($build) { [string]$build._links.web.href } else { $runUrl }
+    $selectionSummary = @(
+        "**Mode:** $($selection.mode)  ",
+        "**Platforms:** $platformText  ",
+        "**Categories:** $(if ($selection.mode -eq 'full') { 'all' } elseif ($selection.mode -eq 'none') { 'none' } else { Format-RunTestsCategoryList $selection.expandedCategories })",
+        '',
+        $selection.summary,
+        '',
+        $(if ($build) { "Azure DevOps run: [$($script:RunTestsPipelineName) #$($build.id)]($buildUrl)" } elseif ($queueError) { "Not queued: $queueError" } elseif ($SkipQueue) { 'Selection only: Azure DevOps dispatch is not available in this repository.' } else { '' })
+    ) -join "`n"
+
+    if (-not $DryRun -and -not $SkipChecks) {
+        $sha = $pr.head.sha
+        # A later run on the same commit may select something an earlier run skipped: retire those.
+        $existing = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/commits/$sha/check-runs?per_page=100&filter=latest")
+        $existingRuns = @($existing | ForEach-Object { $_.check_runs } | Where-Object {
+            $_.app.slug -eq 'github-actions' -and $_.name.StartsWith($script:RunTestsSkippedCheckPrefix) })
+        $planned = @($checks | ForEach-Object { $_.name })
+        foreach ($stale in $existingRuns | Where-Object { $_.name -notin $planned }) {
+            $body = @{ conclusion = 'neutral'; output = @{ title = "Selected by a later /review $($script:RunTestsCommand)"; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
+            Invoke-GhJson @('-X', 'PATCH', "repos/$Repository/check-runs/$($stale.id)") -InputJson $body | Out-Null
+        }
+
+        $now = (Get-Date).ToUniversalTime().ToString('o')
+        foreach ($check in $checks) {
+            $summary = "Not selected by ``/review $($script:RunTestsCommand)`` for this commit.`n`n$selectionSummary"
+            $body = [ordered]@{
+                name = $check.name; head_sha = $sha; status = 'completed'; conclusion = 'skipped'
+                started_at = $now; completed_at = $now; details_url = $buildUrl
+                output = [ordered]@{ title = $check.title; summary = $summary }
+            } | ConvertTo-Json -Depth 5
+            Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+        }
+
+        $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
+        $title = if ($queueError) { "$($script:RunTestsKind) were not queued" } elseif ($selection.mode -eq 'none') { "No $($script:RunTestsKind) selected" } elseif ($selection.mode -eq 'full') { "Full $($script:RunTestsPipelineName) suite selected" } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
         $body = [ordered]@{
-            name = $check.name; head_sha = $sha; status = 'completed'; conclusion = 'skipped'
+            name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
             started_at = $now; completed_at = $now; details_url = $buildUrl
-            output = [ordered]@{ title = $check.title; summary = $summary }
+            output = [ordered]@{ title = $title; summary = $selectionSummary; text = $selection.rationale }
         } | ConvertTo-Json -Depth 5
         Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+        if ($build -and $dispatch) {
+            # maui-pr-uitests reports its own checks on the dispatch commit; this one follows it on the PR.
+            $body = [ordered]@{
+                name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
+                started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
+                output = [ordered]@{ title = "$($script:RunTestsPipelineName) #$($build.id) is running"; summary = $selectionSummary }
+            } | ConvertTo-Json -Depth 5
+            $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
+        }
+        Write-Host "Published $($checks.Count) skipped check runs and the selection check on $sha."
     }
 
-    $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
-    $title = if ($queueError) { "$($script:RunTestsKind) were not queued" } elseif ($selection.mode -eq 'none') { "No $($script:RunTestsKind) selected" } elseif ($selection.mode -eq 'full') { "Full $($script:RunTestsPipelineName) suite selected" } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
-    $body = [ordered]@{
-        name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
-        started_at = $now; completed_at = $now; details_url = $buildUrl
-        output = [ordered]@{ title = $title; summary = $selectionSummary; text = $selection.rationale }
-    } | ConvertTo-Json -Depth 5
-    Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
-    if ($build -and $dispatch) {
-        # maui-pr-uitests reports its own checks on the dispatch commit; this one follows it on the PR.
-        $body = [ordered]@{
-            name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
-            started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
-            output = [ordered]@{ title = "$($script:RunTestsPipelineName) #$($build.id) is running"; summary = $selectionSummary }
-        } | ConvertTo-Json -Depth 5
-        $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
-    }
-    Write-Host "Published $($checks.Count) skipped check runs and the selection check on $sha."
+    return @{ suite = $Suite; selection = $selection; inventory = $inventory; build = $build; dispatch = $dispatch; queueError = $queueError }
 }
 
-$comment = New-RunTestsComment -Selection $selection -Inventory $inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
-    -Build $build -QueueError $queueError -Requester $Actor -Dispatch $dispatch -SelectionOnly:$SkipQueue
+$runs = [ordered]@{}
+foreach ($suite in $suites) { $runs[$suite] = Invoke-SuiteRun $suite }
+
+if ($combined) {
+    $sections = [ordered]@{}
+    foreach ($suite in $runs.Keys) {
+        $run = $runs[$suite]
+        Set-RunTestsSuite $suite -Combined
+        $sections[$suite] = New-RunTestsComment -Selection $run.selection -Inventory $run.inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
+            -Build $run.build -QueueError $run.queueError -Requester $Actor -Dispatch $run.dispatch -SelectionOnly:$SkipQueue -Section
+    }
+    $modelNames = @($proposals.Keys | ForEach-Object { $script:RunTestsModels[$_] })
+    $notes = @($context.PSObject.Properties['notes']?.Value | Where-Object { $_ -is [string] })
+    $comment = New-RunTestsCombinedComment -Sections $sections -PullRequest $pr -ModelNames $modelNames -Requester $Actor -Notes $notes
+} else {
+    $run = $runs[$suites[0]]
+    $comment = New-RunTestsComment -Selection $run.selection -Inventory $run.inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
+        -Build $run.build -QueueError $run.queueError -Requester $Actor -Dispatch $run.dispatch -SelectionOnly:$SkipQueue
+}
 $commentPath = Join-Path $OutputDirectory 'comment.md'
 $comment | Set-Content -LiteralPath $commentPath -Encoding utf8
 if ($DryRun) {
@@ -394,4 +452,4 @@ if ($DryRun) {
 $posted = Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json)
 Write-Host "Posted the $($script:RunTestsCommand) comment on #$PrNumber."
 Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId $posted.id
-if ($queueError) { Write-Host "::warning::$queueError" }
+foreach ($run in $runs.Values) { if ($run.queueError) { Write-Host "::warning::$($run.suite): $($run.queueError)" } }

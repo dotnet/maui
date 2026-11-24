@@ -560,8 +560,17 @@ Describe 'Two-model selection' {
         $mai | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
         $gpt | Should -Match "proposal\['model'\] = 'gpt-6.2-sol'"
         $mai | Should -Match "proposal\['model'\] = 'mai-code-2'"
-        # Exactly `/review run-ui-tests` (UI tests) or `/review run-device-tests` (device tests).
+        # Exactly `/review run-tests` (both), `/review run-ui-tests` or `/review run-device-tests`.
         $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-(?:(ui|device)-)?tests\s*$/i'))
+        $gpt | Should -Match ([regex]::Escape("let suite = 'all';"))
+        $gpt | Should -Match ([regex]::Escape('if (command[1]) suite = command[1].toLowerCase();'))
+        $gpt | Should -Match 'options: \[all, ui, device\]'
+        foreach ($workflow in $gpt, $mai) {
+            foreach ($key in 'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
+                $workflow | Should -Match "(?m)^        $($key):"
+                $workflow | Should -Match "'$key'"
+            }
+        }
         $gpt | Should -Match ([regex]::Escape('-Suite "$SUITE"'))
         foreach ($workflow in $gpt, $mai) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
     }
@@ -796,5 +805,105 @@ Describe '/review run-device-tests' {
         ([regex]::Matches($windows, 'if %USE_CATEGORY_RUNS%==1 \(')).Count | Should -Be 2
         $windows | Should -Not -Match 'if %IS_CONTROLS_TEST%==1'
         Test-RunTestsPipelineSupportsDispatch (Get-Content (Join-Path $pipelines 'ci-uitests.yml') -Raw) | Should -BeFalse
+    }
+}
+
+Describe '/review run-tests (both suites)' {
+    BeforeAll {
+        $root = Join-Path $PSScriptRoot '../..'
+        $script:bothDeviceInventory = Get-RunTestsDeviceInventory ([ordered]@{
+                Controls = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Controls/tests/DeviceTests/TestCategory.cs'))
+                Core = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Core/tests/DeviceTests/TestCategory.cs'))
+            })
+        $script:bothPr = [pscustomobject]@{ head = [pscustomobject]@{ sha = ('c' * 40) }; base = [pscustomobject]@{ repo = [pscustomobject]@{ full_name = 'dotnet/maui' } } }
+        function New-BothComment {
+            Set-RunTestsSuite ui -Combined
+            $ui = Resolve-RunTestsSelection -Proposal (New-Proposal @('android') @('Label')) -Inventory $inventory
+            $uiBuild = [pscustomobject]@{ id = 11; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=11' } } }
+            $sections = [ordered]@{}
+            $sections.ui = New-RunTestsComment -Selection $ui -Inventory $inventory -PullRequest $bothPr -WorkflowRunUrl 'https://run' -Build $uiBuild -Requester 'octocat' -Section
+            Set-RunTestsSuite device -Combined
+            $device = Resolve-RunTestsSelection -Proposal (New-Proposal @('ios') @('Core.Label')) -Inventory $bothDeviceInventory
+            $deviceBuild = [pscustomobject]@{ id = 22; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=22' } } }
+            $sections.device = New-RunTestsComment -Selection $device -Inventory $bothDeviceInventory -PullRequest $bothPr -WorkflowRunUrl 'https://run' -Build $deviceBuild -Requester 'octocat' -Section
+            return New-RunTestsCombinedComment -Sections $sections -PullRequest $bothPr -ModelNames @('GPT-6.2 Sol', 'MAI Code 2') -Requester 'octocat' -Notes @('a note')
+        }
+    }
+    AfterAll { Set-RunTestsSuite ui }
+
+    It 'names /review run-tests and supersedes every run-tests comment' {
+        Set-RunTestsSuite device -Combined
+        $script:RunTestsCommand | Should -Be 'run-tests'
+        $script:RunTestsPipelineName | Should -Be 'maui-pr-devicetests'
+        $comments = @('<!-- review-run-tests -->', '<!-- review-run-devicetests -->', '<!-- review-run-tests-all -->', '<!-- review-run-devicetests-unsupported -->', '<!-- AI Gate -->') |
+            ForEach-Object -Begin { $i = 0 } -Process { $i++; [pscustomobject]@{ id = $i; node_id = "n$i"; user = [pscustomobject]@{ type = 'Bot' }; body = "$_`nx" } }
+        @(Select-RunTestsOutdatedComments $comments -KeepId 99 | ForEach-Object node_id) | Should -Be @('n1', 'n2', 'n3', 'n4')
+        # A single-suite request supersedes only its own suite's comments.
+        Set-RunTestsSuite device
+        $script:RunTestsCommand | Should -Be 'run-device-tests'
+        @(Select-RunTestsOutdatedComments $comments -KeepId 99 | ForEach-Object node_id) | Should -Be @('n2', 'n4')
+    }
+
+    It 'splits a combined proposal into its UI and device halves' {
+        $proposal = (New-Proposal @('android') @('Label')) + @{ device_platforms = '["ios"]'; device_categories = '["Core.Label"]'; device_full_run = $false; device_rationale = '- device' }
+        $ui = Get-RunTestsSuiteProposal -Proposal $proposal -Suite ui -Combined
+        $ui.platforms | Should -Be '["android"]'
+        $ui.Contains('device_platforms') | Should -BeFalse
+        $device = Get-RunTestsSuiteProposal -Proposal $proposal -Suite device -Combined
+        $device.platforms | Should -Be '["ios"]'
+        $device.categories | Should -Be '["Core.Label"]'
+        $device.rationale | Should -Be '- device'
+        $device.summary | Should -Be 'summary'
+        # A model that left the device half out selected no device tests.
+        $none = Get-RunTestsSuiteProposal -Proposal (New-Proposal @('android') @('Label')) -Suite device -Combined
+        (Resolve-RunTestsSelection -Proposal $none -Inventory $bothDeviceInventory).mode | Should -Be 'none'
+        # Outside /review run-tests the device suite reads the plain fields.
+        (Get-RunTestsSuiteProposal -Proposal $proposal -Suite device).platforms | Should -Be '["android"]'
+    }
+
+    It 'renders one comment with a section per suite' {
+        $body = New-BothComment
+        Get-RunTestsCommentSuite $body | Should -Be 'all'
+        $body | Should -Match '^<!-- review-run-tests-all -->'
+        $body | Should -Match '## Selected Tests'
+        $body | Should -Match 'AI-selected UI tests and device tests \(GPT-6.2 Sol \+ MAI Code 2\)'
+        $body | Should -Match '> \[!NOTE\]\n> a note'
+        $body | Should -Match '### UI Tests &#x2014; `maui-pr-uitests`'
+        $body | Should -Match '### Device Tests &#x2014; `maui-pr-devicetests`'
+        $body | Should -Match 'Generated by \[/review run-tests\]'
+        ([regex]::Matches($body, '<!-- review-run-tests-state: running -->')).Count | Should -Be 2
+        # Only the combined marker starts the comment, so it is not taken for a single-suite one.
+        $body | Should -Not -Match '<!-- review-run-tests -->|<!-- review-run-devicetests -->'
+        $sections = @(Get-RunTestsCommentSections $body)
+        $sections.suite | Should -Be @('ui', 'device')
+        $sections[0].body | Should -Match '<!-- review-run-tests-build: 11 -->'
+        $sections[1].body | Should -Match '<!-- review-run-tests-build: 22 -->'
+        $sections[1].body | Should -Not -Match 'buildId=11'
+    }
+
+    It 'updates one suite section without touching the other' {
+        $body = New-BothComment
+        $device = @(Get-RunTestsCommentSections $body)[1]
+        Set-RunTestsSuite device
+        $build = [pscustomobject]@{ id = 22; status = 'completed'; result = 'succeeded'; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=22' } } }
+        $results = ConvertTo-RunTestsResults -Build $build -Timeline $null
+        $updated = Set-RunTestsCommentSection -Body $body -Suite device -Section (Update-RunTestsComment -Body $device.body -Build $build -Results $results)
+        $after = @(Get-RunTestsCommentSections $updated)
+        $after[1].body | Should -Match '<!-- review-run-tests-state: done -->'
+        $after[1].body | Should -Match 'Result PASSED'
+        $after[0].body | Should -BeExactly @(Get-RunTestsCommentSections $body)[0].body
+        $updated | Should -Match '^<!-- review-run-tests-all -->'
+        # A single-suite comment is one section: its whole body.
+        $single = "<!-- review-run-devicetests -->`nbody"
+        @(Get-RunTestsCommentSections $single).suite | Should -Be 'device'
+        Set-RunTestsCommentSection -Body $single -Suite device -Section 'new' | Should -Be 'new'
+    }
+
+    It 'documents the combined selection for the models' {
+        $selection = Get-Content (Join-Path $PSScriptRoot '../workflows/shared/run-tests-selection.md') -Raw
+        $selection | Should -Match '`"all"` \(`/review run-tests`\)'
+        $selection | Should -Match 'device_platforms'
+        $dispatch = Get-Content (Join-Path $PSScriptRoot '../workflows/review-run-tests-dispatch.yml') -Raw
+        $dispatch | Should -Match 'timeout-minutes: 40'
     }
 }
