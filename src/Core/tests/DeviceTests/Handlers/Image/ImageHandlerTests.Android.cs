@@ -112,6 +112,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
+		{
+			var service = new FileImageSourceService();
+			var first = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var deferredSource = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+			var laterSource = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Green));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// A load requested while Glide reports the first one is deferred until after the callback;
+					// a load started directly before then is newer, so the deferred one must not replace it.
+					Task<IImageSourceServiceResult> deferred = null;
+					var later = new TaskCompletionSource<Task<IImageSourceServiceResult>>();
+					await service.LoadDrawableAsync(first, handler.PlatformView).ContinueWith(
+						_ =>
+						{
+							deferred = service.LoadDrawableAsync(deferredSource, handler.PlatformView);
+							new global::Android.OS.Handler(global::Android.OS.Looper.MainLooper).PostAtFrontOfQueue(
+								() => later.SetResult(service.LoadDrawableAsync(laterSource, handler.PlatformView)));
+						},
+						TaskContinuationOptions.ExecuteSynchronously);
+
+					var laterLoad = await later.Task;
+					await Task.WhenAny(Task.WhenAll(laterLoad, deferred.ContinueWith(_ => { })), Task.Delay(5_000));
+					Assert.Equal(TaskStatus.Canceled, deferred.Status);
+					Assert.Equal(TaskStatus.RanToCompletion, laterLoad.Status);
+
+					await handler.PlatformView.AssertContainsColor(Colors.Green, MauiContext);
+					await handler.PlatformView.AssertDoesNotContainColor(Colors.Blue, MauiContext);
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]

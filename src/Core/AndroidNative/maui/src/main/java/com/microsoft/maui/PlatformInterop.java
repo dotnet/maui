@@ -379,7 +379,7 @@ public class PlatformInterop {
      * Used before waiting for a download, so that a previous load cannot complete into the view in the meantime.
      */
     public static void clearImageView(ImageView imageView) {
-        MauiCustomViewTarget.onViewCleared(imageView);
+        MauiCustomViewTarget.onViewChanged(imageView);
         if (isContextDestroyed(imageView.getContext())) {
             return;
         }

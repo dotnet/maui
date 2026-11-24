@@ -30,6 +30,7 @@ namespace Microsoft.Maui
 	{
 		internal const string MaxDownloadSizeAppContextKey = "Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize";
 		internal const int DefaultMaxDownloadSize = 50 * 1024 * 1024;
+		internal const int MaxTrackedRemovals = 1024;
 
 		static readonly TimeSpan MaxRetryAfter = TimeSpan.FromSeconds(10);
 		static readonly object RetryAfterKey = typeof(UriImageLoader).FullName + ".RetryAfter";
@@ -241,7 +242,7 @@ namespace Microsoft.Maui
 				{
 					lock (_memoryPublishLock)
 					{
-						DiskCache.Remove(uri, () => _removals.AddOrUpdate(key, 1, static (_, count) => count + 1));
+						DiskCache.Remove(uri, () => ChangeVersion(key));
 						MemoryCache.Remove(key);
 					}
 				},
@@ -281,12 +282,25 @@ namespace Microsoft.Maui
 			((long)Volatile.Read(ref _cacheGeneration) << 32) | (uint)(_removals.TryGetValue(uri.OriginalString, out var removals) ? removals : 0);
 
 		/// <summary>
+		/// Changes the version of the image with cache key <paramref name="key"/>, so that loads that started before cannot keep what they load.
+		/// Must be called while holding <see cref="_memoryPublishLock"/> and the disk cache lock.
+		/// </summary>
+		void ChangeVersion(string key)
+		{
+			// Keep the number of tracked images bounded: start a new version for all images instead.
+			if (_removals.Count >= MaxTrackedRemovals && !_removals.ContainsKey(key))
+			{
+				Interlocked.Increment(ref _cacheGeneration);
+				_removals.Clear();
+			}
+
+			_removals.AddOrUpdate(key, 1, static (_, count) => count + 1);
+		}
+
+		/// <summary>
 		/// Removes <paramref name="entry"/> (and the memory copy) if the cache was not cleared since <paramref name="version"/>.
 		/// </summary>
-		/// <remarks>
-		/// When <paramref name="rejected"/> (the server rejected the image), its version also changes, so that loads that already have it cannot keep it in memory.
-		/// </remarks>
-		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry, bool rejected = false)
+		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry)
 		{
 			// Same gate as publishing to memory, so a load that already checked its entry cannot put it back.
 			lock (_memoryPublishLock)
@@ -294,14 +308,26 @@ namespace Microsoft.Maui
 				if (version != GetVersion(uri))
 					return;
 
-				var key = uri.OriginalString;
-				var removedFromMemory = MemoryCache.Remove(key);
+				MemoryCache.Remove(uri.OriginalString);
 				if (entry is not null)
 					DiskCache.Remove(entry);
+			}
+		}
 
-				// Only for images that were cached, so failing URIs that never loaded are not tracked.
-				if (rejected && (removedFromMemory || entry is not null))
-					_removals.AddOrUpdate(key, 1, static (_, count) => count + 1);
+		/// <summary>
+		/// Forgets the image after the server rejected it (for example 404 or 403), unless the cache was cleared since <paramref name="version"/>:
+		/// whatever is cached for it, including copies stored by overlapping loads, and what loads that are still in progress get.
+		/// </summary>
+		void Reject(Uri uri, long version)
+		{
+			var key = uri.OriginalString;
+			lock (_memoryPublishLock)
+			{
+				if (version != GetVersion(uri))
+					return;
+
+				DiskCache.Remove(uri, () => ChangeVersion(key));
+				MemoryCache.Remove(key);
 			}
 		}
 
@@ -498,7 +524,7 @@ namespace Microsoft.Maui
 			{
 				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it,
 				// including a copy that is only in memory.
-				InvalidateIfCurrent(uri, version, cached, rejected: true);
+				Reject(uri, version);
 				throw;
 			}
 			catch (Exception ex) when (cached is not null && IsTransient(ex, cancellationToken) && File.Exists(cached.DataPath))

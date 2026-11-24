@@ -158,31 +158,54 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.Equal(3, _handler.RequestCount);
 		}
 
-		[Fact]
-		public async Task LoadsThatGotTheImageBeforeTheServerRejectedItDoNotKeepIt()
+		[Theory]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task ImageIsNotCachedWhenAnOverlappingRequestWasRejected(bool rejectionFirst, bool diskCacheEnabled)
 		{
-			var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			// A downloads the image while B (another validity, so another request) is rejected by the server.
+			var startedA = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var startedB = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseA = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseB = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			_handler.Respond(async _ =>
 			{
-				started.SetResult(true);
-				await release.Task;
-				return Ok(Png);
+				if (startedA.TrySetResult(true))
+				{
+					await releaseA.Task;
+					return Ok(Png);
+				}
+
+				startedB.SetResult(true);
+				await releaseB.Task;
+				return new HttpResponseMessage(HttpStatusCode.Forbidden);
 			});
-			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 0);
-			var first = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
-			await started.Task;
+			var loader = CreateLoader(o => o.DiskCacheSizeLimit = diskCacheEnabled ? ImageLoadingOptions.DefaultDiskCacheSizeLimit : 0);
 
-			// Cached in memory by an earlier load, then rejected by the server while the first load is still downloading.
-			_handler.Respond(_ => Ok(Png));
-			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
-			_handler.Respond(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
-			await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.Zero));
+			var a = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+			await startedA.Task;
+			var b = loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+			await startedB.Task;
 
-			release.SetResult(true);
-			Assert.Equal(Png, await first);
+			if (rejectionFirst)
+			{
+				releaseB.SetResult(true);
+				await Assert.ThrowsAsync<HttpRequestException>(() => b);
+				releaseA.SetResult(true);
+				Assert.Equal(Png, await a);
+			}
+			else
+			{
+				releaseA.SetResult(true);
+				Assert.Equal(Png, await a);
+				releaseB.SetResult(true);
+				await Assert.ThrowsAsync<HttpRequestException>(() => b);
+			}
 
 			Assert.False(loader.MemoryCache.TryGet(ImageUri.OriginalString, out _));
+			Assert.Null(loader.DiskCache.GetEntry(ImageUri));
 		}
 
 		[Fact]

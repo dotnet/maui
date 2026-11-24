@@ -81,10 +81,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public bool Remove(string key)
+		public void Remove(string key)
 		{
 			lock (_lock)
-				return RemoveLocked(key);
+				RemoveLocked(key);
 		}
 
 		public void Clear()
@@ -97,15 +97,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		bool RemoveLocked(string key)
+		void RemoveLocked(string key)
 		{
-			if (!_items.TryGetValue(key, out var node))
-				return false;
-
-			_items.Remove(key);
-			_lru.Remove(node);
-			_size -= node.Value.Data.LongLength;
-			return true;
+			if (_items.TryGetValue(key, out var node))
+			{
+				_items.Remove(key);
+				_lru.Remove(node);
+				_size -= node.Value.Data.LongLength;
+			}
 		}
 
 		internal readonly struct Item
