@@ -11,6 +11,51 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 public partial class BlazorWebViewTests
 {
+	[Fact]
+	public async Task RootComponentsCanBeClearedAndReaddedAfterInitialization()
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+
+		var bwv = new BlazorWebViewWithCustomFiles
+		{
+			HostPage = "wwwroot/index.html",
+			CustomFiles = new Dictionary<string, string>
+			{
+				{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
+			},
+		};
+		bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(TestComponent1), Selector = "#app" });
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(bwv);
+			try
+			{
+				var platformWebView = handler.PlatformView;
+				await WebViewHelpers.WaitForWebViewReady(platformWebView);
+				await WebViewHelpers.WaitForControlDiv(platformWebView, "0");
+
+				for (var i = 0; i < 2; i++)
+				{
+					bwv.RootComponents.Clear();
+					await WebViewHelpers.WaitForCondition(platformWebView,
+						"document.getElementById('app').textContent.trim() === ''");
+
+					bwv.RootComponents.Clear();
+					bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(TestComponent1), Selector = "#app" });
+					await WebViewHelpers.WaitForControlDiv(platformWebView, "0");
+				}
+			}
+			finally
+			{
+				((IElementHandler)handler).DisconnectHandler();
+			}
+		});
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
