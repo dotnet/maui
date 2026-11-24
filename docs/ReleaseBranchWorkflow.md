@@ -506,9 +506,14 @@ Force-pushing or rebasing `net11` breaks that ancestry for every unpublished
 lane: the publication reconciler fails until its prepared commit is an ancestor
 of `net11` again.
 The merged-PR trigger then revalidates that ancestry and resumes the same receipt.
+If the normalization PR is squash- or rebase-merged anyway, the runner warns,
+ignores that merge and opens a replacement draft PR from the same pinned head
+(its diff may be empty because the tree already landed). Merging the replacement
+with **Create a merge commit** records the ancestry and resumes the receipt.
 Existing protections and bypass actors are never changed by this workflow.
-If net11 acquires unrelated work before normalization, the runner refuses to
-overwrite it. Servicing preparation runs independently in the publication
+While normalization is pending, net11 may advance from the approved candidate
+merge, but the runner never overwrites it and refuses history that no longer
+descends from that merge. Servicing preparation runs independently in the publication
 reconciler before a real manual cut. The next-lane runner reconciles the next tracking pair and prepares
 the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
 is not used, so servicing configuration cannot overwrite feature-major settings.
