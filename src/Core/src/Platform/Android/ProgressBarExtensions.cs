@@ -1,6 +1,7 @@
-﻿using Android.Content.Res;
+﻿using Android.Graphics.Drawables;
 using Google.Android.Material.ProgressIndicator;
 using Microsoft.Maui.Graphics;
+using ADrawable = Android.Graphics.Drawables.Drawable;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Platform
@@ -30,24 +31,31 @@ namespace Microsoft.Maui.Platform
 		{
 			Color color = progress.ProgressColor;
 
-			if (color == null)
+			// Use a color filter instead of a tint list: setting ProgressTintList replaces the tint
+			// that the theme puts on the platform drawable, and setting it back to null does not
+			// restore that tint. Clearing the filter brings back the theme color.
+			var drawable = platformProgressBar.Indeterminate
+				? platformProgressBar.IndeterminateDrawable
+				: platformProgressBar.ProgressDrawable?.GetProgressLayer();
+
+			if (color is null)
 			{
-				(platformProgressBar.Indeterminate ? platformProgressBar.IndeterminateDrawable :
-					platformProgressBar.ProgressDrawable)?.ClearColorFilter();
+				drawable?.ClearColorFilter();
 			}
 			else
 			{
-				var tintList = ColorStateList.ValueOf(color.ToPlatform());
-
-				if (platformProgressBar.Indeterminate)
-				{
-					platformProgressBar.IndeterminateTintList = tintList;
-				}
-				else
-				{
-					platformProgressBar.ProgressTintList = tintList;
-				}
+				drawable?.SetColorFilter(color, FilterMode.SrcIn);
 			}
+		}
+
+		// Only color the progress layer, so the track keeps its color.
+		static ADrawable GetProgressLayer(this ADrawable progressDrawable)
+		{
+			progressDrawable.Mutate();
+
+			return progressDrawable is LayerDrawable layerDrawable
+				? layerDrawable.FindDrawableByLayerId(Android.Resource.Id.Progress) ?? progressDrawable
+				: progressDrawable;
 		}
 
 		static void UpdateLinearProgressIndicatorColor(this LinearProgressIndicator materialProgressBar, IProgress progress)

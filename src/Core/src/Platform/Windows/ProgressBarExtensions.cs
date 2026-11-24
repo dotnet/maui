@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)
 		{
 			Color progressColor = progress.ProgressColor;
-			if (progressColor != null)
+			if (progressColor is null)
+				platformProgressBar.ClearValue(ProgressBar.ForegroundProperty);
+			else
 				platformProgressBar.Foreground = progressColor.ToPlatform();
 		}
 	}
