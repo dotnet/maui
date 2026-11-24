@@ -47,6 +47,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.ObjectKey;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -61,6 +62,7 @@ import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
+import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -354,6 +356,30 @@ public class PlatformInterop {
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
+    /**
+     * Loads an image that MAUI downloaded into its own disk cache.
+     * Glide does not cache the file on disk again, but keeps the decoded image in memory.
+     * The version changes whenever the file content changes, so a refreshed file is never shown from Glide's memory cache.
+     */
+    public static void loadImageFromCachedFile(ImageView imageView, String file, long version, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(new File(file))
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .signature(new ObjectKey(version));
+        loadInto(builder, imageView, true, callback, file);
+    }
+
+    /**
+     * Loads an image from bytes that must not be cached.
+     */
+    public static void loadImageFromBytes(ImageView imageView, byte[] data, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(data);
+        loadInto(builder, imageView, false, callback, null);
+    }
+
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
@@ -396,6 +422,30 @@ public class PlatformInterop {
             .with(context)
             .load(androidUri);
         load(builder, context, cachingEnabled, callback, androidUri);
+    }
+
+    public static void loadImageFromCachedFile(Context context, String file, long version, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(new File(file))
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .signature(new ObjectKey(version));
+        load(builder, context, true, callback, file);
+    }
+
+    public static void loadImageFromBytes(Context context, byte[] data, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(data);
+        load(builder, context, false, callback, null);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {

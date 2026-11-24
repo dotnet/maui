@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Platform
 			IImageSourceServiceProvider services,
 			Action<WImageSource?> setImage,
 			float imageScale = 1.0f,
-			CancellationToken cancellationToken = default)
+			CancellationToken cancellationToken = default,
+			Action<Exception>? onFailed = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -53,9 +54,18 @@ namespace Microsoft.Maui.Platform
 				// no-op
 				events?.LoadingCompleted(false);
 			}
+			catch (Exception) when (cancellationToken.IsCancellationRequested || imageSource != image.Source)
+			{
+				// The load was cancelled or a newer source is loading; this failure is no longer relevant
+				// and must not clear the newer image.
+				events?.LoadingCompleted(false);
+			}
 			catch (Exception ex)
 			{
-				setImage?.Invoke(null);
+				if (onFailed is not null)
+					onFailed(ex);
+				else
+					setImage?.Invoke(null);
 				events?.LoadingFailed(ex);
 			}
 			finally

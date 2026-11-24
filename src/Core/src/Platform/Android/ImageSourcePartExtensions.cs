@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Platform
 			View destinationContext,
 			IImageSourceServiceProvider services,
 			Action<Drawable?> setImage,
-			CancellationToken cancellationToken = default)
+			CancellationToken cancellationToken = default,
+			Action<Exception>? onFailed = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -49,11 +50,15 @@ namespace Microsoft.Maui.Platform
 					if (destinationImageView is not null)
 					{
 						result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+						applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
 					}
 					else
 					{
 						result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
-						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+
+						// Only set the image if we are still on the same one.
+						applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+						if (applied && setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
 							setImage.Invoke(drawableResult.Value);
 					}
 
@@ -69,9 +74,18 @@ namespace Microsoft.Maui.Platform
 				// no-op
 				events?.LoadingCompleted(false);
 			}
+			catch (Exception) when (cancellationToken.IsCancellationRequested || imageSource != image.Source)
+			{
+				// The load was cancelled or a newer source is loading; this failure is no longer relevant
+				// and must not clear the newer image.
+				events?.LoadingCompleted(false);
+			}
 			catch (Exception ex)
 			{
-				setImage?.Invoke(null);
+				if (onFailed is not null)
+					onFailed(ex);
+				else
+					setImage?.Invoke(null);
 				events?.LoadingFailed(ex);
 			}
 			finally

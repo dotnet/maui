@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 
@@ -50,6 +51,9 @@ namespace Microsoft.Maui.Platform
 		public void Reset()
 		{
 			SourceManager.Reset();
+#if IOS || ANDROID || WINDOWS
+			ReleaseFallback();
+#endif
 		}
 
 		public async Task UpdateImageSourceAsync()
@@ -66,19 +70,41 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS || ANDROID || WINDOWS
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+
+				var fallbacks = imageSource as IImageSourcePartFallbacks;
+				var errorSource = fallbacks?.ErrorSource;
+				Action<Exception>? onFailed = errorSource is null
+					? null
+					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, token, () => true).FireAndForget();
 #endif
 
 #if IOS || WINDOWS
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
-				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
-					.ConfigureAwait(false);
-
-				SourceManager.CompleteLoad(result);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed);
 #elif ANDROID
-				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
-					.ConfigureAwait(false);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed);
+#endif
+
+#if IOS || ANDROID || WINDOWS
+				// Only show the placeholder when the image is not available right away (for example from a memory cache).
+				if (!loadTask.IsCompleted && fallbacks?.PlaceholderSource is { } placeholderSource)
+				{
+					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, token, () => !loadTask.IsCompleted)
+						.FireAndForget();
+				}
+
+				var result = await loadTask;
+
+				// A newer load has started (or the loader was reset); it owns the result and the fallbacks now.
+				if (token.IsCancellationRequested)
+					return;
 
 				SourceManager.CompleteLoad(result);
+
+				// Release the placeholder once the image replaced it. After a failure the
+				// placeholder stays until the error image (if any) replaces it.
+				if (result is not null || errorSource is null)
+					ReleaseFallback();
 #else
 				await Task.CompletedTask;
 #endif
@@ -90,10 +116,82 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				Setter.SetImageSource(null);
+#if IOS || ANDROID || WINDOWS
+				ReleaseFallback();
+#endif
 #if ANDROID
 				CheckForImageLoadedOnAttached = false;
 #endif
 			}
 		}
+
+#if IOS || ANDROID || WINDOWS
+		IDisposable? _fallbackResult;
+
+		/// <summary>
+		/// Shows a placeholder or error image without changing the loading state.
+		/// </summary>
+		async Task ShowFallbackAsync(IImageSource source, IImageSourceServiceProvider provider, PlatformView platformView, CancellationToken token, Func<bool> isStillNeeded)
+		{
+			IDisposable? result = null;
+			PlatformImage? image = null;
+
+			try
+			{
+				var service = provider.GetRequiredImageSourceService(source);
+#if IOS
+				var scale = platformView.Window?.GetDisplayDensity() ?? 1.0f;
+				var platformResult = await service.GetImageAsync(source, scale, token);
+				result = platformResult;
+				image = platformResult?.Value;
+#elif WINDOWS
+				var scale = platformView.XamlRoot?.RasterizationScale is double rasterizationScale ? (float)rasterizationScale : 1.0f;
+				var platformResult = await service.GetImageSourceAsync(source, scale, token);
+				result = platformResult;
+				image = platformResult?.Value;
+#elif ANDROID
+				if (platformView.Context is not { } context)
+					return;
+				var platformResult = await service.GetDrawableAsync(source, context, token);
+				result = platformResult;
+				image = platformResult?.Value;
+#endif
+			}
+			catch (Exception) when (token.IsCancellationRequested)
+			{
+				return;
+			}
+			catch (Exception)
+			{
+				// The fallback image could not be loaded either: show nothing.
+				if (!token.IsCancellationRequested && isStillNeeded())
+				{
+					Setter.SetImageSource(null);
+					ReleaseFallback();
+				}
+				return;
+			}
+
+			if (token.IsCancellationRequested || !isStillNeeded() || image is null)
+			{
+				// The fallback was never shown.
+				result?.Dispose();
+				return;
+			}
+
+			Setter.SetImageSource(image);
+
+			var previous = _fallbackResult;
+			_fallbackResult = result;
+			previous?.Dispose();
+		}
+
+		void ReleaseFallback()
+		{
+			var previous = _fallbackResult;
+			_fallbackResult = null;
+			previous?.Dispose();
+		}
+#endif
 	}
 }

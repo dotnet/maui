@@ -24,11 +24,15 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken);
+				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken).ConfigureAwait(false);
 
 				using var cgImageSource = imageData.GetPlatformImageSource();
 				if (cgImageSource is null)
+				{
+					// Do not keep showing (or caching) data that cannot be decoded.
+					Loader.Invalidate(imageSource.Uri);
 					throw new InvalidOperationException("Unable to load image file.");
+				}
 
 				var image = cgImageSource.GetPlatformImage();
 
@@ -45,42 +49,17 @@ namespace Microsoft.Maui
 
 		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
 		{
-			// TODO: use a real caching library with the URI
-
-			var filename = GetCachedFileName(imageSource);
-			var pathToImageCache = Path.Combine(CacheDirectory, filename);
-
-			NSData? imageData;
-
-			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
-			{
-				imageData = GetCachedImage(pathToImageCache);
-			}
-			else
-			{
-				imageData = await DownloadImageAsync(imageSource, cancellationToken);
-				if (imageSource.CachingEnabled)
-					CacheImage(imageData, pathToImageCache);
-			}
-
-			return imageData;
-		}
-
-		internal static async Task<NSData> DownloadImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
-		{
-			if (imageSource is not IStreamImageSource streamImageSource)
+			if (!UriImageLoader.CanLoad(imageSource))
 				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
 
-			using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
-			if (stream is null)
-				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
+			var bytes = await Loader.LoadAsync(
+				imageSource.Uri,
+				imageSource.CachingEnabled,
+				imageSource.CacheValidity,
+				UriImageLoader.GetCustomFetch(imageSource),
+				cancellationToken).ConfigureAwait(false);
 
-			var imageData = NSData.FromStream(stream);
-
-			if (imageData is null)
-				throw new InvalidOperationException("Unable to load image stream data.");
-
-			return imageData;
+			return NSData.FromArray(bytes);
 		}
 
 #pragma warning disable CA1822 // Mark members as static; Disabling because these methods are public and changing them to static is potentially a breaking change

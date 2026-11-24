@@ -28,8 +28,11 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IImage.Source)] = MapSource,
 		};
 
+		internal const string ReloadCommand = "Reload";
+
 		public static CommandMapper<IImage, IImageHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
+			[ReloadCommand] = MapReload,
 		};
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
@@ -51,6 +54,15 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+
+		/// <summary>
+		/// Loads the image source again, for example after it failed to load.
+		/// </summary>
+		/// <param name="handler">The handler of the image.</param>
+		/// <param name="image">The image to reload.</param>
+		/// <param name="args">Not used.</param>
+		public static void MapReload(IImageHandler handler, IImage image, object? args) =>
+			handler.UpdateValue(nameof(IImage.Source));
 
 		// TODO MAUI: Should we remove all shadowing? 
 		IImage IImageHandler.VirtualView => VirtualView;

@@ -19,21 +19,32 @@ namespace Microsoft.Maui
 			if (imageSource.IsEmpty)
 				return null;
 
-			// TODO: use a real caching library with the URI
-			if (imageSource is not IStreamImageSource streamImageSource)
+			if (!UriImageLoader.CanLoad(imageSource))
 				throw new InvalidOperationException("Unable to load URI as a stream.");
 
 			try
 			{
-				using var stream = await streamImageSource.GetStreamAsync(cancellationToken);
-
-				if (stream == null)
-					throw new InvalidOperationException("Unable to load image stream.");
+				var bytes = await Loader.LoadAsync(
+					imageSource.Uri,
+					imageSource.CachingEnabled,
+					imageSource.CacheValidity,
+					UriImageLoader.GetCustomFetch(imageSource),
+					cancellationToken);
 
 				var image = new BitmapImage();
 
-				using var ras = stream.AsRandomAccessStream();
-				await image.SetSourceAsync(ras);
+				try
+				{
+					using var stream = new MemoryStream(bytes, writable: false);
+					using var ras = stream.AsRandomAccessStream();
+					await image.SetSourceAsync(ras);
+				}
+				catch (Exception) when (!cancellationToken.IsCancellationRequested)
+				{
+					// The data could not be decoded: do not keep it in the cache.
+					Loader.Invalidate(imageSource.Uri);
+					throw;
+				}
 
 				var result = new ImageSourceServiceResult(image);
 

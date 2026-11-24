@@ -1,8 +1,6 @@
 #nullable disable
 using System;
-using System.Globalization;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,12 +8,16 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
 	/// <summary>An <see cref="ImageSource"/> that loads an image from a URI, with caching support.</summary>
-	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
+	/// <remarks>
+	/// Images are downloaded with a shared <see cref="System.Net.Http.HttpClient"/> and cached in memory and on disk for <see cref="CacheValidity"/>.
+	/// Expired images are revalidated with the server and are still shown when the server cannot be reached.
+	/// Configure downloading and caching with <c>MauiAppBuilder.ConfigureImageLoading</c>, and clear the cache with <see cref="IImageCache"/>.
+	/// </remarks>
+	public sealed partial class UriImageSource : ImageSource, IStreamImageSource, ILoaderUriImageSource
 	{
-		internal const int DefaultMaxResponseContentBufferSize = 50 * 1024 * 1024;
-		internal const string MaxResponseContentBufferSizeAppContextKey = "Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize";
+		internal const int DefaultMaxResponseContentBufferSize = UriImageLoader.DefaultMaxDownloadSize;
+		internal const string MaxResponseContentBufferSizeAppContextKey = UriImageLoader.MaxDownloadSizeAppContextKey;
 
 		/// <summary>Bindable property for <see cref="Uri"/>.</summary>
 		public static readonly BindableProperty UriProperty = BindableProperty.Create(
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.Controls
 				return null;
 
 			await OnLoadingStarted();
-			userToken.Register(CancellationTokenSource.Cancel);
+			using var registration = userToken.Register(CancellationTokenSource.Cancel);
 			Stream stream;
 
 			try
@@ -94,82 +96,27 @@ namespace Microsoft.Maui.Controls
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			Stream stream = null;
-
-			if (CachingEnabled)
-			{
-				// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
-
-				// var key = GetKey();
-				// var cached = TryGetFromCache(key, out stream)
-				if (stream is null)
-					stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-				// if (!cached)
-				//    Cache(key, stream)
-			}
-			else
-			{
-				stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-			}
-
-			return stream;
-		}
-
-		async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
 			try
 			{
-				using var client = new HttpClient();
-				client.MaxResponseContentBufferSize = GetMaxResponseContentBufferSize();
+				var data = await UriImageLoader.GetCurrent()
+					.LoadAsync(uri, CachingEnabled, CacheValidity, cancellationToken)
+					.ConfigureAwait(false);
 
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				return new MemoryStream(data, writable: false);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{
-
 				MauiLogger<UriImageSource>.Log(LogLevel.Warning, ex, $"Error getting stream for {Uri}");
 				return null;
 			}
 		}
 
-		internal static int GetMaxResponseContentBufferSize()
-		{
-			var configuredValue = AppContext.GetData(MaxResponseContentBufferSizeAppContextKey);
-			if (configuredValue is null)
-				return DefaultMaxResponseContentBufferSize;
-
-			int maxResponseContentBufferSize;
-			if (configuredValue is int intValue)
-			{
-				maxResponseContentBufferSize = intValue;
-			}
-			else if (configuredValue is long longValue &&
-				longValue >= int.MinValue &&
-				longValue <= int.MaxValue)
-			{
-				maxResponseContentBufferSize = (int)longValue;
-			}
-			else if (configuredValue is string stringValue &&
-				int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-			{
-				maxResponseContentBufferSize = parsedValue;
-			}
-			else
-			{
-				throw new InvalidOperationException(
-					$"The AppContext value '{MaxResponseContentBufferSizeAppContextKey}' must be an integer number of bytes.");
-			}
-
-			if (maxResponseContentBufferSize <= 0)
-			{
-				throw new InvalidOperationException(
-					$"The AppContext value '{MaxResponseContentBufferSizeAppContextKey}' must be between 1 and {int.MaxValue} bytes.");
-			}
-
-			return maxResponseContentBufferSize;
-		}
+		internal static int GetMaxResponseContentBufferSize() =>
+			UriImageLoader.GetDefaultMaxDownloadSize();
 
 		void OnUriChanged()
 		{
