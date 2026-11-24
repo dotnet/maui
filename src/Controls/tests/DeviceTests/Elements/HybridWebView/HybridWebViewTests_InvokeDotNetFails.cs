@@ -60,6 +60,24 @@ public partial class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			// This should return a 400 Bad Request response
 			Assert.Equal("400", target.TestResult);
 		});
+
+	[Fact]
+	public Task UnmarkedBodyHeaderIsNotDecoded() =>
+		RunJavaScriptTest(async (hybridWebView, target) =>
+		{
+			// Test that a body header without the encoding marker (older HybridWebView.js) is passed through unchanged
+			Assert.Equal("200", target.TestResult);
+			Assert.Equal(new[] { "a%20b" }, target.ParamValues);
+		});
+
+	[Fact]
+	public Task MarkedBodyHeaderIsDecoded() =>
+		RunJavaScriptTest(async (hybridWebView, target) =>
+		{
+			// Test that a URL-encoded body header with the encoding marker is decoded
+			Assert.Equal("200", target.TestResult);
+			Assert.Equal(new[] { "a%20b" }, target.ParamValues);
+		});
 #endif
 
 	[Fact]
