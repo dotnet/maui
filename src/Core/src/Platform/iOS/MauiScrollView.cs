@@ -23,6 +23,10 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
 
+		// Cached result of IsLargeTitleTrackedScrollView's hierarchy search, and the controller view it was computed for.
+		bool _isFirstScrollViewInController;
+		WeakReference<UIView>? _firstScrollViewRoot;
+
 		/// <summary>
 		/// Cached result of whether this scroll view is a descendant of another UIScrollView.
 		/// Null when not yet calculated, true if nested within another scroll view, false otherwise.
@@ -749,7 +753,17 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					return FindFirstScrollView(controller.View) == this;
+					// Searching the controller's view tree is costly and this runs on every eligible
+					// arrange (collapsing the title changes the insets, so the frame-changed guard doesn't
+					// skip it). Cache the result per controller view; it is cleared when this view moves
+					// in the hierarchy.
+					if (_firstScrollViewRoot is not { } cachedRoot || !cachedRoot.TryGetTarget(out var root) || root != controller.View)
+					{
+						_isFirstScrollViewInController = FindFirstScrollView(controller.View) == this;
+						_firstScrollViewRoot = new WeakReference<UIView>(controller.View);
+					}
+
+					return _isFirstScrollViewInController;
 				}
 
 				responder = responder.NextResponder;
@@ -758,15 +772,17 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
+		// The root is part of the search: a native host can set this scroll view directly as the
+		// controller's view.
 		static UIScrollView? FindFirstScrollView(UIView view)
 		{
+			if (view is UIScrollView rootScrollView)
+			{
+				return rootScrollView;
+			}
+
 			foreach (var subview in view.Subviews)
 			{
-				if (subview is UIScrollView scrollView)
-				{
-					return scrollView;
-				}
-
 				if (FindFirstScrollView(subview) is { } nested)
 				{
 					return nested;
@@ -949,6 +965,15 @@ namespace Microsoft.Maui.Platform
 			remove => _movedToWindow -= value;
 		}
 
+		/// <inheritdoc/>
+		public override void MovedToSuperview()
+		{
+			base.MovedToSuperview();
+
+			// The controller-wide search result depends on where this view sits in the hierarchy.
+			_firstScrollViewRoot = null;
+		}
+
 		/// <summary>
 		/// Called when the view is moved to a window (added to or removed from the view hierarchy).
 		/// This method handles cleanup and initialization tasks, including invalidating cached values
@@ -963,6 +988,7 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
+			_firstScrollViewRoot = null;
 			_blockedEdgesCacheValid = false;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area

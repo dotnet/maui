@@ -131,6 +131,107 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
+		// The stub layout arranges to 580 high in a 600 high scroll view with a 36 safe area, so
+		// the content is "nearly" scrollable: the scroll view inflates ContentSize to 601 to stay
+		// in scrollable mode, except for the scroll view a large-title navigation bar tracks.
+		const int InflatedHeight = 601;
+		const int RealHeight = 580;
+
+		[Fact]
+		public Task LargeTitleTrackedScrollViewIsNotInflated() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+
+				// The expanded and collapsed title give the scroll view different insets; the content
+				// height must not depend on that (issue #40277).
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				scrollView.SystemInset = new UIEdgeInsets(44, 0, 0, 0);
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task LargeTitleScrollViewSetAsControllerViewIsNotInflated() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View = scrollView;
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+
+				Arrange(scrollView);
+
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Theory]
+		[InlineData(false, UINavigationItemLargeTitleDisplayMode.Automatic)]
+		[InlineData(true, UINavigationItemLargeTitleDisplayMode.Never)]
+		public Task ScrollViewKeepsInflationWithoutLargeTitle(bool prefersLargeTitles, UINavigationItemLargeTitleDisplayMode mode) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = prefersLargeTitles;
+				controller.NavigationItem.LargeTitleDisplayMode = mode;
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task UntrackedScrollViewKeepsInflation() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var tracked = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				// The first scroll view in the hierarchy is the one the navigation bar tracks.
+				controller.View.AddSubview(tracked);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenMovedInHierarchy() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				// Once the other scroll view is gone and this one is re-added, it is the tracked one.
+				other.RemoveFromSuperview();
+				scrollView.RemoveFromSuperview();
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
 		static InsetScrollView CreateScrollView(SafeAreaLayoutStub layout, UIResponder responder, int adjustedTop)
 		{
 			var scrollView = new InsetScrollView
