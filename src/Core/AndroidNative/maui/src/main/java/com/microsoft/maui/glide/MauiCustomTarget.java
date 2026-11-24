@@ -28,6 +28,15 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
     private boolean completed;
 
     public MauiCustomTarget(Context context, ImageLoaderCallback callback, Object model) {
+        this(context, callback, model, SIZE_ORIGINAL, SIZE_ORIGINAL);
+    }
+
+    /**
+     * Creates a target that decodes the image for the given size (like a view of that size would), or at its original size.
+     */
+    public MauiCustomTarget(Context context, ImageLoaderCallback callback, Object model, int width, int height) {
+        super(width, height);
+
         this.completed = false;
         this.context = context;
         this.callback = callback;

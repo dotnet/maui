@@ -10,14 +10,20 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public partial class UriImageSourceService
+	public partial class UriImageSourceService : IImageSourceServiceWithDecodeOptions
 	{
 		internal static readonly string CacheDirectory = Path.Combine(FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync(imageSource, null, cancellationToken);
+
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken) =>
+			GetImageAsync((IUriImageSource)imageSource, options, cancellationToken);
+
+		async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, ImageDecodeOptions? options, CancellationToken cancellationToken)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -31,7 +37,7 @@ namespace Microsoft.Maui
 				{
 					using var cgImageSource = imageData.GetPlatformImageSource()
 						?? throw new InvalidOperationException("Unable to load image file.");
-					image = cgImageSource.GetPlatformImage();
+					image = cgImageSource.GetPlatformImage(1, options);
 				}
 				catch (Exception)
 				{

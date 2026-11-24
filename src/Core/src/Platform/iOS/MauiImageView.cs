@@ -31,6 +31,15 @@ namespace Microsoft.Maui.Platform
 			remove => _movedToWindow -= value;
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			// A large image is decoded at the size it is displayed at; decode it again when the view grows.
+			if (_handler is not null && _handler.TryGetTarget(out var handler))
+				handler.SourceLoader.UpdateDecodedSize();
+		}
+
 		public override void MovedToWindow()
 		{
 			if (_handler is not null && _handler.TryGetTarget(out var handler))

@@ -10,7 +10,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
-	public partial class UriImageSourceService
+	public partial class UriImageSourceService : IViewSizedImageSourceService
 	{
 		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default)
 		{
@@ -45,19 +45,24 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
+			GetDrawableAsync((IUriImageSource)imageSource, context, IViewSizedImageSourceService.SizeOriginal, IViewSizedImageSourceService.SizeOriginal, cancellationToken);
+
+		Task<IImageSourceServiceResult<Drawable>?> IViewSizedImageSourceService.GetDrawableAsync(IImageSource imageSource, Context context, int width, int height, CancellationToken cancellationToken) =>
+			GetDrawableAsync((IUriImageSource)imageSource, context, width, height, cancellationToken);
+
+		Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IUriImageSource uriImageSource, Context context, int width, int height, CancellationToken cancellationToken)
 		{
-			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)
 			{
 				try
 				{
 					if (UriImageLoader.CanLoad(uriImageSource.Uri))
-						return GetDownloadedDrawableAsync(uriImageSource, context, cancellationToken);
+						return GetDownloadedDrawableAsync(uriImageSource, context, width, height, cancellationToken);
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, uriImageSource.CachingEnabled, drawableCallback);
+					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, uriImageSource.CachingEnabled, width, height, drawableCallback);
 
 					return drawableCallback.Result;
 				}
@@ -161,7 +166,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		async Task<IImageSourceServiceResult<Drawable>?> GetDownloadedDrawableAsync(IUriImageSource imageSource, Context context, CancellationToken cancellationToken)
+		async Task<IImageSourceServiceResult<Drawable>?> GetDownloadedDrawableAsync(IUriImageSource imageSource, Context context, int width, int height, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -176,9 +181,9 @@ namespace Microsoft.Maui
 
 				var callback = new ImageLoaderResultCallback();
 				if (image.FilePath is not null)
-					PlatformInterop.LoadImageFromCachedFile(context, image.FilePath, image.Version, callback);
+					PlatformInterop.LoadImageFromCachedFile(context, image.FilePath, image.Version, width, height, callback);
 				else
-					PlatformInterop.LoadImageFromBytes(context, image.Data!, callback);
+					PlatformInterop.LoadImageFromBytes(context, image.Data!, width, height, callback);
 
 				var result = await WaitForGlideAsync(callback.Result, cancellationToken);
 

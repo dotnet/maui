@@ -45,6 +45,15 @@ namespace Microsoft.Maui
 		/// Gets the image to show when <see cref="IImageSourcePart.Source"/> fails to load, or <see langword="null"/> to show nothing.
 		/// </summary>
 		IImageSource? ErrorSource { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the image that is shown stays visible while a new <see cref="IImageSourcePart.Source"/> loads,
+		/// instead of the placeholder (or nothing).
+		/// </summary>
+		/// <remarks>
+		/// Only an image that loaded successfully is kept. When the new source fails to load, the error image (or nothing) is shown.
+		/// </remarks>
+		bool KeepPreviousImageWhileLoading { get; }
 	}
 
 	public interface IImageSourcePartEvents

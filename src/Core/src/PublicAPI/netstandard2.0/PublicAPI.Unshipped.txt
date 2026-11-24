@@ -4,6 +4,7 @@ Microsoft.Maui.IImageCache.ClearAsync(System.Threading.CancellationToken cancell
 Microsoft.Maui.IImageCache.RemoveAsync(System.Uri! uri, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.Maui.IImageSourcePartFallbacks
 Microsoft.Maui.IImageSourcePartFallbacks.ErrorSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.IImageSourcePartFallbacks.KeepPreviousImageWhileLoading.get -> bool
 Microsoft.Maui.IImageSourcePartFallbacks.PlaceholderSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.ImageLoadingOptions
 Microsoft.Maui.ImageLoadingOptions.CacheDirectory.get -> string?

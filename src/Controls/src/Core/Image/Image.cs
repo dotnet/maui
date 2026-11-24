@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ErrorSourceProperty = BindableProperty.Create(nameof(ErrorSource), typeof(ImageSource), typeof(Image), default(ImageSource),
 			propertyChanged: OnFallbackSourceChanged);
 
+		/// <summary>Bindable property for <see cref="KeepPreviousImageWhileLoading"/>.</summary>
+		public static readonly BindableProperty KeepPreviousImageWhileLoadingProperty = BindableProperty.Create(nameof(KeepPreviousImageWhileLoading), typeof(bool), typeof(Image), false);
+
 		static readonly BindablePropertyKey LoadingStatePropertyKey = BindableProperty.CreateReadOnly(nameof(LoadingState), typeof(ImageLoadingState), typeof(Image), ImageLoadingState.Idle);
 
 		/// <summary>Bindable property for <see cref="LoadingState"/>.</summary>
@@ -117,6 +120,21 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (ImageSource)GetValue(ErrorSourceProperty); }
 			set { SetValue(ErrorSourceProperty, value); }
+		}
+
+		/// <summary>Gets or sets a value indicating whether the current image stays visible while a new <see cref="Source"/> loads. This is a bindable property.</summary>
+		/// <value><see langword="true"/> to keep showing the current image until the new one is ready; <see langword="false"/> (the default) otherwise.</value>
+		/// <remarks>
+		/// <para>Use this, for example, to switch between images or to <see cref="Reload"/> without the image disappearing.
+		/// While the current image is kept, <see cref="PlaceholderSource"/> is not shown. Only an image that loaded successfully is kept:
+		/// when the new source fails to load, <see cref="ErrorSource"/> (or nothing) is shown instead.</para>
+		/// <para>Do not enable this for images in a <see cref="CollectionView"/> or <see cref="ListView"/>: a reused cell would keep showing the previous item's image while the new one loads.</para>
+		/// <para>When <see langword="false"/>, Android clears the image as soon as a new source starts loading, while iOS, Mac Catalyst and Windows keep it until the new image is ready.</para>
+		/// </remarks>
+		public bool KeepPreviousImageWhileLoading
+		{
+			get => (bool)GetValue(KeepPreviousImageWhileLoadingProperty);
+			set => SetValue(KeepPreviousImageWhileLoadingProperty, value);
 		}
 
 		/// <summary>Gets the loading state of <see cref="Source"/>. This is a bindable property.</summary>
@@ -204,6 +222,8 @@ namespace Microsoft.Maui.Controls
 		IImageSource IImageSourcePartFallbacks.PlaceholderSource => PlaceholderSource;
 
 		IImageSource IImageSourcePartFallbacks.ErrorSource => ErrorSource;
+
+		bool IImageSourcePartFallbacks.KeepPreviousImageWhileLoading => KeepPreviousImageWhileLoading;
 
 		void IImageSourcePartEvents.LoadingStarted() =>
 			LoadingState = ImageLoadingState.Loading;

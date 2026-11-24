@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Platform
 			IImageSourceServiceProvider services,
 			Action<Drawable?> setImage,
 			CancellationToken cancellationToken = default,
-			Action<Exception>? onFailed = null)
+			Action<Exception>? onFailed = null,
+			bool keepPrevious = false)
 		{
 			image.UpdateIsLoading(false);
 
@@ -47,7 +48,21 @@ namespace Microsoft.Maui.Platform
 
 				if (applied)
 				{
-					if (destinationImageView is not null)
+					if (destinationImageView is not null && keepPrevious && setImage is not null)
+					{
+						// Loading into the view would clear the image that is shown right away, so load the new image
+						// for the view's size without touching the view, then replace the image in one step.
+						result = await GetDrawableForViewAsync(service, imageSource, destinationImageView, context, cancellationToken);
+						applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
+						if (applied && result is IImageSourceServiceResult<Drawable> drawableResult)
+						{
+							// Stop the view's own load (if any), so that it cannot replace this image later.
+							PlatformInterop.ClearImageView(destinationImageView);
+							setImage.Invoke(drawableResult.Value);
+							destinationImageView.UpdateIsAnimationPlaying(image);
+						}
+					}
+					else if (destinationImageView is not null)
 					{
 						result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
 						applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
@@ -107,6 +122,32 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		static Task<IImageSourceServiceResult<Drawable>?> GetDrawableForViewAsync(IImageSourceService service, IImageSource imageSource, ImageView imageView, global::Android.Content.Context context, CancellationToken cancellationToken)
+		{
+			if (service is not IViewSizedImageSourceService sizedService)
+				return service.GetDrawableAsync(imageSource, context, cancellationToken);
+
+			// The same size that a load into the view would use (see Glide's ViewTarget.SizeDeterminer).
+			var width = GetTargetSize(imageView.Width, imageView.LayoutParameters?.Width ?? 0, imageView.PaddingLeft + imageView.PaddingRight, context);
+			var height = GetTargetSize(imageView.Height, imageView.LayoutParameters?.Height ?? 0, imageView.PaddingTop + imageView.PaddingBottom, context);
+
+			return sizedService.GetDrawableAsync(imageSource, context, width, height, cancellationToken);
+		}
+
+		static int GetTargetSize(int viewSize, int layoutParamSize, int padding, global::Android.Content.Context context)
+		{
+			if (layoutParamSize - padding > 0)
+				return layoutParamSize - padding;
+
+			if (viewSize - padding > 0)
+				return viewSize - padding;
+
+			var metrics = context.Resources?.DisplayMetrics;
+			return metrics is null
+				? IViewSizedImageSourceService.SizeOriginal
+				: Math.Max(metrics.WidthPixels, metrics.HeightPixels);
 		}
 	}
 }

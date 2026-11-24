@@ -496,11 +496,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void FallbackSourcesAreExposedToHandlers()
 		{
-			var image = new Image { PlaceholderSource = "placeholder.png", ErrorSource = "error.png" };
+			var image = new Image { PlaceholderSource = "placeholder.png", ErrorSource = "error.png", KeepPreviousImageWhileLoading = true };
 			var fallbacks = (IImageSourcePartFallbacks)image;
 
 			Assert.Same(image.PlaceholderSource, fallbacks.PlaceholderSource);
 			Assert.Same(image.ErrorSource, fallbacks.ErrorSource);
+			Assert.True(fallbacks.KeepPreviousImageWhileLoading);
 			Assert.Equal("placeholder.png", ((FileImageSource)image.PlaceholderSource).File);
 		}
 

@@ -18,7 +18,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Image)]
-	public class ImageLoadingTests : ControlsHandlerTestBase
+	public partial class ImageLoadingTests : ControlsHandlerTestBase
 	{
 		static readonly Uri RedUri = new("https://images.test/red.png");
 
@@ -302,6 +302,74 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(500);
 				Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
 				Assert.Empty(_failures);
+			}, image);
+		}
+
+		[Fact]
+		public async Task KeepPreviousImageWhileLoadingKeepsTheImageInsteadOfThePlaceholder()
+		{
+			SetupBuilder();
+			var release = new TaskCompletionSource<bool>();
+			_server.Respond(async request =>
+			{
+				if (request.RequestUri.AbsolutePath.EndsWith("blue.png", StringComparison.Ordinal))
+				{
+					await release.Task;
+					return Png(Colors.Blue);
+				}
+
+				return Png(Colors.Red);
+			});
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.PlaceholderSource = "green.png";
+			image.KeepPreviousImageWhileLoading = true;
+			var loaded = 0;
+			image.ImageLoaded += (_, _) => loaded++;
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+				await AssertColor(image, Colors.Red);
+
+				image.Source = new UriImageSource { Uri = new Uri("https://images.test/blue.png") };
+				await WaitFor(() => _server.RequestCount >= 2);
+				Assert.Equal(ImageLoadingState.Loading, image.LoadingState);
+
+				// The current image stays (no placeholder, not cleared) while the new one loads.
+				await Task.Delay(300);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, MauiContext);
+
+				release.SetResult(true);
+				await WaitFor(() => loaded == 2);
+				await AssertColor(image, Colors.Blue);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
+			}, image);
+		}
+
+		[Fact]
+		public async Task KeepPreviousImageWhileLoadingShowsTheErrorImageWhenTheNewImageFails()
+		{
+			SetupBuilder();
+			_server.Respond(request => request.RequestUri.AbsolutePath.EndsWith("missing.png", StringComparison.Ordinal)
+				? new HttpResponseMessage(HttpStatusCode.NotFound)
+				: Png(Colors.Red));
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.ErrorSource = "green.png";
+			image.KeepPreviousImageWhileLoading = true;
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+
+				image.Source = new UriImageSource { Uri = new Uri("https://images.test/missing.png") };
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed);
+
+				// The previous image is not left in place of the image that failed to load.
+				await AssertColor(image, Colors.Lime);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
 			}, image);
 		}
 

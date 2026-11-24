@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Platform
 			Action<UIImage?> setImage,
 			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default,
-			Action<Exception>? onFailed = null)
+			Action<Exception>? onFailed = null,
+			ImageDecodeOptions? decodeOptions = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -31,7 +32,9 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.GetImageAsync(imageSource, imageScale, cancellationToken);
+				var result = decodeOptions is not null && service is IImageSourceServiceWithDecodeOptions decodingService
+					? await decodingService.GetImageAsync(imageSource, imageScale, decodeOptions, cancellationToken)
+					: await service.GetImageAsync(imageSource, imageScale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;

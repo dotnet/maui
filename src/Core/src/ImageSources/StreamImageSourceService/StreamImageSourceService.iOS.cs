@@ -9,12 +9,20 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public partial class StreamImageSourceService
+	public partial class StreamImageSourceService : IImageSourceServiceWithDecodeOptions
 	{
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IStreamImageSource)imageSource, scale, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync(imageSource, null, cancellationToken);
+
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken) =>
+			// A stream can only be read once, so it is not read again when the view grows: only decode it smaller
+			// when the size it is shown at is known.
+			GetImageAsync((IStreamImageSource)imageSource, options.IsViewSizeKnown ? options : null, cancellationToken);
+
+		async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, ImageDecodeOptions? options, CancellationToken cancellationToken)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -26,7 +34,7 @@ namespace Microsoft.Maui
 				if (cgImageSource is null)
 					throw new InvalidOperationException("Unable to load image file.");
 
-				var image = cgImageSource.GetPlatformImage();
+				var image = cgImageSource.GetPlatformImage(1, options);
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 

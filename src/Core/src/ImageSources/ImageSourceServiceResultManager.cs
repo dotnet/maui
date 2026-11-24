@@ -78,6 +78,16 @@ namespace Microsoft.Maui
 			CurrentResolution = 1.0f;
 		}
 
+		/// <summary>
+		/// Replaces the result of the completed load with another image of the same source (for example decoded at a larger size).
+		/// </summary>
+		public void ReplaceResult(IDisposable result)
+		{
+			var previous = _sourceResult;
+			_sourceResult = result;
+			previous?.Dispose();
+		}
+
 		public void Reset()
 		{
 			BeginLoad();

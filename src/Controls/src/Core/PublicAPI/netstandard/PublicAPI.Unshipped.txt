@@ -1,6 +1,8 @@
 #nullable enable
 ~Microsoft.Maui.Controls.Image.ErrorSource.get -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.Image.ErrorSource.set -> void
+Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.get -> bool
+Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.set -> void
 Microsoft.Maui.Controls.Image.ImageFailed -> System.EventHandler<Microsoft.Maui.Controls.ImageFailedEventArgs>
 Microsoft.Maui.Controls.Image.ImageLoaded -> System.EventHandler
 Microsoft.Maui.Controls.Image.LoadingState.get -> Microsoft.Maui.Controls.ImageLoadingState
@@ -17,5 +19,6 @@ Microsoft.Maui.Controls.ImageLoadingState.Loaded = 2 -> Microsoft.Maui.Controls.
 Microsoft.Maui.Controls.ImageLoadingState.Loading = 1 -> Microsoft.Maui.Controls.ImageLoadingState
 ~override Microsoft.Maui.Controls.Image.OnPropertyChanged(string propertyName = null) -> void
 ~static readonly Microsoft.Maui.Controls.Image.ErrorSourceProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoadingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Image.LoadingStateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Image.PlaceholderSourceProperty -> Microsoft.Maui.Controls.BindableProperty

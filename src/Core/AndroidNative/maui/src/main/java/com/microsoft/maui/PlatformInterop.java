@@ -333,7 +333,11 @@ public class PlatformInterop {
     }
 
     private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
+        load(builder, context, cachingEnabled, callback, model, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+    }
+
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model, int width, int height) {
+        MauiCustomTarget target = new MauiCustomTarget(context, callback, model, width, height);
         prepare(builder, target, cachingEnabled, callback);
     }
 
@@ -423,6 +427,13 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
+        loadImageFromFile(context, file, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    /**
+     * Loads an image file for a view of the given size (in pixels), decoding it like a load into that view would.
+     */
+    public static void loadImageFromFile(Context context, String file, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -430,10 +441,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback, file);
+        load(builder, context, true, callback, file, width, height);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
+        loadImageFromUri(context, uri, cachingEnabled, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -446,10 +461,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback, androidUri);
+        load(builder, context, cachingEnabled, callback, androidUri, width, height);
     }
 
     public static void loadImageFromCachedFile(Context context, String file, long version, ImageLoaderCallback callback) {
+        loadImageFromCachedFile(context, file, version, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    public static void loadImageFromCachedFile(Context context, String file, long version, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -459,10 +478,14 @@ public class PlatformInterop {
             .load(new File(file))
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .signature(new ObjectKey(version));
-        load(builder, context, true, callback, file);
+        load(builder, context, true, callback, file, width, height);
     }
 
     public static void loadImageFromBytes(Context context, byte[] data, ImageLoaderCallback callback) {
+        loadImageFromBytes(context, data, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    public static void loadImageFromBytes(Context context, byte[] data, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -470,7 +493,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(data);
-        load(builder, context, false, callback, null);
+        load(builder, context, false, callback, null, width, height);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
