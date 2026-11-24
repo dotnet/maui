@@ -27,9 +27,6 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
 		readonly List<INativeObject> _interactions = new List<INativeObject>();
 
-		// MAUI adds these interactions itself, so it keeps references instead of searching UIView.Interactions.
-		// Reading that property wraps every interaction without a managed peer in a new wrapper whose finalizer
-		// releases the native object on the finalizer thread (dotnet/macios#27420, #40489).
 		readonly List<FakeRightClickContextMenuInteraction> _fakeRightClickInteractions = new();
 		UIDragInteraction? _dragInteraction;
 		UIDropInteraction? _dropInteraction;
@@ -1011,7 +1008,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				// Remove the fake right-click interactions MAUI added that are no longer needed.
 				for (int i = _fakeRightClickInteractions.Count - 1; i >= 0; i--)
 				{
 					var interaction = _fakeRightClickInteractions[i];

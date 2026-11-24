@@ -680,9 +680,6 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					// MAUI adds the interaction itself, so look it up in a table instead of reading UIView.Interactions:
-					// that wraps every interaction in a new wrapper whose finalizer releases the native object on the
-					// finalizer thread (dotnet/macios#27420, #40489).
 					s_toolTipInteractions.TryGetValue(platformView, out interaction);
 				}
 			}
