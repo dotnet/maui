@@ -491,6 +491,340 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "ItemSpacing matches an up-front list after items are added, removed or replaced at runtime")]
+		[InlineData(false, "Append")]
+		[InlineData(false, "InsertAtStart")]
+		[InlineData(false, "RemoveFromEnd")]
+		[InlineData(false, "RemoveFromStart")]
+		[InlineData(false, "Replace")]
+		[InlineData(true, "Append")]
+		[InlineData(true, "InsertAtStart")]
+		[InlineData(true, "RemoveFromEnd")]
+		[InlineData(true, "RemoveFromStart")]
+		[InlineData(true, "Replace")]
+		public async Task ItemSpacingIsUpdatedWhenItemsChangeAtRuntime(bool grid, string change)
+		{
+			SetupBuilder();
+
+			var finalItems = grid ? new[] { "0", "1", "2", "3" } : new[] { "0", "1", "2" };
+
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = grid
+					? new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { VerticalItemSpacing = 8 }
+					: new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+			};
+
+			// The CollectionView sizes to its content here, so spacing left on an outer edge shows up in its height
+			var layout = new VerticalStackLayout { collectionView };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				var recyclerView = (RecyclerView)collectionView.Handler.PlatformView;
+
+				collectionView.ItemsSource = new ObservableCollection<string>(finalItems);
+				var expected = await GetSettledItemLayout(recyclerView, finalItems.Length);
+
+				var items = new ObservableCollection<string>(change switch
+				{
+					"Append" => finalItems.Take(grid ? 2 : 1),
+					"InsertAtStart" => finalItems.Skip(1),
+					"RemoveFromEnd" => finalItems.Append("extra"),
+					"RemoveFromStart" => finalItems.Prepend("extra"),
+					_ => finalItems.Select((item, index) => index == 1 ? "replaced" : item),
+				});
+				collectionView.ItemsSource = items;
+				await GetSettledItemLayout(recyclerView, items.Count);
+
+				switch (change)
+				{
+					case "Append":
+						while (items.Count < finalItems.Length)
+						{
+							items.Add(finalItems[items.Count]);
+							await GetSettledItemLayout(recyclerView, items.Count);
+						}
+						break;
+					case "InsertAtStart":
+						items.Insert(0, finalItems[0]);
+						break;
+					case "RemoveFromEnd":
+						items.RemoveAt(items.Count - 1);
+						break;
+					case "RemoveFromStart":
+						items.RemoveAt(0);
+						break;
+					default:
+						items[1] = finalItems[1];
+						break;
+				}
+
+				Assert.Equal(expected, await GetSettledItemLayout(recyclerView, finalItems.Length));
+			});
+
+			static async Task<string> GetSettledItemLayout(RecyclerView recyclerView, int itemCount)
+			{
+				await AssertEventually(() => recyclerView.ChildCount == itemCount && !recyclerView.IsAnimating && !recyclerView.IsLayoutRequested, timeout: 5000);
+
+				var tops = new int[itemCount];
+				for (var i = 0; i < itemCount; i++)
+				{
+					var child = recyclerView.GetChildAt(i);
+					tops[recyclerView.GetChildAdapterPosition(child)] = child.Top;
+				}
+
+				return $"item tops [{string.Join(", ", tops)}], height {recyclerView.Height}";
+			}
+		}
+
+		[Fact(DisplayName = "Replacing an off-screen item does not recompute the spacing of the visible items")]
+		public async Task ReplacingAnItemDoesNotRecomputeOtherItemOffsets()
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				items[items.Count - 1] = "replaced";
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// RecyclerView only recomputes the offsets of children whose decorations were invalidated
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
+		[Theory(DisplayName = "The ItemSpacing observer only reports insertions and removals in the last row")]
+		[InlineData("Insert", 0, 1, false)]
+		[InlineData("Insert", 98, 1, false)]
+		[InlineData("Insert", 99, 1, true)]
+		[InlineData("Remove", 0, 1, false)]
+		[InlineData("Remove", 99, 1, false)]
+		[InlineData("Remove", 100, 1, true)]
+		[InlineData("Change", 99, 1, false)]
+		[InlineData("Move", 99, 0, false)]
+		[InlineData("Reset", 0, 0, false)]
+		public void ItemSpacingObserverOnlyReportsLastRowChanges(string change, int positionStart, int itemCount, bool expected)
+		{
+			var calls = 0;
+
+			// ItemCount is the count at the last layout pass; the change leaves 100 items in a list, so the last row starts at 99
+			using var observer = new DataChangeObserver(_ => calls++, () => 1)
+			{
+				ItemCount = change switch { "Insert" => 100 - itemCount, "Remove" => 100 + itemCount, _ => 100 },
+			};
+
+			switch (change)
+			{
+				case "Insert":
+					observer.OnItemRangeInserted(positionStart, itemCount);
+					break;
+				case "Remove":
+					observer.OnItemRangeRemoved(positionStart, itemCount);
+					break;
+				case "Change":
+					observer.OnItemRangeChanged(positionStart, itemCount);
+					break;
+				case "Move":
+					observer.OnItemRangeMoved(positionStart, itemCount, 1);
+					break;
+				default:
+					observer.OnChanged();
+					break;
+			}
+
+			Assert.Equal(expected ? 1 : 0, calls);
+		}
+
+		[Fact(DisplayName = "The ItemSpacing observer applies every change since the last layout pass")]
+		public void ItemSpacingObserverAppliesChangesSinceLastLayout()
+		{
+			var calls = 0;
+
+			// One item at the last layout pass, then two appends dispatched before the next one
+			using var observer = new DataChangeObserver(_ => calls++, () => 1) { ItemCount = 1 };
+			observer.OnItemRangeInserted(1, 1);
+			observer.OnItemRangeInserted(2, 1);
+			Assert.Equal(2, calls);
+
+			observer.OnItemRangeInserted(0, 1);
+			observer.OnItemRangeRemoved(3, 1);
+			Assert.Equal(3, calls);
+			Assert.Equal(3, observer.ItemCount);
+
+			// A reset can change the count in any way, so changes are reported until the next layout pass sets it again
+			observer.OnChanged();
+			observer.OnItemRangeInserted(0, 1);
+			Assert.Equal(4, calls);
+		}
+
+		[Fact(DisplayName = "Inserting into the first group of a grouped CollectionView with item spacing does not count all groups")]
+		public async Task GroupedInsertWithItemSpacingDoesNotCountAllGroups()
+		{
+			SetupBuilder();
+
+			var groups = Enumerable.Range(0, 5).Select(g => new EnumerationCountingGroup(Enumerable.Range(0, 3).Select(i => $"{g}-{i}"))).ToList();
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = groups,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				await AssertEventually(() => recyclerView.ChildCount > 0 && !recyclerView.IsLayoutRequested);
+
+				var lastGroup = groups[groups.Count - 1];
+				lastGroup.Enumerations = 0;
+				groups[0].Add("new");
+
+				// The notification uses the count from the last layout pass instead of counting every group again
+				Assert.Equal(0, lastGroup.Enumerations);
+			});
+		}
+
+		[Theory(DisplayName = "Inserting or removing an off-screen middle item does not recompute the spacing of the visible items")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task OffscreenMiddleChangeDoesNotRecomputeOffsets(bool insert)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				if (insert)
+					items.Insert(50, "new");
+				else
+					items.RemoveAt(50);
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// The count from the last layout pass shows the change is far from the last row, so nothing is invalidated
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
+		[Fact(DisplayName = "Appending to a grid with only cross-axis spacing does not recompute the spacing of the visible items")]
+		public async Task AppendingToGridWithCrossAxisSpacingDoesNotRecomputeOffsets()
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { HorizontalItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				items.Add("new");
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// HorizontalItemSpacing is the same for every row, so the off-screen append changes no visible item's spacing
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
+		[Theory(DisplayName = "Inserting into a grouped CollectionView without scrolling-axis spacing does not count all groups")]
+		[InlineData(0)]
+		[InlineData(8)]
+		public async Task GroupedInsertWithoutScrollingAxisSpacingDoesNotCountAllGroups(double crossAxisSpacing)
+		{
+			SetupBuilder();
+
+			var groups = Enumerable.Range(0, 5).Select(g => new EnumerationCountingGroup(Enumerable.Range(0, 3).Select(i => $"{g}-{i}"))).ToList();
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { HorizontalItemSpacing = crossAxisSpacing },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = groups,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				await AssertEventually(() => recyclerView.ChildCount > 0 && !recyclerView.IsLayoutRequested);
+
+				var lastGroup = groups[groups.Count - 1];
+				lastGroup.Enumerations = 0;
+				groups[0].Add("new");
+
+				// Counting the items (ItemsViewAdapter.ItemCount) walks every group, so it would enumerate the last group
+				Assert.Equal(0, lastGroup.Enumerations);
+			});
+		}
+
+		class EnumerationCountingGroup : IEnumerable<string>, System.Collections.Specialized.INotifyCollectionChanged
+		{
+			readonly List<string> _items;
+
+			public EnumerationCountingGroup(IEnumerable<string> items) => _items = new List<string>(items);
+
+			public int Enumerations { get; set; }
+
+			public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+
+			public void Add(string item)
+			{
+				_items.Add(item);
+				CollectionChanged?.Invoke(this, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+					System.Collections.Specialized.NotifyCollectionChangedAction.Add, item, _items.Count - 1));
+			}
+
+			public IEnumerator<string> GetEnumerator()
+			{
+				Enumerations++;
+				return _items.GetEnumerator();
+			}
+
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		}
+
+		class ItemOffsetsCounter : RecyclerView.ItemDecoration
+		{
+			public int Count { get; set; }
+
+			public override void GetItemOffsets(global::Android.Graphics.Rect outRect, AView view, RecyclerView parent, RecyclerView.State state) => Count++;
+		}
+
 		[Fact]
 		public async Task GroupedCollectionViewEmptyViewTracksOuterGroupCount()
 		{
