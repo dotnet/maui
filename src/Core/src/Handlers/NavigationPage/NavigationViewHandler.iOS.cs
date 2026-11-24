@@ -168,19 +168,13 @@ namespace Microsoft.Maui.Handlers
 						var rootVC = GetOrCreateViewController(newStack[0]);
 						var pendingStack = new List<IView>(newStack);
 						_pendingNavigationStack = pendingStack;
-						if (!animated || navManager.NavigationController.ViewIfLoaded?.Window is null)
+
+						bool animatePop = animated && navManager.NavigationController.ViewIfLoaded?.Window is not null;
+						navManager.PopToRootViewController(rootVC, animatePop);
+						if (!animatePop && ReferenceEquals(_pendingNavigationStack, pendingStack))
 						{
-							// An offscreen controller may never deliver DidShowViewController.
-							navManager.PopToRootViewController(rootVC, false);
-							if (ReferenceEquals(_pendingNavigationStack, pendingStack))
-							{
-								navManager.UpdateTopVCCache(rootVC);
-								CompletePendingNavigation();
-							}
-						}
-						else
-						{
-							navManager.PopToRootViewController(rootVC, true);
+							navManager.UpdateTopVCCache(rootVC);
+							CompletePendingNavigation();
 						}
 
 						return;
