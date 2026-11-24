@@ -75,8 +75,28 @@ namespace Microsoft.Maui
 		/// Waits for a Glide load, but stops waiting when the load is cancelled (for example replaced by a newer load):
 		/// Glide does not report loads that it clears before they complete.
 		/// </summary>
-		static Task<T?> WaitForGlideAsync<T>(Task<T?> glideLoad, CancellationToken cancellationToken) =>
-			cancellationToken.CanBeCanceled ? glideLoad.WaitAsync(cancellationToken) : glideLoad;
+		static Task<T?> WaitForGlideAsync<T>(Task<T?> glideLoad, CancellationToken cancellationToken)
+			where T : class, IDisposable
+		{
+			if (!cancellationToken.CanBeCanceled || glideLoad.IsCompleted)
+				return glideLoad;
+
+			var wait = glideLoad.WaitAsync(cancellationToken);
+
+			// Nobody receives an image that is loaded after the wait was cancelled, so release it (and Glide's resources) here.
+			wait.ContinueWith(
+				static (_, state) => ((Task<T?>)state!).ContinueWith(
+					static load => load.Result?.Dispose(),
+					CancellationToken.None,
+					TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
+					TaskScheduler.Default),
+				glideLoad,
+				CancellationToken.None,
+				TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.ExecuteSynchronously,
+				TaskScheduler.Default);
+
+			return wait;
+		}
 
 		static bool CanStillLoadInto(ImageView imageView, CancellationToken cancellationToken) =>
 			!cancellationToken.IsCancellationRequested &&
@@ -86,6 +106,8 @@ namespace Microsoft.Maui
 
 		async Task<IImageSourceServiceResult?> LoadCachedDrawableAsync(IUriImageSource imageSource, UriImageResult cached, ImageView imageView, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
+
 			var callback = new ImageLoaderCallback();
 			PlatformInterop.LoadImageFromCachedFile(imageView, cached.FilePath!, cached.Version, callback);
 

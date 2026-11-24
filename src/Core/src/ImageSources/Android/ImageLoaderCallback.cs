@@ -27,13 +27,20 @@ namespace Microsoft.Maui
 
 		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
 		{
+			// No result at all: the load was cancelled before it started (the view was cleared).
+			if (success is null)
+			{
+				_tcsResult.TrySetCanceled();
+				return;
+			}
+
 			try
 			{
 				Action? disposeWrapper = dispose != null
 					? dispose.Run
 					: null;
 
-				var result = success?.BooleanValue() == true
+				var result = success.BooleanValue()
 					? OnSuccess(drawable, disposeWrapper)
 					: OnFailure(drawable, disposeWrapper);
 

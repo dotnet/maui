@@ -23,6 +23,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     private static final PlatformLogger logger = new PlatformLogger("MauiCustomViewTarget");
 
     @IdRes private static final int RUNNING_CALLBACKS_TAG = R.id.maui_custom_view_target_running_callbacks_tag;
+    @IdRes private static final int CLEARED_TAG = R.id.maui_custom_view_target_cleared_tag;
 
     private final ImageLoaderCallback callback;
     private final String resourceLogIdentifier;
@@ -42,6 +43,17 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     }
 
     public void load(RequestBuilder<Drawable> builder) {
+        start(builder, this.view.getTag(CLEARED_TAG));
+    }
+
+    /**
+     * Records that the view was cleared, so that loads into it whose start was deferred are not started anymore.
+     */
+    public static void onViewCleared(@NonNull ImageView view) {
+        view.setTag(CLEARED_TAG, new Object());
+    }
+
+    private void start(RequestBuilder<Drawable> builder, Object clearedToken) {
         // Glide does not support starting new loads from Target callbacks and throws an exception.
         // https://github.com/bumptech/glide/blob/9c9f56f29e63114c409184dd1e82b42b3f0063f7/library/src/main/java/com/bumptech/glide/request/SingleRequest.java#L301-L311
         //
@@ -68,7 +80,19 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         // This use case is covered by `LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang` core device test.
         if (getIsInvokingCallbacks()) {
             if (logger.isVerboseLoggable) logger.v("defer load: " + resourceLogIdentifier);
-            this.view.post(() -> load(builder));
+            this.view.post(() -> {
+                // The view was cleared (for example its image source removed) before the load could start:
+                // report it as cancelled instead of showing the image.
+                if (this.view.getTag(CLEARED_TAG) != clearedToken) {
+                    if (logger.isVerboseLoggable) logger.v("cancel deferred load: " + resourceLogIdentifier);
+                    if (!completed) {
+                        completed = true;
+                        callback.onComplete(null, null, null);
+                    }
+                    return;
+                }
+                start(builder, clearedToken);
+            });
             return;
         }
 

@@ -76,6 +76,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task LoadStartedFromLoadCallbackIsCancelledWhenTheViewIsCleared()
+		{
+			var service = new FileImageSourceService();
+			var first = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var second = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// A load started while Glide reports the first one is deferred until after the callback;
+					// clearing the view before then must cancel it rather than show its image.
+					Task<IImageSourceServiceResult> deferred = null;
+					await service.LoadDrawableAsync(first, handler.PlatformView).ContinueWith(
+						_ =>
+						{
+							deferred = service.LoadDrawableAsync(second, handler.PlatformView);
+							PlatformInterop.ClearImageView(handler.PlatformView);
+						},
+						TaskContinuationOptions.ExecuteSynchronously);
+
+					Assert.NotNull(deferred);
+					await Task.WhenAny(deferred, Task.Delay(5_000));
+					Assert.Equal(TaskStatus.Canceled, deferred.Status);
+
+					await Task.Delay(100);
+					await handler.PlatformView.AssertDoesNotContainColor(Colors.Blue, MauiContext);
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]

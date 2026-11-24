@@ -144,6 +144,48 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public async Task ImageOnlyInMemoryIsNotUsedAfterTheServerRejectsIt()
+		{
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 0);
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+
+			_handler.Respond(_ => new HttpResponseMessage(HttpStatusCode.Forbidden));
+			await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.Zero));
+
+			// A longer validity must not bring back the rejected image.
+			await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1)));
+			Assert.Equal(3, _handler.RequestCount);
+		}
+
+		[Fact]
+		public async Task LoadsThatGotTheImageBeforeTheServerRejectedItDoNotKeepIt()
+		{
+			var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_handler.Respond(async _ =>
+			{
+				started.SetResult(true);
+				await release.Task;
+				return Ok(Png);
+			});
+			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 0);
+			var first = loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
+			await started.Task;
+
+			// Cached in memory by an earlier load, then rejected by the server while the first load is still downloading.
+			_handler.Respond(_ => Ok(Png));
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+			_handler.Respond(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+			await Assert.ThrowsAsync<HttpRequestException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.Zero));
+
+			release.SetResult(true);
+			Assert.Equal(Png, await first);
+
+			Assert.False(loader.MemoryCache.TryGet(ImageUri.OriginalString, out _));
+		}
+
+		[Fact]
 		public async Task NotModifiedWithNoStoreDoesNotRenew()
 		{
 			_handler.Respond(_ => Ok(Png, etag: "\"v1\""));

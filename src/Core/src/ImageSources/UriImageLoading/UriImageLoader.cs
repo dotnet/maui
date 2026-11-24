@@ -283,14 +283,26 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Removes <paramref name="entry"/> (and the memory copy) if the cache was not cleared since <paramref name="version"/>.
 		/// </summary>
-		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry)
+		/// <remarks>
+		/// When <paramref name="rejected"/> (the server rejected the image), its version also changes, so that loads that already have it cannot keep it in memory.
+		/// </remarks>
+		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry, bool rejected = false)
 		{
-			if (version != GetVersion(uri))
-				return;
+			// Same gate as publishing to memory, so a load that already checked its entry cannot put it back.
+			lock (_memoryPublishLock)
+			{
+				if (version != GetVersion(uri))
+					return;
 
-			MemoryCache.Remove(uri.OriginalString);
-			if (entry is not null)
-				DiskCache.Remove(entry);
+				var key = uri.OriginalString;
+				var removedFromMemory = MemoryCache.Remove(key);
+				if (entry is not null)
+					DiskCache.Remove(entry);
+
+				// Only for images that were cached, so failing URIs that never loaded are not tracked.
+				if (rejected && (removedFromMemory || entry is not null))
+					_removals.AddOrUpdate(key, 1, static (_, count) => count + 1);
+			}
 		}
 
 		internal static int GetDefaultMaxDownloadSize()
@@ -482,10 +494,11 @@ namespace Microsoft.Maui
 				var maxRetryCount = cached is not null && File.Exists(cached.DataPath) ? 0 : _maxRetryCount;
 				response = await DownloadWithRetriesAsync(uri, cached, fetch, maxRetryCount, cancellationToken).ConfigureAwait(false);
 			}
-			catch (Exception ex) when (cached is not null && IsPermanentHttpFailure(ex))
+			catch (Exception ex) when (IsPermanentHttpFailure(ex))
 			{
-				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it.
-				InvalidateIfCurrent(uri, version, cached);
+				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it,
+				// including a copy that is only in memory.
+				InvalidateIfCurrent(uri, version, cached, rejected: true);
 				throw;
 			}
 			catch (Exception ex) when (cached is not null && IsTransient(ex, cancellationToken) && File.Exists(cached.DataPath))
