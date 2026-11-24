@@ -324,6 +324,51 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// A list that turns vertical starts over, as a new one does, when its new layout replaces the old one: a ScrollTo the
+		// app requests right after, in the same update, is newer, and judged by where it lands. One requested right before was
+		// for the old layout, and the list goes to its end.
+		[Theory(DisplayName = "A ScrollTo in the same update as a horizontal list turning vertical wins when it comes after")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AScrollToInTheSameUpdateAsAHorizontalListTurningVerticalWinsWhenItComesAfter(bool scrollFirst)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+			collectionView.ItemsLayout = LinearItemsLayout.Horizontal;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// Horizontal, the list isn't anchored. Settled: laid out where it is.
+				var laidOut = await Wait(() => GetHorizontalDistanceToEnd(handler) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {GetHorizontalDistanceToEnd(handler)}.");
+				await Task.Delay(300);
+				Assert.False(collectionView.IsAnchored, "A horizontal list shouldn't follow its end.");
+
+				if (scrollFirst)
+				{
+					collectionView.ScrollTo(10, position: ScrollToPosition.Start, animate: false);
+					collectionView.ItemsLayout = LinearItemsLayout.Vertical;
+
+					await AssertAtEnd(handler, "The new layout should show the end, as a new list does.");
+					await Task.Delay(500);
+					await AssertAtEnd(handler, "The list should stay at its end.");
+					Assert.True(collectionView.IsAnchored, "The list should follow its end.");
+					return;
+				}
+
+				collectionView.ItemsLayout = LinearItemsLayout.Vertical;
+				collectionView.ScrollTo(10, position: ScrollToPosition.Start, animate: false);
+
+				var landed = await Wait(() => !double.IsNaN(GetItemHeight(handler, 10)), 3000);
+				Assert.True(landed, $"ScrollTo should bring item 10 into view. Position: {GetScrollPosition(handler)}, distance to the end: {GetDistanceToEnd(handler)}, anchored: {collectionView.IsAnchored}.");
+				await Task.Delay(500);
+				Assert.False(double.IsNaN(GetItemHeight(handler, 10)), $"The list should stay at item 10, not go to the end the new layout shows. Position: {GetScrollPosition(handler)}.");
+				Assert.True(GetDistanceToEnd(handler) > 100, $"The list shouldn't be at its end. Distance to the end: {GetDistanceToEnd(handler)}.");
+				Assert.False(collectionView.IsAnchored, "Away from the end, the list shouldn't follow it.");
+			});
+		}
+
 		[Theory(DisplayName = "A ScrollTo that finds nothing to scroll to keeps following the end")]
 		[InlineData(false)]
 		[InlineData(true)]

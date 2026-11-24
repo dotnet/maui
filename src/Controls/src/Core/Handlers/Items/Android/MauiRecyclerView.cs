@@ -442,6 +442,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateFlowDirection();
 			UpdateItemSpacing();
+
+			// A layout that scrolls vertically again starts the anchor over now, not at its next look: a scroll the app
+			// requests next, in the same update, is newer.
+			_scrollAnchor?.LayoutManagerReplaced();
 		}
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);

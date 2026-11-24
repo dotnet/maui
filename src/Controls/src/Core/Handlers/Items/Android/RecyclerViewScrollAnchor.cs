@@ -229,6 +229,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		/// <summary>
+		/// Called after the recycler view replaced its layout manager, for a new <c>ItemsLayout</c>. One that scrolls vertically
+		/// again after one that didn't starts over now, as a new view does, rather than at the next look: a scroll the app
+		/// requests after it, in the same update, is newer, and judged by where it lands. A scroll requested before it was for
+		/// the layout manager it replaced, which never makes it.
+		/// </summary>
+		public void LayoutManagerReplaced()
+		{
+			var isVertical = _recyclerView.GetLayoutManager() is { } layoutManager && layoutManager.CanScrollVertically();
+			if (isVertical == _wasVertical)
+			{
+				return;
+			}
+
+			_wasVertical = isVertical;
+			_tracker.Reset();
+			_requestPending = false;
+			_requestLandsLater = false;
+			ResetMeasurement();
+		}
+
 		/// <summary>Called before the recycler view lays out its children.</summary>
 		public void LayoutStarting() => _layoutDepth++;
 
