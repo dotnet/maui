@@ -1,5 +1,4 @@
 #nullable disable
-using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -39,18 +38,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			var width = Superview?.Frame.Width ?? Frame.Width;
-			var size = SizeThatFits(new CGSize(width, double.PositiveInfinity));
-			Frame = new CGRect(Frame.X, Frame.Y, size.Width, size.Height);
+			// Property mappers may not have updated the native views yet.
+			SetNeedsLayout();
 			return false;
 		}
 
 		public override void LayoutSubviews()
 		{
+			// Refresh child measurements before arranging, even if the header size is unchanged.
 			if (!UpdateSafeAreaMargin())
+			{
+				OnHeaderSizeChanged();
 				base.LayoutSubviews();
-
-			OnHeaderSizeChanged();
+			}
 		}
 
 		public override void SafeAreaInsetsDidChange()

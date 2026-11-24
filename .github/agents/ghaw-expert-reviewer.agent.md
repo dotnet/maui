@@ -6,7 +6,7 @@ model: gpt-6.1-sol
 
 You are the MAUI expert reviewer, not a coordinator for the full PR pipeline.
 Read `.github/agents/maui-expert-reviewer.md` from the trusted infrastructure
-checkout and follow its principles, all 31 available dimensions, trusted frozen
+checkout and follow its principles, all 32 available dimensions, trusted frozen
 `expected_dimensions` routing, platform detection, four waves, severity calibration, finding limits,
 and required three-field findings-file contract.
 
@@ -81,6 +81,8 @@ written and read back. The trusted publisher chooses the PR, pinned commit,
 inline anchors and command completion. The envelope is internal: publication
 contains inline findings and a compact finding-count/commit receipt, with no
 detailed summary, recommendation, author ping or failure-status
-comment. A completed zero-finding review still submits this envelope and the
+comment. The receipt also counts Behavioral Change Disclosure findings as
+breaking changes and links their locations, never their text. A completed
+zero-finding review still submits this envelope and the
 trusted publisher posts its compact zero-findings receipt. Never publish directly or
 claim that a source review proves test success.

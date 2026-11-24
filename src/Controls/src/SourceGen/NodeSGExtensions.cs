@@ -139,6 +139,48 @@ static class NodeSGExtensions
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
 	/// <summary>
+	/// Empty elements of a ResourceDictionary subtype (typically an x:Class dictionary) added to
+	/// MergedDictionaries are created when they are merged rather than up front, so their
+	/// {StaticResource} can resolve resources from the preceding merged dictionaries (#29589).
+	/// </summary>
+	public static bool IsDeferredMergedDictionary(this ElementNode node, INode parentNode, ITypeSymbol? type, SourceGenContext context, out ElementNode? mergeTargetNode)
+	{
+		mergeTargetNode = null;
+		if (node.Properties.Count != 0 || node.CollectionItems.Count != 0)
+			return false;
+
+		var rdType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+		if (type is not INamedTypeSymbol namedType
+			|| namedType.IsAbstract
+			|| namedType.IsUnboundGenericType
+			|| namedType.Equals(rdType, SymbolEqualityComparer.Default)
+			|| !namedType.InheritsFrom(rdType, context)
+			|| !namedType.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public))
+			return false;
+
+		XmlName propertyName;
+		if (parentNode is ListNode listNode)
+		{
+			mergeTargetNode = listNode.Parent as ElementNode;
+			if (mergeTargetNode is null || !listNode.TryGetPropertyName(mergeTargetNode, out propertyName))
+				return false;
+		}
+		else if (parentNode is ElementNode parentElement && node.TryGetPropertyName(parentNode, out propertyName))
+			mergeTargetNode = parentElement;
+		else
+			return false;
+
+		if (mergeTargetNode is null || propertyName.LocalName is null
+			|| (propertyName.LocalName != "MergedDictionaries"
+				&& !propertyName.LocalName.EndsWith(".MergedDictionaries", StringComparison.Ordinal)))
+		{
+			mergeTargetNode = null;
+			return false;
+		}
+		return true;
+	}
+
+	/// <summary>
 	/// Determines if a node should be treated as a lazy resource in ResourceDictionary.
 	/// Lazy resources are created via factory functions for on-demand instantiation.
 	/// </summary>
@@ -268,6 +310,12 @@ static class NodeSGExtensions
 	public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
 			=> CanConvertTo(valueNode, property, context, out _);
 
+	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context)
+	{
+		var typeConverter = toType.GetAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToFQDisplayString() == "global::System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+		return CanConvertTo(valueNode, toType, typeConverter, context);
+	}
+
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
 		// C# expressions can be assigned to any type - trust the user's code
@@ -361,7 +409,7 @@ static class NodeSGExtensions
 		return valueNode.ConvertTo(toType, typeConverter, writer, context, parentVar);
 	}
 
-	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
+	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null, INode? serviceProviderNode = null)
 	{
 		// C# expressions are emitted directly without conversion, but need quote transformation
 		if (valueNode.Value is Expression expression)
@@ -384,7 +432,9 @@ static class NodeSGExtensions
 		}
 
 		if (typeConverter is not null)
-			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
+			return serviceProviderNode is not null
+				? serviceProviderNode.ConvertWithConverter(SymbolDisplay.FormatLiteral(valueString, true), typeConverter, toType, writer, context)
+				: valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
 
 		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Type"), SymbolEqualityComparer.Default))
 			return typeTypeConverter(valueString, valueNode, toType, writer, context, parentVar);
@@ -582,6 +632,11 @@ static class NodeSGExtensions
 	public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var valueString = valueNode.Value as string ?? string.Empty;
+		return valueNode.ConvertWithConverter(SymbolDisplay.FormatLiteral(valueString, true), typeConverter, targetType, writer, context);
+	}
+
+	public static string ConvertWithConverter(this INode node, string valueExpression, ITypeSymbol typeConverter, ITypeSymbol targetType, IndentedTextWriter writer, SourceGenContext context)
+	{
 		//TODO check if there's a SourceGen version of the converter
 		if (typeConverter.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IExtendedTypeConverter")!))
 		{
@@ -589,20 +644,20 @@ static class NodeSGExtensions
 			var (acceptEmptyServiceProvider, requiredServices) = typeConverter.GetServiceProviderAttributes(context);
 			if (!acceptEmptyServiceProvider)
 			{
-				var serviceProvider = valueNode.GetOrCreateServiceProvider(writer, context, requiredServices);
+				var serviceProvider = node.GetOrCreateServiceProvider(writer, context, requiredServices);
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
-					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
+					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString({valueExpression}, {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString({valueExpression}, {serviceProvider.ValueAccessor})!";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
-				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
+				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString({valueExpression}, null) as {targetType.ToFQDisplayString()}";
 		}
 		//TypeConverter returns an object, so we need to cast it to the target type
 		if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
-			return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\") as {targetType.ToFQDisplayString()}";
+			return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString({valueExpression}) as {targetType.ToFQDisplayString()}";
 		else
-			return $"({targetType.ToFQDisplayString()})new {typeConverter.ToFQDisplayString()}().ConvertFromInvariantString(\"{valueString}\")!";
+			return $"({targetType.ToFQDisplayString()})new {typeConverter.ToFQDisplayString()}().ConvertFromInvariantString({valueExpression})!";
 	}
 
 	public static bool IsValueProvider(this INode node, SourceGenContext context,

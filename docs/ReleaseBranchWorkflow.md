@@ -380,12 +380,20 @@ that its default-channel/feed wiring matches the existing nightly contract, and
 that a signed internal build publishes the expected artifacts. Do not rewrite
 mirror history or promote workload-release packages as part of this migration.
 The dnceng `dotnet-mirroring` configuration must list `candidate/<band>-srN` as
-an optional fast-forward pattern, as it does `main`, `release/*` and
-`inflight/current`, so the selected candidate reaches the internal `dotnet-maui`
-repository. That mirroring never force-pushes: after a public rebase or
-force-push of a mirrored branch, the branch stops mirroring (and a mirroring
-issue is filed) until a maintainer verifies that no internal-only commits would
-be dropped and performs a leased internal sync. The internal candidate's own
+an optional fast-forward pattern, as it does `main` and `release/*`, so the
+selected candidate reaches the internal `dotnet-maui` repository. The `net11`
+review lane and the `inflight/<band>-srN` staging lanes aren't mirrored, because
+official nightlies build only from the candidate. Switching `nightlyMode` to
+`versioned` would first require mirroring the inflight lanes. Fast-forward
+mirroring alone never follows a public rebase or force-push: the branch stops
+mirroring (and a mirroring issue is filed). The configuration must therefore
+also list the candidate lanes under its opt-in `followRewrites` patterns. For
+those branches, the mirror resets the internal branch to the rewritten public
+tip with a leased push, but only when the public repository activity shows that
+the internal tip was once a published tip of the same public branch, so no
+internal-only commit can be dropped. When that can't be verified, the branch
+stays blocked until a maintainer verifies that no internal-only commits would be
+dropped and performs a leased internal sync. The internal candidate's own
 05:00 UTC schedule then runs official pipeline 1095, without an additional
 competing build trigger. Advancing `currentSr` therefore selects and mirrors the
 next candidate without a manual per-SR change.

@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateHideSingle(this UIPageControl pageControl, IIndicatorView indicatorView)
-			=> pageControl.HidesForSinglePage = indicatorView.HideSingle;
+			=> pageControl.HidesForSinglePage = indicatorView.HideSingle
+				&& (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null;
 
 		public static void UpdateCurrentPage(this UIPageControl pageControl, int currentPage)
 			=> pageControl.CurrentPage = currentPage;

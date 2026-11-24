@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
@@ -9,11 +10,16 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public sealed class OrientationStateTrigger : StateTriggerBase
 	{
+		readonly WeakDisplayInfoChangedProxy _displayInfoProxy = new();
+		// The proxy holds the handler weakly, so the trigger keeps it alive.
+		readonly EventHandler<DisplayInfoChangedEventArgs> _displayInfoChanged;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OrientationStateTrigger"/> class.
 		/// </summary>
 		public OrientationStateTrigger()
 		{
+			_displayInfoChanged = OnInfoPropertyChanged;
 			UpdateState();
 		}
 
@@ -43,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			if (!DesignMode.IsDesignModeEnabled)
 			{
 				UpdateState();
-				DeviceDisplay.MainDisplayInfoChanged += OnInfoPropertyChanged;
+				_displayInfoProxy.Subscribe(DeviceDisplay.Current, _displayInfoChanged);
 			}
 		}
 
@@ -51,7 +57,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnDetached();
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnInfoPropertyChanged;
+			_displayInfoProxy.Unsubscribe();
 		}
 
 		void OnInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e) =>

@@ -17,17 +17,49 @@ public class Issue7556 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.FlyoutPage)]
+	public void CloseFlyoutRespectsDeviceIdiomInSplitMode()
+	{
+		App.WaitForElement("Split");
+		var idiom = App.WaitForElement("DeviceIdiom").ReadText();
+		var isPhone = idiom == "Phone";
+
+		// Split is locked on non-phone idioms; phones still present an overlay.
+		if (isPhone)
+			App.TapFlyoutPageIcon("Flyout");
+
+		App.WaitForElement("FlyoutVisible");
+		Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.EqualTo(isPhone),
+			$"Closing a Split flyout should only be enabled on phones (idiom: {idiom}).");
+
+		App.Tap("CloseFlyout");
+
+		if (isPhone)
+		{
+			App.WaitForNoElement("FlyoutVisible");
+			App.WaitForElement("DetailSentinel");
+		}
+		else
+		{
+			App.WaitForElement("Split");
+			App.WaitForElement("FlyoutVisible");
+			Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.False,
+				"A tap must not enable closing a locked Split flyout.");
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
 	public void MasterStillVisibleAfterPushingAndPoppingModalPage()
 	{
 		App.SetOrientationLandscape();
 		App.WaitForElement("Split");
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
 		App.WaitForElementTillPageNavigationSettled("PushModalPage");
 		App.Tap("PushModalPage");
 		App.WaitForElementTillPageNavigationSettled("PopModalPage");
 		App.Tap("PopModalPage");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
 	}
 
 	[Test]
@@ -36,33 +68,42 @@ public class Issue7556 : _IssuesUITest
 	{
 		while (App.WaitForElement("CurrentMasterBehavior").ReadText() != Microsoft.Maui.Controls.FlyoutLayoutBehavior.SplitOnLandscape.ToString())
 		{
-			App.Tap("ChangeMasterBehavior");
+			if (App.FindElements("FlyoutVisible").Count > 0)
+				App.Tap("CloseFlyout");
 
-			if (App.FindElements("Flyout Visible").Count > 0)
-				App.Tap("Close Flyout");
+			App.Tap("ChangeMasterBehavior");
 		}
 
 		App.TapFlyoutPageIcon("Flyout");
 
-		App.WaitForElement("Flyout Visible");
-		App.Tap("Close Flyout");
+		App.WaitForElement("FlyoutVisible");
+		App.Tap("CloseFlyout");
+		App.WaitForNoElement("FlyoutVisible");
 
 		App.SetOrientationLandscape();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationPortrait();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationLandscape();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationPortrait();
-
-		if (App.FindElements("Flyout Visible").Count > 0)
-			App.Tap("Close Flyout");
+		AssertDetailIsAccessible();
 
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
-		App.Tap("Close Flyout");
+		App.WaitForElement("FlyoutVisible");
+		App.Tap("CloseFlyout");
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
+	}
+
+	void AssertDetailIsAccessible()
+	{
+		App.WaitForElement("DetailSentinel");
+		if (App.FindElements("FlyoutVisible").Count > 0)
+		{
+			Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.False,
+				"The detail sentinel must not be covered by an open overlay flyout.");
+		}
 	}
 
 	[TearDown]

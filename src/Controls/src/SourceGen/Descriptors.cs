@@ -162,6 +162,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		internal static DiagnosticDescriptor ConflictingXmlnsType = new DiagnosticDescriptor(
+			id: "MAUIX2020",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
 			id: "MAUIX2002",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
@@ -318,6 +326,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		// x:Code diagnostics
+		public static DiagnosticDescriptor XCodeRequiresPreview = new DiagnosticDescriptor(
+			id: "MAUIX2012",
+			title: "x:Code requires preview features",
+			messageFormat: "x:Code requires EnablePreviewFeatures to be set to true.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
 			id: "MAUIX2015",
 			title: "x:Code must be an immediate child of the root element",
@@ -330,6 +346,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			id: "MAUIX2016",
 			title: "x:Code requires x:Class on the root element",
 			messageFormat: "x:Code requires x:Class to be specified on the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresSourceGen = new DiagnosticDescriptor(
+			id: "MAUIX2023",
+			title: "x:Code requires XAML source generation",
+			messageFormat: "x:Code requires SourceGen as the only XAML inflator.",
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
@@ -348,6 +372,22 @@ namespace Microsoft.Maui.Controls.SourceGen
 			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExtensionPropertyAmbiguous = new DiagnosticDescriptor(
+			id: "MAUIX2021",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExtensionPropertyAmbiguous), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExtensionPropertyResolution = new DiagnosticDescriptor(
+			id: "MAUIX2022",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExtensionPropertyResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
