@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using UIKit;
@@ -28,6 +29,53 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LabelHandler>(label);
 				Assert.True(handler.PlatformView.UserInteractionEnabled);
 			});
+		}
+
+		[Fact]
+		public async Task HandlerWithoutGesturesDoesNotReadInteractions()
+		{
+			var view = new CountingElement();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CountingHandler>(view);
+				var platformView = (CountingPlatformView)handler.PlatformView;
+
+				Assert.Equal(0, platformView.Reads);
+
+				view.GestureRecognizers.Add(new TapGestureRecognizer());
+
+				Assert.Equal(0, platformView.Reads);
+
+				((IElementHandler)handler).DisconnectHandler();
+			});
+		}
+
+		class CountingElement : View
+		{
+		}
+
+		class CountingPlatformView : UIView
+		{
+			public int Reads { get; private set; }
+
+			public override IUIInteraction[] Interactions
+			{
+				get
+				{
+					Reads++;
+					return base.Interactions;
+				}
+			}
+		}
+
+		class CountingHandler : ViewHandler<CountingElement, CountingPlatformView>
+		{
+			public CountingHandler() : base(ViewMapper)
+			{
+			}
+
+			protected override CountingPlatformView CreatePlatformView() => new CountingPlatformView();
 		}
 
 #if MACCATALYST

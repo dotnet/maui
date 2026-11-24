@@ -667,7 +667,7 @@ namespace Microsoft.Maui.Platform
 
 		static readonly ConditionalWeakTable<UIView, UIToolTipInteraction> s_toolTipInteractions = new();
 
-		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView, bool searchInteractions = false)
 		{
 			UIToolTipInteraction? interaction = default;
 
@@ -680,7 +680,18 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					s_toolTipInteractions.TryGetValue(platformView, out interaction);
+					if (!s_toolTipInteractions.TryGetValue(platformView, out interaction) && searchInteractions)
+					{
+						foreach (var ia in platformView.Interactions)
+						{
+							if (ia is UIToolTipInteraction toolTipInteraction)
+							{
+								interaction = toolTipInteraction;
+								s_toolTipInteractions.AddOrUpdate(platformView, toolTipInteraction);
+								break;
+							}
+						}
+					}
 				}
 			}
 
@@ -694,7 +705,7 @@ namespace Microsoft.Maui.Platform
 				|| OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				string? text = tooltip?.Content?.ToString();
-				var interaction = platformView.GetToolTipInteraction();
+				var interaction = platformView.GetToolTipInteraction(searchInteractions: !string.IsNullOrEmpty(text));
 
 				if (interaction is null)
 				{
