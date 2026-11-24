@@ -13,19 +13,24 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly AppCompatEditText _view;
 		readonly Action _clearSelection;
-		readonly ClearClickListener _clickListener;
+		readonly PickerClearButtonClickListener _clickListener;
 		Drawable? _drawable;
 		Drawable?[]? _originalDrawables;
 		IPicker? _picker;
 		AppCompatAlertDialog? _dialog;
 		bool _visible;
 		bool _trackingTouch;
+		float _touchDownX;
+		float _touchDownY;
+		readonly int _touchSlop;
 
 		internal PickerClearButtonManager(AppCompatEditText view, Action clearSelection)
 		{
 			_view = view;
 			_clearSelection = clearSelection;
-			_clickListener = new ClearClickListener(this);
+			_clickListener = new PickerClearButtonClickListener(this);
+			var context = view.Context ?? throw new InvalidOperationException("The picker clear-button manager requires a platform context.");
+			_touchSlop = Math.Max(1, ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 0);
 			_view.Touch += OnTouch;
 		}
 
@@ -89,7 +94,7 @@ namespace Microsoft.Maui.Platform
 				Update(picker);
 		}
 
-		void ClearSelection()
+		internal void ClearSelection()
 		{
 			if (_picker is not { IsEnabled: true } picker || !picker.ShouldShowClearButton())
 				return;
@@ -102,31 +107,45 @@ namespace Microsoft.Maui.Platform
 			e.Handled = false;
 			var motion = e.Event;
 			if (motion is null)
-				return;
-
-			if (motion.ActionMasked == MotionEventActions.Down)
 			{
-				_trackingTouch = _visible && _picker is { IsEnabled: true } && IsInClearTarget(motion);
-			}
-
-			if (!_trackingTouch)
-			{
-				e.Handled = false;
+				_trackingTouch = false;
 				return;
 			}
 
-			e.Handled = true;
-			if (motion.ActionMasked == MotionEventActions.Up)
+			switch (motion.ActionMasked)
 			{
-				_trackingTouch = false;
-				if (IsInClearTarget(motion))
-					ClearSelection();
-			}
-			else if (motion.ActionMasked == MotionEventActions.Cancel)
-			{
-				_trackingTouch = false;
+				case MotionEventActions.Down:
+					_trackingTouch = _visible && _picker is { IsEnabled: true } && IsInClearTarget(motion);
+					if (_trackingTouch)
+					{
+						_touchDownX = motion.GetX();
+						_touchDownY = motion.GetY();
+					}
+					break;
+				case MotionEventActions.Move:
+					if (_trackingTouch && HasExceededTouchSlop(motion))
+						_trackingTouch = false;
+					break;
+				case MotionEventActions.Up:
+					if (_trackingTouch)
+					{
+						_trackingTouch = false;
+						if (!HasExceededTouchSlop(motion) && IsInClearTarget(motion))
+						{
+							e.Handled = true;
+							ClearSelection();
+						}
+					}
+					break;
+				case MotionEventActions.Cancel:
+				case MotionEventActions.PointerDown:
+					_trackingTouch = false;
+					break;
 			}
 		}
+
+		bool HasExceededTouchSlop(MotionEvent motion) =>
+			Math.Max(Math.Abs(motion.GetX() - _touchDownX), Math.Abs(motion.GetY() - _touchDownY)) >= _touchSlop;
 
 		bool IsInClearTarget(MotionEvent motion)
 		{
@@ -157,15 +176,21 @@ namespace Microsoft.Maui.Platform
 			_clickListener.Dispose();
 		}
 
-		sealed class ClearClickListener(PickerClearButtonManager manager) : Java.Lang.Object, AView.IOnClickListener
-		{
-			readonly WeakReference<PickerClearButtonManager> _manager = new(manager);
+	}
 
-			public void OnClick(AView? view)
-			{
-				if (_manager.TryGetTarget(out var manager))
-					manager.ClearSelection();
-			}
+	internal sealed class PickerClearButtonClickListener : Java.Lang.Object, AView.IOnClickListener
+	{
+		readonly WeakReference<PickerClearButtonManager> _manager;
+
+		public PickerClearButtonClickListener(PickerClearButtonManager manager)
+		{
+			_manager = new WeakReference<PickerClearButtonManager>(manager);
+		}
+
+		public void OnClick(AView? view)
+		{
+			if (_manager.TryGetTarget(out var manager))
+				manager.ClearSelection();
 		}
 	}
 }

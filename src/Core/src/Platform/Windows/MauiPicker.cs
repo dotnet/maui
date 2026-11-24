@@ -60,12 +60,31 @@ namespace Microsoft.Maui.Platform
 
 		void OnLoaded(object sender, RoutedEventArgs e)
 		{
+			ApplyScopedComboBoxStyle();
+
 			if (!_clearButtonsEnabled)
 				return;
 
 			ApplyTemplate();
 			AddClearButtons();
 			UpdateClearButtonVisibility();
+		}
+
+		void ApplyScopedComboBoxStyle()
+		{
+			DependencyObject? current = this;
+			while (current is not null)
+			{
+				if (current is FrameworkElement element &&
+					element.Resources.TryGetValue(typeof(ComboBox), out var comboBoxStyle) &&
+					comboBoxStyle is Style style)
+				{
+					Style = style;
+					return;
+				}
+
+				current = VisualTreeHelper.GetParent(current);
+			}
 		}
 
 		internal void DisconnectClearButtons()
