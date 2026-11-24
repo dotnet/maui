@@ -467,7 +467,14 @@ namespace Microsoft.Maui
 		Task<UriImageResult> StartLoad(InFlightLoad load, string key, long version, Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch)
 		{
 			var token = load.Cancellation.Token;
-			var task = Task.Run(() => ResolveAsync(uri, version, cachingEnabled, cacheValidity, fetch, token), token);
+
+			// Which cache clear the load belongs to, taken when it is admitted (not when its worker starts).
+			// If the cache was cleared after the version was taken, the load cannot tell: it does not invalidate anything.
+			var clearCount = Volatile.Read(ref _clearCount);
+			if (version != GetVersion(uri))
+				clearCount = -1;
+
+			var task = Task.Run(() => ResolveAsync(uri, version, clearCount, cachingEnabled, cacheValidity, fetch, token), token);
 
 			task.ContinueWith(
 				t =>
@@ -509,9 +516,8 @@ namespace Microsoft.Maui
 			((System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, InFlightLoad>>)_inFlight)
 				.Remove(new System.Collections.Generic.KeyValuePair<string, InFlightLoad>(key, load));
 
-		async Task<UriImageResult> ResolveAsync(Uri uri, long version, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
+		async Task<UriImageResult> ResolveAsync(Uri uri, long version, int clearCount, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
 		{
-			var clearCount = Volatile.Read(ref _clearCount);
 			UriImageDiskCache.Entry? cached = null;
 
 			if (cachingEnabled)
