@@ -122,12 +122,16 @@ namespace Microsoft.Maui.Handlers
 			if (((IElementHandler)handler).PlatformView is not MauiContentButton platformView)
 				return;
 
-			if (handler.MauiContext is null)
+			var mauiContext = handler.MauiContext ??
 				throw new InvalidOperationException($"{nameof(handler.MauiContext)} must be set before mapping ContentButton content.");
 
+			var presentedContent = button.PresentedContent;
 			AView? content = null;
-			if (button.PresentedContent is IView presentedContent)
-				content = presentedContent.ToPlatform(handler.MauiContext);
+			if (presentedContent is not null)
+				content = presentedContent.ToPlatform(mauiContext);
+
+			if (!IsCurrentContent(handler, button, presentedContent, platformView, mauiContext))
+				return;
 
 			platformView.SetContent(content);
 			platformView.RequestLayout();

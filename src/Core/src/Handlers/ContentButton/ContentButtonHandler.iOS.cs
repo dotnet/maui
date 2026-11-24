@@ -68,16 +68,24 @@ namespace Microsoft.Maui.Handlers
 			if (((IElementHandler)handler).PlatformView is not MauiContentButton platformView)
 				return;
 
-			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} cannot be null.");
+			var mauiContext = handler.MauiContext ??
+				throw new InvalidOperationException($"{nameof(handler.MauiContext)} cannot be null.");
 
+			var presentedContent = button.PresentedContent;
 			UIView? content = null;
-			if (button.PresentedContent is IView presentedContent)
+			if (presentedContent is not null)
 			{
-				content = presentedContent.ToPlatform(handler.MauiContext);
+				content = presentedContent.ToPlatform(mauiContext);
+
+				if (!IsCurrentContent(handler, button, presentedContent, platformView, mauiContext))
+					return;
 
 				if (presentedContent.FlowDirection == FlowDirection.MatchParent)
 					content.UpdateFlowDirection(presentedContent);
 			}
+
+			if (!IsCurrentContent(handler, button, presentedContent, platformView, mauiContext))
+				return;
 
 			platformView.SetContent(content);
 		}

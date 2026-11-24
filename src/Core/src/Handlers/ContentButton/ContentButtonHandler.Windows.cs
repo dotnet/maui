@@ -120,14 +120,21 @@ namespace Microsoft.Maui.Handlers
 			var mauiContext = handler.MauiContext ??
 				throw new InvalidOperationException($"{nameof(handler.MauiContext)} must be set before updating content.");
 
+			var content = button.PresentedContent;
 			// A new template can reuse the current content while its handler is created.
 			platformButton.ClearPresentedContent();
 
-			if (button.PresentedContent is not IView content)
+			if (!IsCurrentContent(handler, button, content, platformButton, mauiContext) || content is null)
 				return;
 
 			var platformContent = content.ToPlatform(mauiContext);
+			if (!IsCurrentContent(handler, button, content, platformButton, mauiContext))
+				return;
+
 			RemoveFromParent(platformContent);
+			if (!IsCurrentContent(handler, button, content, platformButton, mauiContext))
+				return;
+
 			platformButton.SetPresentedContent(platformContent);
 		}
 

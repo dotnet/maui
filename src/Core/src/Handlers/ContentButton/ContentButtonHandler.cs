@@ -45,9 +45,16 @@ namespace Microsoft.Maui.Handlers
 		IContentButton IContentButtonHandler.VirtualView => VirtualView;
 		PlatformView IContentButtonHandler.PlatformView => PlatformView;
 
-		// Pressed/Released run application code that can disconnect or replace this handler's view.
+		// Application callbacks can disconnect or replace the handler's view.
 		internal static bool IsConnectedTo(IElementHandler handler, IContentButton button) =>
 			ReferenceEquals(handler.VirtualView, button) && handler.PlatformView is not null;
+
+		internal static bool IsCurrentContent(IContentButtonHandler handler, IContentButton button, IView? content, object platformView, IMauiContext context) =>
+			IsConnectedTo(handler, button) &&
+			ReferenceEquals(button.Handler, handler) &&
+			ReferenceEquals(((IElementHandler)handler).PlatformView, platformView) &&
+			ReferenceEquals(handler.MauiContext, context) &&
+			ReferenceEquals(button.PresentedContent, content);
 
 		/// <summary>Updates the native content.</summary>
 		public static partial void MapContent(IContentButtonHandler handler, IContentButton button);
