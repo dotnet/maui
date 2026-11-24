@@ -18,7 +18,7 @@ public partial class SwitchOptionsPage : ContentPage
 
 	private void OnFlowDirectionCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+		if (!(sender is CheckBox changedBox) || changedBox.IsChecked != true)
 			return;
 		if (changedBox == FlowDirectionLeftToRightCheckBox)
 		{
@@ -71,7 +71,7 @@ public partial class SwitchOptionsPage : ContentPage
 
 	private void OnOnColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+		if (!(sender is CheckBox changedBox) || changedBox.IsChecked != true)
 			return;
 		if (changedBox == OnColorRedCheckBox)
 		{
@@ -87,7 +87,7 @@ public partial class SwitchOptionsPage : ContentPage
 
 	private void OnOffColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+		if (!(sender is CheckBox changedBox) || changedBox.IsChecked != true)
 			return;
 		if (changedBox == OffColorRedCheckBox)
 		{
@@ -115,7 +115,7 @@ public partial class SwitchOptionsPage : ContentPage
 
 	private void OnThumbColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+		if (!(sender is CheckBox changedBox) || changedBox.IsChecked != true)
 			return;
 		if (changedBox == ThumbColorRedCheckBox)
 		{

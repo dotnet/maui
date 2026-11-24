@@ -251,6 +251,8 @@ namespace Microsoft.Maui.Controls
 
 		internal CoerceValueDelegate CoerceValue { get; private set; }
 
+		internal bool CoerceValueAfterPropertyChanging { get; set; }
+
 		internal CreateDefaultValueDelegate DefaultValueCreator { get; }
 
 		internal BindingPropertyChangedDelegate PropertyChanged { get; private set; }

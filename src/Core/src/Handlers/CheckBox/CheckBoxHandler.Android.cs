@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Google.Android.Material.CheckBox;
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var platformCheckBox = new MaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context))
+			var platformCheckBox = new MauiMaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context))
 			{
 				SoundEffectsEnabled = false
 			};
@@ -20,12 +21,26 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
-			platformView.CheckedChange += OnCheckedChange;
+			if (platformView is MauiMaterialCheckBox materialCheckBox)
+			{
+				materialCheckBox.CheckedStateChanged += OnCheckedStateChanged;
+			}
+			else
+			{
+				platformView.CheckedChange += OnCheckedChange;
+			}
 		}
 
 		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
-			platformView.CheckedChange -= OnCheckedChange;
+			if (platformView is MauiMaterialCheckBox materialCheckBox)
+			{
+				materialCheckBox.CheckedStateChanged -= OnCheckedStateChanged;
+			}
+			else
+			{
+				platformView.CheckedChange -= OnCheckedChange;
+			}
 		}
 
 		// This is an Android-specific mapping
@@ -39,6 +54,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
+		public static partial void MapIsThreeState(ICheckBoxHandler handler, ICheckBox check)
+		{
+			if (handler.PlatformView is MauiMaterialCheckBox platformView)
+			{
+				platformView.IsThreeState = check is ICheckBox2 { IsThreeState: true };
+			}
+		}
+
 		public static partial void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.PlatformView?.UpdateForeground(check);
@@ -47,7 +70,20 @@ namespace Microsoft.Maui.Handlers
 		void OnCheckedChange(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{
 			if (VirtualView != null)
-				VirtualView.IsChecked = e.IsChecked;
+				SetCheckedState(VirtualView, e.IsChecked);
+		}
+
+		void OnCheckedStateChanged(object? sender, EventArgs e)
+		{
+			if (sender is MauiMaterialCheckBox platformView && VirtualView != null)
+			{
+				SetCheckedState(VirtualView, platformView.CheckedState switch
+				{
+					MaterialCheckBox.StateChecked => true,
+					MaterialCheckBox.StateIndeterminate => null,
+					_ => false
+				});
+			}
 		}
 	}
 }

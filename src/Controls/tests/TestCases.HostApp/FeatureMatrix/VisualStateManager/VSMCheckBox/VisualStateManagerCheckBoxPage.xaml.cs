@@ -33,7 +33,7 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 		}
 		else
 		{
-			var state = VSMCheckBox.IsChecked ? "Checked" : "Unchecked";
+			var state = VSMCheckBox.IsChecked == true ? "Checked" : "Unchecked";
 			VisualStateManager.GoToState(VSMCheckBox, state);
 			CheckBoxState.Text = $"State: {state}";
 		}

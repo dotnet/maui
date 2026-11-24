@@ -110,7 +110,7 @@ namespace Maui.Controls.Sample.Pages
 		void UpdateContentBackground()
 		{
 			if (BorderView.Content is View content)
-				content.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
+				content.BackgroundColor = ContentBackgroundCheckBox.IsChecked == true ? Color.FromArgb("#99FF0000") : Colors.Transparent;
 		}
 
 		void UpdateBorderContent()

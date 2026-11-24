@@ -145,8 +145,16 @@ namespace Microsoft.Maui.Controls
 
 			bpcontext.Values.Remove(specificity);
 
+			if (property.CoerceValueAfterPropertyChanging && property.CoerceValue is { } coerceValue)
+			{
+				// Reentrant callbacks may have changed the fallback since it was captured.
+				var fallback = bpcontext.Values.GetSpecificityAndValue();
+				newValue = coerceValue(this, fallback.Value);
+				bpcontext.Values.SetValue(fallback.Key, newValue);
+				changed = !Equals(original.Value, newValue);
+			}
 			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
-			if (property.CoerceValue != null)
+			else if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
 
 			OnBindablePropertySet(property, original.Value, newValue, changed, changed);
@@ -753,6 +761,13 @@ namespace Microsoft.Maui.Controls
 				property.PropertyChanging?.Invoke(this, original, value);
 
 				NotifyPropertyChanging(property);
+			}
+
+			// Only opted-in properties recheck constraints changed by reentrant callbacks.
+			if (property.CoerceValueAfterPropertyChanging && property.CoerceValue is { } coerceValue)
+			{
+				value = coerceValue(this, value);
+				sameValue = ReferenceEquals(context.Property, BindingContextProperty) ? ReferenceEquals(value, original) : Equals(value, original);
 			}
 
 			context.Values.SetValue(specificity, value);

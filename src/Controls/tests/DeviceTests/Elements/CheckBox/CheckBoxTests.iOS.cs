@@ -11,6 +11,12 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(RunInNewWindowCollection)]
 	public partial class CheckBoxTests
 	{
+		bool? GetNativeCheckedState(CheckBoxHandler handler) =>
+			handler.PlatformView.IsChecked;
+
+		void ActivateNativeCheckBox(CheckBoxHandler handler) =>
+			handler.PlatformView.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+
 		MauiCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
 
