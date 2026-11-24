@@ -1288,6 +1288,9 @@ namespace Microsoft.Maui.DeviceTests
 			var toStart = edge == ScrollAnchorMode.Start;
 			var collectionView = CreateAnchorCollectionView(items, edge);
 
+			// Only the anchor could move the list as items are added (see TurningAnchorModeOffFromScrolledStopsFollowingTheEnd).
+			collectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				double Distance() => toStart ? GetDistanceFromStart(handler) : GetDistanceToEnd(handler);
@@ -1440,6 +1443,10 @@ namespace Microsoft.Maui.DeviceTests
 			var items = CreateAnchorItems(40);
 			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
 
+			// KeepItemsInView, the default, shows the first item as items are added to a list that doesn't follow an edge.
+			// KeepScrollOffset leaves the list where it is: only the anchor could move it.
+			collectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				await AssertAtEnd(handler, "The list should open at its end.");
@@ -1474,6 +1481,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
 			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// Only the anchor could move the list as items are added (see TurningAnchorModeOffFromScrolledStopsFollowingTheEnd).
+			collectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
 
 			// The first report comes as the handler starts anchoring the list.
 			var turnedOff = false;
@@ -1701,6 +1711,9 @@ namespace Microsoft.Maui.DeviceTests
 			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
 			collectionView.Header = null;
 
+			// Only the anchor could move the list as items are added (see TurningAnchorModeOffFromScrolledStopsFollowingTheEnd).
+			collectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
@@ -1882,6 +1895,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
 			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			// Only the anchor could move the list as items are added (see TurningAnchorModeOffFromScrolledStopsFollowingTheEnd).
+			collectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
@@ -3557,8 +3573,9 @@ namespace Microsoft.Maui.DeviceTests
 		static double GetItemHeight(CollectionViewHandler handler, int index, bool hasHeader = true)
 		{
 #if IOS || MACCATALYST
-			// The header is a supplementary view: the items are the first section's.
-			using var indexPath = Foundation.NSIndexPath.FromItemSection(index, 0);
+			// The header is a supplementary view: the items are the first section's. Not disposed: the managed index path is
+			// the one UIKit's equal index path maps to, which the handler can hold while this runs from Scrolled.
+			var indexPath = Foundation.NSIndexPath.FromItemSection(index, 0);
 			return handler.Controller.CollectionView.CellForItem(indexPath) is { } cell ? (double)cell.Frame.Height : double.NaN;
 #else
 			// The header is the adapter's first position.
@@ -3594,8 +3611,8 @@ namespace Microsoft.Maui.DeviceTests
 		static double GetGroupedItemHeight(CollectionViewHandler handler, IList<AnchorGroup> groups, int groupIndex, int index)
 		{
 #if IOS || MACCATALYST
-			// Each group is a section, and the headers are supplementary views.
-			using var indexPath = Foundation.NSIndexPath.FromItemSection(index, groupIndex);
+			// Each group is a section, and the headers are supplementary views. Not disposed (see GetItemHeight).
+			var indexPath = Foundation.NSIndexPath.FromItemSection(index, groupIndex);
 			return handler.Controller.CollectionView.CellForItem(indexPath) is { } cell ? (double)cell.Frame.Height : double.NaN;
 #else
 			// The header is the adapter's first position, and each group starts with its header.

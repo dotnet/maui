@@ -153,7 +153,9 @@ namespace Microsoft.Maui.Controls
 		/// </para>
 		/// <para>
 		/// While the view follows an edge, <see cref="ItemsView.ItemsUpdatingScrollMode"/> doesn't scroll it; while it
-		/// doesn't, <see cref="ItemsView.ItemsUpdatingScrollMode"/> applies as usual.
+		/// doesn't, <see cref="ItemsView.ItemsUpdatingScrollMode"/> applies as usual. With
+		/// <see cref="ItemsUpdatingScrollMode.KeepItemsInView"/>, the default, items added then scroll the view to its first
+		/// item; <see cref="ItemsUpdatingScrollMode.KeepScrollOffset"/> leaves it where the user scrolled.
 		/// </para>
 		/// <para>
 		/// Anchoring applies to vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere it has no effect, and
