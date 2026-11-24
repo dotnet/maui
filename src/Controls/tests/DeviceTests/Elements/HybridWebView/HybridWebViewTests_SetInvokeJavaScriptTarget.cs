@@ -75,7 +75,6 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 
 		public string? LastMethodCalled { get; private set; }
 
-		// Returns 2 only when the non-ASCII string arrives unchanged (https://github.com/dotnet/maui/issues/40546).
 		public int Invoke_NonAsciiParam_ReturnValueType(string value)
 		{
 			UpdateLastMethodCalled();

@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Validates a POST-only bridge request that carries its body in the
-		// URL-encoded X-Maui-Request-Body header (Android does not expose the POST body to
+		// X-Maui-Request-Body header (Android does not expose the POST body to
 		// ShouldInterceptRequest). On success returns true with the body in `body`;
 		// on failure returns false with the appropriate error response in `errorResponse`.
 		private static bool TryValidateBridgeRequest(IWebResourceRequest request, string endpointName, ILogger? logger, [NotNullWhen(true)] out string? body, [NotNullWhen(false)] out WebResourceResponse? errorResponse)
@@ -285,7 +285,6 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			// The script URL-encodes the header value, because header values only allow ISO-8859-1.
 			body = Uri.UnescapeDataString(body);
 
 			errorResponse = null;

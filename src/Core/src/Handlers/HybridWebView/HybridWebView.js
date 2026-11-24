@@ -78,7 +78,6 @@
                     headers: {
                         'Content-Type': 'text/plain',
                         'X-Maui-Invoke-Token': 'HybridWebView',
-                        // URL-encoded: header values only allow ISO-8859-1. Decoded in MauiHybridWebViewClient.
                         'X-Maui-Request-Body': encodeURIComponent(msg)
                     },
                     body: msg
@@ -190,9 +189,7 @@
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Maui-Invoke-Token': 'HybridWebView',
-                // Some platforms (Android) do not expose the POST body. URL-encoded because header
-                // values only allow ISO-8859-1; decoded in MauiHybridWebViewClient.
-                'X-Maui-Request-Body': encodeURIComponent(message)
+                'X-Maui-Request-Body': encodeURIComponent(message) // Some platforms (Android) do not expose the POST body
             },
             body: message
         });
