@@ -359,10 +359,12 @@ namespace Microsoft.Maui
 		public void ResetIndex()
 		{
 			lock (_indexBuildLock)
-			lock (_lock)
 			{
-				_index = new Dictionary<string, Entry>(StringComparer.Ordinal);
-				_size = 0;
+				lock (_lock)
+				{
+					_index = new Dictionary<string, Entry>(StringComparer.Ordinal);
+					_size = 0;
+				}
 			}
 		}
 
