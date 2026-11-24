@@ -544,8 +544,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (AnimationFrameClock.TestClock is IStoryboardClock testClock)
 				return testClock;
 
-			if (target?.Window is Window window)
-				return window.GetAnimationClock();
+			if (target?.Window is Window window && window.GetAnimationClock() is { } windowClock)
+				return windowClock;
 
 			// Finite runs on a target with no window run on the application clock, so their tasks complete.
 			return _compiled.IsForever ? null : AnimationFrameClock.GetApplicationClock();

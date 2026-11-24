@@ -759,16 +759,11 @@ namespace Microsoft.Maui.Controls
 				if (IsSameValue(property, value, original))
 					return;
 
-				// User input beats animation: the hold ends and the handler's value stands. The change is
-				// raised against the animated value, which is what was on screen.
-				context.Values.Remove(SetterSpecificity.Animation);
-				originalSpecificity = context.Values.GetSpecificity();
+				// User input beats animation: the hold ends and the handler's value stands. The animated value stays in
+				// place through PropertyChanging (subscribers read what was on screen) and is removed just before the
+				// handler's value is stored, below.
 				holdLostToHandler = true;
 			}
-
-			// The owner is told before any change handler runs, so a throwing handler can't leave its bookkeeping stale.
-			if (holdLostToHandler)
-				OnAnimationHoldLost(context, Microsoft.Maui.Controls.Animations.AnimationHoldLossReason.HandlerWrite);
 
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
@@ -800,7 +795,29 @@ namespace Microsoft.Maui.Controls
 			// bool clearTwoWayBindings = (attributes & SetValueFlags.ClearTwoWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
 
 			bool sameValue = IsSameValue(context.Property, value, original);
-			if (!silent && (!sameValue || raiseOnEqual))
+			if (holdLostToHandler)
+			{
+				// Guarded: only for a handler write that ends an animation hold or claim. Ownership ends first, so nothing
+				// a PropertyChanging handler does can commit, release or reclaim through the ended hold; the animated value
+				// itself stays visible to those handlers. However PropertyChanging ends, the value goes and the former owner
+				// is told, so a throwing handler can't leave either behind.
+				var formerOwner = context.AnimationOwner;
+				context.AnimationOwner = null;
+				try
+				{
+					if (!silent && (!sameValue || raiseOnEqual))
+					{
+						property.PropertyChanging?.Invoke(this, original, value);
+						NotifyPropertyChanging(property);
+					}
+				}
+				finally
+				{
+					context.Values.Remove(SetterSpecificity.Animation);
+					formerOwner?.OnHoldLost(this, property, Microsoft.Maui.Controls.Animations.AnimationHoldLossReason.HandlerWrite);
+				}
+			}
+			else if (!silent && (!sameValue || raiseOnEqual))
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
 

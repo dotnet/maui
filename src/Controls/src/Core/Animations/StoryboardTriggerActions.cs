@@ -143,6 +143,7 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		public static void Replace(VisualElement element, Storyboard storyboard, StoryboardPlayer player, StoryboardHandoffBehavior handoff)
 		{
+			List<Exception>? errors = null;
 			// An Ignore run leaves earlier runs in charge of whatever they still own; only a takeover replaces them.
 			if (handoff == StoryboardHandoffBehavior.SnapshotAndReplace && (player.State != PlaybackState.Stopped || player.HoldsAnything()))
 			{
@@ -152,8 +153,17 @@ namespace Microsoft.Maui.Controls.Animations
 					{
 						if (ReferenceEquals(run.Storyboard, storyboard) && !ReferenceEquals(run, player))
 						{
-							// Whatever the previous run still holds (nothing, after a full takeover) is released.
-							run.Stop(StopBehavior.Release);
+							// Whatever the previous run still holds (nothing, after a full takeover) is released. Every earlier
+							// run is retired, and the new one registered, even when a release throws; the errors follow.
+							try
+							{
+								run.Stop(StopBehavior.Release);
+							}
+							catch (Exception ex)
+							{
+								(errors ??= new List<Exception>()).Add(ex);
+							}
+
 							runs.Remove(run);
 						}
 					}
@@ -161,6 +171,12 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			Add(element, player);
+
+			// Thrown as Stop throws it (one failure as is), so callers see the same exception shape.
+			if (errors is { Count: 1 })
+				System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(errors[0]).Throw();
+			if (errors is not null)
+				throw new AggregateException(errors);
 		}
 
 		public static StoryboardPlayer? Find(VisualElement element, Storyboard? storyboard)

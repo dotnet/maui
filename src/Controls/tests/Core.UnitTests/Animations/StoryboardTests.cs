@@ -2354,6 +2354,114 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(0.6, label.Opacity, 10);
 		}
 
+		[Fact]
+		public void ARestartIsRegisteredEvenWhenRetiringAnEarlierRunThrows()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var storyboard = Fade(0, 0.3);
+			var earlier = storyboard.Begin(label, new PlaybackOptions { FillCompletion = FillCompletion.Hold });
+			Advance(110);
+			StoryboardRuns.Add(label, earlier);
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					throw new InvalidOperationException("release");
+			};
+			var restarted = storyboard.CreatePlayer(label);
+
+			Assert.Throws<AggregateException>(() => StoryboardRuns.Replace(label, storyboard, restarted, StoryboardHandoffBehavior.SnapshotAndReplace));
+
+			Assert.Same(restarted, StoryboardRuns.Find(label, storyboard));
+		}
+
+		[Fact]
+		public void PropertyChangingReadsTheDisplayedValueWhenUserInputTakesOver()
+		{
+			var label = new Label { Opacity = 0.9 };
+			Fade(0.3, 0.3, 1000).Begin(label);
+			Advance(10);
+			double? seen = null;
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					seen = label.Opacity;
+			};
+
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.6);
+
+			Assert.Equal(0.3, seen);
+			Assert.Equal(0.6, label.Opacity);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void AClockCreatedWhileTheWindowIsStoppedStartsSuspended()
+		{
+			var window = new Window(new ContentPage());
+			((IWindow)window).Stopped();
+
+			var clock = window.GetAnimationClock()!;
+
+			var suspended = typeof(AnimationFrameClock).GetField("_suspended", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+			Assert.True((bool)suspended.GetValue(clock));
+
+			((IWindow)window).Resumed();
+			Assert.False((bool)suspended.GetValue(clock));
+		}
+
+		[Fact]
+		public void StoppingWithCommitCurrentFromPropertyChangingKeepsTheUsersValue()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var player = Fade(0.3, 0.3, 1000).Begin(label);
+			Advance(10);
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && player.State == PlaybackState.Running)
+					player.Stop(StopBehavior.CommitCurrent);
+			};
+
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.6);
+
+			Assert.Equal(0.6, label.Opacity);
+		}
+
+		[Fact]
+		public void StoppingFromPropertyChangingDuringATakeoverRaisesOnePairOfNotifications()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var player = Fade(0.3, 0.3, 1000).Begin(label);
+			Advance(10);
+			var log = new System.Collections.Generic.List<string>();
+			label.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName != nameof(Label.Opacity))
+					return;
+				log.Add("changing:" + label.Opacity);
+				if (player.State == PlaybackState.Running)
+					player.Stop();
+			};
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity))
+					log.Add("changed:" + label.Opacity);
+			};
+
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.6);
+
+			Assert.Equal(new[] { "changing:0.3", "changed:0.6" }, log);
+		}
+
+		[Fact]
+		public void ADestroyedWindowHandsOutNoClock()
+		{
+			var window = new Window(new ContentPage());
+			((IWindow)window).Created();
+			((IWindow)window).Destroying();
+
+			Assert.Null(window.GetAnimationClock());
+		}
+
 		static (ContentView Root, Label Badge, Label Title) CreateNamedTree()
 		{
 			var badge = new Label();
