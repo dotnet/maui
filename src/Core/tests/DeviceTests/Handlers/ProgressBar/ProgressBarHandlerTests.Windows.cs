@@ -41,7 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(Colors.Red, Assert.IsType<SolidColorBrush>(values.Red).Color.ToColor());
-			// The local value is cleared, so the default theme brush applies again.
 			Assert.Equal(DependencyProperty.UnsetValue, values.ResetLocalValue);
 			if (values.Default is SolidColorBrush defaultBrush && values.Reset is SolidColorBrush resetBrush)
 				Assert.Equal(defaultBrush.Color, resetBrush.Color);

@@ -35,7 +35,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.NotNull(filterWhenRed);
-			// No filter and no tint override left, so the theme's progress color shows again.
 			Assert.Null(filterAfterReset);
 			Assert.Null(tintAfterReset);
 		}
