@@ -984,7 +984,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_trackers[page] = tracker;
 
 			var parentTabBar = ParentViewController as UITabBarController;
-			var showsPresentation = parentTabBar == null || ReferenceEquals(parentTabBar.SelectedViewController, this);
+
+			// A section under the More tab is shown by the tab bar's More controller (which is then selected), not by
+			// this renderer: its pushes are visible too, and complete through HandleMoreNavigationCompletionTasks, after
+			// a page transition when one runs.
+			var showsPresentation = parentTabBar == null
+				|| ReferenceEquals(parentTabBar.SelectedViewController, this)
+				|| (IsInMoreTab && ReferenceEquals(parentTabBar.SelectedViewController, parentTabBar.MoreNavigationController));
 			if (completionSource != null && showsPresentation)
 				_completionTasks[pageViewController] = completionSource;
 

@@ -727,6 +727,163 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public async Task OverlappingGoToAsyncRequestsKeepTheirOwnTransitions()
+		{
+			// Two requests on one Shell, each suspended inside its own navigation (its transition in force): each must
+			// resolve its own pages with its own transition, whichever began last.
+			var shell = new Shell();
+			var root = new ContentPage();
+			shell.Items.Add(new ShellContent { Content = root });
+			var releaseFirst = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseSecond = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			async Task<PageTransition> Navigate(PageTransition transition, Task release)
+			{
+				using var scope = new ShellTransitionScope(shell, transition);
+				await release;
+				return PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition;
+			}
+
+			var first = Navigate(new FadeTransition(), releaseFirst.Task);
+			var second = Navigate(new ScaleTransition(), releaseSecond.Task);
+
+			// Neither request's transition leaks out of its own flow.
+			Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+
+			releaseFirst.SetResult(true);
+			Assert.IsType<FadeTransition>(await first.WaitAsync(TimeSpan.FromSeconds(5)));
+
+			releaseSecond.SetResult(true);
+			Assert.IsType<ScaleTransition>(await second.WaitAsync(TimeSpan.FromSeconds(5)));
+		}
+
+		[Fact]
+		public async Task WorkStartedInsideAGoToAsyncDoesntInheritItsTransitionAfterItEnds()
+		{
+			var shell = new Shell();
+			var root = new ContentPage();
+			shell.Items.Add(new ShellContent { Content = root });
+			var later = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			Task<PageTransition> handler;
+
+			using (new ShellTransitionScope(shell, new FadeTransition()))
+			{
+				// Something the navigation starts (a handler) that navigates after the navigation has ended.
+				handler = ResolveLater();
+			}
+
+			later.SetResult(true);
+			Assert.Same(PageTransition.Platform, await handler.WaitAsync(TimeSpan.FromSeconds(5)));
+
+			async Task<PageTransition> ResolveLater()
+			{
+				await later.Task;
+				return PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition;
+			}
+		}
+
+		[Fact]
+		public async Task AShellPushAppliedLaterOutsideTheRequestKeepsItsTransition()
+		{
+			// Android queues a navigation behind the one running and applies it later, from a fragment callback outside the
+			// GoToAsync's flow: the transition staged on the page when the section requested it must still resolve.
+			var root = new ContentPage();
+			var section = new ShellSection { Items = { new ShellContent { Content = root } } };
+			var shell = new Shell { Items = { new ShellItem { Items = { section } } } };
+			var platform = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			((IShellSectionController)section).NavigationRequested += (_, e) => e.Task = platform.Task;
+			var page = new ContentPage();
+			Task push;
+
+			using (new ShellTransitionScope(shell, new ScaleTransition()))
+			{
+				push = section.Navigation.PushAsync(page);
+			}
+
+			var resolved = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, root, page, true);
+			Assert.IsType<ScaleTransition>(resolved.Transition);
+
+			platform.SetResult(true);
+			await push.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.False(PageTransitionResolver.HasPending(page));
+		}
+
+		[Fact]
+		public async Task AnUnconsumedStagedShellTransitionIsClearedWhenTheNavigationEnds()
+		{
+			var root = new ContentPage();
+			var section = new ShellSection { Items = { new ShellContent { Content = root } } };
+			var shell = new Shell { Items = { new ShellItem { Items = { section } } } };
+			var platform = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			((IShellSectionController)section).NavigationRequested += (_, e) => e.Task = platform.Task;
+			var page = new ContentPage();
+			Task push;
+
+			using (new ShellTransitionScope(shell, new ScaleTransition()))
+			{
+				push = section.Navigation.PushAsync(page);
+			}
+
+			Assert.True(PageTransitionResolver.HasPending(page));
+			platform.SetResult(true);
+			await push.WaitAsync(TimeSpan.FromSeconds(5));
+			await Task.Yield();
+
+			Assert.False(PageTransitionResolver.HasPending(page));
+		}
+
+		[Fact]
+		public void ARunningRootReplacementEndsWhenAnotherPageIsAssignedDirectly()
+		{
+			var page = new ContentPage();
+			var window = new Window(new ContentPage());
+			var finished = 0;
+			var running = RootPageTransition.Track(window, page, () => finished++);
+
+			// Its own assignment doesn't end it.
+			window.Page = page;
+			Assert.Equal(0, finished);
+			Assert.False(running.IsSuperseded);
+
+			window.Page = new ContentPage();
+			Assert.Equal(1, finished);
+			Assert.True(running.IsSuperseded);
+
+			// It stopped observing the window: later changes don't finish it again.
+			window.Page = new ContentPage();
+			Assert.Equal(1, finished);
+		}
+
+		[Fact]
+		public void ARunningRootReplacementEndsWhenTheWindowIsDestroyed()
+		{
+			var page = new ContentPage();
+			var window = new Window(new ContentPage());
+			var finished = 0;
+			var running = RootPageTransition.Track(window, page, () => finished++);
+
+			((IWindow)window).Destroying();
+
+			Assert.Equal(1, finished);
+			Assert.True(running.IsSuperseded);
+		}
+
+		[Fact]
+		public void AFinishedRootReplacementStopsObservingTheWindow()
+		{
+			var page = new ContentPage();
+			var window = new Window(new ContentPage());
+			var finished = 0;
+			var running = RootPageTransition.Track(window, page, () => finished++);
+
+			RootPageTransition.Untrack(window, running);
+			window.Page = new ContentPage();
+			((IWindow)window).Destroying();
+
+			Assert.Equal(0, finished);
+		}
+
+		[Fact]
 		public async Task ADeferredModalKeepsItsPerNavigationTransition()
 		{
 			// The window has no platform yet, so the modal is queued for the sync to present later.

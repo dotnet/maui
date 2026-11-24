@@ -54,7 +54,16 @@ namespace Microsoft.Maui.Controls.Animations
 					return null;
 				}
 
-				return new FadeTransition().Snapshot();
+				var crossfade = new FadeTransition().Snapshot();
+
+				// The crossfade, not Platform, is what showed the page: going back reverses it even when the heroes no
+				// longer match (one hidden or removed), rather than switching to the platform's animation.
+				if (request.Kind == NavigationTransitionKind.Push && request.To is { } shownPage)
+				{
+					PageTransitionResolver.RecordShown(shownPage, crossfade);
+				}
+
+				return crossfade;
 			}
 
 			return transition;

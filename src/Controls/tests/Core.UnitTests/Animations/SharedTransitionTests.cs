@@ -37,6 +37,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void TheCrossfadeHeroesFlyOverIsWhatThePopReversesEvenWithoutAMatch()
+		{
+			PageTransitionResolver.ReducedMotionOverride = false;
+			try
+			{
+				var (list, detail) = PagesWith("photo", "photo");
+
+				// Only shared-element names are set: the push crossfades so the hero has something to fly over.
+				var push = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, list, detail, true);
+				Assert.IsType<FadeTransition>(BuiltInNavigationTransitions.GetEffectiveTransition(push.Request, out var pushHeroes));
+				Assert.Single(pushHeroes);
+
+				// The list page's hero is hidden before going back: no pair, but the pop still reverses the crossfade.
+				((VisualElement)((VerticalStackLayout)list.Content)[0]).IsVisible = false;
+				var pop = PageTransitionResolver.Resolve(NavigationTransitionKind.Pop, detail, list, true);
+
+				Assert.IsType<FadeTransition>(pop.Transition);
+				Assert.IsType<FadeTransition>(BuiltInNavigationTransitions.GetEffectiveTransition(pop.Request, out var popHeroes));
+				Assert.Empty(popHeroes);
+			}
+			finally
+			{
+				PageTransitionResolver.ReducedMotionOverride = null;
+			}
+		}
+
+		[Fact]
 		public void ElementsWithTheSameNameArePaired()
 		{
 			var (from, to) = PagesWith("photo", "photo");

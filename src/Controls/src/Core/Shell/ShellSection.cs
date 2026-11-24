@@ -779,7 +779,24 @@ namespace Microsoft.Maui.Controls
 
 		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
 		{
+			// A GoToAsync transition is tied to its own request (it flows with it); staged here, where the request and
+			// the page it moves are both known, it reaches a platform that applies the navigation later too.
+			var kind = args.RequestType switch
+			{
+				NavigationRequestType.Push => Animations.NavigationTransitionKind.Push,
+				NavigationRequestType.Pop or NavigationRequestType.PopToRoot => Animations.NavigationTransitionKind.Pop,
+				_ => (Animations.NavigationTransitionKind?)null,
+			};
+			var staged = kind is { } navigationKind ? Animations.PageTransitionResolver.StageShellOverride(Shell, args.Page, navigationKind) : null;
+
 			_navigationRequested?.Invoke(this, args);
+
+			if (staged is not null)
+			{
+				Task navigation = args.Task;
+				navigation ??= _handlerBasedNavigationCompletionSource?.Task;
+				Animations.PageTransitionResolver.ClearPendingWhenDone(args.Page, staged, navigation);
+			}
 		}
 
 		protected virtual void OnInsertPageBefore(Page page, Page before)

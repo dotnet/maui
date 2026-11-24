@@ -56,6 +56,18 @@ namespace Microsoft.Maui.Controls.Animations
 			var original = NativePose.Of(content);
 			RunningTransition? running = null;
 
+			// The transition's background shows behind the moving content: the decor view, which isn't transformed,
+			// paints it for the duration, and its own background comes back on every way the replacement ends.
+			var hasBackdrop = false;
+			global::Android.Graphics.Drawables.Drawable? decorBackground = null;
+			if (transition.Background is { } background)
+			{
+				decorBackground = decor.Background;
+				decor.Background = null;
+				decor.UpdateBackground((Microsoft.Maui.Graphics.Paint)background);
+				hasBackdrop = true;
+			}
+
 			void Cleanup()
 			{
 				if (finished)
@@ -67,6 +79,11 @@ namespace Microsoft.Maui.Controls.Animations
 				overlay.Remove(picture);
 				ActivePictures--;
 				original.Restore(content);
+				if (hasBackdrop)
+				{
+					decor.Background = decorBackground;
+				}
+
 				bitmap.Recycle();
 				if (running is not null)
 				{
@@ -78,7 +95,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			// This replacement owns the window's root (the content view is shared) before the page is assigned: a
 			// replacement started from the assignment's own callbacks finishes this one rather than racing it.
-			running = Track(window, () =>
+			running = Track(window, page, () =>
 			{
 				animator?.End();
 				Cleanup();

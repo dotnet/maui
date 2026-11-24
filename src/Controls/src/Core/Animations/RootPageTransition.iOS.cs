@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Animations
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.Controls.Animations
 			var flowDirection = request.FlowDirection;
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			UIView? incoming = null;
+			UIView? backdrop = null;
 			(CGAffineTransform Transform, nfloat Alpha) incomingOriginal = (CGAffineTransform.MakeIdentity(), 1);
 			var finished = false;
 			RunningTransition? running = null;
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.Controls.Animations
 				finished = true;
 				picture.Layer.RemoveAllAnimations();
 				picture.RemoveFromSuperview();
+				backdrop?.RemoveFromSuperview();
 				if (incoming is not null)
 				{
 					incoming.Layer.RemoveAllAnimations();
@@ -59,7 +62,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			// This replacement owns the window's root before the page is assigned: a replacement started from the
 			// assignment's own callbacks finishes this one rather than racing it.
-			running = Track(window, Cleanup);
+			running = Track(window, page, Cleanup);
 
 			window.Page = page;
 
@@ -76,6 +79,16 @@ namespace Microsoft.Maui.Controls.Animations
 
 			incoming = uiWindow.RootViewController?.View;
 			incoming?.LayoutIfNeeded();
+
+			// The transition's background shows behind the moving root: an untransformed view directly beneath it,
+			// removed on every way the replacement ends.
+			if (transition.Background is { } background && incoming?.Superview is { } host)
+			{
+				backdrop = new UIView(host.Bounds) { AutoresizingMask = UIViewAutoresizing.FlexibleDimensions };
+				backdrop.UpdateBackground((Microsoft.Maui.Graphics.Paint)background);
+				host.InsertSubviewBelow(backdrop, incoming);
+			}
+
 			uiWindow.AddSubview(picture);
 			uiWindow.BringSubviewToFront(picture);
 			if (incoming is not null)

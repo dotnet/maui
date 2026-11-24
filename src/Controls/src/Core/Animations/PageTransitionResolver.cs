@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Animations
@@ -44,10 +45,11 @@ namespace Microsoft.Maui.Controls.Animations
 		// they were staged for. The overload removes an entry the navigation didn't consume once its task ends.
 		static readonly ConditionalWeakTable<Page, PendingTransitions> s_pending = new();
 
-		// GoToAsync(state, transition) applies to every page that navigation pushes or pops.
-		// Kept as a stack per Shell: a GoToAsync suspended in Navigating keeps its override while a later one runs
-		// (or fails), and each removes only its own entry.
-		static readonly ConditionalWeakTable<Shell, ShellOverrides> s_shellOverrides = new();
+		// GoToAsync(state, transition) applies to every page that navigation pushes or pops, and only to that navigation.
+		// It flows with the request's own async flow rather than being stored on the Shell, so overlapping GoToAsync
+		// calls (one suspended in Navigating, one presenting a multi-page route) never see each other's transition,
+		// and a navigation started later from inside it (a handler) doesn't inherit it once the request has ended.
+		static readonly System.Threading.AsyncLocal<ShellOverride?> s_shellOverride = new();
 
 		static readonly ConditionalWeakTable<IServiceProvider, INavigationTransitionProvider[]> s_providers = new();
 
@@ -121,6 +123,40 @@ namespace Microsoft.Maui.Controls.Animations
 			set => s_modalPopTransition.Value = value;
 		}
 
+		/// <summary>
+		/// Stages the running GoToAsync transition of this flow (if <paramref name="shell"/> has one) on the page a Shell
+		/// section is about to push or pop, so a platform that applies the request later, outside the request's flow (an
+		/// Android navigation queued behind the one running), still resolves it. Returns a token for
+		/// <see cref="ClearPendingWhenDone"/>, or <see langword="null"/> when nothing was staged.
+		/// </summary>
+		internal static object? StageShellOverride(Shell? shell, Page? page, NavigationTransitionKind kind)
+			=> shell is not null && page is not null && OverrideFor(shell) is { } transition
+				? SetPending(page, kind, transition)
+				: null;
+
+		/// <summary>
+		/// Removes the staged entry <paramref name="token"/> once <paramref name="navigation"/> has ended (at once when it
+		/// is <see langword="null"/>), if the platform never consumed it. A navigation that faults is the caller's to observe.
+		/// </summary>
+		internal static async void ClearPendingWhenDone(Page page, object token, Task? navigation)
+		{
+			try
+			{
+				if (navigation is not null)
+				{
+					await navigation;
+				}
+			}
+			catch (Exception)
+			{
+				// The navigation's own caller observes its fault; only the staged entry is this method's business.
+			}
+			finally
+			{
+				ClearPending(page, token);
+			}
+		}
+
 		/// <summary>The GoToAsync transition of the Shell navigation running for <paramref name="page"/>, if any.</summary>
 		internal static PageTransition? GetShellOverride(Element? page) => FindShellOverride(page);
 
@@ -152,31 +188,55 @@ namespace Microsoft.Maui.Controls.Animations
 
 		internal static object BeginShellOverride(Shell shell, PageTransition transition)
 		{
-			var entry = new ShellOverride(transition.Snapshot());
-			s_shellOverrides.GetValue(shell, static _ => new ShellOverrides()).Entries.Add(entry);
+			var entry = new ShellOverride(shell, transition.Snapshot(), s_shellOverride.Value);
+			s_shellOverride.Value = entry;
 			return entry;
 		}
 
 		internal static void EndShellOverride(Shell shell, object token)
 		{
-			if (s_shellOverrides.TryGetValue(shell, out var overrides) && token is ShellOverride entry)
+			if (token is not ShellOverride entry)
 			{
-				overrides.Entries.Remove(entry);
-				if (overrides.Entries.Count == 0)
-				{
-					s_shellOverrides.Remove(shell);
-				}
+				return;
+			}
+
+			// Ended for every flow that captured it (a continuation or handler still holding it sees it as over), and
+			// this flow goes back to whatever enclosed the request.
+			entry.Ended = true;
+			if (ReferenceEquals(s_shellOverride.Value, entry))
+			{
+				s_shellOverride.Value = entry.Previous;
 			}
 		}
 
-		static PageTransition? LatestOverride(Shell shell)
-			=> s_shellOverrides.TryGetValue(shell, out var overrides) && overrides.Entries.Count > 0
-				? overrides.Entries[overrides.Entries.Count - 1].Transition
-				: null;
+		// The innermost running GoToAsync override of this flow that belongs to shell.
+		static PageTransition? OverrideFor(Shell shell)
+		{
+			for (var entry = s_shellOverride.Value; entry is not null; entry = entry.Previous)
+			{
+				if (!entry.Ended && entry.IsFor(shell))
+				{
+					return entry.Transition;
+				}
+			}
+
+			return null;
+		}
 
 		/// <summary>The flow direction recorded for <paramref name="page"/> when it was last shown.</summary>
 		internal static FlowDirection? GetShownFlowDirection(Page page)
 			=> s_shown.TryGetValue(page, out var shown) ? shown.FlowDirection : null;
+
+		/// <summary>
+		/// Records <paramref name="transition"/> as what actually showed <paramref name="page"/> when the built-in
+		/// transitions substitute one for the resolved transition (the crossfade heroes fly over), so going back reverses
+		/// what ran even if the heroes no longer match. The recorded flow direction is kept.
+		/// </summary>
+		internal static void RecordShown(Page page, PageTransition transition)
+		{
+			var flowDirection = s_shown.TryGetValue(page, out var shown) ? shown.FlowDirection : FlowDirectionOf(page);
+			s_shown.Put(page, new ShownTransition(transition, flowDirection));
+		}
 
 		/// <summary>The transition recorded for <paramref name="page"/> when it was last shown.</summary>
 		internal static PageTransition? GetShownTransition(Page page)
@@ -335,14 +395,14 @@ namespace Microsoft.Maui.Controls.Animations
 			var current = element;
 			while (current is not null)
 			{
-				if (current is Shell shell && LatestOverride(shell) is { } fromShell)
+				if (current is Shell shell && OverrideFor(shell) is { } fromShell)
 				{
 					return fromShell;
 				}
 
 				// A modal (and a stack inside a modal NavigationPage) is a child of the window, not of the Shell that
 				// routed to it: the override of the Shell that is this window's page applies.
-				if (current is Window { Page: Shell windowShell } && LatestOverride(windowShell) is { } fromWindowShell)
+				if (current is Window { Page: Shell windowShell } && OverrideFor(windowShell) is { } fromWindowShell)
 				{
 					return fromWindowShell;
 				}
@@ -440,16 +500,25 @@ namespace Microsoft.Maui.Controls.Animations
 			public PageTransition Transition { get; }
 		}
 
-		sealed class ShellOverrides
-		{
-			public List<ShellOverride> Entries { get; } = new();
-		}
-
 		sealed class ShellOverride
 		{
-			public ShellOverride(PageTransition transition) => Transition = transition;
+			// Weak: an execution context captured by something long-lived must not keep the Shell alive.
+			readonly WeakReference<Shell> _shell;
+
+			public ShellOverride(Shell shell, PageTransition transition, ShellOverride? previous)
+			{
+				_shell = new WeakReference<Shell>(shell);
+				Transition = transition;
+				Previous = previous;
+			}
 
 			public PageTransition Transition { get; }
+
+			public ShellOverride? Previous { get; }
+
+			public bool Ended { get; set; }
+
+			public bool IsFor(Shell shell) => _shell.TryGetTarget(out var target) && ReferenceEquals(target, shell);
 		}
 	}
 

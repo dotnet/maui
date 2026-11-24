@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Animations
 {
@@ -91,37 +92,104 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 
 		/// <summary>
-		/// Records the root replacement now starting on <paramref name="window"/>, before anything (the page assignment
-		/// included) can start another; <paramref name="finish"/> must be idempotent. A replacement started meanwhile
-		/// finishes this one, which <see cref="RunningTransition.IsSuperseded"/> then reports.
+		/// Records the root replacement of <paramref name="page"/> now starting on <paramref name="window"/>, before anything
+		/// (the page assignment included) can start another; <paramref name="finish"/> must be idempotent. It is finished,
+		/// and <see cref="RunningTransition.IsSuperseded"/> then reports it, by whichever comes first: another replacement,
+		/// any other page assigned to the window directly, or the window being destroyed.
 		/// </summary>
-		static RunningTransition Track(Window window, Action finish)
+		internal static RunningTransition Track(Window window, Page page, Action finish)
 		{
-			var running = new RunningTransition(finish);
+			var running = new RunningTransition(window, page, finish);
 			s_running.Put(window, running);
+			running.Observe();
 			return running;
 		}
 
-		static void Untrack(Window window, RunningTransition running)
+		/// <summary>Releases <paramref name="running"/>: stops observing the window and forgets it. Safe to call twice.</summary>
+		internal static void Untrack(Window window, RunningTransition running)
 		{
+			running.StopObserving();
 			if (s_running.TryGetValue(window, out var current) && ReferenceEquals(current, running))
 			{
 				s_running.Remove(window);
 			}
 		}
 
-		sealed class RunningTransition
+		internal sealed class RunningTransition
 		{
+			readonly Window _window;
+			readonly Page _page;
 			readonly Action _finish;
+			bool _observing;
 
-			public RunningTransition(Action finish) => _finish = finish;
+			public RunningTransition(Window window, Page page, Action finish)
+			{
+				_window = window;
+				_page = page;
+				_finish = finish;
+			}
 
 			public bool IsSuperseded { get; private set; }
 
 			public void Finish()
 			{
 				IsSuperseded = true;
+				StopObserving();
 				_finish();
+			}
+
+			public void Observe()
+			{
+				if (_observing)
+				{
+					return;
+				}
+
+				_observing = true;
+				_window.PropertyChanged += OnWindowPropertyChanged;
+				_window.Destroying += OnWindowDestroying;
+			}
+
+			public void StopObserving()
+			{
+				if (!_observing)
+				{
+					return;
+				}
+
+				_observing = false;
+				_window.PropertyChanged -= OnWindowPropertyChanged;
+				_window.Destroying -= OnWindowDestroying;
+			}
+
+			// The replacement's own assignment sets the window's page to _page; anything else replaced it directly.
+			void OnWindowPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == Window.PageProperty.PropertyName && !ReferenceEquals(_window.Page, _page))
+				{
+					FinishThis();
+				}
+			}
+
+			void OnWindowDestroying(object? sender, EventArgs e) => FinishThis();
+
+			void FinishThis()
+			{
+				if (s_running.TryGetValue(_window, out var current) && ReferenceEquals(current, this))
+				{
+					s_running.Remove(_window);
+				}
+
+				// Raised from the window's own page change or teardown: a failure restoring the native views is logged and
+				// must not break the assignment or teardown that triggered it.
+				try
+				{
+					Finish();
+				}
+				catch (Exception ex)
+				{
+					_window.FindMauiContext()?.CreateLogger<RunningTransition>()?.LogWarning(ex, "Finishing a root page transition failed.");
+				}
 			}
 		}
 
