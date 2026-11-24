@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			Action<Drawable?> setImage,
 			CancellationToken cancellationToken = default,
 			Action<Exception>? onFailed = null,
-			bool keepPrevious = false)
+			Action<IImageSourceServiceResult>? onKeptImageReplaced = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Platform
 
 				if (applied)
 				{
-					if (destinationImageView is not null && keepPrevious && setImage is not null)
+					// Keeping the image that is shown while the new one loads.
+					if (destinationImageView is not null && onKeptImageReplaced is not null && setImage is not null)
 					{
 						// Loading into the view would clear the image that is shown right away, so load the new image
 						// for the view's size without touching the view, then replace the image in one step.
@@ -60,6 +61,7 @@ namespace Microsoft.Maui.Platform
 							PlatformInterop.ClearImageView(destinationImageView);
 							setImage.Invoke(drawableResult.Value);
 							destinationImageView.UpdateIsAnimationPlaying(image);
+							onKeptImageReplaced(drawableResult);
 						}
 					}
 					else if (destinationImageView is not null)

@@ -59,13 +59,8 @@ namespace Microsoft.Maui.Platform
 #endif
 			CancelFallbacks();
 #if ANDROID
-			// Glide may reuse the bitmap of an image that the loader owns as soon as it is released, so stop showing it first.
-			if (Setter.Handler?.PlatformView is global::Android.Widget.ImageView imageView &&
-				_ownedResult is IImageSourceServiceResult<PlatformImage> { Value: { } ownedImage } &&
-				imageView.Drawable == ownedImage)
-			{
-				imageView.SetImageDrawable(null);
-			}
+			// Reset runs when the handler is disconnected, after its PlatformView was cleared, so the view is tracked separately.
+			RemoveOwnedImageFromView();
 #endif
 			ReleaseOwnedResult();
 #endif
@@ -100,8 +95,27 @@ namespace Microsoft.Maui.Platform
 				// Only an image that loaded successfully is kept (not a placeholder or an error image).
 				var keepPrevious = _isLoadedImageShown && fallbacks?.KeepPreviousImageWhileLoading == true;
 #if ANDROID
-				// Otherwise Android clears the image as soon as the new one starts loading.
+				// Otherwise Android clears the image as soon as the new one starts loading. Glide only does that for images
+				// it set itself, not for a kept image that the loader set.
+				if (!keepPrevious && _isLoadedImageShown)
+				{
+					RemoveOwnedImageFromView();
+					ReleaseOwnedResult();
+				}
 				_isLoadedImageShown &= keepPrevious;
+
+				// A kept image's replacement is set on the view by the loader itself, so the loader owns it from then on.
+				// It takes it over before the image is reported as loaded, which may start another load.
+				var adopted = false;
+				Action<IImageSourceServiceResult>? onKeptImageReplaced = !keepPrevious
+					? null
+					: replacement =>
+					{
+						adopted = true;
+						_isLoadedImageShown = true;
+						_ownedImageView = platformView as global::Android.Widget.ImageView;
+						ReplaceOwnedResult(replacement);
+					};
 #endif
 				Action<Exception>? onFailed = errorSource is null
 					? null
@@ -117,7 +131,7 @@ namespace Microsoft.Maui.Platform
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed);
 #elif ANDROID
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, keepPrevious);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, onKeptImageReplaced);
 #endif
 
 #if IOS || ANDROID || WINDOWS
@@ -153,11 +167,10 @@ namespace Microsoft.Maui.Platform
 #endif
 
 #if ANDROID
-				if (keepPrevious && result is not null)
+				if (adopted)
 				{
-					// The loader set this image on the view itself (instead of Glide), so it releases it once it is replaced.
+					// The loader owns this image already (see above).
 					SourceManager.CompleteLoad(null);
-					ReplaceOwnedResult(result);
 				}
 				else
 #endif
@@ -253,20 +266,26 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception)
 			{
-				// The fallback image could not be loaded either: show nothing.
-				if (IsCurrent())
-				{
-					Setter.SetImageSource(null);
-					_isLoadedImageShown = false;
-					ReleaseOwnedResult();
-				}
-				return;
+				// Handled below like a fallback image that does not exist.
 			}
 
-			if (!IsCurrent() || image is null)
+			if (!IsCurrent())
 			{
 				// The fallback was never shown.
 				result?.Dispose();
+				return;
+			}
+
+			if (image is null)
+			{
+				// The fallback image could not be loaded either: show nothing (not an image that is no longer current).
+				result?.Dispose();
+				Setter.SetImageSource(null);
+				_isLoadedImageShown = false;
+#if IOS
+				_decodedFor = null;
+#endif
+				ReleaseOwnedResult();
 				return;
 			}
 
@@ -274,6 +293,9 @@ namespace Microsoft.Maui.Platform
 			_isLoadedImageShown = false;
 #if IOS
 			_decodedFor = null;
+#endif
+#if ANDROID
+			_ownedImageView = platformView as global::Android.Widget.ImageView;
 #endif
 			ReplaceOwnedResult(result);
 		}
@@ -289,11 +311,33 @@ namespace Microsoft.Maui.Platform
 		{
 			var previous = _ownedResult;
 			_ownedResult = result;
+#if ANDROID
+			if (result is null)
+				_ownedImageView = null;
+#endif
 			previous?.Dispose();
 		}
 
 		void ReleaseOwnedResult() =>
 			ReplaceOwnedResult(null);
+
+#if ANDROID
+		// The view that shows the owned image (the handler's PlatformView is cleared before it is disconnected).
+		global::Android.Widget.ImageView? _ownedImageView;
+
+		/// <summary>
+		/// Stops showing the owned image: Glide may reuse its bitmap as soon as it is released.
+		/// </summary>
+		void RemoveOwnedImageFromView()
+		{
+			if (_ownedImageView is { } imageView && imageView.IsAlive() &&
+				_ownedResult is IImageSourceServiceResult<PlatformImage> { Value: { } ownedImage } &&
+				imageView.Drawable == ownedImage)
+			{
+				imageView.SetImageDrawable(null);
+			}
+		}
+#endif
 #endif
 
 #if IOS
@@ -302,26 +346,35 @@ namespace Microsoft.Maui.Platform
 		bool _isRedecoding;
 
 		/// <summary>
-		/// Gets the size the image of an <see cref="IImage"/> is displayed at, so that a large image can be decoded at that size.
+		/// Gets the size the image of an <see cref="IImage"/> will be displayed at, so that a large image can be decoded at that size.
 		/// </summary>
-		ImageDecodeOptions? GetDecodeOptions(PlatformView platformView, float density, IElementHandler handler)
+		/// <remarks>With <paramref name="useBounds"/>, the view's current size (after layout) is used, rather than the size the new image is expected to have.</remarks>
+		ImageDecodeOptions? GetDecodeOptions(PlatformView platformView, float density, IElementHandler handler, bool useBounds = false)
 		{
 			if (!RuntimeFeature.IsImageDownsamplingEnabled || platformView is not MauiImageView || Setter.ImageSourcePart is not IImage image)
 				return null;
 
 			var bounds = platformView.Bounds.Size;
-			if (bounds.Width > 0 && bounds.Height > 0)
-				return new ImageDecodeOptions(bounds.Width * density, bounds.Height * density, image.Aspect, isViewSizeKnown: true);
+			if (useBounds)
+			{
+				return bounds.Width > 0 && bounds.Height > 0
+					? new ImageDecodeOptions(bounds.Width * density, bounds.Height * density, image.Aspect, isViewSizeKnown: true)
+					: null;
+			}
 
+			// The size of the view only does not depend on the image when it is requested explicitly.
 			if (Primitives.Dimension.IsExplicitSet(image.Width) && Primitives.Dimension.IsExplicitSet(image.Height) && image.Width > 0 && image.Height > 0)
 				return new ImageDecodeOptions(image.Width * density, image.Height * density, image.Aspect, isViewSizeKnown: true);
 
-			// Not laid out yet: the image is rarely shown larger than the window. If it is, it is decoded again once laid out.
+			// Otherwise the current size may be the size of the previous image. The image is rarely shown larger than the window
+			// (or the view is already larger); if it is, it is decoded again once laid out.
 			var window = platformView.Window ?? handler.MauiContext?.GetOptionalPlatformWindow();
-			if (window is not null && window.Bounds.Width > 0 && window.Bounds.Height > 0)
-				return new ImageDecodeOptions(window.Bounds.Width * density, window.Bounds.Height * density, image.Aspect, isViewSizeKnown: false);
+			if (window is null || window.Bounds.Width <= 0 || window.Bounds.Height <= 0)
+				return null;
 
-			return null;
+			var width = Math.Max(window.Bounds.Width, bounds.Width);
+			var height = Math.Max(window.Bounds.Height, bounds.Height);
+			return new ImageDecodeOptions(width * density, height * density, image.Aspect, isViewSizeKnown: false);
 		}
 
 		/// <summary>
@@ -337,17 +390,17 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// Only sources that can be read again (from the cache): a stream may only be readable once.
+			// Only sources that can be decoded again without loading them again (which might return another image).
 			var source = Setter.ImageSourcePart?.Source;
-			if (source is not (IUriImageSource or IFileImageSource))
+			if (source is not (IUriImageSource { CachingEnabled: true } or IFileImageSource))
 				return;
 
 			var density = platformView.Window.GetDisplayDensity();
-			var required = GetDecodeOptions(platformView, density, handler);
-			if (required is null || !required.IsViewSizeKnown || !decodedFor.IsInsufficientFor(required))
+			var required = GetDecodeOptions(platformView, density, handler, useBounds: true);
+			if (required is null || !decodedFor.IsInsufficientFor(required))
 				return;
 
-			RedecodeAsync(source, density, required).FireAndForget();
+			RedecodeAsync(source, density, new ImageDecodeOptions(required.PixelWidth, required.PixelHeight, required.Aspect, isViewSizeKnown: true) { FromCacheOnly = true }).FireAndForget();
 		}
 
 		async Task RedecodeAsync(IImageSource source, float density, ImageDecodeOptions options)
@@ -372,17 +425,28 @@ namespace Microsoft.Maui.Platform
 				_isRedecoding = false;
 			}
 
+			var isCurrent = generation == _fallbackGeneration && !token.IsCancellationRequested && !SourceManager.IsLoading &&
+				Setter.ImageSourcePart?.Source == source && _decodedFor is not null;
+
 			// Only replace the image when it is still the one this was decoded for.
-			if (result?.Value is not { } image || generation != _fallbackGeneration || token.IsCancellationRequested ||
-				SourceManager.IsLoading || Setter.ImageSourcePart?.Source != source || _decodedFor is null)
+			if (result?.Value is not { } image || !isCurrent)
 			{
 				result?.Dispose();
-				return;
+
+				// The image is no longer cached (or could not be decoded): keep the image that is shown, and stop trying.
+				if (result is null && isCurrent)
+					_decodedFor = null;
+			}
+			else
+			{
+				_decodedFor = options.WasDownsampled ? options : null;
+				Setter.SetImageSource(image);
+				SourceManager.ReplaceResult(result);
 			}
 
-			Setter.SetImageSource(image);
-			SourceManager.ReplaceResult(result);
-			_decodedFor = options.WasDownsampled ? options : null;
+			// The view may have changed again while the image was decoded.
+			if (result is not null)
+				UpdateDecodedSize();
 		}
 #endif
 	}

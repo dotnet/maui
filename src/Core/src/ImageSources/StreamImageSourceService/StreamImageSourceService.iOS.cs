@@ -17,10 +17,19 @@ namespace Microsoft.Maui
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync(imageSource, null, cancellationToken);
 
-		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken) =>
-			// A stream can only be read once, so it is not read again when the view grows: only decode it smaller
-			// when the size it is shown at is known.
-			GetImageAsync((IStreamImageSource)imageSource, options.IsViewSizeKnown ? options : null, cancellationToken);
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			// A stream may only be readable once, so it is never decoded again.
+			if (options.FromCacheOnly)
+				return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
+
+			// A derived service may load images differently: use its implementation (at the image's full size).
+			if (GetType() != typeof(StreamImageSourceService))
+				return GetImageAsync(imageSource, scale, cancellationToken);
+
+			// Only decode it smaller when the size it is shown at does not depend on the image.
+			return GetImageAsync((IStreamImageSource)imageSource, options.IsViewSizeKnown ? options : null, cancellationToken);
+		}
 
 		async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, ImageDecodeOptions? options, CancellationToken cancellationToken)
 		{

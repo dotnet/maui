@@ -200,6 +200,21 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Gets the cached image for <paramref name="uri"/> (even if it expired) without downloading it, or <see langword="null"/> when it is not cached.
+		/// </summary>
+		internal Task<byte[]?> TryLoadCachedAsync(Uri uri, CancellationToken cancellationToken = default)
+		{
+			if (MemoryCache.TryGet(uri.OriginalString, out var item))
+				return Task.FromResult<byte[]?>(item.Data);
+
+			return Task.Run(
+				async () => DiskCache.GetEntry(uri) is { } entry
+					? await DiskCache.TryReadAsync(entry, cancellationToken).ConfigureAwait(false)
+					: null,
+				cancellationToken);
+		}
+
+		/// <summary>
 		/// Returns the valid cached file for <paramref name="uri"/> without performing any I/O, if there is one.
 		/// </summary>
 		public bool TryGetCachedFile(Uri uri, TimeSpan cacheValidity, out UriImageResult result)

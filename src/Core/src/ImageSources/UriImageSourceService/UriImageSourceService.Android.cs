@@ -49,7 +49,10 @@ namespace Microsoft.Maui
 			GetDrawableAsync((IUriImageSource)imageSource, context, IViewSizedImageSourceService.SizeOriginal, IViewSizedImageSourceService.SizeOriginal, cancellationToken);
 
 		Task<IImageSourceServiceResult<Drawable>?> IViewSizedImageSourceService.GetDrawableAsync(IImageSource imageSource, Context context, int width, int height, CancellationToken cancellationToken) =>
-			GetDrawableAsync((IUriImageSource)imageSource, context, width, height, cancellationToken);
+			// A derived service may load images differently: use its implementation (at the image's own size).
+			GetType() == typeof(UriImageSourceService)
+				? GetDrawableAsync((IUriImageSource)imageSource, context, width, height, cancellationToken)
+				: GetDrawableAsync(imageSource, context, cancellationToken);
 
 		Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IUriImageSource uriImageSource, Context context, int width, int height, CancellationToken cancellationToken)
 		{

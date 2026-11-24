@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		readonly string _cacheDirectory = Path.Combine(CacheRoot, Guid.NewGuid().ToString("N"));
 
-		void SetupBuilder()
+		void SetupBuilder(Func<IServiceProvider, UriImageSourceService> createUriImageSourceService = null)
 		{
 			// Remove the caches of earlier tests.
 			try
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 				// Apps register this through UseMauiApp; the test host only registers the Core interfaces.
 				builder.ConfigureImageSources(services =>
-					services.AddService<UriImageSource>(svcs => new UriImageSourceService(null, ImageSourcesMauiAppBuilderExtensions.GetUriImageLoader(svcs))));
+					services.AddService<UriImageSource>(svcs => createUriImageSourceService?.Invoke(svcs) ?? new UriImageSourceService(null, ImageSourcesMauiAppBuilderExtensions.GetUriImageLoader(svcs))));
 				builder.ConfigureImageLoading(options =>
 				{
 					options.HttpMessageHandlerFactory = () => _server;
@@ -369,6 +369,30 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The previous image is not left in place of the image that failed to load.
 				await AssertColor(image, Colors.Lime);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
+			}, image);
+		}
+
+		[Fact]
+		public async Task KeepPreviousImageWhileLoadingDoesNotKeepTheImageWhenTheErrorImageIsMissing()
+		{
+			SetupBuilder();
+			_server.Respond(request => request.RequestUri.AbsolutePath.EndsWith("missing.png", StringComparison.Ordinal)
+				? new HttpResponseMessage(HttpStatusCode.NotFound)
+				: Png(Colors.Red));
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.ErrorSource = "does_not_exist.png";
+			image.KeepPreviousImageWhileLoading = true;
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+
+				image.Source = new UriImageSource { Uri = new Uri("https://images.test/missing.png") };
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed);
+				await Task.Delay(500);
+
 				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
 			}, image);
 		}

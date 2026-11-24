@@ -27,9 +27,16 @@ namespace Microsoft.Maui
 		public Aspect Aspect { get; }
 
 		/// <summary>
-		/// Whether the size is the size of the view (or its requested size), rather than an estimate such as the window size.
+		/// Whether the size is the size the image is displayed at, rather than an estimate (such as the window size)
+		/// because the size of the view depends on the image.
 		/// </summary>
 		public bool IsViewSizeKnown { get; }
+
+		/// <summary>
+		/// Whether the image may only be decoded from data that is available without loading it again (for example from a cache),
+		/// so that the image that is shown does not change. The service returns <see langword="null"/> otherwise.
+		/// </summary>
+		public bool FromCacheOnly { get; init; }
 
 		/// <summary>Set by the service when it decoded the image at a smaller size than its full size.</summary>
 		public bool WasDownsampled { get; set; }

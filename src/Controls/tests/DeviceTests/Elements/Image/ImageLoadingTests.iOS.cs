@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -83,6 +84,82 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(ImageLoadingState.Loaded, image.LoadingState);
 				Assert.Equal(1, _server.RequestCount);
 			}, image);
+		}
+
+		[Fact]
+		public async Task StreamImagesAreOnlyDecodedSmallerWhenTheirSizeDoesNotDependOnTheImage()
+		{
+			SetupBuilder();
+			var png = CreateLargePng();
+			var autoSized = CreateImage(ImageSource.FromStream(() => new MemoryStream(png)));
+			autoSized.WidthRequest = -1;
+			autoSized.HeightRequest = -1;
+			autoSized.Aspect = Aspect.AspectFit;
+			var fixedSize = CreateSizedImage(ImageSource.FromStream(() => new MemoryStream(png)), 60, 40, Aspect.AspectFit);
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => autoSized.LoadingState == ImageLoadingState.Loaded && fixedSize.LoadingState == ImageLoadingState.Loaded);
+
+				// A stream cannot be decoded again when the view turns out larger, so it is only decoded smaller at a fixed size.
+				Assert.Equal(LargeWidth, GetUIImage(autoSized).CGImage.Width);
+				Assert.True(GetUIImage(fixedSize).CGImage.Width < LargeWidth);
+			}, autoSized, fixedSize);
+		}
+
+		[Fact]
+		public async Task ImagesThatAreNotCachedAreNotDownloadedAgainWhenTheViewGrows()
+		{
+			SetupBuilder();
+			var png = CreateLargePng();
+			_server.Respond(_ => LargePng(png));
+			var image = CreateSizedImage(new UriImageSource { Uri = RedUri, CachingEnabled = false }, 30, 20, Aspect.AspectFit);
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+
+				image.WidthRequest = 300;
+				image.HeightRequest = 200;
+				await WaitFor(() => image.Width == 300);
+				await Task.Delay(500);
+
+				// Downloading it again could return another image.
+				Assert.Equal(1, _server.RequestCount);
+				await AssertColor(image, Colors.Red);
+			}, image);
+		}
+
+		[Fact]
+		public async Task DerivedImageSourceServicesLoadTheImageThemselves()
+		{
+			var service = default(DerivedUriImageSourceService);
+			SetupBuilder(svcs => service = new DerivedUriImageSourceService(ImageSourcesMauiAppBuilderExtensions.GetUriImageLoader(svcs)));
+			var png = CreateLargePng();
+			_server.Respond(_ => LargePng(png));
+			var image = CreateSizedImage(new UriImageSource { Uri = RedUri }, 60, 40, Aspect.AspectFit);
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+				Assert.Equal(1, service.Calls);
+			}, image);
+		}
+
+		class DerivedUriImageSourceService : UriImageSourceService
+		{
+			internal DerivedUriImageSourceService(UriImageLoader loader)
+				: base(null, loader)
+			{
+			}
+
+			public int Calls { get; private set; }
+
+			public override Task<IImageSourceServiceResult<UIImage>> GetImageAsync(IImageSource imageSource, float scale = 1, System.Threading.CancellationToken cancellationToken = default)
+			{
+				Calls++;
+				return base.GetImageAsync(imageSource, scale, cancellationToken);
+			}
 		}
 
 		Image CreateSizedImage(ImageSource source, double width, double height, Aspect aspect)

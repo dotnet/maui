@@ -20,8 +20,40 @@ namespace Microsoft.Maui
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync(imageSource, null, cancellationToken);
 
-		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken) =>
-			GetImageAsync((IUriImageSource)imageSource, options, cancellationToken);
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			// A derived service may load images differently: use its implementation (at the image's full size).
+			if (GetType() != typeof(UriImageSourceService))
+				return options.FromCacheOnly ? Task.FromResult<IImageSourceServiceResult<UIImage>?>(null) : GetImageAsync(imageSource, scale, cancellationToken);
+
+			var uriImageSource = (IUriImageSource)imageSource;
+			if (options.FromCacheOnly)
+				return GetCachedImageAsync(uriImageSource, options, cancellationToken);
+
+			// Without the cache, the image cannot be decoded again (larger) without downloading it again, which may return
+			// another image. So only decode it smaller when the size it is shown at does not depend on the image.
+			return GetImageAsync(uriImageSource, uriImageSource.CachingEnabled || options.IsViewSizeKnown ? options : null, cancellationToken);
+		}
+
+		/// <summary>
+		/// Decodes the image again from the cache, without downloading it, or returns <see langword="null"/> when it is not cached.
+		/// </summary>
+		async Task<IImageSourceServiceResult<UIImage>?> GetCachedImageAsync(IUriImageSource imageSource, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			if (imageSource.IsEmpty || !imageSource.CachingEnabled || !UriImageLoader.CanLoad(imageSource))
+				return null;
+
+			var bytes = await Loader.TryLoadCachedAsync(imageSource.Uri, cancellationToken).ConfigureAwait(false);
+			if (bytes is null)
+				return null;
+
+			using var cgImageSource = NSData.FromArray(bytes).GetPlatformImageSource();
+			if (cgImageSource is null)
+				return null;
+
+			var image = cgImageSource.GetPlatformImage(1, options);
+			return new ImageSourceServiceResult(image, () => image.Dispose());
+		}
 
 		async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, ImageDecodeOptions? options, CancellationToken cancellationToken)
 		{

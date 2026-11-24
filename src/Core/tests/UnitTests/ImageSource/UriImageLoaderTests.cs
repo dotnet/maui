@@ -283,6 +283,20 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public async Task CachedImagesCanBeReadWithoutDownloadingThem()
+		{
+			_handler.Respond(_ => Ok(Png));
+			await CreateLoader().LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			// Even when expired, and only from the disk (another loader).
+			_now = _now.AddDays(3);
+			var loader = CreateLoader();
+			Assert.Equal(Png, await loader.TryLoadCachedAsync(ImageUri));
+			Assert.Null(await loader.TryLoadCachedAsync(new Uri("https://example.com/other.png")));
+			Assert.Equal(1, _handler.RequestCount);
+		}
+
+		[Fact]
 		public async Task NotModifiedWithNoStoreDoesNotRenew()
 		{
 			_handler.Respond(_ => Ok(Png, etag: "\"v1\""));

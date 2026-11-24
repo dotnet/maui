@@ -19,8 +19,14 @@ namespace Microsoft.Maui
 
 		// Like other file images, the image is created right away: images loaded later would not update the layout.
 		// (Decoding it at a smaller size costs about as much as drawing the full image, which also decodes it.)
-		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken) =>
-			FromResult(GetImage((IFileImageSource)imageSource, options));
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			// A derived service may load images differently: use its implementation (at the image's full size).
+			if (GetType() != typeof(FileImageSourceService))
+				return options.FromCacheOnly ? FromResult(null) : GetImageAsync(imageSource, scale, cancellationToken);
+
+			return FromResult(GetImage((IFileImageSource)imageSource, options));
+		}
 
 		ImageSourceServiceResult? GetImage(IFileImageSource imageSource, ImageDecodeOptions? options)
 		{
