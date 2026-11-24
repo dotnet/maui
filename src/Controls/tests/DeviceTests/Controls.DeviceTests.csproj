@@ -27,6 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <MauiFont Include="..\..\..\Core\tests\DeviceTests\Resources\Fonts\dokdo_regular.ttf" Link="Resources\Fonts\dokdo_regular.ttf" Condition="$(TargetFramework.Contains('-windows'))" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />

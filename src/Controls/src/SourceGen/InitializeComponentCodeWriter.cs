@@ -17,8 +17,16 @@ static class InitializeComponentCodeWriter
 
 	public static string GeneratedCodeAttribute => $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{typeof(InitializeComponentCodeWriter).Assembly.FullName}\", \"{typeof(InitializeComponentCodeWriter).Assembly.GetName().Version}\")]";
 
-	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, Action<Diagnostic>? diagnosticObserver = null)
 	{
+		Action<Diagnostic> reportDiagnostic = diagnosticObserver is null
+			? sourceProductionContext.ReportDiagnostic
+			: diagnostic =>
+			{
+				diagnosticObserver(diagnostic);
+				sourceProductionContext.ReportDiagnostic(diagnostic);
+			};
+
 		using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine })
 		{
 			PrePost newblock() =>
@@ -40,7 +48,7 @@ static class InitializeComponentCodeWriter
 			foreach (var warning in root.Warnings)
 			{
 				var location = LocationHelpers.LocationCreate(xamlItem.ProjectItem.RelativePath!, warning.lineNumber, warning.linePosition, warning.lineNumber, warning.linePosition);
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.PropertyElementWithAttribute, location, warning.message));
+				reportDiagnostic(Diagnostic.Create(Descriptors.PropertyElementWithAttribute, location, warning.message));
 			}
 
 			string accessModifier = "public";
@@ -90,7 +98,7 @@ static class InitializeComponentCodeWriter
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, sourceProductionContext.ReportDiagnostic);
+				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, reportDiagnostic);
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
 				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
@@ -201,13 +209,23 @@ $$"""
 							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
 						}
 
+						// Record the generation this instance is at, so UpdateComponent() can pick the patch diffed
+						// from it (https://github.com/dotnet/maui/issues/36937).
+						var generationKey = XamlHotReloadState.GetGenerationKey(compilation.AssemblyName ?? string.Empty, xamlItem.ProjectItem.TargetFramework ?? string.Empty, xamlItem.ProjectItem.HotReloadStateKey, xamlItem.ProjectItem.HotReloadSessionToken);
+						if (generationKey is not null)
+						{
+							var markerKey = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(UpdateComponentCodeWriter.GetGenerationMarkerKey(rootType!), quote: true);
+							var generationLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(generationKey, quote: true);
+							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, {markerKey}, {generationLiteral});");
+						}
+
 						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}
 			}
 		exit:
 			codeWriter.Flush();
-			return codeWriter.InnerWriter.ToString();
+			return GeneratorHelpers.LiftFallbackUsings(codeWriter.InnerWriter.ToString(), NewLine);
 		}
 	}
 
@@ -323,7 +341,42 @@ $$"""
 		out int newNextNodeId,
 		out bool parseError,
 		out bool emptyDiff)
+		=> TryGeneratePatchBody(cachedOldRoot, cachedOldIds, nextNodeId, oldXaml, newXaml, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem, generatedFields,
+			currentRoot: null, currentIds: null,
+			out parsedNewRoot, out effectiveNewIds, out newNextNodeId, out parseError, out emptyDiff, out _);
+
+	/// <summary>
+	/// Same as the overload above, but the new XAML is the current generation: its nodes keep the IDs
+	/// <paramref name="currentIds"/> gives them in <paramref name="currentRoot"/> (parsed from the same XAML)
+	/// unless the diff matches them to an old node. <paramref name="idsMatchCurrent"/> tells whether every
+	/// node ended up with its current ID, i.e. whether the patch leaves an instance at the old generation
+	/// with the same components registry as one created by the current <c>InitializeComponent()</c>.
+	/// </summary>
+	public static string? TryGeneratePatchBody(
+		SGRootNode? cachedOldRoot,
+		Dictionary<ElementNode, string>? cachedOldIds,
+		int nextNodeId,
+		string oldXaml,
+		string newXaml,
+		int fromVersion,
+		int toVersion,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem projectItem,
+		Dictionary<string, XmlType>? generatedFields,
+		SGRootNode? currentRoot,
+		Dictionary<ElementNode, string>? currentIds,
+		out SGRootNode? parsedNewRoot,
+		out Dictionary<ElementNode, string>? effectiveNewIds,
+		out int newNextNodeId,
+		out bool parseError,
+		out bool emptyDiff,
+		out bool idsMatchCurrent)
 	{
+		idsMatchCurrent = false;
 		parseError = false;
 		emptyDiff = false;
 		parsedNewRoot = null;
@@ -377,10 +430,31 @@ $$"""
 
 		// Assign fresh IDs to the new tree (starting from nextNodeId to avoid collision with old IDs)
 		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
+		bool currentIdsCompatible = false;
+		if (currentRoot is not null && currentIds is not null)
+		{
+			var transferredIds = NodeIdHelper.TransferIds(newRoot, currentIds, currentRoot);
+			if (transferredIds.Count != newIds.Count)
+				return null;
+			currentIdsCompatible = AreCurrentIdsCompatible(oldRoot, newRoot, oldIds, transferredIds);
+			newIds = transferredIds;
+		}
 
 		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds);
 		if (diff is null)
 			return null;
+		idsMatchCurrent = currentIdsCompatible && effectiveNewIds is not null && effectiveNewIds.Count == newIds.Count;
+		if (idsMatchCurrent)
+		{
+			foreach (var id in newIds)
+			{
+				if (!effectiveNewIds!.TryGetValue(id.Key, out var effectiveId) || effectiveId != id.Value)
+				{
+					idsMatchCurrent = false;
+					break;
+				}
+			}
+		}
 		if (diff.IsEmpty)
 		{
 			emptyDiff = true;
@@ -388,7 +462,38 @@ $$"""
 		}
 
 		var templateNodeIds = NodeIdHelper.GetTemplateNodeIds(newRoot, effectiveNewIds!);
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields, templateNodeIds);
+		var previousResources = oldRoot.Properties.FirstOrDefault(property => property.Key.LocalName == "Resources").Value;
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields, templateNodeIds, previousResources);
+	}
+
+	/// <summary>
+	/// Whether diffing <paramref name="oldRoot"/> against <paramref name="newRoot"/> keeps the IDs
+	/// <paramref name="currentIds"/> gives the new nodes: every node matched to an old node already has
+	/// that node's ID, and no added node reuses the ID of an old node.
+	/// </summary>
+	static bool AreCurrentIdsCompatible(SGRootNode oldRoot, SGRootNode newRoot, Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> currentIds)
+	{
+		// Diff with IDs no old node has, so the nodes the diff doesn't match keep them.
+		var maxId = -1;
+		foreach (var id in oldIds.Values.Concat(currentIds.Values))
+		{
+			if (int.TryParse(id, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var value) && value > maxId)
+				maxId = value;
+		}
+		var probeIds = NodeIdHelper.AssignIds(newRoot, maxId + 1, out _);
+		if (XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, probeIds, out var probedIds) is null || probedIds is null)
+			return false;
+
+		var oldIdValues = new HashSet<string>(oldIds.Values);
+		foreach (var node in currentIds)
+		{
+			if (!probedIds.TryGetValue(node.Key, out var probedId) || !probeIds.TryGetValue(node.Key, out var probeId))
+				return false;
+			var matched = probedId != probeId || node.Key == newRoot;
+			if (matched ? probedId != node.Value : oldIdValues.Contains(node.Value))
+				return false;
+		}
+		return true;
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

@@ -127,5 +127,13 @@ namespace Microsoft.Maui.Controls
 		{
 			Handler?.Invoke(action, new Maui.Handlers.MenuBarHandlerUpdate(index, view));
 		}
+
+		// iOS and Mac Catalyst build the platform menu bar once from the current values,
+		// so changing the title of an item in it has to rebuild it.
+		internal static void UpdateWindowMenuBar(Element element)
+		{
+			if (element.FindParentOfType<MenuBarItem>(includeThis: true) is not null)
+				element.FindParentOfType<Window>()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
+		}
 	}
 }
