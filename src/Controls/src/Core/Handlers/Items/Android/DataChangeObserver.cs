@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
 		IntPtr _adapter;
-		readonly Action _onDataChange;
+		readonly Action<bool> _onDataChange;
 		readonly Func<int> _lastRowSize;
 
 		public bool Observing { get; private set; }
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public int ItemCount { get; set; } = -1;
 
 		// lastRowSize: when set, only report items inserted into or removed from the last row (that many positions, 0 for none)
-		public DataChangeObserver(Action onDataChange, Func<int> lastRowSize = null) : base()
+		public DataChangeObserver(Action<bool> onDataChange, Func<int> lastRowSize = null) : base()
 		{
 			_onDataChange = onDataChange;
 			_lastRowSize = lastRowSize;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null)
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(false);
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null || ReachesLastRow(positionStart + itemCount))
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(true);
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null)
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(false);
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null)
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(false);
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null || ReachesLastRow(positionStart))
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(false);
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_lastRowSize is null)
 			{
-				_onDataChange?.Invoke();
+				_onDataChange?.Invoke(false);
 			}
 		}
 

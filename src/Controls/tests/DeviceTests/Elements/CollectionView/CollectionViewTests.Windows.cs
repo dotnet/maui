@@ -920,6 +920,176 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Grid CollectionView Scrolled reports source item indexes after containers are recycled")]
+		[InlineData(ItemsLayoutOrientation.Vertical)]
+		[InlineData(ItemsLayoutOrientation.Horizontal)]
+		public async Task GridScrolledReportsSourceIndexesAfterRecycling(ItemsLayoutOrientation orientation)
+		{
+			SetupBuilder();
+
+			const int itemCount = 1000;
+			var collectionView = CreateGridThresholdCollectionView(orientation, Enumerable.Range(0, itemCount).Select(i => $"Item {i}").ToList());
+
+			ItemsViewScrolledEventArgs lastScrolledArgs = null;
+			collectionView.Scrolled += (_, args) => lastScrolledArgs = args;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				Assert.IsType<UI.Xaml.Controls.ItemsWrapGrid>(handler.PlatformView.ItemsPanelRoot);
+
+				// Only part of the source stays realized at the end of a long virtualized list,
+				// so positions among realized containers differ from source indexes.
+				collectionView.ScrollTo(itemCount - 1, position: ScrollToPosition.End, animate: false);
+				await AssertEventually(() => lastScrolledArgs?.LastVisibleItemIndex == itemCount - 1,
+					timeout: 5000,
+					message: $"Expected LastVisibleItemIndex {itemCount - 1}, got {lastScrolledArgs?.LastVisibleItemIndex}");
+
+				Assert.InRange(lastScrolledArgs.FirstVisibleItemIndex, itemCount - 40, itemCount - 1);
+				Assert.InRange(lastScrolledArgs.CenterItemIndex, lastScrolledArgs.FirstVisibleItemIndex, lastScrolledArgs.LastVisibleItemIndex);
+
+				const int middleIndex = itemCount / 2;
+				collectionView.ScrollTo(middleIndex, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => lastScrolledArgs?.FirstVisibleItemIndex == middleIndex,
+					timeout: 5000,
+					message: $"Expected FirstVisibleItemIndex {middleIndex}, got {lastScrolledArgs?.FirstVisibleItemIndex}");
+
+				Assert.InRange(lastScrolledArgs.LastVisibleItemIndex, middleIndex + 1, middleIndex + 40);
+				Assert.InRange(lastScrolledArgs.CenterItemIndex, lastScrolledArgs.FirstVisibleItemIndex, lastScrolledArgs.LastVisibleItemIndex);
+			});
+		}
+
+		[Fact(DisplayName = "Grid CollectionView raises RemainingItemsThresholdReached for every loaded page")]
+		public async Task GridRemainingItemsThresholdReachedFiresForEveryPage()
+		{
+			SetupBuilder();
+
+			const int pageSize = 40;
+			const int maxItems = pageSize * 5;
+			var data = new ObservableCollection<string>();
+			void AddPage()
+			{
+				int start = data.Count;
+				for (int i = start; i < start + pageSize; i++)
+				{
+					data.Add($"Item {i}");
+				}
+			}
+			AddPage();
+
+			var collectionView = CreateGridThresholdCollectionView(ItemsLayoutOrientation.Vertical, data);
+			collectionView.RemainingItemsThreshold = 5;
+
+			// Scrolled can fire repeatedly at the end; load each page only once.
+			int lastLoadedCount = -1;
+			collectionView.RemainingItemsThresholdReached += (_, _) =>
+			{
+				if (data.Count == lastLoadedCount || data.Count >= maxItems)
+				{
+					return;
+				}
+
+				lastLoadedCount = data.Count;
+				AddPage();
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				for (int expectedCount = pageSize * 2; expectedCount <= maxItems; expectedCount += pageSize)
+				{
+					collectionView.ScrollTo(data.Count - 1, position: ScrollToPosition.End, animate: false);
+					await AssertEventually(() => data.Count == expectedCount,
+						timeout: 5000,
+						message: $"Expected {expectedCount} items after reaching the end, got {data.Count}");
+				}
+			});
+		}
+
+		[Theory(DisplayName = "Grid scrolling reports source indexes and reaches the remaining-items threshold after recycling")]
+		[InlineData(ItemsLayoutOrientation.Vertical)]
+		[InlineData(ItemsLayoutOrientation.Horizontal)]
+		public async Task GridScrollReportsSourceIndexesAndRaisesThresholdAfterRecycling(ItemsLayoutOrientation orientation)
+		{
+			SetupBuilder();
+
+			const int itemCount = 1000;
+			const int threshold = 5;
+			var collectionView = CreateGridThresholdCollectionView(
+				orientation,
+				Enumerable.Range(0, itemCount).Select(index => $"Item {index}").ToList());
+			collectionView.RemainingItemsThreshold = threshold;
+
+			UI.Xaml.Controls.ItemsWrapGrid panel = null;
+			var requestedIndex = itemCount / 2;
+			int scrolledFirstVisibleItemIndex = -1;
+			int scrolledLastVisibleItemIndex = -1;
+			int panelFirstVisibleIndex = -1;
+			int panelLastVisibleIndex = -1;
+			int thresholdReachedCount = 0;
+
+			collectionView.Scrolled += (_, args) =>
+			{
+				if (panel is null || panel.LastVisibleIndex < requestedIndex)
+				{
+					return;
+				}
+
+				scrolledFirstVisibleItemIndex = args.FirstVisibleItemIndex;
+				scrolledLastVisibleItemIndex = args.LastVisibleItemIndex;
+				panelFirstVisibleIndex = panel.FirstVisibleIndex;
+				panelLastVisibleIndex = panel.LastVisibleIndex;
+			};
+			collectionView.RemainingItemsThresholdReached += (_, _) => thresholdReachedCount++;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var control = handler.PlatformView;
+				panel = Assert.IsType<UI.Xaml.Controls.ItemsWrapGrid>(control.ItemsPanelRoot);
+				var scrollViewer = control.GetFirstDescendant<UI.Xaml.Controls.ScrollViewer>();
+				Assert.NotNull(scrollViewer);
+				await AssertEventually(() => scrollViewer.ViewportWidth > 0 && scrollViewer.ViewportHeight > 0);
+
+				collectionView.ScrollTo(requestedIndex, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(
+					() => panelFirstVisibleIndex >= requestedIndex / 2 && panelLastVisibleIndex >= requestedIndex,
+					timeout: 5000,
+					message: "The grid did not scroll to the middle of the source.");
+
+				Assert.Equal(panelFirstVisibleIndex, scrolledFirstVisibleItemIndex);
+				Assert.Equal(panelLastVisibleIndex, scrolledLastVisibleItemIndex);
+				Assert.Equal(0, thresholdReachedCount);
+
+				requestedIndex = itemCount - 1;
+				scrolledFirstVisibleItemIndex = -1;
+				scrolledLastVisibleItemIndex = -1;
+				panelFirstVisibleIndex = -1;
+				panelLastVisibleIndex = -1;
+
+				collectionView.ScrollTo(requestedIndex, position: ScrollToPosition.End, animate: false);
+				await AssertEventually(
+					() => panelLastVisibleIndex == itemCount - 1 && thresholdReachedCount > 0,
+					timeout: 5000,
+					message: "Scrolling to the last item should reach RemainingItemsThreshold.");
+
+				Assert.Equal(panelFirstVisibleIndex, scrolledFirstVisibleItemIndex);
+				Assert.Equal(itemCount - 1, scrolledLastVisibleItemIndex);
+			});
+		}
+
+		static CollectionView CreateGridThresholdCollectionView(ItemsLayoutOrientation orientation, System.Collections.IEnumerable itemsSource) =>
+			new()
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				ItemsLayout = new GridItemsLayout(2, orientation),
+				ItemsSource = itemsSource,
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 50, WidthRequest = 100 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
 		[Fact]
 		public async Task VerifyGroupCollectionDoesntLeak()
 		{

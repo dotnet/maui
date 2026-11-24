@@ -54,6 +54,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		PropertyChangedEventHandler _layoutPropertyChanged;
 		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
+		CollectionViewAccessibilityMetadata _accessibilityMetadata;
+
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
@@ -61,13 +63,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
-			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
+			_emptyCollectionObserver = new DataChangeObserver(_ => UpdateEmptyViewVisibility());
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
 			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetSpacingLastRowSize);
+			_itemSpacingObserver = new DataChangeObserver(_ => InvalidateItemSpacing(), GetSpacingLastRowSize);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
+		}
+
+		public override void SetAdapter(Adapter adapter)
+		{
+			base.SetAdapter(adapter);
+			_accessibilityMetadata?.InvalidateCache();
+		}
+
+		public override void SwapAdapter(Adapter adapter, bool removeAndRecycleExistingViews)
+		{
+			base.SwapAdapter(adapter, removeAndRecycleExistingViews);
+			_accessibilityMetadata?.InvalidateCache();
 		}
 
 		protected override void OnAttachedToWindow()
@@ -161,6 +175,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Unhook whichever adapter is active
 				SetAdapter(null);
 
+				_accessibilityMetadata?.UnobserveAdapter(_emptyViewAdapter);
+				_accessibilityMetadata?.UnobserveAdapter(ItemsViewAdapter);
 				_emptyViewAdapter?.Dispose();
 				ItemsViewAdapter?.Dispose();
 			}
@@ -193,6 +209,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemsView = newElement;
+
+			// Check the control instance: CollectionViewHandler uses ReorderableItemsView as TItemsView.
+			if (newElement is CollectionView && _accessibilityMetadata is null)
+			{
+				_accessibilityMetadata = new CollectionViewAccessibilityMetadata(this);
+				SetAccessibilityDelegateCompat(new CollectionViewAccessibilityDelegate(this, _accessibilityMetadata));
+				_accessibilityMetadata.ObserveAdapter(ItemsViewAdapter);
+				_accessibilityMetadata.ObserveAdapter(_emptyViewAdapter);
+			}
 
 			UpdateLayoutManager();
 
@@ -262,6 +287,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (_emptyViewAdapter == null)
 				{
 					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
+					_accessibilityMetadata?.ObserveAdapter(_emptyViewAdapter);
 				}
 
 				if (ItemsView is StructuredItemsView structuredItemsView)
@@ -303,9 +329,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var previousLayoutDirection = LayoutDirection;
 			this.UpdateFlowDirection(ItemsView);
 
 			ReconcileFlowDirectionAndLayout();
+
+			if (LayoutDirection != previousLayoutDirection)
+			{
+				// Span offsets depend on direction and are cached on realized children.
+				InvalidateItemDecorations();
+			}
 		}
 
 		public virtual void UpdateAdapter()
@@ -313,17 +346,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var oldItemViewAdapter = ItemsViewAdapter;
 
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+			_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
 			_itemSpacingObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
 			_itemSpacingObserver.Start(ItemsViewAdapter);
+			_accessibilityMetadata?.ObserveAdapter(ItemsViewAdapter);
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
 			if (GetAdapter() != _emptyViewAdapter)
 			{
-				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
-
 				SetAdapter(null);
 
 				SwapAdapter(ItemsViewAdapter, true);
@@ -331,8 +364,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateEmptyView();
 
+			UpdateItemsUpdatingScrollMode();
+
 			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
 
+			_accessibilityMetadata?.UnobserveAdapter(oldItemViewAdapter);
 			oldItemViewAdapter?.Dispose();
 		}
 
@@ -471,9 +507,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ScrollHelper.RemoveScrollListener();
 			}
 
-			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			if (ItemsView is CarouselView && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				// Keeping the current items in view is the default, so we don't need to watch for data changes
+				// CarouselView manages its position in response to collection changes.
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 			}
 			else
@@ -1138,16 +1174,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return false;
 		}
 
-		internal void AdjustScrollForItemUpdate()
+		internal void AdjustScrollForItemUpdate(bool itemsInserted)
 		{
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ScrollTo(new ScrollToRequestEventArgs(GetLayoutManager().ItemCount, 0,
-					Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				var source = ItemsViewAdapter.ItemsSource;
+				int itemCount = source.Count - (source.HasHeader ? 1 : 0) - (source.HasFooter ? 1 : 0);
+
+				if (source is ObservableGroupedSource groupedSource)
+				{
+					itemCount = 0;
+					for (int groupIndex = 0; groupIndex < groupedSource.GroupCount; groupIndex++)
+					{
+						var group = groupedSource.GetGroupItemsViewSource(groupIndex);
+						itemCount += group.Count - (group.HasHeader ? 1 : 0) - (group.HasFooter ? 1 : 0);
+					}
+				}
+
+				if (itemCount > 0)
+				{
+					// A negative group index selects the flat data-index path without an item lookup.
+					ScrollTo(new ScrollToRequestEventArgs(itemCount - 1, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				}
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
+			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& itemsInserted && ItemsView is not CarouselView)
+			{
+				if (GetLayoutManager().ItemCount > 0)
+				{
+					ScrollTo(new ScrollToRequestEventArgs(0, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.Start, false));
+				}
 			}
 		}
 

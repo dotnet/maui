@@ -14,5 +14,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		internal static void MapIndicatorsLayoutOverride(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 	}
 }

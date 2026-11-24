@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when the long press gesture is completed (when the user releases after the minimum duration).
+		/// Occurs when the long press gesture is recognized, while the user is still pressing.
 		/// </summary>
 		public event EventHandler<LongPressedEventArgs>? LongPressed;
 
@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Controls
 		/// for tracking Started, Running, Completed, and Canceled states.
 		/// </summary>
 		/// <remarks>
-		/// On Android and Windows, this event fires when the gesture completes or is cancelled,
-		/// but does not provide Started/Running state updates.
+		/// On Android and Windows, this event reports Completed at recognition, rather than release,
+		/// and does not provide Started/Running state updates.
 		/// </remarks>
 		public event EventHandler<LongPressingEventArgs>? LongPressing;
 
@@ -127,9 +127,12 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the long press position relative to a specified element.</param>
 		/// <remarks>
 		/// <para>This infrastructure method is intended for gesture platform managers.</para>
-		/// <para>Platform backends should raise this when the press completes successfully, immediately
-		/// followed by <see cref="SendLongPressing(View, GestureStatus, Func{IElement, Point?})"/> with
-		/// <see cref="GestureStatus.Completed"/>. It must be called on the UI thread.</para>
+		/// <para>Platform backends should raise this once when the press is recognized, without waiting
+		/// for release. Backends with continuous state updates should first raise
+		/// <see cref="GestureStatus.Started"/> and report <see cref="GestureStatus.Completed"/> on release
+		/// or <see cref="GestureStatus.Canceled"/> on cancellation. Backends that only report recognition
+		/// may raise <see cref="GestureStatus.Completed"/> immediately afterward. It must be called on
+		/// the UI thread.</para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -152,10 +155,12 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the long press position relative to a specified element.</param>
 		/// <remarks>
 		/// <para>This infrastructure method is intended for gesture platform managers.</para>
-		/// <para>Platform backends should raise <see cref="GestureStatus.Started"/> once the press is
-		/// recognized, <see cref="GestureStatus.Running"/> while it is held, and finish with either
-		/// <see cref="GestureStatus.Completed"/> or <see cref="GestureStatus.Canceled"/>. It must be
-		/// called on the UI thread.</para>
+		/// <para>Backends with continuous state updates should raise <see cref="GestureStatus.Started"/>
+		/// once the press is recognized, <see cref="GestureStatus.Running"/> while it is held, and finish
+		/// with either <see cref="GestureStatus.Completed"/> or <see cref="GestureStatus.Canceled"/>.
+		/// Backends that only report recognition may raise <see cref="GestureStatus.Completed"/>
+		/// immediately after <see cref="SendLongPressed(View, Func{IElement, Point?})"/>.
+		/// It must be called on the UI thread.</para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]

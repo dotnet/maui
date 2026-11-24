@@ -10,6 +10,29 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CheckBoxHandlerTests
 	{
+		[Fact(DisplayName = "Disabled unchecked color is used when pressed state is present")]
+		public void DisabledUncheckedColorIsUsedWhenPressed()
+		{
+			const int disabledUnchecked = unchecked((int)0xFF123456);
+			const int fallback = unchecked((int)0xFF654321);
+			using var colorStateList = PlatformInterop.GetCheckBoxColorStateList(
+				unchecked((int)0xFF111111),
+				unchecked((int)0xFF222222),
+				unchecked((int)0xFF333333),
+				disabledUnchecked);
+
+			var color = colorStateList.GetColorForState(
+				new[]
+				{
+					-global::Android.Resource.Attribute.StateEnabled,
+					-global::Android.Resource.Attribute.StateChecked,
+					global::Android.Resource.Attribute.StatePressed
+				},
+				new global::Android.Graphics.Color(fallback));
+
+			Assert.Equal(disabledUnchecked, color);
+		}
+
 		[Theory(DisplayName = "Color (Foreground) Updates Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF0000FF)]

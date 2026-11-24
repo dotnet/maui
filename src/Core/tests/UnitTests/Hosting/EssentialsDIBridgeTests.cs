@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -1453,23 +1454,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public async Task AppInfoSecureStorageReleasesDisposedPredecessor()
 		{
-			MauiApp? predecessorApp = null;
 			MauiApp? successorApp = null;
-			WeakReference? predecessorSecureStorageReference = null;
 
 			try
 			{
-				(predecessorApp, predecessorSecureStorageReference) =
-					BuildDisposableSecureStorageApp();
-
-				var successorBuilder = MauiApp.CreateBuilder();
-				successorBuilder.Services.AddSingleton<IAppInfo>(
-					new StubAppInfo(packageName: "successor.package"));
-				successorApp = successorBuilder.Build();
-				Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
-
-				predecessorApp.Dispose();
-				predecessorApp = null;
+				var predecessorSecureStorageReference =
+					BuildAppWithDisposedSecureStoragePredecessor(out successorApp);
 
 				Assert.False(
 					await TestHelpers.WaitForCollect(predecessorSecureStorageReference),
@@ -1478,18 +1468,26 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			finally
 			{
 				successorApp?.Dispose();
-				predecessorApp?.Dispose();
 			}
 		}
 
-		static (MauiApp App, WeakReference SecureStorageReference) BuildDisposableSecureStorageApp()
+		// Collection can resume before the first await returns, so keep predecessor roots in a separate frame.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference BuildAppWithDisposedSecureStoragePredecessor(out MauiApp successorApp)
 		{
 			var builder = MauiApp.CreateBuilder();
 			builder.Services.AddSingleton<ISecureStorage>(_ => new StubSecureStorage());
-			var app = builder.Build();
-			return (
-				app,
-				new WeakReference(app.Services.GetRequiredService<ISecureStorage>()));
+			using var predecessorApp = builder.Build();
+			var reference = new WeakReference(
+				predecessorApp.Services.GetRequiredService<ISecureStorage>());
+
+			var successorBuilder = MauiApp.CreateBuilder();
+			successorBuilder.Services.AddSingleton<IAppInfo>(
+				new StubAppInfo(packageName: "successor.package"));
+			successorApp = successorBuilder.Build();
+			Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+			return reference;
 		}
 
 		[Fact]

@@ -78,8 +78,13 @@
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">

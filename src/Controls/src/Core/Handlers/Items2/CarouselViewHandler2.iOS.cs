@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
+				carouselViewController2.PrepareScrollTo(args);
 				base.ScrollToRequested(sender, args);
 			}
 		}

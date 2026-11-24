@@ -62,6 +62,7 @@
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="Transparent"/>
                                                 <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="False"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{Binding Description, StringFormat='{0}, Unselected'}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Selected">
@@ -69,6 +70,7 @@
                                                 <Setter Property="BackgroundColor" Value="Transparent"/>
                                                 <Setter Property="Background" Value="Transparent"/>
                                                 <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="True"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{OnPlatform Default={Binding Description}, iOS={Binding Description, StringFormat='{0}, Selected'}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -121,12 +123,14 @@
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{Binding Title, StringFormat='{0}, Unselected'}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="{Binding DisplayColor}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{OnPlatform Default={Binding Title}, iOS={Binding Title, StringFormat='{0}, Selected'}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
