@@ -164,6 +164,35 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// Implementing this turns off WebKit's own reload, which leaves HTML sources blank; UpdateReload restores them.
+		[Export("webViewWebContentProcessDidTerminate:")]
+		void ContentProcessDidTerminate(WKWebView webView)
+		{
+			var handler = Handler;
+
+			if (handler is null || !handler.IsConnected() || handler.VirtualView is not IWebView virtualView)
+				return;
+
+			virtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
+
+			// The app's ProcessTerminated handler may have disconnected the handler or swapped its views.
+			if (!handler.IsConnected() || handler.VirtualView != virtualView || handler.PlatformView != webView)
+				return;
+
+			// Reload at most once per 30 seconds so a page that keeps crashing the process can't loop.
+			var now = Environment.TickCount64;
+			if (now - LastProcessTerminationReload < 30_000)
+				return;
+
+			LastProcessTerminationReload = now;
+
+			// Restore an HTML source only while its document is shown; a page the user moved on to reloads itself.
+			if (webView is MauiWKWebView { HtmlUrl: { } htmlUrl } && webView.Url?.AbsoluteString?.Split('#')[0] is { } url && url != htmlUrl)
+				webView.Reload();
+			else
+				webView.UpdateReload(virtualView);
+		}
+
 		string GetCurrentUrl()
 		{
 			return Handler?.PlatformView?.Url?.AbsoluteUrl?.ToString() ?? string.Empty;
@@ -174,6 +203,8 @@ namespace Microsoft.Maui.Platform
 			get;
 			set;
 		}
+
+		internal long? LastProcessTerminationReload { get; set; }
 
 		IWebViewHandler? Handler
 		{

@@ -174,6 +174,10 @@ namespace Microsoft.Maui.Controls
 				else
 					value = Binding.FallbackValue ?? property.GetDefaultValue(target);
 
+				// The converter returned Binding.DoNothing: don't update the target
+				if (ReferenceEquals(value, MultiBinding.DoNothing))
+					return;
+
 				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, property.ReturnType);
@@ -185,6 +189,10 @@ namespace Microsoft.Maui.Controls
 			else if (needsSetter && part.LastSetter != null && current != null)
 			{
 				object value = Binding.GetTargetValue(target.GetValue(property), part.SetterType);
+
+				// The converter returned Binding.DoNothing: don't update the source
+				if (ReferenceEquals(value, MultiBinding.DoNothing))
+					return;
 
 				if (!BindingExpressionHelper.TryConvert(ref value, property, part.SetterType, false))
 				{
