@@ -2,6 +2,7 @@
 using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+using ALayoutDirection = Android.Views.LayoutDirection;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 
@@ -17,13 +18,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
-			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
-			// It did not apply any spacing to items currently at span index 0 which can create an issue for us with grid layouts.
-			// If one of those items at span index 0 were to move to another column, it would result in misaligned items.
-			// It's better to just apply equal spacing to all items so we can avoid that issue (even the ones at span index 0).
-			// The reason they didn't do this originally, I suspect, is that they didn't want spacing around the edge of the RecyclerView.
-			// That however can be corrected by adjusting the padding on the RecyclerView which we are now doing.
-
 			if (itemsLayout == null)
 			{
 				throw new ArgumentNullException(nameof(itemsLayout));
@@ -105,7 +99,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
 				isInFirstRowCol = IsInFirstSpanGroup(spanSizeLookup, position, spanCount);
-				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, position, itemCount, spanCount);
+				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, state, position, itemCount, spanCount);
+
+				int spanIndex = GetSpanIndex(spanSizeLookup, view, state, position, spanCount);
+				int spanSize = GetSpanSize(spanSizeLookup, view, state, position);
+
+				// Distribute cross-axis spacing without adding insets at the grid's outer edges.
+				if (_orientation == ItemsLayoutOrientation.Vertical)
+				{
+					GetCrossAxisOffsets(HorizontalOffset * 2, spanIndex, spanSize, spanCount, out int start, out int end);
+					bool isRtl = parent.LayoutDirection == ALayoutDirection.Rtl;
+					outRect.Left = isRtl ? end : start;
+					outRect.Right = isRtl ? start : end;
+				}
+				else
+				{
+					GetCrossAxisOffsets(VerticalOffset * 2, spanIndex, spanSize, spanCount, out int top, out int bottom);
+					outRect.Top = top;
+					outRect.Bottom = bottom;
+				}
 			}
 			else
 			{
@@ -128,6 +140,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (isInLastRowCol)
 					outRect.Right = 0;
 			}
+		}
+
+		internal static void GetCrossAxisOffsets(int spacing, int spanIndex, int spanSize, int spanCount, out int start, out int end)
+		{
+			start = (int)((long)spacing * spanIndex / spanCount);
+			end = spacing - (int)((long)spacing * (spanIndex + spanSize) / spanCount);
 		}
 
 		static bool IsInFirstSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, int position, int spanCount)
@@ -156,7 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return true;
 		}
 
-		static bool IsInLastSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int itemCount, int spanCount)
+		static bool IsInLastSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, RecyclerView.State state, int position, int itemCount, int spanCount)
 		{
 			// Every item occupies at least one span, so the last row holds at most spanCount items.
 			if (itemCount - 1 - position >= spanCount)
@@ -164,7 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			int span = GetSpanIndex(spanSizeLookup, view, position, spanCount) + spanSizeLookup.GetSpanSize(position);
+			int span = GetSpanIndex(spanSizeLookup, view, state, position, spanCount) + GetSpanSize(spanSizeLookup, view, state, position);
 
 			for (int i = position + 1; i < itemCount; i++)
 			{
@@ -182,11 +200,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return true;
 		}
 
-		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int spanCount)
+		static int GetSpanSize(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, RecyclerView.State state, int position)
+		{
+			// Avoid scanning the grouped adapter when native spans have already been assigned.
+			// In pre-layout the LayoutParams describe the item's old position, which no longer matches `position`.
+			if (!state.IsPreLayout
+				&& view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
+				&& layoutParams.SpanIndex != GridLayoutManager.LayoutParams.InvalidSpanId
+				&& layoutParams.SpanSize > 0)
+			{
+				return layoutParams.SpanSize;
+			}
+
+			return spanSizeLookup.GetSpanSize(position);
+		}
+
+		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, RecyclerView.State state, int position, int spanCount)
 		{
 			// GridLayoutManager assigns spans to the whole row before measuring its children, so the
 			// LayoutParams already hold the answer; fall back to the lookup for anything not yet assigned.
-			if (view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
+			// In pre-layout they hold the span of the item's old position, which no longer matches `position`.
+			if (!state.IsPreLayout
+				&& view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
 				&& layoutParams.SpanIndex != GridLayoutManager.LayoutParams.InvalidSpanId)
 			{
 				return layoutParams.SpanIndex;

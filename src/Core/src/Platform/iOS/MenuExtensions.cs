@@ -19,6 +19,20 @@ namespace Microsoft.Maui.Platform
 			uiMenuElement.UpdateIsEnabled(menuFlyoutItem.IsEnabled);
 		}
 
+		internal static void UpdateImageSource(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem, IMauiContext? mauiContext)
+		{
+			if (mauiContext == null)
+				return;
+
+			var image = menuFlyoutItem.Source.GetPlatformMenuImage(mauiContext);
+
+			if (uiMenuElement is UIAction action)
+				action.Image = image;
+
+			if (uiMenuElement is UICommand command)
+				command.Image = image;
+		}
+
 		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, bool isEnabled)
 		{
 			uiMenuElement.UpdateMenuElementAttributes(isEnabled);
@@ -49,7 +63,10 @@ namespace Microsoft.Maui.Platform
 			if (imageSource is IFontImageSource fontImageSource)
 			{
 				var fontManager = mauiContext.Services.GetRequiredService<IFontManager>();
-				return fontImageSource.GetPlatformImage(fontManager, 1);
+
+				// Render at the screen scale. A 1x image is stretched in the menu and is blurry on 2x and 3x screens.
+				var scale = mauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? (float)UIScreen.MainScreen.Scale;
+				return fontImageSource.GetPlatformImage(fontManager, scale);
 			}
 
 			throw new InvalidOperationException("MenuItems on Catalyst currently only support Font and File Images");

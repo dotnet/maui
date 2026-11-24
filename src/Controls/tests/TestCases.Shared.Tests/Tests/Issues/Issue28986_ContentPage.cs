@@ -121,7 +121,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when keyboard shows - MainGrid gets bottom padding from SoftInput");
 		});
 
-		App.DismissKeyboard();
+		HideKeyboardWithoutLeavingPage();
 
 		App.RetryAssert(() =>
 		{
@@ -151,7 +151,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 			"ContentGrid should shrink when keyboard is showing with SafeAreaEdges=All");
 
 		App.Tap("GridSetContainerButton");
-		App.DismissKeyboard();
+		HideKeyboardWithoutLeavingPage();
 		Assert.That(App.WaitForKeyboardToHide(), Is.True, "Keyboard should be hidden before restoring all safe-area edges");
 		App.Tap("GridResetAllButton");
 
@@ -160,6 +160,24 @@ public class Issue28986_ContentPage : _IssuesUITest
 				.And.Property(nameof(baselinePosition.Y)).EqualTo(baselinePosition.Y).Within(1)
 				.After(timeoutMilliseconds, pollingIntervalMilliseconds),
 			"ContentGrid height and Y should match baseline after toggling edges with keyboard dismiss — no white space (#34846)");
+	}
+
+	// On Android, App.DismissKeyboard() uses Appium's hideKeyboard, which sends ESC and,
+	// if the keyboard is still reported as shown about a second later, falls back to BACK.
+	// On a slow emulator the IME hide can outlast that window, and the BACK key then
+	// closes the test page's activity. ESC is consumed by the visible IME, so send only
+	// ESC and wait for the keyboard to finish hiding.
+	void HideKeyboardWithoutLeavingPage()
+	{
+#if ANDROID
+		const int KeyCodeEscape = 111;
+
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "The soft keyboard should be visible before hiding it");
+		App.SendKeys(KeyCodeEscape);
+		Assert.That(App.WaitForKeyboardToHide(), Is.True, "The soft keyboard was not hidden");
+#else
+		App.DismissKeyboard();
+#endif
 	}
 }
 #endif
