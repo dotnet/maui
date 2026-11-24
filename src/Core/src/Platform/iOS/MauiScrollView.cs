@@ -716,8 +716,9 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// Whether this is the scroll view UIKit tracks for the large title of its navigation bar:
-		/// the first scroll view in the hierarchy of a view controller whose navigation bar shows
-		/// large titles.
+		/// the content scroll view the controller sets explicitly or, otherwise, the scroll view reached
+		/// by following the first subview from the controller's view, for a controller whose navigation
+		/// bar shows large titles.
 		/// </summary>
 		bool IsLargeTitleTrackedScrollView()
 		{
@@ -743,7 +744,13 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					return FindFirstScrollView(controller.View) == this;
+					if ((OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15)) &&
+						controller.GetContentScrollView(NSDirectionalRectEdge.Top) is { } explicitScrollView)
+					{
+						return explicitScrollView == this;
+					}
+
+					return FindTrackedScrollView(controller.View) == this;
 				}
 
 				responder = responder.NextResponder;
@@ -752,19 +759,18 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		static UIScrollView? FindFirstScrollView(UIView view)
+		static UIScrollView? FindTrackedScrollView(UIView view)
 		{
-			if (view is UIScrollView rootScrollView)
+			UIView? current = view;
+			while (current is not null)
 			{
-				return rootScrollView;
-			}
-
-			foreach (var subview in view.Subviews)
-			{
-				if (FindFirstScrollView(subview) is { } nested)
+				if (current is UIScrollView scrollView)
 				{
-					return nested;
+					return scrollView;
 				}
+
+				var subviews = current.Subviews;
+				current = subviews.Length > 0 ? subviews[0] : null;
 			}
 
 			return null;
