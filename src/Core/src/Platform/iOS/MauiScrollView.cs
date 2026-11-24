@@ -635,8 +635,13 @@ namespace Microsoft.Maui.Platform
 			{
 				var inflateWidth = width <= Bounds.Width &&
 					(_safeArea.HorizontalThickness + width) > Bounds.Width;
+				// The scroll view a large-title navigation bar tracks keeps its UIKit inset whether or
+				// not it can scroll, so it doesn't need inflating. Inflating it would also make the
+				// decision depend on the title's expanded/collapsed state (the safe area changes by
+				// the title height), flipping ContentSize and making the content bounce (issue #40277).
 				var inflateHeight = height <= Bounds.Height &&
-					(_safeArea.VerticalThickness + height) > Bounds.Height;
+					(_safeArea.VerticalThickness + height) > Bounds.Height &&
+					!IsLargeTitleTrackedScrollView();
 
 				// We do this to keep the content scrollable
 				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
@@ -711,6 +716,64 @@ namespace Microsoft.Maui.Platform
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;
+		}
+
+		/// <summary>
+		/// Whether this is the scroll view UIKit tracks for the large title of its navigation bar:
+		/// the first scroll view in the hierarchy of a view controller whose navigation bar shows
+		/// large titles.
+		/// </summary>
+		bool IsLargeTitleTrackedScrollView()
+		{
+			UIResponder? responder = this;
+			while (responder is not null)
+			{
+				if (responder is UIViewController controller)
+				{
+					var navigationController = controller.NavigationController;
+					if (navigationController?.NavigationBar.PrefersLargeTitles != true)
+					{
+						return false;
+					}
+
+					// The controller hosting this view may be nested inside the one the navigation
+					// controller manages; the navigation bar reads the item of the latter.
+					while (controller.ParentViewController is { } parent && parent != navigationController)
+					{
+						controller = parent;
+					}
+
+					if (controller.NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never ||
+						controller.View is null)
+					{
+						return false;
+					}
+
+					return FindFirstScrollView(controller.View) == this;
+				}
+
+				responder = responder.NextResponder;
+			}
+
+			return false;
+		}
+
+		static UIScrollView? FindFirstScrollView(UIView view)
+		{
+			foreach (var subview in view.Subviews)
+			{
+				if (subview is UIScrollView scrollView)
+				{
+					return scrollView;
+				}
+
+				if (FindFirstScrollView(subview) is { } nested)
+				{
+					return nested;
+				}
+			}
+
+			return null;
 		}
 
 		bool IsInsidePageSheet()
