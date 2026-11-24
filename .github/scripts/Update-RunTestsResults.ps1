@@ -106,6 +106,8 @@ foreach ($comment in $comments) {
         $refreshed += $result
     }
     if ($updated -ceq $comment.body) { continue }
+    # The Result badge and overview table of a /review run-tests comment summarize its sections.
+    if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
     foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
     if ($DryRun) { $updated; continue }
     $payload = @{ body = $updated } | ConvertTo-Json
