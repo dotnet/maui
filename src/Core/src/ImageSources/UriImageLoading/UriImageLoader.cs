@@ -45,6 +45,7 @@ namespace Microsoft.Maui
 		readonly TimeSpan _requestTimeout;
 		readonly long? _maxDownloadSize;
 		readonly Random _jitter = new();
+		readonly ConcurrentDictionary<string, int> _removals = new(StringComparer.Ordinal);
 		int _cacheGeneration;
 		int _disposed;
 
@@ -53,6 +54,14 @@ namespace Microsoft.Maui
 #endif
 
 		public UriImageLoader(ImageLoadingOptions options, ILogger? logger = null)
+			: this(options, logger, acceptFilesWithoutMetadata: null)
+		{
+		}
+
+		/// <param name="options">The options.</param>
+		/// <param name="logger">The logger.</param>
+		/// <param name="acceptFilesWithoutMetadata">Overrides whether files cached by earlier versions are recognized (for tests).</param>
+		internal UriImageLoader(ImageLoadingOptions options, ILogger? logger, bool? acceptFilesWithoutMetadata)
 		{
 			_logger = logger;
 			_maxRetryCount = Math.Max(0, options.MaxRetryCount);
@@ -68,7 +77,12 @@ namespace Microsoft.Maui
 			_httpClient = new Lazy<HttpClient>(() => CreateHttpClient(handlerFactory, configureHttpClient), LazyThreadSafetyMode.ExecutionAndPublication);
 
 			MemoryCache = new UriImageMemoryCache(options.MemoryCacheSizeLimit);
-			DiskCache = new UriImageDiskCache(options.CacheDirectory ?? GetDefaultCacheDirectory(), options.DiskCacheSizeLimit, () => UtcNow());
+			// Images cached by earlier versions (without metadata) are only recognized in the default directory.
+			DiskCache = new UriImageDiskCache(
+				options.CacheDirectory ?? GetDefaultCacheDirectory(),
+				options.DiskCacheSizeLimit,
+				() => UtcNow(),
+				acceptFilesWithoutMetadata ?? options.CacheDirectory is null);
 			DiskCache.BeginIndexing();
 
 #if IOS || MACCATALYST
@@ -149,6 +163,7 @@ namespace Microsoft.Maui
 		{
 			ValidateUri(uri, fetch);
 			cancellationToken.ThrowIfCancellationRequested();
+			fetch = OnCallerContext(fetch);
 
 			if (cachingEnabled && MemoryCache.TryGet(uri.OriginalString, out var item) && IsFresh(item.ValidatedAt.UtcTicks, cacheValidity))
 				return Task.FromResult(item.Data);
@@ -163,10 +178,11 @@ namespace Microsoft.Maui
 		public async Task<UriImageResult> LoadFileAsync(Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch = null, CancellationToken cancellationToken = default)
 		{
 			ValidateUri(uri, fetch);
+			fetch = OnCallerContext(fetch);
 
 			for (var attempt = 0; ; attempt++)
 			{
-				var result = await JoinAsync(uri, cachingEnabled, cacheValidity, fetch, cancellationToken).ConfigureAwait(false);
+				var result = await JoinAsync(uri, GetVersion(uri), cachingEnabled, cacheValidity, fetch, cancellationToken).ConfigureAwait(false);
 				if (result.Entry is null || File.Exists(result.Entry.DataPath))
 					return result;
 
@@ -197,9 +213,11 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public Task ClearAsync(CancellationToken cancellationToken = default)
 		{
+			// Forget the disk entries first, so that loads started from now on download again, then remove the files.
+			DiskCache.ResetIndex();
 			Interlocked.Increment(ref _cacheGeneration);
 			MemoryCache.Clear();
-			return Task.Run(DiskCache.Clear, cancellationToken);
+			return Task.Run(DiskCache.DeleteUnindexedFiles, cancellationToken);
 		}
 
 		/// <inheritdoc/>
@@ -208,7 +226,8 @@ namespace Microsoft.Maui
 			if (uri is null)
 				throw new ArgumentNullException(nameof(uri));
 
-			Interlocked.Increment(ref _cacheGeneration);
+			// Only loads of this image are affected; downloads of it that are in progress are not kept.
+			_removals.AddOrUpdate(uri.OriginalString, 1, static (_, count) => count + 1);
 			MemoryCache.Remove(uri.OriginalString);
 			return Task.Run(() => DiskCache.Remove(uri), cancellationToken);
 		}
@@ -236,6 +255,26 @@ namespace Microsoft.Maui
 		{
 			MemoryCache.Remove(uri.OriginalString);
 			DiskCache.Remove(uri);
+		}
+
+		/// <summary>
+		/// Identifies the state of the cache for <paramref name="uri"/>: it changes when the cache is cleared or the image is removed.
+		/// Results of loads that started with another version are not kept.
+		/// </summary>
+		long GetVersion(Uri uri) =>
+			((long)Volatile.Read(ref _cacheGeneration) << 32) | (uint)(_removals.TryGetValue(uri.OriginalString, out var removals) ? removals : 0);
+
+		/// <summary>
+		/// Removes <paramref name="entry"/> (and the memory copy) if the cache was not cleared since <paramref name="version"/>.
+		/// </summary>
+		void InvalidateIfCurrent(Uri uri, long version, UriImageDiskCache.Entry? entry)
+		{
+			if (version != GetVersion(uri))
+				return;
+
+			MemoryCache.Remove(uri.OriginalString);
+			if (entry is not null)
+				DiskCache.Remove(entry);
 		}
 
 		internal static int GetDefaultMaxDownloadSize()
@@ -275,11 +314,10 @@ namespace Microsoft.Maui
 
 		async Task<byte[]> LoadBytesCoreAsync(Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
 		{
-			var generation = Volatile.Read(ref _cacheGeneration);
-
 			for (var attempt = 0; ; attempt++)
 			{
-				var result = await JoinAsync(uri, cachingEnabled, cacheValidity, fetch, cancellationToken).ConfigureAwait(false);
+				var version = GetVersion(uri);
+				var result = await JoinAsync(uri, version, cachingEnabled, cacheValidity, fetch, cancellationToken).ConfigureAwait(false);
 
 				var data = result.Data;
 				if (data is null && result.Entry is not null)
@@ -297,29 +335,29 @@ namespace Microsoft.Maui
 				if (data is null)
 					throw new InvalidOperationException($"Unable to load image from '{uri}'.");
 
-				if (cachingEnabled && result.Cacheable)
+				if (cachingEnabled && result.Cacheable && version == GetVersion(uri))
 				{
 					var validatedAt = result.Entry is not null
 						? new DateTimeOffset(result.Entry.ValidatedUtcTicks, TimeSpan.Zero)
 						: UtcNow();
 					MemoryCache.Set(uri.OriginalString, data, validatedAt);
 
-					// The cache was cleared while this image was loading: do not keep it.
-					if (generation != Volatile.Read(ref _cacheGeneration))
-						MemoryCache.Remove(uri.OriginalString);
+					// The cache was cleared while this image was being stored: do not keep it.
+					if (version != GetVersion(uri))
+						MemoryCache.RemoveIfSame(uri.OriginalString, data);
 				}
 
 				return data;
 			}
 		}
 
-		async Task<UriImageResult> JoinAsync(Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
+		async Task<UriImageResult> JoinAsync(Uri uri, long version, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
 		{
 			// Loads started after the cache was cleared never share a download that started before it.
-			var generation = Volatile.Read(ref _cacheGeneration);
+			// Custom streams are never shared: each image source provides its own.
 			var key = string.Concat(
-				generation.ToString(CultureInfo.InvariantCulture), "|",
-				fetch is null ? "h|" : "s|",
+				version.ToString(CultureInfo.InvariantCulture), "|",
+				fetch is null ? "h|" : "s" + Guid.NewGuid().ToString("N") + "|",
 				cachingEnabled ? "1|" : "0|",
 				cacheValidity.Ticks.ToString(CultureInfo.InvariantCulture), "|",
 				uri.OriginalString);
@@ -340,7 +378,7 @@ namespace Microsoft.Maui
 					else
 					{
 						load.Waiters++;
-						task = load.Task ??= StartLoad(load, key, generation, uri, cachingEnabled, cacheValidity, fetch);
+						task = load.Task ??= StartLoad(load, key, version, uri, cachingEnabled, cacheValidity, fetch);
 					}
 				}
 
@@ -362,18 +400,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		Task<UriImageResult> StartLoad(InFlightLoad load, string key, int generation, Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch)
+		Task<UriImageResult> StartLoad(InFlightLoad load, string key, long version, Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch)
 		{
 			var token = load.Cancellation.Token;
-
-			// Custom streams are requested on the calling thread's context (for example the UI thread),
-			// as they were before the loader existed. Everything else runs on the thread pool.
-			var scheduler = fetch is not null && SynchronizationContext.Current is not null
-				? TaskScheduler.FromCurrentSynchronizationContext()
-				: TaskScheduler.Default;
-			var task = Task.Factory
-				.StartNew(() => ResolveAsync(uri, generation, cachingEnabled, cacheValidity, fetch, token), token, TaskCreationOptions.DenyChildAttach, scheduler)
-				.Unwrap();
+			var task = Task.Run(() => ResolveAsync(uri, version, cachingEnabled, cacheValidity, fetch, token), token);
 
 			task.ContinueWith(
 				t =>
@@ -415,7 +445,7 @@ namespace Microsoft.Maui
 			((System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, InFlightLoad>>)_inFlight)
 				.Remove(new System.Collections.Generic.KeyValuePair<string, InFlightLoad>(key, load));
 
-		async Task<UriImageResult> ResolveAsync(Uri uri, int generation, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
+		async Task<UriImageResult> ResolveAsync(Uri uri, long version, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
 		{
 			UriImageDiskCache.Entry? cached = null;
 
@@ -436,24 +466,31 @@ namespace Microsoft.Maui
 			catch (Exception ex) when (cached is not null && IsPermanentHttpFailure(ex))
 			{
 				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it.
-				Invalidate(uri);
+				InvalidateIfCurrent(uri, version, cached);
 				throw;
 			}
-			catch (Exception ex) when (cached is not null && !cancellationToken.IsCancellationRequested && File.Exists(cached.DataPath))
+			catch (Exception ex) when (cached is not null && IsTransient(ex, cancellationToken) && File.Exists(cached.DataPath))
 			{
-				// Prefer an expired image over no image when the server cannot be reached.
+				// Prefer an expired image over no image when the server cannot be reached. The copy stays expired,
+				// so it is not kept in memory and the next load tries the server again.
 				_logger?.LogWarning(ex, "Unable to revalidate image '{Uri}'; using the expired cached copy.", uri);
-				return new UriImageResult(null, cached, cacheable: true);
+				return new UriImageResult(null, cached, cacheable: false);
 			}
 
 			if (response.NotModified && cached is not null)
 			{
-				// A no-store response must not extend how long the copy is reused; it is revalidated again next time.
 				if (response.NoStore)
-					return new UriImageResult(null, cached, cacheable: false);
-
-				if (DiskCache.Renew(cached, response.ETag, response.LastModified, UtcNow()))
+				{
+					// The server confirmed the copy but does not allow storing it: use it once, then forget it.
+					var copy = await DiskCache.TryReadAsync(cached, cancellationToken).ConfigureAwait(false);
+					InvalidateIfCurrent(uri, version, cached);
+					if (copy is not null)
+						return new UriImageResult(copy, null, cacheable: false);
+				}
+				else if (DiskCache.Renew(cached, response.ETag, response.LastModified, UtcNow()))
+				{
 					return new UriImageResult(null, cached, cacheable: true);
+				}
 
 				// The cached file disappeared while revalidating it.
 				response = await DownloadWithRetriesAsync(uri, null, fetch, _maxRetryCount, cancellationToken).ConfigureAwait(false);
@@ -463,12 +500,12 @@ namespace Microsoft.Maui
 			var cacheable = cachingEnabled && !response.NoStore;
 
 			UriImageDiskCache.Entry? entry = null;
-			if (cacheable && generation == Volatile.Read(ref _cacheGeneration))
+			if (cacheable && version == GetVersion(uri))
 			{
 				entry = DiskCache.Write(uri, data, response.ETag, response.LastModified, UtcNow());
 
-				// The cache was cleared while the image was written: do not keep it.
-				if (entry is not null && generation != Volatile.Read(ref _cacheGeneration))
+				// The cache was cleared (or the image removed) while the image was written: do not keep it.
+				if (entry is not null && version != GetVersion(uri))
 				{
 					DiskCache.Remove(entry);
 					entry = null;
@@ -476,10 +513,10 @@ namespace Microsoft.Maui
 			}
 			else if (cachingEnabled && response.NoStore)
 			{
-				Invalidate(uri);
+				InvalidateIfCurrent(uri, version, cached);
 			}
 
-			return new UriImageResult(data, entry, cacheable && generation == Volatile.Read(ref _cacheGeneration));
+			return new UriImageResult(data, entry, cacheable && version == GetVersion(uri));
 		}
 
 		async Task<DownloadResponse> DownloadWithRetriesAsync(Uri uri, UriImageDiskCache.Entry? cached, Func<CancellationToken, Task<Stream?>>? fetch, int maxRetryCount, CancellationToken cancellationToken)
@@ -528,29 +565,9 @@ namespace Microsoft.Maui
 			{
 				// Some platform handlers do not observe cancellation while connecting,
 				// so stop waiting when the attempt times out even if the handler does not.
-				var send = _httpClient.Value.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
-				HttpResponseMessage sent;
-				try
-				{
-					sent = await WaitAsync(send, timeout.Token).ConfigureAwait(false);
-				}
-				catch (OperationCanceledException)
-				{
-					_ = send.ContinueWith(
-						static t =>
-						{
-							if (t.Status == TaskStatus.RanToCompletion)
-								t.Result.Dispose();
-							else
-								_ = t.Exception;
-						},
-						CancellationToken.None,
-						TaskContinuationOptions.ExecuteSynchronously,
-						TaskScheduler.Default);
-					throw;
-				}
-
-				using var response = sent;
+				using var response = await WaitOrAbandonAsync(
+					_httpClient.Value.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token),
+					timeout.Token).ConfigureAwait(false);
 
 				var eTag = response.Headers.ETag?.ToString();
 				var lastModified = response.Content.Headers.LastModified?.ToString("R", CultureInfo.InvariantCulture);
@@ -590,7 +607,7 @@ namespace Microsoft.Maui
 
 			try
 			{
-				using var stream = await fetch(timeout.Token).ConfigureAwait(false)
+				using var stream = await WaitOrAbandonAsync(fetch(timeout.Token), timeout.Token).ConfigureAwait(false)
 					?? throw new InvalidOperationException($"Unable to load image stream from URI '{uri}'.");
 
 				var data = await ReadBoundedAsync(stream, _maxDownloadSize ?? GetDefaultMaxDownloadSize(), uri, timeout, _requestTimeout).ConfigureAwait(false);
@@ -609,9 +626,9 @@ namespace Microsoft.Maui
 		{
 			timeout.CancelAfter(idleTimeout);
 #if NETSTANDARD
-			using var stream = await WaitAsync(content.ReadAsStreamAsync(), timeout.Token).ConfigureAwait(false);
+			using var stream = await WaitOrAbandonAsync(content.ReadAsStreamAsync(), timeout.Token).ConfigureAwait(false);
 #else
-			using var stream = await WaitAsync(content.ReadAsStreamAsync(timeout.Token), timeout.Token).ConfigureAwait(false);
+			using var stream = await WaitOrAbandonAsync(content.ReadAsStreamAsync(timeout.Token), timeout.Token).ConfigureAwait(false);
 #endif
 			return await ReadBoundedAsync(stream, maxSize, uri, timeout, idleTimeout).ConfigureAwait(false);
 		}
@@ -627,7 +644,7 @@ namespace Microsoft.Maui
 			while (true)
 			{
 				timeout.CancelAfter(idleTimeout);
-				var read = await WaitAsync(stream.ReadAsync(chunk, 0, chunk.Length, timeout.Token), timeout.Token).ConfigureAwait(false);
+				var read = await WaitOrAbandonAsync(stream.ReadAsync(chunk, 0, chunk.Length, timeout.Token), timeout.Token).ConfigureAwait(false);
 				if (read <= 0)
 					break;
 
@@ -751,6 +768,73 @@ namespace Microsoft.Maui
 				// No file system available (for example netstandard or unit tests): the disk cache is disabled.
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// Waits for <paramref name="task"/> until <paramref name="cancellationToken"/> is cancelled, even if the operation ignores it.
+		/// An abandoned operation is observed, and its result is disposed when it completes later.
+		/// </summary>
+		static async Task<T> WaitOrAbandonAsync<T>(Task<T> task, CancellationToken cancellationToken)
+		{
+			try
+			{
+				return await WaitAsync(task, cancellationToken).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException) when (!task.IsCompleted)
+			{
+				_ = task.ContinueWith(
+					static t =>
+					{
+						if (t.Status == TaskStatus.RanToCompletion)
+							(t.Result as IDisposable)?.Dispose();
+						else
+							_ = t.Exception;
+					},
+					CancellationToken.None,
+					TaskContinuationOptions.ExecuteSynchronously,
+					TaskScheduler.Default);
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Makes <paramref name="fetch"/> run on the calling thread's context (for example the UI thread), where custom
+		/// image sources provided their stream before the loader existed. Everything else runs on the thread pool.
+		/// </summary>
+		static Func<CancellationToken, Task<Stream?>>? OnCallerContext(Func<CancellationToken, Task<Stream?>>? fetch)
+		{
+			var context = SynchronizationContext.Current;
+			if (fetch is null || context is null)
+				return fetch;
+
+			return token =>
+			{
+				var completion = new TaskCompletionSource<Stream?>(TaskCreationOptions.RunContinuationsAsynchronously);
+				context.Post(_ =>
+				{
+					try
+					{
+						fetch(token).ContinueWith(
+							t =>
+							{
+								if (t.IsCanceled)
+									completion.TrySetCanceled();
+								else if (t.IsFaulted)
+									completion.TrySetException(t.Exception!.InnerExceptions);
+								else
+									completion.TrySetResult(t.Result);
+							},
+							CancellationToken.None,
+							TaskContinuationOptions.ExecuteSynchronously,
+							TaskScheduler.Default);
+					}
+					catch (Exception ex)
+					{
+						completion.TrySetException(ex);
+					}
+				}, null);
+				return completion.Task;
+			};
 		}
 
 		static async Task<T> WaitAsync<T>(Task<T> task, CancellationToken cancellationToken)

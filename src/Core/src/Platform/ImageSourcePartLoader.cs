@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Platform
 			SourceManager.Reset();
 #if IOS || ANDROID || WINDOWS
 			_fallbackGeneration++;
+			CancelFallbacks();
 			ReleaseFallback();
 #endif
 
@@ -71,6 +72,8 @@ namespace Microsoft.Maui.Platform
 			var imageSource = Setter.ImageSourcePart;
 #if IOS || ANDROID || WINDOWS
 			var fallbackGeneration = ++_fallbackGeneration;
+			CancelFallbacks();
+			var fallbackToken = (_fallbackCancellation = new CancellationTokenSource()).Token;
 #endif
 
 			if (imageSource?.Source is { IsEmpty: false })
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.Platform
 				var errorSource = fallbacks?.ErrorSource;
 				Action<Exception>? onFailed = errorSource is null
 					? null
-					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => true).FireAndForget();
+					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => true, fallbackToken).FireAndForget();
 #endif
 
 #if IOS || WINDOWS
@@ -96,15 +99,22 @@ namespace Microsoft.Maui.Platform
 				// Only show the placeholder when the image is not available right away (for example from a memory cache).
 				if (!loadTask.IsCompleted && fallbacks?.PlaceholderSource is { } placeholderSource)
 				{
-					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => !loadTask.IsCompleted)
+					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => !loadTask.IsCompleted, fallbackToken)
 						.FireAndForget();
 				}
 
 				var result = await loadTask;
 
-				// A newer load has started (or the loader was reset); it owns the result and the fallbacks now.
+				// A newer load has started (or the loader was reset); it owns the view and the fallbacks now.
 				if (token.IsCancellationRequested)
+				{
+#if !ANDROID
+					// Only possible when the image was replaced from an ImageLoaded handler; it is no longer shown.
+					// (On Android, Glide manages the lifetime of images it set on the view.)
+					result?.Dispose();
+#endif
 					return;
+				}
 
 				SourceManager.CompleteLoad(result);
 
@@ -122,10 +132,19 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+#if ANDROID
+				// Also stop a Glide load into the view that is still in progress, so it cannot show its image later.
+				if (platformView is global::Android.Widget.ImageView imageView)
+					PlatformInterop.ClearImageView(imageView);
+#endif
 				Setter.SetImageSource(null);
 #if IOS || ANDROID || WINDOWS
 				ReleaseFallback();
 #endif
+				SourceManager.CompleteLoad(null);
+
+				// A load that was cancelled by clearing the source does not report that it stopped loading.
+				imageSource?.UpdateIsLoading(false);
 #if ANDROID
 				CheckForImageLoadedOnAttached = false;
 #endif
@@ -134,6 +153,7 @@ namespace Microsoft.Maui.Platform
 
 #if IOS || ANDROID || WINDOWS
 		IDisposable? _fallbackResult;
+		CancellationTokenSource? _fallbackCancellation;
 
 		// Identifies the load that a placeholder or error image belongs to. It changes whenever a new load
 		// starts or the loader is reset, even after the load itself has completed.
@@ -142,10 +162,9 @@ namespace Microsoft.Maui.Platform
 		/// <summary>
 		/// Shows a placeholder or error image without changing the loading state.
 		/// </summary>
-		async Task ShowFallbackAsync(IImageSource source, IImageSourceServiceProvider provider, PlatformView platformView, int generation, Func<bool> isStillNeeded)
+		async Task ShowFallbackAsync(IImageSource source, IImageSourceServiceProvider provider, PlatformView platformView, int generation, Func<bool> isStillNeeded, CancellationToken token)
 		{
-			// Fallback images are not cancelled; a result that is no longer needed is discarded below.
-			var token = CancellationToken.None;
+			// The token is cancelled when a newer load starts; results that are no longer needed are also discarded below.
 			bool IsCurrent() => generation == _fallbackGeneration && isStillNeeded();
 
 			IDisposable? result = null;
@@ -195,6 +214,13 @@ namespace Microsoft.Maui.Platform
 			var previous = _fallbackResult;
 			_fallbackResult = result;
 			previous?.Dispose();
+		}
+
+		void CancelFallbacks()
+		{
+			var cancellation = _fallbackCancellation;
+			_fallbackCancellation = null;
+			cancellation?.Cancel();
 		}
 
 		void ReleaseFallback()

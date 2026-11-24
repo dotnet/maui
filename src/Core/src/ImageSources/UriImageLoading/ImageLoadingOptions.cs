@@ -81,6 +81,7 @@ namespace Microsoft.Maui
 		/// Gets or sets the directory where downloaded images are cached.
 		/// When <see langword="null"/>, a folder inside the app's cache directory is used.
 		/// </summary>
+		/// <remarks>Use a directory dedicated to the image cache. Files the cache did not write are left alone.</remarks>
 		public string? CacheDirectory { get; set; }
 	}
 }

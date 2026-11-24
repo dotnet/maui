@@ -155,15 +155,18 @@ namespace Microsoft.Maui.DeviceTests
 			await RunWithImages(async () =>
 			{
 				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed);
+				var requestsBeforeReload = _server.RequestCount;
 
 				_server.Respond(_ => Png(Colors.Red));
 				image.Reload();
 
 				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
 				await AssertColor(image, Colors.Red);
-			}, image);
 
-			Assert.Equal(2, _server.RequestCount);
+				// Failures are not cached: reloading downloads again. (Android may also retry a failed image
+				// once on its own when the view is attached, so only the reload itself is checked.)
+				Assert.True(_server.RequestCount > requestsBeforeReload);
+			}, image);
 		}
 
 		[Fact]
@@ -257,6 +260,33 @@ namespace Microsoft.Maui.DeviceTests
 
 				release.SetResult(true);
 				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded && !image.IsLoading);
+			}, image);
+		}
+
+		[Fact]
+		public async Task ClearingTheSourceWhileLoadingStopsLoading()
+		{
+			SetupBuilder();
+			var release = new TaskCompletionSource<bool>();
+			_server.Respond(async _ =>
+			{
+				await release.Task;
+				return Png(Colors.Red);
+			});
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => _server.RequestCount == 1 && image.IsLoading);
+
+				image.Source = null;
+				await WaitFor(() => !image.IsLoading && image.LoadingState == ImageLoadingState.Idle);
+
+				release.SetResult(true);
+				await Task.Delay(500);
+				Assert.False(image.IsLoading);
+				Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
 			}, image);
 		}
 

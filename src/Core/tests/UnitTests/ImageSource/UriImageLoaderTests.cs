@@ -35,7 +35,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			}
 		}
 
-		UriImageLoader CreateLoader(Action<ImageLoadingOptions> configure = null)
+		UriImageLoader CreateLoader(Action<ImageLoadingOptions> configure = null, bool? acceptFilesWithoutMetadata = null)
 		{
 			var options = new ImageLoadingOptions
 			{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 				RetryDelay = TimeSpan.FromMilliseconds(1),
 			};
 			configure?.Invoke(options);
-			return new UriImageLoader(options) { UtcNow = () => _now };
+			return new UriImageLoader(options, null, acceptFilesWithoutMetadata) { UtcNow = () => _now };
 		}
 
 		[Fact]
@@ -159,8 +159,71 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			});
 
 			Assert.Equal(Png, await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
-			Assert.Equal(Png, await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
-			Assert.Equal(3, _handler.RequestCount);
+			Assert.Null(loader.DiskCache.GetEntry(ImageUri));
+		}
+
+		[Fact]
+		public async Task ExpiredImageIsNotUsedWhenTheServerReturnsSomethingElse()
+		{
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader();
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			// For example a login page after the session expired.
+			_now = _now.AddHours(2);
+			_handler.Respond(_ =>
+			{
+				var response = Ok(System.Text.Encoding.UTF8.GetBytes("<html>login</html>"));
+				response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+				return response;
+			});
+
+			await Assert.ThrowsAsync<InvalidDataException>(() => loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+		}
+
+		[Fact]
+		public async Task RemoveAsyncDoesNotAffectOtherImages()
+		{
+			var release = new TaskCompletionSource<bool>();
+			_handler.Respond(async request =>
+			{
+				if (request.RequestUri.AbsolutePath.EndsWith("other.png", StringComparison.Ordinal))
+					await release.Task;
+				return Ok(Png);
+			});
+			var loader = CreateLoader();
+			var other = new Uri("https://example.com/other.png");
+
+			var otherLoad = loader.LoadAsync(other, true, TimeSpan.FromDays(1));
+			await WaitUntil(() => _handler.RequestCount == 1);
+			await loader.RemoveAsync(ImageUri);
+			release.SetResult(true);
+			await otherLoad;
+
+			Assert.NotNull(loader.DiskCache.GetEntry(other));
+			Assert.True(loader.LoadAsync(other, true, TimeSpan.FromDays(1)).IsCompletedSuccessfully);
+		}
+
+		[Fact]
+		public async Task CustomStreamsAreNotShared()
+		{
+			var release = new TaskCompletionSource<bool>();
+			var calls = 0;
+			async Task<Stream> Fetch(CancellationToken token)
+			{
+				Interlocked.Increment(ref calls);
+				await release.Task;
+				return new MemoryStream(Png);
+			}
+			var loader = CreateLoader();
+			var uri = new Uri("custom://images/shared");
+
+			var first = loader.LoadAsync(uri, false, TimeSpan.FromDays(1), Fetch);
+			var second = loader.LoadAsync(uri, false, TimeSpan.FromDays(1), Fetch);
+			await WaitUntil(() => Volatile.Read(ref calls) == 2);
+			release.SetResult(true);
+
+			await Task.WhenAll(first, second);
 		}
 
 		[Fact]
@@ -191,14 +254,15 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Directory.CreateDirectory(_cacheDirectory);
 			var sentinel = Path.Combine(_cacheDirectory, "settings.json");
 			File.WriteAllText(sentinel, "{}");
+			var hashNamedSentinel = Path.Combine(_cacheDirectory, "0123456789ABCDEF.profile.json");
+			File.WriteAllText(hashNamedSentinel, "{}");
 			_handler.Respond(_ => Ok(Png));
 			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 1);
 			await loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
 
 			await loader.ClearAsync();
 
-			Assert.True(File.Exists(sentinel));
-			Assert.Equal(new[] { sentinel }, Directory.GetFiles(_cacheDirectory));
+			Assert.Equal(new[] { hashNamedSentinel, sentinel }, Directory.GetFiles(_cacheDirectory).OrderBy(f => f, StringComparer.Ordinal));
 		}
 
 		[Fact]
@@ -548,12 +612,12 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			File.WriteAllBytes(legacyPath, Png);
 			File.SetLastWriteTimeUtc(legacyPath, _now.UtcDateTime.AddMinutes(-10));
 
-			Assert.Equal(Png, await CreateLoader().LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+			Assert.Equal(Png, await CreateLoader(acceptFilesWithoutMetadata: true).LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
 			Assert.Equal(0, _handler.RequestCount);
 
 			_now = _now.AddHours(1);
 			_handler.Respond(_ => Ok(OtherPng));
-			Assert.Equal(OtherPng, await CreateLoader().LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+			Assert.Equal(OtherPng, await CreateLoader(acceptFilesWithoutMetadata: true).LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
 		}
 
 		[Fact]

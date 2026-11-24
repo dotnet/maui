@@ -25,18 +25,27 @@ namespace Microsoft.Maui
 
 		readonly object _lock = new();
 		readonly object _indexBuildLock = new();
-		readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _keyLocks = new(StringComparer.Ordinal);
+		readonly object[] _keyLocks = CreateKeyLocks();
+		readonly bool _acceptFilesWithoutMetadata;
 		readonly long _sizeLimit;
 		readonly Func<DateTimeOffset> _utcNow;
 		Dictionary<string, Entry>? _index;
 		long _size;
 		Task? _indexing;
 
-		public UriImageDiskCache(string? directory, long sizeLimit, Func<DateTimeOffset>? utcNow = null)
+		/// <param name="directory">The directory to store images in, or <see langword="null"/> to disable the disk cache.</param>
+		/// <param name="sizeLimit">The maximum total size of the stored images.</param>
+		/// <param name="utcNow">The clock.</param>
+		/// <param name="acceptFilesWithoutMetadata">
+		/// Whether image files without a <c>.meta</c> file are cached images (written by earlier versions in the default directory).
+		/// In other directories such files are left alone.
+		/// </param>
+		public UriImageDiskCache(string? directory, long sizeLimit, Func<DateTimeOffset>? utcNow = null, bool acceptFilesWithoutMetadata = false)
 		{
 			Directory = string.IsNullOrEmpty(directory) ? null : directory;
 			_sizeLimit = Math.Max(0, sizeLimit);
 			_utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+			_acceptFilesWithoutMetadata = acceptFilesWithoutMetadata;
 		}
 
 		public string? Directory { get; }
@@ -76,7 +85,15 @@ namespace Microsoft.Maui
 		internal static string GetFileName(Uri uri)
 		{
 			var hash = Crc64.ComputeHashString(uri.OriginalString);
-			var extension = Path.GetExtension(uri.AbsolutePath);
+			string extension;
+			try
+			{
+				extension = Path.GetExtension(uri.IsAbsoluteUri ? uri.AbsolutePath : uri.OriginalString);
+			}
+			catch (ArgumentException)
+			{
+				extension = string.Empty;
+			}
 			if (extension.Length > 10 ||
 				extension.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
 				extension.Equals(MetadataExtension, StringComparison.OrdinalIgnoreCase) ||
@@ -192,7 +209,25 @@ namespace Microsoft.Maui
 					};
 
 					WriteAtomically(dataPath, stream => stream.Write(data, 0, data.Length));
-					WriteMetadata(entry);
+					try
+					{
+						WriteMetadata(entry);
+					}
+					catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+					{
+						// Never leave new image data next to the metadata (validators) of the previous download.
+						TryDelete(dataPath);
+						TryDelete(dataPath + MetadataExtension);
+						lock (_lock)
+						{
+							if (_index is not null && _index.TryGetValue(fileName, out var previous))
+							{
+								_index.Remove(fileName);
+								_size -= previous.Length;
+							}
+						}
+						throw;
+					}
 
 					EnsureIndex();
 					lock (_lock)
@@ -256,11 +291,20 @@ namespace Microsoft.Maui
 		bool IsCurrent(Entry entry)
 		{
 			lock (_lock)
-				return _index is null || !_index.TryGetValue(entry.FileName, out var current) || current == entry;
+				return _index is not null && _index.TryGetValue(entry.FileName, out var current) && ReferenceEquals(current, entry);
 		}
 
+		// A fixed set of locks, so that memory does not grow with the number of images ever cached.
 		object GetKeyLock(string fileName) =>
-			_keyLocks.GetOrAdd(fileName, static _ => new object());
+			_keyLocks[(StringComparer.Ordinal.GetHashCode(fileName) & int.MaxValue) % _keyLocks.Length];
+
+		static object[] CreateKeyLocks()
+		{
+			var locks = new object[64];
+			for (var i = 0; i < locks.Length; i++)
+				locks[i] = new object();
+			return locks;
+		}
 
 		public void Remove(Uri uri)
 		{
@@ -309,25 +353,48 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public void Clear()
+		/// <summary>
+		/// Forgets all entries. Files are removed by <see cref="DeleteUnindexedFiles"/>.
+		/// </summary>
+		public void ResetIndex()
 		{
-			if (Directory is null)
-				return;
-
+			lock (_indexBuildLock)
 			lock (_lock)
 			{
 				_index = new Dictionary<string, Entry>(StringComparer.Ordinal);
 				_size = 0;
 			}
+		}
+
+		/// <summary>
+		/// Deletes the cache's files that are not (or no longer) part of the index, for example after <see cref="ResetIndex"/>.
+		/// Images written after the reset are kept.
+		/// </summary>
+		public void DeleteUnindexedFiles()
+		{
+			if (Directory is null)
+				return;
 
 			try
 			{
-				if (System.IO.Directory.Exists(Directory))
+				if (!System.IO.Directory.Exists(Directory))
+					return;
+
+				foreach (var path in System.IO.Directory.EnumerateFiles(Directory))
 				{
-					foreach (var file in System.IO.Directory.EnumerateFiles(Directory))
+					var name = Path.GetFileName(path);
+					if (!IsCacheFileName(name) || !IsOwnedFile(path))
+						continue;
+
+					var fileName = GetDataFileName(name);
+					lock (GetKeyLock(fileName))
 					{
-						if (IsCacheFileName(Path.GetFileName(file)))
-							TryDelete(file);
+						bool indexed;
+						lock (_lock)
+							indexed = _index is not null && _index.ContainsKey(fileName);
+
+						if (!indexed)
+							TryDelete(path);
 					}
 				}
 			}
@@ -335,6 +402,49 @@ namespace Microsoft.Maui
 			{
 				// Best effort.
 			}
+		}
+
+		public void Clear()
+		{
+			ResetIndex();
+			DeleteUnindexedFiles();
+		}
+
+		/// <summary>
+		/// The image file name that <paramref name="name"/> (an image, metadata or temporary file) belongs to.
+		/// </summary>
+		static string GetDataFileName(string name)
+		{
+			if (name.EndsWith(TempExtension, StringComparison.Ordinal))
+			{
+				// {data}[.meta].{guid}.tmp
+				var guidStart = name.Length - TempExtension.Length - 1;
+				while (guidStart > 0 && name[guidStart] != '.')
+					guidStart--;
+				if (guidStart > 0)
+					name = name.Substring(0, guidStart);
+			}
+
+			if (name.EndsWith(MetadataExtension, StringComparison.Ordinal))
+				name = name.Substring(0, name.Length - MetadataExtension.Length);
+
+			return name;
+		}
+
+		/// <summary>
+		/// Whether a file with a cache file name was written by this cache: metadata and temporary files always are;
+		/// image files are when they have metadata (or, in the default directory, also without it).
+		/// </summary>
+		bool IsOwnedFile(string path)
+		{
+			if (_acceptFilesWithoutMetadata ||
+				path.EndsWith(MetadataExtension, StringComparison.Ordinal) ||
+				path.EndsWith(TempExtension, StringComparison.Ordinal))
+			{
+				return true;
+			}
+
+			return File.Exists(path + MetadataExtension);
 		}
 
 		void EnsureIndex()
@@ -386,6 +496,9 @@ namespace Microsoft.Maui
 								TryDelete(info.FullName);
 							continue;
 						}
+
+						if (!IsOwnedFile(info.FullName))
+							continue;
 
 						var entry = new Entry(name, info.FullName)
 						{
