@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -750,7 +752,7 @@ namespace Microsoft.Maui.Platform
 						return explicitScrollView == this;
 					}
 
-					return FindTrackedScrollView(controller.View) == this;
+					return IsFirstScrollViewInFirstSubviewChain(controller.View);
 				}
 
 				responder = responder.NextResponder;
@@ -759,22 +761,34 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		static UIScrollView? FindTrackedScrollView(UIView view)
+		bool IsFirstScrollViewInFirstSubviewChain(UIView? view)
 		{
-			UIView? current = view;
-			while (current is not null)
+			var current = view?.Handle ?? NativeHandle.Zero;
+			var scrollViewClass = ObjCRuntime.Class.GetHandle(typeof(UIScrollView));
+
+			while (current != NativeHandle.Zero)
 			{
-				if (current is UIScrollView scrollView)
+				if (byte_objc_msgSend_NativeHandle(current, IsKindOfClassSelector, scrollViewClass) != 0)
 				{
-					return scrollView;
+					return current == Handle;
 				}
 
-				var subviews = current.Subviews;
-				current = subviews.Length > 0 ? subviews[0] : null;
+				var subviews = NativeHandle_objc_msgSend(current, SubviewsSelector);
+				current = subviews == NativeHandle.Zero ? NativeHandle.Zero : NativeHandle_objc_msgSend(subviews, FirstObjectSelector);
 			}
 
-			return null;
+			return false;
 		}
+
+		static NativeHandle IsKindOfClassSelector => ObjCRuntime.Selector.GetHandle("isKindOfClass:");
+		static NativeHandle SubviewsSelector => ObjCRuntime.Selector.GetHandle("subviews");
+		static NativeHandle FirstObjectSelector => ObjCRuntime.Selector.GetHandle("firstObject");
+
+		[DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		static extern NativeHandle NativeHandle_objc_msgSend(NativeHandle receiver, NativeHandle selector);
+
+		[DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		static extern byte byte_objc_msgSend_NativeHandle(NativeHandle receiver, NativeHandle selector, NativeHandle arg1);
 
 		bool IsInsidePageSheet()
 		{

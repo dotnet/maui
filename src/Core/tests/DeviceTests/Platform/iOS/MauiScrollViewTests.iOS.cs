@@ -285,13 +285,13 @@ namespace Microsoft.Maui.DeviceTests
 				using var other = new UIScrollView();
 				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
 				controller.View.AddSubview(container);
-				controller.View.AddSubview(scrollView);
 				container.AddSubview(nested);
+				nested.AddSubview(scrollView);
 
 				Arrange(scrollView);
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
 
-				nested.AddSubview(other);
+				container.InsertSubview(other, 0);
 
 				Arrange(scrollView);
 				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
@@ -377,15 +377,15 @@ namespace Microsoft.Maui.DeviceTests
 				using var first = new UIView();
 				using var container = new UIView();
 				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
-				controller.View.AddSubview(first);
 				if (nestedInSecondChild)
 				{
 					controller.View.AddSubview(container);
-					container.AddSubview(new UIView());
+					container.AddSubview(first);
 					container.AddSubview(scrollView);
 				}
 				else
 				{
+					controller.View.AddSubview(first);
 					controller.View.AddSubview(scrollView);
 				}
 
@@ -415,6 +415,29 @@ namespace Microsoft.Maui.DeviceTests
 				Arrange(scrollView);
 
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task ExplicitContentScrollViewTakesPrecedenceOverFirstSubviewChain() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					return;
+				}
+
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+				controller.View.AddSubview(other);
+				controller.SetContentScrollView(other, NSDirectionalRectEdge.Top);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
 			});
 
 		static void ChangeInset(InsetScrollView scrollView, int top)
