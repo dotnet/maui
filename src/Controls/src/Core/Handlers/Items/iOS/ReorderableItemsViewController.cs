@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -234,6 +235,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (_longPressGestureRecognizer == null)
 				{
 					_longPressGestureRecognizer = new UILongPressGestureRecognizer(HandleLongPress);
+
+					// Reordering keeps priority over context flyouts on the items
+					MauiUIContextMenuInteraction.MarkLongPressRecognizer(_longPressGestureRecognizer);
 #if MACCATALYST
 					// On Mac Catalyst, we disable the default drag interaction and instead handle dragging using a long press gesture recognizer.
 					// Since a long press typically takes more time to trigger than the system's default drag interaction, 

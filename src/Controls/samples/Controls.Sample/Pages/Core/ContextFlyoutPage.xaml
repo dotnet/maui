@@ -7,7 +7,7 @@
     <ScrollView>
         <VerticalStackLayout>
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Increment by 1 (or right-click me)" Clicked="OnIncrementByOneClicked" FontSize="30" BackgroundColor="DarkGray">
+                <Button Text="Increment by 1 (or right-click / long press me)" Clicked="OnIncrementByOneClicked" FontSize="30" BackgroundColor="DarkGray">
                     <FlyoutBase.ContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem x:Name="Increment10MenuFlyoutItem" Text="Increment by 10" Clicked="OnIncrementMenuItemClicked" CommandParameter="10" />
@@ -29,7 +29,7 @@
                 <Switch IsToggled="{Binding IsDynamicCommandEnabled}" />
             </HorizontalStackLayout>
 
-            <Label Text="Right-click and add additional menus (currently quirky on Windows and Catalyst)">
+            <Label Text="Right-click or long press and add additional menus (currently quirky on Windows and Catalyst)">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Add top-level menu items" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
@@ -43,7 +43,7 @@
                 </FlyoutBase.ContextFlyout>
             </Label>
 
-            <Label Text="Right-click to see beautiful menus" FontSize="30">
+            <Label Text="Right-click or long press to see beautiful menus" FontSize="30">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Red">

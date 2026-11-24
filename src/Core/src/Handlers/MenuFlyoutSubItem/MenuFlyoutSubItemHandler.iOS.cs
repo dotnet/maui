@@ -7,6 +7,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
+			// Context menus are standalone menus: they must not be merged into (or require) the main menu bar
+			if (VirtualView.IsInContextFlyout())
+			{
+				return UIMenu.Create(
+					VirtualView.Text ?? string.Empty,
+					VirtualView.Source.GetPlatformContextMenuImage(MauiContext!),
+					UIMenuIdentifier.None,
+					0,
+					VirtualView.ToPlatformContextMenuElements(MauiContext!));
+			}
+
 			var menuBar = VirtualView.FindParentOfType<IMenuBar>();
 
 			IUIMenuBuilder? uIMenuBuilder = null;
@@ -50,12 +61,12 @@ namespace Microsoft.Maui.Handlers
 			Rebuild();
 		}
 
-		static void Rebuild()
+		void Rebuild()
 		{
-			// For context flyout support this likely also needs some logic like in MenuFlyoutItemHandler.iOS.cs where
-			// it follows one code path for main menus (this existing code), and a different code path for context menus that
-			// rebuilds the UIMenu of the context menu.
-			// https://github.com/dotnet/maui/issues/9359
+			// Context menus are rebuilt every time they open, so only the main menu needs a rebuild
+			if (VirtualView.IsInContextFlyout())
+				return;
+
 			MenuBarHandler.Rebuild();
 		}
 	}

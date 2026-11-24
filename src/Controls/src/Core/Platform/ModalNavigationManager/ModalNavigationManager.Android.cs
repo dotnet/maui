@@ -11,6 +11,7 @@ using AndroidX.Activity;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -563,12 +564,24 @@ namespace Microsoft.Maui.Controls.Platform
 					return handled || base.OnKeyUp(keyCode, e);
 				}
 
+				public override void OnAttachedToWindow()
+				{
+					base.OnAttachedToWindow();
+
+					// Context flyouts open when a confirm key is held on the focused view (see MauiAppCompatActivity)
+					ContextFlyoutKeyTracker.Observe(Window?.DecorView);
+				}
+
 				public override bool DispatchTouchEvent(MotionEvent? e)
 				{
 					if (e is null)
 					{
 						return false;
 					}
+
+					// Context flyouts observe touches before they're dispatched (see MauiAppCompatActivity)
+					if (ContextFlyoutTouchTracker.OnDispatchTouchEvent(Window, e))
+						return true;
 
 					bool handled = base.DispatchTouchEvent(e);
 

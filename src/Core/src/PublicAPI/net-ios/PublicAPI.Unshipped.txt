@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiTextField.GetEditMenu(UIKit.UITextRange! textRange, UIKit.UIMenuElement![]! suggestedActions) -> UIKit.UIMenu?
+override Microsoft.Maui.Platform.MauiTextView.GetEditMenu(UIKit.UITextRange! textRange, UIKit.UIMenuElement![]! suggestedActions) -> UIKit.UIMenu?

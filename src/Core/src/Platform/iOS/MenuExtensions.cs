@@ -55,6 +55,65 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("MenuItems on Catalyst currently only support Font and File Images");
 		}
 
+		// Context menus are built while the user is interacting, so an unsupported image source
+		// must not crash the app: the item is shown without an icon instead.
+		internal static UIImage? GetPlatformContextMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)
+		{
+			if (imageSource is (IFileImageSource or IFontImageSource) and { IsEmpty: false })
+				return imageSource.GetPlatformMenuImage(mauiContext);
+
+			return null;
+		}
+
+		internal static bool IsInContextFlyout(this IElement? element)
+		{
+			var current = element;
+			while (current != null)
+			{
+				if (current is IMenuFlyout)
+					return true;
+				current = current.Parent;
+			}
+			return false;
+		}
+
+		// Separators are expressed as inline sections, which is how UIKit draws dividers in menus
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		internal static UIMenuElement[] ToPlatformContextMenuElements(this IList<IMenuElement> menuElements, IMauiContext mauiContext)
+		{
+			List<UIMenuElement>? sections = null;
+			var current = new List<UIMenuElement>(menuElements.Count);
+
+			for (int i = 0; i < menuElements.Count; i++)
+			{
+				var item = menuElements[i];
+
+				if (item is IMenuFlyoutSeparator)
+				{
+					sections ??= new List<UIMenuElement>();
+					AddSection(sections, current);
+					continue;
+				}
+
+				current.Add((UIMenuElement)item.ToHandler(mauiContext)!.PlatformView!);
+			}
+
+			if (sections is null)
+				return current.ToArray();
+
+			AddSection(sections, current);
+			return sections.ToArray();
+
+			static void AddSection(List<UIMenuElement> sections, List<UIMenuElement> items)
+			{
+				if (items.Count == 0)
+					return;
+
+				sections.Add(UIMenu.Create(string.Empty, null, UIMenuIdentifier.None, UIMenuOptions.DisplayInline, items.ToArray()));
+				items.Clear();
+			}
+		}
+
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void SendClicked(this UICommand uICommand)
 		{
@@ -71,14 +130,7 @@ namespace Microsoft.Maui.Platform
 			this IList<IMenuElement> menuElements,
 			IMauiContext mauiContext)
 		{
-			UIMenuElement[] platformMenuElements = new UIMenuElement[menuElements.Count];
-
-			for (int i = 0; i < menuElements.Count; i++)
-			{
-				var item = menuElements[i];
-				var menuElement = (UIMenuElement)item.ToHandler(mauiContext)!.PlatformView!;
-				platformMenuElements[i] = menuElement;
-			}
+			var platformMenuElements = menuElements.ToPlatformContextMenuElements(mauiContext);
 
 #pragma warning disable CA1416
 			var platformMenu = UIMenu.Create(children: platformMenuElements);

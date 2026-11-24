@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue33402"
+             x:DataType="local:Issue33402ViewModel">
+    <VerticalStackLayout Padding="12" Spacing="12">
+        <Label AutomationId="StatusLabel" Text="{Binding Status}" />
+
+        <Label AutomationId="MenuLabel" Text="Long press or right-click for a context menu" Padding="8" BackgroundColor="LightBlue">
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="{Binding CopyText}" Command="{Binding RecordCommand}" CommandParameter="copy" />
+                    <MenuFlyoutItem Text="Disabled item" IsEnabled="False" Command="{Binding RecordCommand}" CommandParameter="disabled" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutSubItem Text="More">
+                        <MenuFlyoutItem Text="Archive" Command="{Binding RecordCommand}" CommandParameter="archive" />
+                    </MenuFlyoutSubItem>
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Label>
+
+        <Entry AutomationId="FlyoutEntry" Text="Long press any word of this text to select it and show the text menu">
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Entry item" Command="{Binding RecordCommand}" CommandParameter="entry-item" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Entry>
+
+        <Border AutomationId="TapBorder" Padding="12" Stroke="Gray">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding RecordCommand}" CommandParameter="border-tapped" />
+            </Border.GestureRecognizers>
+            <Label AutomationId="InnerLabel" Text="Tapping this label taps the border">
+                <FlyoutBase.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Inner action" Command="{Binding RecordCommand}" CommandParameter="inner" />
+                    </MenuFlyout>
+                </FlyoutBase.ContextFlyout>
+            </Label>
+        </Border>
+
+        <Label AutomationId="LongPressLabel" Text="Long-press gesture and context menu on the same label" Padding="8" BackgroundColor="LightGreen">
+            <Label.GestureRecognizers>
+                <LongPressGestureRecognizer Command="{Binding RecordCommand}" CommandParameter="long-pressed" />
+            </Label.GestureRecognizers>
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Gesture menu item" Command="{Binding RecordCommand}" CommandParameter="gesture-menu" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Label>
+
+        <CollectionView AutomationId="ItemsView" ItemsSource="{Binding Items}" SelectionMode="Single" SelectedItem="{Binding SelectedItem}" HeightRequest="240">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Grid Padding="12">
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Delete"
+                                                Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type local:Issue33402ViewModel}}, x:DataType=local:Issue33402ViewModel}"
+                                                CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
+                        <Label AutomationId="{Binding .}" Text="{Binding .}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

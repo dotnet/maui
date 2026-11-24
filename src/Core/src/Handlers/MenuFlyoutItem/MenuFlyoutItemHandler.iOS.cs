@@ -10,32 +10,29 @@ namespace Microsoft.Maui.Handlers
 	{
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
 
-		bool IsInContextFlyout()
-		{
-			IElement? current = VirtualView;
-			while (current != null)
-			{
-				if (current is Microsoft.Maui.IMenuFlyout)
-					return true;
-				current = current.Parent;
-			}
-			return false;
-		}
-
 		protected override UIMenuElement CreatePlatformElement()
 		{
 			// https://github.com/dotnet/maui/issues/9332
 			// The menu code needs to be converted over to using `UIAction`
 			// so that all of this can be the same
-			if (IsInContextFlyout())
+			if (VirtualView.IsInContextFlyout())
 			{
-				UIImage? contextUiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
+				UIImage? contextUiImage = VirtualView.Source.GetPlatformContextMenuImage(MauiContext!);
+
+				// Menus are rebuilt every time they're requested, which disconnects this handler, while UIKit can
+				// still show (and invoke) a menu it got before. The action keeps working with the item itself.
+				var item = new WeakReference<IMenuFlyoutItem>(VirtualView);
 
 				var uiAction = UIAction.Create(
-					title: VirtualView.Text,
+					title: VirtualView.Text ?? string.Empty,
 					image: contextUiImage,
 					identifier: null,
-					handler: (_) => VirtualView?.Clicked());
+					handler: (_) =>
+					{
+						// A menu shown before can outlive changes: MenuItem.Clicked is raised even when disabled
+						if (item.TryGetTarget(out var menuItem) && menuItem.IsEnabled)
+							menuItem.Clicked();
+					});
 
 				return uiAction;
 			}

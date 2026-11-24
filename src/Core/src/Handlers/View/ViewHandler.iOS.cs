@@ -15,15 +15,20 @@ namespace Microsoft.Maui.Handlers
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-#if MACCATALYST
+			// Before context flyouts on iOS, they only worked on Mac Catalyst
+			if (!OperatingSystem.IsMacCatalyst() && !RuntimeFeature.AreMobileContextFlyoutsEnabled)
+				return;
+
 			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
+				// Views without a context flyout never get an interaction, so there is nothing to remove
+				if (handler.IsConnectingHandler() && contextFlyoutContainer.ContextFlyout is null)
+					return;
+
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
-#endif
 		}
 
-#if MACCATALYST
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
@@ -31,13 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is PlatformView uiView)
 			{
-				MauiUIContextMenuInteraction? currentInteraction = null;
-
-				foreach (var interaction in uiView.Interactions)
-				{
-					if (interaction is MauiUIContextMenuInteraction menuInteraction)
-						currentInteraction = menuInteraction;
-				}
+				var currentInteraction = GetContextMenuInteraction(uiView);
 
 				if (contextFlyoutContainer.ContextFlyout != null)
 				{
@@ -50,7 +49,32 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 		}
-#endif
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		static MauiUIContextMenuInteraction? GetContextMenuInteraction(PlatformView uiView)
+		{
+			foreach (var interaction in uiView.Interactions)
+			{
+				if (interaction is MauiUIContextMenuInteraction menuInteraction)
+					return menuInteraction;
+			}
+
+			return null;
+		}
+
+		partial void DisconnectingHandler(PlatformView platformView)
+		{
+			if (VirtualView is not IContextFlyoutElement { ContextFlyout: { } contextFlyout })
+				return;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				if (GetContextMenuInteraction(platformView) is { } interaction)
+					platformView.RemoveInteraction(interaction);
+			}
+
+			contextFlyout.Handler?.DisconnectHandler();
+		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
