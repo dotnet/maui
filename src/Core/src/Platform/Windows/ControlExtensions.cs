@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ControlExtensions
 	{
+		internal static readonly ImageSourceRequestManager BackgroundImageRequests = new();
+
 		public static void UpdateFont(this Control platformButton, ITextStyle textStyle, IFontManager fontManager) =>
 			platformButton.UpdateFont(textStyle.Font, fontManager);
 
@@ -27,14 +29,23 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Control platformControl, IView view, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.UpdateBackground(view.Background, defaultBrush);
 
-		public static void UpdateBackground(this Control platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+		public static void UpdateBackground(this Control platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null)
+		{
+			BackgroundImageRequests.Begin(platformControl);
 			platformControl.UpdateProperty(Control.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		}
 
-		public static void UpdateBackground(this Border platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+		public static void UpdateBackground(this Border platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null)
+		{
+			BackgroundImageRequests.Begin(platformControl);
 			platformControl.UpdateProperty(Border.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		}
 
-		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
+		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null)
+		{
+			BackgroundImageRequests.Begin(platformControl);
 			platformControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
+		}
 
 		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 			=> await platformView.UpdateBackgroundImageAsync(imageSource, provider);
@@ -63,8 +74,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
-			if (platformView == null || provider == null)
+			if (platformView == null)
 				return;
+
+			var request = BackgroundImageRequests.Begin(platformView);
 
 			if (imageSource == null)
 			{
@@ -80,6 +93,11 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var nativeBackgroundImageSource = await service.GetImageSourceAsync(imageSource);
+				if (!BackgroundImageRequests.IsCurrent(platformView, request))
+				{
+					nativeBackgroundImageSource?.Dispose();
+					return;
+				}
 
 				var background = new ImageBrush { ImageSource = nativeBackgroundImageSource?.Value };
 

@@ -63,6 +63,11 @@ namespace Microsoft.Maui.Handlers
 
 		public void OnWindowChanged()
 		{
+			// The platform view can move out of its window after the handler was disconnected,
+			// e.g. an Image in NavigationPage.TitleView when its page is popped (https://github.com/dotnet/maui/issues/39949)
+			if (!this.IsConnected())
+				return;
+
 			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));
 		}

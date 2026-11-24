@@ -1,15 +1,145 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Google.Android.Material.ImageView;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task FailingLoadOnlyReportsFailureWhenNotCancelled(bool disconnectHandler)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub();
+				var handler = CreateHandler<CountedImageHandler>(image);
+				var platformView = handler.PlatformView;
+				var imageEvents = handler.ImageEvents;
+				using var previousDrawable = new ColorDrawable(Colors.Red.ToPlatform());
+				platformView.SetImageDrawable(previousDrawable);
+				imageEvents.Clear();
+
+				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = Assert.IsType<CountedImageSourceServiceStub>(
+					provider.GetRequiredImageSourceService<CountedImageSourceStub>());
+				var failure = new InvalidOperationException("The image service failed.");
+				service.LoadException = failure;
+
+				var events = new List<string>();
+				Exception reportedFailure = null;
+				image.LoadingStarted += () => events.Add("LoadingStarted");
+				image.LoadingCompleted += successful => events.Add($"LoadingCompleted({successful})");
+				image.LoadingFailed += exception =>
+				{
+					reportedFailure = exception;
+					events.Add("LoadingFailed");
+				};
+
+				image.Source = new CountedImageSourceStub(Colors.Blue, true);
+				var loadTask = handler.SourceLoader.UpdateImageSourceAsync();
+
+				try
+				{
+					Assert.True(await Task.Run(() => service.Starting.WaitOne(TimeSpan.FromSeconds(5))),
+						"The image service did not start.");
+					Assert.True(service.LoadCancellationToken.CanBeCanceled);
+					Assert.False(service.LoadCancellationToken.IsCancellationRequested);
+					Assert.True(image.IsLoading);
+
+					if (disconnectHandler)
+						((IElementHandler)handler).DisconnectHandler();
+
+					Assert.Equal(disconnectHandler, service.LoadCancellationToken.IsCancellationRequested);
+				}
+				finally
+				{
+					service.DoWork.Set();
+					await loadTask.WaitAsync(TimeSpan.FromSeconds(5));
+				}
+
+				Assert.False(image.IsLoading);
+				if (disconnectHandler)
+				{
+					Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(False)" }, events);
+					Assert.Null(reportedFailure);
+					Assert.Empty(imageEvents);
+					Assert.Same(previousDrawable, platformView.Drawable);
+				}
+				else
+				{
+					Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, events);
+					Assert.Same(failure, reportedFailure);
+					var imageEvent = Assert.Single(imageEvents);
+					Assert.Equal("SetImageDrawable", imageEvent.Member);
+					Assert.Null(imageEvent.Value);
+					Assert.Null(platformView.Drawable);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task CancelledLoadThatFailsDoesNotClearReplacementImage()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub();
+				var handler = CreateHandler<CountedImageHandler>(image);
+				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = Assert.IsType<CountedImageSourceServiceStub>(
+					provider.GetRequiredImageSourceService<CountedImageSourceStub>());
+				service.LoadException = new InvalidOperationException("The old image service failed.");
+
+				var events = new List<string>();
+				image.LoadingStarted += () => events.Add("LoadingStarted");
+				image.LoadingCompleted += successful => events.Add($"LoadingCompleted({successful})");
+				image.LoadingFailed += exception => events.Add($"LoadingFailed({exception.Message})");
+
+				image.Source = new CountedImageSourceStub(Colors.Blue, true);
+				var loadTask = handler.SourceLoader.UpdateImageSourceAsync();
+				Drawable replacementDrawable = null;
+
+				try
+				{
+					Assert.True(await Task.Run(() => service.Starting.WaitOne(TimeSpan.FromSeconds(5))),
+						"The image service did not start.");
+					var cancelledToken = service.LoadCancellationToken;
+					Assert.True(cancelledToken.CanBeCanceled);
+					Assert.False(cancelledToken.IsCancellationRequested);
+
+					// Finish the replacement before allowing the old load to fail.
+					service.LoadException = null;
+					image.Source = new CountedImageSourceStub(Colors.Red);
+					await handler.SourceLoader.UpdateImageSourceAsync().WaitAsync(TimeSpan.FromSeconds(5));
+					Assert.True(cancelledToken.IsCancellationRequested);
+					var drawable = Assert.IsType<ColorDrawable>(handler.PlatformView.Drawable);
+					Assert.Equal(Colors.Red.ToPlatform(), drawable.Color);
+					replacementDrawable = drawable;
+					handler.ImageEvents.Clear();
+				}
+				finally
+				{
+					service.DoWork.Set();
+					await loadTask.WaitAsync(TimeSpan.FromSeconds(5));
+				}
+
+				Assert.Equal(new[]
+				{
+					"LoadingStarted", "LoadingStarted", "LoadingCompleted(True)", "LoadingCompleted(False)"
+				}, events);
+				Assert.False(image.IsLoading);
+				Assert.Empty(handler.ImageEvents);
+				Assert.Same(replacementDrawable, handler.PlatformView.Drawable);
+			});
+		}
+
 		[Fact]
 		public async Task UpdatingSourceWorks()
 		{

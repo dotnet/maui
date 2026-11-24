@@ -312,16 +312,20 @@ internal static class MauiCopilotClassFilter_$typeSuffix
 function Get-XHarnessTestResultSnapshot {
     param(
         [string]$OutputDirectory,
-        [string]$ResultFileName = "testResults.xml"
+        [string]$ResultFileName = "testResults.xml",
+        [string]$AdditionalResultFilePattern
     )
 
     $snapshot = @{}
-    if (-not (Test-Path $OutputDirectory -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
         return $snapshot
     }
 
-    foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+    foreach ($file in @(Get-ChildItem -LiteralPath $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -ieq $ResultFileName -or
+                ($AdditionalResultFilePattern -and $_.Name -like $AdditionalResultFilePattern)
+            })) {
         $snapshot[$file.FullName] = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
     }
 
@@ -332,20 +336,31 @@ function Get-FreshXHarnessTestResultFiles {
     param(
         [string]$OutputDirectory,
         [hashtable]$BeforeSnapshot,
-        [string]$ResultFileName = "testResults.xml"
+        [string]$ResultFileName = "testResults.xml",
+        [string]$AdditionalResultFilePattern
     )
 
-    if (-not (Test-Path $OutputDirectory -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
         return @()
     }
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
-    foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+    foreach ($file in @(Get-ChildItem -LiteralPath $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -ieq $ResultFileName -or
+                ($AdditionalResultFilePattern -and $_.Name -like $AdditionalResultFilePattern)
+            })) {
         $fingerprint = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
         if (-not $BeforeSnapshot.ContainsKey($file.FullName) -or $BeforeSnapshot[$file.FullName] -ne $fingerprint) {
             $freshFiles.Add($file.FullName)
         }
+    }
+
+    $canonicalFiles = @($freshFiles | Where-Object {
+        [System.IO.Path]::GetFileName($_) -ieq $ResultFileName
+    })
+    if ($canonicalFiles.Count -gt 0) {
+        return $canonicalFiles
     }
 
     return @($freshFiles)
@@ -358,7 +373,7 @@ function New-XHarnessRunOutputDirectory {
     )
 
     $root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputDirectory)
-    if (-not (Test-Path $root -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         New-Item -ItemType Directory -Path $root -Force | Out-Null
     }
 
@@ -572,7 +587,7 @@ function Get-DeviceTestResultSummary {
     $unexpectedClasses = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $ResultFiles) {
-        if (-not (Test-Path $file)) {
+        if (-not (Test-Path -LiteralPath $file)) {
             continue
         }
 
@@ -589,7 +604,7 @@ function Get-DeviceTestResultSummary {
         # malformed (e.g. the app crashed before writing results).
         $xml = $null
         for ($attempt = 1; $attempt -le 5; $attempt++) {
-            $raw = Get-Content $file -Raw -ErrorAction SilentlyContinue
+            $raw = Get-Content -LiteralPath $file -Raw -ErrorAction SilentlyContinue
             if (-not [string]::IsNullOrWhiteSpace($raw)) {
                 try {
                     $xml = [xml]$raw
@@ -1372,7 +1387,7 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
     # Create output directory
-    if (-not (Test-Path $OutputDirectory)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory)) {
         New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     }
 
@@ -1387,16 +1402,13 @@ try {
         # XHARNESS TEST EXECUTION (iOS, MacCatalyst, Android)
         # ═══════════════════════════════════════════════════════════
 
-        if ($IncludeClasses) {
-            $testOutputDirectory = New-XHarnessRunOutputDirectory -OutputDirectory $OutputDirectory
-            Write-Host "XHarness run output: $testOutputDirectory" -ForegroundColor Gray
+        $testOutputDirectory = New-XHarnessRunOutputDirectory -OutputDirectory $OutputDirectory
+        Write-Host "XHarness run output: $testOutputDirectory" -ForegroundColor Gray
 
-            if ($Platform -eq "android") {
-                # The Gate can retry into the same emulator after a timed-out launch.
-                # Give the Android runner a trusted per-invocation filename so a stale
-                # device-side result from an earlier run cannot satisfy this run.
-                $xharnessResultFileName = "testResults-$([guid]::NewGuid().ToString('N')).xml"
-            }
+        if ($Platform -eq "android") {
+            # Give the Android runner a trusted per-invocation filename so a stale
+            # device-side result from an earlier run cannot satisfy this run.
+            $xharnessResultFileName = "testResults-$([guid]::NewGuid().ToString('N')).xml"
         }
         
         # Determine target
@@ -1408,6 +1420,12 @@ try {
             if ($targetVersion) {
                 $target = "ios-simulator-64_$targetVersion"
             }
+        }
+
+        $additionalResultFilePattern = if ($Platform -in @("ios", "maccatalyst")) {
+            "xunit-test-$target-*.xml"
+        } else {
+            $null
         }
 
         # Build xharness arguments based on platform
@@ -1439,6 +1457,7 @@ try {
                     "android", "test"
                     "--app", $appPath
                     "--package-name", $androidPackageName
+                    "--instrumentation", "$androidPackageName.TestInstrumentation"
                     "--device-id", $deviceUdidToUse
                     "-o", $testOutputDirectory
                     "--timeout", $Timeout
@@ -1457,7 +1476,7 @@ try {
             }
         }
 
-        if ($IncludeClasses -and $Platform -eq "android") {
+        if ($Platform -eq "android") {
             $xharnessArgs += "--arg", "results-file-name=$xharnessResultFileName"
         }
 
@@ -1479,13 +1498,10 @@ try {
         }
         Write-Host ""
 
-        $xharnessResultSnapshot = if ($IncludeClasses) {
-            Get-XHarnessTestResultSnapshot `
-                -OutputDirectory $testOutputDirectory `
-                -ResultFileName $xharnessResultFileName
-        } else {
-            $null
-        }
+        $xharnessResultSnapshot = Get-XHarnessTestResultSnapshot `
+            -OutputDirectory $testOutputDirectory `
+            -ResultFileName $xharnessResultFileName `
+            -AdditionalResultFilePattern $additionalResultFilePattern
 
         if ($useLocalXharness) {
             & dotnet xharness @xharnessArgs
@@ -1496,29 +1512,34 @@ try {
         $rawXHarnessExitCode = $LASTEXITCODE
         $testExitCode = $rawXHarnessExitCode
 
-        if ($IncludeClasses) {
-            $xharnessResultFiles = @(Get-FreshXHarnessTestResultFiles `
-                -OutputDirectory $testOutputDirectory `
-                -BeforeSnapshot $xharnessResultSnapshot `
-                -ResultFileName $xharnessResultFileName)
-            if ($xharnessResultFiles.Count -eq 0) {
-                throw "XHarness did not produce the expected fresh result '$xharnessResultFileName' for requested class(es) '$IncludeClasses' (the target tests did not run)."
-            }
+        $xharnessResultFiles = @(Get-FreshXHarnessTestResultFiles `
+            -OutputDirectory $testOutputDirectory `
+            -BeforeSnapshot $xharnessResultSnapshot `
+            -ResultFileName $xharnessResultFileName `
+            -AdditionalResultFilePattern $additionalResultFilePattern)
+        if ($xharnessResultFiles.Count -eq 0) {
+            $scope = if ($IncludeClasses) { "class(es) '$IncludeClasses'" } else { "native test scope" }
+            throw "XHarness did not produce the expected fresh result '$xharnessResultFileName' for requested $scope (the target tests did not run)."
+        }
 
-            $script:XHarnessDeviceTestSummary = Get-DeviceTestResultSummary `
-                -ResultFiles $xharnessResultFiles `
-                -IncludeClasses $IncludeClasses `
-                -IncludeMethods $IncludeMethods `
-                -RequireClassIsolation
-            $script:XHarnessDeviceTestResultFiles = $xharnessResultFiles
-            $testExitCode = if (($script:XHarnessDeviceTestSummary.Failed + $script:XHarnessDeviceTestSummary.Errors) -eq 0) { 0 } else { 1 }
+        $script:XHarnessDeviceTestSummary = Get-DeviceTestResultSummary `
+            -ResultFiles $xharnessResultFiles `
+            -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods `
+            -RequireClassIsolation:([bool]$IncludeClasses)
+        if ($script:XHarnessDeviceTestSummary.Total -eq 0) {
+            throw "XHarness result file(s) contained no tests (the target tests did not run)."
+        }
+        $script:XHarnessDeviceTestResultFiles = $xharnessResultFiles
+        $testExitCode = if (($script:XHarnessDeviceTestSummary.Failed + $script:XHarnessDeviceTestSummary.Errors) -eq 0) { 0 } else { 1 }
+        if (-not $IncludeClasses -and $rawXHarnessExitCode -ne 0) {
+            $testExitCode = $rawXHarnessExitCode
+        }
 
-            if ($rawXHarnessExitCode -ne 0 -and $testExitCode -eq 0) {
-                # The MAUI runner writes/copies testResults.xml only after runner.Run()
-                # completes. A fresh, isolated XML file therefore provides stronger
-                # target-test evidence than XHarness cleanup/teardown exit codes.
-                Write-Warning "XHarness exited with code $rawXHarnessExitCode after the scoped target tests completed successfully; using the verified target-test result."
-            }
+        if ($IncludeClasses -and $rawXHarnessExitCode -ne 0 -and $testExitCode -eq 0) {
+            # A fresh, isolated XML file provides stronger target-test evidence
+            # than XHarness cleanup/teardown exit codes.
+            Write-Warning "XHarness exited with code $rawXHarnessExitCode after the scoped target tests completed successfully; using the verified target-test result."
         }
     } else {
         # ═══════════════════════════════════════════════════════════
@@ -1566,7 +1587,7 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
     # Try to find and parse the log file
-    $logFile = Get-ChildItem -Path $testOutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
+    $logFile = Get-ChildItem -LiteralPath $testOutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
     
     if ($script:XHarnessDeviceTestSummary) {
         Write-Host ""
@@ -1574,7 +1595,9 @@ try {
         Write-Output "  Failed: $($script:XHarnessDeviceTestSummary.Failed + $script:XHarnessDeviceTestSummary.Errors)"
         Write-Output "  Skipped: $($script:XHarnessDeviceTestSummary.Skipped)"
         Write-Output "  Total: $($script:XHarnessDeviceTestSummary.Total)"
-        Write-Host "  Class isolation verified: $IncludeClasses" -ForegroundColor Green
+        if ($IncludeClasses) {
+            Write-Host "  Class isolation verified: $IncludeClasses" -ForegroundColor Green
+        }
         if ($IncludeMethods) {
             Write-Host "  Scoped to method(s): $IncludeMethods" -ForegroundColor Gray
         }
@@ -1583,7 +1606,7 @@ try {
         }
         Write-Host "  Result file(s): $($script:XHarnessDeviceTestResultFiles -join ', ')" -ForegroundColor Gray
     } elseif ($logFile) {
-        $logContent = Get-Content $logFile.FullName -Raw
+        $logContent = Get-Content -LiteralPath $logFile.FullName -Raw
         $passCount = ([regex]::Matches($logContent, '\[PASS\]')).Count
         $failCount = ([regex]::Matches($logContent, '\[FAIL\]')).Count
         

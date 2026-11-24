@@ -47,7 +47,8 @@ if (-not (Test-RunTestsDispatchAt $pr.base.ref) -and -not (Test-RunTestsDispatch
     Write-Host $message
     if ($PostUnsupportedComment) {
         $body = @{ body = "<!-- review-run-tests-unsupported -->`n$message" } | ConvertTo-Json
-        $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input - | Out-Null
+        $posted = $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input -
+        if ($LASTEXITCODE -eq 0) { Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId (($posted -join "`n") | ConvertFrom-Json).id }
     }
     if ($env:GITHUB_OUTPUT) { "ready=false" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }
     return
