@@ -21,6 +21,10 @@
                     case 'Invoke_OneParam_ReturnDictionary':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
                         break;
+                    case 'Invoke_NonAsciiParam_ReturnValueType':
+                        // https://github.com/dotnet/maui/issues/40546
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, ['Grüße 10 € 😀 100%']);
+                        break;
                     case 'Invoke_NullParam_ReturnComplex':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [null]);
                         break;

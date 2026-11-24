@@ -125,7 +125,8 @@ interface DotNetInvokeResult {
                     headers: {
                         'Content-Type': 'text/plain',
                         'X-Maui-Invoke-Token': 'HybridWebView',
-                        'X-Maui-Request-Body': msg
+                        // URL-encoded: header values only allow ISO-8859-1. Decoded in MauiHybridWebViewClient.
+                        'X-Maui-Request-Body': encodeURIComponent(msg)
                     },
                     body: msg
                 }).catch(err => {
@@ -247,7 +248,9 @@ interface DotNetInvokeResult {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Maui-Invoke-Token': 'HybridWebView',
-                'X-Maui-Request-Body': message // Some platforms (Android) do not expose the POST body
+                // Some platforms (Android) do not expose the POST body. URL-encoded because header
+                // values only allow ISO-8859-1; decoded in MauiHybridWebViewClient.
+                'X-Maui-Request-Body': encodeURIComponent(message)
             },
             body: message
         });

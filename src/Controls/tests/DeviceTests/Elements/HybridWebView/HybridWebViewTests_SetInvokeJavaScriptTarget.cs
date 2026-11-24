@@ -75,6 +75,13 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 
 		public string? LastMethodCalled { get; private set; }
 
+		// Returns 2 only when the non-ASCII string arrives unchanged (https://github.com/dotnet/maui/issues/40546).
+		public int Invoke_NonAsciiParam_ReturnValueType(string value)
+		{
+			UpdateLastMethodCalled();
+			return value == "Grüße 10 € 😀 100%" ? 2 : 0;
+		}
+
 		public void Invoke_NoParam_NoReturn()
 		{
 			UpdateLastMethodCalled();
@@ -191,6 +198,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			yield return new object?[] { "Invoke_OneParam_ReturnValueType", ValueTypeResult };
 			yield return new object?[] { "Invoke_OneParam_ReturnDictionary", DictionaryResult };
 			yield return new object?[] { "Invoke_NullParam_ReturnComplex", ComplexResult };
+			yield return new object?[] { "Invoke_NonAsciiParam_ReturnValueType", ValueTypeResult };
 			yield return new object?[] { "Invoke_ManyParams_NoReturn", null };
 		}
 
