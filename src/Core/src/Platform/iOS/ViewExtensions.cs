@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -664,6 +665,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 
+		static readonly ConditionalWeakTable<UIView, UIToolTipInteraction> s_toolTipInteractions = new();
+
 		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
 		{
 			UIToolTipInteraction? interaction = default;
@@ -677,19 +680,10 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					// Cache Interactions; each access marshals the whole native array (see #34396).
-					var interactions = platformView.Interactions;
-					if (interactions is not null)
-					{
-						foreach (var ia in interactions)
-						{
-							if (ia is UIToolTipInteraction toolTipInteraction)
-							{
-								interaction = toolTipInteraction;
-								break;
-							}
-						}
-					}
+					// MAUI adds the interaction itself, so look it up in a table instead of reading UIView.Interactions:
+					// that wraps every interaction in a new wrapper whose finalizer releases the native object on the
+					// finalizer thread (dotnet/macios#27420, #40489).
+					s_toolTipInteractions.TryGetValue(platformView, out interaction);
 				}
 			}
 
@@ -711,6 +705,11 @@ namespace Microsoft.Maui.Platform
 					{
 						interaction = new UIToolTipInteraction(text);
 						platformView.AddInteraction(interaction);
+
+						if (platformView is not UIControl)
+						{
+							s_toolTipInteractions.AddOrUpdate(platformView, interaction);
+						}
 					}
 				}
 				else
