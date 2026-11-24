@@ -28,24 +28,54 @@ namespace Microsoft.Maui.DeviceTests
 
 				progressBar.ProgressColor = Colors.Red;
 				handler.UpdateValue(nameof(IProgress.ProgressColor));
-				var redForeground = platformProgressBar.Foreground;
+				var redColor = (platformProgressBar.Foreground as SolidColorBrush)?.Color.ToColor();
 
 				progressBar.ProgressColor = null;
 				handler.UpdateValue(nameof(IProgress.ProgressColor));
+				var resetForeground = platformProgressBar.Foreground;
 
 				return (
-					Default: defaultForeground,
-					Red: redForeground,
-					Reset: platformProgressBar.Foreground,
-					ResetLocalValue: platformProgressBar.ReadLocalValue(Control.ForegroundProperty));
+					Red: redColor,
+					ResetLocalValue: platformProgressBar.ReadLocalValue(Control.ForegroundProperty),
+					ResetMatchesDefault: ReferenceEquals(defaultForeground, resetForeground) ||
+						(defaultForeground is SolidColorBrush defaultBrush && resetForeground is SolidColorBrush resetBrush &&
+							defaultBrush.Color == resetBrush.Color));
 			});
 
-			Assert.Equal(Colors.Red, Assert.IsType<SolidColorBrush>(values.Red).Color.ToColor());
+			Assert.Equal(Colors.Red, values.Red);
 			Assert.Equal(DependencyProperty.UnsetValue, values.ResetLocalValue);
-			if (values.Default is SolidColorBrush defaultBrush && values.Reset is SolidColorBrush resetBrush)
-				Assert.Equal(defaultBrush.Color, resetBrush.Color);
-			else
-				Assert.Same(values.Default, values.Reset);
+			Assert.True(values.ResetMatchesDefault);
+		}
+
+		[Fact(DisplayName = "Null Progress Color Keeps Native Foreground")]
+		public async Task NullProgressColorKeepsNativeForeground()
+		{
+			var progressBar = new ProgressBarStub()
+			{
+				Progress = 0.5
+			};
+
+			var handler = await CreateHandlerAsync(progressBar);
+
+			var colors = await InvokeOnMainThreadAsync(() =>
+			{
+				var platformProgressBar = GetNativeProgressBar(handler);
+				platformProgressBar.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green);
+
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+				var afterNullMapping = (platformProgressBar.Foreground as SolidColorBrush)?.Color;
+
+				progressBar.ProgressColor = Colors.Red;
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+				progressBar.ProgressColor = null;
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+				var afterReset = (platformProgressBar.Foreground as SolidColorBrush)?.Color;
+
+				return (AfterNullMapping: afterNullMapping, AfterReset: afterReset);
+			});
+
+			Assert.Equal(Microsoft.UI.Colors.Green, colors.AfterNullMapping);
+			Assert.Equal(Microsoft.UI.Colors.Green, colors.AfterReset);
 		}
 
 		ProgressBar GetNativeProgressBar(ProgressBarHandler progressBarHandler) =>
