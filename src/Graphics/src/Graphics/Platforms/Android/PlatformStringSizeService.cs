@@ -10,12 +10,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (value == null)
 				return new SizeF();
 
-			var textPaint = new TextPaint { TextSize = fontSize };
+			using var textPaint = new TextPaint { TextSize = fontSize };
 			textPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);
 
-			var staticLayout = TextLayoutUtils.CreateLayout(value, textPaint, null, Layout.Alignment.AlignNormal);
+			using var staticLayout = TextLayoutUtils.CreateLayout(value, textPaint, null, Layout.Alignment.AlignNormal);
 			var size = staticLayout.GetTextSizeAsSizeF(false);
-			staticLayout.Dispose();
 			return size;
 		}
 
@@ -24,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (aString == null)
 				return new SizeF();
 
-			var vTextPaint = new TextPaint { TextSize = aFontSize };
+			using var vTextPaint = new TextPaint { TextSize = aFontSize };
 			vTextPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);
 
 			Layout.Alignment vAlignment;
@@ -41,9 +40,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					break;
 			}
 
-			StaticLayout vLayout = TextLayoutUtils.CreateLayout(aString, vTextPaint, null, vAlignment);
+			using StaticLayout vLayout = TextLayoutUtils.CreateLayout(aString, vTextPaint, null, vAlignment);
 			SizeF vSize = vLayout.GetTextSizeAsSizeF(false);
-			vLayout.Dispose();
 			return vSize;
 		}
 	}

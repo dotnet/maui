@@ -76,3 +76,6 @@ static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TabTransition
 static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.GroupProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

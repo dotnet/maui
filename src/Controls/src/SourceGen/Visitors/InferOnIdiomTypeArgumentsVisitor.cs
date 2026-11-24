@@ -42,7 +42,7 @@ class InferOnIdiomTypeArgumentsVisitor(SourceGenContext context) : IXamlNodeVisi
 		if (parentNode is not ElementNode parentElement
 			|| !node.TryGetPropertyName(parentElement, out var propertyName)
 			|| !IsOnIdiomExtension(node)
-			|| !TryGetTargetType(parentElement, propertyName, out var targetType, out var targetConverter)
+			|| !TryGetTargetType(parentElement, propertyName, node, out var targetType, out var targetConverter)
 			|| !CanUseGenericOnIdiom(node, targetType, targetConverter))
 		{
 			return;
@@ -104,7 +104,7 @@ class InferOnIdiomTypeArgumentsVisitor(SourceGenContext context) : IXamlNodeVisi
 			Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.OnIdiomExtension"));
 	}
 
-	bool TryGetTargetType(ElementNode parent, XmlName propertyName, out ITypeSymbol targetType, out ITypeSymbol? targetConverter)
+	bool TryGetTargetType(ElementNode parent, XmlName propertyName, ElementNode valueNode, out ITypeSymbol targetType, out ITypeSymbol? targetConverter)
 	{
 		targetType = null!;
 		targetConverter = null;
@@ -131,7 +131,12 @@ class InferOnIdiomTypeArgumentsVisitor(SourceGenContext context) : IXamlNodeVisi
 			return false;
 		}
 
-		var property = parentType.GetAllProperties(propertyName.LocalName, Context)
+		var localName = propertyName.LocalName;
+		var bindablePropertyField = parentType.GetBindableProperty(propertyName.NamespaceURI, ref localName, out _, Context, null);
+		var extensionProperty = bindablePropertyField is null
+			? SetPropertyHelpers.FindExtensionProperty(parentType, propertyName, valueNode, Context)
+			: null;
+		var property = extensionProperty ?? parentType.GetAllProperties(propertyName.LocalName, Context)
 			.FirstOrDefault(property => Context.Compilation.IsSymbolAccessibleWithin(property, Context.RootType));
 		if (property is not null)
 		{
@@ -143,8 +148,6 @@ class InferOnIdiomTypeArgumentsVisitor(SourceGenContext context) : IXamlNodeVisi
 			return true;
 		}
 
-		var localName = propertyName.LocalName;
-		var bindablePropertyField = parentType.GetBindableProperty(propertyName.NamespaceURI, ref localName, out _, Context, null);
 		if (bindablePropertyField is not null
 			&& Context.Compilation.IsSymbolAccessibleWithin(bindablePropertyField, Context.RootType)
 			&& bindablePropertyField.GetBPTypeAndConverter(Context) is { } bindablePropertyInfo)

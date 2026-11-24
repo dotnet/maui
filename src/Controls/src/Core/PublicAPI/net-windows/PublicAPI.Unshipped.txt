@@ -76,3 +76,4 @@ static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TabTransition
 static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.GroupProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T

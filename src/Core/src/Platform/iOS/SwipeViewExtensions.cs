@@ -77,8 +77,13 @@ namespace Microsoft.Maui.Platform
 			double totalWidth = 0;
 			int visibleItemCount = 0;
 
-			for (int i = 0; i < platformItems.Count; i++)
+			for (int i = 0; i < platformItems.Count && i < items.Count; i++)
 			{
+				if (items[i] is not ISwipeItemMenuItem)
+				{
+					continue;
+				}
+
 				var platformItem = platformItems[i];
 				if (platformItem.Hidden)
 					continue;

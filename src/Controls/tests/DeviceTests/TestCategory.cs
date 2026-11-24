@@ -45,6 +45,7 @@
 		public const string Shell = "Shell";
 		public const string Slider = "Slider";
 		public const string SwipeView = "SwipeView";
+		public const string Switch = "Switch";
 		public const string TabbedPage = "TabbedPage";
 		public const string TextInput = "TextInput";
 		public const string Toolbar = "Toolbar";

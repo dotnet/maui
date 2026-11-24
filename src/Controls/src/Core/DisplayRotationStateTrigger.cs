@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
@@ -68,6 +69,10 @@ namespace Microsoft.Maui.Controls;
 /// </example>
 public sealed class DisplayRotationStateTrigger : StateTriggerBase
 {
+	readonly WeakDisplayInfoChangedProxy _displayInfoProxy = new();
+	// The proxy holds the handler weakly, so the trigger keeps it alive.
+	readonly EventHandler<DisplayInfoChangedEventArgs> _displayInfoChanged;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DisplayRotationStateTrigger"/> class.
 	/// </summary>
@@ -76,6 +81,7 @@ public sealed class DisplayRotationStateTrigger : StateTriggerBase
 	/// </remarks>
 	public DisplayRotationStateTrigger()
 	{
+		_displayInfoChanged = OnInfoPropertyChanged;
 		UpdateState();
 	}
 
@@ -123,7 +129,7 @@ public sealed class DisplayRotationStateTrigger : StateTriggerBase
 		if (!DesignMode.IsDesignModeEnabled)
 		{
 			UpdateState();
-			DeviceDisplay.MainDisplayInfoChanged += OnInfoPropertyChanged;
+			_displayInfoProxy.Subscribe(DeviceDisplay.Current, _displayInfoChanged);
 		}
 	}
 
@@ -131,7 +137,7 @@ public sealed class DisplayRotationStateTrigger : StateTriggerBase
 	{
 		base.OnDetached();
 
-		DeviceDisplay.MainDisplayInfoChanged -= OnInfoPropertyChanged;
+		_displayInfoProxy.Unsubscribe();
 	}
 
 	void OnInfoPropertyChanged(object? sender, DisplayInfoChangedEventArgs e) =>

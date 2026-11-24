@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls.Platform
 		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			var modal = CurrentPlatformModalPage;
+			var isFinalModal = _platformModalPages.Count == 1;
 			_platformModalPages.Remove(modal);
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
@@ -96,6 +97,16 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
 				animated = Animations.ModalPageTransitions.PrepareDismiss(modalWrapper, modal, presenter, animated);
+
+				if (isFinalModal &&
+					_window.Page is Shell shell &&
+					shell.Navigation.ModalStack.Count == 0 &&
+					shell.GetCurrentShellPage() is Page shellPage)
+				{
+					// A Shell item change under the modal can leave its toolbar appearance stale.
+					((IShellController)shell).AppearanceChanged(shellPage, false);
+				}
+
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
 				DisposeHelpers.DisposeModalAndChildHandlers(modal);
 				return modal;
