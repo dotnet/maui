@@ -73,6 +73,16 @@ Describe 'review command helpers' {
         $parsed.Platform | Should -BeNullOrEmpty
     }
 
+    It 'leaves the test-selection commands to their own workflow' -TestCases @(
+        @{ Command = '/review run-tests' }
+        @{ Command = '/review run-ui-tests' }
+        @{ Command = '/review run-device-tests' }
+    ) {
+        param($Command)
+
+        ConvertFrom-ReviewCommand $Command | Should -BeNullOrEmpty
+    }
+
     It 'strips refs heads prefix when normalizing review pipeline refs' {
         Normalize-ReviewPipelineRef 'refs/heads/feature/regression-check' |
             Should -Be 'feature/regression-check'
