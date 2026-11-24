@@ -166,8 +166,22 @@ namespace Microsoft.Maui.Handlers
 					{
 						// Pop to root
 						var rootVC = GetOrCreateViewController(newStack[0]);
-						_pendingNavigationStack = new List<IView>(newStack);
-						navManager.PopToRootViewController(rootVC, animated);
+						var pendingStack = new List<IView>(newStack);
+						_pendingNavigationStack = pendingStack;
+						if (!animated || navManager.NavigationController.ViewIfLoaded?.Window is null)
+						{
+							// An offscreen controller may never deliver DidShowViewController.
+							navManager.PopToRootViewController(rootVC, false);
+							if (ReferenceEquals(_pendingNavigationStack, pendingStack))
+							{
+								navManager.UpdateTopVCCache(rootVC);
+								CompletePendingNavigation();
+							}
+						}
+						else
+						{
+							navManager.PopToRootViewController(rootVC, true);
+						}
 
 						return;
 					}
@@ -228,6 +242,30 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
+
+		void CompletePendingNavigation()
+		{
+			if (_pendingNavigationStack is not { } pendingStack)
+				return;
+
+			_pendingNavigationStack = null;
+
+			// Re-pushing a popped page must create a fresh VC and refresh its loaded state.
+			if (pendingStack.Count < NavigationStack.Count)
+			{
+				var newSet = new HashSet<IView>(pendingStack);
+				foreach (var view in NavigationStack)
+				{
+					if (!newSet.Contains(view) && _viewControllerMap.Remove(view, out var vc))
+					{
+						(vc as IDisposable)?.Dispose();
+					}
+				}
+			}
+
+			NavigationStack = pendingStack;
+			NavigationView.NavigationFinished(pendingStack);
+		}
 
 		bool SyncMiddleOfStack(IReadOnlyList<IView> newStack)
 		{
@@ -412,37 +450,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (handler._pendingNavigationStack is not null)
 				{
-					// A MAUI-initiated push or pop has completed (DidShowViewController fired).
-					// Consume the pending stack and call NavigationFinished synchronously here
-					// on the main thread. This avoids the ContinueWith double-fire issue where
-					// the pop's ContinueWith fires after the second push has begun, incorrectly
-					// completing the push TCS with the wrong (pop) stack.
-					var pendingStack = handler._pendingNavigationStack;
-					handler._pendingNavigationStack = null;
-
-					// If this is a pop, remove the popped pages from the VC map so that
-					// re-pushing the same page instance creates a fresh VC via CreateForPage.
-					// This ensures page.ToPlatform() is called again, which refreshes MAUI's
-					// platform-loaded state so OnLoadedAsync can complete.
-					if (pendingStack.Count < handler.NavigationStack.Count)
-					{
-						var newSet = new HashSet<IView>(pendingStack);
-						foreach (var view in handler.NavigationStack)
-						{
-							if (!newSet.Contains(view))
-							{
-								if (handler._viewControllerMap.TryGetValue(view, out var vc))
-								{
-									(vc as IDisposable)?.Dispose();
-								}
-
-								handler._viewControllerMap.Remove(view);
-							}
-						}
-					}
-
-					handler.NavigationStack = pendingStack;
-					handler.NavigationView.NavigationFinished(pendingStack);
+					handler.CompletePendingNavigation();
 				}
 				else if (uikitCount < mauiCount)
 				{

@@ -174,6 +174,9 @@ namespace Microsoft.Maui.Platform
 
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
+			bool isInactiveTab = VirtualView?.Parent is ITabbedView && !NavHost.IsResumed;
+			bool popWithoutFragmentView = newPageStack.Count < fragmentNavDestinations.Count &&
+				(isInactiveTab || ChildFragmentManager?.PrimaryNavigationFragment?.View is null);
 
 			// Current BackStack has less entries then incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
@@ -239,6 +242,12 @@ namespace Microsoft.Maui.Platform
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
 			TriggerBackButtonVisibleUpdate();
+
+			// An offscreen tab's fragment may not deliver OnFragmentViewDestroyed.
+			if (popWithoutFragmentView && ReferenceEquals(ActiveRequestedArgs, args))
+			{
+				NavigationFinished(NavigationView);
+			}
 		}
 
 		void TriggerBackButtonVisibleUpdate()
@@ -760,6 +769,15 @@ namespace Microsoft.Maui.Platform
 			public override void OnFragmentStarted(FragmentManager fm, Fragment f)
 			{
 				base.OnFragmentStarted(fm, f);
+
+				// ViewPager2 keeps attached inactive tabs STARTED, not RESUMED.
+				if (f is NavigationViewFragment &&
+					_stackNavigationManager is { IsInitialNavigation: true, OnResumeRequestedArgs: null } manager &&
+					manager.VirtualView?.Parent is ITabbedView &&
+					ReferenceEquals(f, fm.PrimaryNavigationFragment))
+				{
+					manager.NavigationFinished(manager.NavigationView);
+				}
 			}
 
 			public override void OnFragmentAttached(FragmentManager fm, Fragment f, Context context)
