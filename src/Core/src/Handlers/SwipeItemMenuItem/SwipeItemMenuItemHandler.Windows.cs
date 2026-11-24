@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Handlers
 			if (source is null)
 			{
 				swipeItem.IconSource = null;
-				sourceManager.CompleteLoad(null);
+				sourceManager.CompleteLoad(null, cancellationToken);
 				return;
 			}
 
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Handlers
 								swipeItem.IconSource = tintedIconSource;
 							}
 
-							sourceManager.CompleteLoad(null);
+							sourceManager.CompleteLoad(null, cancellationToken);
 						}
 
 						return;
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Handlers
 					var iconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
 					swipeItem.IconSource = iconSource;
 					fontIconApplied = fontSource is not null && iconSource is not null;
-					sourceManager.CompleteLoad(result);
+					sourceManager.CompleteLoad(result, cancellationToken);
 					result = null;
 				}
 			}
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Handlers
 			catch (System.Exception ex)
 			{
 				if (IsIconLoadCurrent(handler, item, swipeItem, generation))
-					sourceManager.CompleteLoad(null);
+					sourceManager.CompleteLoad(null, cancellationToken);
 
 				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
 			}

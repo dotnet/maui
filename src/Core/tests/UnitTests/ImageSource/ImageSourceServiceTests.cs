@@ -13,6 +13,35 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 	public class ImageSourceServiceTests
 	{
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SupersededLoadCannotCompleteTheCurrentLoad(bool returnsLateResult)
+		{
+			var manager = new ImageSourceServiceResultManager();
+			var first = manager.BeginLoad();
+			var second = manager.BeginLoad();
+			var lateFirstResult = returnsLateResult ? new ImageSourceServiceLoadResult() : null;
+
+			Assert.True(first.IsCancellationRequested);
+			manager.CompleteLoad(lateFirstResult, first);
+			if (lateFirstResult is not null)
+				Assert.True(lateFirstResult.IsDisposed);
+			Assert.True(manager.IsLoading);
+
+			var third = manager.BeginLoad();
+			Assert.True(second.IsCancellationRequested);
+
+			var latestResult = new ImageSourceServiceLoadResult();
+			manager.CompleteLoad(latestResult, third);
+			manager.CompleteLoad(null, second);
+			Assert.False(manager.IsLoading);
+			Assert.False(latestResult.IsDisposed);
+
+			manager.Reset();
+			Assert.True(latestResult.IsDisposed);
+		}
+
+		[Theory]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
 		[InlineData(true, true)]
