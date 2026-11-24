@@ -80,11 +80,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int headerValue = itemsSource.HasHeader ? 1 : 0;
 			int footerValue = itemsSource.HasFooter ? 1 : 0;
 
-			// Calculate actual data item count (excluding header and footer positions)
-			int actualItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
+			// Calculate actual data item count (excluding header and footer positions).
+			// Use ItemsSource.Count: the adapter's ItemCount is a virtual count for a looping CarouselView.
+			int actualItemCount = itemsSource.Count - footerValue - headerValue;
 
-			// Ensure we're within the data items region (not in header/footer)
-			if (Last < headerValue || Last > actualItemCount)
+			// Last is already a data item index (GetVisibleItemsIndex strips the header/footer and clamps to 0),
+			// so use the raw position to tell "only the header is visible" apart from "the first item is visible".
+			bool onlyHeaderVisible = itemsSource.HasHeader
+				&& recyclerView.GetLayoutManager() is LinearLayoutManager layoutManager
+				&& layoutManager.FindLastVisibleItemPosition() == 0;
+
+			// Ensure a data item is visible
+			if (onlyHeaderVisible || Last >= actualItemCount)
 			{
 				return;
 			}

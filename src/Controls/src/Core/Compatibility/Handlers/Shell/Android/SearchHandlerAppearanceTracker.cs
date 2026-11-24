@@ -7,6 +7,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 using AImageButton = Android.Widget.ImageButton;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
 			UpdateFont();
+			UpdateCharacterSpacing();
 			UpdateHorizontalTextAlignment();
 			UpdateVerticalTextAlignment();
 			UpdateInputType();
@@ -71,6 +73,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateFont();
 			}
+			else if (e.Is(SearchHandler.CharacterSpacingProperty))
+			{
+				UpdateCharacterSpacing();
+			}
 			else if (e.Is(SearchHandler.CancelButtonColorProperty))
 			{
 				UpdateCancelButtonColor();
@@ -91,6 +97,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.Is(SearchHandler.QueryProperty))
+			{
+				UpdateText();
+			}
+		}
+
+		void UpdateText()
+		{
+			if (_searchHandler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				_editText.UpdateTextFromPlatform(_searchHandler);
+				return;
+			}
+
+			_editText.UpdateText(_searchHandler);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
@@ -124,9 +145,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)_searchHandler.FontSize);
 		}
 
+		void UpdateCharacterSpacing()
+		{
+			_editText.UpdateCharacterSpacing(_searchHandler);
+		}
+
 		void UpdatePlaceholder()
 		{
-			_editText.Hint = _searchHandler.Placeholder;
+			_editText.UpdatePlaceholder(_searchHandler);
 		}
 
 		void UpdatePlaceholderColor()
@@ -146,7 +172,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTextTransform()
 		{
-			_editText.Text = _searchHandler.UpdateFormsText(_editText.Text, _searchHandler.TextTransform);
+			UpdateText();
 		}
 
 		void UpdateBackgroundColor()

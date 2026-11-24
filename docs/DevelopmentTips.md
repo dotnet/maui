@@ -31,6 +31,15 @@ minimum remains 17.0. The Apple workload manifests also require the .NET 10
 26.5.10322 compatibility SDK packs, which are pinned separately from the
 .NET 11 packs.
 
+The newer .NET 11 SDK also bundles .NET 10 runtime manifests requiring 10.0.15
+packs that are not yet on the public feeds. Provisioning pins only the .NET 10
+Mono/Emscripten manifests to `11.0.100-rtm.26480.113` (public 10.0.12 packs) and
+removes the bundled .NET 10 manifests before installing them. Integration tests
+use the same 10.0.12 framework, reference, linker and compiler packs through
+`src/Templates/TemplateTestExtraTargets.targets`. Remove both compatibility
+overrides together once all required 10.0.15 packs are publicly available;
+the current .NET 11 and Apple SDK pins are unchanged.
+
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
 until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
 UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the

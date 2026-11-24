@@ -353,6 +353,82 @@ public static class XamlComponentRegistry
 		return null;
 	}
 
+	/// <summary>
+	/// Updates the setters of a <see cref="Style"/> already materialized in <paramref name="dictionary"/>
+	/// and reapplies them to every element currently using that style.
+	/// </summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's <c>x:Key</c>.</param>
+	/// <param name="replacement">A freshly built style whose setters replace those of the live style.</param>
+	/// <returns>
+	/// <see langword="true"/> if a live, shared style compatible with <paramref name="replacement"/> was updated;
+	/// <see langword="false"/> if the caller must replace the dictionary entry instead (style not materialized yet,
+	/// <c>x:Shared="False"</c>, or a change other than setters).
+	/// </returns>
+	/// <remarks>
+	/// Generator-only helper used by <c>UpdateComponent()</c> during incremental hot reload. Updating the live instance
+	/// refreshes consumers that hold it directly (<c>StaticResource</c>, <c>StyleClass</c>, derived styles), which
+	/// replacing the dictionary entry alone does not.
+	/// </remarks>
+	public static bool TryUpdateStyle(ResourceDictionary dictionary, string key, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+
+		if (!dictionary.TryGetLocalMaterializedValue(key, out var value) || value is not Style live)
+			return false;
+
+		return TryUpdateStyle(live, replacement);
+	}
+
+	/// <summary>Checks for a materialized keyed style without invoking a lazy factory.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's resource key.</param>
+	/// <returns>Whether the dictionary contains a materialized style.</returns>
+	public static bool HasMaterializedStyle(ResourceDictionary dictionary, string key)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		return dictionary.TryGetLocalMaterializedValue(key, out var value) && value is Style;
+	}
+
+	/// <summary>Updates a class style identified by its generated node ID.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="nodeId">The generated identity of the style declaration.</param>
+	/// <param name="replacement">The replacement style.</param>
+	/// <returns>Whether the style was updated.</returns>
+	public static bool TryUpdateClassStyle(ResourceDictionary dictionary, string nodeId, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+		if (!TryGet(dictionary, nodeId, out var value) || value is not Style live)
+			return false;
+		if (!dictionary.TryGetLocalMaterializedValue(Style.StyleClassPrefix + live.Class, out var classes)
+			|| classes is not IList<Style> styles || !styles.Contains(live))
+			return false;
+		return TryUpdateStyle(live, replacement);
+	}
+
+	static bool TryUpdateStyle(Style live, Style replacement)
+	{
+		if (ReferenceEquals(live, replacement) || !IsSetterOnlyChange(live, replacement))
+			return false;
+
+		live.ReplaceSetters(replacement.Setters);
+		return true;
+	}
+
+	static bool IsSetterOnlyChange(Style live, Style replacement)
+		=> live.TargetType == replacement.TargetType
+			&& live.Class == replacement.Class
+			&& live.ApplyToDerivedTypes == replacement.ApplyToDerivedTypes
+			&& live.CanCascade == replacement.CanCascade
+			&& live.BaseResourceKey == replacement.BaseResourceKey;
+
 	static void TrackInstance(object page)
 	{
 		var type = page.GetType();
