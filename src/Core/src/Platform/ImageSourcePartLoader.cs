@@ -97,13 +97,18 @@ namespace Microsoft.Maui.Platform
 
 #if IOS || ANDROID || WINDOWS
 				// Only show the placeholder when the image is not available right away (for example from a memory cache).
+				CancellationTokenSource? placeholderCancellation = null;
 				if (!loadTask.IsCompleted && fallbacks?.PlaceholderSource is { } placeholderSource)
 				{
-					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => !loadTask.IsCompleted, fallbackToken)
+					placeholderCancellation = CancellationTokenSource.CreateLinkedTokenSource(fallbackToken);
+					ShowFallbackAsync(placeholderSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => !loadTask.IsCompleted, placeholderCancellation.Token)
 						.FireAndForget();
 				}
 
 				var result = await loadTask;
+
+				// The placeholder is no longer needed (the image or the error image replaces it).
+				placeholderCancellation?.Cancel();
 
 				// A newer load has started (or the loader was reset); it owns the view and the fallbacks now.
 				if (token.IsCancellationRequested)
@@ -141,10 +146,14 @@ namespace Microsoft.Maui.Platform
 #if IOS || ANDROID || WINDOWS
 				ReleaseFallback();
 #endif
-				SourceManager.CompleteLoad(null);
 
-				// A load that was cancelled by clearing the source does not report that it stopped loading.
-				imageSource?.UpdateIsLoading(false);
+				// Unless clearing the image started a new load, this "load" is complete. A load that was
+				// cancelled by clearing the source does not report that it stopped loading.
+				if (SourceManager.Token == token)
+				{
+					SourceManager.CompleteLoad(null);
+					imageSource?.UpdateIsLoading(false);
+				}
 #if ANDROID
 				CheckForImageLoadedOnAttached = false;
 #endif

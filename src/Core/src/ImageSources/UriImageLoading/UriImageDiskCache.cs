@@ -183,7 +183,16 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public Entry? Write(Uri uri, byte[] data, string? eTag, string? lastModified, DateTimeOffset now)
+		/// <param name="uri">The URI of the image.</param>
+		/// <param name="data">The image.</param>
+		/// <param name="eTag">The ETag response header, if any.</param>
+		/// <param name="lastModified">The Last-Modified response header, if any.</param>
+		/// <param name="now">The current time.</param>
+		/// <param name="canPublish">
+		/// Checked before writing and again (atomically with <see cref="ResetIndex"/> and <see cref="Remove(Uri, Action?)"/>)
+		/// before the entry is added; the entry is not stored when it returns <see langword="false"/>.
+		/// </param>
+		public Entry? Write(Uri uri, byte[] data, string? eTag, string? lastModified, DateTimeOffset now, Func<bool>? canPublish = null)
 		{
 			if (!IsEnabled || data.LongLength > _sizeLimit)
 				return null;
@@ -193,6 +202,9 @@ namespace Microsoft.Maui
 
 			lock (GetKeyLock(fileName))
 			{
+				if (canPublish is not null && !canPublish())
+					return null;
+
 				try
 				{
 					System.IO.Directory.CreateDirectory(Directory!);
@@ -232,6 +244,14 @@ namespace Microsoft.Maui
 					EnsureIndex();
 					lock (_lock)
 					{
+						if (canPublish is not null && !canPublish())
+						{
+							// The cache was cleared (or the image removed) while it was written.
+							TryDelete(dataPath);
+							TryDelete(dataPath + MetadataExtension);
+							return null;
+						}
+
 						if (_index!.TryGetValue(fileName, out var existing))
 							_size -= existing.Length;
 						_index[fileName] = entry;
@@ -288,7 +308,8 @@ namespace Microsoft.Maui
 			}
 		}
 
-		bool IsCurrent(Entry entry)
+		/// <summary>Whether <paramref name="entry"/> is still the cached version of its image.</summary>
+		public bool IsCurrent(Entry entry)
 		{
 			lock (_lock)
 				return _index is not null && _index.TryGetValue(entry.FileName, out var current) && ReferenceEquals(current, entry);
@@ -306,10 +327,19 @@ namespace Microsoft.Maui
 			return locks;
 		}
 
-		public void Remove(Uri uri)
+		/// <summary>
+		/// Removes the image of <paramref name="uri"/>.
+		/// </summary>
+		/// <param name="uri">The URI of the image.</param>
+		/// <param name="whileLocked">Invoked atomically with removing the entry from the index (also when the disk cache is disabled).</param>
+		public void Remove(Uri uri, Action? whileLocked = null)
 		{
 			if (!IsEnabled)
+			{
+				lock (_lock)
+					whileLocked?.Invoke();
 				return;
+			}
 
 			var fileName = GetFileName(uri);
 			lock (GetKeyLock(fileName))
@@ -321,6 +351,8 @@ namespace Microsoft.Maui
 						_index.Remove(fileName);
 						_size -= entry.Length;
 					}
+
+					whileLocked?.Invoke();
 				}
 
 				var dataPath = Path.Combine(Directory!, fileName);
@@ -356,15 +388,16 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Forgets all entries. Files are removed by <see cref="DeleteUnindexedFiles"/>.
 		/// </summary>
-		public void ResetIndex()
+		/// <param name="whileLocked">Invoked atomically with the reset.</param>
+		public void ResetIndex(Action? whileLocked = null)
 		{
-			lock (_indexBuildLock)
+			// An index build that is in progress does not replace this index (it only publishes when there is none),
+			// so this does not need to wait for it.
+			lock (_lock)
 			{
-				lock (_lock)
-				{
-					_index = new Dictionary<string, Entry>(StringComparer.Ordinal);
-					_size = 0;
-				}
+				_index = new Dictionary<string, Entry>(StringComparer.Ordinal);
+				_size = 0;
+				whileLocked?.Invoke();
 			}
 		}
 
@@ -382,7 +415,13 @@ namespace Microsoft.Maui
 				if (!System.IO.Directory.Exists(Directory))
 					return;
 
-				foreach (var path in System.IO.Directory.EnumerateFiles(Directory))
+				// Image files first: whether an image file belongs to the cache depends on its metadata file,
+				// which must therefore still exist when the image file is checked.
+				var paths = System.IO.Directory.EnumerateFiles(Directory)
+					.OrderBy(path => IsMetadataOrTempFile(path) ? 1 : 0)
+					.ToList();
+
+				foreach (var path in paths)
 				{
 					var name = Path.GetFileName(path);
 					if (!IsCacheFileName(name) || !IsOwnedFile(path))
@@ -439,15 +478,50 @@ namespace Microsoft.Maui
 		/// </summary>
 		bool IsOwnedFile(string path)
 		{
-			if (_acceptFilesWithoutMetadata ||
-				path.EndsWith(MetadataExtension, StringComparison.Ordinal) ||
-				path.EndsWith(TempExtension, StringComparison.Ordinal))
+			if (path.EndsWith(TempExtension, StringComparison.Ordinal))
+				return IsTempFileName(Path.GetFileName(path));
+
+			if (path.EndsWith(MetadataExtension, StringComparison.Ordinal))
+				return IsMetadataFile(path);
+
+			return _acceptFilesWithoutMetadata || IsMetadataFile(path + MetadataExtension);
+		}
+
+		/// <summary>Whether <paramref name="path"/> is a metadata file written by this cache (checked by its header).</summary>
+		static bool IsMetadataFile(string path)
+		{
+			try
 			{
-				return true;
+				using var reader = new StreamReader(path);
+				return reader.ReadLine() == MetadataHeader;
+			}
+			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+			{
+				return false;
+			}
+		}
+
+		/// <summary>Whether <paramref name="fileName"/> has the form <c>{name}.{32 hex digits}.tmp</c> used by <see cref="WriteAtomically"/>.</summary>
+		static bool IsTempFileName(string fileName)
+		{
+			const int GuidLength = 32;
+			var guidEnd = fileName.Length - TempExtension.Length;
+			var guidStart = guidEnd - GuidLength;
+			if (guidStart < 1 || fileName[guidStart - 1] != '.')
+				return false;
+
+			for (var i = guidStart; i < guidEnd; i++)
+			{
+				var c = fileName[i];
+				if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')))
+					return false;
 			}
 
-			return File.Exists(path + MetadataExtension);
+			return true;
 		}
+
+		static bool IsMetadataOrTempFile(string path) =>
+			path.EndsWith(MetadataExtension, StringComparison.Ordinal) || path.EndsWith(TempExtension, StringComparison.Ordinal);
 
 		void EnsureIndex()
 		{
@@ -487,14 +561,15 @@ namespace Microsoft.Maui
 
 						if (name.EndsWith(TempExtension, StringComparison.Ordinal))
 						{
-							if (info.LastWriteTimeUtc < staleTempTime)
+							// Left behind by an interrupted write.
+							if (info.LastWriteTimeUtc < staleTempTime && IsOwnedFile(info.FullName))
 								TryDelete(info.FullName);
 							continue;
 						}
 
 						if (name.EndsWith(MetadataExtension, StringComparison.Ordinal))
 						{
-							if (!File.Exists(info.FullName.Substring(0, info.FullName.Length - MetadataExtension.Length)))
+							if (!File.Exists(info.FullName.Substring(0, info.FullName.Length - MetadataExtension.Length)) && IsOwnedFile(info.FullName))
 								TryDelete(info.FullName);
 							continue;
 						}

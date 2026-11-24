@@ -213,9 +213,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public Task ClearAsync(CancellationToken cancellationToken = default)
 		{
-			// Forget the disk entries first, so that loads started from now on download again, then remove the files.
-			DiskCache.ResetIndex();
-			Interlocked.Increment(ref _cacheGeneration);
+			// Forget the disk entries and start a new cache version in one step: a load either sees the old
+			// entries with the old version (and cannot keep what it loads) or neither. Then remove the files.
+			DiskCache.ResetIndex(() => Interlocked.Increment(ref _cacheGeneration));
 			MemoryCache.Clear();
 			return Task.Run(DiskCache.DeleteUnindexedFiles, cancellationToken);
 		}
@@ -227,9 +227,15 @@ namespace Microsoft.Maui
 				throw new ArgumentNullException(nameof(uri));
 
 			// Only loads of this image are affected; downloads of it that are in progress are not kept.
-			_removals.AddOrUpdate(uri.OriginalString, 1, static (_, count) => count + 1);
-			MemoryCache.Remove(uri.OriginalString);
-			return Task.Run(() => DiskCache.Remove(uri), cancellationToken);
+			// The disk entry is removed and the version changed in one step (see ClearAsync).
+			var key = uri.OriginalString;
+			return Task.Run(
+				() =>
+				{
+					DiskCache.Remove(uri, () => _removals.AddOrUpdate(key, 1, static (_, count) => count + 1));
+					MemoryCache.Remove(key);
+				},
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -335,7 +341,9 @@ namespace Microsoft.Maui
 				if (data is null)
 					throw new InvalidOperationException($"Unable to load image from '{uri}'.");
 
-				if (cachingEnabled && result.Cacheable && version == GetVersion(uri))
+				// Only keep the image in memory when it is still the cached version (not replaced while it was read).
+				if (cachingEnabled && result.Cacheable && version == GetVersion(uri) &&
+					(result.Entry is null || DiskCache.IsCurrent(result.Entry)))
 				{
 					var validatedAt = result.Entry is not null
 						? new DateTimeOffset(result.Entry.ValidatedUtcTicks, TimeSpan.Zero)
@@ -502,7 +510,7 @@ namespace Microsoft.Maui
 			UriImageDiskCache.Entry? entry = null;
 			if (cacheable && version == GetVersion(uri))
 			{
-				entry = DiskCache.Write(uri, data, response.ETag, response.LastModified, UtcNow());
+				entry = DiskCache.Write(uri, data, response.ETag, response.LastModified, UtcNow(), () => version == GetVersion(uri));
 
 				// The cache was cleared (or the image removed) while the image was written: do not keep it.
 				if (entry is not null && version != GetVersion(uri))
@@ -780,8 +788,9 @@ namespace Microsoft.Maui
 			{
 				return await WaitAsync(task, cancellationToken).ConfigureAwait(false);
 			}
-			catch (OperationCanceledException) when (!task.IsCompleted)
+			catch (OperationCanceledException)
 			{
+				// Also when the operation completed at the same time: its result must still be released.
 				_ = task.ContinueWith(
 					static t =>
 					{

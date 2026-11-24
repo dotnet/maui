@@ -256,13 +256,19 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			File.WriteAllText(sentinel, "{}");
 			var hashNamedSentinel = Path.Combine(_cacheDirectory, "0123456789ABCDEF.profile.json");
 			File.WriteAllText(hashNamedSentinel, "{}");
+			var metaSentinel = Path.Combine(_cacheDirectory, "0123456789ABCDEF.notes.meta");
+			File.WriteAllText(metaSentinel, "not image cache metadata");
+			var tmpSentinel = Path.Combine(_cacheDirectory, "0123456789ABCDEF.download.tmp");
+			File.WriteAllText(tmpSentinel, "{}");
 			_handler.Respond(_ => Ok(Png));
 			var loader = CreateLoader(o => o.DiskCacheSizeLimit = 1);
 			await loader.LoadAsync(ImageUri, true, TimeSpan.FromDays(1));
 
 			await loader.ClearAsync();
 
-			Assert.Equal(new[] { hashNamedSentinel, sentinel }, Directory.GetFiles(_cacheDirectory).OrderBy(f => f, StringComparer.Ordinal));
+			Assert.Equal(
+				new[] { tmpSentinel, metaSentinel, hashNamedSentinel, sentinel }.OrderBy(f => f, StringComparer.Ordinal),
+				Directory.GetFiles(_cacheDirectory).OrderBy(f => f, StringComparer.Ordinal));
 		}
 
 		[Fact]
