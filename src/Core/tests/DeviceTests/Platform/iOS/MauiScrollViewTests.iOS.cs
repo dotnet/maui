@@ -148,6 +148,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
 
 				scrollView.SystemInset = new UIEdgeInsets(44, 0, 0, 0);
+				scrollView.AdjustedContentInsetDidChange();
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				scrollView.SystemInset = new UIEdgeInsets(96, 0, 0, 0);
+				scrollView.AdjustedContentInsetDidChange();
 				Arrange(scrollView);
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
 			});
@@ -220,6 +226,27 @@ namespace Microsoft.Maui.DeviceTests
 				other.RemoveFromSuperview();
 				scrollView.RemoveFromSuperview();
 				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenEarlierSiblingIsRemoved() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				other.RemoveFromSuperview();
 
 				Arrange(scrollView);
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);

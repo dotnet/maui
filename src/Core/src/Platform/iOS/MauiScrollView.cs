@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
 
-		bool _isFirstScrollViewInController;
+		WeakReference<UIScrollView>? _firstScrollViewInController;
 		WeakReference<UIView>? _firstScrollViewRoot;
 
 		/// <summary>
@@ -746,13 +746,20 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					if (_firstScrollViewRoot is not { } cachedRoot || !cachedRoot.TryGetTarget(out var root) || root != controller.View)
+					var controllerView = controller.View;
+					if (_firstScrollViewRoot is not { } cachedRoot ||
+						!cachedRoot.TryGetTarget(out var root) ||
+						root != controllerView ||
+						_firstScrollViewInController is not { } cachedFirst ||
+						!cachedFirst.TryGetTarget(out var first) ||
+						!first.IsDescendantOfView(controllerView))
 					{
-						_isFirstScrollViewInController = FindFirstScrollView(controller.View) == this;
-						_firstScrollViewRoot = new WeakReference<UIView>(controller.View);
+						first = FindFirstScrollView(controllerView);
+						_firstScrollViewInController = first is null ? null : new WeakReference<UIScrollView>(first);
+						_firstScrollViewRoot = new WeakReference<UIView>(controllerView);
 					}
 
-					return _isFirstScrollViewInController;
+					return first == this;
 				}
 
 				responder = responder.NextResponder;
