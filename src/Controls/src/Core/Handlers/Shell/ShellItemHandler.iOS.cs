@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Keeps <see cref="ShellItem.CurrentItem"/> in sync for MoreNavigationController selections.
         /// </summary>
-        sealed class MoreNavigationDelegate : UINavigationControllerDelegate
+        internal sealed class MoreNavigationDelegate : UINavigationControllerDelegate
         {
             readonly WeakReference<ShellItemHandler> _handlerRef;
 
@@ -425,6 +425,12 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             Microsoft.Maui.Platform.NavigationTransitionDriver? _transitionDriver;
+
+            /// <summary>Whether the More controller's current push or pop runs a page transition (set while UIKit asks for
+            /// the animator, so it is known as soon as PushViewController/PopViewController returns).</summary>
+            internal bool RunsPageTransition { get; private set; }
+
+            internal void ResetPageTransition() => RunsPageTransition = false;
 
             /// <summary>Stops following the More controller's swipe-back. Call when the delegate is dropped.</summary>
             internal void Detach() => _transitionDriver?.Detach();
@@ -446,11 +452,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
 
                 var section = handler.CurrentRenderer?.ShellSection;
-                return _transitionDriver.GetAnimationController(
+                var animator = _transitionDriver.GetAnimationController(
                     section as IView,
                     operation,
                     PageForViewController(section, handler.CurrentRenderer, fromViewController),
-                    PageForViewController(section, handler.CurrentRenderer, toViewController))!;
+                    PageForViewController(section, handler.CurrentRenderer, toViewController));
+                RunsPageTransition = animator is not null;
+                return animator!;
             }
 
             [Export("navigationController:interactionControllerForAnimationController:")]

@@ -915,9 +915,14 @@ namespace Microsoft.Maui.Controls.Handlers
             var navigationController = ActiveNavigationController();
             if (!ReferenceEquals(navigationController, _navigationController))
             {
+                // Under the More tab: with a page transition running, the task completes (and the page is disposed,
+                // below) only when the transition has finished, as with the compatibility renderer.
+                ResetMorePageTransition(navigationController);
                 _ = navigationController.PopViewController(animated);
                 CompletePopImmediately();
-                popTask = Task.FromResult(true);
+                var popSource = new TaskCompletionSource<bool>();
+                CompleteMoreNavigationAfterTransition(navigationController, () => popSource.TrySetResult(true));
+                popTask = popSource.Task;
             }
             else
             {
@@ -1019,12 +1024,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_isInMoreTab && _navigationController.ParentViewController is UITabBarController tabBarController)
             {
+                ResetMorePageTransition(tabBarController.MoreNavigationController);
                 tabBarController.MoreNavigationController.PushViewController(pageViewController, animated);
                 if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
                 {
                     pageViewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
                 }
-                completionSource?.TrySetResult(true);
+                CompleteMoreNavigationAfterTransition(tabBarController.MoreNavigationController, () => completionSource?.TrySetResult(true));
             }
             else
             {
@@ -1842,6 +1848,27 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void CompletePopImmediately()
             => _navManager?.CompletePopImmediately();
+
+        static void ResetMorePageTransition(UINavigationController moreNavigationController)
+        {
+            // Cleared before each More push/pop; UIKit sets it again while asking for the animator, if it does.
+            if (moreNavigationController.Delegate is ShellItemHandler.MoreNavigationDelegate moreDelegate)
+                moreDelegate.ResetPageTransition();
+        }
+
+        // With a page transition running under the More tab, completes when it has finished (or been cancelled);
+        // otherwise (UIKit's own animation, or none) straight away, as it always has.
+        static void CompleteMoreNavigationAfterTransition(UINavigationController moreNavigationController, Action complete)
+        {
+            if (moreNavigationController.Delegate is ShellItemHandler.MoreNavigationDelegate { RunsPageTransition: true }
+                && moreNavigationController.GetTransitionCoordinator() is { } coordinator
+                && coordinator.AnimateAlongsideTransition(null!, _ => complete()))
+            {
+                return;
+            }
+
+            complete();
+        }
 
         void DisposeNavigationResources()
         {
