@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-Refreshes `/review run-tests` comments with the outcome of their maui-pr-uitests build.
+Refreshes `/review run-ui-tests` comments with the outcome of their maui-pr-uitests build.
 
 .DESCRIPTION
 Finds recent run-tests comments that are still "running", reads the build, its job timeline
@@ -37,7 +37,7 @@ $raw = & gh api --paginate --slurp "repos/$Repository/issues/comments?since=$sin
 if ($LASTEXITCODE -ne 0) { throw 'Could not list recent comments.' }
 $comments = @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_ }) | Where-Object {
     $(if ($CommentAuthor) { $_.user.login -eq $CommentAuthor } else { $_.user.type -eq 'Bot' }) -and
-    $_.body -and $_.body.StartsWith($script:RunTestsCommentMarker) -and
+    $_.body -and (Get-RunTestsCommentSuite $_.body) -and
     $_.body -match '<!-- review-run-tests-state: (running|done) -->'
 }
 if ($HeadSha) {
@@ -49,8 +49,16 @@ if ($HeadSha) {
 }
 Write-Host "Found $(@($comments).Count) run-tests comment(s) to refresh."
 
-foreach ($comment in $comments) {
-    if ($comment.body -notmatch '<!-- review-run-tests-build: (\d{1,12}) -->') { continue }
+function Update-RunTestsSection {
+    <#
+    .SYNOPSIS
+    Refreshes one suite's comment text from its build. Returns { body; build; results; checkId }, or
+    $null when the text names no build or the build cannot be read.
+    #>
+    param([Parameter(Mandatory)][string]$Suite, [Parameter(Mandatory)][string]$Body)
+    # /review run-ui-tests (maui-pr-uitests) or /review run-device-tests (maui-pr-devicetests).
+    Set-RunTestsSuite $Suite
+    if ($Body -notmatch '<!-- review-run-tests-build: (\d{1,12}) -->') { return $null }
     $buildId = $Matches[1]
     $base = "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId"
     try {
@@ -58,7 +66,7 @@ foreach ($comment in $comments) {
         $timeline = Invoke-RestMethod -Uri "$base/timeline?api-version=7.1" -TimeoutSec 60
     } catch {
         Write-Warning "Could not read build $($buildId): $($_.Exception.Message)"
-        continue
+        return $null
     }
     $failedTests = $null
     if ($build.status -eq 'completed' -and $build.result -ne 'succeeded') {
@@ -76,32 +84,55 @@ foreach ($comment in $comments) {
         }
     }
     $results = ConvertTo-RunTestsResults -Build $build -Timeline $timeline -FailedTests $failedTests
-    $updated = Update-RunTestsComment -Body $comment.body -Build $build -Results $results
+    $checkId = if ($Body -match '<!-- review-run-tests-check: (\d{1,20}) -->') { $Matches[1] } else { $null }
+    return @{ body = (Update-RunTestsComment -Body $Body -Build $build -Results $results); build = $build; results = $results; checkId = $checkId }
+}
+
+foreach ($comment in $comments) {
+    # A /review run-tests comment has a section per suite, each following its own build.
+    $updated = $comment.body
+    $refreshed = @()
+    foreach ($section in Get-RunTestsCommentSections $comment.body) {
+        if ($HeadSha) {
+            # Each section carries the PR head and its own dispatch commit.
+            if (-not ($section.body.Contains("<!-- review-run-tests-head: $HeadSha -->") -or $section.body.Contains("<!-- review-run-tests-dispatch: $HeadSha -->"))) { continue }
+        } elseif ($section.body -notmatch '<!-- review-run-tests-state: running -->') {
+            continue
+        }
+        $result = Update-RunTestsSection -Suite $section.suite -Body $section.body
+        if (-not $result) { continue }
+        $updated = Set-RunTestsCommentSection -Body $updated -Suite $section.suite -Section $result.body
+        $result.suite = $section.suite
+        $refreshed += $result
+    }
     if ($updated -ceq $comment.body) { continue }
-    Write-Host "Updating $($comment.html_url): build $buildId $($build.status) $($build.result)"
+    foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
     if ($DryRun) { $updated; continue }
     $payload = @{ body = $updated } | ConvertTo-Json
     $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
-    if ($comment.body -match '<!-- review-run-tests-check: (\d{1,20}) -->') {
-        $check = New-RunTestsRunCheckUpdate -Build $build -Results $results
-        $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($Matches[1])" --input - | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($Matches[1])." }
+    foreach ($result in $refreshed | Where-Object { $_.checkId }) {
+        Set-RunTestsSuite $result.suite
+        $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
+        $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
     }
 }
 
 if (-not $HeadSha) {
     # Delete expired dispatch branches. Their builds have finished; the comments keep the links.
-    $raw = & gh api --paginate --slurp "repos/$Repository/git/matching-refs/heads/$($script:RunTestsDispatchBranchPrefix)"
-    if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not list dispatch branches.'; return }
     $cutoff = [DateTimeOffset]::UtcNow.AddDays(-$DispatchRetentionDays)
-    foreach ($ref in @(($raw -join "`n") | ConvertFrom-Json -Depth 10 | ForEach-Object { $_ })) {
-        if ($ref.ref -cnotmatch '^refs/heads/run-tests/pr[0-9]+-[0-9]+$') { continue }
-        $commit = & gh api "repos/$Repository/git/commits/$($ref.object.sha)" | ConvertFrom-Json
-        if ($LASTEXITCODE -ne 0 -or [DateTimeOffset]$commit.committer.date -gt $cutoff) { continue }
-        Write-Host "Deleting expired dispatch branch $($ref.ref)."
-        if ($DryRun) { continue }
-        & gh api -X DELETE "repos/$Repository/$($ref.ref -replace '^refs/', 'git/refs/')" | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $($ref.ref)." }
+    foreach ($prefix in @($script:RunTestsSuites.Values | ForEach-Object { $_.DispatchBranchPrefix })) {
+        $raw = & gh api --paginate --slurp "repos/$Repository/git/matching-refs/heads/$prefix"
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list $prefix* dispatch branches."; continue }
+        foreach ($ref in @(($raw -join "`n") | ConvertFrom-Json -Depth 10 | ForEach-Object { $_ })) {
+            if ($ref.ref -cnotmatch "^refs/heads/$([regex]::Escape($prefix))pr[0-9]+-[0-9]+$") { continue }
+            $commit = & gh api "repos/$Repository/git/commits/$($ref.object.sha)" | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0 -or [DateTimeOffset]$commit.committer.date -gt $cutoff) { continue }
+            Write-Host "Deleting expired dispatch branch $($ref.ref)."
+            if ($DryRun) { continue }
+            & gh api -X DELETE "repos/$Repository/$($ref.ref -replace '^refs/', 'git/refs/')" | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $($ref.ref)." }
+        }
     }
 }

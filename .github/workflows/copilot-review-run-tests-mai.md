@@ -1,5 +1,5 @@
 ---
-description: "/review run-tests, second model: Claude Opus 5.5 picks UI tests from the same context as GPT-6.2 Sol; the union of both selections runs in maui-pr-uitests."
+description: "/review run-tests, second model: MAI Code 2 selects UI and/or device tests from the same context as GPT-6.2 Sol; the union of both selections runs."
 
 imports:
   - shared/threat-detection.md
@@ -77,7 +77,7 @@ permissions:
   contents: read
   pull-requests: read
 
-model: claude-opus-5.5
+model: mai-code-2
 engine:
   id: copilot
   env:
@@ -117,7 +117,9 @@ safe-outputs:
   jobs:
     run-selected-ui-tests:
       description: >-
-        Propose the platforms and UI test categories maui-pr-uitests should run for the triggering PR.
+        Propose the platforms and test categories to run for the triggering PR: UI test categories for
+        maui-pr-uitests (/review run-ui-tests), device test units for maui-pr-devicetests (/review run-device-tests),
+        or both (/review run-tests: UI in platforms/categories/full_run, device in the device_* inputs).
         Call exactly once. Trusted code validates the selection, combines it with the other model's and queues the run.
       runs-on: ubuntu-latest
       # Inherits the copilot-pat-pool environment; it only hands both proposals to
@@ -126,11 +128,11 @@ safe-outputs:
         actions: write
       inputs:
         platforms:
-          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no UI test is affected.'
+          description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no test is affected.'
           type: string
           required: true
         categories:
-          description: 'JSON array string of UI test categories from the inventory. "[]" means every category on the selected platforms.'
+          description: 'JSON array string of categories from the inventory (UI test categories, or device test units such as "Controls.Button" or "Graphics"). "[]" means everything on the selected platforms.'
           type: string
           required: true
         full_run:
@@ -144,6 +146,21 @@ safe-outputs:
           description: Short markdown bullet list mapping the changed areas to the chosen platforms and categories, and why the rest is not needed.
           type: string
           required: true
+        device_platforms:
+          description: 'Only when context.json suite is "all": JSON array string of platforms for device tests. "[]" when no device test is affected.'
+          type: string
+        device_categories:
+          description: 'Only when context.json suite is "all": JSON array string of device test units from device.inventory.categories. "[]" means every unit on device_platforms.'
+          type: string
+        device_full_run:
+          description: 'Only when context.json suite is "all": true to run the complete device test suite on every platform'
+          type: boolean
+        device_summary:
+          description: 'Only when context.json suite is "all": one sentence on the device test selection.'
+          type: string
+        device_rationale:
+          description: 'Only when context.json suite is "all": short markdown bullets for the device test selection.'
+          type: string
       steps:
         - name: Extract the proposal
           shell: pwsh
@@ -156,10 +173,11 @@ safe-outputs:
             # Keep only the declared inputs; the dispatch workflow validates every value again.
             $item = $items[-1]
             $proposal = [ordered]@{}
-            foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale') {
+            foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale',
+                'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
               if ($item.PSObject.Properties[$key]) { $proposal[$key] = $item.$key }
             }
-            $proposal['model'] = 'claude-opus-5.5'
+            $proposal['model'] = 'mai-code-2'
             $proposal['sourceRunId'] = $env:SOURCE_RUN_ID
             New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/run-tests-proposal" | Out-Null
             $proposal | ConvertTo-Json -Depth 5 | Set-Content "$env:RUNNER_TEMP/run-tests-proposal/proposal.json" -Encoding utf8
@@ -187,7 +205,7 @@ network:
   allowed: [defaults, github]
 
 concurrency:
-  group: review-run-tests-opus-${{ inputs.pr_number || github.run_id }}
+  group: review-run-tests-mai-${{ inputs.pr_number || github.run_id }}
   cancel-in-progress: false
 
 timeout-minutes: 20
@@ -199,4 +217,4 @@ steps:
       path: /tmp/gh-aw/agent/run-tests
 ---
 
-Follow the shared `/review run-tests` selection instructions.
+Follow the shared `/review run-tests` / `/review run-ui-tests` / `/review run-device-tests` selection instructions.

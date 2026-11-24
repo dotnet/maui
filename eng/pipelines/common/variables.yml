@@ -70,9 +70,10 @@ variables:
 - name: nugetMultiFeedWarnLevel
   value: none
 
-# `/review run-tests` dispatch branches (refs/heads/run-tests/*) build pull-request code as a branch
-# build, so they never get this group's secret; pull-request builds from forks don't get it either.
-- ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:
+# `/review run-ui-tests` and `/review run-device-tests` dispatch branches (refs/heads/run-tests/*,
+# refs/heads/run-devicetests/*) build pull-request code as a branch build, so they never get this
+# group's secret; pull-request builds from forks don't get it either.
+- ${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:
   - group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
 
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
