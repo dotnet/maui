@@ -46,6 +46,10 @@ namespace Microsoft.Maui
 		readonly long? _maxDownloadSize;
 		readonly Random _jitter = new();
 		readonly ConcurrentDictionary<string, int> _removals = new(StringComparer.Ordinal);
+
+		// Makes "is this still the current image" and "keep it in memory" one step, relative to clearing,
+		// removing and publishing newer versions.
+		readonly object _memoryPublishLock = new();
 		int _cacheGeneration;
 		int _disposed;
 
@@ -215,8 +219,11 @@ namespace Microsoft.Maui
 		{
 			// Forget the disk entries and start a new cache version in one step: a load either sees the old
 			// entries with the old version (and cannot keep what it loads) or neither. Then remove the files.
-			DiskCache.ResetIndex(() => Interlocked.Increment(ref _cacheGeneration));
-			MemoryCache.Clear();
+			lock (_memoryPublishLock)
+			{
+				DiskCache.ResetIndex(() => Interlocked.Increment(ref _cacheGeneration));
+				MemoryCache.Clear();
+			}
 			return Task.Run(DiskCache.DeleteUnindexedFiles, cancellationToken);
 		}
 
@@ -232,8 +239,11 @@ namespace Microsoft.Maui
 			return Task.Run(
 				() =>
 				{
-					DiskCache.Remove(uri, () => _removals.AddOrUpdate(key, 1, static (_, count) => count + 1));
-					MemoryCache.Remove(key);
+					lock (_memoryPublishLock)
+					{
+						DiskCache.Remove(uri, () => _removals.AddOrUpdate(key, 1, static (_, count) => count + 1));
+						MemoryCache.Remove(key);
+					}
 				},
 				cancellationToken);
 		}
@@ -341,18 +351,19 @@ namespace Microsoft.Maui
 				if (data is null)
 					throw new InvalidOperationException($"Unable to load image from '{uri}'.");
 
-				// Only keep the image in memory when it is still the cached version (not replaced while it was read).
-				if (cachingEnabled && result.Cacheable && version == GetVersion(uri) &&
-					(result.Entry is null || DiskCache.IsCurrent(result.Entry)))
+				// Only keep the image in memory when it is still the cached version (not replaced while it was read,
+				// and the cache was not cleared or the image removed since the load started).
+				if (cachingEnabled && result.Cacheable)
 				{
 					var validatedAt = result.Entry is not null
 						? new DateTimeOffset(result.Entry.ValidatedUtcTicks, TimeSpan.Zero)
 						: UtcNow();
-					MemoryCache.Set(uri.OriginalString, data, validatedAt);
 
-					// The cache was cleared while this image was being stored: do not keep it.
-					if (version != GetVersion(uri))
-						MemoryCache.RemoveIfSame(uri.OriginalString, data);
+					lock (_memoryPublishLock)
+					{
+						if (version == GetVersion(uri) && (result.Entry is null || DiskCache.IsCurrent(result.Entry)))
+							MemoryCache.Set(uri.OriginalString, data, validatedAt);
+					}
 				}
 
 				return data;

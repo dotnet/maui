@@ -87,16 +87,6 @@ namespace Microsoft.Maui
 				RemoveLocked(key);
 		}
 
-		/// <summary>Removes the entry for <paramref name="key"/> only if it still holds <paramref name="data"/>.</summary>
-		public void RemoveIfSame(string key, byte[] data)
-		{
-			lock (_lock)
-			{
-				if (_items.TryGetValue(key, out var node) && ReferenceEquals(node.Value.Data, data))
-					RemoveLocked(key);
-			}
-		}
-
 		public void Clear()
 		{
 			lock (_lock)

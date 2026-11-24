@@ -80,19 +80,6 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         if (logger.isVerboseLoggable) logger.v("onResourceCleared: " + resourceLogIdentifier);
 
 		this.view.setImageDrawable(placeholder);
-
-        // A load that is cleared before it completes (for example because a newer load or an empty source
-        // replaced it) never completes otherwise; report it as not loaded so that the caller stops waiting.
-        if (!completed) {
-            completed = true;
-            try {
-                setIsInvokingCallbacks(true);
-                callback.onComplete(false, null, null);
-            }
-            finally {
-                setIsInvokingCallbacks(false);
-            }
-        }
     }
 
     @Override

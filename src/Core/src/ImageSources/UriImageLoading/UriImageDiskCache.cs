@@ -562,15 +562,16 @@ namespace Microsoft.Maui
 						if (name.EndsWith(TempExtension, StringComparison.Ordinal))
 						{
 							// Left behind by an interrupted write.
-							if (info.LastWriteTimeUtc < staleTempTime && IsOwnedFile(info.FullName))
-								TryDelete(info.FullName);
+							if (info.LastWriteTimeUtc < staleTempTime)
+								TryDeleteLeftover(info.FullName, () => true);
 							continue;
 						}
 
 						if (name.EndsWith(MetadataExtension, StringComparison.Ordinal))
 						{
-							if (!File.Exists(info.FullName.Substring(0, info.FullName.Length - MetadataExtension.Length)) && IsOwnedFile(info.FullName))
-								TryDelete(info.FullName);
+							// Metadata whose image file is gone.
+							var dataPath = info.FullName.Substring(0, info.FullName.Length - MetadataExtension.Length);
+							TryDeleteLeftover(info.FullName, () => !File.Exists(dataPath));
 							continue;
 						}
 
@@ -604,6 +605,29 @@ namespace Microsoft.Maui
 				_index = index;
 				_size = size;
 				EvictLocked(keep: null);
+			}
+		}
+
+		/// <summary>
+		/// Deletes a leftover file found while indexing, re-checking <paramref name="isLeftover"/> while no write of that
+		/// image can run (an image written in the meantime, for example after the cache was cleared, is kept).
+		/// </summary>
+		void TryDeleteLeftover(string path, Func<bool> isLeftover)
+		{
+			// Indexing holds the index build lock, which writers take while holding the image's lock: only try,
+			// to never wait for a writer that waits for this scan. Skipped files are retried on the next start.
+			var keyLock = GetKeyLock(GetDataFileName(Path.GetFileName(path)));
+			if (!Monitor.TryEnter(keyLock))
+				return;
+
+			try
+			{
+				if (isLeftover() && IsOwnedFile(path))
+					TryDelete(path);
+			}
+			finally
+			{
+				Monitor.Exit(keyLock);
 			}
 		}
 

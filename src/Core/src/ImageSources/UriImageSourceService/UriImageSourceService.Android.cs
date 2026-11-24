@@ -33,7 +33,7 @@ namespace Microsoft.Maui
 
 					PlatformInterop.LoadImageFromUri(imageView, uriImageSource.Uri.OriginalString, uriImageSource.CachingEnabled, callback);
 
-					return callback.Result;
+					return WaitForGlideAsync(callback.Result, cancellationToken);
 				}
 				catch (Exception ex)
 				{
@@ -71,6 +71,13 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
+		/// <summary>
+		/// Waits for a Glide load, but stops waiting when the load is cancelled (for example replaced by a newer load):
+		/// Glide does not report loads that it clears before they complete.
+		/// </summary>
+		static Task<T?> WaitForGlideAsync<T>(Task<T?> glideLoad, CancellationToken cancellationToken) =>
+			cancellationToken.CanBeCanceled ? glideLoad.WaitAsync(cancellationToken) : glideLoad;
+
 		static bool CanStillLoadInto(ImageView imageView, CancellationToken cancellationToken) =>
 			!cancellationToken.IsCancellationRequested &&
 			imageView.IsAlive() &&
@@ -82,7 +89,7 @@ namespace Microsoft.Maui
 			var callback = new ImageLoaderCallback();
 			PlatformInterop.LoadImageFromCachedFile(imageView, cached.FilePath!, cached.Version, callback);
 
-			var result = await callback.Result;
+			var result = await WaitForGlideAsync(callback.Result, cancellationToken);
 			if (result is not null || !CanStillLoadInto(imageView, cancellationToken))
 				return result;
 
@@ -117,7 +124,7 @@ namespace Microsoft.Maui
 				else
 					PlatformInterop.LoadImageFromBytes(imageView, image.Data!, callback);
 
-				var result = await callback.Result;
+				var result = await WaitForGlideAsync(callback.Result, cancellationToken);
 
 				// Only a decoding failure means the cached data is bad (not a cancelled load or a destroyed view).
 				if (result is null && CanStillLoadInto(imageView, cancellationToken))
@@ -151,7 +158,7 @@ namespace Microsoft.Maui
 				else
 					PlatformInterop.LoadImageFromBytes(context, image.Data!, callback);
 
-				var result = await callback.Result;
+				var result = await WaitForGlideAsync(callback.Result, cancellationToken);
 
 				// Only a decoding failure means the cached data is bad (not a cancelled load or a destroyed context).
 				if (result is null && !cancellationToken.IsCancellationRequested && !PlatformInterop.IsContextDestroyed(context))
