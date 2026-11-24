@@ -13,6 +13,74 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PickerTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TitleColorTracksThemeChanges(bool customTitleColor)
+		{
+			var picker = new Picker
+			{
+				Title = "Select an option",
+				TitleColor = customTitleColor ? Colors.Red : null
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<PickerHandler>(picker);
+				var native = handler.PlatformView;
+				var reference = (TextBlock)UI.Xaml.Markup.XamlReader.Load("""
+					<TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					           Text="Reference"
+					           Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" />
+					""");
+				var host = new StackPanel
+				{
+					Children = { native, reference }
+				};
+
+				await host.AttachAndRun(async () =>
+				{
+					await AssertHelpers.AssertEventually(() =>
+						native.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("HeaderContentPresenter")
+							?.GetFirstDescendant<TextBlock>()?.IsLoaded == true &&
+						reference.IsLoaded,
+						message: "The Picker header and reference TextBlock did not load.");
+
+					var title = native.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("HeaderContentPresenter")
+						.GetFirstDescendant<TextBlock>();
+					Assert.Equal(picker.Title, title.Text);
+					var initialTheme = reference.ActualTheme;
+					var initialColor = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(reference.Foreground).Color;
+					var expectedColor = customTitleColor ? Colors.Red.ToWindowsColor() : initialColor;
+					await AssertHelpers.AssertEventually(() =>
+						title.Foreground is UI.Xaml.Media.SolidColorBrush brush && brush.Color == expectedColor,
+						message: "The Picker title color did not match the initial application theme or explicit TitleColor.");
+
+					var nextTheme = initialTheme == UI.Xaml.ElementTheme.Light
+						? UI.Xaml.ElementTheme.Dark
+						: UI.Xaml.ElementTheme.Light;
+					foreach (var theme in new[] { nextTheme, initialTheme })
+					{
+						var previousColor = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(reference.Foreground).Color;
+						host.RequestedTheme = theme;
+
+						await AssertHelpers.AssertEventually(() =>
+							reference.ActualTheme == theme &&
+							reference.Foreground is UI.Xaml.Media.SolidColorBrush brush && brush.Color != previousColor,
+							message: $"The reference TextBlock did not update for the {theme} theme.");
+
+						expectedColor = customTitleColor
+							? Colors.Red.ToWindowsColor()
+							: Assert.IsType<UI.Xaml.Media.SolidColorBrush>(reference.Foreground).Color;
+						await AssertHelpers.AssertEventually(() =>
+							title.ActualTheme == theme &&
+							title.Foreground is UI.Xaml.Media.SolidColorBrush brush && brush.Color == expectedColor,
+							message: $"The Picker title color was incorrect after switching to the {theme} theme (customTitleColor: {customTitleColor}).");
+					}
+				}, MauiContext);
+			});
+		}
+
 		[Fact(DisplayName = "HorizontalOptions Initializes Correctly")]
 		public async Task HorizontalOptionsInitializesCorrectly()
 		{

@@ -12,8 +12,9 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeComboBox.Header = string.IsNullOrEmpty(picker.Title) ? null : picker;
 
+			var headerTemplateKey = picker.TitleColor.IsDefault() ? "ComboBoxHeaderDefaultTitleColor" : "ComboBoxHeader";
 			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
-				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
+				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources[headerTemplateKey];
 
 		}
 
