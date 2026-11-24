@@ -634,9 +634,14 @@ function Get-MauiReleaseCompletionPlan {
         throw 'CI housekeeping must update the bug-template version in the same patch-bump commit.'
     }
     $restoreFixes = $Fixes -ceq $LanePlan.mergeSha
-    if (!$restoreFixes) {
+    $normalizationIntegrated = !$restoreFixes -and (Test-MauiReleaseAncestor -RepositoryPath $RepositoryPath `
+        -Ancestor $LanePlan.normalizedSha -Descendant $Fixes)
+    if (!$restoreFixes -and !$normalizationIntegrated) {
+        # A squashed normalization (or a later integration PR) moves the branch forward without the
+        # prepared ancestry. The reviewed normalization PR still gates next-lane work; only
+        # movement away from the approved merge is refused here.
         $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-            'merge-base', '--is-ancestor', $LanePlan.normalizedSha, $Fixes)
+            'merge-base', '--is-ancestor', $LanePlan.mergeSha, $Fixes)
     }
     [pscustomobject]@{
         releaseSha = if ($Release) { $Release } else { $null }
@@ -645,6 +650,22 @@ function Get-MauiReleaseCompletionPlan {
         createStaging = !$Staging
         createRelease = $false
         restoreFixes = $restoreFixes
+        normalizationIntegrated = $normalizationIntegrated
+    }
+}
+
+function Test-MauiReleaseAncestor {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Ancestor,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Descendant
+    )
+    $null = & git -C $RepositoryPath merge-base --is-ancestor $Ancestor $Descendant 2>$null
+    switch ($LASTEXITCODE) {
+        0 { return $true }
+        1 { return $false }
+        default { throw "Release Git operation 'merge-base' failed for $Ancestor and $Descendant." }
     }
 }
 
@@ -721,4 +742,4 @@ Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionCont
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
     New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
     Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge,
-    Get-MauiReleaseGenerationHead
+    Get-MauiReleaseGenerationHead, Test-MauiReleaseAncestor
