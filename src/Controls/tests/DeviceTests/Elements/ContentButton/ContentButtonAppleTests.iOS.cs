@@ -361,6 +361,32 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task HintDoesNotUsePresentationContentAsAccessibleName()
+		{
+			var content = new Label { Text = "First" };
+			var button = new ContentButton { Content = content };
+			SemanticProperties.SetHint(button, "Opens details");
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.True(string.IsNullOrEmpty(handler.PlatformView.AccessibilityLabel));
+				Assert.Equal("Opens details", handler.PlatformView.AccessibilityHint);
+
+				content.Text = "Updated";
+				button.Content = new Label { Text = "Replacement" };
+				Assert.True(string.IsNullOrEmpty(handler.PlatformView.AccessibilityLabel));
+
+				SemanticProperties.SetDescription(button, "Open item");
+				Assert.Equal("Open item", handler.PlatformView.AccessibilityLabel);
+
+				SemanticProperties.SetDescription(button, null);
+				Assert.True(string.IsNullOrEmpty(handler.PlatformView.AccessibilityLabel));
+				Assert.Equal("Opens details", handler.PlatformView.AccessibilityHint);
+			});
+		}
+
+		[Fact]
 		public async Task ReusedHandlerUpdatesEventsAndAccessibility()
 		{
 			var firstClicks = 0;

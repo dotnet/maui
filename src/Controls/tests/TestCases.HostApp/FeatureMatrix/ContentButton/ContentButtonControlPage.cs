@@ -6,7 +6,7 @@ public class ContentButtonControlPage : ContentPage
 	readonly VerticalStackLayout _buttons = new() { Spacing = 12 };
 	readonly Label _status = new() { AutomationId = "ContentButtonStatus" };
 	readonly ScrollView _scroll;
-	int _commands, _clicks, _pressed, _released;
+	int _commands, _clicks, _pressed, _released, _parentTaps;
 	double _scrollY;
 	string _order = "";
 	string _pressAction = "";
@@ -43,6 +43,11 @@ public class ContentButtonControlPage : ContentPage
 		};
 		_button.Released += (_, _) => { _released++; UpdateStatus(); };
 
+#if WINDOWS
+		var parentTap = new TapGestureRecognizer();
+		parentTap.Tapped += (_, _) => { _parentTaps++; UpdateStatus(); };
+		_buttons.GestureRecognizers.Add(parentTap);
+#endif
 		_buttons.Add(_button);
 		_buttons.Add(new BoxView { HeightRequest = 500, Color = Colors.LightBlue });
 		var actions = new FlexLayout { Wrap = Microsoft.Maui.Layouts.FlexWrap.Wrap };
@@ -118,7 +123,7 @@ public class ContentButtonControlPage : ContentPage
 		presentation.Add(new Label { Text = "Nested label", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center });
 		presentation.Add(new Image { Source = "dotnet_bot.png", WidthRequest = 40, HeightRequest = 40 }, 1);
 		_button.Content = presentation;
-		_commands = _clicks = _pressed = _released = 0;
+		_commands = _clicks = _pressed = _released = _parentTaps = 0;
 		_order = "";
 		_scrollY = 0;
 		_ = _scroll?.ScrollToAsync(0, 0, false);
@@ -126,5 +131,5 @@ public class ContentButtonControlPage : ContentPage
 	}
 
 	void UpdateStatus() => _status.Text =
-		$"Commands={_commands}; Clicks={_clicks}; Pressed={_pressed}; Released={_released}; IsPressed={_button.IsPressed}; Order={_order}; ScrollY={_scrollY:0}";
+		$"Commands={_commands}; Clicks={_clicks}; Pressed={_pressed}; Released={_released}; IsPressed={_button.IsPressed}; Order={_order}; ScrollY={_scrollY:0}; ParentTaps={_parentTaps}";
 }

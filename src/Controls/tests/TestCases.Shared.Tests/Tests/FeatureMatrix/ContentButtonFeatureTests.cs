@@ -125,6 +125,24 @@ public class ContentButtonFeatureTests : _GalleryUITest
 	}
 
 #if WINDOWS
+	[Test]
+	[Category(UITestCategories.Button)]
+	public void ButtonTapDoesNotInvokeParentTapGesture()
+	{
+		ResetButton();
+		var button = App.WaitForElement("ContentButtonControl").GetRect();
+		var scroll = App.WaitForElement("ContentButtonScroll").GetRect();
+		var parentY = button.Y + button.Height + 25;
+		Assert.That(parentY, Is.LessThan(scroll.Y + scroll.Height));
+		App.TapCoordinates(scroll.X + scroll.Width / 2, parentY);
+		Assert.That(Status, Does.Contain("ParentTaps=1"));
+
+		ResetButton();
+		TapContentButton();
+		Assert.That(Status, Does.Contain("Commands=1; Clicks=1"));
+		Assert.That(Status, Does.Contain("ParentTaps=0"));
+	}
+
 	[TestCase(0x20)]
 	[TestCase(0x0D)]
 	[Category(UITestCategories.Button)]
