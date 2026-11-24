@@ -23,9 +23,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _invalidateParentWhenMovedToWindow;
 
-		WeakReference<UIScrollView>? _firstScrollViewInController;
-		WeakReference<UIView>? _firstScrollViewRoot;
-
 		/// <summary>
 		/// Cached result of whether this scroll view is a descendant of another UIScrollView.
 		/// Null when not yet calculated, true if nested within another scroll view, false otherwise.
@@ -746,20 +743,7 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 
-					var controllerView = controller.View;
-					if (_firstScrollViewRoot is not { } cachedRoot ||
-						!cachedRoot.TryGetTarget(out var root) ||
-						root != controllerView ||
-						_firstScrollViewInController is not { } cachedFirst ||
-						!cachedFirst.TryGetTarget(out var first) ||
-						!first.IsDescendantOfView(controllerView))
-					{
-						first = FindFirstScrollView(controllerView);
-						_firstScrollViewInController = first is null ? null : new WeakReference<UIScrollView>(first);
-						_firstScrollViewRoot = new WeakReference<UIView>(controllerView);
-					}
-
-					return first == this;
+					return FindFirstScrollView(controller.View) == this;
 				}
 
 				responder = responder.NextResponder;
@@ -959,13 +943,6 @@ namespace Microsoft.Maui.Platform
 			remove => _movedToWindow -= value;
 		}
 
-		public override void MovedToSuperview()
-		{
-			base.MovedToSuperview();
-
-			_firstScrollViewRoot = null;
-		}
-
 		/// <summary>
 		/// Called when the view is moved to a window (added to or removed from the view hierarchy).
 		/// This method handles cleanup and initialization tasks, including invalidating cached values
@@ -980,7 +957,6 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
-			_firstScrollViewRoot = null;
 			_blockedEdgesCacheValid = false;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area

@@ -252,6 +252,108 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
 			});
 
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenScrollViewIsBroughtToFront() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+				controller.View.AddSubview(other);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				controller.View.BringSubviewToFront(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenScrollViewIsInsertedBefore() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var container = new UIView();
+				using var nested = new UIView();
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(container);
+				controller.View.AddSubview(scrollView);
+				container.AddSubview(nested);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				nested.AddSubview(other);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewKeepsContentHeightWhenTitleCollapsesAndExpands() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				const int contentHeight = 524;
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				var layout = new SafeAreaLayoutStub { ContentHeight = contentHeight };
+				using var scrollView = CreateScrollView(layout, null, 96);
+				scrollView.SafeTop = 96;
+				controller.View.AddSubview(scrollView);
+
+				foreach (var top in new[] { 96, 44, 96 })
+				{
+					ChangeInset(scrollView, top);
+					Arrange(scrollView);
+					Assert.Equal(contentHeight, (double)scrollView.ContentSize.Height);
+				}
+			});
+
+		[Fact]
+		public Task UntrackedScrollViewInflationFollowsTitleCollapsingAndExpanding() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				const int contentHeight = 524;
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				var layout = new SafeAreaLayoutStub { ContentHeight = contentHeight };
+				using var scrollView = CreateScrollView(layout, null, 96);
+				scrollView.SafeTop = 96;
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				ChangeInset(scrollView, 96);
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				ChangeInset(scrollView, 44);
+				Arrange(scrollView);
+				Assert.Equal(contentHeight, (double)scrollView.ContentSize.Height);
+
+				ChangeInset(scrollView, 96);
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		static void ChangeInset(InsetScrollView scrollView, int top)
+		{
+			scrollView.SystemInset = new UIEdgeInsets(top, 0, 0, 0);
+			scrollView.SafeTop = top;
+			scrollView.SafeAreaInsetsDidChange();
+			scrollView.AdjustedContentInsetDidChange();
+		}
+
 		static InsetScrollView CreateScrollView(SafeAreaLayoutStub layout, UIResponder responder, int adjustedTop)
 		{
 			var scrollView = new InsetScrollView
@@ -276,7 +378,8 @@ namespace Microsoft.Maui.DeviceTests
 			public UIResponder Responder { get; set; }
 			public UIEdgeInsets SystemInset { get; set; }
 			public override UIResponder NextResponder => Responder ?? base.NextResponder;
-			public override UIEdgeInsets SafeAreaInsets => new UIEdgeInsets(36, 0, 0, 0);
+			public nfloat SafeTop { get; set; } = 36;
+			public override UIEdgeInsets SafeAreaInsets => new UIEdgeInsets(SafeTop, 0, 0, 0);
 			public override UIEdgeInsets AdjustedContentInset => SystemInset;
 		}
 
@@ -292,8 +395,9 @@ namespace Microsoft.Maui.DeviceTests
 			public bool HasExplicitSafeAreaEdges => false;
 			public Thickness SafeAreaInsets { private get; set; }
 			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Default;
-			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) => new Size(240, 580);
-			public Size CrossPlatformArrange(Rect bounds) => new Size(240, 580);
+			public double ContentHeight { get; set; } = 580;
+			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) => new Size(240, ContentHeight);
+			public Size CrossPlatformArrange(Rect bounds) => new Size(240, ContentHeight);
 		}
 	}
 }
