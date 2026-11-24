@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.ImageSource
@@ -57,6 +59,34 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 			Assert.True(staleResult.IsDisposed);
 			Assert.True(currentResult.IsDisposed);
+		}
+
+		[Fact]
+		public async Task SupersededLoadsCanCompleteWhileNewLoadsBegin()
+		{
+			var manager = new ImageSourceServiceResultManager();
+			var staleTokens = new System.Collections.Concurrent.BlockingCollection<CancellationToken>();
+
+			var completer = Task.Run(() =>
+			{
+				foreach (var token in staleTokens.GetConsumingEnumerable())
+				{
+					manager.CompleteLoad(new DisposableResult(), token);
+				}
+			});
+
+			for (int i = 0; i < 20000; i++)
+			{
+				staleTokens.Add(manager.BeginLoad());
+			}
+
+			staleTokens.CompleteAdding();
+			await completer;
+
+			var lastToken = manager.BeginLoad();
+			manager.CompleteLoad(null, lastToken);
+
+			Assert.False(manager.IsLoading);
 		}
 
 		class DisposableResult : IDisposable

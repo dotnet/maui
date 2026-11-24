@@ -24,6 +24,7 @@ namespace Microsoft.Maui
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
 		List<IDisposable>? _supersededResults;
+		readonly object _lock = new();
 
 		public bool IsLoading => _sourceCancellation is not null;
 		public CancellationToken Token =>
@@ -35,22 +36,34 @@ namespace Microsoft.Maui
 
 		public CancellationToken BeginLoad()
 		{
-			_sourceResult?.Dispose();
+			IDisposable? sourceResult;
+			List<IDisposable>? supersededResults;
+			CancellationTokenSource? previousCancellation;
+			CancellationToken token;
 
-			if (_supersededResults is not null)
+			lock (_lock)
 			{
-				foreach (var supersededResult in _supersededResults)
+				sourceResult = _sourceResult;
+				supersededResults = _supersededResults;
+				_supersededResults = null;
+				previousCancellation = _sourceCancellation;
+				_sourceCancellation = new CancellationTokenSource();
+				token = _sourceCancellation.Token;
+			}
+
+			sourceResult?.Dispose();
+
+			if (supersededResults is not null)
+			{
+				foreach (var supersededResult in supersededResults)
 				{
 					supersededResult.Dispose();
 				}
-
-				_supersededResults = null;
 			}
 
-			_sourceCancellation?.Cancel();
-			_sourceCancellation = new CancellationTokenSource();
+			previousCancellation?.Cancel();
 
-			return Token;
+			return token;
 		}
 
 		public void CompleteLoad<T>(IImageSourceServiceResult<T>? result, PlatformView uiContext)
@@ -82,24 +95,34 @@ namespace Microsoft.Maui
 
 		public void CompleteLoad(IDisposable? result, CancellationToken token)
 		{
-			if (_sourceCancellation is null || token != _sourceCancellation.Token)
+			lock (_lock)
 			{
-				if (result is not null)
+				if (_sourceCancellation is null || token != _sourceCancellation.Token)
 				{
-					(_supersededResults ??= new List<IDisposable>()).Add(result);
+					if (result is not null)
+					{
+						(_supersededResults ??= new List<IDisposable>()).Add(result);
+					}
+
+					return;
 				}
 
-				return;
+				CompleteLoad(result);
 			}
-
-			CompleteLoad(result);
 		}
 
 		public void CompleteLoad(IDisposable? result)
 		{
-			_sourceResult = result;
-			_sourceCancellation?.Dispose();
-			_sourceCancellation = null;
+			CancellationTokenSource? sourceCancellation;
+
+			lock (_lock)
+			{
+				_sourceResult = result;
+				sourceCancellation = _sourceCancellation;
+				_sourceCancellation = null;
+			}
+
+			sourceCancellation?.Dispose();
 
 			IsResolutionDependent = false;
 			CurrentResolution = 1.0f;
