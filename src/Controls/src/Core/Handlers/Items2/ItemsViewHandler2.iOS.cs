@@ -406,9 +406,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 					// Horizontal items fill the native frame, so its height is not an intrinsic measurement.
 					// Bootstrap unbounded Auto rows from real item content rather than a synthetic frame.
-					contentSize.Height = VirtualView is CollectionView { ItemsLayout: LinearItemsLayout } &&
+					contentSize.Height = VirtualView is CollectionView { ItemsLayout: LinearItemsLayout or GridItemsLayout } &&
 						!double.IsFinite(measurementHeight)
-							? MeasureFirstItemHeight()
+							? MeasureHorizontalContentHeight()
 							: 0;
 				}
 			}
@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return contentSize;
 		}
 
-		double MeasureFirstItemHeight()
+		double MeasureHorizontalContentHeight()
 		{
 			var source = Controller.ItemsSource;
 			for (int group = 0; group < source.GroupCount; group++)
@@ -428,26 +428,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				using var indexPath = NSIndexPath.Create(group, 0);
 				var item = source[indexPath];
+				double itemHeight;
 				if (ItemsView.ItemTemplate is null)
 				{
 					using var cell = new HorizontalDefaultCell2(CGRect.Empty);
 					cell.Label.Text = item.ToString();
-					return cell.Label.IntrinsicContentSize.Height;
+					itemHeight = cell.Label.IntrinsicContentSize.Height;
+				}
+				else
+				{
+					using var measurementCell = new TemplatedCell2(CGRect.Empty);
+					try
+					{
+						measurementCell.Bind(ItemsView.ItemTemplate, item, ItemsView);
+						itemHeight = measurementCell.PlatformHandler.VirtualView.Measure(
+							double.PositiveInfinity, double.PositiveInfinity).Height;
+					}
+					finally
+					{
+						var view = measurementCell.PlatformHandler?.VirtualView;
+						measurementCell.Unbind();
+						view?.DisconnectHandlers();
+					}
 				}
 
-				using var measurementCell = new TemplatedCell2(CGRect.Empty);
-				try
-				{
-					measurementCell.Bind(ItemsView.ItemTemplate, item, ItemsView);
-					return measurementCell.PlatformHandler.VirtualView.Measure(
-						double.PositiveInfinity, double.PositiveInfinity).Height;
-				}
-				finally
-				{
-					var view = measurementCell.PlatformHandler?.VirtualView;
-					measurementCell.Unbind();
-					view?.DisconnectHandlers();
-				}
+				return ItemsView is CollectionView { ItemsLayout: GridItemsLayout grid }
+					? itemHeight * grid.Span + grid.VerticalItemSpacing * (grid.Span - 1)
+					: itemHeight;
 			}
 
 			return 0;
