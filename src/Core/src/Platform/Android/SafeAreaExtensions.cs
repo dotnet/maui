@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
@@ -159,7 +160,7 @@ internal static class SafeAreaExtensions
 				// Get actual screen dimensions (including system UI)
 				// This must be done BEFORE margin adjustment so we can detect
 				// off-screen animation state from raw position values.
-				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+				var windowManager = context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>();
 				if (windowManager?.DefaultDisplay is not null)
 				{
 					var realMetrics = new global::Android.Util.DisplayMetrics();

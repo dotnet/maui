@@ -18,21 +18,28 @@ namespace Microsoft.Maui.DeviceTests
 		const int TopInset = 100;
 
 		[Theory]
-		[InlineData(0, true, TopInset)]
-		[InlineData(1, true, TopInset)]
-		[InlineData(TopInset - 1, true, TopInset)]
-		[InlineData(TopInset, true, TopInset)]
-		[InlineData(TopInset + 1, true, TopInset)]
-		[InlineData(1, false, 0)]
-		public async Task TopInsetRetainedOnlyForFullHeightTransitions(int offset, bool fullHeight, int expectedTopInset)
+		[InlineData(0, true, TopInset, false)]
+		[InlineData(1, true, TopInset, false)]
+		[InlineData(TopInset - 1, true, TopInset, false)]
+		[InlineData(TopInset, true, TopInset, false)]
+		[InlineData(TopInset + 1, true, TopInset, false)]
+		[InlineData(1, false, 0, false)]
+		[InlineData(1, false, 0, true)]
+		public async Task TopInsetRetainedOnlyForFullHeightTransitions(int offset, bool fullHeight, int expectedTopInset, bool useNewContext)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var context = MauiProgram.DefaultContext;
-				// Resolve the typed Java peer before the inset helper calls GetSystemService.
-				var windowManager = context.GetActivity()?.WindowManager;
+				var activityContext = MauiProgram.DefaultContext;
+				using var newContext = useNewContext
+					? activityContext.CreateConfigurationContext(activityContext.Resources.Configuration)
+					: null;
+				var context = newContext ?? activityContext;
+				// Keep the new context's window-service peer alive while insets are applied.
+				using var windowService = useNewContext ? context.GetSystemService(Context.WindowService) : null;
+				if (useNewContext)
+					Assert.NotNull(windowService);
+				var windowManager = activityContext.GetActivity()?.WindowManager;
 				Assert.NotNull(windowManager);
-				Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(Context.WindowService));
 				int screenWidth;
 				int screenHeight;
 				if (OperatingSystem.IsAndroidVersionAtLeast(30))
