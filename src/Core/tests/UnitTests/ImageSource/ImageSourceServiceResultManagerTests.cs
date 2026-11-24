@@ -89,11 +89,44 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.False(manager.IsLoading);
 		}
 
+		[Fact]
+		public void ResetKeepsLoadStartedWhileDisposingTheCurrentResult()
+		{
+			var manager = new ImageSourceServiceResultManager();
+			var reentrantToken = default(CancellationToken);
+			var result = new DisposableResult(() => reentrantToken = manager.BeginLoad());
+
+			var tokenA = manager.BeginLoad();
+			manager.CompleteLoad(result, tokenA);
+
+			manager.Reset();
+
+			Assert.True(result.IsDisposed);
+			Assert.True(manager.IsLoading);
+			Assert.Equal(reentrantToken, manager.Token);
+			Assert.False(reentrantToken.IsCancellationRequested);
+
+			manager.CompleteLoad(null, reentrantToken);
+
+			Assert.False(manager.IsLoading);
+		}
+
 		class DisposableResult : IDisposable
 		{
+			readonly Action _onDispose;
+
+			public DisposableResult(Action onDispose = null) => _onDispose = onDispose;
+
 			public bool IsDisposed { get; private set; }
 
-			public void Dispose() => IsDisposed = true;
+			public void Dispose()
+			{
+				if (IsDisposed)
+					return;
+
+				IsDisposed = true;
+				_onDispose?.Invoke();
+			}
 		}
 	}
 }

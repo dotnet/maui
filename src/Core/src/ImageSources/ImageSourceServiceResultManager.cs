@@ -44,6 +44,7 @@ namespace Microsoft.Maui
 			lock (_lock)
 			{
 				sourceResult = _sourceResult;
+				_sourceResult = null;
 				supersededResults = _supersededResults;
 				_supersededResults = null;
 				previousCancellation = _sourceCancellation;
@@ -130,8 +131,8 @@ namespace Microsoft.Maui
 
 		public void Reset()
 		{
-			BeginLoad();
-			CompleteLoad(null);
+			var token = BeginLoad();
+			CompleteLoad(null, token);
 		}
 	}
 }
