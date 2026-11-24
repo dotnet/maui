@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UIKit;
@@ -40,6 +41,21 @@ namespace Microsoft.Maui
 
 		/// <summary>Set by the service when it decoded the image at a smaller size than its full size.</summary>
 		public bool WasDownsampled { get; set; }
+
+		/// <summary>
+		/// Identifies the data the image was decoded from (set by the service), so that it is only decoded again from the same data.
+		/// </summary>
+		public string? ContentVersion { get; set; }
+
+		internal static string GetContentVersion(byte[] data) =>
+			$"{data.Length}:{Convert.ToHexString(Crc64.ComputeHash(data))}";
+
+		internal static string GetFileVersion(string file)
+		{
+			// Files in the app package do not change.
+			var info = new System.IO.FileInfo(file);
+			return info.Exists ? $"{info.Length}:{info.LastWriteTimeUtc.Ticks}" : string.Empty;
+		}
 
 		/// <summary>
 		/// Whether an image decoded for these options is not sharp enough for <paramref name="required"/>.

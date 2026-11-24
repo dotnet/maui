@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Platform
 			Action<WImageSource?> setImage,
 			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default,
-			Action<Exception>? onFailed = null)
+			Action<Exception>? onFailed = null,
+			Action? onImageShown = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -44,6 +45,10 @@ namespace Microsoft.Maui.Platform
 				{
 					setImage(uiImage);
 				}
+
+				// The image is shown before that is reported (which may start another load).
+				if (applied && result is not null)
+					onImageShown?.Invoke();
 
 				events?.LoadingCompleted(applied);
 

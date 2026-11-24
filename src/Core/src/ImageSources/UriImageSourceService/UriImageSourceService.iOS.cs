@@ -44,7 +44,9 @@ namespace Microsoft.Maui
 				return null;
 
 			var bytes = await Loader.TryLoadCachedAsync(imageSource.Uri, cancellationToken).ConfigureAwait(false);
-			if (bytes is null)
+
+			// Only the same image (not a newer version of it): the image that is shown must not change.
+			if (bytes is null || ImageDecodeOptions.GetContentVersion(bytes) != options.ContentVersion)
 				return null;
 
 			using var cgImageSource = NSData.FromArray(bytes).GetPlatformImageSource();
@@ -70,6 +72,8 @@ namespace Microsoft.Maui
 					using var cgImageSource = imageData.GetPlatformImageSource()
 						?? throw new InvalidOperationException("Unable to load image file.");
 					image = cgImageSource.GetPlatformImage(1, options);
+					if (options?.WasDownsampled == true)
+						options.ContentVersion = ImageDecodeOptions.GetContentVersion(imageData.ToArray());
 				}
 				catch (Exception)
 				{

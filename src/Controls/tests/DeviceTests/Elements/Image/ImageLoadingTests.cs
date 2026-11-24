@@ -374,6 +374,45 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task KeepPreviousImageWhileLoadingKeepsTheImageWhenTheSourceIsChangedFromImageLoaded()
+		{
+			SetupBuilder();
+			var release = new TaskCompletionSource<bool>();
+			_server.Respond(async request =>
+			{
+				if (request.RequestUri.AbsolutePath.EndsWith("blue.png", StringComparison.Ordinal))
+				{
+					await release.Task;
+					return Png(Colors.Blue);
+				}
+
+				return Png(Colors.Red);
+			});
+
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.PlaceholderSource = "green.png";
+			image.KeepPreviousImageWhileLoading = true;
+			var loaded = 0;
+			image.ImageLoaded += (_, _) =>
+			{
+				if (++loaded == 1)
+					image.Source = new UriImageSource { Uri = new Uri("https://images.test/blue.png") };
+			};
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => loaded == 1 && _server.RequestCount >= 2);
+				await Task.Delay(300);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, MauiContext);
+
+				release.SetResult(true);
+				await WaitFor(() => loaded == 2);
+				await AssertColor(image, Colors.Blue);
+			}, image);
+		}
+
+		[Fact]
 		public async Task KeepPreviousImageWhileLoadingDoesNotKeepTheImageWhenTheErrorImageIsMissing()
 		{
 			SetupBuilder();

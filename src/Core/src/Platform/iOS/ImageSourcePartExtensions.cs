@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Platform
 			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default,
 			Action<Exception>? onFailed = null,
-			ImageDecodeOptions? decodeOptions = null)
+			ImageDecodeOptions? decodeOptions = null,
+			Action? onImageShown = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -46,6 +47,10 @@ namespace Microsoft.Maui.Platform
 					if (destinationContext is UIImageView imageView)
 						imageView.UpdateIsAnimationPlaying(image);
 				}
+
+				// The image is shown before that is reported (which may start another load).
+				if (applied && result is not null)
+					onImageShown?.Invoke();
 
 				events?.LoadingCompleted(applied);
 

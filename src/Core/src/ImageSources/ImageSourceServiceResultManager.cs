@@ -79,6 +79,16 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Takes the result of the completed load, so that starting the next load does not release it.
+		/// </summary>
+		public IDisposable? DetachResult()
+		{
+			var result = _sourceResult;
+			_sourceResult = null;
+			return result;
+		}
+
+		/// <summary>
 		/// Replaces the result of the completed load with another image of the same source (for example decoded at a larger size).
 		/// </summary>
 		public void ReplaceResult(IDisposable result)

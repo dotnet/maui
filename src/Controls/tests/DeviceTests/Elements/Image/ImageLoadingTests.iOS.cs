@@ -131,6 +131,37 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ImageIsNotDecodedAgainFromANewerVersionOfIt()
+		{
+			SetupBuilder();
+			var red = CreateLargePng();
+			var blue = CreateLargePng(UIColor.Blue);
+			var serveBlue = false;
+			_server.Respond(_ => LargePng(serveBlue ? blue : red));
+			var image = CreateSizedImage(new UriImageSource { Uri = RedUri }, 30, 20, Aspect.AspectFit);
+			var other = CreateSizedImage(null, 30, 20, Aspect.AspectFit);
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+
+				// Another image of the same URI replaces the cached image with a newer version.
+				serveBlue = true;
+				other.Source = new UriImageSource { Uri = RedUri, CacheValidity = TimeSpan.Zero };
+				await WaitFor(() => other.LoadingState == ImageLoadingState.Loaded);
+				await AssertColor(other, Colors.Blue);
+
+				image.WidthRequest = 300;
+				image.HeightRequest = 200;
+				await WaitFor(() => image.Width == 300);
+				await Task.Delay(500);
+
+				// The image that is shown does not change when the view grows.
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Blue, MauiContext);
+			}, image, other);
+		}
+
+		[Fact]
 		public async Task DerivedImageSourceServicesLoadTheImageThemselves()
 		{
 			var service = default(DerivedUriImageSourceService);
@@ -188,14 +219,14 @@ namespace Microsoft.Maui.DeviceTests
 			return new FileImageSource { File = path };
 		}
 
-		/// <summary>Creates a red PNG of 1200x800 pixels.</summary>
-		static byte[] CreateLargePng()
+		/// <summary>Creates a PNG of 1200x800 pixels (red by default).</summary>
+		static byte[] CreateLargePng(UIColor color = null)
 		{
 			var format = new UIGraphicsImageRendererFormat { Scale = 1 };
 			var renderer = new UIGraphicsImageRenderer(new CGSize(LargeWidth, LargeHeight), format);
 			using var image = renderer.CreateImage(context =>
 			{
-				UIColor.Red.SetFill();
+				(color ?? UIColor.Red).SetFill();
 				context.FillRect(new CGRect(0, 0, LargeWidth, LargeHeight));
 			});
 			return image.AsPNG().ToArray();

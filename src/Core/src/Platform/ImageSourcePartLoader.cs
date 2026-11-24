@@ -76,8 +76,19 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var token = SourceManager.BeginLoad();
 			var imageSource = Setter.ImageSourcePart;
+#if IOS || ANDROID || WINDOWS
+			// Only an image that loaded successfully is kept (not a placeholder or an error image).
+			var keepPrevious = _isLoadedImageShown && imageSource?.Source is { IsEmpty: false } &&
+				imageSource is IImageSourcePartFallbacks { KeepPreviousImageWhileLoading: true } &&
+				CanKeepPreviousImage(handler, imageSource.Source);
+
+			// Starting a load releases the result of the image that is shown; keep it until it is no longer shown.
+			if (keepPrevious && SourceManager.DetachResult() is { } shownResult)
+				ReplaceOwnedResult(shownResult);
+#endif
+
+			var token = SourceManager.BeginLoad();
 #if IOS || ANDROID || WINDOWS
 			var fallbackGeneration = ++_fallbackGeneration;
 			CancelFallbacks();
@@ -92,8 +103,6 @@ namespace Microsoft.Maui.Platform
 				var fallbacks = imageSource as IImageSourcePartFallbacks;
 				var errorSource = fallbacks?.ErrorSource;
 
-				// Only an image that loaded successfully is kept (not a placeholder or an error image).
-				var keepPrevious = _isLoadedImageShown && fallbacks?.KeepPreviousImageWhileLoading == true;
 #if ANDROID
 				// Otherwise Android clears the image as soon as the new one starts loading. Glide only does that for images
 				// it set itself, not for a kept image that the loader set.
@@ -126,12 +135,12 @@ namespace Microsoft.Maui.Platform
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				_decodedFor = null;
 				var decodeOptions = GetDecodeOptions(platformView, scale, handler);
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, decodeOptions);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, decodeOptions, OnImageShown);
 #elif WINDOWS
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, OnImageShown);
 #elif ANDROID
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, onKeptImageReplaced);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, onKeptImageReplaced, OnImageShown);
 #endif
 
 #if IOS || ANDROID || WINDOWS
@@ -321,6 +330,29 @@ namespace Microsoft.Maui.Platform
 		void ReleaseOwnedResult() =>
 			ReplaceOwnedResult(null);
 
+		/// <summary>
+		/// Called when the source's image is shown, before that is reported (which may start another load).
+		/// </summary>
+		void OnImageShown() =>
+			_isLoadedImageShown = true;
+
+#if !ANDROID
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance data on Android.")]
+#endif
+		bool CanKeepPreviousImage(IElementHandler handler, IImageSource source)
+		{
+#if ANDROID
+			// Loading into the view clears it, so the image is loaded without the view first; only the built-in services
+			// are known to load images the same way without the view (others may override how they load into the view).
+			_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+			var serviceType = _imageSourceServiceProvider.GetImageSourceService(source)?.GetType();
+			return serviceType == typeof(FileImageSourceService) || serviceType == typeof(UriImageSourceService) ||
+				serviceType == typeof(StreamImageSourceService) || serviceType == typeof(FontImageSourceService);
+#else
+			return true;
+#endif
+		}
+
 #if ANDROID
 		// The view that shows the owned image (the handler's PlatformView is cleared before it is disconnected).
 		global::Android.Widget.ImageView? _ownedImageView;
@@ -400,7 +432,12 @@ namespace Microsoft.Maui.Platform
 			if (required is null || !decodedFor.IsInsufficientFor(required))
 				return;
 
-			RedecodeAsync(source, density, new ImageDecodeOptions(required.PixelWidth, required.PixelHeight, required.Aspect, isViewSizeKnown: true) { FromCacheOnly = true }).FireAndForget();
+			var options = new ImageDecodeOptions(required.PixelWidth, required.PixelHeight, required.Aspect, isViewSizeKnown: true)
+			{
+				FromCacheOnly = true,
+				ContentVersion = decodedFor.ContentVersion,
+			};
+			RedecodeAsync(source, density, options).FireAndForget();
 		}
 
 		async Task RedecodeAsync(IImageSource source, float density, ImageDecodeOptions options)

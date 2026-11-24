@@ -25,7 +25,13 @@ namespace Microsoft.Maui
 			if (GetType() != typeof(FileImageSourceService))
 				return options.FromCacheOnly ? FromResult(null) : GetImageAsync(imageSource, scale, cancellationToken);
 
-			return FromResult(GetImage((IFileImageSource)imageSource, options));
+			var fileImageSource = (IFileImageSource)imageSource;
+
+			// Only the same image (not a changed file): the image that is shown must not change.
+			if (options.FromCacheOnly && ImageDecodeOptions.GetFileVersion(fileImageSource.File) != options.ContentVersion)
+				return FromResult(null);
+
+			return FromResult(GetImage(fileImageSource, options));
 		}
 
 		ImageSourceServiceResult? GetImage(IFileImageSource imageSource, ImageDecodeOptions? options)
@@ -43,6 +49,8 @@ namespace Microsoft.Maui
 				// that's easily fixed by the user. Plus, the extension is required on other platforms so it's actually
 				// more consistent to not load the gif on iOS without the extension.			
 				var image = cgImageSource?.GetPlatformImage(loadedScale, options) ?? imageSource.GetPlatformImage();
+				if (options?.WasDownsampled == true)
+					options.ContentVersion = ImageDecodeOptions.GetFileVersion(imageSource.File);
 
 				if (image is null)
 					throw new InvalidOperationException("Unable to load image file.");
