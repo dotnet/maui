@@ -24,19 +24,27 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CollectionViewTests
 	{
 		[Theory]
-		[InlineData(false, true)]
-		[InlineData(true, true)]
-		[InlineData(false, false)]
-		public async Task HorizontalCollectionViewPreMountHeightMeasuresContent(bool isGrouped, bool hasTemplate)
+		[InlineData(false, true, 0, 0)]
+		[InlineData(true, true, 0, 0)]
+		[InlineData(false, false, 0, 0)]
+		[InlineData(false, true, 1, 6)]
+		[InlineData(false, true, 4, 0)]
+		[InlineData(true, true, 4, 6)]
+		[InlineData(false, false, 4, 6)]
+		public async Task HorizontalCollectionViewPreMountHeightMeasuresContent(
+			bool isGrouped, bool hasTemplate, int span, double verticalSpacing)
 		{
 			SetupBuilder();
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var items = new ObservableCollection<string> { "Item" };
+				ItemsLayout itemsLayout = span == 0
+					? new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+					: new GridItemsLayout(span, ItemsLayoutOrientation.Horizontal) { VerticalItemSpacing = verticalSpacing };
 				var collectionView = new CollectionView
 				{
-					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+					ItemsLayout = itemsLayout,
 					IsGrouped = isGrouped,
 					ItemsSource = isGrouped
 						? new ObservableCollection<ObservableCollection<string>> { new(), items }
@@ -55,6 +63,10 @@ namespace Microsoft.Maui.DeviceTests
 					? ((IView)expectedLabel).Measure(double.PositiveInfinity, double.PositiveInfinity).Height
 					: defaultLabel.IntrinsicContentSize.Height;
 				Assert.True(expectedHeight > 0);
+				if (span > 0)
+				{
+					expectedHeight = expectedHeight * span + verticalSpacing * (span - 1);
+				}
 
 				var handler = new CollectionViewHandler2();
 				handler.SetMauiContext(MauiContext);
@@ -76,6 +88,90 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					((IElementHandler)handler).DisconnectHandler();
 					expectedLabel.DisconnectHandlers();
+				}
+			});
+		}
+
+		[Fact]
+		public async Task HorizontalGridInAutoRowDisplaysItems()
+		{
+			SetupBuilder();
+
+			const int span = 4;
+			const double itemHeight = 32;
+			const double verticalSpacing = 5;
+			var items = new[] { "Item 1", "Item 2", "Item 3", "Item 4" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemsLayout = new GridItemsLayout(span, ItemsLayoutOrientation.Horizontal)
+				{
+					VerticalItemSpacing = verticalSpacing
+				},
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = itemHeight, WidthRequest = 80 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+			var layout = new Grid
+			{
+				RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
+			};
+			layout.Add(collectionView);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				var handler = Assert.IsType<CollectionViewHandler2>(collectionView.Handler);
+				var platformView = handler.Controller.CollectionView;
+				var expectedHeight = itemHeight * span + verticalSpacing * (span - 1);
+
+				await AssertEventually(() => platformView.VisibleCells.Length == items.Length &&
+					Math.Abs(collectionView.Height - expectedHeight) <= 1,
+					message: "The four-row CollectionView should display its items in the Auto row.");
+
+				double previousBottom = 0;
+				for (int i = 0; i < items.Length; i++)
+				{
+					using var indexPath = NSIndexPath.Create(0, i);
+					var cell = Assert.IsAssignableFrom<TemplatedCell2>(platformView.CellForItem(indexPath));
+					var label = Assert.IsType<Label>(cell.PlatformHandler.VirtualView);
+					Assert.Equal(items[i], label.Text);
+					Assert.True((double)cell.Frame.Height >= itemHeight - 1);
+					if (i > 0)
+					{
+						Assert.True((double)cell.Frame.Top >= previousBottom + verticalSpacing - 1);
+					}
+					previousBottom = (double)cell.Frame.Bottom;
+					Assert.True(previousBottom <= (double)platformView.Bounds.Height + 1);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task HorizontalGridWithEmptyGroupsDoesNotMeasureItemSpacing()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = new ObservableCollection<ObservableCollection<string>> { new() },
+					ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Horizontal) { VerticalItemSpacing = 6 }
+				};
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					Assert.Equal(0, handler.GetDesiredSize(350, double.PositiveInfinity).Height, 1);
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
 				}
 			});
 		}
