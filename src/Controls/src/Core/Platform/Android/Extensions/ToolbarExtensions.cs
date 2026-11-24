@@ -192,10 +192,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var tintColor = solidColor.Color;
 
-					// Tint the background drawable instead of the view. A view background tint
-					// stays on the toolbar and paints over any background drawable set later
-					// (for example by a custom IShellToolbarAppearanceTracker), while a drawable
-					// tint goes away with the drawable it was applied to.
 					var background = nativeToolbar.Background?.Mutate();
 
 					if (tintColor == null)

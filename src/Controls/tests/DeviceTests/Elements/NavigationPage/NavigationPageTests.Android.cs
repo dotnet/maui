@@ -151,7 +151,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Solid BarBackground does not leave a background tint on the toolbar")]
 		public async Task SolidBarBackgroundDoesNotLeaveViewBackgroundTint()
 		{
-			// https://github.com/dotnet/maui/issues/40372
 			if (RuntimeFeature.IsMaterial3Enabled && RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 				return;
 
@@ -168,8 +167,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
 
-				// A view tint would paint over a background drawable set later, such as the
-				// gradient a custom IShellToolbarAppearanceTracker sets.
 				Assert.Null(platformToolbar.BackgroundTintList);
 
 				var customBackground = new Android.Graphics.Drawables.GradientDrawable(
