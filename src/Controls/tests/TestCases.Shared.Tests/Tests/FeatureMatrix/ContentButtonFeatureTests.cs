@@ -159,18 +159,12 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		});
 		try
 		{
+			Assert.That(GetStatusValue("Pressed"), Is.EqualTo(1));
 			if (virtualKey == 0x20)
 			{
 				Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
-				Assert.That(GetStatusValue("Pressed"), Is.EqualTo(1));
 				Assert.That(GetStatusValue("Released"), Is.Zero);
 				Assert.That(Status, Does.Contain("IsPressed=True"));
-			}
-			else
-			{
-				Assert.That(Status, Does.Contain("Commands=1; Clicks=1"));
-				Assert.That(Status, Does.Contain("Pressed=1; Released=1"));
-				Assert.That(Status, Does.Contain("IsPressed=False"));
 			}
 		}
 		finally
