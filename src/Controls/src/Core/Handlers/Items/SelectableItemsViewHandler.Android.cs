@@ -23,5 +23,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			handler.PlatformView.UpdateSelection(itemsView);
 		}
+
+		partial void UpdateIsItemTapEnabled(SelectableItemsView itemsView)
+		{
+			// Same adapter type as in MapSelectionMode
+			var adapter = PlatformView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
+			adapter?.UpdateSelectionMode();
+		}
 	}
 }

@@ -1,1 +1,10 @@
 #nullable enable
+Microsoft.Maui.Controls.SelectableItemsView.ItemTapped -> System.EventHandler<Microsoft.Maui.Controls.ItemTappedEventArgs>
+~Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommand.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommand.set -> void
+~Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommandParameter.get -> object
+~Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommandParameter.set -> void
+~static readonly Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SelectableItemsView.ItemTappedCommandProperty -> Microsoft.Maui.Controls.BindableProperty
+~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.OnAttachedToRecyclerView(AndroidX.RecyclerView.Widget.RecyclerView recyclerView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.OnDetachedFromRecyclerView(AndroidX.RecyclerView.Widget.RecyclerView recyclerView) -> void

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.ListView.ItemTapped"/> event.</summary>
+	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.ListView.ItemTapped"/> and <see cref="Microsoft.Maui.Controls.SelectableItemsView.ItemTapped"/> events.</summary>
 	public class ItemTappedEventArgs : EventArgs
 	{
 		/// <summary>Creates a new <see cref="ItemTappedEventArgs"/> with the specified group, item, and index.</summary>
@@ -17,13 +17,13 @@ namespace Microsoft.Maui.Controls
 			ItemIndex = itemIndex;
 		}
 
-		/// <summary>The collection of elements to which the tapped item belongs.</summary>
+		/// <summary>The group to which the tapped item belongs, or <see langword="null"/> when the items are not grouped.</summary>
 		public object Group { get; private set; }
 
-		/// <summary>The visual element that the user tapped.</summary>
+		/// <summary>The data item that the user tapped.</summary>
 		public object Item { get; private set; }
 
-		/// <summary>Gets the index of the tapped item within the items source.</summary>
+		/// <summary>Gets the index of the tapped item within the items source. When the items are grouped, this is the position in the flattened list in which each group occupies one row for its header followed by its items.</summary>
 		public int ItemIndex { get; private set; }
 	}
 }

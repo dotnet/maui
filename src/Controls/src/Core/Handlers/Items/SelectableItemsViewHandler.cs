@@ -23,7 +23,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			[SelectableItemsView.IsItemTapEnabledMapperKey] = MapIsItemTapEnabled,
 		};
+
+		internal static void MapIsItemTapEnabled(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
+			=> handler.UpdateIsItemTapEnabled(itemsView);
+
+		partial void UpdateIsItemTapEnabled(SelectableItemsView itemsView);
 
 	}
 }

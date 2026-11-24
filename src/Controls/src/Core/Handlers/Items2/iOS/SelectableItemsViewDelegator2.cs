@@ -23,5 +23,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ViewController?.ItemDeselected(collectionView, indexPath);
 		}
+
+		public override bool ShouldSelectItem(UICollectionView collectionView, NSIndexPath indexPath)
+		{
+			return ViewController?.ShouldSelectItemCore(indexPath) ?? false;
+		}
 	}
 }
