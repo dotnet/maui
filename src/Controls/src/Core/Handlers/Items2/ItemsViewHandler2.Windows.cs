@@ -523,6 +523,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is View mauiView)
 				{
 					mauiView.DisconnectHandlers();
+					if (mauiView.Handler is null && wrapper.Content is not null)
+					{
+						wrapper.UnwireContentSizeObserver();
+						wrapper.Content = null;
+					}
 					VirtualView.RemoveLogicalChild(mauiView);
 				}
 			}
