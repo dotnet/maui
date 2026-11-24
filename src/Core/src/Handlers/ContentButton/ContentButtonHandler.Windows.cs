@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Handlers
 		WeakReference<IContentButton>? _activationView;
 		bool _isPressed;
 
+		internal override bool PreventGestureBubbling => true;
+
 		public override void SetVirtualView(IView view)
 		{
 			var elementHandler = (IElementHandler)this;
