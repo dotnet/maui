@@ -262,6 +262,9 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is not { } picker || PlatformView is not { } platformView)
 				return;
 
+			if (picker is IPickerClearButton { IsClearButtonVisible: false })
+				_selectionWasCleared = false;
+
 			platformView.ClearButtonMode = picker.ShouldShowClearButton()
 				? UITextFieldViewMode.Always
 				: UITextFieldViewMode.Never;

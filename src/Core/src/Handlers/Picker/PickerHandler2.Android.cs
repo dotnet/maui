@@ -32,7 +32,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 			[nameof(IPickerClearButton.IsClearButtonVisible)] = MapIsClearButtonVisible,
 			[nameof(IView.IsEnabled)] = static (handler, picker) =>
 			{
-				ViewHandler.MapIsEnabled(handler, picker);
+				ViewMapper.UpdateProperty(handler, picker, nameof(IView.IsEnabled));
 				handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 			},
 		};

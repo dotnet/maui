@@ -25,6 +25,12 @@ namespace Microsoft.Maui.Platform
 
 		internal MauiPicker()
 		{
+			if (Application.Current.Resources.TryGetValue(typeof(ComboBox), out var comboBoxStyle) &&
+				comboBoxStyle is Style style)
+			{
+				Style = style;
+			}
+
 			Loaded += OnLoaded;
 		}
 

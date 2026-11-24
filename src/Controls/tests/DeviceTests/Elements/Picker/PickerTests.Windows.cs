@@ -20,6 +20,43 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PickerTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task PickerInheritsApplicationComboBoxStyle()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var resources = UI.Xaml.Application.Current.Resources;
+				var hasOriginalStyle = resources.TryGetValue(typeof(ComboBox), out var originalStyle);
+				var style = new UI.Xaml.Style(typeof(ComboBox));
+				style.Setters.Add(new UI.Xaml.Setter
+				{
+					Property = UI.Xaml.Controls.Control.CornerRadiusProperty,
+					Value = new UI.Xaml.CornerRadius(12)
+				});
+				resources[typeof(ComboBox)] = style;
+
+				try
+				{
+					var picker = new Picker { Items = { "One" } };
+					var handler = CreateHandler<PickerHandler>(picker);
+					var host = new StackPanel { Children = { handler.PlatformView } };
+
+					await host.AttachAndRun(async () =>
+					{
+						await AssertEventually(() => handler.PlatformView.IsLoaded);
+						Assert.Equal(new UI.Xaml.CornerRadius(12), handler.PlatformView.CornerRadius);
+					}, MauiContext);
+				}
+				finally
+				{
+					if (hasOriginalStyle)
+						resources[typeof(ComboBox)] = originalStyle!;
+					else
+						resources.Remove(typeof(ComboBox));
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData(false, false)]
 		[InlineData(false, true)]
@@ -85,6 +122,53 @@ namespace Microsoft.Maui.DeviceTests
 					selection.SelectedIndex = 0;
 					Assert.Equal(0, native.SelectedIndex);
 					Assert.Equal(UI.Xaml.Visibility.Visible, native.ClearButton.Visibility);
+				}
+				finally
+				{
+					picker.IsOpen = false;
+				}
+			});
+		}
+
+		[Fact]
+		public async Task WindowsClearSelectionSurvivesNativeSelectionRestoration()
+		{
+			var selection = new WindowsPickerSelection();
+			var picker = new Picker
+			{
+				Items = { "One", "Two" },
+				IsClearButtonVisible = true
+			};
+			picker.SetBinding(Picker.SelectedIndexProperty,
+				new Binding(nameof(WindowsPickerSelection.SelectedIndex), BindingMode.TwoWay, source: selection));
+
+			await AttachAndRun<PickerHandler>(picker, async handler =>
+			{
+				var native = Assert.IsType<MauiPicker>(handler.PlatformView);
+				await AssertEventually(() => native.ClearButton?.IsLoaded == true);
+				picker.IsOpen = true;
+				await AssertEventually(() => native.PopupClearButton?.IsLoaded == true);
+
+				try
+				{
+					var peer = new ButtonAutomationPeer(native.PopupClearButton);
+					Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke)).Invoke();
+					await AssertEventually(() => picker.SelectedIndex == -1);
+
+					Assert.Null(picker.SelectedItem);
+					Assert.Equal(-1, selection.SelectedIndex);
+					Assert.Equal(-1, native.SelectedIndex);
+
+					picker.IsOpen = false;
+					await AssertEventually(() => !native.IsDropDownOpen);
+
+					// WinUI may restore the opening selection when a dropdown is canceled.
+					native.SelectedIndex = 1;
+					await AssertEventually(() => native.SelectedIndex == -1);
+
+					Assert.Equal(-1, picker.SelectedIndex);
+					Assert.Null(picker.SelectedItem);
+					Assert.Equal(-1, selection.SelectedIndex);
 				}
 				finally
 				{
