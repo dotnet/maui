@@ -47,13 +47,13 @@ namespace Microsoft.Maui.Controls.Animations
 			var view = PlatformView(page);
 			var container = view?.Parent as ViewGroup;
 
-			// The outgoing page is removed by the transaction, and a container draws views being removed above
-			// the others by default. Going forward the incoming page belongs on top, so the outgoing one is
-			// drawn first for the length of the transition.
+			// The outgoing page is removed by the transaction. Despite its name, the argument of
+			// setDrawDisappearingViewsLast is "draw disappearing views first" (true by default, beneath the others):
+			// forward, the outgoing page stays beneath the incoming one; back, it is drawn on top as it leaves.
 			if (!enter && container is FragmentContainerView fragmentContainer)
 			{
-				SetDrawDisappearingViewsLast(fragmentContainer, isBack);
-				animation.AnimationEnd += (_, _) => SetDrawDisappearingViewsLast(fragmentContainer, true);
+				SetDrawDisappearingViewsLast(fragmentContainer, drawDisappearingViewsFirst: !isBack);
+				animation.AnimationEnd += (_, _) => SetDrawDisappearingViewsLast(fragmentContainer, drawDisappearingViewsFirst: true);
 			}
 
 			if (!enter && container is not null && _transition.Background is { } background)
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Animations
 		// FragmentContainerView.setDrawDisappearingViewsLast isn't in the AndroidX binding.
 		static IntPtr s_setDrawDisappearingViewsLast;
 
-		static void SetDrawDisappearingViewsLast(FragmentContainerView container, bool value)
+		static void SetDrawDisappearingViewsLast(FragmentContainerView container, bool drawDisappearingViewsFirst)
 		{
 			try
 			{
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Animations
 					global::Android.Runtime.JNIEnv.DeleteLocalRef(type);
 				}
 
-				global::Android.Runtime.JNIEnv.CallVoidMethod(container.Handle, s_setDrawDisappearingViewsLast, new global::Android.Runtime.JValue(value));
+				global::Android.Runtime.JNIEnv.CallVoidMethod(container.Handle, s_setDrawDisappearingViewsLast, new global::Android.Runtime.JValue(drawDisappearingViewsFirst));
 			}
 			catch (Java.Lang.Throwable)
 			{
@@ -185,21 +185,27 @@ namespace Microsoft.Maui.Controls.Animations
 
 			sealed class Flight
 			{
-				public Flight(AView source, VisualElement to, ImageView picture, int[] start, float sourceAlpha)
+				public Flight(VisualElement from, AView source, VisualElement to, ImageView picture, int[] start)
 				{
+					From = from;
 					Source = source;
 					To = to;
 					Picture = picture;
 					Start = start;
-					SourceAlpha = sourceAlpha;
 				}
 
+				public VisualElement From { get; }
 				public AView Source { get; }
 				public VisualElement To { get; }
 				public ImageView Picture { get; }
+				public ImageView? Landing { get; set; }
 				public int[] Start { get; }
-				public float SourceAlpha { get; }
+				public bool Landed { get; set; }
 			}
+
+			// Ends the temporary hiding by reapplying the element's own mapped opacity, so a change to its Opacity
+			// made during the flight (and any mapper customization) is what shows afterwards.
+			static void RestoreOpacity(VisualElement element) => element.Handler?.UpdateValue(nameof(IView.Opacity));
 
 			internal static void Start(AView incomingView, List<(VisualElement From, VisualElement To)> heroes, long duration, IInterpolator interpolator)
 			{
@@ -227,7 +233,7 @@ namespace Microsoft.Maui.Controls.Animations
 						var start = new int[2];
 						source.GetLocationInWindow(start);
 						var picture = Picture(root, overlay, bitmap, start[0], start[1], source.Width, source.Height);
-						flights.Add(new Flight(source, to, picture, start, source.Alpha));
+						flights.Add(new Flight(from, source, to, picture, start));
 						source.Alpha = 0;
 					}
 				}
@@ -292,6 +298,17 @@ namespace Microsoft.Maui.Controls.Animations
 					{
 						Fly(_flights[i], duration, interpolator);
 					}
+
+					// Interruption stays handled while the pictures fly: the incoming page leaving the window (its root
+					// replaced, the modal closed) stops them, removes them and puts both elements back.
+					EventHandler<AView.ViewDetachedFromWindowEventArgs>? onFlightDetached = null;
+					onFlightDetached = (_, _) =>
+					{
+						incomingView.ViewDetachedFromWindow -= onFlightDetached;
+						StopFlights();
+					};
+					incomingView.ViewDetachedFromWindow += onFlightDetached;
+					_stopListening = () => incomingView.ViewDetachedFromWindow -= onFlightDetached;
 				};
 
 				// The navigation being interrupted before the flight starts (the outgoing page removed, say by a root page
@@ -317,6 +334,8 @@ namespace Microsoft.Maui.Controls.Animations
 				_root.PostDelayed(timeout, duration + 500);
 			}
 
+			Action? _stopListening;
+
 			void Cancel()
 			{
 				if (_started || _cancelled)
@@ -328,7 +347,52 @@ namespace Microsoft.Maui.Controls.Animations
 				for (int i = 0; i < _flights.Count; i++)
 				{
 					_overlay.Remove(_flights[i].Picture);
-					_flights[i].Source.Alpha = _flights[i].SourceAlpha;
+					RestoreOpacity(_flights[i].From);
+				}
+			}
+
+			// Stops flights still in the air: their animations end where they are, and the pictures go.
+			void StopFlights()
+			{
+				for (int i = 0; i < _flights.Count; i++)
+				{
+					Land(_flights[i], cancelAnimations: true);
+				}
+			}
+
+			void Land(Flight flight, bool cancelAnimations)
+			{
+				if (flight.Landed)
+				{
+					return;
+				}
+
+				flight.Landed = true;
+				if (cancelAnimations)
+				{
+					flight.Picture.Animate()?.Cancel();
+					flight.Landing?.Animate()?.Cancel();
+				}
+
+				_overlay.Remove(flight.Picture);
+				if (flight.Landing is not null)
+				{
+					_overlay.Remove(flight.Landing);
+				}
+
+				RestoreOpacity(flight.From);
+				RestoreOpacity(flight.To);
+
+				var allLanded = true;
+				for (int i = 0; i < _flights.Count && allLanded; i++)
+				{
+					allLanded = _flights[i].Landed;
+				}
+
+				if (allLanded)
+				{
+					_stopListening?.Invoke();
+					_stopListening = null;
 				}
 			}
 
@@ -341,21 +405,19 @@ namespace Microsoft.Maui.Controls.Animations
 				if (target is not { IsAttachedToWindow: true, Width: > 0, Height: > 0 } || !ReferenceEquals(target.RootView, _root))
 				{
 					// No landing spot in this window: no morph, the page transition runs alone.
-					_overlay.Remove(picture);
-					source.Alpha = flight.SourceAlpha;
+					Land(flight, cancelAnimations: false);
 					return;
 				}
 
 				var end = new int[2];
 				target.GetLocationInWindow(end);
-				var targetAlpha = target.Alpha;
 				var targetBitmap = Snapshot(target);
 				ImageView? landing = targetBitmap is null ? null : Picture(_root, _overlay, targetBitmap, start[0], start[1], source.Width, source.Height);
+				flight.Landing = landing;
 				target.Alpha = 0;
 
 				var scaleX = target.Width / (float)source.Width;
 				var scaleY = target.Height / (float)source.Height;
-				var overlay = _overlay;
 
 				picture.PivotX = 0;
 				picture.PivotY = 0;
@@ -372,17 +434,7 @@ namespace Microsoft.Maui.Controls.Animations
 				picture.Animate()!
 					.TranslationX(end[0] - start[0]).TranslationY(end[1] - start[1]).ScaleX(scaleX).ScaleY(scaleY).Alpha(0)
 					.SetDuration(duration).SetInterpolator(interpolator)
-					.WithEndAction(new Java.Lang.Runnable(() =>
-					{
-						overlay.Remove(picture);
-						if (landing is not null)
-						{
-							overlay.Remove(landing);
-						}
-
-						source.Alpha = flight.SourceAlpha;
-						target.Alpha = targetAlpha;
-					}))!
+					.WithEndAction(new Java.Lang.Runnable(() => Land(flight, cancelAnimations: false)))!
 					.Start();
 			}
 

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		// One-shot overrides from the per-navigation overloads, consumed only by the navigation of that page and kind
 		// they were staged for. The overload removes an entry the navigation didn't consume once its task ends.
-		static readonly ConditionalWeakTable<Page, PendingTransition> s_pending = new();
+		static readonly ConditionalWeakTable<Page, PendingTransitions> s_pending = new();
 
 		// GoToAsync(state, transition) applies to every page that navigation pushes or pops.
 		// Kept as a stack per Shell: a GoToAsync suspended in Navigating keeps its override while a later one runs
@@ -67,24 +67,30 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		internal static object SetPending(Page page, NavigationTransitionKind kind, PageTransition transition)
 		{
+			// Several requests for the same page can be outstanding (one queued behind a running navigation, and another
+			// that then fails); each keeps its own entry, and navigations consume them in the order they were made.
 			var entry = new PendingTransition(kind, transition.Snapshot());
-			s_pending.Put(page, entry);
+			s_pending.GetValue(page, static _ => new PendingTransitions()).Entries.Add(entry);
 			return entry;
 		}
 
 		/// <summary>
-		/// Removes a staged transition the navigation didn't consume (it was a no-op, failed, or the platform never asked),
-		/// unless a newer navigation has staged its own since.
+		/// Removes a staged transition the navigation didn't consume (it was a no-op, failed, or the platform never asked).
+		/// Other requests' entries are left alone.
 		/// </summary>
 		internal static void ClearPending(Page page, object token)
 		{
-			if (s_pending.TryGetValue(page, out var current) && ReferenceEquals(current, token))
+			if (s_pending.TryGetValue(page, out var pending) && token is PendingTransition entry)
 			{
-				s_pending.Remove(page);
+				pending.Entries.Remove(entry);
+				if (pending.Entries.Count == 0)
+				{
+					s_pending.Remove(page);
+				}
 			}
 		}
 
-		internal static bool HasPending(Page page) => s_pending.TryGetValue(page, out _);
+		internal static bool HasPending(Page page) => s_pending.TryGetValue(page, out var pending) && pending.Entries.Count > 0;
 
 		/// <summary>
 		/// Takes the transition staged for <paramref name="page"/>'s <paramref name="kind"/> navigation, for a navigation the
@@ -100,16 +106,35 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			if (transition is not null)
 			{
-				s_pending.Put(page, new PendingTransition(kind, transition));
+				// Ahead of anything staged since: this is the request the platform runs next.
+				s_pending.GetValue(page, static _ => new PendingTransitions()).Entries.Insert(0, new PendingTransition(kind, transition));
 			}
 		}
 
+		/// <summary>The GoToAsync transition of the Shell navigation running for <paramref name="page"/>, if any.</summary>
+		internal static PageTransition? GetShellOverride(Element? page) => FindShellOverride(page);
+
 		static PageTransition? TakePending(Page? page, NavigationTransitionKind kind)
 		{
-			if (page is not null && s_pending.TryGetValue(page, out var pending) && pending.Kind == kind)
+			if (page is null || !s_pending.TryGetValue(page, out var pending))
 			{
-				s_pending.Remove(page);
-				return pending.Transition;
+				return null;
+			}
+
+			var entries = pending.Entries;
+			for (int i = 0; i < entries.Count; i++)
+			{
+				if (entries[i].Kind == kind)
+				{
+					var transition = entries[i].Transition;
+					entries.RemoveAt(i);
+					if (entries.Count == 0)
+					{
+						s_pending.Remove(page);
+					}
+
+					return transition;
+				}
 			}
 
 			return null;
@@ -387,6 +412,11 @@ namespace Microsoft.Maui.Controls.Animations
 			public FlowDirection FlowDirection { get; }
 		}
 
+		sealed class PendingTransitions
+		{
+			public List<PendingTransition> Entries { get; } = new();
+		}
+
 		sealed class PendingTransition
 		{
 			public PendingTransition(NavigationTransitionKind kind, PageTransition transition)
@@ -410,6 +440,27 @@ namespace Microsoft.Maui.Controls.Animations
 			public ShellOverride(PageTransition transition) => Transition = transition;
 
 			public PageTransition Transition { get; }
+		}
+	}
+
+	/// <summary>Installs a Shell navigation's own page transition for as long as that navigation runs.</summary>
+	internal readonly struct ShellTransitionScope : IDisposable
+	{
+		readonly Shell? _shell;
+		readonly object? _token;
+
+		public ShellTransitionScope(Shell? shell, PageTransition? transition)
+		{
+			_shell = shell;
+			_token = shell is not null && transition is not null ? PageTransitionResolver.BeginShellOverride(shell, transition) : null;
+		}
+
+		public void Dispose()
+		{
+			if (_shell is not null && _token is not null)
+			{
+				PageTransitionResolver.EndShellOverride(_shell, _token);
+			}
 		}
 	}
 

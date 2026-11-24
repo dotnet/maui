@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Threading.Tasks;
 using Android.Animation;
 using Android.Graphics;
@@ -48,6 +49,10 @@ namespace Microsoft.Maui.Controls.Animations
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			ValueAnimator? animator = null;
 			var finished = false;
+
+			// The content view survives root replacement; whatever the activity configured on it is composed with the
+			// motion and restored afterwards.
+			var original = NativePose.Of(content);
 			RunningTransition? running = null;
 
 			void Cleanup()
@@ -59,7 +64,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 				finished = true;
 				overlay.Remove(picture);
-				Pose(content, PageTransitionCurves.Pose.Identity, width, height);
+				original.Restore(content);
 				bitmap.Recycle();
 				if (running is not null)
 				{
@@ -85,8 +90,8 @@ namespace Microsoft.Maui.Controls.Animations
 
 			void Apply(float progress)
 			{
-				Pose(content, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
-				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
+				Pose(content, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height, original);
+				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height, NativePose.Identity);
 			}
 
 			animator = ValueAnimator.OfFloat(0f, 1f)!;
@@ -100,15 +105,62 @@ namespace Microsoft.Maui.Controls.Animations
 			return tcs.Task;
 		}
 
-		static void Pose(AView view, PageTransitionCurves.Pose pose, int width, int height)
+		static void Pose(AView view, PageTransitionCurves.Pose pose, int width, int height, NativePose original)
 		{
 			view.PivotX = width / 2f;
 			view.PivotY = height / 2f;
-			view.TranslationX = (float)(pose.TranslationX * width);
-			view.TranslationY = (float)(pose.TranslationY * height);
-			view.ScaleX = (float)pose.Scale;
-			view.ScaleY = (float)pose.Scale;
-			view.Alpha = (float)pose.Opacity;
+			view.TranslationX = original.TranslationX + (float)(pose.TranslationX * width);
+			view.TranslationY = original.TranslationY + (float)(pose.TranslationY * height);
+			view.ScaleX = original.ScaleX * (float)pose.Scale;
+			view.ScaleY = original.ScaleY * (float)pose.Scale;
+			view.Alpha = original.Alpha * (float)pose.Opacity;
+		}
+
+		readonly struct NativePose
+		{
+			NativePose(float translationX, float translationY, float scaleX, float scaleY, float alpha, float pivotX, float pivotY, bool hasPivot)
+			{
+				TranslationX = translationX;
+				TranslationY = translationY;
+				ScaleX = scaleX;
+				ScaleY = scaleY;
+				Alpha = alpha;
+				PivotX = pivotX;
+				PivotY = pivotY;
+				HasPivot = hasPivot;
+			}
+
+			public static NativePose Identity => new(0, 0, 1, 1, 1, 0, 0, false);
+
+			public float TranslationX { get; }
+			public float TranslationY { get; }
+			public float ScaleX { get; }
+			public float ScaleY { get; }
+			public float Alpha { get; }
+			public float PivotX { get; }
+			public float PivotY { get; }
+			public bool HasPivot { get; }
+
+			public static NativePose Of(AView view)
+				=> new(view.TranslationX, view.TranslationY, view.ScaleX, view.ScaleY, view.Alpha, view.PivotX, view.PivotY, !OperatingSystem.IsAndroidVersionAtLeast(28) || view.IsPivotSet);
+
+			public void Restore(AView view)
+			{
+				view.TranslationX = TranslationX;
+				view.TranslationY = TranslationY;
+				view.ScaleX = ScaleX;
+				view.ScaleY = ScaleY;
+				view.Alpha = Alpha;
+				if (HasPivot)
+				{
+					view.PivotX = PivotX;
+					view.PivotY = PivotY;
+				}
+				else if (OperatingSystem.IsAndroidVersionAtLeast(28))
+				{
+					view.ResetPivot();
+				}
+			}
 		}
 	}
 }

@@ -482,6 +482,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(testPage.AppliedQueryAttributes[0].IsReadOnly);
 		}
 
+		// Records the GoToAsync transition in force when it joins a Shell section, which happens while its navigation runs.
+		public class TransitionCapturePage : ContentPage
+		{
+			public static Microsoft.Maui.Controls.Animations.PageTransition Seen;
+
+			protected override void OnParentSet()
+			{
+				base.OnParentSet();
+				if (Parent is not null)
+				{
+					Seen ??= Microsoft.Maui.Controls.Animations.PageTransitionResolver.GetShellOverride(this);
+				}
+			}
+		}
+
+		[Fact]
+		public async Task AGoToAsyncTransitionAppliesOnlyWhileItsOwnNavigationRuns()
+		{
+			TransitionCapturePage.Seen = null;
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "section2"));
+			Routing.RegisterRoute("transitionfirst", typeof(TransitionCapturePage));
+			Routing.RegisterRoute("transitionsecond", typeof(ContentPage));
+
+			var deferrals = new System.Collections.Generic.List<ShellNavigatingDeferral>();
+			shell.Navigating += (_, args) => deferrals.Add(args.GetDeferral());
+
+			// The first navigation is suspended in Navigating, and a second one is started meanwhile.
+			var first = Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(shell, "transitionfirst", new Microsoft.Maui.Controls.Animations.FadeTransition());
+			var second = Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(shell, "transitionsecond", new Microsoft.Maui.Controls.Animations.ScaleTransition());
+
+			// Neither transition is installed while its navigation is suspended.
+			Assert.Null(Microsoft.Maui.Controls.Animations.PageTransitionResolver.GetShellOverride(shell.CurrentPage));
+
+			deferrals[0].Complete();
+			await first.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.IsType<Microsoft.Maui.Controls.Animations.FadeTransition>(TransitionCapturePage.Seen);
+
+			foreach (var deferral in deferrals)
+			{
+				deferral.Complete();
+			}
+
+			await second.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.Null(Microsoft.Maui.Controls.Animations.PageTransitionResolver.GetShellOverride(shell.CurrentPage));
+		}
+
 		[Fact]
 		public async Task ExtraParametersArentReAppliedWhenNavigatingBackToShellContent()
 		{

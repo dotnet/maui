@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Animations
 	/// per-navigation argument is passed to the pop. When the operating system asks for reduced motion, every
 	/// transition other than <see cref="PageTransition.Platform"/> runs as <see cref="PageTransition.None"/>.</para>
 	/// <para>The navigation task returned by <c>PushAsync</c>, <c>PopAsync</c> and the other navigation methods
-	/// completes, and <see cref="Page.NavigatedTo"/> is raised, after the transition finishes.</para>
+	/// completes, and <see cref="Page.NavigatedTo"/> is raised, after the transition finishes on iOS, Mac Catalyst and
+	/// Android. On Windows it completes when WinUI reports the navigation done: WinUI's navigation transitions give no
+	/// completion callback, so the task can complete while the transition's motion is still running there.</para>
 	/// </remarks>
 	public static class PageTransitions
 	{
@@ -163,28 +165,25 @@ namespace Microsoft.Maui.Controls.Animations
 			_ = shell ?? throw new ArgumentNullException(nameof(shell));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
-			var token = PageTransitionResolver.BeginShellOverride(shell, transition);
-			try
+			var animate = !transition.IsNone;
+			ShellRouteParameters? routeParameters = parameters switch
 			{
-				var animate = !transition.IsNone;
-				if (parameters is null)
-				{
-					await shell.GoToAsync(state, animate).ConfigureAwait(true);
-				}
-				else if (parameters is ShellNavigationQueryParameters singleUse)
-				{
-					// Keep single-use parameters single-use: the IDictionary overload would retain them for back navigation.
-					await shell.GoToAsync(state, animate, singleUse).ConfigureAwait(true);
-				}
-				else
-				{
-					await shell.GoToAsync(state, animate, parameters).ConfigureAwait(true);
-				}
-			}
-			finally
+				null => null,
+				// Single-use parameters stay single-use, as with the matching Shell.GoToAsync overload.
+				ShellNavigationQueryParameters singleUse => new ShellRouteParameters(singleUse),
+				_ => new ShellRouteParameters(parameters),
+			};
+
+			// The transition travels with this navigation's request: a GoToAsync suspended in Navigating, or one that
+			// fails, never lends its transition to another.
+			await shell.NavigationManager.GoToAsync(new ShellNavigationParameters
 			{
-				PageTransitionResolver.EndShellOverride(shell, token);
-			}
+				TargetState = state,
+				Animated = animate,
+				EnableRelativeShellRoutes = false,
+				Parameters = routeParameters,
+				PageTransition = transition.Snapshot(),
+			}).ConfigureAwait(true);
 		}
 
 		/// <summary>

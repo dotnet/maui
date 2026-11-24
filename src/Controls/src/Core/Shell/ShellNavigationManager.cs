@@ -101,6 +101,10 @@ namespace Microsoft.Maui.Controls
 
 			Routing.RegisterImplicitPageRoutes(_shell);
 
+			// The navigation's own page transition, installed now that it runs (after any deferral) and removed when
+			// it ends, however it ends.
+			using var transitionScope = new Animations.ShellTransitionScope(_shell, shellNavigationParameters.PageTransition);
+
 			_accumulateNavigatedEvents = true;
 
 			var uri = navigationRequest.Request.FullUri;

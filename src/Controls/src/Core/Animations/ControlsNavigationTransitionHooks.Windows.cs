@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Animations
 	/// <summary>
 	/// MAUI's built-in page transitions on Windows, mapped to the closest WinUI navigation transition.
 	/// WinUI's transitions have a fixed duration and curve, so <see cref="PageTransition.Duration"/> and
-	/// <see cref="PageTransition.Easing"/> don't apply here.
+	/// <see cref="PageTransition.Easing"/> don't apply here, and they raise no completion, so the navigation completes when
+	/// WinUI reports it (see the remarks on <see cref="PageTransitions"/>).
 	/// </summary>
 	internal static class PageTransitionInfos
 	{

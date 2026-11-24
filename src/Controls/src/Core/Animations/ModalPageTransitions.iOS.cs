@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Runtime.CompilerServices;
 using UIKit;
 using iOSPage = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
@@ -37,9 +38,8 @@ namespace Microsoft.Maui.Controls.Animations
 				wrapper.ModalPresentationStyle = UIModalPresentationStyle.OverFullScreen;
 			}
 
-			var transitionDelegate = s_delegates.GetValue(wrapper, static _ => new ModalTransitionDelegate());
+			var transitionDelegate = Install(wrapper);
 			transitionDelegate.Present = resolved.Platform;
-			wrapper.TransitioningDelegate = transitionDelegate;
 			return true;
 		}
 
@@ -64,12 +64,25 @@ namespace Microsoft.Maui.Controls.Animations
 				&& wrapper.ModalPresentationStyle is UIModalPresentationStyle.FullScreen or UIModalPresentationStyle.OverFullScreen)
 			{
 				// A per-navigation transition on a modal presented with the platform's animation.
-				transitionDelegate = s_delegates.GetValue(wrapper, static _ => new ModalTransitionDelegate());
+				transitionDelegate = Install(wrapper);
 				transitionDelegate.Dismiss = resolved.Platform;
-				wrapper.TransitioningDelegate = transitionDelegate;
 			}
 
 			return animated;
+		}
+
+		// Wraps whatever transitioning delegate the wrapper already has (a custom page handler's, which the modal wrapper
+		// copies), and forwards to it whenever MAUI has nothing of its own to run.
+		static ModalTransitionDelegate Install(UIViewController wrapper)
+		{
+			var transitionDelegate = s_delegates.GetValue(wrapper, static _ => new ModalTransitionDelegate());
+			if (!ReferenceEquals(wrapper.TransitioningDelegate, transitionDelegate))
+			{
+				transitionDelegate.Inner = wrapper.TransitioningDelegate;
+				wrapper.TransitioningDelegate = transitionDelegate;
+			}
+
+			return transitionDelegate;
 		}
 
 		sealed class ModalTransitionDelegate : UIViewControllerTransitioningDelegate
@@ -78,19 +91,57 @@ namespace Microsoft.Maui.Controls.Animations
 
 			public PlatformNavigationTransition? Dismiss { get; set; }
 
+			// Weak: the page's own controller keeps the original delegate (the modal wrapper only copied it).
+			WeakReference<IUIViewControllerTransitioningDelegate>? _inner;
+
+			public IUIViewControllerTransitioningDelegate? Inner
+			{
+				get => _inner is not null && _inner.TryGetTarget(out var inner) ? inner : null;
+				set => _inner = value is null ? null : new WeakReference<IUIViewControllerTransitioningDelegate>(value);
+			}
+
 			public override IUIViewControllerAnimatedTransitioning GetAnimationControllerForPresentedController(UIViewController presented, UIViewController presenting, UIViewController source)
 			{
 				var transition = Present;
 				Present = null;
-				return transition?.GetAnimator(out _)!;
+				if (transition is null)
+				{
+					return Inner?.GetAnimationControllerForPresentedController(presented, presenting, source)!;
+				}
+
+				var own = transition.GetAnimator(out _);
+				_own = own is null ? null : new WeakReference<IUIViewControllerAnimatedTransitioning>(own);
+				return own!;
 			}
 
 			public override IUIViewControllerAnimatedTransitioning GetAnimationControllerForDismissedController(UIViewController dismissed)
 			{
 				var transition = Dismiss;
 				Dismiss = null;
-				return transition?.GetAnimator(out _)!;
+				if (transition is null)
+				{
+					return Inner?.GetAnimationControllerForDismissedController(dismissed)!;
+				}
+
+				var own = transition.GetAnimator(out _);
+				_own = own is null ? null : new WeakReference<IUIViewControllerAnimatedTransitioning>(own);
+				return own!;
 			}
+
+			// An interaction controller only ever comes from the original delegate, for the original delegate's animator.
+			WeakReference<IUIViewControllerAnimatedTransitioning>? _own;
+
+			bool IsInners(IUIViewControllerAnimatedTransitioning animator)
+				=> _own is null || !_own.TryGetTarget(out var own) || !ReferenceEquals(animator, own);
+
+			public override IUIViewControllerInteractiveTransitioning GetInteractionControllerForPresentation(IUIViewControllerAnimatedTransitioning animator)
+				=> (IsInners(animator) ? Inner?.GetInteractionControllerForPresentation(animator) : null)!;
+
+			public override IUIViewControllerInteractiveTransitioning GetInteractionControllerForDismissal(IUIViewControllerAnimatedTransitioning animator)
+				=> (IsInners(animator) ? Inner?.GetInteractionControllerForDismissal(animator) : null)!;
+
+			public override UIPresentationController GetPresentationControllerForPresentedViewController(UIViewController presentedViewController, UIViewController? presentingViewController, UIViewController sourceViewController)
+				=> Inner?.GetPresentationControllerForPresentedViewController(presentedViewController, presentingViewController!, sourceViewController)!;
 		}
 	}
 }

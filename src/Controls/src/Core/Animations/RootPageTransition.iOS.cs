@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Controls.Animations
 				return Task.CompletedTask;
 			}
 
-			// The outgoing root as a picture above everything, while the new root goes in underneath it.
+			// The outgoing root as a picture, laid over the new root once it has replaced the old one (replacing the
+			// root view controller rebuilds the window's view hierarchy, so it is added after the assignment).
 			picture.Frame = uiWindow.Bounds;
-			uiWindow.AddSubview(picture);
 
 			var width = (double)uiWindow.Bounds.Width;
 			var height = (double)uiWindow.Bounds.Height;
@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Animations
 			var flowDirection = request.FlowDirection;
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			UIView? incoming = null;
+			(CGAffineTransform Transform, nfloat Alpha) incomingOriginal = (CGAffineTransform.MakeIdentity(), 1);
 			var finished = false;
 			RunningTransition? running = null;
 
@@ -44,8 +45,8 @@ namespace Microsoft.Maui.Controls.Animations
 				if (incoming is not null)
 				{
 					incoming.Layer.RemoveAllAnimations();
-					incoming.Transform = CGAffineTransform.MakeIdentity();
-					incoming.Alpha = 1;
+					incoming.Transform = incomingOriginal.Transform;
+					incoming.Alpha = incomingOriginal.Alpha;
 				}
 
 				if (running is not null)
@@ -68,15 +69,21 @@ namespace Microsoft.Maui.Controls.Animations
 
 			incoming = uiWindow.RootViewController?.View;
 			incoming?.LayoutIfNeeded();
+			uiWindow.AddSubview(picture);
+			uiWindow.BringSubviewToFront(picture);
+			if (incoming is not null)
+			{
+				incomingOriginal = (incoming.Transform, incoming.Alpha);
+			}
 
 			void Apply(double progress)
 			{
 				if (incoming is not null)
 				{
-					Pose(incoming, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height);
+					PageTransitionAnimator.ApplyPose(incoming, PageTransitionCurves.GetRootPose(transition, true, progress, flowDirection), width, height, incomingOriginal.Transform, incomingOriginal.Alpha);
 				}
 
-				Pose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height);
+				PageTransitionAnimator.ApplyPose(picture, PageTransitionCurves.GetRootPose(transition, false, progress, flowDirection), width, height, CGAffineTransform.MakeIdentity(), 1);
 			}
 
 			Apply(0);
@@ -97,16 +104,5 @@ namespace Microsoft.Maui.Controls.Animations
 			return tcs.Task;
 		}
 
-		static void Pose(UIView view, PageTransitionCurves.Pose pose, double width, double height)
-		{
-			var transform = CGAffineTransform.MakeTranslation((nfloat)(pose.TranslationX * width), (nfloat)(pose.TranslationY * height));
-			if (pose.Scale != 1)
-			{
-				transform = CGAffineTransform.Scale(transform, (nfloat)pose.Scale, (nfloat)pose.Scale);
-			}
-
-			view.Transform = transform;
-			view.Alpha = (nfloat)pose.Opacity;
-		}
 	}
 }

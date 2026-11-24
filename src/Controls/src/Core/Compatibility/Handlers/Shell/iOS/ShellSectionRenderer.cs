@@ -831,13 +831,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
+				if (tabBarController is ShellItemRenderer pushingItem)
+					pushingItem.MoreNavigationRunsPageTransition = false;
+
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
 				// UINavigationItem.BackAction requires iOS 16.0+; UIAction.Create requires iOS 14.0+.
 				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
 				{
 					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
 				}
-				CompleteMoreNavigationAfterTransition(tabBarController.MoreNavigationController, viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController, viewController);
 			}
 			else
 			{
@@ -857,20 +860,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
+				if (tabBarController is ShellItemRenderer poppingItem)
+					poppingItem.MoreNavigationRunsPageTransition = false;
+
 				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
-				CompleteMoreNavigationAfterTransition(tabBarController.MoreNavigationController, viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController, viewController);
 				return viewController;
 			}
 
 			return base.PopViewController(animated);
 		}
 
-		// The navigation task completes when the More controller's transition (a page transition included) has
-		// finished, not as soon as it starts.
-		void CompleteMoreNavigationAfterTransition(UINavigationController moreNavigationController, UIViewController viewController)
+		// With a page transition running, the navigation task completes when it has finished. Otherwise (UIKit's own
+		// animation, or none) it completes straight away, as it always has under the More tab.
+		void CompleteMoreNavigationAfterTransition(UITabBarController tabBarController, UIViewController viewController)
 		{
+			var moreNavigationController = tabBarController.MoreNavigationController;
+
 			// AnimateAlongsideTransition returns false when no transition is running; complete straight away then.
-			if (moreNavigationController.GetTransitionCoordinator() is { } coordinator
+			if (tabBarController is ShellItemRenderer { MoreNavigationRunsPageTransition: true }
+				&& moreNavigationController.GetTransitionCoordinator() is { } coordinator
 				&& coordinator.AnimateAlongsideTransition(null, _ => HandleMoreNavigationCompletionTasks(viewController)))
 			{
 				return;

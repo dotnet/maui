@@ -769,6 +769,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public async Task AFailedSecondRequestDoesntTakeAQueuedRequestsTransition()
+		{
+			var (nav, handler) = PageTransitionTestHelpers.CreateNavigationPage(new ContentPage());
+			handler.HoldTransitions = true;
+			var running = nav.PushAsync(new ContentPage());
+			await handler.WaitForHoldAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+			// Queued behind the running push, this one stages Fade for the page...
+			var detail = new ContentPage();
+			var queued = nav.Navigation.PushAsync(detail, new FadeTransition());
+
+			// ...and a second request for the same page fails before it is consumed.
+			await Assert.ThrowsAnyAsync<Exception>(() => nav.Navigation.PushAsync(detail, new ScaleTransition()));
+
+			handler.HoldTransitions = false;
+			handler.FinishTransition();
+			await running.WaitAsync(TimeSpan.FromSeconds(5));
+			await queued.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.IsType<FadeTransition>(handler.Last.Transition);
+			Assert.Same(detail, handler.Last.Request.To);
+		}
+
+		[Fact]
+		public async Task ADeferredRoutedModalKeepsTheGoToAsyncTransition()
+		{
+			var shell = new Shell();
+			shell.Items.Add(new ShellContent { Content = new ContentPage() });
+			var window = new TestWindow(shell);
+			var modal = new ContentPage();
+
+			// GoToAsync's transition is in force while the routed modal is pushed, and gone once GoToAsync ends.
+			using (new ShellTransitionScope(shell, new ScaleTransition()))
+			{
+				await window.Navigation.PushModalAsync(modal);
+			}
+
+			Assert.IsType<ScaleTransition>(window.ModalNavigationManager.GetDeferredTransition(modal));
+		}
+
+		[Fact]
 		public void TabTransitionNearestSettingWins()
 		{
 			var content = new ShellContent { Content = new ContentPage() };

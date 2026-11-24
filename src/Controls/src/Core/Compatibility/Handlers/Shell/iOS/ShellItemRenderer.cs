@@ -129,12 +129,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			EnsureMoreTransitionDriver();
 			var section = (CurrentRenderer as ShellSectionRenderer)?.ShellSection;
-			return _moreTransitionDriver.GetAnimationController(
+			var animator = _moreTransitionDriver.GetAnimationController(
 				section as IView,
 				operation,
 				MorePageForViewController(fromViewController),
 				MorePageForViewController(toViewController));
+
+			MoreNavigationRunsPageTransition = animator is not null;
+			return animator;
 		}
+
+		/// <summary>
+		/// Whether the More controller's navigation that just started runs a page transition (rather than UIKit's own
+		/// animation). Only then does its navigation task wait for the transition to finish.
+		/// </summary>
+		internal bool MoreNavigationRunsPageTransition { get; set; }
 
 		// The More controller's swipe-back follows the finger with a custom transition too.
 		[Export("navigationController:interactionControllerForAnimationController:")]

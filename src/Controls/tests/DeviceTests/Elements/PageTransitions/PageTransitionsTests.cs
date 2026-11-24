@@ -222,8 +222,16 @@ namespace Microsoft.Maui.DeviceTests
 				await push.WaitAsync(TimeSpan.FromSeconds(10));
 
 				Assert.True(hidden, "The source element was never hidden: no shared-element flight ran.");
-				Assert.Equal(1, NativeAlpha(source), 3);
-				Assert.Equal(1, NativeAlpha(target), 3);
+
+				// The flight lands with the page transition; allow its end action a moment to run.
+				var landing = Stopwatch.StartNew();
+				while ((NativeAlpha(source) != 1 || NativeAlpha(target) != 1) && landing.Elapsed < TimeSpan.FromMilliseconds(500))
+				{
+					await Task.Yield();
+				}
+
+				Assert.True(NativeAlpha(source) == 1, $"Source alpha left at {NativeAlpha(source)}");
+				Assert.True(NativeAlpha(target) == 1, $"Target alpha left at {NativeAlpha(target)}");
 			});
 		}
 
@@ -236,6 +244,41 @@ namespace Microsoft.Maui.DeviceTests
 #else
 			return view.Alpha;
 #endif
+		}
+#endif
+
+#if ANDROID
+		[Fact(DisplayName = "A navigation with a longer entrance than exit completes after the entrance")]
+		public async Task LongerEntranceThanExitCompletesAfterTheEntrance()
+		{
+			// A provider's animation: a long entrance and a short exit.
+			SetupBuilder(_ => new PlatformNavigationTransition(enter => new global::Android.Views.Animations.AlphaAnimation(enter ? 0.2f : 1f, 1f)
+			{
+				Duration = enter ? 1500 : 100,
+			}));
+
+			var root = CreatePage("Root");
+			var detail = CreatePage("Detail");
+			var navigatedTo = false;
+			detail.NavigatedTo += (_, _) => navigatedTo = true;
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (_) =>
+			{
+				await OnNavigatedToAsync(root);
+
+				var push = Stopwatch.StartNew();
+				var pushTask = navPage.PushAsync(detail);
+				await Task.WhenAny(pushTask, Task.Delay(900));
+
+				// The outgoing page went long ago; the entrance is still running.
+				Assert.False(pushTask.IsCompleted, $"Push completed after {push.Elapsed}, before the 1500 ms entrance ended.");
+				Assert.False(navigatedTo);
+
+				await pushTask.WaitAsync(TimeSpan.FromSeconds(10));
+				Assert.True(push.Elapsed >= TimeSpan.FromMilliseconds(1300), $"Push completed after {push.Elapsed}.");
+				Assert.True(navigatedTo);
+			});
 		}
 #endif
 

@@ -83,6 +83,11 @@ namespace Microsoft.Maui.Controls.Animations
 				toView.LayoutIfNeeded();
 			}
 
+			// The views' own transform and alpha (a custom page handler can set them): poses are applied on top of them,
+			// and they are what the views go back to, whether the transition finishes or is cancelled.
+			var toOriginal = toView is null ? default : (toView.Transform, toView.Alpha);
+			var fromOriginal = fromView is null ? default : (fromView.Transform, fromView.Alpha);
+
 			var flights = HeroFlight.Prepare(container, _heroes);
 			var width = (double)container.Bounds.Width;
 			var height = (double)container.Bounds.Height;
@@ -92,12 +97,12 @@ namespace Microsoft.Maui.Controls.Animations
 			{
 				if (toView is not null)
 				{
-					ApplyPose(toView, PageTransitionCurves.GetPose(_transition, isBack, true, progress, flowDirection), width, height);
+					ApplyPose(toView, PageTransitionCurves.GetPose(_transition, isBack, true, progress, flowDirection), width, height, toOriginal.Transform, toOriginal.Alpha);
 				}
 
 				if (fromView is not null)
 				{
-					ApplyPose(fromView, PageTransitionCurves.GetPose(_transition, isBack, false, progress, flowDirection), width, height);
+					ApplyPose(fromView, PageTransitionCurves.GetPose(_transition, isBack, false, progress, flowDirection), width, height, fromOriginal.Transform, fromOriginal.Alpha);
 				}
 
 				for (int i = 0; i < flights.Count; i++)
@@ -108,13 +113,16 @@ namespace Microsoft.Maui.Controls.Animations
 
 			void Finish(bool cancelled)
 			{
-				foreach (var view in new[] { fromView, toView })
+				if (toView is not null)
 				{
-					if (view is not null)
-					{
-						view.Transform = CGAffineTransform.MakeIdentity();
-						view.Alpha = 1;
-					}
+					toView.Transform = toOriginal.Transform;
+					toView.Alpha = toOriginal.Alpha;
+				}
+
+				if (fromView is not null)
+				{
+					fromView.Transform = fromOriginal.Transform;
+					fromView.Alpha = fromOriginal.Alpha;
 				}
 
 				for (int i = 0; i < flights.Count; i++)
@@ -157,7 +165,7 @@ namespace Microsoft.Maui.Controls.Animations
 				_ => Finish(transitionContext.TransitionWasCancelled));
 		}
 
-		static void ApplyPose(UIView view, PageTransitionCurves.Pose pose, double width, double height)
+		internal static void ApplyPose(UIView view, PageTransitionCurves.Pose pose, double width, double height, CGAffineTransform original, nfloat originalAlpha)
 		{
 			var transform = CGAffineTransform.MakeTranslation((nfloat)(pose.TranslationX * width), (nfloat)(pose.TranslationY * height));
 			if (pose.Scale != 1)
@@ -165,8 +173,9 @@ namespace Microsoft.Maui.Controls.Animations
 				transform = CGAffineTransform.Scale(transform, (nfloat)pose.Scale, (nfloat)pose.Scale);
 			}
 
-			view.Transform = transform;
-			view.Alpha = (nfloat)pose.Opacity;
+			// The view's own transform first, then the pose.
+			view.Transform = CGAffineTransform.Multiply(original, transform);
+			view.Alpha = (nfloat)(pose.Opacity * originalAlpha);
 		}
 
 		/// <summary>
@@ -175,25 +184,21 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		sealed class HeroFlight
 		{
-			readonly UIView _source;
-			readonly UIView _target;
+			readonly VisualElement _from;
+			readonly VisualElement _to;
 			readonly UIView _fromSnapshot;
 			readonly UIView _toSnapshot;
 			readonly CGRect _start;
 			readonly CGRect _end;
-			readonly nfloat _sourceAlpha;
-			readonly nfloat _targetAlpha;
 
-			HeroFlight(UIView source, UIView target, UIView fromSnapshot, UIView toSnapshot, CGRect start, CGRect end)
+			HeroFlight(VisualElement from, VisualElement to, UIView fromSnapshot, UIView toSnapshot, CGRect start, CGRect end)
 			{
-				_source = source;
-				_target = target;
+				_from = from;
+				_to = to;
 				_fromSnapshot = fromSnapshot;
 				_toSnapshot = toSnapshot;
 				_start = start;
 				_end = end;
-				_sourceAlpha = source.Alpha;
-				_targetAlpha = target.Alpha;
 			}
 
 			internal static List<HeroFlight> Prepare(UIView container, List<(VisualElement From, VisualElement To)> heroes)
@@ -206,7 +211,7 @@ namespace Microsoft.Maui.Controls.Animations
 						&& PlatformView(to) is { } target
 						&& !target.Bounds.IsEmpty)
 					{
-						var flight = Create(container, source, target);
+						var flight = Create(container, from, to, source, target);
 						if (flight is not null)
 						{
 							flights.Add(flight);
@@ -217,7 +222,7 @@ namespace Microsoft.Maui.Controls.Animations
 				return flights;
 			}
 
-			static HeroFlight? Create(UIView container, UIView source, UIView target)
+			static HeroFlight? Create(UIView container, VisualElement from, VisualElement to, UIView source, UIView target)
 			{
 				var fromSnapshot = source.SnapshotView(false);
 				var toSnapshot = target.SnapshotView(true);
@@ -234,7 +239,7 @@ namespace Microsoft.Maui.Controls.Animations
 				container.AddSubview(fromSnapshot);
 				container.AddSubview(toSnapshot);
 
-				var flight = new HeroFlight(source, target, fromSnapshot, toSnapshot, start, end);
+				var flight = new HeroFlight(from, to, fromSnapshot, toSnapshot, start, end);
 				source.Alpha = 0;
 				target.Alpha = 0;
 				return flight;
@@ -259,8 +264,10 @@ namespace Microsoft.Maui.Controls.Animations
 
 			internal void Land()
 			{
-				_source.Alpha = _sourceAlpha;
-				_target.Alpha = _targetAlpha;
+				// The elements' own mapped opacity, not the alpha they had when the flight began: an Opacity change made
+				// during the flight (and any mapper customization) is what shows afterwards.
+				_from.Handler?.UpdateValue(nameof(IView.Opacity));
+				_to.Handler?.UpdateValue(nameof(IView.Opacity));
 				_fromSnapshot.RemoveFromSuperview();
 				_toSnapshot.RemoveFromSuperview();
 			}

@@ -728,8 +728,10 @@ namespace Microsoft.Maui.Controls.Platform
 			bool isPlatformReady = IsModalReady;
 			if (!(isPlatformReady && !syncing))
 			{
-				// Presented later, by the sync: it keeps its per-navigation transition until then.
-				request.Transition = Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PushModal);
+				// Presented later, by the sync: it keeps its per-navigation transition until then, whether it was passed to
+				// PushModalAsync or comes from the GoToAsync that routed to it (which ends before the sync runs).
+				request.Transition = Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PushModal)
+					?? Animations.PageTransitionResolver.GetShellOverride(modal);
 			}
 
 			if (isPlatformReady && !syncing)
