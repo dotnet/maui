@@ -218,7 +218,12 @@ namespace Microsoft.Maui.Controls.Animations
 			else
 				active = repeat.Count * duration.Ticks + Math.Max(0, Math.Ceiling(repeat.Count) - 1) * storyboard.IterationDelay.Ticks;
 
-			return storyboard.BeginTime + TimeSpan.FromTicks((long)Math.Round(active / storyboard.SpeedRatio));
+			// Rounded up to a whole tick, as the timing tree snaps the same end: the next step of a sequence then starts at
+			// or after it, never a fraction of a tick before (which would read as an overlap).
+			var exactEnd = storyboard.BeginTime.Ticks + active / storyboard.SpeedRatio;
+			var rounded = Math.Round(exactEnd);
+			var ticks = Math.Abs(exactEnd - rounded) < 1e-6 ? rounded : Math.Ceiling(exactEnd);
+			return TimeSpan.FromTicks((long)ticks);
 		}
 	}
 

@@ -144,8 +144,6 @@
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Storyboard() -> void
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetName.get -> string?
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetName.set -> void
-[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetType.get -> System.Type?
-[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetType.set -> void
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.AddChild(System.TimeSpan beginTime, System.Action<Microsoft.Maui.Controls.Animations.StoryboardBuilder!>! child) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.AddTrack<T>(Microsoft.Maui.Controls.BindableProperty! property, System.Action<Microsoft.Maui.Controls.Animations.TrackBuilder<T>!>! track, string? targetName = null) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
@@ -241,4 +239,3 @@
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
-[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetTypeProperty -> Microsoft.Maui.Controls.BindableProperty!

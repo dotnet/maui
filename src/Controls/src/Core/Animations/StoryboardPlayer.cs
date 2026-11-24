@@ -365,10 +365,14 @@ namespace Microsoft.Maui.Controls.Animations
 				return false;
 			}
 
-			if (target.ClaimAnimation(slot.Slot.Property, this))
-				slot.Owned = true;
-			else
+			// Recorded first: claiming tells the previous owner, whose handler may throw, and fault cleanup must still
+			// know this run owns the property.
+			slot.Owned = true;
+			if (!target.ClaimAnimation(slot.Slot.Property, this))
+			{
+				slot.Owned = false;
 				slot.Excluded = true; // TwoWay / OneWayToSource-bound or platform-written: never interpolated; a commit writes once.
+			}
 
 			return true;
 		}
@@ -499,15 +503,18 @@ namespace Microsoft.Maui.Controls.Animations
 			if (target is null || _waitingForWindow)
 				return;
 
+			// Wait for the target to get a window. Not Loaded: a natively hosted view can be loaded (and Loaded fires
+			// immediately for a loaded view) with no Controls window at all.
 			_waitingForWindow = true;
-			target.Loaded += OnLoadedWaitingForWindow;
+			((IControlsVisualElement)target).WindowChanged += OnWindowChangedWaitingForWindow;
 		}
 
-		void OnLoadedWaitingForWindow(object? sender, EventArgs e)
+		void OnWindowChangedWaitingForWindow(object? sender, EventArgs e)
 		{
-			if (sender is VisualElement target)
-				target.Loaded -= OnLoadedWaitingForWindow;
+			if (sender is not VisualElement target || target.Window is null)
+				return;
 
+			((IControlsVisualElement)target).WindowChanged -= OnWindowChangedWaitingForWindow;
 			_waitingForWindow = false;
 			if (!_ended && _state == PlaybackState.Running)
 				StartTicking();
@@ -657,7 +664,10 @@ namespace Microsoft.Maui.Controls.Animations
 				{
 					target.ClearAnimationValue(property, this);
 					slot.Held = false;
-					target.ClaimAnimation(property, this);
+
+					// The release's callbacks may have stopped the run; a stopped run reclaims nothing.
+					if (!_ended && slot.Owned)
+						target.ClaimAnimation(property, this);
 				}
 				return;
 			}
@@ -831,7 +841,7 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_waitingForWindow && Target is VisualElement target)
 			{
 				_waitingForWindow = false;
-				target.Loaded -= OnLoadedWaitingForWindow;
+				((IControlsVisualElement)target).WindowChanged -= OnWindowChangedWaitingForWindow;
 			}
 
 			SetState(state);

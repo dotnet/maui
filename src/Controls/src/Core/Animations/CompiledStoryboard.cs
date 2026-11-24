@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Animations
 		static object? ResolveValue(object? value, BindableProperty property, BindableObject target, VisualElement playTarget)
 		{
 			if (value is BindingBase binding)
-				value = SampleBinding(binding, property, playTarget.BindingContext);
+				value = SampleBinding(binding, property, playTarget.BindingContext, target as Element ?? playTarget);
 			else if (value is DynamicResource dynamicResource)
 				value = (target as Element ?? playTarget).TryGetResource(dynamicResource.Key, out var resource) ? resource : null;
 
@@ -284,28 +284,35 @@ namespace Microsoft.Maui.Controls.Animations
 			return value;
 		}
 
-		static object? SampleBinding(BindingBase binding, BindableProperty property, object? bindingContext)
+		static object? SampleBinding(BindingBase binding, BindableProperty property, object? bindingContext, Element relativeSourceTarget)
 		{
 			var probe = new BindingProbe { BindingContext = bindingContext };
 			var probeProperty = BindingProbe.For(property);
 
 			// Sampled read-only: a TwoWay or OneWayToSource clone would write the probe's default into the source.
+			// The probe isn't an Element, so a RelativeSource binding resolves against the animated element instead,
+			// and values a compiled binding's Clone drops (fallback, target-null) are carried over.
 			var clone = binding.Clone();
-			MakeReadOnly(clone);
+			Prepare(binding, clone, relativeSourceTarget);
 			probe.SetBinding(probeProperty, clone);
 			var result = probe.GetValue(probeProperty);
 			probe.RemoveBinding(probeProperty);
 			return result;
 		}
 
-		// Every binding in the tree reads only: a MultiBinding's clone keeps its children's modes.
-		static void MakeReadOnly(BindingBase binding)
+		// Every binding in the tree reads only (a MultiBinding's clone keeps its children's modes), keeps its fallback and
+		// target-null values, and resolves a relative source against the animated element.
+		static void Prepare(BindingBase original, BindingBase clone, Element relativeSourceTarget)
 		{
-			binding.Mode = BindingMode.OneWay;
-			if (binding is MultiBinding multi)
+			clone.Mode = BindingMode.OneWay;
+			clone.FallbackValue = original.FallbackValue;
+			clone.TargetNullValue = original.TargetNullValue;
+			clone.RelativeSourceTargetOverride = relativeSourceTarget;
+
+			if (original is MultiBinding multiOriginal && clone is MultiBinding multiClone)
 			{
-				foreach (var child in multi.Bindings)
-					MakeReadOnly(child);
+				for (var i = 0; i < multiClone.Bindings.Count && i < multiOriginal.Bindings.Count; i++)
+					Prepare(multiOriginal.Bindings[i], multiClone.Bindings[i], relativeSourceTarget);
 			}
 		}
 
@@ -339,8 +346,46 @@ namespace Microsoft.Maui.Controls.Animations
 		static void CheckOverlaps(TimingNode root, int slotCount)
 		{
 			var intervals = new List<(double Start, double End)>[slotCount];
+			s_periodic = null;
 			root.CollectIntervals(0, 1, intervals);
 			CheckIntervals(intervals);
+			CheckPeriodic(intervals);
+		}
+
+		[ThreadStatic]
+		static List<(int Slot, PeriodicActivity Activity)>? s_periodic;
+
+		internal static void AddPeriodic(int slot, PeriodicActivity activity)
+			=> (s_periodic ??= new List<(int, PeriodicActivity)>()).Add((slot, activity));
+
+		// Each heavily repeated pattern against the plain intervals of the same slot, iteration by iteration but only
+		// over the iterations a plain interval spans; two patterns on one slot are compared by their whole ranges.
+		static void CheckPeriodic(List<(double Start, double End)>[] intervals)
+		{
+			var periodic = s_periodic;
+			s_periodic = null;
+			if (periodic is null)
+				return;
+
+			for (var i = 0; i < periodic.Count; i++)
+			{
+				var (slot, activity) = periodic[i];
+				if (intervals[slot] is { } plain)
+				{
+					foreach (var (start, end) in plain)
+					{
+						if (activity.Overlaps(start, end))
+							throw new InvalidOperationException("Two parts of the storyboard animate the same property at the same time; they need distinct, non-overlapping intervals (MAUIX2307).");
+					}
+				}
+
+				for (var j = i + 1; j < periodic.Count; j++)
+				{
+					var (otherSlot, other) = periodic[j];
+					if (otherSlot == slot && activity.Origin < other.End - TickSnap && other.Origin < activity.End - TickSnap)
+						throw new InvalidOperationException("Two parts of the storyboard animate the same property at the same time; they need distinct, non-overlapping intervals (MAUIX2307).");
+				}
+			}
 		}
 
 		internal static void CheckIntervals(List<(double Start, double End)>[] intervals)
@@ -450,7 +495,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		bool Forward(long iteration) => Direction switch
+		internal bool Forward(long iteration) => Direction switch
 		{
 			AnimationDirection.Reverse => false,
 			AnimationDirection.Alternate => iteration % 2 == 0,
@@ -471,12 +516,21 @@ namespace Microsoft.Maui.Controls.Animations
 			if (Repeat.HasDuration)
 			{
 				var span = Span;
-				var position = CompiledStoryboard.SnapCount(Active / span);
-				iteration = (long)Math.Floor(position);
-				// An end exactly on a span boundary belongs to the previous iteration.
-				if (iteration > 0 && position == Math.Floor(position))
-					iteration--;
-				x = Math.Min(CompiledStoryboard.Snap(Active - iteration * span), Duration);
+				if (double.IsPositiveInfinity(span))
+				{
+					// An open-ended iteration bounded by the repeat duration: still the first iteration.
+					iteration = 0;
+					x = Active;
+				}
+				else
+				{
+					var position = CompiledStoryboard.SnapCount(Active / span);
+					iteration = (long)Math.Floor(position);
+					// An end exactly on a span boundary belongs to the previous iteration.
+					if (iteration > 0 && position == Math.Floor(position))
+						iteration--;
+					x = Math.Min(CompiledStoryboard.Snap(Active - iteration * span), Duration);
+				}
 			}
 			else
 			{
@@ -501,8 +555,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (a < Active)
 			{
 				var span = Span;
-				var iteration = span > 0 ? (long)Math.Floor(CompiledStoryboard.SnapCount(a / span)) : 0;
-				var u = CompiledStoryboard.Snap(a - iteration * span);
+				var iteration = span > 0 && !double.IsPositiveInfinity(span) ? (long)Math.Floor(CompiledStoryboard.SnapCount(a / span)) : 0;
+				var u = iteration == 0 ? a : CompiledStoryboard.Snap(a - iteration * span);
 				var x = Math.Min(u, Duration);
 				return (Directed(iteration, x), iteration, ContributionKind.Active, 0);
 			}
@@ -616,15 +670,18 @@ namespace Microsoft.Maui.Controls.Animations
 		bool PredecessorEndValue(TrackSlot slot, Func<TrackSlot, object?> currentValue, Contribution[] scratch, out object? value)
 		{
 			value = null;
-			if (Parent is null)
-				return false;
 
+			// The latest-ending earlier sibling at this level; failing that, at each enclosing level in turn, so a step
+			// wrapped in a container continues from the step before the container.
 			TimingNode? best = null;
-			foreach (var sibling in Parent.Children)
+			for (var node = this; best is null && node.Parent is TimingNode parent; node = parent)
 			{
-				var endsBefore = !ReferenceEquals(sibling, this) && sibling.ParentEnd <= Begin;
-				if (endsBefore && sibling.Animates(slot) && (best is null || sibling.ParentEnd > best.ParentEnd))
-					best = sibling;
+				foreach (var sibling in parent.Children)
+				{
+					var endsBefore = !ReferenceEquals(sibling, node) && sibling.ParentEnd <= node.Begin;
+					if (endsBefore && sibling.Animates(slot) && (best is null || sibling.ParentEnd > best.ParentEnd))
+						best = sibling;
+				}
 			}
 
 			if (best is null)
@@ -688,10 +745,11 @@ namespace Microsoft.Maui.Controls.Animations
 					child.CollectIntervals(0, 1, single);
 				CompiledStoryboard.CheckIntervals(single);
 
+				// Outside siblings are checked against the repeating pattern itself, so its idle gaps stay usable.
 				for (var i = 0; i < single.Length; i++)
 				{
 					if (single[i] is not null)
-						(intervals[i] ??= new List<(double, double)>()).Add((start, end));
+						CompiledStoryboard.AddPeriodic(i, new PeriodicActivity(this, start, span * childScale, Duration * childScale, end, single[i], childScale));
 				}
 				return;
 			}
@@ -726,5 +784,66 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
+	}
+
+	/// <summary>The activity of one slot inside a container repeated too many times to expand, in root time.</summary>
+	internal sealed class PeriodicActivity
+	{
+		const double Snap = 1e-6;
+		const long MaxCheckedIterations = 1_000_000;
+
+		readonly TimingNode _container;
+		readonly double _period;
+		readonly double _iteration;
+		readonly List<(double Start, double End)> _local;
+
+		public PeriodicActivity(TimingNode container, double origin, double period, double iteration, double end, List<(double Start, double End)> local, double scale)
+		{
+			_container = container;
+			Origin = origin;
+			_period = period;
+			_iteration = iteration;
+			End = end;
+			_local = new List<(double, double)>(local.Count);
+			foreach (var (start, stop) in local)
+				_local.Add((start * scale, stop * scale));
+		}
+
+		public double Origin { get; }
+
+		public double End { get; }
+
+		public bool Overlaps(double start, double end)
+		{
+			if (end <= Origin + Snap || start >= End - Snap)
+				return false;
+
+			if (_period <= 0 || double.IsInfinity(_period))
+				return true;
+
+			var first = Math.Max(0, (long)Math.Floor((start - Origin) / _period) - 1);
+			var last = double.IsPositiveInfinity(end) ? long.MaxValue : (long)Math.Ceiling((end - Origin) / _period) + 1;
+			if (last - first > MaxCheckedIterations)
+				return true; // conservative: too long to check iteration by iteration
+
+			for (var k = first; k <= last; k++)
+			{
+				var iterationStart = Origin + k * _period;
+				if (iterationStart >= End)
+					break;
+
+				var iterationEnd = Math.Min(iterationStart + _iteration, End);
+				var forward = _container.Forward(k);
+				foreach (var (localStart, localEnd) in _local)
+				{
+					var from = iterationStart + (forward ? localStart : _iteration - localEnd);
+					var to = Math.Min(iterationStart + (forward ? localEnd : _iteration - localStart), iterationEnd);
+					if (to > from && from < end - Snap && start < to - Snap)
+						return true;
+				}
+			}
+
+			return false;
+		}
 	}
 }

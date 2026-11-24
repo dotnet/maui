@@ -343,13 +343,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
-		public void IsSetReportsTheValueBeneathTheHold()
+		public void AnimatedValuesCountAsSetForPresentationConsumers()
 		{
 			var label = new Label();
 
-			label.SetAnimationValue(VisualElement.OpacityProperty, 0.2, new TestOwner());
+			label.SetAnimationValue(VisualElement.WidthRequestProperty, 150.0, new TestOwner());
 
-			Assert.False(label.IsSet(VisualElement.OpacityProperty));
+			// IView.Width only reports a request that IsSet: an animated size request must reach layout.
+			Assert.True(label.IsSet(VisualElement.WidthRequestProperty));
+			Assert.Equal(150, ((IView)label).Width);
+		}
+
+		[Fact]
+		public void RemovingABindingThatPromotesASourceWritingFallbackEndsTheHold()
+		{
+			var vm = new ViewModel { Value = 0.5 };
+			var label = new Label { BindingContext = vm };
+			label.SetBinding(VisualElement.OpacityProperty, new Binding(nameof(ViewModel.Value)));
+			label.Style = new Style(typeof(Label))
+			{
+				Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = new Binding(nameof(ViewModel.Value), BindingMode.OneWayToSource) } },
+			};
+			var owner = new TestOwner();
+			label.SetAnimationValue(VisualElement.OpacityProperty, 0.1, owner);
+
+			label.RemoveBinding(VisualElement.OpacityProperty);
+
+			Assert.Equal(AnimationHoldLossReason.Excluded, owner.LostReason);
+			Assert.NotEqual(0.1, vm.Value);
 		}
 
 		[Fact]

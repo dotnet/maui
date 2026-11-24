@@ -250,10 +250,7 @@ namespace Microsoft.Maui.Controls
 				return false;
 			if ((bpcontext.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
 				return true;
-			var specificity = bpcontext.Values.GetSpecificity();
-			if (specificity == SetterSpecificity.Animation)
-				specificity = bpcontext.Values.GetClearedSpecificity();
-			return specificity != SetterSpecificity.DefaultValue;
+			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
 		/// <summary>
@@ -941,6 +938,16 @@ namespace Microsoft.Maui.Controls
 				currentbinding = null;
 				if (count > 1)
 					currentbinding = context.Bindings.GetClearedValue();
+
+				// A TwoWay / OneWayToSource fallback promoted under an animation would read and write back the
+				// animated value; the hold or claim ends first, as it does when such a binding is set.
+				if (currentbinding is not null && context.AnimationOwner is not null)
+				{
+					if (context.Values.GetSpecificity() == SetterSpecificity.Animation)
+						PrepareBindingUnderAnimation(context, currentbinding);
+					else
+						RelinquishClaimForBinding(context, currentbinding);
+				}
 
 				property.BindingChanging?.Invoke(this, binding, currentbinding);
 

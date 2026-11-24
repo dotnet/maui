@@ -30,10 +30,6 @@ namespace Microsoft.Maui.Controls.Animations
 			BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(Storyboard), TimeSpan.Zero,
 				validateValue: (_, value) => (TimeSpan)value >= TimeSpan.Zero);
 
-		/// <summary>Bindable property for <see cref="TargetType"/>.</summary>
-		public static readonly BindableProperty TargetTypeProperty =
-			BindableProperty.Create(nameof(TargetType), typeof(Type), typeof(Storyboard), null);
-
 		/// <summary>Bindable property for <see cref="TargetName"/>.</summary>
 		public static readonly BindableProperty TargetNameProperty =
 			BindableProperty.Create(nameof(TargetName), typeof(string), typeof(Storyboard), null);
@@ -78,13 +74,6 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			get => (TimeSpan)GetValue(DurationProperty);
 			set => SetValue(DurationProperty, value);
-		}
-
-		/// <summary>The type unqualified <see cref="Setter.Property"/> names resolve against in XAML.</summary>
-		public Type? TargetType
-		{
-			get => (Type?)GetValue(TargetTypeProperty);
-			set => SetValue(TargetTypeProperty, value);
 		}
 
 		/// <summary>The default target of the keyframes' setters, resolved in the play target's name scope.

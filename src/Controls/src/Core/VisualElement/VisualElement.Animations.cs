@@ -41,8 +41,9 @@ namespace Microsoft.Maui.Controls
 
 #if IOS || MACCATALYST || WINDOWS
 			// MAUI's own transform mappings each read every transform property and rebuild the platform transform, so
-			// one of them is enough. A property whose mapping was replaced or appended to still gets its own update.
-			var mapper = (handler as ElementHandler)?._mapper;
+			// one of them is enough. A property whose mapping was replaced or appended to still gets its own update, and
+			// a handler type MAUI doesn't ship (which may override UpdateValue) gets every update.
+			var mapper = IsMauiHandler(handler) ? (handler as ElementHandler)?._mapper : null;
 			var rebuilt = false;
 			FlushCoalesced(handler, mapper, deferred, TranslationXBit, 0, ref rebuilt);
 			FlushCoalesced(handler, mapper, deferred, TranslationYBit, 1, ref rebuilt);
@@ -100,6 +101,15 @@ namespace Microsoft.Maui.Controls
 			var builtIn = Microsoft.Maui.Handlers.ViewHandler.BuiltInTransformMappings[index];
 			return builtIn is not null && mapper is not null
 				&& ReferenceEquals(mapper.GetProperty(Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys[index]), builtIn);
+		}
+
+		static readonly System.Reflection.Assembly s_coreAssembly = typeof(Microsoft.Maui.Handlers.ViewHandler).Assembly;
+		static readonly System.Reflection.Assembly s_controlsAssembly = typeof(VisualElement).Assembly;
+
+		internal static bool IsMauiHandler(IViewHandler handler)
+		{
+			var assembly = handler.GetType().Assembly;
+			return ReferenceEquals(assembly, s_coreAssembly) || ReferenceEquals(assembly, s_controlsAssembly);
 		}
 
 		bool DeferTransformUpdate(string property)

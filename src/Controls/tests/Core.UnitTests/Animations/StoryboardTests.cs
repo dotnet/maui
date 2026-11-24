@@ -1756,6 +1756,242 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(scale, label.Scale);
 		}
 
+		[Fact]
+		public void AForeverRunWithoutAWindowWaitsForOneWithoutRecursing()
+		{
+			AnimationFrameClock.TestClock = null;
+			var label = new Label();
+			var player = Storyboard.Create().WithDuration(Ms(100)).WithRepeat(RepeatBehavior.Forever)
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.Build()
+				.Begin(label);
+
+			Assert.Equal(PlaybackState.Running, player.State);
+			_ = new Window(new ContentPage { Content = label });
+			Assert.Equal(PlaybackState.Running, player.State);
+			player.Stop();
+		}
+
+		[Fact]
+		public void APreviousOwnerThatThrowsWhenTakenOverLeavesNothingBehind()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var first = Fade(0, 1, 1000).Begin(label);
+			Advance(100);
+			first.Completed += (_, _) => throw new InvalidOperationException("completed");
+
+			Assert.Throws<InvalidOperationException>(() => Fade(1, 0, 1000).Begin(label));
+
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+			label.Opacity = 0.5;
+			Assert.Equal(0.5, label.Opacity);
+		}
+
+		[Fact]
+		public void StoppingFromAReleaseCallbackDoesNotReclaim()
+		{
+			var label = new Label { Opacity = 0.9 };
+			StoryboardPlayer player = null;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && label.Opacity == 0.9 && player?.State == PlaybackState.Running)
+					player.Stop();
+			};
+			player = Storyboard.Create().WithDuration(Ms(200))
+				.AddChild(TimeSpan.Zero, child => child.WithDuration(Ms(100)).WithFillMode(AnimationFillMode.None)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.Build()
+				.Begin(label);
+			Advance(50);
+
+			Advance(100);
+
+			Assert.Equal(AnimationResult.Stopped, player.Completion.Result);
+			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void ABoundedContainerOfAForeverChildEvaluatesItsChild()
+		{
+			var label = new Label();
+			Storyboard.Create().WithRepeat(new RepeatBehavior(Ms(300)))
+				.AddChild(TimeSpan.Zero, child => child.WithDuration(Ms(100)).WithRepeat(RepeatBehavior.Forever)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.Build()
+				.Begin(label);
+
+			Advance(50);
+
+			Assert.Equal(0.5, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void AStepWrappedInAContainerContinuesFromThePreviousStep()
+		{
+			var label = new Label { Opacity = 0 };
+			Storyboard.Create()
+				.Sequence(
+					a => a.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.5)),
+					container => container.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0))))
+				.Build()
+				.Begin(label);
+
+			Advance(150);
+
+			Assert.Equal(0.75, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void ASiblingInTheIdleGapOfAHeavilyRepeatedContainerIsAllowed()
+		{
+			Storyboard Build(TimeSpan siblingBegin) => Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(257))
+					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
+				.AddChild(siblingBegin, sibling => sibling.WithDuration(Ms(25)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
+				.Build();
+
+			Assert.Equal(PlaybackState.Running, Build(Ms(150)).Begin(new Label()).State);
+
+			var ex = Assert.Throws<InvalidOperationException>(() => Build(Ms(250)).Begin(new Label()));
+			Assert.Contains("MAUIX2307", ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void RelativeSourceKeyFrameBindingsResolveAgainstTheAnimatedElement()
+		{
+			var label = new Label();
+			var page = new ContentPage { Opacity = 0.4, Content = label };
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame
+			{
+				Cue = Cue.FromFraction(1),
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualElement.OpacityProperty,
+						Value = new Binding(nameof(VisualElement.Opacity), source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(ContentPage))),
+					},
+				},
+			});
+
+			storyboard.Begin(label);
+			Advance(110);
+
+			Assert.Equal(0.4, label.Opacity, 10);
+		}
+
+		class NullableModel
+		{
+			public double? Value { get; set; }
+		}
+
+		[Fact]
+		public void CompiledKeyFrameBindingsKeepTheirTargetNullValue()
+		{
+			var label = new Label { BindingContext = new NullableModel() };
+			var binding = new TypedBinding<NullableModel, double?>(m => (m.Value, true), null, null) { TargetNullValue = 0.6 };
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = binding } } });
+
+			storyboard.Begin(label);
+			Advance(110);
+
+			Assert.Equal(0.6, label.Opacity, 10);
+		}
+
+		sealed class RecordingDispatcher : IDispatcher
+		{
+			readonly bool _requiresDispatch;
+			bool _dispatching;
+
+			public RecordingDispatcher(bool requiresDispatch) => _requiresDispatch = requiresDispatch;
+
+			public int Dispatched { get; private set; }
+
+			public bool IsDispatching => _dispatching;
+
+			public bool IsDispatchRequired => _requiresDispatch && !_dispatching;
+
+			public bool Dispatch(Action action)
+			{
+				Dispatched++;
+				_dispatching = true;
+				try
+				{
+					action();
+				}
+				finally
+				{
+					_dispatching = false;
+				}
+				return true;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => false;
+
+			public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+		}
+
+		sealed class PerThreadDispatcherProvider : IDispatcherProvider
+		{
+			readonly IDispatcher _owner;
+			readonly IDispatcher _other;
+
+			public PerThreadDispatcherProvider(IDispatcher owner, IDispatcher other)
+			{
+				_owner = owner;
+				_other = other;
+			}
+
+			public Thread OwnerThread { get; set; }
+
+			public IDispatcher GetForCurrentThread() => Thread.CurrentThread == OwnerThread ? _owner : _other;
+		}
+
+		[Fact]
+		public void PlayAsyncUsesTheDispatcherTheTargetWasCreatedOn()
+		{
+			// Created on one thread (dispatcher A), played from another whose current dispatcher B refuses work: the
+			// run must go to A, the target's own, so it completes instead of being refused by B.
+			var owner = new RecordingDispatcher(requiresDispatch: true);
+			var other = new RefusingDispatcher { Refuse = true };
+			var provider = new PerThreadDispatcherProvider(owner, other);
+			DispatcherProvider.SetCurrent(provider);
+			Label label = null;
+			var creator = new Thread(() => label = new Label());
+			provider.OwnerThread = creator;
+			creator.Start();
+			creator.Join();
+			MotionPolicy.TestOverride = MotionPolicy.Instant;
+
+			var task = Fade(0, 0.5).PlayAsync(label);
+
+			Assert.Equal(AnimationResult.ReducedMotionSkipped, task.WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult());
+		}
+
+		[Fact]
+		public void OnlyMauisOwnHandlerTypesAreCoalesced()
+		{
+			Assert.False(VisualElement.IsMauiHandler(Substitute.For<IViewHandler>()));
+			Assert.True(VisualElement.IsMauiHandler(new Microsoft.Maui.Handlers.LabelHandler()));
+		}
+
+		[Fact]
+		public void ASequenceOfFastStepsIsNotAnOverlap()
+		{
+			var label = new Label();
+			var player = Storyboard.Create()
+				.Sequence(
+					a => a.WithDuration(Ms(100)).WithSpeedRatio(3).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.5)),
+					b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0)))
+				.Build()
+				.Begin(label);
+
+			Assert.Equal(PlaybackState.Running, player.State);
+		}
+
 		static (ContentView Root, Label Badge, Label Title) CreateNamedTree()
 		{
 			var badge = new Label();
