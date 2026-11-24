@@ -111,6 +111,16 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
+		// PopModalAsync(transition): which modal it dismisses is only known once the modal manager has waited for any
+		// presentation in progress, so the transition flows with the call and is attached to the modal selected then.
+		static readonly System.Threading.AsyncLocal<PageTransition?> s_modalPopTransition = new();
+
+		internal static PageTransition? ModalPopTransition
+		{
+			get => s_modalPopTransition.Value;
+			set => s_modalPopTransition.Value = value;
+		}
+
 		/// <summary>The GoToAsync transition of the Shell navigation running for <paramref name="page"/>, if any.</summary>
 		internal static PageTransition? GetShellOverride(Element? page) => FindShellOverride(page);
 

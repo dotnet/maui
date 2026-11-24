@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Animations
 {
 	internal static partial class RootPageTransition
 	{
-		static Task ReplacePlatformAsync(Window window, Page page, NavigationTransitionRequest request, PageTransition transition)
+		static async Task ReplacePlatformAsync(Window window, Page page, NavigationTransitionRequest request, PageTransition transition)
 		{
 			var activity = (window.Handler?.PlatformView as global::Android.App.Activity) ?? window.Handler?.MauiContext?.Context?.GetActivity();
 			var decor = activity?.Window?.DecorView as ViewGroup;
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Animations
 			if (decor?.Overlay is null || content is not { Width: > 0, Height: > 0 } || config is null)
 			{
 				window.Page = page;
-				return Task.CompletedTask;
+				return;
 			}
 
 			// The outgoing root as a picture in the window overlay, while the new root goes in underneath it.
@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			var overlay = global::Android.Runtime.Extensions.JavaCast<ViewGroupOverlay>(decor.Overlay);
 			overlay.Add(picture);
+			ActivePictures++;
 
 			var width = content.Width;
 			var height = content.Height;
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 				finished = true;
 				overlay.Remove(picture);
+				ActivePictures--;
 				original.Restore(content);
 				bitmap.Recycle();
 				if (running is not null)
@@ -83,9 +85,16 @@ namespace Microsoft.Maui.Controls.Animations
 			});
 
 			window.Page = page;
-			if (running.IsSuperseded)
+
+			// A replacement started from another assignment's callbacks is queued behind it: wait until this page is
+			// really the window's page before animating its root.
+			await Task.WhenAny(WhenAssignedAsync(window, page), tcs.Task).ConfigureAwait(true);
+			if (running.IsSuperseded || !ReferenceEquals(window.Page, page))
 			{
-				return tcs.Task;
+				// Replaced meanwhile: nothing of this one is left to animate (Cleanup only releases this replacement).
+				Cleanup();
+				await tcs.Task.ConfigureAwait(true);
+				return;
 			}
 
 			void Apply(float progress)
@@ -102,7 +111,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 			Apply(0);
 			animator.Start();
-			return tcs.Task;
+			await tcs.Task.ConfigureAwait(true);
 		}
 
 		static void Pose(AView view, PageTransitionCurves.Pose pose, int width, int height, NativePose original)

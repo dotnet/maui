@@ -79,8 +79,11 @@ namespace Microsoft.Maui.Controls.Animations
 			return NavigateAsync(page, NavigationTransitionKind.Push, transition, () => navigation.PushAsync(page, !transition.IsNone));
 		}
 
-		/// <summary>Pops the top page with <paramref name="transition"/> instead of reversing the one it was shown with.</summary>
-		public static Task<Page> PopAsync(this INavigation navigation, PageTransition transition)
+		/// <summary>
+		/// Pops the top page with <paramref name="transition"/> instead of reversing the one it was shown with. The result is
+		/// <see langword="null"/> when there was nothing to pop.
+		/// </summary>
+		public static Task<Page?> PopAsync(this INavigation navigation, PageTransition transition)
 		{
 			_ = navigation ?? throw new ArgumentNullException(nameof(navigation));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
@@ -101,15 +104,24 @@ namespace Microsoft.Maui.Controls.Animations
 			return NavigateAsync(page, NavigationTransitionKind.PushModal, transition, () => navigation.PushModalAsync(page, !transition.IsNone));
 		}
 
-		/// <summary>Dismisses the top modal page with <paramref name="transition"/> instead of reversing the one it was presented with.</summary>
-		public static Task<Page> PopModalAsync(this INavigation navigation, PageTransition transition)
+		/// <summary>
+		/// Dismisses the top modal page with <paramref name="transition"/> instead of reversing the one it was presented with.
+		/// The result is <see langword="null"/> when the dismissal was cancelled.
+		/// </summary>
+		public static Task<Page?> PopModalAsync(this INavigation navigation, PageTransition transition)
 		{
 			_ = navigation ?? throw new ArgumentNullException(nameof(navigation));
 			_ = transition ?? throw new ArgumentNullException(nameof(transition));
 
-			var stack = navigation.ModalStack;
-			var top = stack.Count > 0 ? stack[stack.Count - 1] : null;
-			return NavigateAsync(top, NavigationTransitionKind.PopModal, transition, () => navigation.PopModalAsync(!transition.IsNone));
+			return PopModalWithTransitionAsync(navigation, transition);
+		}
+
+		// The modal manager attaches the transition to the modal it actually dismisses: one queued ahead of this call can
+		// be on top by the time it runs.
+		static async Task<Page?> PopModalWithTransitionAsync(INavigation navigation, PageTransition transition)
+		{
+			PageTransitionResolver.ModalPopTransition = transition.IsNone ? null : transition.Snapshot();
+			return await navigation.PopModalAsync(!transition.IsNone).ConfigureAwait(true);
 		}
 
 		// Stages the transition for this page and kind only, runs the navigation, and removes the staged value if the
@@ -132,7 +144,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		static async Task<Page> NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task<Page>> navigate)
+		static async Task<Page?> NavigateAsync(Page? page, NavigationTransitionKind kind, PageTransition transition, Func<Task<Page>> navigate)
 		{
 			var token = page is null ? null : PageTransitionResolver.SetPending(page, kind, transition);
 			try

@@ -210,8 +210,12 @@ namespace Microsoft.Maui.DeviceTests
 				// While it flies, the real source is hidden under its snapshot.
 				var hidden = false;
 				var watch = Stopwatch.StartNew();
+				var picturesSeen = 0;
 				while (!hidden && watch.Elapsed < TimeSpan.FromMilliseconds(800))
 				{
+#if ANDROID
+					picturesSeen = Math.Max(picturesSeen, PageTransitionAnimations.HeroFlights.ActivePictures);
+#endif
 					hidden = NativeAlpha(source) == 0;
 					if (!hidden)
 					{
@@ -222,6 +226,9 @@ namespace Microsoft.Maui.DeviceTests
 				await push.WaitAsync(TimeSpan.FromSeconds(10));
 
 				Assert.True(hidden, "The source element was never hidden: no shared-element flight ran.");
+#if ANDROID
+				Assert.True(picturesSeen > 0, "No flight picture was shown.");
+#endif
 
 				// The flight lands with the page transition; allow its end action a moment to run.
 				var landing = Stopwatch.StartNew();
@@ -232,6 +239,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(NativeAlpha(source) == 1, $"Source alpha left at {NativeAlpha(source)}");
 				Assert.True(NativeAlpha(target) == 1, $"Target alpha left at {NativeAlpha(target)}");
+#if ANDROID
+				// The flight's pictures are gone from the window overlay.
+				Assert.Equal(0, PageTransitionAnimations.HeroFlights.ActivePictures);
+#endif
 			});
 		}
 
@@ -278,6 +289,85 @@ namespace Microsoft.Maui.DeviceTests
 				await pushTask.WaitAsync(TimeSpan.FromSeconds(10));
 				Assert.True(push.Elapsed >= TimeSpan.FromMilliseconds(1300), $"Push completed after {push.Elapsed}.");
 				Assert.True(navigatedTo);
+			});
+		}
+#endif
+
+#if ANDROID
+		[Fact(DisplayName = "A modal transition's Background is shown behind the modal while it animates")]
+		public async Task ModalTransitionBackgroundIsShown()
+		{
+			SetupBuilder();
+			var root = CreatePage("Root");
+			var modal = CreatePage("Modal");
+			PageTransitions.SetModalTransition(modal, new ScaleTransition
+			{
+				FromScale = 0.5,
+				Duration = TimeSpan.FromSeconds(1),
+				Background = new SolidColorBrush(Graphics.Colors.Red),
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(root), async (_) =>
+			{
+				await OnLoadedAsync(root.Content);
+
+				var push = root.Navigation.PushModalAsync(modal);
+				var seen = false;
+				var watch = Stopwatch.StartNew();
+				while (!seen && watch.Elapsed < TimeSpan.FromMilliseconds(900))
+				{
+					seen = BackdropColor(modal) == global::Android.Graphics.Color.Red.ToArgb();
+					if (!seen)
+					{
+						await Task.Yield();
+					}
+				}
+
+				await push.WaitAsync(TimeSpan.FromSeconds(10));
+
+				Assert.True(seen, "The transition's Background never showed behind the modal.");
+				Assert.NotEqual(global::Android.Graphics.Color.Red.ToArgb(), BackdropColor(modal));
+			});
+		}
+
+		static int? BackdropColor(Page page)
+			=> ((page.Handler as IPlatformViewHandler)?.PlatformView?.RootView?.Background as global::Android.Graphics.Drawables.ColorDrawable)?.Color.ToArgb();
+
+		[Fact(DisplayName = "A root replacement started during another settles on the newest root")]
+		public async Task OverlappingRootReplacementsSettle()
+		{
+			SetupBuilder();
+			var first = CreatePage("First");
+			var second = CreatePage("Second");
+			var third = CreatePage("Third");
+			var window = new Window(first);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(first.Content);
+				var content = handler.PlatformView.Window?.DecorView?.FindViewById(global::Android.Resource.Id.Content);
+				Assert.NotNull(content);
+
+				// The second replacement starts from the first one's page assignment.
+				Task nested = null;
+				window.PropertyChanged += (_, e) =>
+				{
+					if (e.PropertyName == Window.PageProperty.PropertyName && ReferenceEquals(window.Page, second) && nested is null)
+					{
+						nested = window.ReplacePageAsync(third, new FadeTransition { Duration = TimeSpan.FromMilliseconds(400) });
+					}
+				};
+
+				var outer = window.ReplacePageAsync(second, new SlideTransition { Duration = TimeSpan.FromMilliseconds(800) });
+				await outer.WaitAsync(TimeSpan.FromSeconds(10));
+				Assert.NotNull(nested);
+				await nested.WaitAsync(TimeSpan.FromSeconds(10));
+
+				Assert.Same(third, window.Page);
+				Assert.Equal(0, RootPageTransition.ActivePictures);
+				Assert.Equal(0, content.TranslationX);
+				Assert.Equal(1, content.ScaleX);
+				Assert.Equal(1, content.Alpha);
 			});
 		}
 #endif

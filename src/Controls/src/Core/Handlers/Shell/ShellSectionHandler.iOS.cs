@@ -1872,6 +1872,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler = handler;
             }
 
+            internal ShellSectionHandler Handler => _handler;
+
             public bool IsInMoreTab
             {
                 get => _handler.IsInMoreTab;

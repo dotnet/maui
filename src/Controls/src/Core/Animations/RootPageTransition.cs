@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Animations
 		// The root replacement running on each window. A new one finishes it first, so two never animate the same views.
 		static readonly ConditionalWeakTable<Window, RunningTransition> s_running = new();
 
+		/// <summary>Pictures of outgoing roots currently shown over a window, for tests.</summary>
+		internal static int ActivePictures;
+
 		internal static Task ReplaceAsync(Window window, Page page, PageTransition transition)
 		{
 			FinishRunning(window);
@@ -48,6 +51,33 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			return ReplacePlatformAsync(window, page, request, effective);
+		}
+
+		/// <summary>
+		/// Completes once <paramref name="window"/>'s page has settled after assigning <paramref name="page"/>: at once if it
+		/// already is the page, or at the next page change. An assignment made from inside another assignment's change
+		/// callbacks is queued until that one finishes, so the native root to animate only exists once this has completed.
+		/// The caller checks the page is still <paramref name="page"/>.
+		/// </summary>
+		internal static Task WhenAssignedAsync(Window window, Page page)
+		{
+			if (ReferenceEquals(window.Page, page))
+			{
+				return Task.CompletedTask;
+			}
+
+			var assigned = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			System.ComponentModel.PropertyChangedEventHandler? handler = null;
+			handler = (_, e) =>
+			{
+				if (e.PropertyName == Window.PageProperty.PropertyName)
+				{
+					window.PropertyChanged -= handler;
+					assigned.TrySetResult(true);
+				}
+			};
+			window.PropertyChanged += handler;
+			return assigned.Task;
 		}
 
 		/// <summary>Ends the root replacement running on <paramref name="window"/>, jumping it to its end state.</summary>

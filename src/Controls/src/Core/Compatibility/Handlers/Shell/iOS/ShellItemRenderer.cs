@@ -229,17 +229,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 			RegisterTabBar();
 
-			// PageTransitions.TabTransition. An animator a subclass already installed keeps running whenever the tab's
-			// transition is the platform's, so existing custom tab animations are unchanged; null keeps UIKit's
+			// PageTransitions.TabTransition. An animator a subclass already installed takes precedence and is left exactly
+			// as it is (so removing it later with -= still restores the native switch); a null animator keeps UIKit's
 			// unanimated switch.
-			var existingAnimator = GetAnimationControllerForTransition;
-			GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
-				Animations.TabPageTransitions.GetAnimator(
-					tabController,
-					fromViewController,
-					toViewController,
-					vc => RendererForViewController(vc)?.ShellSection)
-				?? existingAnimator?.Invoke(tabController, fromViewController, toViewController)!;
+			if (GetAnimationControllerForTransition is null)
+			{
+				GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
+					Animations.TabPageTransitions.GetAnimator(
+						tabController,
+						fromViewController,
+						toViewController,
+						vc => RendererForViewController(vc)?.ShellSection)!;
+			}
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{

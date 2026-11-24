@@ -186,19 +186,34 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			readonly VisualElement _from;
 			readonly VisualElement _to;
+			readonly UIView _source;
+			readonly UIView _target;
 			readonly UIView _fromSnapshot;
 			readonly UIView _toSnapshot;
 			readonly CGRect _start;
 			readonly CGRect _end;
+			readonly double _fromOpacity;
+			readonly double _toOpacity;
+			readonly nfloat _sourceAlpha;
+			readonly nfloat _targetAlpha;
 
-			HeroFlight(VisualElement from, VisualElement to, UIView fromSnapshot, UIView toSnapshot, CGRect start, CGRect end)
+			/// <summary>Snapshot views currently flying, for tests.</summary>
+			internal static int ActiveSnapshots;
+
+			HeroFlight(VisualElement from, VisualElement to, UIView source, UIView target, UIView fromSnapshot, UIView toSnapshot, CGRect start, CGRect end)
 			{
 				_from = from;
 				_to = to;
+				_source = source;
+				_target = target;
 				_fromSnapshot = fromSnapshot;
 				_toSnapshot = toSnapshot;
 				_start = start;
 				_end = end;
+				_fromOpacity = from.Opacity;
+				_toOpacity = to.Opacity;
+				_sourceAlpha = source.Alpha;
+				_targetAlpha = target.Alpha;
 			}
 
 			internal static List<HeroFlight> Prepare(UIView container, List<(VisualElement From, VisualElement To)> heroes)
@@ -239,7 +254,8 @@ namespace Microsoft.Maui.Controls.Animations
 				container.AddSubview(fromSnapshot);
 				container.AddSubview(toSnapshot);
 
-				var flight = new HeroFlight(from, to, fromSnapshot, toSnapshot, start, end);
+				var flight = new HeroFlight(from, to, source, target, fromSnapshot, toSnapshot, start, end);
+				ActiveSnapshots += 2;
 				source.Alpha = 0;
 				target.Alpha = 0;
 				return flight;
@@ -264,12 +280,25 @@ namespace Microsoft.Maui.Controls.Animations
 
 			internal void Land()
 			{
-				// The elements' own mapped opacity, not the alpha they had when the flight began: an Opacity change made
-				// during the flight (and any mapper customization) is what shows afterwards.
-				_from.Handler?.UpdateValue(nameof(IView.Opacity));
-				_to.Handler?.UpdateValue(nameof(IView.Opacity));
+				// Unchanged Opacity puts back the exact native alpha (a handler may have set its own); a change made during
+				// the flight is applied through the handler's mapper.
+				Restore(_from, _source, _fromOpacity, _sourceAlpha);
+				Restore(_to, _target, _toOpacity, _targetAlpha);
 				_fromSnapshot.RemoveFromSuperview();
 				_toSnapshot.RemoveFromSuperview();
+				ActiveSnapshots -= 2;
+			}
+
+			static void Restore(VisualElement element, UIView view, double opacity, nfloat alpha)
+			{
+				if (element.Opacity == opacity)
+				{
+					view.Alpha = alpha;
+				}
+				else
+				{
+					element.Handler?.UpdateValue(nameof(IView.Opacity));
+				}
 			}
 
 			static nfloat Lerp(nfloat from, nfloat to, double progress) => (nfloat)(from + (to - from) * progress);

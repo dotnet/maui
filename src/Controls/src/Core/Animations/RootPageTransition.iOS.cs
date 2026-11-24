@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Animations
 	{
 		const int Samples = 24;
 
-		static Task ReplacePlatformAsync(Window window, Page page, NavigationTransitionRequest request, PageTransition transition)
+		static async Task ReplacePlatformAsync(Window window, Page page, NavigationTransitionRequest request, PageTransition transition)
 		{
 			if (window.Handler?.PlatformView is not UIWindow uiWindow || uiWindow.SnapshotView(false) is not { } picture)
 			{
 				window.Page = page;
-				return Task.CompletedTask;
+				return;
 			}
 
 			// The outgoing root as a picture, laid over the new root once it has replaced the old one (replacing the
@@ -62,9 +62,16 @@ namespace Microsoft.Maui.Controls.Animations
 			running = Track(window, Cleanup);
 
 			window.Page = page;
-			if (running.IsSuperseded)
+
+			// A replacement started from another assignment's callbacks is queued behind it: wait until this page is
+			// really the window's page before taking its native root.
+			await Task.WhenAny(WhenAssignedAsync(window, page), tcs.Task).ConfigureAwait(true);
+			if (running.IsSuperseded || !ReferenceEquals(window.Page, page))
 			{
-				return tcs.Task;
+				// Replaced meanwhile: nothing of this one is left to animate (Cleanup only releases this replacement).
+				Cleanup();
+				await tcs.Task.ConfigureAwait(true);
+				return;
 			}
 
 			incoming = uiWindow.RootViewController?.View;
@@ -101,7 +108,7 @@ namespace Microsoft.Maui.Controls.Animations
 				},
 				_ => Cleanup());
 
-			return tcs.Task;
+			await tcs.Task.ConfigureAwait(true);
 		}
 
 	}

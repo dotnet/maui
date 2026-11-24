@@ -626,8 +626,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
+			// PopModalAsync(transition): attached now that the modal being dismissed is known.
+			var explicitTransition = Animations.PageTransitionResolver.ModalPopTransition;
+			Animations.PageTransitionResolver.ModalPopTransition = null;
+			var explicitToken = explicitTransition is null ? null : Animations.PageTransitionResolver.SetPending(modal, Animations.NavigationTransitionKind.PopModal, explicitTransition);
+
 			if (_window.OnModalPopping(modal))
 			{
+				if (explicitToken is not null)
+					Animations.PageTransitionResolver.ClearPending(modal, explicitToken);
+
 				_window.OnPopCanceled();
 				return null;
 			}
@@ -667,13 +675,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (isPresented)
 				_pendingPopAnimations[modal] = animated;
 
-			// A dismissal the platform runs later keeps its per-navigation transition until then.
-			if (isPresented && !applyNow && Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PopModal) is { } deferredTransition)
+			// A dismissal the platform runs later keeps its per-navigation transition until then, whether it was passed to
+			// PopModalAsync or comes from the GoToAsync that routed back (which ends before the dismissal runs).
+			if (isPresented && !applyNow
+				&& (Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PopModal)
+					?? Animations.PageTransitionResolver.GetShellOverride(modal)) is { } deferredTransition)
 				_pendingPopTransitions[modal] = deferredTransition;
 
 			Task popTask = applyNow ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
+
+			// Whatever the platform didn't consume (a no-op, or a platform that doesn't animate modals).
+			if (explicitToken is not null)
+				Animations.PageTransitionResolver.ClearPending(modal, explicitToken);
 
 			if (applyNow)
 				_pendingPopAnimations.Remove(modal);

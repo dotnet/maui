@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.Animations;
 using Android.Widget;
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Animations
 				animation.AnimationEnd += (_, _) => SetDrawDisappearingViewsLast(fragmentContainer, drawDisappearingViewsFirst: true);
 			}
 
-			if (!enter && container is not null && _transition.Background is { } background)
+			if (!enter && container is not null && _transition.Background is { } background && _request.Kind is NavigationTransitionKind.Push or NavigationTransitionKind.Pop)
 			{
 				// Detach the container's own drawable before painting the transition background, so it is neither
 				// recolored nor disposed, and put that same, untouched drawable back afterwards.
@@ -64,6 +65,31 @@ namespace Microsoft.Maui.Controls.Animations
 				container.Background = null;
 				container.UpdateBackground((Microsoft.Maui.Graphics.Paint)background);
 				animation.AnimationEnd += (_, _) => container.Background = previous;
+			}
+
+			// A modal animates alone in its dialog's window: the backdrop goes on that window's root, behind the modal,
+			// once the animation starts (the modal's views don't exist yet when its animation is created).
+			if (_request.Kind is NavigationTransitionKind.PushModal or NavigationTransitionKind.PopModal && _transition.Background is { } modalBackground)
+			{
+				Drawable? previousModalBackground = null;
+				ViewGroup? backdrop = null;
+				animation.AnimationStart += (_, _) =>
+				{
+					backdrop = PlatformView(page)?.RootView as ViewGroup;
+					if (backdrop is not null)
+					{
+						previousModalBackground = backdrop.Background;
+						backdrop.Background = null;
+						backdrop.UpdateBackground((Microsoft.Maui.Graphics.Paint)modalBackground);
+					}
+				};
+				animation.AnimationEnd += (_, _) =>
+				{
+					if (backdrop is not null)
+					{
+						backdrop.Background = previousModalBackground;
+					}
+				};
 			}
 
 			if (enter && _heroes.Count > 0 && view is not null)
@@ -167,7 +193,7 @@ namespace Microsoft.Maui.Controls.Animations
 		/// Shared elements on Android: pictures of the element on both pages, flown in the overlay of the window the pages
 		/// are in (the activity's, or a modal dialog's) from the source to the destination while the real elements are hidden.
 		/// </summary>
-		sealed class HeroFlights
+		internal sealed class HeroFlights
 		{
 			readonly ViewGroup _root;
 			readonly ViewGroupOverlay _overlay;
@@ -192,7 +218,11 @@ namespace Microsoft.Maui.Controls.Animations
 					To = to;
 					Picture = picture;
 					Start = start;
+					FromState = ElementAlpha.Of(from, source);
 				}
+
+				public ElementAlpha FromState { get; }
+				public ElementAlpha? ToState { get; set; }
 
 				public VisualElement From { get; }
 				public AView Source { get; }
@@ -203,9 +233,53 @@ namespace Microsoft.Maui.Controls.Animations
 				public bool Landed { get; set; }
 			}
 
-			// Ends the temporary hiding by reapplying the element's own mapped opacity, so a change to its Opacity
-			// made during the flight (and any mapper customization) is what shows afterwards.
-			static void RestoreOpacity(VisualElement element) => element.Handler?.UpdateValue(nameof(IView.Opacity));
+			// An element's opacity when it was hidden for the flight: its managed Opacity and the native alpha shown.
+			readonly struct ElementAlpha
+			{
+				ElementAlpha(VisualElement element, AView view, double opacity, float alpha)
+				{
+					Element = element;
+					View = view;
+					Opacity = opacity;
+					Alpha = alpha;
+				}
+
+				public VisualElement Element { get; }
+				public AView View { get; }
+				public double Opacity { get; }
+				public float Alpha { get; }
+
+				public static ElementAlpha Of(VisualElement element, AView view) => new(element, view, element.Opacity, view.Alpha);
+
+				// Ends the temporary hiding. Unchanged Opacity puts back the exact native alpha (a handler may have set its
+				// own); a change made during the flight is applied through the handler's mapper.
+				public void Restore()
+				{
+					if (Element.Opacity == Opacity)
+					{
+						View.Alpha = Alpha;
+					}
+					else
+					{
+						Element.Handler?.UpdateValue(nameof(IView.Opacity));
+					}
+				}
+			}
+
+			/// <summary>Snapshot pictures currently in a window overlay, for tests.</summary>
+			internal static int ActivePictures;
+
+			void AddPicture(ImageView picture)
+			{
+				_overlay.Add(picture);
+				ActivePictures++;
+			}
+
+			void RemovePicture(ImageView picture)
+			{
+				_overlay.Remove(picture);
+				ActivePictures--;
+			}
 
 			internal static void Start(AView incomingView, List<(VisualElement From, VisualElement To)> heroes, long duration, IInterpolator interpolator)
 			{
@@ -233,6 +307,8 @@ namespace Microsoft.Maui.Controls.Animations
 						var start = new int[2];
 						source.GetLocationInWindow(start);
 						var picture = Picture(root, overlay, bitmap, start[0], start[1], source.Width, source.Height);
+						overlay.Add(picture);
+						ActivePictures++;
 						flights.Add(new Flight(from, source, to, picture, start));
 						source.Alpha = 0;
 					}
@@ -294,13 +370,10 @@ namespace Microsoft.Maui.Controls.Animations
 					Unsubscribe();
 					e.Handled = true;
 					_started = true;
-					for (int i = 0; i < _flights.Count; i++)
-					{
-						Fly(_flights[i], duration, interpolator);
-					}
 
 					// Interruption stays handled while the pictures fly: the incoming page leaving the window (its root
-					// replaced, the modal closed) stops them, removes them and puts both elements back.
+					// replaced, the modal closed) stops them, removes them and puts both elements back. Registered before
+					// any flight starts, so a flight that lands at once (no landing spot) removes it with the last one.
 					EventHandler<AView.ViewDetachedFromWindowEventArgs>? onFlightDetached = null;
 					onFlightDetached = (_, _) =>
 					{
@@ -309,6 +382,11 @@ namespace Microsoft.Maui.Controls.Animations
 					};
 					incomingView.ViewDetachedFromWindow += onFlightDetached;
 					_stopListening = () => incomingView.ViewDetachedFromWindow -= onFlightDetached;
+
+					for (int i = 0; i < _flights.Count; i++)
+					{
+						Fly(_flights[i], duration, interpolator);
+					}
 				};
 
 				// The navigation being interrupted before the flight starts (the outgoing page removed, say by a root page
@@ -346,8 +424,8 @@ namespace Microsoft.Maui.Controls.Animations
 				_cancelled = true;
 				for (int i = 0; i < _flights.Count; i++)
 				{
-					_overlay.Remove(_flights[i].Picture);
-					RestoreOpacity(_flights[i].From);
+					RemovePicture(_flights[i].Picture);
+					_flights[i].FromState.Restore();
 				}
 			}
 
@@ -374,14 +452,14 @@ namespace Microsoft.Maui.Controls.Animations
 					flight.Landing?.Animate()?.Cancel();
 				}
 
-				_overlay.Remove(flight.Picture);
+				RemovePicture(flight.Picture);
 				if (flight.Landing is not null)
 				{
-					_overlay.Remove(flight.Landing);
+					RemovePicture(flight.Landing);
 				}
 
-				RestoreOpacity(flight.From);
-				RestoreOpacity(flight.To);
+				flight.FromState.Restore();
+				flight.ToState?.Restore();
 
 				var allLanded = true;
 				for (int i = 0; i < _flights.Count && allLanded; i++)
@@ -413,7 +491,13 @@ namespace Microsoft.Maui.Controls.Animations
 				target.GetLocationInWindow(end);
 				var targetBitmap = Snapshot(target);
 				ImageView? landing = targetBitmap is null ? null : Picture(_root, _overlay, targetBitmap, start[0], start[1], source.Width, source.Height);
+				if (landing is not null)
+				{
+					AddPicture(landing);
+				}
+
 				flight.Landing = landing;
+				flight.ToState = ElementAlpha.Of(flight.To, target);
 				target.Alpha = 0;
 
 				var scaleX = target.Width / (float)source.Width;
@@ -461,7 +545,6 @@ namespace Microsoft.Maui.Controls.Animations
 					AView.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
 					AView.MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
 				picture.Layout(x, y, x + width, y + height);
-				overlay.Add(picture);
 				return picture;
 			}
 		}

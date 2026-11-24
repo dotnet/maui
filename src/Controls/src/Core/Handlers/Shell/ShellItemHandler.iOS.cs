@@ -153,6 +153,7 @@ namespace Microsoft.Maui.Controls.Handlers
             CurrentRenderer = null;
             _currentSection = null;
             _displayedPage = null;
+            _moreNavigationDelegate?.Detach();
             _moreNavigationDelegate = null;
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
@@ -417,8 +418,80 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handlerRef = new WeakReference<ShellItemHandler>(handler);
             }
 
+            Microsoft.Maui.Platform.NavigationTransitionDriver? _transitionDriver;
+
+            /// <summary>Stops following the More controller's swipe-back. Call when the delegate is dropped.</summary>
+            internal void Detach() => _transitionDriver?.Detach();
+
+            // The More controller pushes the overflow section's pages itself, so page transitions are resolved here.
+            [Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+            {
+                if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is not ShellItem)
+                {
+                    return null!;
+                }
+
+                if (_transitionDriver is null)
+                {
+                    _transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(navigationController);
+                    _transitionDriver.AttachInteractivePop();
+                }
+
+                var section = handler.CurrentRenderer?.ShellSection;
+                return _transitionDriver.GetAnimationController(
+                    section as IView,
+                    operation,
+                    PageForViewController(section, handler.CurrentRenderer, fromViewController),
+                    PageForViewController(section, handler.CurrentRenderer, toViewController))!;
+            }
+
+            [Export("navigationController:interactionControllerForAnimationController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerInteractiveTransitioning GetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+                => _transitionDriver?.GetInteractionController()!;
+
+            static Page? PageForViewController(ShellSection? section, IShellSectionRenderer? renderer, UIViewController viewController)
+            {
+                if (section is null)
+                {
+                    return null;
+                }
+
+                foreach (var page in section.Stack)
+                {
+                    if (page?.Handler is IPlatformViewHandler { ViewController: var vc } && vc == viewController)
+                    {
+                        return page;
+                    }
+                }
+
+                if ((section.CurrentItem as IShellContentController)?.Page is { Handler: IPlatformViewHandler { ViewController: var rootVc } } root && rootVc == viewController)
+                {
+                    return root;
+                }
+
+                // A popped page has already left the section's stack; its controller is still tracked by the section.
+                var sectionHandler = renderer as ShellSectionHandler ?? (renderer as ShellSectionHandler.ShellSectionHandlerAdapter)?.Handler;
+                if (sectionHandler is not null)
+                {
+                    foreach (var tracker in sectionHandler._trackers)
+                    {
+                        if (tracker.Value.ViewController == viewController)
+                        {
+                            return tracker.Key as Page;
+                        }
+                    }
+                }
+
+                return null;
+            }
+
             public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
             {
+                _transitionDriver?.TransitionEnded();
+
                 if (!_handlerRef.TryGetTarget(out var handler))
                 {
                     return;
