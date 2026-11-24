@@ -72,16 +72,40 @@ public static class XamlIncrementalHotReloadHandler
 		// XAML actually changed in this delta, then issue a single MainThread.BeginInvokeOnMainThread.
 		//
 		// handledTypes is the synchronous, pre-dispatch "this is a XAML change" signal tooling reads.
-		// UpdateComponent() is now emitted on EVERY XAML type (member stability), so its mere presence no
-		// longer distinguishes a XAML edit from a pure C#/code-behind edit. Instead we look at whether the
-		// method's BODY is non-empty: the generator emits an EMPTY UpdateComponent() when a generation
-		// carries no XAML change, and a patched (non-empty) one when the XAML changed. A pure C# edit does
-		// not regenerate the XAML code, so UpdateComponent() stays empty for that page — correctly read as
-		// "not a XAML change" — while the method still never appears/disappears across generations.
+		// UpdateComponent() is emitted on EVERY XAML type (member stability), and its body keeps the
+		// pending patch across later generations (C#-only edits, repeated or throwaway evaluations), so
+		// neither its presence nor its body tells whether THIS delta carries a XAML change. The generator
+		// also emits a companion signal type nested in the root, whose content only changes when the patch
+		// changes: the root is a XAML change when the delta lists that companion and the patch is not empty
+		// (structural changes reset UpdateComponent() to an empty body: live instances can't be patched).
+		// Roots generated without a companion fall back to the non-empty-body check alone.
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
 		var handledTypes = new List<Type>();
 
+		HashSet<Type>? signaledRoots = null;
 		foreach (var type in updatedTypes)
+		{
+			if (type.IsNested && type.Name == SignalTypeName && type.DeclaringType is { } root)
+				(signaledRoots ??= new HashSet<Type>()).Add(root);
+		}
+
+		var candidates = new List<Type>(updatedTypes.Length);
+		foreach (var type in updatedTypes)
+		{
+			if (!(type.IsNested && type.Name == SignalTypeName))
+				candidates.Add(type);
+		}
+		if (signaledRoots is not null)
+		{
+			// A root is normally listed with its companion (its InitializeComponent changes too), but don't rely on it.
+			foreach (var root in signaledRoots)
+			{
+				if (!candidates.Contains(root))
+					candidates.Add(root);
+			}
+		}
+
+		foreach (var type in candidates)
 		{
 #pragma warning disable IL2070, IL2075
 			var ucMethod = type.GetMethod(
@@ -95,8 +119,11 @@ public static class XamlIncrementalHotReloadHandler
 			if (ucMethod is null)
 				continue; // not an incremental-XAML type at all
 
+			if (HasSignalType(type) && signaledRoots?.Contains(type) != true)
+				continue; // the patch didn't change in this delta (e.g. a pure C# edit) — not a XAML change
+
 			if (IsEmptyUpdateComponent(ucMethod))
-				continue; // XAML unchanged in this delta (e.g. a pure C# edit) — not a XAML change
+				continue; // no patch (e.g. a structural change or a pure C# edit) — not a XAML change
 
 			handledTypes.Add(type);
 
@@ -158,11 +185,22 @@ public static class XamlIncrementalHotReloadHandler
 		});
 	}
 
-	// The generator emits an EMPTY UpdateComponent() body when a generation carries no XAML change, and a
-	// patched (non-empty) one when the XAML changed. An empty method compiles to a trivial body (just a
+	/// <summary>
+	/// Name of the companion type the source generator nests in every XIHR root. Must match
+	/// <c>UpdateComponentCodeWriter.SignalTypeName</c> in the source generator.
+	/// </summary>
+	internal const string SignalTypeName = "__XamlHotReloadSignal";
+
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); HasSignalType is never reached there.")]
+	static bool HasSignalType(Type rootType) =>
+		rootType.GetNestedType(SignalTypeName, BindingFlags.NonPublic) is not null;
+
+	// The generator emits an EMPTY UpdateComponent() body when there is no pending patch, and a patched
+	// (non-empty) one otherwise. An empty method compiles to a trivial body (just a
 	// return / a couple of nops), so its IL is only a few bytes; any real patch is far larger. This lets
-	// the handler distinguish a XAML change from a pure C#/code-behind edit without adding or removing the
-	// method across generations. Unlike reflecting a generated method's return value, UpdateComponent() is
+	// the handler skip roots without a patch (and, for roots generated without the companion signal type,
+	// pure C#/code-behind edits) without adding or removing the method across generations. Unlike reflecting a generated method's return value, UpdateComponent() is
 	// always part of a XAML-change delta (it is what applies Hot Reload), so its body is reliably current.
 	const int EmptyUpdateComponentMaxIL = 8;
 

@@ -83,7 +83,7 @@ jobs:
             else
               echo "matched=false" >> "$GITHUB_OUTPUT"
             fi
-          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]] ||
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|run-tests|performance)([[:space:]]|$) ]] ||
                [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
@@ -113,7 +113,7 @@ jobs:
               return
             fi
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|rerun|performance)([[:space:]]|$) ]] &&
               [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
           }
 
@@ -839,7 +839,7 @@ jobs:
                 return
               fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|rerun|performance)([[:space:]]|$) ]] &&
                 [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
             }
 

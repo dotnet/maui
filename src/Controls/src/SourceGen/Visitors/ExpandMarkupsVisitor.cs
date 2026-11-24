@@ -67,8 +67,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 			// Extract expression code - single quotes are always transformed to double quotes
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed);
+			ResolveExpressionContext(parentNode, out var thisType, out var dataType);
 			// Resolve xmlns prefixes (e.g., local:Helper → fully qualified) before ABP syntax (e.g., target.(Grid.Row) → Grid.GetRow(target)).
-			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, node.NamespaceResolver, Context);
+			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, node.NamespaceResolver, Context, dataType, thisType);
 			if (ReportStandaloneAttachedProperty(node, expressionCode))
 				return;
 			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
@@ -88,17 +89,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		var markupString = markupnode.MarkupString;
 		INode? node = null;
 
-		// Get thisType and dataType for ambiguity checking
-		ITypeSymbol? thisType = null;
-		ITypeSymbol? dataType = null;
-
-		// Try to get the page/view type (this)
-		var rootElement = GetRootElement(parentElement);
-		if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
-			thisType = resolvedThisType;
-
-		// Try to get x:DataType
-		XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
+		// Get thisType and dataType for ambiguity checking and expression scope resolution
+		ResolveExpressionContext(parentElement, out var thisType, out var dataType);
 
 		// Check if this is a C# expression (consolidates all detection logic)
 		var classification = CSharpExpressionHelpers.ClassifyExpression(
@@ -130,7 +122,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 				// Extract expression code - single quotes are always transformed to double quotes
 				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
 				// Resolve xmlns prefixes before ABP syntax so prefixed ABPs become fully qualified type names.
-				expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupnode.NamespaceResolver, Context);
+				expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupnode.NamespaceResolver, Context, dataType, thisType);
 				if (ReportStandaloneAttachedProperty(markupnode, expressionCode))
 					return;
 				expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
@@ -141,6 +133,12 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// If not an expression, parse as markup extension
 		node ??= ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode);
 
+		// x:DataType only accepts {x:Type} or {x:Null}; like the runtime inflator, leave any other markup unexpanded so it is never instantiated
+		if (propertyName == XmlName.xDataType && node is ElementNode
+			&& !node.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
+			&& !node.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
+			return;
+
 		if (node != null)
 		{
 			parentElement.Properties[propertyName] = node;
@@ -148,33 +146,34 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		}
 	}
 
+	void ResolveExpressionContext(INode parentNode, out ITypeSymbol? thisType, out ITypeSymbol? dataType)
+	{
+		thisType = Context.RootType;
+		dataType = null;
+
+		var elementNode = parentNode as ElementNode ?? (parentNode as ListNode)?.Parent as ElementNode;
+		if (elementNode == null)
+			return;
+
+		if (thisType == null)
+		{
+			var rootElement = GetRootElement(elementNode);
+			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+				thisType = resolvedThisType;
+		}
+
+		XDataTypeResolver.TryGetXDataType(elementNode, Context, out dataType);
+	}
+
 	/// <summary>
 	/// Checks if a bare identifier can be resolved as a property on thisType or dataType.
 	/// </summary>
 	bool CanResolveAsProperty(string name, ITypeSymbol? thisType, ITypeSymbol? dataType)
 	{
-		if (thisType != null && HasMember(thisType, name))
+		if (thisType != null && MemberResolver.HasMember(thisType, name, includeMethods: false, Context.Compilation))
 			return true;
-		if (dataType != null && HasMember(dataType, name))
+		if (dataType != null && MemberResolver.HasMember(dataType, name, includeMethods: false, Context.Compilation))
 			return true;
-		return false;
-	}
-
-	/// <summary>
-	/// Checks if a type has a property or field with the given name.
-	/// </summary>
-	static bool HasMember(ITypeSymbol type, string memberName)
-	{
-		var currentType = type;
-		while (currentType != null)
-		{
-			foreach (var member in currentType.GetMembers(memberName))
-			{
-				if (member is IPropertySymbol || member is IFieldSymbol)
-					return true;
-			}
-			currentType = currentType.BaseType;
-		}
 		return false;
 	}
 

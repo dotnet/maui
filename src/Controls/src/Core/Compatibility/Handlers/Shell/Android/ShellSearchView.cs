@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Microsoft.Maui.Handlers;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
 using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
@@ -57,6 +58,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ITextWatcher.AfterTextChanged(IEditable s)
 		{
+			var searchHandler = SearchHandler;
+			if (searchHandler == null)
+			{
+				return;
+			}
+
 			var text = _textBlock.Text;
 
 			if (text == ShellSearchViewAdapter.DoNotUpdateMarker)
@@ -66,7 +73,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateClearButtonState();
 
-			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
+			// Let the mapping know that the update is coming from changes to the platform control.
+			var previousDirection = searchHandler.DataFlowDirection;
+			searchHandler.DataFlowDirection = DataFlowDirection.FromPlatform;
+			try
+			{
+				var query = searchHandler.Query ?? string.Empty;
+				var nativeText = text ?? string.Empty;
+				var transformedQuery = Microsoft.Maui.Controls.Platform.EditTextExtensions.GetTexts(_textBlock, query, searchHandler).newText;
+
+				if (transformedQuery != nativeText)
+				{
+					if (query == nativeText)
+					{
+						Microsoft.Maui.Controls.Platform.EditTextExtensions.UpdateTextFromPlatform(_textBlock, searchHandler);
+					}
+					else
+					{
+						searchHandler.SetValue(SearchHandler.QueryProperty, text);
+					}
+				}
+			}
+			finally
+			{
+				// Restore the previous direction.
+				searchHandler.DataFlowDirection = previousDirection;
+			}
 
 			UpdateShowsResults();
 		}

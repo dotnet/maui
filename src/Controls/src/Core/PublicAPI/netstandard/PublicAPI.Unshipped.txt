@@ -10,3 +10,4 @@ Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> 
 Microsoft.Maui.Controls.StructuredItemsView.ScrollToStart(bool animate = true) -> void
 ~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
