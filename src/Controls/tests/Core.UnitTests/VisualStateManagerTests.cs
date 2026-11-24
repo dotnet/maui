@@ -92,6 +92,80 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void QueuedTransitionsInDifferentGroupsDoNotSupersedeEachOther()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			var firstGroup = new VisualStateGroup
+			{
+				Name = "ColorGroup",
+				States =
+				{
+					new VisualState { Name = "Blue" },
+					new VisualState { Name = "Red" }
+				}
+			};
+			var secondGroup = new VisualStateGroup
+			{
+				Name = "SizeGroup",
+				States =
+				{
+					new VisualState { Name = "Small" },
+					new VisualState { Name = "Large" }
+				}
+			};
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { firstGroup, secondGroup });
+			VisualStateManager.GoToState(label, "Blue");
+			VisualStateManager.GoToState(label, "Small");
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			Assert.True(VisualStateManager.GoToState(label, "Red"));
+			Assert.True(VisualStateManager.GoToState(label, "Large"));
+			dispatchRequired = false;
+			while (queue.Count > 0)
+			{
+				queue.Dequeue()();
+			}
+
+			Assert.Equal("Red", firstGroup.CurrentState.Name);
+			Assert.Equal("Large", secondGroup.CurrentState.Name);
+		}
+
+		[Fact]
+		public void MissingSynchronousStateDoesNotSupersedeQueuedTransition()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			var group = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState { Name = "Off" },
+					new VisualState { Name = "On" }
+				}
+			};
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			VisualStateManager.GoToState(label, "Off");
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			Assert.True(VisualStateManager.GoToState(label, "On"));
+			dispatchRequired = false;
+			Assert.False(VisualStateManager.GoToState(label, "MissingState"));
+			while (queue.Count > 0)
+			{
+				queue.Dequeue()();
+			}
+
+			Assert.Equal("On", group.CurrentState.Name);
+		}
+
+		[Fact]
 		public void TriggerUpdateEvaluatesStateAfterItIsDispatched()
 		{
 			var queue = new Queue<Action>();
@@ -116,6 +190,85 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				queue.Dequeue()();
 
 			Assert.Same(fallbackState, group.CurrentState);
+		}
+
+		[Fact]
+		public void TriggerTransitionsAreAppliedAfterTheyAreDispatched()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			var higherPriorityTrigger = new TestStateTrigger();
+			var fallbackTrigger = new TestStateTrigger();
+			fallbackTrigger.Activate(true);
+			var higherPriorityState = new VisualState
+			{
+				Name = "HigherPriority",
+				StateTriggers = { higherPriorityTrigger },
+				Setters = { new Setter { Property = Label.TextProperty, Value = "higher" } }
+			};
+			var fallbackState = new VisualState
+			{
+				Name = "Fallback",
+				StateTriggers = { fallbackTrigger },
+				Setters = { new Setter { Property = Label.TextProperty, Value = "fallback" } }
+			};
+			var group = new VisualStateGroup { States = { higherPriorityState, fallbackState } };
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			higherPriorityTrigger.Activate(true);
+			dispatchRequired = false;
+			while (queue.Count > 0)
+			{
+				queue.Dequeue()();
+			}
+
+			Assert.Same(higherPriorityState, group.CurrentState);
+			Assert.Equal("higher", label.Text);
+
+			dispatchRequired = true;
+			higherPriorityTrigger.Activate(false);
+			dispatchRequired = false;
+			while (queue.Count > 0)
+			{
+				queue.Dequeue()();
+			}
+
+			Assert.Same(fallbackState, group.CurrentState);
+			Assert.Equal("fallback", label.Text);
+		}
+
+		[Fact]
+		public void QueuedTriggerTransitionExceptionsAreContained()
+		{
+			var queue = new Queue<Action>();
+			var dispatchRequired = false;
+			var dispatcher = CreateDispatcher(queue, () => dispatchRequired);
+			var label = new Label();
+			NameScope.SetNameScope(label, new NameScope());
+			var brokenTrigger = new TestStateTrigger();
+			var fallbackTrigger = new TestStateTrigger();
+			fallbackTrigger.Activate(true);
+			var brokenState = new VisualState
+			{
+				Name = "Broken",
+				StateTriggers = { brokenTrigger },
+				Setters = { new Setter { TargetName = "Missing", Property = Label.TextProperty, Value = "broken" } }
+			};
+			var fallbackState = new VisualState { Name = "Fallback", StateTriggers = { fallbackTrigger } };
+			var group = new VisualStateGroup { States = { brokenState, fallbackState } };
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			label.Handler = CreateHandler(CreateContext(dispatcher));
+
+			dispatchRequired = true;
+			brokenTrigger.Activate(true);
+			dispatchRequired = false;
+
+			Assert.Null(Record.Exception(() => queue.Dequeue()()));
+			Assert.Same(brokenState, group.CurrentState);
 		}
 
 		static DispatcherStub CreateDispatcher(Queue<Action> queue, Func<bool> isDispatchRequired) =>

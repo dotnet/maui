@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls
 	public static class VisualStateManager
 	{
 		static readonly ConditionalWeakTable<VisualElement, StateRequestVersion> s_stateRequestVersions = new();
+		static readonly ConditionalWeakTable<VisualStateGroup, StateRequestVersion> s_stateGroupRequestVersions = new();
 
 		public class CommonStates
 		{
@@ -118,12 +119,14 @@ namespace Microsoft.Maui.Controls
 
 				if (!dispatcher.Dispatch(() =>
 				{
-					if (IsWindowScopeDisposed(context) || !stateRequestVersion.IsCurrent(requestVersion))
+					if (IsWindowScopeDisposed(context))
+					{
 						return;
+					}
 
 					try
 					{
-						GoToStateCore(visualElement, name, force);
+						GoToStateCore(visualElement, name, force, requestVersion);
 					}
 					catch (Exception exception)
 					{
@@ -140,7 +143,7 @@ namespace Microsoft.Maui.Controls
 				return true;
 			}
 
-			return GoToStateCore(visualElement, name, force);
+			return GoToStateCore(visualElement, name, force, requestVersion);
 		}
 
 		internal static void UpdateStateTriggers(VisualStateGroup group)
@@ -153,10 +156,31 @@ namespace Microsoft.Maui.Controls
 			var requestVersion = stateRequestVersion.Next();
 			if (dispatcher?.IsDispatchRequired == true)
 			{
+				ILogger logger;
+				try
+				{
+					logger = context?.CreateLogger(nameof(VisualStateManager));
+				}
+				catch (ObjectDisposedException) when (IsWindowScopeDisposed(context))
+				{
+					return;
+				}
+
 				if (!dispatcher.Dispatch(() =>
 				{
-					if (!IsWindowScopeDisposed(context) && stateRequestVersion.IsCurrent(requestVersion))
-						group.UpdateStateTriggersCore();
+					if (IsWindowScopeDisposed(context))
+					{
+						return;
+					}
+
+					try
+					{
+						group.UpdateStateTriggersCore(requestVersion);
+					}
+					catch (Exception exception)
+					{
+						logger?.LogError(exception, "Failed to update visual state triggers on the UI thread.");
+					}
 				}))
 				{
 					throw new InvalidOperationException("The visual state trigger update could not be dispatched to the element's dispatcher.");
@@ -165,8 +189,14 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			group.UpdateStateTriggersCore();
+			group.UpdateStateTriggersCore(requestVersion);
 		}
+
+		internal static bool TryUpdateStateRequestVersion(VisualStateGroup group, long requestVersion) =>
+			s_stateGroupRequestVersions.GetValue(group, static _ => new StateRequestVersion()).TryUpdate(requestVersion);
+
+		internal static bool GoToStateFromTrigger(VisualElement visualElement, string name, long requestVersion) =>
+			GoToStateCore(visualElement, name, force: false, requestVersion);
 
 		static bool TryGetDispatcher(VisualElement visualElement, out IMauiContext context, out IDispatcher dispatcher)
 		{
@@ -195,10 +225,25 @@ namespace Microsoft.Maui.Controls
 
 			public long Next() => Interlocked.Increment(ref _value);
 
-			public bool IsCurrent(long value) => Interlocked.Read(ref _value) == value;
+			public bool TryUpdate(long value)
+			{
+				while (true)
+				{
+					var current = Interlocked.Read(ref _value);
+					if (value < current)
+					{
+						return false;
+					}
+
+					if (value == current || Interlocked.CompareExchange(ref _value, value, current) == current)
+					{
+						return true;
+					}
+				}
+			}
 		}
 
-		static bool GoToStateCore(VisualElement visualElement, string name, bool force)
+		static bool GoToStateCore(VisualElement visualElement, string name, bool force, long requestVersion)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
@@ -225,6 +270,11 @@ namespace Microsoft.Maui.Controls
 				if (target == null)
 				{
 					continue;
+				}
+
+				if (!TryUpdateStateRequestVersion(group, requestVersion))
+				{
+					return true;
 				}
 
 				if (group.CurrentState?.Name == name && !force)
@@ -832,7 +882,7 @@ namespace Microsoft.Maui.Controls
 			VisualStateManager.UpdateStateTriggers(this);
 		}
 
-		internal void UpdateStateTriggersCore()
+		internal void UpdateStateTriggersCore(long requestVersion)
 		{
 			if (VisualElement == null)
 				return;
@@ -847,12 +897,17 @@ namespace Microsoft.Maui.Controls
 			if (newStateTrigger == null)
 				return;
 
+			if (!VisualStateManager.TryUpdateStateRequestVersion(this, requestVersion))
+			{
+				return;
+			}
+
 			var oldStateTrigger = CurrentState;
 
 			if (newStateTrigger == oldStateTrigger)
 				return;
 
-			VisualStateManager.GoToState(VisualElement, newStateTrigger.Name);
+			VisualStateManager.GoToStateFromTrigger(VisualElement, newStateTrigger.Name, requestVersion);
 		}
 
 		internal event EventHandler StatesChanged;
