@@ -428,16 +428,10 @@ $runs = [ordered]@{}
 foreach ($suite in $suites) { $runs[$suite] = Invoke-SuiteRun $suite }
 
 if ($combined) {
-    $sections = [ordered]@{}
-    foreach ($suite in $runs.Keys) {
-        $run = $runs[$suite]
-        Set-RunTestsSuite $suite -Combined
-        $sections[$suite] = New-RunTestsComment -Selection $run.selection -Inventory $run.inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
-            -Build $run.build -QueueError $run.queueError -Requester $Actor -Dispatch $run.dispatch -SelectionOnly:$SkipQueue -Section
-    }
     $modelNames = @($proposals.Keys | ForEach-Object { $script:RunTestsModels[$_] })
     $notes = @($context.PSObject.Properties['notes']?.Value | Where-Object { $_ -is [string] })
-    $comment = New-RunTestsCombinedComment -Sections $sections -PullRequest $pr -ModelNames $modelNames -Requester $Actor -Notes $notes
+    $comment = New-RunTestsCombinedComment -Runs $runs -PullRequest $pr -WorkflowRunUrl $runUrl -ModelNames $modelNames `
+        -Requester $Actor -Notes $notes -SelectionOnly:$SkipQueue
 } else {
     $run = $runs[$suites[0]]
     $comment = New-RunTestsComment -Selection $run.selection -Inventory $run.inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
