@@ -182,6 +182,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 #if MACCATALYST
 			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
 #endif
+
+			_gotoPosition = position;
+			SetPosition(position);
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -730,7 +733,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_positionBeforeBoundsChange >= 0 && goToPosition != _positionBeforeBoundsChange)
 			{
-				_positionBeforeBoundsChange = -1;
+				_positionBeforeBoundsChange = goToPosition;
+				return;
 			}
 
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
