@@ -25,6 +25,95 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
+		public async Task InitialPageRedirectKeepsSelectedTab(bool hideTabs)
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial" } };
+			var destinationPage = new ContentPage { Content = new Label { Text = "Destination" } };
+			foreach (var page in new[] { initialPage, destinationPage })
+			{
+				Shell.SetFlyoutBehavior(page, FlyoutBehavior.Disabled);
+				Shell.SetNavBarIsVisible(page, false);
+				Shell.SetTabBarIsVisible(page, !hideTabs);
+			}
+
+			var initialNavigations = 0;
+			var destinationNavigations = 0;
+			Task redirect = null;
+			var shell = await CreateShellAsync(shell =>
+			{
+				initialPage.NavigatedTo += (_, _) =>
+				{
+					if (++initialNavigations == 1)
+						redirect = shell.GoToAsync("//destination");
+				};
+				destinationPage.NavigatedTo += (_, _) => destinationNavigations++;
+				shell.Items.Add(new TabBar
+				{
+					Items =
+					{
+						new ShellContent { Route = "initial", ContentTemplate = new DataTemplate(() => initialPage) },
+						new ShellContent { Route = "destination", ContentTemplate = new DataTemplate(() => destinationPage) }
+					}
+				});
+				shell.Items.Add(new ShellContent { Route = "items", ContentTemplate = new DataTemplate(() => new ContentPage()) });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async _ =>
+			{
+				await AssertEventually(() => redirect is not null);
+				await redirect;
+				// WinUI can deliver an old SelectionChanged after the redirect has completed.
+				await Task.Delay(250);
+
+				Assert.Equal(1, initialNavigations);
+				Assert.Equal(1, destinationNavigations);
+				Assert.Same(destinationPage, shell.CurrentPage);
+				Assert.Equal("//destination", shell.CurrentState.Location.OriginalString);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabBarSelectionKeepsDestinationIndicatorVisible(bool invokeTab)
+		{
+			await RunShellTabBarTests(_ => { }, async shell =>
+			{
+				var navView = (MauiNavigationView)shell.CurrentItem.Handler.PlatformView;
+				await Task.Delay(750);
+				var items = navView.GetChildren<WNavigationViewItem>()
+					.Where(item => item.DataContext is NavigationViewItemViewModel vm && vm.Data is ShellContent)
+					.ToArray();
+				Assert.True(items.Length >= 2);
+				var indicators = items.Select(item => item.GetDescendantByName<WFrameworkElement>("SelectionIndicator")).ToArray();
+				Assert.All(indicators, indicator => Assert.NotNull(indicator));
+				for (int round = 0; round < 2; round++)
+				{
+					int from = round % 2, to = 1 - from;
+					var timer = System.Diagnostics.Stopwatch.StartNew();
+					if (invokeTab)
+						ClickNavigationViewItem(items[to]);
+					else
+						shell.CurrentItem.CurrentItem = (ShellContent)((NavigationViewItemViewModel)items[to].DataContext).Data;
+
+					// A redundant PaneDisplayMode assignment hides the incoming indicator until the animation ends.
+					while (timer.ElapsedMilliseconds < 750)
+					{
+						Assert.Equal(1d, indicators[to].Opacity);
+						await Task.Delay(25);
+					}
+					Assert.True(items[to].IsSelected);
+					await AssertEventually(() => indicators[from].Opacity == 0d && indicators[to].Opacity == 1d,
+						message: "The tab selection indicator animation did not complete");
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
 		public async Task TabBarDisabledColorCanBeAppliedChangedAndCleared(bool setTextColors)
 		{
 			await RunShellTabBarTests(shell =>

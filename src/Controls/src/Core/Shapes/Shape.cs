@@ -316,13 +316,27 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			return PathForBounds(viewBounds, includeStroke: false);
+			return PathForBounds(viewBounds, _includeStrokeInPathForBounds);
 		}
 
 		PathF IShapeWithStroke.PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
 		{
-			return PathForBounds(viewBounds, includeStroke);
+			// Dispatch through IShape so that derived shapes re-implementing IShape.PathForBounds
+			// are still honored, because IShapeWithStroke is internal and cannot be implemented by them.
+			var previousIncludeStroke = _includeStrokeInPathForBounds;
+			_includeStrokeInPathForBounds = includeStroke;
+
+			try
+			{
+				return ((IShape)this).PathForBounds(viewBounds);
+			}
+			finally
+			{
+				_includeStrokeInPathForBounds = previousIncludeStroke;
+			}
 		}
+
+		bool _includeStrokeInPathForBounds;
 
 		PathF PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
 		{

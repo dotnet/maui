@@ -421,6 +421,70 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			AssertPathBounds(((IRoundRectangle)roundRectangle).InnerPathForBounds(new Rect(0, 0, 20, 10), 1, includeShapeStroke: true), 0.5, 0.5, 19, 9);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CustomShapeReimplementingIShapePathForBoundsIsHonored(bool includeStroke)
+		{
+			var shape = new CustomPathForBoundsShape();
+			var bounds = new Rect(0, 0, 20, 10);
+
+			var path = ((IShapeWithStroke)shape).PathForBounds(bounds, includeStroke);
+
+			Assert.Equal(1, shape.PathForBoundsCallCount);
+			Assert.Equal(bounds, shape.LastBounds);
+			AssertPathBounds(path, 2, 3, 4, 5);
+		}
+
+		[Fact]
+		public void CustomShapeReimplementingIShapeIsHonoredWhenUsedAsBorderShape()
+		{
+			var shape = new CustomPathForBoundsShape();
+			var border = new Border
+			{
+				Stroke = Colors.Black,
+				StrokeShape = shape
+			};
+
+			AssertPathBounds(GetBorderPath(border), 2, 3, 4, 5);
+			Assert.Equal(1, shape.PathForBoundsCallCount);
+		}
+
+		[Fact]
+		public void BuiltInShapeStrokeAwarePathDoesNotLeakIntoIShapePath()
+		{
+			var rectangle = new Rectangle { StrokeThickness = 2 };
+			var bounds = new Rect(0, 0, 20, 10);
+
+			AssertPathBounds(((IShapeWithStroke)rectangle).PathForBounds(bounds, includeStroke: true), 1, 1, 18, 8);
+			AssertPathBounds(((IShape)rectangle).PathForBounds(bounds), 0, 0, 20, 10);
+			AssertPathBounds(((IShapeWithStroke)rectangle).PathForBounds(bounds, includeStroke: false), 0, 0, 20, 10);
+		}
+
+		class CustomPathForBoundsShape : Shape, IShape
+		{
+			public int PathForBoundsCallCount { get; private set; }
+
+			public Rect LastBounds { get; private set; }
+
+			public override PathF GetPath()
+			{
+				var path = new PathF();
+				path.AppendRectangle(0, 0, 1, 1);
+				return path;
+			}
+
+			public PathF PathForBounds(Rect bounds)
+			{
+				PathForBoundsCallCount++;
+				LastBounds = bounds;
+
+				var path = new PathF();
+				path.AppendRectangle(2, 3, 4, 5);
+				return path;
+			}
+		}
+
 		static PathF GetBorderPath(Border border)
 		{
 			var shape = Assert.IsAssignableFrom<IShapeWithStroke>(((IBorderStroke)border).Shape);

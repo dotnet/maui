@@ -184,7 +184,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
-			if (args.SelectedItem == null)
+			// A reentrant navigation can change the selection before WinUI delivers an earlier event.
+			if (args.SelectedItem == null || !ReferenceEquals(args.SelectedItem, sender.SelectedItem))
 				return;
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;

@@ -44,6 +44,9 @@ namespace Microsoft.Maui.Platform
 		public string? CurrentUrl =>
 			Url?.AbsoluteUrl?.ToString();
 
+		// Where the last HTML source was loaded, so a process-crash recovery can tell whether it's still shown.
+		internal string? HtmlUrl { get; private set; }
+
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
@@ -104,6 +107,7 @@ namespace Microsoft.Maui.Platform
 				var resolvedBaseUrl = !string.IsNullOrEmpty(baseUrl)
 					? new NSUrl(baseUrl, true)
 					: new NSUrl(NSBundle.MainBundle.BundlePath, true);
+				HtmlUrl = resolvedBaseUrl.AbsoluteString;
 
 				// LoadSimulatedRequest (iOS 15+ / macCatalyst 15+) is preferred over LoadHtmlString because:
 				//   1. History  — creates a back/forward history entry for both the null and non-null
