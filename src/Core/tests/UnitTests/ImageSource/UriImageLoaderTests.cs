@@ -252,6 +252,37 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public async Task RejectionFromBeforeAClearDoesNotRemoveWhatWasCachedAfterIt()
+		{
+			_handler.Respond(_ => Ok(Png));
+			var loader = CreateLoader();
+			await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1));
+
+			var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_handler.Respond(async _ =>
+			{
+				started.TrySetResult(true);
+				await release.Task;
+				return new HttpResponseMessage(HttpStatusCode.Forbidden);
+			});
+			var oldRequest = loader.LoadAsync(ImageUri, true, TimeSpan.Zero);
+			await started.Task;
+
+			// For example the user signed in to another account: the cache is cleared and the image is loaded again.
+			await loader.ClearAsync();
+			_handler.Respond(_ => Ok(OtherPng));
+			Assert.Equal(OtherPng, await loader.LoadAsync(ImageUri, true, TimeSpan.FromHours(1)));
+
+			release.SetResult(true);
+			await Assert.ThrowsAsync<HttpRequestException>(() => oldRequest);
+
+			Assert.NotNull(loader.DiskCache.GetEntry(ImageUri));
+			Assert.True(loader.MemoryCache.TryGet(ImageUri.OriginalString, out var item));
+			Assert.Equal(OtherPng, item.Data);
+		}
+
+		[Fact]
 		public async Task NotModifiedWithNoStoreDoesNotRenew()
 		{
 			_handler.Respond(_ => Ok(Png, etag: "\"v1\""));

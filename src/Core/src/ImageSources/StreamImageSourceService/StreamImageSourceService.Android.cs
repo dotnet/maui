@@ -25,21 +25,13 @@ namespace Microsoft.Maui
 					stream = await streamImageSource.GetStreamAsync(cancellationToken);
 
 					// A newer load into the view may have started while waiting for the stream; do not replace it.
-					if (cancellationToken.IsCancellationRequested)
-					{
-						stream?.Dispose();
-						cancellationToken.ThrowIfCancellationRequested();
-					}
+					cancellationToken.ThrowIfCancellationRequested();
 
 					var callback = new ImageLoaderCallback();
 
 					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
-					var result = await callback.Result;
-
-					stream?.Dispose();
-
-					return result;
+					return await callback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -48,8 +40,8 @@ namespace Microsoft.Maui
 				}
 				finally
 				{
-					if (stream != null)
-						GC.KeepAlive(stream);
+					// Also when the load was cancelled before Glide read the stream (for example its deferred start was dropped).
+					stream?.Dispose();
 				}
 			}
 
