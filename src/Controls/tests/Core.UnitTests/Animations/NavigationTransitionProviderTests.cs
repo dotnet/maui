@@ -199,5 +199,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			Assert.Empty(heroes);
 		}
+		[Fact]
+		public void APresetLooksForSharedElementsOnlyWhereItsPlatformFliesThem()
+		{
+			var (from, to) = SharedTransitionTests.PagesWith("photo", "photo");
+			PageTransitions.SetTransition(to, new SlideTransition());
+			var request = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, from, to, true).Request;
+
+			Assert.IsType<SlideTransition>(BuiltInNavigationTransitions.GetEffectiveTransition(request, out var flown));
+			Assert.Single(flown);
+
+			// WinUI hosts no flights: the preset runs without the pages being searched.
+			Assert.IsType<SlideTransition>(BuiltInNavigationTransitions.GetEffectiveTransition(request, out var skipped, presetsCarryHeroes: false));
+			Assert.Empty(skipped);
+		}
+
+		[Fact]
+		public void SharedElementsStillTurnAPlatformNavigationIntoTheCrossfadeWhereNoPresetFliesThem()
+		{
+			var (from, to) = SharedTransitionTests.PagesWith("photo", "photo");
+			var request = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, from, to, true).Request;
+
+			Assert.IsType<FadeTransition>(BuiltInNavigationTransitions.GetEffectiveTransition(request, out _, presetsCarryHeroes: false));
+		}
 	}
 }

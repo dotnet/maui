@@ -88,6 +88,11 @@ namespace Microsoft.Maui.Controls.Animations
 			var toOriginal = toView is null ? default : (toView.Transform, toView.Alpha);
 			var fromOriginal = fromView is null ? default : (fromView.Transform, fromView.Alpha);
 
+			// The managed values mapped onto those views (a page's own view is its handler's): a change made while the
+			// transition runs is applied again once the captured state has been put back.
+			var toManaged = ManagedViewState.Of(ElementShownBy(_request.To, toView));
+			var fromManaged = ManagedViewState.Of(ElementShownBy(_request.From, fromView));
+
 			var flights = HeroFlight.Prepare(container, _heroes);
 			var width = (double)container.Bounds.Width;
 			var height = (double)container.Bounds.Height;
@@ -117,12 +122,14 @@ namespace Microsoft.Maui.Controls.Animations
 				{
 					toView.Transform = toOriginal.Transform;
 					toView.Alpha = toOriginal.Alpha;
+					toManaged.ReapplyChanged();
 				}
 
 				if (fromView is not null)
 				{
 					fromView.Transform = fromOriginal.Transform;
 					fromView.Alpha = fromOriginal.Alpha;
+					fromManaged.ReapplyChanged();
 				}
 
 				for (int i = 0; i < flights.Count; i++)
@@ -165,6 +172,41 @@ namespace Microsoft.Maui.Controls.Animations
 				_ => Finish(transitionContext.TransitionWasCancelled));
 		}
 
+		/// <summary>
+		/// <paramref name="page"/> when <paramref name="view"/> is the native view its handler maps its own properties onto,
+		/// else <see langword="null"/> (a container MAUI doesn't map, whose captured state is simply put back).
+		/// </summary>
+		internal static VisualElement? ElementShownBy(Page? page, UIView? view)
+		{
+			if (page?.Handler is not IPlatformViewHandler handler || view is null)
+			{
+				return null;
+			}
+
+			var mapped = handler.ContainerView ?? handler.PlatformView;
+			return ReferenceEquals(mapped, view) ? page : null;
+		}
+
+		/// <summary>The animation keys on <paramref name="view"/>'s layer that weren't in <paramref name="before"/>.</summary>
+		internal static string[] AddedAnimations(UIView? view, string[] before)
+		{
+			if (view?.Layer.AnimationKeys is not { } after)
+			{
+				return Array.Empty<string>();
+			}
+
+			var added = new List<string>();
+			foreach (var key in after)
+			{
+				if (Array.IndexOf(before, key) < 0)
+				{
+					added.Add(key);
+				}
+			}
+
+			return added.ToArray();
+		}
+
 		internal static void ApplyPose(UIView view, PageTransitionCurves.Pose pose, double width, double height, CGAffineTransform original, nfloat originalAlpha)
 		{
 			var transform = CGAffineTransform.MakeTranslation((nfloat)(pose.TranslationX * width), (nfloat)(pose.TranslationY * height));
@@ -182,38 +224,34 @@ namespace Microsoft.Maui.Controls.Animations
 		/// One shared element: snapshots of the element on both pages flown from the source frame to the
 		/// destination frame and crossfaded on the way, while the real elements are hidden underneath.
 		/// </summary>
-		sealed class HeroFlight
+		internal sealed class HeroFlight
 		{
-			readonly VisualElement _from;
-			readonly VisualElement _to;
 			readonly UIView _source;
 			readonly UIView _target;
 			readonly UIView _fromSnapshot;
 			readonly UIView _toSnapshot;
 			readonly CGRect _start;
 			readonly CGRect _end;
-			readonly double _fromOpacity;
-			readonly double _toOpacity;
-			readonly nfloat _sourceAlpha;
-			readonly nfloat _targetAlpha;
+			readonly ManagedViewState _fromManaged;
+			readonly ManagedViewState _toManaged;
+			readonly bool _sourceHidden;
+			readonly bool _targetHidden;
 
 			/// <summary>Snapshot views currently flying, for tests.</summary>
 			internal static int ActiveSnapshots;
 
 			HeroFlight(VisualElement from, VisualElement to, UIView source, UIView target, UIView fromSnapshot, UIView toSnapshot, CGRect start, CGRect end)
 			{
-				_from = from;
-				_to = to;
 				_source = source;
 				_target = target;
 				_fromSnapshot = fromSnapshot;
 				_toSnapshot = toSnapshot;
 				_start = start;
 				_end = end;
-				_fromOpacity = from.Opacity;
-				_toOpacity = to.Opacity;
-				_sourceAlpha = source.Alpha;
-				_targetAlpha = target.Alpha;
+				_fromManaged = ManagedViewState.Of(from);
+				_toManaged = ManagedViewState.Of(to);
+				_sourceHidden = source.Hidden;
+				_targetHidden = target.Hidden;
 			}
 
 			internal static List<HeroFlight> Prepare(UIView container, List<(VisualElement From, VisualElement To)> heroes)
@@ -256,8 +294,11 @@ namespace Microsoft.Maui.Controls.Animations
 
 				var flight = new HeroFlight(from, to, source, target, fromSnapshot, toSnapshot, start, end);
 				ActiveSnapshots += 2;
-				source.Alpha = 0;
-				target.Alpha = 0;
+
+				// Hidden rather than made transparent: Opacity maps onto alpha, so a change to it during the flight (a
+				// binding, say) would show the real element under its snapshot; only a change to IsVisible maps onto Hidden.
+				source.Hidden = true;
+				target.Hidden = true;
 				return flight;
 			}
 
@@ -280,24 +321,24 @@ namespace Microsoft.Maui.Controls.Animations
 
 			internal void Land()
 			{
-				// Unchanged Opacity puts back the exact native alpha (a handler may have set its own); a change made during
+				// Unchanged IsVisible puts back the exact native state (a handler may have set its own); a change made during
 				// the flight is applied through the handler's mapper.
-				Restore(_from, _source, _fromOpacity, _sourceAlpha);
-				Restore(_to, _target, _toOpacity, _targetAlpha);
+				Restore(_fromManaged, _source, _sourceHidden);
+				Restore(_toManaged, _target, _targetHidden);
 				_fromSnapshot.RemoveFromSuperview();
 				_toSnapshot.RemoveFromSuperview();
 				ActiveSnapshots -= 2;
 			}
 
-			static void Restore(VisualElement element, UIView view, double opacity, nfloat alpha)
+			static void Restore(ManagedViewState managed, UIView view, bool hidden)
 			{
-				if (element.Opacity == opacity)
+				if (managed.VisibilityChanged)
 				{
-					view.Alpha = alpha;
+					managed.Element?.Handler?.UpdateValue(nameof(IView.Visibility));
 				}
 				else
 				{
-					element.Handler?.UpdateValue(nameof(IView.Opacity));
+					view.Hidden = hidden;
 				}
 			}
 

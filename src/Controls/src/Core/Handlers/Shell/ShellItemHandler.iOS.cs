@@ -473,29 +473,19 @@ namespace Microsoft.Maui.Controls.Handlers
                     return null;
                 }
 
+                // The section's own mapping knows its root view controller (which shows the current content page, and is
+                // what the More controller has on its stack) and the trackers of pages already taken off the stack.
+                var sectionHandler = renderer as ShellSectionHandler ?? (renderer as ShellSectionHandler.ShellSectionHandlerAdapter)?.Handler;
+                if (sectionHandler is not null)
+                {
+                    return ((Microsoft.Maui.Platform.INavigationManagerDelegate)sectionHandler).GetViewForViewController(viewController) as Page;
+                }
+
                 foreach (var page in section.Stack)
                 {
                     if (page?.Handler is IPlatformViewHandler { ViewController: var vc } && vc == viewController)
                     {
                         return page;
-                    }
-                }
-
-                if ((section.CurrentItem as IShellContentController)?.Page is { Handler: IPlatformViewHandler { ViewController: var rootVc } } root && rootVc == viewController)
-                {
-                    return root;
-                }
-
-                // A popped page has already left the section's stack; its controller is still tracked by the section.
-                var sectionHandler = renderer as ShellSectionHandler ?? (renderer as ShellSectionHandler.ShellSectionHandlerAdapter)?.Handler;
-                if (sectionHandler is not null)
-                {
-                    foreach (var tracker in sectionHandler._trackers)
-                    {
-                        if (tracker.Value.ViewController == viewController)
-                        {
-                            return tracker.Key as Page;
-                        }
                     }
                 }
 

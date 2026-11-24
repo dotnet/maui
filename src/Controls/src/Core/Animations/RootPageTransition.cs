@@ -55,10 +55,11 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 
 		/// <summary>
-		/// Completes once <paramref name="window"/>'s page has settled after assigning <paramref name="page"/>: at once if it
-		/// already is the page, or at the next page change. An assignment made from inside another assignment's change
-		/// callbacks is queued until that one finishes, so the native root to animate only exists once this has completed.
-		/// The caller checks the page is still <paramref name="page"/>.
+		/// Completes once <paramref name="page"/> has become <paramref name="window"/>'s page: at once if it already is. An
+		/// assignment made from inside another assignment's change callbacks is queued until that one finishes (whose own
+		/// change is raised first, for its page), so the native root to animate only exists once this has completed. A
+		/// replacement that never lands is ended by whatever supersedes it (see <see cref="Track"/>), which the caller
+		/// awaits alongside this.
 		/// </summary>
 		internal static Task WhenAssignedAsync(Window window, Page page)
 		{
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.Controls.Animations
 			System.ComponentModel.PropertyChangedEventHandler? handler = null;
 			handler = (_, e) =>
 			{
-				if (e.PropertyName == Window.PageProperty.PropertyName)
+				if (e.PropertyName == Window.PageProperty.PropertyName && ReferenceEquals(window.Page, page))
 				{
 					window.PropertyChanged -= handler;
 					assigned.TrySetResult(true);
@@ -122,6 +123,10 @@ namespace Microsoft.Maui.Controls.Animations
 			readonly Action _finish;
 			bool _observing;
 
+			// Whether the replacement's own assignment has landed. Until it has, a page change for another page is an older
+			// assignment finishing (this one queued behind it), not a replacement of this one.
+			bool _assigned;
+
 			public RunningTransition(Window window, Page page, Action finish)
 			{
 				_window = window;
@@ -146,6 +151,7 @@ namespace Microsoft.Maui.Controls.Animations
 				}
 
 				_observing = true;
+				_assigned = ReferenceEquals(_window.Page, _page);
 				_window.PropertyChanged += OnWindowPropertyChanged;
 				_window.Destroying += OnWindowDestroying;
 			}
@@ -162,10 +168,20 @@ namespace Microsoft.Maui.Controls.Animations
 				_window.Destroying -= OnWindowDestroying;
 			}
 
-			// The replacement's own assignment sets the window's page to _page; anything else replaced it directly.
+			// The replacement's own assignment sets the window's page to _page; a change after that replaced it directly. A
+			// change before it is an earlier assignment finishing, ahead of this one in the setter queue.
 			void OnWindowPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
-				if (e.PropertyName == Window.PageProperty.PropertyName && !ReferenceEquals(_window.Page, _page))
+				if (e.PropertyName != Window.PageProperty.PropertyName)
+				{
+					return;
+				}
+
+				if (ReferenceEquals(_window.Page, _page))
+				{
+					_assigned = true;
+				}
+				else if (_assigned)
 				{
 					FinishThis();
 				}

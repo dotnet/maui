@@ -218,11 +218,11 @@ namespace Microsoft.Maui.Controls.Animations
 					To = to;
 					Picture = picture;
 					Start = start;
-					FromState = ElementAlpha.Of(from, source);
+					FromState = HiddenElement.Of(from, source);
 				}
 
-				public ElementAlpha FromState { get; }
-				public ElementAlpha? ToState { get; set; }
+				public HiddenElement FromState { get; }
+				public HiddenElement? ToState { get; set; }
 
 				public VisualElement From { get; }
 				public AView Source { get; }
@@ -233,35 +233,37 @@ namespace Microsoft.Maui.Controls.Animations
 				public bool Landed { get; set; }
 			}
 
-			// An element's opacity when it was hidden for the flight: its managed Opacity and the native alpha shown.
-			readonly struct ElementAlpha
+			// An element hidden for the flight. It is made invisible rather than transparent: Opacity maps onto alpha, so a
+			// change to it during the flight (a binding, say) would show the real element under its picture; only a change
+			// to IsVisible maps onto the native visibility.
+			readonly struct HiddenElement
 			{
-				ElementAlpha(VisualElement element, AView view, double opacity, float alpha)
+				HiddenElement(VisualElement element, AView view)
 				{
-					Element = element;
+					Managed = ManagedViewState.Of(element);
 					View = view;
-					Opacity = opacity;
-					Alpha = alpha;
+					Visibility = view.Visibility;
 				}
 
-				public VisualElement Element { get; }
+				public ManagedViewState Managed { get; }
 				public AView View { get; }
-				public double Opacity { get; }
-				public float Alpha { get; }
+				public ViewStates Visibility { get; }
 
-				public static ElementAlpha Of(VisualElement element, AView view) => new(element, view, element.Opacity, view.Alpha);
+				public static HiddenElement Of(VisualElement element, AView view) => new(element, view);
 
-				// Ends the temporary hiding. Unchanged Opacity puts back the exact native alpha (a handler may have set its
+				public void Hide() => View.Visibility = ViewStates.Invisible;
+
+				// Ends the hiding. Unchanged IsVisible puts back the exact native visibility (a handler may have set its
 				// own); a change made during the flight is applied through the handler's mapper.
 				public void Restore()
 				{
-					if (Element.Opacity == Opacity)
+					if (Managed.VisibilityChanged)
 					{
-						View.Alpha = Alpha;
+						Managed.Element?.Handler?.UpdateValue(nameof(IView.Visibility));
 					}
 					else
 					{
-						Element.Handler?.UpdateValue(nameof(IView.Opacity));
+						View.Visibility = Visibility;
 					}
 				}
 			}
@@ -309,8 +311,9 @@ namespace Microsoft.Maui.Controls.Animations
 						var picture = Picture(root, overlay, bitmap, start[0], start[1], source.Width, source.Height);
 						overlay.Add(picture);
 						ActivePictures++;
-						flights.Add(new Flight(from, source, to, picture, start));
-						source.Alpha = 0;
+						var flight = new Flight(from, source, to, picture, start);
+						flights.Add(flight);
+						flight.FromState.Hide();
 					}
 				}
 
@@ -497,8 +500,9 @@ namespace Microsoft.Maui.Controls.Animations
 				}
 
 				flight.Landing = landing;
-				flight.ToState = ElementAlpha.Of(flight.To, target);
-				target.Alpha = 0;
+				var toState = HiddenElement.Of(flight.To, target);
+				flight.ToState = toState;
+				toState.Hide();
 
 				var scaleX = target.Width / (float)source.Width;
 				var scaleY = target.Height / (float)source.Height;

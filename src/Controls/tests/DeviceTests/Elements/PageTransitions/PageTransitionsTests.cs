@@ -20,12 +20,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		readonly List<NavigationTransitionRequest> _requests = new();
 
-		void SetupBuilder(Func<NavigationTransitionRequest, PlatformNavigationTransition> provider = null)
+		void SetupBuilder(Func<NavigationTransitionRequest, PlatformNavigationTransition> provider = null, Action<IMauiHandlersCollection> configureHandlers = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					// First: the defaults below only fill in what the test didn't register.
+					configureHandlers?.Invoke(handlers);
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Window, WindowHandlerStub>();
@@ -210,13 +212,15 @@ namespace Microsoft.Maui.DeviceTests
 				// While it flies, the real source is hidden under its snapshot.
 				var hidden = false;
 				var watch = Stopwatch.StartNew();
+#if ANDROID
 				var picturesSeen = 0;
+#endif
 				while (!hidden && watch.Elapsed < TimeSpan.FromMilliseconds(800))
 				{
 #if ANDROID
 					picturesSeen = Math.Max(picturesSeen, PageTransitionAnimations.HeroFlights.ActivePictures);
 #endif
-					hidden = NativeAlpha(source) == 0;
+					hidden = !NativeShown(source);
 					if (!hidden)
 					{
 						await Task.Yield();
@@ -232,18 +236,83 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The flight lands with the page transition; allow its end action a moment to run.
 				var landing = Stopwatch.StartNew();
-				while ((NativeAlpha(source) != 1 || NativeAlpha(target) != 1) && landing.Elapsed < TimeSpan.FromMilliseconds(500))
+				while ((!NativeShown(source) || !NativeShown(target)) && landing.Elapsed < TimeSpan.FromMilliseconds(500))
 				{
 					await Task.Yield();
 				}
 
-				Assert.True(NativeAlpha(source) == 1, $"Source alpha left at {NativeAlpha(source)}");
-				Assert.True(NativeAlpha(target) == 1, $"Target alpha left at {NativeAlpha(target)}");
+				Assert.True(NativeShown(source), "The source was left hidden.");
+				Assert.True(NativeShown(target), "The target was left hidden.");
+				Assert.Equal(1, NativeAlpha(source), 3);
+				Assert.Equal(1, NativeAlpha(target), 3);
 #if ANDROID
 				// The flight's pictures are gone from the window overlay.
 				Assert.Equal(0, PageTransitionAnimations.HeroFlights.ActivePictures);
 #endif
 			});
+		}
+
+		[Fact(DisplayName = "Changing the destination's Opacity during a flight doesn't reveal it under the snapshot")]
+		public async Task OpacityChangedDuringAFlightDoesntRevealTheDestination()
+		{
+			SetupBuilder();
+			var source = new BoxView { Color = Graphics.Colors.SteelBlue, HeightRequest = 80 };
+			var target = new BoxView { Color = Graphics.Colors.SteelBlue, HeightRequest = 200 };
+			SharedTransition.SetName(source, "photo");
+			SharedTransition.SetName(target, "photo");
+			var root = new ContentPage { Content = new VerticalStackLayout { source } };
+			var detail = new ContentPage { Content = new VerticalStackLayout { target } };
+			PageTransitions.SetTransition(detail, new SlideTransition { Duration = TimeSpan.FromSeconds(1.5) });
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (_) =>
+			{
+				await OnLoadedAsync(source);
+				var push = navPage.PushAsync(detail);
+
+				// Wait for the flight to hide the destination, then change its Opacity (as a binding would).
+				var watch = Stopwatch.StartNew();
+				while (NativeShown(target) && watch.Elapsed < TimeSpan.FromMilliseconds(1000))
+				{
+					await Task.Yield();
+				}
+
+				Assert.False(NativeShown(target), "The destination was never hidden: no flight ran.");
+				target.Opacity = 0.25;
+
+				// For the rest of the flight the real destination stays hidden under its snapshot.
+				var revealed = false;
+				while (!push.IsCompleted && !revealed)
+				{
+					revealed = NativeShown(target);
+					await Task.Yield();
+				}
+
+				await push.WaitAsync(TimeSpan.FromSeconds(10));
+				Assert.False(revealed, "The destination showed under its snapshot during the flight.");
+
+				// Once landed, it shows its current Opacity.
+				var landing = Stopwatch.StartNew();
+				while (!NativeShown(target) && landing.Elapsed < TimeSpan.FromMilliseconds(500))
+				{
+					await Task.Yield();
+				}
+
+				Assert.True(NativeShown(target));
+				Assert.Equal(0.25, NativeAlpha(target), 3);
+			});
+		}
+
+		// Whether the element's native view is on screen at all: not hidden and not fully transparent.
+		static bool NativeShown(VisualElement element)
+		{
+			var handler = (IPlatformViewHandler)element.Handler;
+			var view = handler.ContainerView ?? handler.PlatformView;
+#if IOS || MACCATALYST
+			return !view.Hidden && view.Alpha > 0;
+#else
+			return view.Visibility == global::Android.Views.ViewStates.Visible && view.Alpha > 0;
+#endif
 		}
 
 		static double NativeAlpha(VisualElement element)

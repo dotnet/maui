@@ -791,21 +791,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			var section = new ShellSection { Items = { new ShellContent { Content = root } } };
 			var shell = new Shell { Items = { new ShellItem { Items = { section } } } };
 			var platform = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-			((IShellSectionController)section).NavigationRequested += (_, e) => e.Task = platform.Task;
-			var page = new ContentPage();
-			Task push;
-
-			using (new ShellTransitionScope(shell, new ScaleTransition()))
+			Page pushed = null;
+			((IShellSectionController)section).NavigationRequested += (_, e) =>
 			{
-				push = section.Navigation.PushAsync(page);
+				pushed = e.Page;
+				e.Task = platform.Task;
+			};
+
+			Routing.RegisterRoute("pagetransitions-later", typeof(ContentPage));
+			try
+			{
+				var navigation = shell.GoToAsync("pagetransitions-later", new ScaleTransition());
+
+				// Resolved from this test's own flow, which the request's scope never reached.
+				Assert.NotNull(pushed);
+				Assert.IsType<ScaleTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, root, pushed, true).Transition);
+
+				platform.SetResult(true);
+				await navigation.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.False(PageTransitionResolver.HasPending(pushed));
 			}
-
-			var resolved = PageTransitionResolver.Resolve(NavigationTransitionKind.Push, root, page, true);
-			Assert.IsType<ScaleTransition>(resolved.Transition);
-
-			platform.SetResult(true);
-			await push.WaitAsync(TimeSpan.FromSeconds(5));
-			Assert.False(PageTransitionResolver.HasPending(page));
+			finally
+			{
+				Routing.UnRegisterRoute("pagetransitions-later");
+			}
 		}
 
 		[Fact]
@@ -815,21 +824,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			var section = new ShellSection { Items = { new ShellContent { Content = root } } };
 			var shell = new Shell { Items = { new ShellItem { Items = { section } } } };
 			var platform = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-			((IShellSectionController)section).NavigationRequested += (_, e) => e.Task = platform.Task;
+			Page pushed = null;
+			((IShellSectionController)section).NavigationRequested += (_, e) =>
+			{
+				pushed = e.Page;
+				e.Task = platform.Task;
+			};
+
+			Routing.RegisterRoute("pagetransitions-unconsumed", typeof(ContentPage));
+			try
+			{
+				var navigation = shell.GoToAsync("pagetransitions-unconsumed", new ScaleTransition());
+
+				Assert.True(PageTransitionResolver.HasPending(pushed));
+				platform.SetResult(true);
+				await navigation.WaitAsync(TimeSpan.FromSeconds(5));
+				await Task.Yield();
+
+				Assert.False(PageTransitionResolver.HasPending(pushed));
+			}
+			finally
+			{
+				Routing.UnRegisterRoute("pagetransitions-unconsumed");
+			}
+		}
+
+		[Fact]
+		public void AUserNavigationInsideAGoToAsyncIsItsOwnRequest()
+		{
+			// Navigation.PushAsync goes through Shell's navigation manager as a request of its own: started inside
+			// another request's flow (a handler of it), it doesn't take that request's transition.
+			var root = new ContentPage();
+			var section = new ShellSection { Items = { new ShellContent { Content = root } } };
+			var shell = new Shell { Items = { new ShellItem { Items = { section } } } };
 			var page = new ContentPage();
-			Task push;
+			var staged = true;
+			((IShellSectionController)section).NavigationRequested += (_, e) => staged = PageTransitionResolver.HasPending(e.Page);
 
 			using (new ShellTransitionScope(shell, new ScaleTransition()))
 			{
-				push = section.Navigation.PushAsync(page);
+				_ = section.Navigation.PushAsync(page);
 			}
 
-			Assert.True(PageTransitionResolver.HasPending(page));
-			platform.SetResult(true);
-			await push.WaitAsync(TimeSpan.FromSeconds(5));
-			await Task.Yield();
-
-			Assert.False(PageTransitionResolver.HasPending(page));
+			Assert.False(staged);
 		}
 
 		[Fact]
@@ -881,6 +918,146 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			((IWindow)window).Destroying();
 
 			Assert.Equal(0, finished);
+		}
+
+		[Fact]
+		public void ARequestWithoutATransitionMasksTheRequestItWasStartedFrom()
+		{
+			// A GoToAsync started from inside another (its Navigated handler runs before that request's scope ends) has
+			// no transition of its own: it must not take the enclosing request's.
+			var shell = new Shell();
+			var root = new ContentPage();
+			shell.Items.Add(new ShellContent { Content = root });
+
+			using (new ShellTransitionScope(shell, new FadeTransition()))
+			{
+				using (new ShellTransitionScope(shell, null))
+				{
+					Assert.Same(PageTransition.Platform, PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+					Assert.Null(PageTransitionResolver.StageShellOverride(shell, root, NavigationTransitionKind.Push));
+				}
+
+				// The enclosing request's transition is back once the inner one ends.
+				Assert.IsType<FadeTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+			}
+		}
+
+		[Fact]
+		public void AMaskOnlyHidesItsOwnShellsRequests()
+		{
+			var shell = new Shell();
+			var root = new ContentPage();
+			shell.Items.Add(new ShellContent { Content = root });
+			var other = new Shell();
+
+			using (new ShellTransitionScope(shell, new FadeTransition()))
+			using (new ShellTransitionScope(other, null))
+			{
+				Assert.IsType<FadeTransition>(PageTransitionResolver.Resolve(NavigationTransitionKind.Push, null, root, true).Transition);
+			}
+		}
+
+		sealed class ContextDroppingDispatcher : Microsoft.Maui.Dispatching.IDispatcher, Microsoft.Maui.Dispatching.IDispatcherProvider
+		{
+			// Runs every callback in the execution context captured when the dispatcher was made, as a dispatcher that
+			// posts a bare callback (Android's Handler.Post) does: nothing of the caller's async flow comes along.
+			readonly System.Threading.ExecutionContext _clean = System.Threading.ExecutionContext.Capture();
+
+			public bool IsDispatchRequired => false;
+
+			public bool Dispatch(Action action)
+			{
+				System.Threading.ExecutionContext.Run(_clean.CreateCopy(), _ => action(), null);
+				return true;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => Dispatch(action);
+
+			public Microsoft.Maui.Dispatching.IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+
+			public Microsoft.Maui.Dispatching.IDispatcher GetForCurrentThread() => this;
+		}
+
+		[Fact]
+		public async Task AGoToAsyncTransitionCrossesADispatchThatDoesntFlowTheContext()
+		{
+			Microsoft.Maui.Dispatching.DispatcherProvider.SetCurrent(new ContextDroppingDispatcher());
+
+			var root = new ContentPage();
+			var content = new ShellContent { Route = "content", Content = root };
+			var section = new ShellSection { Route = "section", Items = { content } };
+			var item = new ShellItem { Route = "item", Items = { section } };
+			var shell = new Shell { Items = { item } };
+			_ = new TestWindow(shell);
+
+			// The detail was shown with its own Fade; going back to the root with Scale must run Scale.
+			var detail = new ContentPage();
+			PageTransitions.SetTransition(detail, new FadeTransition());
+			await section.Navigation.PushAsync(detail);
+
+			PageTransition popped = null;
+			((IShellSectionController)section).NavigationRequested += (_, e) =>
+			{
+				if (e.RequestType is Microsoft.Maui.Controls.Internals.NavigationRequestType.Pop or Microsoft.Maui.Controls.Internals.NavigationRequestType.PopToRoot)
+				{
+					popped = PageTransitionResolver.Resolve(NavigationTransitionKind.Pop, detail, root, true).Transition;
+				}
+			};
+
+			// An absolute route back to the root of the current section: Shell dispatches the section's navigation.
+			await shell.GoToAsync("//item/section/content", new ScaleTransition()).WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Same(root, shell.CurrentPage);
+			Assert.IsType<ScaleTransition>(popped);
+		}
+
+		[Fact]
+		public void AnEarlierAssignmentFinishingDoesntEndAReplacementQueuedBehindIt()
+		{
+			// ReplacePageAsync(C) started from Window.PropertyChanging for B: C's assignment is queued behind B's, whose
+			// change is raised (for B) before C's lands.
+			var b = new ContentPage();
+			var c = new ContentPage();
+			var window = new Window(new ContentPage());
+			var finished = 0;
+			RootPageTransition.RunningTransition running = null;
+			Microsoft.Maui.Controls.PropertyChangingEventHandler onChanging = null;
+			onChanging = (_, e) =>
+			{
+				if (e.PropertyName == Window.PageProperty.PropertyName)
+				{
+					window.PropertyChanging -= onChanging;
+					running = RootPageTransition.Track(window, c, () => finished++);
+					window.Page = c;
+				}
+			};
+			window.PropertyChanging += onChanging;
+			var assigned = RootPageTransition.WhenAssignedAsync(window, c);
+
+			window.Page = b;
+
+			Assert.Same(c, window.Page);
+			Assert.Equal(0, finished);
+			Assert.False(running.IsSuperseded);
+			Assert.True(assigned.IsCompleted);
+
+			// Once its own page is in, a direct assignment still ends it.
+			window.Page = new ContentPage();
+			Assert.Equal(1, finished);
+		}
+
+		[Fact]
+		public void WaitingForAnAssignmentIgnoresAnotherPagesChange()
+		{
+			var page = new ContentPage();
+			var window = new Window(new ContentPage());
+			var assigned = RootPageTransition.WhenAssignedAsync(window, page);
+
+			window.Page = new ContentPage();
+			Assert.False(assigned.IsCompleted);
+
+			window.Page = page;
+			Assert.True(assigned.IsCompleted);
 		}
 
 		[Fact]

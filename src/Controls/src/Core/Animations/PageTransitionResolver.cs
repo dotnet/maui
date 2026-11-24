@@ -186,11 +186,42 @@ namespace Microsoft.Maui.Controls.Animations
 			return null;
 		}
 
-		internal static object BeginShellOverride(Shell shell, PageTransition transition)
+		/// <summary>
+		/// Opens a Shell request's scope on this flow: <paramref name="transition"/> applies to the pages it moves, and a
+		/// request without one (<see langword="null"/>) masks any enclosing request's transition, so a navigation started
+		/// from inside another (its Navigated handler, say) never inherits that one's override.
+		/// </summary>
+		internal static object BeginShellOverride(Shell shell, PageTransition? transition)
 		{
-			var entry = new ShellOverride(shell, transition.Snapshot(), s_shellOverride.Value);
+			var entry = new ShellOverride(shell, transition?.Snapshot(), s_shellOverride.Value);
 			s_shellOverride.Value = entry;
 			return entry;
+		}
+
+		/// <summary>
+		/// The Shell request scopes of this flow, for carrying across a boundary that doesn't flow the execution context
+		/// (Android's dispatcher posts a bare callback): pass it to <see cref="RestoreShellFlow"/> on the other side.
+		/// </summary>
+		internal static object? CaptureShellFlow() => s_shellOverride.Value;
+
+		/// <summary>
+		/// Puts the request scopes <paramref name="captured"/> by <see cref="CaptureShellFlow"/> back on this flow until the
+		/// returned scope is disposed; async work started meanwhile keeps them. The scopes still end with their requests.
+		/// </summary>
+		internal static ShellFlowRestoration RestoreShellFlow(object? captured)
+		{
+			var previous = s_shellOverride.Value;
+			s_shellOverride.Value = captured as ShellOverride;
+			return new ShellFlowRestoration(previous);
+		}
+
+		internal readonly struct ShellFlowRestoration : IDisposable
+		{
+			readonly ShellOverride? _previous;
+
+			public ShellFlowRestoration(object? previous) => _previous = previous as ShellOverride;
+
+			public void Dispose() => s_shellOverride.Value = _previous;
 		}
 
 		internal static void EndShellOverride(Shell shell, object token)
@@ -209,18 +240,17 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		// The innermost running GoToAsync override of this flow that belongs to shell.
+		// The transition of the innermost running Shell request of this flow that belongs to shell: null when that request
+		// has none, which masks any request enclosing it.
 		static PageTransition? OverrideFor(Shell shell)
 		{
-			for (var entry = s_shellOverride.Value; entry is not null; entry = entry.Previous)
+			var entry = s_shellOverride.Value;
+			while (entry is not null && (entry.Ended || !entry.IsFor(shell)))
 			{
-				if (!entry.Ended && entry.IsFor(shell))
-				{
-					return entry.Transition;
-				}
+				entry = entry.Previous;
 			}
 
-			return null;
+			return entry?.Transition;
 		}
 
 		/// <summary>The flow direction recorded for <paramref name="page"/> when it was last shown.</summary>
@@ -505,14 +535,15 @@ namespace Microsoft.Maui.Controls.Animations
 			// Weak: an execution context captured by something long-lived must not keep the Shell alive.
 			readonly WeakReference<Shell> _shell;
 
-			public ShellOverride(Shell shell, PageTransition transition, ShellOverride? previous)
+			public ShellOverride(Shell shell, PageTransition? transition, ShellOverride? previous)
 			{
 				_shell = new WeakReference<Shell>(shell);
 				Transition = transition;
 				Previous = previous;
 			}
 
-			public PageTransition Transition { get; }
+			// Null for a request without its own transition: it masks the requests enclosing it.
+			public PageTransition? Transition { get; }
 
 			public ShellOverride? Previous { get; }
 
@@ -522,7 +553,10 @@ namespace Microsoft.Maui.Controls.Animations
 		}
 	}
 
-	/// <summary>Installs a Shell navigation's own page transition for as long as that navigation runs.</summary>
+	/// <summary>
+	/// Installs a Shell navigation's own page transition for as long as that navigation runs. Every request has one: a
+	/// request without a transition masks the transition of a request it was started from.
+	/// </summary>
 	internal readonly struct ShellTransitionScope : IDisposable
 	{
 		readonly Shell? _shell;
@@ -531,7 +565,7 @@ namespace Microsoft.Maui.Controls.Animations
 		public ShellTransitionScope(Shell? shell, PageTransition? transition)
 		{
 			_shell = shell;
-			_token = shell is not null && transition is not null ? PageTransitionResolver.BeginShellOverride(shell, transition) : null;
+			_token = shell is not null ? PageTransitionResolver.BeginShellOverride(shell, transition) : null;
 		}
 
 		public void Dispose()

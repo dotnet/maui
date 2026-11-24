@@ -31,6 +31,11 @@ namespace Microsoft.Maui.Controls.Animations
 			UIView? incoming = null;
 			UIView? backdrop = null;
 			(CGAffineTransform Transform, nfloat Alpha) incomingOriginal = (CGAffineTransform.MakeIdentity(), 1);
+
+			// The managed values mapped onto the incoming view (when it is the page's own view, as a NavigationPage's is),
+			// and the animations the replacement added to it: only those are removed, never the view's own.
+			ManagedViewState incomingManaged = default;
+			string[] ownedAnimations = Array.Empty<string>();
 			var finished = false;
 			RunningTransition? running = null;
 
@@ -47,9 +52,15 @@ namespace Microsoft.Maui.Controls.Animations
 				backdrop?.RemoveFromSuperview();
 				if (incoming is not null)
 				{
-					incoming.Layer.RemoveAllAnimations();
+					foreach (var key in ownedAnimations)
+					{
+						incoming.Layer.RemoveAnimation(key);
+					}
+
+					// What the view had, then whatever the page changed meanwhile, through its handler.
 					incoming.Transform = incomingOriginal.Transform;
 					incoming.Alpha = incomingOriginal.Alpha;
+					incomingManaged.ReapplyChanged();
 				}
 
 				if (running is not null)
@@ -94,7 +105,10 @@ namespace Microsoft.Maui.Controls.Animations
 			if (incoming is not null)
 			{
 				incomingOriginal = (incoming.Transform, incoming.Alpha);
+				incomingManaged = ManagedViewState.Of(PageTransitionAnimator.ElementShownBy(page, incoming));
 			}
+
+			var animationsBefore = incoming?.Layer.AnimationKeys ?? Array.Empty<string>();
 
 			void Apply(double progress)
 			{
@@ -121,6 +135,7 @@ namespace Microsoft.Maui.Controls.Animations
 				},
 				_ => Cleanup());
 
+			ownedAnimations = PageTransitionAnimator.AddedAnimations(incoming, animationsBefore);
 			await tcs.Task.ConfigureAwait(true);
 		}
 

@@ -28,26 +28,30 @@ namespace Microsoft.Maui.Controls.Animations
 	{
 		/// <summary>
 		/// The transition the built-in presets run for <paramref name="request"/>, or <see langword="null"/> to keep the
-		/// platform's own animation, with the shared elements that fly inside it.
+		/// platform's own animation, with the shared elements that fly inside it. Shared elements are only looked for when
+		/// they can change the result: with <paramref name="presetsCarryHeroes"/> false (a platform whose presets don't
+		/// host flights), a preset navigation doesn't walk the pages for them at all.
 		/// </summary>
-		internal static PageTransition? GetEffectiveTransition(NavigationTransitionRequest request, out List<(VisualElement From, VisualElement To)> heroes)
+		internal static PageTransition? GetEffectiveTransition(NavigationTransitionRequest request, out List<(VisualElement From, VisualElement To)> heroes, bool presetsCarryHeroes = true)
 		{
 			var transition = request.Transition;
-
-			// Nothing morphs under reduced motion; a page that only sets shared elements keeps the platform's own
-			// transition, which follows the platform's reduced-motion handling.
-			heroes = (request.Kind is NavigationTransitionKind.Push or NavigationTransitionKind.Pop) && !PageTransitionResolver.IsReducedMotion
-				? SharedTransition.FindPairs(request.From, request.To)
-				: new List<(VisualElement From, VisualElement To)>();
-
+			heroes = new List<(VisualElement From, VisualElement To)>();
 			if (transition.IsNone)
 			{
-				heroes.Clear();
 				return null;
 			}
 
+			// Nothing morphs under reduced motion; a page that only sets shared elements keeps the platform's own
+			// transition, which follows the platform's reduced-motion handling.
+			var canFly = (request.Kind is NavigationTransitionKind.Push or NavigationTransitionKind.Pop) && !PageTransitionResolver.IsReducedMotion;
+
 			if (transition.IsPlatform)
 			{
+				if (canFly)
+				{
+					heroes = SharedTransition.FindPairs(request.From, request.To);
+				}
+
 				// Shared elements need something to fly over: with nothing else set, the pages crossfade.
 				if (heroes.Count == 0)
 				{
@@ -66,12 +70,23 @@ namespace Microsoft.Maui.Controls.Animations
 				return crossfade;
 			}
 
+			if (canFly && presetsCarryHeroes)
+			{
+				heroes = SharedTransition.FindPairs(request.From, request.To);
+			}
+
 			return transition;
 		}
 
 		internal static PlatformNavigationTransition? GetTransition(NavigationTransitionRequest request)
 		{
+#if WINDOWS
+			// WinUI's navigation transitions host no shared elements: a preset doesn't look for them. (Shared elements on
+			// a Platform navigation still turn it into the crossfade, as on the other platforms.)
+			var transition = GetEffectiveTransition(request, out var heroes, presetsCarryHeroes: false);
+#else
 			var transition = GetEffectiveTransition(request, out var heroes);
+#endif
 			if (transition is null)
 			{
 				return PlatformNavigationTransition.Platform;
