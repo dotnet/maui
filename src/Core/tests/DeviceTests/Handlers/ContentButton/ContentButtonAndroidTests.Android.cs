@@ -1066,6 +1066,56 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task QuickTapInScrollViewClearsNativePressedState()
+		{
+			var pressed = 0;
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => pressed++,
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformView = handler.PlatformView;
+				using var scroll = new ScrollView(MauiContext.Context);
+				using var content = new LinearLayout(MauiContext.Context) { Orientation = global::Android.Widget.Orientation.Vertical };
+				using var filler = new AView(MauiContext.Context);
+				content.AddView(platformView, new LinearLayout.LayoutParams(200, 100));
+				content.AddView(filler, new LinearLayout.LayoutParams(200, 5000));
+				scroll.AddView(content);
+
+				await scroll.AttachAndRun(async () =>
+				{
+					await platformView.WaitForLayoutOrNonZeroSize();
+					Assert.True(scroll.CanScrollVertically(1));
+					Assert.True(scroll.ShouldDelayChildPressedState());
+					var scrollLocation = new int[2];
+					var buttonLocation = new int[2];
+					scroll.GetLocationInWindow(scrollLocation);
+					platformView.GetLocationInWindow(buttonLocation);
+					var x = buttonLocation[0] - scrollLocation[0] + platformView.Width / 2f;
+					var y = buttonLocation[1] - scrollLocation[1] + platformView.Height / 2f;
+					var downTime = SystemClock.UptimeMillis();
+
+					DispatchTouch(scroll, MotionEventActions.Down, x, y, downTime);
+					Assert.Equal(1, pressed);
+					Assert.False(platformView.Pressed, "The ScrollView should delay the native pressed state.");
+					DispatchTouch(scroll, MotionEventActions.Up, x, y, downTime);
+					await Task.Delay(ViewConfiguration.TapTimeout + 200);
+
+					Assert.Equal(1, released);
+					Assert.Equal(1, clicked);
+					Assert.False(platformView.Pressed, "The native pressed state should stay clear after the tap timeout.");
+				});
+			});
+		}
+
+		[Fact]
 		public async Task StatefulNativeBackgroundIsRestored()
 		{
 			var button = new ContentButtonStub();

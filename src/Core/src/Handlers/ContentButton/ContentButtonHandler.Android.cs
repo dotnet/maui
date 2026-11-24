@@ -212,6 +212,15 @@ namespace Microsoft.Maui.Handlers
 						(e.GetX() < 0 || e.GetX() >= platformView.Width ||
 							e.GetY() < 0 || e.GetY() >= platformView.Height);
 
+					if (platformView is not null)
+					{
+						// UP is handled here, so cancel native delayed press and long-press callbacks.
+						using var cancelEvent = MotionEvent.Obtain(e) ??
+							throw new InvalidOperationException("Unable to cancel the ContentButton's native touch sequence.");
+						cancelEvent.Action = MotionEventActions.Cancel;
+						platformView.OnTouchEvent(cancelEvent);
+					}
+
 					handler.ReleasePressed();
 					var cancelActivation = releasedOutside || !ReferenceEquals(touchTarget, button) ||
 						!IsConnectedTo(handler, button) ||
