@@ -53,6 +53,7 @@ namespace Microsoft.Maui
 		readonly object _memoryPublishLock = new();
 		int _cacheGeneration;
 		int _clearCount;
+		int _lastClearGeneration;
 		int _disposed;
 
 #if IOS || MACCATALYST
@@ -225,7 +226,7 @@ namespace Microsoft.Maui
 			{
 				DiskCache.ResetIndex(() =>
 				{
-					Interlocked.Increment(ref _cacheGeneration);
+					Interlocked.Exchange(ref _lastClearGeneration, Interlocked.Increment(ref _cacheGeneration));
 					Interlocked.Increment(ref _clearCount);
 				});
 				MemoryCache.Clear();
@@ -469,9 +470,10 @@ namespace Microsoft.Maui
 			var token = load.Cancellation.Token;
 
 			// Which cache clear the load belongs to, taken when it is admitted (not when its worker starts).
-			// If the cache was cleared after the version was taken, the load cannot tell: it does not invalidate anything.
+			// If the cache was cleared after the version was taken, the load belongs to before the clear: it does not invalidate anything.
+			// (ClearAsync updates _lastClearGeneration before _clearCount, so a new count is never seen with an old generation.)
 			var clearCount = Volatile.Read(ref _clearCount);
-			if (version != GetVersion(uri))
+			if ((int)(version >> 32) < Volatile.Read(ref _lastClearGeneration))
 				clearCount = -1;
 
 			var task = Task.Run(() => ResolveAsync(uri, version, clearCount, cachingEnabled, cacheValidity, fetch, token), token);
