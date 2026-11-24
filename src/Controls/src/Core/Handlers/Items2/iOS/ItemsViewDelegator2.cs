@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		where TViewController : ItemsViewController2<TItemsView>
 	{
 		readonly WeakReference<TViewController> _viewController;
+		bool _notifyingThreshold;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public UICollectionViewLayout ItemsViewLayout { get; }
@@ -60,28 +61,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var itemsView = viewController.ItemsView;
 			var source = viewController.ItemsSource;
+			if (itemsView is null || source is null)
+				return;
+
 			itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
 			PreviousHorizontalOffset = (float)contentOffsetX;
 			PreviousVerticalOffset = (float)contentOffsetY;
 
-			if (!visibleItems)
+			if (!visibleItems || viewController.ItemsSource != source ||
+				_notifyingThreshold)
 			{
 				return;
 			}
 
-			switch (itemsView.RemainingItemsThreshold)
+			// Collection updates can synchronously scroll and reach the threshold again.
+			_notifyingThreshold = true;
+			try
 			{
-				case -1:
-					return;
-				case 0:
-					if (lastVisibleItemIndex == source.ItemCount - 1)
-						itemsView.SendRemainingItemsThresholdReached();
-					break;
-				default:
-					if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
-						itemsView.SendRemainingItemsThresholdReached();
-					break;
+				switch (itemsView.RemainingItemsThreshold)
+				{
+					case -1:
+						return;
+					case 0:
+						if (lastVisibleItemIndex == source.ItemCount - 1)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
+					default:
+						if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
+				}
+			}
+			finally
+			{
+				_notifyingThreshold = false;
 			}
 		}
 
