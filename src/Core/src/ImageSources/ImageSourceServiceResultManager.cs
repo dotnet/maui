@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 #if IOS || MACCATALYST
@@ -22,6 +23,7 @@ namespace Microsoft.Maui
 	{
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
+		List<IDisposable>? _supersededResults;
 
 		public bool IsLoading => _sourceCancellation is not null;
 		public CancellationToken Token =>
@@ -34,6 +36,16 @@ namespace Microsoft.Maui
 		public CancellationToken BeginLoad()
 		{
 			_sourceResult?.Dispose();
+
+			if (_supersededResults is not null)
+			{
+				foreach (var supersededResult in _supersededResults)
+				{
+					supersededResult.Dispose();
+				}
+
+				_supersededResults = null;
+			}
 
 			_sourceCancellation?.Cancel();
 			_sourceCancellation = new CancellationTokenSource();
@@ -66,6 +78,26 @@ namespace Microsoft.Maui
 #endif
 
 			return false;
+		}
+
+		/// <summary>
+		/// Completes the load that was started with <paramref name="token"/>. When a newer load has
+		/// started since then, that load owns the cancellation state, so it is kept and the result of
+		/// this superseded load is only released when the next load begins.
+		/// </summary>
+		public void CompleteLoad(IDisposable? result, CancellationToken token)
+		{
+			if (_sourceCancellation is null || token != _sourceCancellation.Token)
+			{
+				if (result is not null)
+				{
+					(_supersededResults ??= new List<IDisposable>()).Add(result);
+				}
+
+				return;
+			}
+
+			CompleteLoad(result);
 		}
 
 		public void CompleteLoad(IDisposable? result)
