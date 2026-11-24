@@ -724,6 +724,14 @@ manual activation. It reads trusted branch roles from `main` and uses a
 separate `automation/forward-servicing-fixes` head so GitHub's post-merge branch
 deletion cannot delete the servicing branch.
 
+Manual forward PRs must follow the same rule: push a separate branch such as
+`forward/net11-to-main-<sha>` and never open a PR whose head is `net11`,
+`inflight/*` or `candidate/*`. The repository has `delete_branch_on_merge`
+enabled, so merging such a PR deletes the long-lived branch and closes every PR
+that targets it. The `MAUI long-lived branch deletion guard` ruleset blocks
+deletion of `net11`, `net12`, `inflight/*` and `candidate/*`; keep its patterns
+in sync with the roles in `eng/release-rollover.json`.
+
 Forwarding waits until the feature branch's actual major exceeds the servicing
 major. It also waits for post-staging fixes housekeeping: the source must have
 `ci.main` branding and `StabilizePackageVersion=false`, not transient servicing
