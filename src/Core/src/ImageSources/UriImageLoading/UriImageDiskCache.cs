@@ -175,39 +175,41 @@ namespace Microsoft.Maui
 			var dataPath = Path.Combine(Directory!, fileName);
 
 			lock (GetKeyLock(fileName))
-			try
 			{
-				System.IO.Directory.CreateDirectory(Directory!);
-
-				var entry = new Entry(fileName, dataPath)
+				try
 				{
-					Uri = uri.OriginalString,
-					Length = data.LongLength,
-					DownloadedUtcTicks = now.UtcTicks,
-					ValidatedUtcTicks = now.UtcTicks,
-					LastAccessUtcTicks = now.UtcTicks,
-					ETag = eTag,
-					LastModified = lastModified,
-				};
+					System.IO.Directory.CreateDirectory(Directory!);
 
-				WriteAtomically(dataPath, stream => stream.Write(data, 0, data.Length));
-				WriteMetadata(entry);
+					var entry = new Entry(fileName, dataPath)
+					{
+						Uri = uri.OriginalString,
+						Length = data.LongLength,
+						DownloadedUtcTicks = now.UtcTicks,
+						ValidatedUtcTicks = now.UtcTicks,
+						LastAccessUtcTicks = now.UtcTicks,
+						ETag = eTag,
+						LastModified = lastModified,
+					};
 
-				EnsureIndex();
-				lock (_lock)
-				{
-					if (_index!.TryGetValue(fileName, out var existing))
-						_size -= existing.Length;
-					_index[fileName] = entry;
-					_size += entry.Length;
-					EvictLocked(keep: fileName);
+					WriteAtomically(dataPath, stream => stream.Write(data, 0, data.Length));
+					WriteMetadata(entry);
+
+					EnsureIndex();
+					lock (_lock)
+					{
+						if (_index!.TryGetValue(fileName, out var existing))
+							_size -= existing.Length;
+						_index[fileName] = entry;
+						_size += entry.Length;
+						EvictLocked(keep: fileName);
+					}
+
+					return entry;
 				}
-
-				return entry;
-			}
-			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-			{
-				return null;
+				catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+				{
+					return null;
+				}
 			}
 		}
 
