@@ -87,12 +87,13 @@ namespace Microsoft.Maui.Platform
 		{
 			CaptureNativeDefaults();
 
-			if (button.Background?.ToPlatform() is null)
+			var brush = button.Background?.ToPlatform();
+			if (brush is null)
 				RestoreNativeDefaults(BackgroundResourceKeys);
 			else
 			{
 				RemoveNativeDefaultBeforeBackgroundOverride();
-				ButtonExtensions.UpdateBackground(this, button);
+				ButtonExtensions.UpdateBackgroundBrush(this, brush);
 			}
 		}
 
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Platform
 		{
 			CaptureNativeDefaults();
 
-			if (button.StrokeColor?.ToPlatform() is null)
+			if (button.StrokeColor is null)
 				RestoreNativeDefaults(StrokeColorResourceKeys);
 			else
 				ButtonExtensions.UpdateStrokeColor(this, button);

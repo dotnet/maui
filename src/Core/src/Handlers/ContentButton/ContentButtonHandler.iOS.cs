@@ -205,14 +205,12 @@ namespace Microsoft.Maui.Handlers
 
 			void OnPrimaryActionTriggered(object? sender, EventArgs e)
 			{
-				var touchActivationView = _touchActivationView is not null &&
-					_touchActivationView.TryGetTarget(out var target)
-						? target
-						: null;
+				var touchActivationView = _touchActivationView;
 				_touchActivationView = null;
 
 				if (VirtualView is { IsEnabled: true } button &&
-					(touchActivationView is null || ReferenceEquals(touchActivationView, button)))
+					(touchActivationView is null ||
+						(touchActivationView.TryGetTarget(out var target) && ReferenceEquals(target, button))))
 					button.Clicked();
 			}
 		}

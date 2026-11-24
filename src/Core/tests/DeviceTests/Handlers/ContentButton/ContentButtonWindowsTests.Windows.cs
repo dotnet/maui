@@ -129,6 +129,51 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReplacingFocusedVirtualViewTransfersFocus()
+		{
+			var first = new ContentButtonStub();
+			var second = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(first);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformView = handler.PlatformView;
+				var root = new WStackPanel { Children = { platformView } };
+				await root.AttachAndRun(async () =>
+				{
+					Assert.True(platformView.Focus(FocusState.Programmatic));
+					await AssertionExtensions.AssertEventually(() => first.IsFocused);
+
+					handler.SetVirtualView(second);
+
+					Assert.NotEqual(FocusState.Unfocused, platformView.FocusState);
+					Assert.False(first.IsFocused);
+					Assert.True(second.IsFocused);
+				}, MauiContext);
+			});
+		}
+
+		[Fact]
+		public async Task ChangingCornerRadiusRefreshesShadowMapping()
+		{
+			var button = new ContentButtonStub { Shadow = new ShadowStub { Paint = new SolidPaint(Colors.Black) } };
+			var shadowUpdates = 0;
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			mapper.AppendToMapping(nameof(IView.Shadow), (_, _) => shadowUpdates++);
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				var previousUpdates = shadowUpdates;
+				button.CornerRadius = 30;
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+
+				Assert.Equal(previousUpdates + 1, shadowUpdates);
+			});
+		}
+
+		[Fact]
 		public async Task KeyActivationDoesNotClickReplacementSetByReleasedCallback()
 		{
 			var originalClicks = 0;
@@ -152,6 +197,79 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, originalClicks);
 				Assert.Equal(0, replacementClicks);
 			});
+		}
+
+		[Fact]
+		public async Task CollectedKeyTargetDoesNotClickReplacementView()
+		{
+			var clicks = 0;
+			var replacement = new ContentButtonStub { Clicked = () => clicks++ };
+			var (original, handler) = await PressAndReplace(replacement);
+
+			await AssertionExtensions.WaitForGC(original);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InvokeClick(handler);
+				Assert.Equal(0, clicks);
+
+				InvokeClick(handler);
+				Assert.Equal(1, clicks);
+			});
+			GC.KeepAlive(handler);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CanceledPointerAllowsReplacementAutomation(bool replaceOnRelease)
+		{
+			var clicks = 0;
+			ContentButtonHandler? handler = null;
+			var replacement = new ContentButtonStub { Clicked = () => clicks++ };
+			var original = new ContentButtonStub
+			{
+				Released = () =>
+				{
+					if (replaceOnRelease)
+						handler!.SetVirtualView(replacement);
+				}
+			};
+			var connectedHandler = await CreateHandlerAsync(original);
+			handler = connectedHandler;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var press = typeof(ContentButtonHandler).GetMethod("Press", BindingFlags.Instance | BindingFlags.NonPublic);
+				var cancel = typeof(ContentButtonHandler).GetMethod("OnPointerReleased", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(press);
+				Assert.NotNull(cancel);
+				press.Invoke(connectedHandler, null);
+				cancel.Invoke(connectedHandler, new object?[] { connectedHandler.PlatformView, null });
+
+				if (!replaceOnRelease)
+					connectedHandler.SetVirtualView(replacement);
+
+				var peer = new MauiButtonAutomationPeer(connectedHandler.PlatformView);
+				var invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
+				invokeProvider.Invoke();
+				Assert.Equal(1, clicks);
+			});
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<(WeakReference Original, ContentButtonHandler Handler)> PressAndReplace(ContentButtonStub replacement)
+		{
+			var original = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(original);
+			var reference = new WeakReference(original);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				PressActivationKey(handler);
+				handler.SetVirtualView(replacement);
+			});
+
+			return (reference, handler);
 		}
 
 		[Theory]

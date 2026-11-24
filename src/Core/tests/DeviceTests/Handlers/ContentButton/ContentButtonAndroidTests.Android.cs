@@ -13,10 +13,12 @@ using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Google.Android.Material.Card;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Primitives;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AInsets = AndroidX.Core.Graphics.Insets;
@@ -62,6 +64,64 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(secondPlatformView.Parent);
 				Assert.Equal(secondImportance, secondPlatformView.ImportantForAccessibility);
 				Assert.Equal(0, container.ChildCount);
+			});
+		}
+
+		[Fact]
+		public async Task ReplacingFocusedVirtualViewTransfersFocus()
+		{
+			var first = new ContentButtonStub();
+			var second = new ContentButtonStub();
+
+			await AttachAndRun(first, handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+				Assert.True(first.IsFocused);
+
+				handler.SetVirtualView(second);
+
+				Assert.True(platformView.IsFocused);
+				Assert.False(first.IsFocused);
+				Assert.True(second.IsFocused);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task NativeMinimumWidthIsUsedToMeasureWrappingContent()
+		{
+			var content = new LabelStub
+			{
+				Text = new string('W', 80),
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
+			};
+			var button = new ContentButtonStub
+			{
+				Content = content,
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
+				MinimumWidth = 200,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				var context = platformView.Context!;
+				var heightSpec = AView.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+				var narrowSpec = AView.MeasureSpec.MakeMeasureSpec((int)context.ToPixels(100), MeasureSpecMode.AtMost);
+				var minimumSpec = AView.MeasureSpec.MakeMeasureSpec((int)context.ToPixels(200), MeasureSpecMode.AtMost);
+
+				platformView.Measure(narrowSpec, heightSpec);
+				var narrowSize = (platformView.MeasuredWidth, platformView.MeasuredHeight);
+				platformView.ForceLayout();
+				platformView.Measure(minimumSpec, heightSpec);
+
+				Assert.Equal((int)context.ToPixels(200), narrowSize.MeasuredWidth);
+				Assert.Equal(narrowSize, (platformView.MeasuredWidth, platformView.MeasuredHeight));
 			});
 		}
 
@@ -132,6 +192,52 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ThemeChangeRefreshesDefaultsFromTheNewTheme()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context;
+				using var dayConfiguration = new Configuration(context.Resources!.Configuration!);
+				dayConfiguration.UiMode = (dayConfiguration.UiMode & ~UiMode.NightMask) | UiMode.NightNo;
+				using var nightConfiguration = new Configuration(dayConfiguration);
+				nightConfiguration.UiMode = (nightConfiguration.UiMode & ~UiMode.NightMask) | UiMode.NightYes;
+				using var dayConfigurationContext = context.CreateConfigurationContext(dayConfiguration);
+				using var nightConfigurationContext = context.CreateConfigurationContext(nightConfiguration);
+				using var dayContext = new ContextThemeWrapper(dayConfigurationContext, Resource.Style.Maui_MainTheme_NoActionBar);
+				using var nightContext = new ContextThemeWrapper(nightConfigurationContext, Resource.Style.Maui_Material3_Theme_NoActionBar);
+				using var mutableContext = new MutableContextWrapper(dayContext);
+				var button = new ContentButtonStub();
+				var handler = new ContextContentButtonHandler(mutableContext);
+				InitializeViewHandler(button, handler);
+				using var host = new FrameLayout(context);
+				host.AddView(handler.PlatformView);
+
+				await host.AttachAndRun(async () =>
+				{
+					using var dayCard = new MaterialCardView(mutableContext);
+					var dayBackground = dayCard.CardBackgroundColor!.DefaultColor;
+					var dayBackgroundPixel = BackgroundCenterPixel(dayCard);
+					var dayRadius = dayCard.Radius;
+					mutableContext.SetBaseContext(nightContext);
+					using var nightCard = new MaterialCardView(mutableContext);
+					var nightBackground = nightCard.CardBackgroundColor!.DefaultColor;
+					var nightBackgroundPixel = BackgroundCenterPixel(nightCard);
+					var nightRadius = nightCard.Radius;
+					Assert.NotEqual(dayBackground, nightBackground);
+					Assert.NotEqual(dayBackgroundPixel, nightBackgroundPixel);
+					Assert.NotEqual(dayRadius, nightRadius);
+
+					handler.PlatformView.DispatchConfigurationChanged(nightConfiguration);
+					await DrainPostedWork(handler.PlatformView);
+
+					Assert.Equal(nightBackground, handler.PlatformView.CardBackgroundColor!.DefaultColor);
+					Assert.Equal(nightBackgroundPixel, BackgroundCenterPixel(handler.PlatformView));
+					Assert.Equal(nightRadius, handler.PlatformView.Radius);
+				});
+			});
+		}
+
+		[Fact]
 		public async Task PostedThemeChangeRefreshesReplacementView()
 		{
 			await AttachAndRun(new ContentButtonStub(), async handler =>
@@ -178,6 +284,80 @@ namespace Microsoft.Maui.DeviceTests
 					handler.PlatformView.DispatchConfigurationChanged(configuration);
 					await DrainPostedWork(handler.PlatformView);
 					Assert.Equal(StyledContentButtonHandler.NativeRadius, handler.PlatformView.Radius);
+				});
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task HandlerProvidedCornerTreatmentsSurviveAttachmentAndThemeRefresh(bool differentCornerSizes)
+		{
+			var button = new ContentButtonStub { CornerRadius = -1 };
+			var handler = new CutCornerContentButtonHandler(differentCornerSizes);
+			await InvokeOnMainThreadAsync(() => InitializeViewHandler(button, handler));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					void AssertNativeShape()
+					{
+						var shape = handler.PlatformView.ShapeAppearanceModel;
+						Assert.IsType<CutCornerTreatment>(shape.TopLeftCorner);
+						Assert.IsType<CutCornerTreatment>(shape.TopRightCorner);
+						using var bounds = new global::Android.Graphics.RectF(0, 0, 200, 200);
+						Assert.Equal(handler.TopLeftRadius,
+							shape.TopLeftCornerSize.GetCornerSize(bounds));
+						Assert.Equal(handler.TopRightRadius,
+							shape.TopRightCornerSize.GetCornerSize(bounds));
+					}
+
+					await DrainPostedWork(handler.PlatformView);
+					AssertNativeShape();
+
+					using var configuration = new Configuration(handler.PlatformView.Resources!.Configuration!);
+					var nightMode = configuration.UiMode & UiMode.NightMask;
+					configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+						(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+					handler.PlatformView.DispatchConfigurationChanged(configuration);
+					await DrainPostedWork(handler.PlatformView);
+
+					AssertNativeShape();
+				});
+			});
+		}
+
+		[Fact]
+		public async Task HandlerProvidedNativeBackgroundTintSurvivesThemeRefresh()
+		{
+			var button = new ContentButtonStub();
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, TintedBackgroundContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await DrainPostedWork(handler.PlatformView);
+					using var defaultCard = new MaterialCardView(handler.PlatformView.Context!);
+					var expectedColor = handler.InitialColor;
+					Assert.NotEqual(BackgroundCenterPixel(defaultCard), expectedColor);
+					Assert.Equal(expectedColor, BackgroundCenterPixel(handler.PlatformView));
+
+					using var configuration = new Configuration(handler.PlatformView.Resources!.Configuration!);
+					var nightMode = configuration.UiMode & UiMode.NightMask;
+					configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+						(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+					handler.PlatformView.DispatchConfigurationChanged(configuration);
+					await DrainPostedWork(handler.PlatformView);
+
+					Assert.Equal(expectedColor, BackgroundCenterPixel(handler.PlatformView));
+					button.Background = new SolidPaint(Colors.Blue);
+					handler.UpdateValue(nameof(IView.Background));
+					button.Background = null;
+					handler.UpdateValue(nameof(IView.Background));
+					Assert.Equal(expectedColor, BackgroundCenterPixel(handler.PlatformView));
 				});
 			});
 		}
@@ -425,6 +605,7 @@ namespace Microsoft.Maui.DeviceTests
 			var button = new ContentButtonStub
 			{
 				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				CornerRadius = 12,
 			};
 			var handler = await CreateHandlerAsync(button);
 
@@ -433,6 +614,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformView = handler.PlatformView;
 				platformView.Layout(0, 0, 160, 80);
 				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var background, out _, out _));
+				var shape = platformView.ShapeAppearanceModel;
 
 				platformView.Layout(20, 30, 180, 110);
 				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var movedBackground, out _, out _));
@@ -441,6 +623,7 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.Layout(20, 30, 200, 130);
 				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var resizedBackground, out _, out _));
 				Assert.NotSame(background, resizedBackground);
+				Assert.Same(shape, platformView.ShapeAppearanceModel);
 			});
 		}
 
@@ -467,6 +650,165 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.Layout(0, 0, 180, 90);
 
 				Assert.Same(customBackground, platformView.Background);
+			});
+		}
+
+		[Theory]
+		[InlineData(nameof(IView.Background), false)]
+		[InlineData(nameof(IView.Background), true)]
+		[InlineData(nameof(IButtonStroke.StrokeColor), false)]
+		[InlineData(nameof(IButtonStroke.StrokeColor), true)]
+		[InlineData(nameof(IButtonStroke.StrokeThickness), false)]
+		[InlineData(nameof(IButtonStroke.StrokeThickness), true)]
+		public async Task BackgroundAndStrokeUpdatesPreserveCornerRadiusMapperCustomization(string property, bool gradient)
+		{
+			var button = new ContentButtonStub
+			{
+				Background = gradient ? new LinearGradientPaintStub(Colors.Red, Colors.Blue) : null,
+				CornerRadius = 12,
+			};
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			mapper.AppendToMapping(nameof(IButtonStroke.CornerRadius), (handler, _) =>
+				handler.PlatformView.Radius = (float)handler.PlatformView.Context!.ToPixels(24));
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				var expectedRadius = (float)handler.PlatformView.Context!.ToPixels(24);
+				Assert.Equal(expectedRadius, handler.PlatformView.Radius);
+
+				button.Background = gradient
+					? new LinearGradientPaintStub(Colors.Blue, Colors.Green)
+					: new SolidPaint(Colors.Blue);
+				button.StrokeColor = Colors.Red;
+				button.StrokeThickness = 2;
+				handler.UpdateValue(property);
+
+				Assert.Equal(expectedRadius, handler.PlatformView.Radius);
+			});
+		}
+
+		[Theory]
+		[InlineData(nameof(IView.Background))]
+		[InlineData(nameof(IButtonStroke.StrokeColor))]
+		[InlineData(nameof(IButtonStroke.StrokeThickness))]
+		public async Task BackgroundAndStrokeUpdatesRefreshGradientShape(string property)
+		{
+			var button = new ContentButtonStub
+			{
+				Background = property == nameof(IView.Background)
+					? null
+					: new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				CornerRadius = 24,
+				StrokeColor = property == nameof(IButtonStroke.StrokeColor) ? null : Colors.Red,
+				StrokeThickness = property == nameof(IButtonStroke.StrokeThickness) ? 0 : 10,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				if (property == nameof(IView.Background))
+					button.Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue);
+				else if (property == nameof(IButtonStroke.StrokeColor))
+					button.StrokeColor = Colors.Red;
+				else
+					button.StrokeThickness = 10;
+
+				handler.UpdateValue(property);
+
+				var context = handler.PlatformView.Context!;
+				var expectedRadius = (int)context.ToPixels(24) - (int)context.ToPixels(10) / 2;
+				Assert.Equal(expectedRadius, handler.PlatformView.Radius);
+			});
+		}
+
+		[Fact]
+		public async Task DefaultStrokeColorWidthRefreshesGradientShape()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				CornerRadius = 24,
+				StrokeColor = null,
+				StrokeThickness = -1,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var context = handler.PlatformView.Context!;
+				button.StrokeColor = Colors.Red;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
+				Assert.Equal((int)context.ToPixels(24) - (int)context.ToPixels(1) / 2, handler.PlatformView.Radius);
+
+				button.StrokeColor = null;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
+				Assert.Equal((int)context.ToPixels(24), handler.PlatformView.Radius);
+			});
+		}
+
+		[Fact]
+		public async Task RemovingBackgroundRestoresNativeShapeRadius()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				CornerRadius = 24,
+				StrokeColor = Colors.Red,
+				StrokeThickness = 10,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var context = handler.PlatformView.Context!;
+				Assert.Equal((int)context.ToPixels(24) - (int)context.ToPixels(10) / 2, handler.PlatformView.Radius);
+
+				button.Background = null;
+				handler.UpdateValue(nameof(IView.Background));
+				Assert.Equal((int)context.ToPixels(24), handler.PlatformView.Radius);
+			});
+		}
+
+		[Theory]
+		[InlineData(nameof(IView.Background), false)]
+		[InlineData(nameof(IView.Background), true)]
+		[InlineData(nameof(IButtonStroke.StrokeColor), true)]
+		[InlineData(nameof(IButtonStroke.StrokeThickness), true)]
+		public async Task CornerRadiusMapperCanUpdateStylingWithoutRecursing(string property, bool setRadiusFirst)
+		{
+			var button = new ContentButtonStub { CornerRadius = 12 };
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			var testReentrancy = false;
+			var updates = 0;
+			mapper.AppendToMapping(nameof(IButtonStroke.CornerRadius), (handler, _) =>
+			{
+				if (!testReentrancy)
+					return;
+
+				if (++updates > 2)
+					throw new InvalidOperationException("CornerRadius and styling mappings recursively update each other.");
+
+				if (setRadiusFirst)
+					handler.PlatformView.Radius = (float)handler.PlatformView.Context!.ToPixels(24);
+				handler.UpdateValue(property);
+				if (!setRadiusFirst)
+					handler.PlatformView.Radius = (float)handler.PlatformView.Context!.ToPixels(24);
+			});
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				testReentrancy = true;
+				button.Background = new SolidPaint(Colors.Blue);
+				button.StrokeColor = Colors.Red;
+				button.StrokeThickness = 2;
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+
+				Assert.Equal(1, updates);
+				Assert.Equal((float)handler.PlatformView.Context!.ToPixels(24), handler.PlatformView.Radius);
 			});
 		}
 
@@ -935,6 +1277,74 @@ namespace Microsoft.Maui.DeviceTests
 				var button = base.CreatePlatformView();
 				button.Radius = NativeRadius;
 				return button;
+			}
+		}
+
+		sealed class CutCornerContentButtonHandler : ContentButtonHandler
+		{
+			readonly bool _differentCornerSizes;
+			internal float TopLeftRadius { get; private set; }
+			internal float TopRightRadius { get; private set; }
+
+			internal CutCornerContentButtonHandler(bool differentCornerSizes) => _differentCornerSizes = differentCornerSizes;
+
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				TopLeftRadius = button.Radius;
+				TopRightRadius = TopLeftRadius + (_differentCornerSizes ? 5 : 0);
+				button.ShapeAppearanceModel = button.ShapeAppearanceModel.ToBuilder()
+					.SetTopLeftCorner(CornerFamily.Cut, TopLeftRadius)
+					.SetTopRightCorner(CornerFamily.Cut, TopRightRadius)
+					.Build();
+				return button;
+			}
+		}
+
+		sealed class ContextContentButtonHandler : ContentButtonHandler
+		{
+			readonly Context _context;
+
+			internal ContextContentButtonHandler(Context context) => _context = context;
+
+			protected override MaterialCardView CreatePlatformView() =>
+				new MauiContentButton(_context)
+				{
+					CardElevation = 0,
+					CrossPlatformLayout = VirtualView,
+					SoundEffectsEnabled = false,
+				};
+		}
+
+		sealed class TintedBackgroundContentButtonHandler : ContentButtonHandler
+		{
+			internal int InitialColor { get; private set; }
+
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.Background!.SetTint(AColor.Magenta);
+				InitialColor = BackgroundCenterPixel(button);
+				return button;
+			}
+		}
+
+		static int BackgroundCenterPixel(AView view)
+		{
+			using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(100, 100, global::Android.Graphics.Bitmap.Config.Argb8888!);
+			using var canvas = new global::Android.Graphics.Canvas(bitmap!);
+			var background = view.Background!;
+			var bounds = background.Bounds!;
+			var (left, top, right, bottom) = (bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+			try
+			{
+				background.SetBounds(0, 0, 100, 100);
+				background.Draw(canvas);
+				return bitmap!.GetPixel(50, 50);
+			}
+			finally
+			{
+				background.SetBounds(left, top, right, bottom);
 			}
 		}
 

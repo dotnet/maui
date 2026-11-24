@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			var elementHandler = (IElementHandler)this;
 			var previousView = elementHandler.VirtualView;
+			var wasFocused = previousView is IView &&
+				elementHandler.PlatformView is AView { IsFocused: true };
 			if (!ReferenceEquals(previousView, view))
 			{
 				ReleasePressed();
@@ -43,13 +45,23 @@ namespace Microsoft.Maui.Handlers
 
 			base.SetVirtualView(view);
 
-			if (PlatformView is MauiContentButton platformView)
+			if (wasFocused && previousView is IView { IsFocused: true } previous &&
+				!ReferenceEquals(elementHandler.VirtualView, previous))
 			{
-				if (!ReferenceEquals(platformView.CrossPlatformLayout, VirtualView))
+				previous.IsFocused = false;
+			}
+
+			if (elementHandler.PlatformView is MauiContentButton platformView &&
+				elementHandler.VirtualView is IContentButton currentView)
+			{
+				if (!ReferenceEquals(platformView.CrossPlatformLayout, currentView))
 				{
-					platformView.CrossPlatformLayout = VirtualView;
+					platformView.CrossPlatformLayout = currentView;
 					platformView.MarkSafeAreaEdgeConfigurationChanged();
 				}
+
+				if (wasFocused && platformView.IsFocused && !currentView.IsFocused)
+					currentView.IsFocused = true;
 			}
 		}
 
@@ -150,14 +162,14 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapStrokeColor(IContentButtonHandler handler, IContentButton button)
 		{
 			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
-				platformView.UpdateButtonStroke(button);
+				platformView.UpdateButtonStroke(button, updateShape: false);
 		}
 
 		public static partial void MapStrokeThickness(IContentButtonHandler handler, IContentButton button)
 		{
 			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
 			{
-				platformView.UpdateButtonStroke(button);
+				platformView.UpdateButtonStroke(button, updateShape: false);
 				platformView.RequestLayout();
 			}
 		}

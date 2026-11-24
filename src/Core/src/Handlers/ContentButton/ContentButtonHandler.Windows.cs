@@ -18,22 +18,34 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
-			var previousView = ((IElementHandler)this).VirtualView;
+			var elementHandler = (IElementHandler)this;
+			var previousView = elementHandler.VirtualView;
+			var wasFocused = previousView is IView &&
+				elementHandler.PlatformView is Button { FocusState: not FocusState.Unfocused };
 			if (_isPressed && !ReferenceEquals(previousView, view))
 			{
 				Release();
 
-				if (!ReferenceEquals(((IElementHandler)this).VirtualView, previousView))
+				if (!ReferenceEquals(elementHandler.VirtualView, previousView))
 					return;
 			}
 
 			base.SetVirtualView(view);
 
+			if (wasFocused && previousView is IView { IsFocused: true } previous &&
+				!ReferenceEquals(elementHandler.VirtualView, previous))
+			{
+				previous.IsFocused = false;
+			}
+
 			if (view is IContentButton button &&
 				IsConnectedTo(this, button) &&
-				((IElementHandler)this).PlatformView is MauiContentButton platformView)
+				elementHandler.PlatformView is MauiContentButton platformView)
 			{
 				platformView.ContentPanel.UpdateCrossPlatformLayout(button);
+
+				if (wasFocused && platformView.FocusState != FocusState.Unfocused && !button.IsFocused)
+					button.IsFocused = true;
 			}
 		}
 
@@ -173,6 +185,9 @@ namespace Microsoft.Maui.Handlers
 				platformButton.UpdateCornerRadius(button);
 			else if (((IElementHandler)handler).PlatformView is Button nativeButton)
 				nativeButton.UpdateCornerRadius(button);
+
+			if (button.Shadow is not null)
+				handler.UpdateValue(nameof(IView.Shadow));
 		}
 
 		static void RemoveFromParent(FrameworkElement platformView)
@@ -197,15 +212,13 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			var button = ((IElementHandler)this).VirtualView as IContentButton;
-			var activationView = _activationView is not null &&
-				_activationView.TryGetTarget(out var target)
-					? target
-					: null;
+			var activationView = _activationView;
 			_activationView = null;
 			Release();
 
 			if (button is { IsEnabled: true } &&
-				(activationView is null || ReferenceEquals(activationView, button)) &&
+				(activationView is null ||
+					(activationView.TryGetTarget(out var target) && ReferenceEquals(target, button))) &&
 				IsConnectedTo(this, button))
 			{
 				button.Clicked();
@@ -222,7 +235,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnPointerReleased(object sender, PointerRoutedEventArgs e) => Release();
+		// WinUI raises a successful pointer Click before release or capture loss.
+		void OnPointerReleased(object sender, PointerRoutedEventArgs e) => CancelPress();
 
 		void OnKeyDown(object? sender, KeyRoutedEventArgs e)
 		{

@@ -22,10 +22,15 @@ namespace Microsoft.Maui.Platform
 		Drawable.ConstantState? _defaultBackgroundState;
 		Drawable? _defaultBackground;
 		ColorStateList? _defaultBackgroundTint;
+		ColorStateList? _defaultBackgroundShapeTint;
 		ColorStateList? _defaultCardBackgroundColor;
 		ColorStateList? _defaultRippleColor;
 		ColorStateList? _defaultStrokeColor;
+		ShapeAppearanceModel? _initialShapeAppearanceModel;
 		ShapeAppearanceModel? _defaultShapeAppearanceModel;
+		ShapeAppearanceModel? _mappedShapeAppearanceModel;
+		float _mappedShapeRadius;
+		bool _mappedShapeUsesDefault;
 		int _defaultStrokeWidth;
 		float _defaultRadius;
 		bool _isInsetListenerSet;
@@ -79,6 +84,8 @@ namespace Microsoft.Maui.Platform
 			ImportantForAccessibility = ImportantForAccessibility.Yes;
 			SetClipChildren(true);
 			_nightMode = Resources?.Configuration?.UiMode & UiMode.NightMask ?? UiMode.NightUndefined;
+			// Handler subclasses can change the shape before native defaults are captured.
+			_initialShapeAppearanceModel = ShapeAppearanceModel;
 		}
 
 		internal void CaptureNativeDefaults()
@@ -90,8 +97,8 @@ namespace Microsoft.Maui.Platform
 			_preserveDefaultRippleColor = !HaveEquivalentColors(RippleColor, themedCard.RippleColor);
 			_preserveDefaultStrokeColor = !HaveEquivalentColors(StrokeColorStateList, themedCard.StrokeColorStateList);
 			_preserveDefaultStrokeWidth = StrokeWidth != themedCard.StrokeWidth;
-			_preserveDefaultRadius = Radius != themedCard.Radius;
-			_preserveDefaultShapeAppearanceModel = _preserveDefaultRadius;
+			_preserveDefaultShapeAppearanceModel = !Equals(ShapeAppearanceModel, _initialShapeAppearanceModel);
+			_preserveDefaultRadius = _preserveDefaultShapeAppearanceModel || Radius != themedCard.Radius;
 			CaptureNativeDefaults(this);
 		}
 
@@ -102,6 +109,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_defaultBackgroundState = materialCard.Background?.GetConstantState();
 				_defaultBackground = _defaultBackgroundState?.NewDrawable()?.Mutate() ?? materialCard.Background;
+				_defaultBackgroundShapeTint = GetBackgroundShapeTint(materialCard.Background);
 			}
 
 			if (!_preserveDefaultBackgroundTint)
@@ -122,7 +130,11 @@ namespace Microsoft.Maui.Platform
 
 		static bool HaveEquivalentBackground(Drawable? first, Drawable? second) =>
 			first?.GetType() == second?.GetType() &&
-			first?.GetConstantState()?.GetType() == second?.GetConstantState()?.GetType();
+			first?.GetConstantState()?.GetType() == second?.GetConstantState()?.GetType() &&
+			HaveEquivalentColors(GetBackgroundShapeTint(first), GetBackgroundShapeTint(second));
+
+		static ColorStateList? GetBackgroundShapeTint(Drawable? background) =>
+			background is InsetDrawable { Drawable: MaterialShapeDrawable shape } ? shape.TintList : null;
 
 		static bool HaveEquivalentColors(ColorStateList? first, ColorStateList? second) =>
 			ReferenceEquals(first, second) || first?.ToString() == second?.ToString();
@@ -132,6 +144,7 @@ namespace Microsoft.Maui.Platform
 			_defaultBackgroundState = materialCard.Background?.GetConstantState();
 			_defaultBackground = _defaultBackgroundState?.NewDrawable()?.Mutate() ?? materialCard.Background;
 			_defaultBackgroundTint = materialCard.BackgroundTintList;
+			_defaultBackgroundShapeTint = GetBackgroundShapeTint(materialCard.Background);
 			_defaultCardBackgroundColor = materialCard.CardBackgroundColor;
 			_defaultRippleColor = materialCard.RippleColor;
 			_defaultStrokeColor = materialCard.StrokeColorStateList;
@@ -167,7 +180,13 @@ namespace Microsoft.Maui.Platform
 				if (_defaultCardBackgroundColor is not null)
 					CardBackgroundColor = _defaultCardBackgroundColor;
 
-				UpdateButtonStroke(button);
+				UpdateButtonStroke(button, updateShape: false);
+				// Assigning BackgroundTintList can clear a tint applied directly to the drawable.
+				if (_defaultBackgroundShapeTint is not null &&
+					Background is InsetDrawable { Drawable: MaterialShapeDrawable shape })
+				{
+					shape.SetTintList(_defaultBackgroundShapeTint);
+				}
 				return;
 			}
 
@@ -182,11 +201,15 @@ namespace Microsoft.Maui.Platform
 					SetStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
 				});
 
-			UpdateButtonStroke(button);
+			UpdateButtonStroke(button, updateShape: false);
 		}
 
-		internal void UpdateButtonStroke(IContentButton button)
+		internal void UpdateButtonStroke(IContentButton button, bool updateShape = true)
 		{
+			// Update framework-owned shapes, but leave mapper customizations intact.
+			updateShape |= _mappedShapeAppearanceModel is not null &&
+				Equals(ShapeAppearanceModel, _mappedShapeAppearanceModel);
+
 			if (this.UpdateMauiRippleDrawableStroke(button))
 			{
 				if (this.TryGetMauiBackground(out _, out _, out var background, out var stroke, out var mask))
@@ -197,14 +220,18 @@ namespace Microsoft.Maui.Platform
 						background.SetStroke(_defaultStrokeWidth, AColor.Transparent);
 					}
 
-					var radius = button.CornerRadius < 0
-						? _defaultRadius
-						: button.GetStrokeProperties(_context, false).Radius;
-
-					background.SetCornerRadius(radius);
-					stroke.SetCornerRadius(radius);
-					mask.SetCornerRadius(radius);
-					UpdateShape(radius, button.CornerRadius < 0);
+					if (button.CornerRadius < 0)
+					{
+						background.SetCornerRadius(_defaultRadius);
+						stroke.SetCornerRadius(_defaultRadius);
+						mask.SetCornerRadius(_defaultRadius);
+						if (updateShape)
+							UpdateShape(_defaultRadius, true);
+					}
+					else if (updateShape)
+					{
+						UpdateShape(background.CornerRadius, false);
+					}
 				}
 
 				StrokeWidth = 0;
@@ -224,12 +251,11 @@ namespace Microsoft.Maui.Platform
 				SetStrokeColor(color);
 			}
 
+			if (!updateShape)
+				return;
+
 			if (button.CornerRadius < 0)
-			{
-				if (_defaultShapeAppearanceModel is not null)
-					ShapeAppearanceModel = _defaultShapeAppearanceModel;
-				Radius = _defaultRadius;
-			}
+				UpdateShape(_defaultRadius, true);
 			else
 			{
 				var (_, _, radius) = button.GetStrokeProperties(_context, true);
@@ -239,18 +265,32 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateShape(float radius, bool useDefaultShape)
 		{
-			if (useDefaultShape && _defaultShapeAppearanceModel is not null)
+			if (_mappedShapeAppearanceModel is not null &&
+				Equals(ShapeAppearanceModel, _mappedShapeAppearanceModel) &&
+				_mappedShapeRadius == radius && _mappedShapeUsesDefault == useDefaultShape &&
+				(!useDefaultShape || Equals(_mappedShapeAppearanceModel, _defaultShapeAppearanceModel)))
 			{
-				ShapeAppearanceModel = _defaultShapeAppearanceModel;
-				Radius = _defaultRadius;
 				return;
 			}
 
-			ShapeAppearanceModel = ShapeAppearanceModel
-				.ToBuilder()
-				.SetAllCorners(CornerFamily.Rounded, radius)
-				.Build();
-			Radius = radius;
+			if (useDefaultShape && _defaultShapeAppearanceModel is not null)
+			{
+				ShapeAppearanceModel = _defaultShapeAppearanceModel;
+			}
+			else if (useDefaultShape)
+				Radius = radius;
+			else
+			{
+				ShapeAppearanceModel = ShapeAppearanceModel
+					.ToBuilder()
+					.SetAllCorners(CornerFamily.Rounded, radius)
+					.Build();
+				Radius = radius;
+			}
+
+			_mappedShapeAppearanceModel = ShapeAppearanceModel;
+			_mappedShapeRadius = radius;
+			_mappedShapeUsesDefault = useDefaultShape;
 		}
 
 		internal void UpdateRippleColor(Color? rippleColor)
@@ -322,8 +362,8 @@ namespace Microsoft.Maui.Platform
 			var paddingTop = _context.FromPixels(_safeAreaPadding.top);
 			var paddingRight = _context.FromPixels(_safeAreaPadding.right);
 			var paddingBottom = _context.FromPixels(_safeAreaPadding.bottom);
-			var availableWidth = Math.Max(0, widthConstraint - paddingLeft - paddingRight);
-			var availableHeight = Math.Max(0, heightConstraint - paddingTop - paddingBottom);
+			var availableWidth = Math.Max(0, Math.Max(widthConstraint, _context.FromPixels(MinimumWidth)) - paddingLeft - paddingRight);
+			var availableHeight = Math.Max(0, Math.Max(heightConstraint, _context.FromPixels(MinimumHeight)) - paddingTop - paddingBottom);
 			var measured = contentView.CrossPlatformMeasure(availableWidth, availableHeight);
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
@@ -463,10 +503,13 @@ namespace Microsoft.Maui.Platform
 				_defaultBackground = null;
 				_defaultBackgroundState = null;
 				_defaultBackgroundTint = null;
+				_defaultBackgroundShapeTint = null;
 				_defaultCardBackgroundColor = null;
 				_defaultRippleColor = null;
 				_defaultStrokeColor = null;
+				_initialShapeAppearanceModel = null;
 				_defaultShapeAppearanceModel = null;
+				_mappedShapeAppearanceModel = null;
 			}
 
 			base.Dispose(disposing);

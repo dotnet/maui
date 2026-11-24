@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -160,6 +162,41 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
 				Assert.Equal(1, secondClicks);
 			});
+		}
+
+		[Fact]
+		public async Task CollectedTouchTargetDoesNotClickReplacementView()
+		{
+			var clicks = 0;
+			var replacement = new ContentButtonStub { Clicked = () => clicks++ };
+			var (original, handler) = await PressAndReplace(replacement);
+
+			await AssertionExtensions.WaitForGC(original);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
+				Assert.Equal(0, clicks);
+
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
+				Assert.Equal(1, clicks);
+			});
+			GC.KeepAlive(handler);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<(WeakReference Original, ContentButtonHandler Handler)> PressAndReplace(ContentButtonStub replacement)
+		{
+			var original = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(original);
+			var reference = new WeakReference(original);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
+				handler.SetVirtualView(replacement);
+			});
+
+			return (reference, handler);
 		}
 
 		[Fact]
