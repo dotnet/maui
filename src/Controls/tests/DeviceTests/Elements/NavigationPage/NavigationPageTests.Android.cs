@@ -148,6 +148,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Solid BarBackground does not leave a background tint on the toolbar")]
+		public async Task SolidBarBackgroundDoesNotLeaveViewBackgroundTint()
+		{
+			// https://github.com/dotnet/maui/issues/40372
+			if (RuntimeFeature.IsMaterial3Enabled && RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = Colors.Orange
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+
+				// A view tint would paint over a background drawable set later, such as the
+				// gradient a custom IShellToolbarAppearanceTracker sets.
+				Assert.Null(platformToolbar.BackgroundTintList);
+
+				var customBackground = new Android.Graphics.Drawables.GradientDrawable(
+					Android.Graphics.Drawables.GradientDrawable.Orientation.LeftRight,
+					new int[] { Colors.Red.ToPlatform(), Colors.Blue.ToPlatform() });
+				platformToolbar.Background = customBackground;
+
+				Assert.Null(platformToolbar.BackgroundTintList);
+				Assert.Same(customBackground, platformToolbar.Background);
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
 		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
 		{
