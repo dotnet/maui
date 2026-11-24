@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			var fileImageSource = (IFileImageSource)imageSource;
 
 			// Only the same image (not a changed file): the image that is shown must not change.
-			if (options.FromCacheOnly && ImageDecodeOptions.GetFileVersion(fileImageSource.File) != options.ContentVersion)
+			if (options.FromCacheOnly && ImageDecodeOptions.GetFileVersion(fileImageSource.GetPlatformImagePath(out _)) != options.ContentVersion)
 				return FromResult(null);
 
 			return FromResult(GetImage(fileImageSource, options));
@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 				// more consistent to not load the gif on iOS without the extension.			
 				var image = cgImageSource?.GetPlatformImage(loadedScale, options) ?? imageSource.GetPlatformImage();
 				if (options?.WasDownsampled == true)
-					options.ContentVersion = ImageDecodeOptions.GetFileVersion(imageSource.File);
+					options.ContentVersion = ImageDecodeOptions.GetFileVersion(imageSource.GetPlatformImagePath(out _));
 
 				if (image is null)
 					throw new InvalidOperationException("Unable to load image file.");

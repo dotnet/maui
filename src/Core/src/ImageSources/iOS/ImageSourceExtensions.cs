@@ -87,7 +87,13 @@ namespace Microsoft.Maui
 			return UIImage.FromBundle(bundleName) ?? UIImage.FromFile(file);
 		}
 
-		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale)
+		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale) =>
+			CGImageSource.FromUrl(NSUrl.CreateFileUrl(imageSource.GetPlatformImagePath(out scale)));
+
+		/// <summary>
+		/// Gets the path of the file that is loaded for <paramref name="imageSource"/>: the scaled image in the app package, or the file itself.
+		/// </summary>
+		internal static string GetPlatformImagePath(this IFileImageSource imageSource, out int scale)
 		{
 			ArgumentNullException.ThrowIfNull(imageSource);
 
@@ -97,10 +103,7 @@ namespace Microsoft.Maui
 			var bundle = FileSystemUtils.PlatformGetFullAppPackageFilePath(filename);
 			bundle = GetScaledFile(bundle, out scale);
 
-			var url = File.Exists(bundle)
-				? NSUrl.CreateFileUrl(bundle)
-				: NSUrl.CreateFileUrl(filename);
-			return CGImageSource.FromUrl(url);
+			return File.Exists(bundle) ? bundle : filename;
 		}
 
 		internal static string GetScaledFile(string filename, out int scale)

@@ -79,6 +79,13 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Records the result of the load that is in progress as soon as its image is shown, so that a load that is
+		/// started before it completes releases (or keeps) it.
+		/// </summary>
+		public void SetResult(IDisposable result) =>
+			_sourceResult = result;
+
+		/// <summary>
 		/// Takes the result of the completed load, so that starting the next load does not release it.
 		/// </summary>
 		public IDisposable? DetachResult()

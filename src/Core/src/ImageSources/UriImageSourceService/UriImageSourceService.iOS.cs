@@ -64,16 +64,19 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken).ConfigureAwait(false);
+				var bytes = await LoadBytesAsync(imageSource, cancellationToken).ConfigureAwait(false);
 
 				UIImage image;
 				try
 				{
+					using var imageData = NSData.FromArray(bytes);
 					using var cgImageSource = imageData.GetPlatformImageSource()
 						?? throw new InvalidOperationException("Unable to load image file.");
 					image = cgImageSource.GetPlatformImage(1, options);
-					if (options?.WasDownsampled == true)
-						options.ContentVersion = ImageDecodeOptions.GetContentVersion(imageData.ToArray());
+
+					// Only cached images are decoded again, from the same data.
+					if (options?.WasDownsampled == true && imageSource.CachingEnabled)
+						options.ContentVersion = ImageDecodeOptions.GetContentVersion(bytes);
 				}
 				catch (Exception)
 				{
@@ -93,19 +96,20 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
+		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken) =>
+			NSData.FromArray(await LoadBytesAsync(imageSource, cancellationToken).ConfigureAwait(false));
+
+		Task<byte[]> LoadBytesAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
 		{
 			if (!UriImageLoader.CanLoad(imageSource))
 				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
 
-			var bytes = await Loader.LoadAsync(
+			return Loader.LoadAsync(
 				imageSource.Uri,
 				imageSource.CachingEnabled,
 				imageSource.CacheValidity,
 				UriImageLoader.GetCustomFetch(imageSource),
-				cancellationToken).ConfigureAwait(false);
-
-			return NSData.FromArray(bytes);
+				cancellationToken);
 		}
 
 #pragma warning disable CA1822 // Mark members as static; Disabling because these methods are public and changing them to static is potentially a breaking change

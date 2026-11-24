@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Platform
 				CanKeepPreviousImage(handler, imageSource.Source);
 
 			// Starting a load releases the result of the image that is shown; keep it until it is no longer shown.
-			if (keepPrevious && SourceManager.DetachResult() is { } shownResult)
-				ReplaceOwnedResult(shownResult);
+			if (keepPrevious && SourceManager.DetachResult() is { } shownResult && handler.PlatformView is PlatformView shownView)
+				OwnShownResult(shownResult, shownView);
 #endif
 
 			var token = SourceManager.BeginLoad();
@@ -122,10 +122,25 @@ namespace Microsoft.Maui.Platform
 					{
 						adopted = true;
 						_isLoadedImageShown = true;
-						_ownedImageView = platformView as global::Android.Widget.ImageView;
-						ReplaceOwnedResult(replacement);
+						OwnShownResult(replacement, platformView);
 					};
 #endif
+				// The image is registered as shown before it is reported as loaded, which may start another load
+				// (that keeps it, or releases it).
+#if !ANDROID
+				var registered = false;
+#endif
+				Action<IImageSourceServiceResult> onImageShown = shownResult =>
+				{
+					_isLoadedImageShown = true;
+#if ANDROID
+					if (adopted)
+						return;
+#else
+					registered = true;
+#endif
+					SourceManager.SetResult(shownResult);
+				};
 				Action<Exception>? onFailed = errorSource is null
 					? null
 					: _ => ShowFallbackAsync(errorSource, _imageSourceServiceProvider, platformView, fallbackGeneration, () => true, fallbackToken).FireAndForget();
@@ -135,12 +150,12 @@ namespace Microsoft.Maui.Platform
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				_decodedFor = null;
 				var decodeOptions = GetDecodeOptions(platformView, scale, handler);
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, decodeOptions, OnImageShown);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, decodeOptions, onImageShown);
 #elif WINDOWS
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, OnImageShown);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token, onFailed, onImageShown);
 #elif ANDROID
-				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, onKeptImageReplaced, OnImageShown);
+				var loadTask = imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token, onFailed, onKeptImageReplaced, onImageShown);
 #endif
 
 #if IOS || ANDROID || WINDOWS
@@ -163,9 +178,10 @@ namespace Microsoft.Maui.Platform
 				if (token.IsCancellationRequested)
 				{
 #if !ANDROID
-					// Only possible when the image was replaced from an ImageLoaded handler; it is no longer shown.
+					// The newer load released (or kept) the image if it was shown; otherwise it was never shown.
 					// (On Android, Glide manages the lifetime of images it set on the view.)
-					result?.Dispose();
+					if (!registered)
+						result?.Dispose();
 #endif
 					return;
 				}
@@ -303,10 +319,7 @@ namespace Microsoft.Maui.Platform
 #if IOS
 			_decodedFor = null;
 #endif
-#if ANDROID
-			_ownedImageView = platformView as global::Android.Widget.ImageView;
-#endif
-			ReplaceOwnedResult(result);
+			OwnShownResult(result, platformView);
 		}
 
 		void CancelFallbacks()
@@ -321,20 +334,29 @@ namespace Microsoft.Maui.Platform
 			var previous = _ownedResult;
 			_ownedResult = result;
 #if ANDROID
-			if (result is null)
-				_ownedImageView = null;
+			_ownedImageView = null;
+			_ownedDrawable = null;
 #endif
 			previous?.Dispose();
 		}
 
+		/// <summary>
+		/// Takes over the result of the image that is shown on <paramref name="platformView"/>; it is released once another image replaces it.
+		/// </summary>
+		void OwnShownResult(IDisposable? result, PlatformView platformView)
+		{
+			ReplaceOwnedResult(result);
+#if ANDROID
+			if (result is not null && platformView is global::Android.Widget.ImageView imageView)
+			{
+				_ownedImageView = imageView;
+				_ownedDrawable = imageView.Drawable;
+			}
+#endif
+		}
+
 		void ReleaseOwnedResult() =>
 			ReplaceOwnedResult(null);
-
-		/// <summary>
-		/// Called when the source's image is shown, before that is reported (which may start another load).
-		/// </summary>
-		void OnImageShown() =>
-			_isLoadedImageShown = true;
 
 #if !ANDROID
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance data on Android.")]
@@ -354,20 +376,17 @@ namespace Microsoft.Maui.Platform
 		}
 
 #if ANDROID
-		// The view that shows the owned image (the handler's PlatformView is cleared before it is disconnected).
+		// The view that shows the owned image, and the image (the handler's PlatformView is cleared before it is disconnected).
 		global::Android.Widget.ImageView? _ownedImageView;
+		PlatformImage? _ownedDrawable;
 
 		/// <summary>
 		/// Stops showing the owned image: Glide may reuse its bitmap as soon as it is released.
 		/// </summary>
 		void RemoveOwnedImageFromView()
 		{
-			if (_ownedImageView is { } imageView && imageView.IsAlive() &&
-				_ownedResult is IImageSourceServiceResult<PlatformImage> { Value: { } ownedImage } &&
-				imageView.Drawable == ownedImage)
-			{
+			if (_ownedImageView is { } imageView && imageView.IsAlive() && _ownedDrawable is not null && imageView.Drawable == _ownedDrawable)
 				imageView.SetImageDrawable(null);
-			}
 		}
 #endif
 #endif

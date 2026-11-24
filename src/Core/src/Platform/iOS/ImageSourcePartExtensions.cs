@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			CancellationToken cancellationToken = default,
 			Action<Exception>? onFailed = null,
 			ImageDecodeOptions? decodeOptions = null,
-			Action? onImageShown = null)
+			Action<IImageSourceServiceResult>? onImageShown = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform
 
 				// The image is shown before that is reported (which may start another load).
 				if (applied && result is not null)
-					onImageShown?.Invoke();
+					onImageShown?.Invoke(result);
 
 				events?.LoadingCompleted(applied);
 
