@@ -80,11 +80,6 @@ namespace Microsoft.Maui
 			return false;
 		}
 
-		/// <summary>
-		/// Completes the load that was started with <paramref name="token"/>. When a newer load has
-		/// started since then, that load owns the cancellation state, so it is kept and the result of
-		/// this superseded load is only released when the next load begins.
-		/// </summary>
 		public void CompleteLoad(IDisposable? result, CancellationToken token)
 		{
 			if (_sourceCancellation is null || token != _sourceCancellation.Token)
