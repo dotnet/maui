@@ -5,6 +5,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AndroidEntry = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Entry;
+using ImeAction = Android.Views.InputMethods.ImeAction;
+using ImeFlags = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImeFlags;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -70,6 +73,41 @@ namespace Microsoft.Maui.DeviceTests
 			await SetValueAsync<string, EntryHandler>(entry, "TEsT", SetPlatformText);
 
 			Assert.Equal(2, entry.CursorPosition);
+		}
+
+		[Fact]
+		public Task ImeOptionsTakesPrecedenceOverReturnType()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var entry = new Entry { ReturnType = ReturnType.Search };
+				var platformEntry = GetPlatformControl(CreateHandler<EntryHandler>(entry));
+				Assert.Equal(ImeAction.Search, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ReturnType = ReturnType.Go;
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ClearValue(AndroidEntry.ImeOptionsProperty);
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+			});
+		}
+
+		[Fact]
+		public Task ImeOptionsTakesPrecedenceWhenEntryAttachesToWindow()
+		{
+			SetupBuilder();
+			var entry = new Entry { ReturnType = ReturnType.Search };
+			AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+
+			return CreateHandlerAndAddToWindow<EntryHandler>(entry, handler =>
+			{
+				var platformEntry = GetPlatformControl(handler);
+				Assert.True(platformEntry.IsAttachedToWindow);
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+			});
 		}
 
 		[Fact]

@@ -111,7 +111,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 			return;
 		}
 
-		PlatformView.EditText?.UpdateReturnType(VirtualView);
+		UpdateValue(nameof(IEntry.ReturnType));
 	}
 
 	public static void MapBackground(EntryHandler2 handler, IEntry entry) =>

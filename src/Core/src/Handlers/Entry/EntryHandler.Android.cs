@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView is null || VirtualView is null)
 				return;
 
-			PlatformView.UpdateReturnType(VirtualView);
+			UpdateValue(nameof(IEntry.ReturnType));
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
