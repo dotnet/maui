@@ -27,6 +27,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ZeroRateIsTreatedAsOne()
+		{
+			var animations = new TestAnimationManager();
+			var tweener = new Tweener(250, 0, animations);
+			var updates = 0;
+			tweener.ValueUpdated += (_, _) => updates++;
+
+			var exception = Record.Exception(tweener.Start);
+
+			Assert.Null(exception);
+			Assert.Equal(1u, tweener.Rate);
+			Assert.True(updates > 0);
+		}
+
+		[Fact]
 		public void ThrowsWithNullCallback()
 		{
 			Assert.Throws<ArgumentNullException>(() => new View().Animate("Test", (Action<double>)null));

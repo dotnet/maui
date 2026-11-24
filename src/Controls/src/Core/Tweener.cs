@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Value = 0.0f;
 			Length = length;
-			Rate = rate;
+			Rate = Math.Max(rate, 1u);
 			_animationManager = animationManager;
 			Loop = false;
 		}
