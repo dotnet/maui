@@ -581,6 +581,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(expectedChanges, changes);
 		}
 
+		[Theory]
+		[InlineData(false, 5)]
+		[InlineData(true, 0)]
+		public void ClearValueFallbackCoercionRequiresOptIn(bool optIn, int expected)
+		{
+			var maximum = 10;
+			var property = BindableProperty.Create(nameof(MockBindable.TargetInt), typeof(int), typeof(MockBindable), 0,
+				coerceValue: (_, value) => Math.Min((int)value, maximum));
+			property.CoerceValueAfterPropertyChanging = optIn;
+			var mock = new MockBindable();
+			mock.SetValue(property, 5, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			mock.SetValue(property, 9);
+			var changes = 0;
+			mock.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == property.PropertyName)
+					maximum = 0;
+			};
+			mock.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == property.PropertyName)
+				{
+					Assert.Equal(expected, mock.GetValue(property));
+					changes++;
+				}
+			};
+
+			mock.ClearValue(property);
+
+			Assert.Equal(expected, mock.GetValue(property));
+			Assert.Equal(1, changes);
+		}
+
 		[Fact]
 		public void InvalidValueNotApplied()
 		{

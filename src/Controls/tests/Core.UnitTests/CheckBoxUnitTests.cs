@@ -183,6 +183,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DisablingThreeStateDuringClearValuePublishesNormalizedFallback(bool initial)
+		{
+			var checkBox = new CheckBox
+			{
+				IsThreeState = true,
+				Style = new Style(typeof(CheckBox))
+				{
+					Setters = { new Setter { Property = CheckBox.IsCheckedProperty, Value = null } }
+				}
+			};
+			Assert.Null(checkBox.IsChecked);
+			checkBox.IsChecked = initial;
+			var changingValues = new List<bool?>();
+			var checkedStates = new List<bool?>();
+			var propertyChangedCount = 0;
+			var commands = 0;
+			checkBox.PropertyChanging += (_, e) =>
+			{
+				if (e.PropertyName == nameof(CheckBox.IsChecked))
+				{
+					changingValues.Add(checkBox.IsChecked);
+					checkBox.IsThreeState = false;
+				}
+			};
+			checkBox.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(CheckBox.IsChecked))
+				{
+					Assert.False(checkBox.IsChecked);
+					propertyChangedCount++;
+				}
+			};
+			checkBox.CheckedChanged += (_, e) =>
+			{
+				Assert.Equal(checkBox.IsChecked, e.CheckedValue);
+				checkedStates.Add(e.CheckedValue);
+			};
+			checkBox.Command = new Command(() =>
+			{
+				Assert.False(checkBox.IsChecked);
+				commands++;
+			});
+
+			checkBox.ClearValue(CheckBox.IsCheckedProperty);
+
+			Assert.False(checkBox.IsThreeState);
+			Assert.False(checkBox.IsChecked);
+			Assert.Equal(new bool?[] { initial }, changingValues);
+			Assert.Equal(initial ? new bool?[] { false } : Array.Empty<bool?>(), checkedStates);
+			Assert.Equal(initial ? 1 : 0, propertyChangedCount);
+			Assert.Equal(propertyChangedCount, commands);
+
+			checkBox.IsThreeState = true;
+			Assert.False(checkBox.IsChecked);
+			Assert.Equal(propertyChangedCount, commands);
+		}
+
+		[Theory]
 		[InlineData(false, false)]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
