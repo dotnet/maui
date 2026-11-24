@@ -52,7 +52,6 @@ namespace Microsoft.Maui
 		// removing and publishing newer versions.
 		readonly object _memoryPublishLock = new();
 		int _cacheGeneration;
-		int _clearCount;
 		int _lastClearGeneration;
 		int _disposed;
 
@@ -224,11 +223,7 @@ namespace Microsoft.Maui
 			// entries with the old version (and cannot keep what it loads) or neither. Then remove the files.
 			lock (_memoryPublishLock)
 			{
-				DiskCache.ResetIndex(() =>
-				{
-					Interlocked.Exchange(ref _lastClearGeneration, Interlocked.Increment(ref _cacheGeneration));
-					Interlocked.Increment(ref _clearCount);
-				});
+				DiskCache.ResetIndex(() => _lastClearGeneration = Interlocked.Increment(ref _cacheGeneration));
 				MemoryCache.Clear();
 			}
 			return Task.Run(DiskCache.DeleteUnindexedFiles, cancellationToken);
@@ -304,15 +299,22 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Removes <paramref name="entry"/> (if it is still the cached version) and the memory copy,
-		/// unless the cache was cleared since the load started (<paramref name="clearCount"/>).
+		/// Whether the cache was cleared after a load with <paramref name="version"/> started. Must be called while holding <see cref="_memoryPublishLock"/>.
 		/// </summary>
-		void InvalidateEntry(Uri uri, UriImageDiskCache.Entry? entry, int clearCount)
+		/// <remarks>Unlike the version itself, this does not change when only versions of single images change.</remarks>
+		bool ClearedSince(long version) =>
+			(int)(version >> 32) < _lastClearGeneration;
+
+		/// <summary>
+		/// Removes <paramref name="entry"/> (if it is still the cached version) and the memory copy,
+		/// unless the cache was cleared since the load (with <paramref name="version"/>) started.
+		/// </summary>
+		void InvalidateEntry(Uri uri, UriImageDiskCache.Entry? entry, long version)
 		{
 			// Same gate as publishing to memory, so a load that already checked its entry cannot put it back.
 			lock (_memoryPublishLock)
 			{
-				if (clearCount != Volatile.Read(ref _clearCount))
+				if (ClearedSince(version))
 					return;
 
 				MemoryCache.Remove(uri.OriginalString);
@@ -324,14 +326,14 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Forgets the image after the server rejected it (for example 404 or 403): whatever is cached for it, including copies
 		/// stored by overlapping loads, and what loads that are still in progress get. Requests that started before the cache
-		/// was cleared (<paramref name="clearCount"/>) do not affect what was cached after it (for example for another account).
+		/// was cleared (with an older <paramref name="version"/>) do not affect what was cached after it (for example for another account).
 		/// </summary>
-		void Reject(Uri uri, int clearCount)
+		void Reject(Uri uri, long version)
 		{
 			var key = uri.OriginalString;
 			lock (_memoryPublishLock)
 			{
-				if (clearCount != Volatile.Read(ref _clearCount))
+				if (ClearedSince(version))
 					return;
 
 				DiskCache.RemoveIfCached(uri, () => ChangeVersion(key));
@@ -468,15 +470,7 @@ namespace Microsoft.Maui
 		Task<UriImageResult> StartLoad(InFlightLoad load, string key, long version, Uri uri, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch)
 		{
 			var token = load.Cancellation.Token;
-
-			// Which cache clear the load belongs to, taken when it is admitted (not when its worker starts).
-			// If the cache was cleared after the version was taken, the load belongs to before the clear: it does not invalidate anything.
-			// (ClearAsync updates _lastClearGeneration before _clearCount, so a new count is never seen with an old generation.)
-			var clearCount = Volatile.Read(ref _clearCount);
-			if ((int)(version >> 32) < Volatile.Read(ref _lastClearGeneration))
-				clearCount = -1;
-
-			var task = Task.Run(() => ResolveAsync(uri, version, clearCount, cachingEnabled, cacheValidity, fetch, token), token);
+			var task = Task.Run(() => ResolveAsync(uri, version, cachingEnabled, cacheValidity, fetch, token), token);
 
 			task.ContinueWith(
 				t =>
@@ -518,7 +512,7 @@ namespace Microsoft.Maui
 			((System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, InFlightLoad>>)_inFlight)
 				.Remove(new System.Collections.Generic.KeyValuePair<string, InFlightLoad>(key, load));
 
-		async Task<UriImageResult> ResolveAsync(Uri uri, long version, int clearCount, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
+		async Task<UriImageResult> ResolveAsync(Uri uri, long version, bool cachingEnabled, TimeSpan cacheValidity, Func<CancellationToken, Task<Stream?>>? fetch, CancellationToken cancellationToken)
 		{
 			UriImageDiskCache.Entry? cached = null;
 
@@ -540,7 +534,7 @@ namespace Microsoft.Maui
 			{
 				// The server says the image is gone or not accessible (for example 404 or 403): do not keep showing it,
 				// including a copy that is only in memory.
-				Reject(uri, clearCount);
+				Reject(uri, version);
 				throw;
 			}
 			catch (Exception ex) when (cached is not null && IsTransient(ex, cancellationToken) && File.Exists(cached.DataPath))
@@ -557,7 +551,7 @@ namespace Microsoft.Maui
 				{
 					// The server confirmed the copy but does not allow storing it: use it once, then forget it.
 					var copy = await DiskCache.TryReadAsync(cached, cancellationToken).ConfigureAwait(false);
-					InvalidateEntry(uri, cached, clearCount);
+					InvalidateEntry(uri, cached, version);
 					if (copy is not null)
 						return new UriImageResult(copy, null, cacheable: false);
 				}
@@ -587,7 +581,7 @@ namespace Microsoft.Maui
 			}
 			else if (cachingEnabled && response.NoStore)
 			{
-				InvalidateEntry(uri, cached, clearCount);
+				InvalidateEntry(uri, cached, version);
 			}
 
 			return new UriImageResult(data, entry, cacheable && version == GetVersion(uri));
