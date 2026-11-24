@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML)",
-  "description": "XAML을 사용하여 콘텐츠를 표시하기 위한 보기입니다. 사용자 지정 및 재사용 가능한 컨트롤을 만드는 데 매우 적합합니다.",
-  "postActions/openInEditor/description": "편집기에서 NewContent1.xaml을 엽니다.",
-  "symbols/namespace/description": "생성된 코드의 네임스페이스입니다."
-}

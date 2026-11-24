@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML)",
-  "description": "Uma exibição para exibir conteúdo usando XAML. Isso é muito adequado para criar seus próprios controles personalizados e reutilizáveis.",
-  "postActions/openInEditor/description": "Abre NewContent1.xaml no editor.",
-  "symbols/namespace/description": "Namespace do código gerado."
-}

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bz54334">
-<StackLayout Padding="10">
-        <Label x:Name="label" HorizontalTextAlignment="Center" Text="I have a set textcolor, but in since pre-3 styles will override it.."  TextColor="Black" />
-        <Label x:Name="themedLabel" HorizontalTextAlignment="Center" Text="I dont have a set textcolor, syles can override me as much as they want"   />
-        <Button x:Name="btn" Text="Change Theme"></Button>
-    </StackLayout>
-</ContentPage>

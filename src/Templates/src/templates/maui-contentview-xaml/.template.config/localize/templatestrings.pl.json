@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML)",
-  "description": "Widok do wyświetlania zawartości przy użyciu języka XAML. Jest to bardzo odpowiednie do tworzenia własnych niestandardowych kontrolek wielokrotnego użytku.",
-  "postActions/openInEditor/description": "Otwiera plik NewContent1.xaml w edytorze.",
-  "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu."
-}

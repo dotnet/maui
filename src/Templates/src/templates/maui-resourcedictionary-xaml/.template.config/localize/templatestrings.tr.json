@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ResourceDictionary (XAML)",
-  "description": "Bir .NET MAUI uygulaması tarafından kullanılan kaynaklar için depo. ResourceDictionary içinde depolanan normal kaynaklar stilleri, denetim şablonlarını, veri şablonlarını, dönüştürücüleri ve renkleri içerir.",
-  "postActions/openInEditor/description": "Dictionary1.xaml dosyasını düzenleyicide açar.",
-  "symbols/namespace/description": "Oluşturulan kod için ad alanı."
-}

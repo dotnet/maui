@@ -1,2 +1,0 @@
-[*.cs]
-dotnet_diagnostic.CA1507.severity = error

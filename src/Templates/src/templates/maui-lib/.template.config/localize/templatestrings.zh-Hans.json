@@ -1,8 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI Class 库",
-  "description": "用于创建 .NET MAUI 类库的项目",
-  "postActions/openInEditor/description": "在编辑器中打开 Class1.cs。",
-  "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目标 DOTNET_TFM_VALUE"
-}

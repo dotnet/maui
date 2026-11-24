@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "SourceGen - Maui.Controls.Sample": {
-      "commandName": "DebugRoslynComponent",
-      "targetProject": "..\\..\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj"
-    }
-  }
-}

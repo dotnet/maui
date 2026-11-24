@@ -1,9 +1,0 @@
-﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="using:Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner"
-             x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.CreditsPage"
-             Title="Credits">
-
-    <WebView Source="{local:EmbeddedHtml 'Assets/credits.html'}" Navigating="OnNavigating" />
-
-</ContentPage>

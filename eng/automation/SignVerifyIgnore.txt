@@ -1,2 +1,0 @@
-**\*.xml,ignore unsigned .xml
-**\cab*.cab.cab,ignore unsigned .cab

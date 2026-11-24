@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<forms:ContentPage xmlns="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:forms="http://schemas.microsoft.com/dotnet/2021/maui"
-			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bz41296">
-	<forms:Label x:Name="TestLabel" Text="{AppendMarkupExtension Value0=Foo, Value1=Bar}" />
-</forms:ContentPage>

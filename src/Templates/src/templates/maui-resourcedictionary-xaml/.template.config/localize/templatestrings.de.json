@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ResourceDictionary (XAML)",
-  "description": "Ein Repository für Ressourcen, die von einer .NET MAUI-App verwendet werden. Typische Ressourcen, die in einem ResourceDictionary gespeichert werden, sind Formatvorlagen, Steuerelementvorlagen, Datenvorlagen, Konverter und Farben.",
-  "postActions/openInEditor/description": "Öffnet Dictionary1.xaml im Editor.",
-  "symbols/namespace/description": "Namespace für den generierten Code."
-}
