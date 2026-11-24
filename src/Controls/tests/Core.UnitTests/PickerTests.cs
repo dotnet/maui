@@ -199,6 +199,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SettingSelectedItemToNullClearsSelectedIndexAndBindings()
+		{
+			var context = new ClearSelectionBindingContext { SelectedIndex = 1, SelectedItem = "Two" };
+			var picker = new Picker
+			{
+				ItemsSource = new[] { "One", "Two" }
+			};
+			picker.SetBinding(Picker.SelectedIndexProperty,
+				new Binding(nameof(Picker.SelectedIndex), source: context, mode: BindingMode.TwoWay));
+			picker.SetBinding(Picker.SelectedItemProperty,
+				new Binding(nameof(Picker.SelectedItem), source: context, mode: BindingMode.TwoWay));
+			var changes = 0;
+			picker.SelectedIndexChanged += (_, _) => changes++;
+
+			picker.SelectedItem = null;
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+			Assert.Equal(-1, context.SelectedIndex);
+			Assert.Null(context.SelectedItem);
+			Assert.Equal(1, changes);
+		}
+
+		[Fact]
 		public void DisabledPickerCannotBeCleared()
 		{
 			var picker = new Picker

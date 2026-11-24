@@ -57,6 +57,50 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task PickerPrefersNearestScopedComboBoxStyle()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var resources = UI.Xaml.Application.Current.Resources;
+				var hasOriginalStyle = resources.TryGetValue(typeof(ComboBox), out var originalStyle);
+				var applicationStyle = new UI.Xaml.Style(typeof(ComboBox));
+				applicationStyle.Setters.Add(new UI.Xaml.Setter
+				{
+					Property = UI.Xaml.Controls.Control.CornerRadiusProperty,
+					Value = new UI.Xaml.CornerRadius(12)
+				});
+				resources[typeof(ComboBox)] = applicationStyle;
+
+				try
+				{
+					var scopedStyle = new UI.Xaml.Style(typeof(ComboBox));
+					scopedStyle.Setters.Add(new UI.Xaml.Setter
+					{
+						Property = UI.Xaml.Controls.Control.CornerRadiusProperty,
+						Value = new UI.Xaml.CornerRadius(24)
+					});
+					var picker = new Picker { Items = { "One" } };
+					var handler = CreateHandler<PickerHandler>(picker);
+					var host = new StackPanel { Children = { handler.PlatformView } };
+					host.Resources[typeof(ComboBox)] = scopedStyle;
+
+					await host.AttachAndRun(async () =>
+					{
+						await AssertEventually(() => handler.PlatformView.IsLoaded);
+						Assert.Equal(new UI.Xaml.CornerRadius(24), handler.PlatformView.CornerRadius);
+					}, MauiContext);
+				}
+				finally
+				{
+					if (hasOriginalStyle)
+						resources[typeof(ComboBox)] = originalStyle!;
+					else
+						resources.Remove(typeof(ComboBox));
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData(false, false)]
 		[InlineData(false, true)]
