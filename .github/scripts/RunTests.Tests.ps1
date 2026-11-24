@@ -916,6 +916,11 @@ Describe '/review run-tests (both suites)' {
         Update-RunTestsCombinedOverview $queued | Should -Match '<img alt="Result NOT QUEUED"'
     }
 
+    It 'leaves comments without an overview table alone' {
+        $legacy = "<!-- review-run-tests-all -->`n<!-- run-tests-section: ui -->`n<!-- review-run-tests-state: done -->`n  <img alt=`"Result PASSED`" src=`"x`">`n<!-- /run-tests-section: ui -->"
+        Update-RunTestsCombinedOverview $legacy | Should -BeExactly $legacy
+    }
+
     It 'sends MAI Code 2 over the Responses API' {
         $mai = Get-Content (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests-mai.md') -Raw
         $mai | Should -Match '(?m)^    COPILOT_PROVIDER_WIRE_API: responses$'
