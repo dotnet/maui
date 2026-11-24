@@ -878,33 +878,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
-		public void OverlapsInLaterIterationsOfARepeatingParentAreAnError()
-		{
-			var storyboard = Storyboard.Create()
-				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(2))
-					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
-				.AddChild(Ms(250), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
-				.Build();
-
-			var ex = Assert.Throws<InvalidOperationException>(() => storyboard.Begin(new Label()));
-			Assert.Contains("MAUIX2307", ex.Message, StringComparison.Ordinal);
-		}
-
-		[Fact]
-		public void NonOverlappingIterationsOfARepeatingParentAreAllowed()
-		{
-			var storyboard = Storyboard.Create()
-				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(2))
-					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
-				.AddChild(Ms(450), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
-				.Build();
-
-			var player = storyboard.Begin(new Label());
-
-			Assert.Equal(PlaybackState.Running, player.State);
-		}
-
-		[Fact]
 		public void StaggerOffsetsEachNamedTarget()
 		{
 			var (root, badge, title) = CreateNamedTree();
@@ -935,18 +908,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			Advance(60);
 			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
-		}
-
-		[Fact]
-		public void OverlappingContributionsToOnePropertyAreAnError()
-		{
-			var storyboard = Storyboard.Create()
-				.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0)))
-				.AddChild(Ms(50), b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 0.0)))
-				.Build();
-
-			var ex = Assert.Throws<InvalidOperationException>(() => storyboard.Begin(new Label()));
-			Assert.Contains("MAUIX2307", ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -1615,34 +1576,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
-		public void SequentialChildrenOfAForeverContainerAreNotAnOverlap()
-		{
-			var storyboard = Storyboard.Create()
-				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(RepeatBehavior.Forever)
-					.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0)))
-					.AddChild(Ms(100), b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 0.0))))
-				.Build();
-
-			var player = storyboard.Begin(new Label());
-
-			Assert.Equal(PlaybackState.Running, player.State);
-		}
-
-		[Fact]
-		public void ASiblingAfterAManyTimesRepeatedContainerIsNotAnOverlap()
-		{
-			var storyboard = Storyboard.Create()
-				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(10)).WithRepeat(new RepeatBehavior(300))
-					.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(5)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
-				.AddChild(Ms(3001), sibling => sibling.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
-				.Build();
-
-			var player = storyboard.Begin(new Label());
-
-			Assert.Equal(PlaybackState.Running, player.State);
-		}
-
-		[Fact]
 		public void AnExplicitRepeatDurationBoundsAContainerOfAForeverChild()
 		{
 			var label = new Label();
@@ -1827,17 +1760,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
-		public void APreviousOwnerThatThrowsWhenTakenOverLeavesNothingBehind()
+		public void APreviousOwnerThatThrowsWhenTakenOverDoesNotBreakTheTakeover()
 		{
+			// The previous run's Completed handler throws when it loses the property; that is its own failure (logged),
+			// and the run taking over carries on owning the property.
 			var label = new Label { Opacity = 0.9 };
 			var first = Fade(0, 1, 1000).Begin(label);
 			Advance(100);
 			first.Completed += (_, _) => throw new InvalidOperationException("completed");
 
-			Assert.Throws<InvalidOperationException>(() => Fade(1, 0, 1000).Begin(label));
+			var second = Fade(1, 0, 1000).Begin(label);
 
+			Assert.Equal(PlaybackState.Running, second.State);
+			Assert.Same(second, label.GetAnimationOwner(VisualElement.OpacityProperty));
+			second.Stop();
 			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
-			Assert.Null(label.GetAnimationOwner(VisualElement.OpacityProperty));
 			label.Opacity = 0.5;
 			Assert.Equal(0.5, label.Opacity);
 		}
@@ -1894,21 +1831,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Advance(150);
 
 			Assert.Equal(0.75, label.Opacity, 10);
-		}
-
-		[Fact]
-		public void ASiblingInTheIdleGapOfAHeavilyRepeatedContainerIsAllowed()
-		{
-			Storyboard Build(TimeSpan siblingBegin) => Storyboard.Create()
-				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(257))
-					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 10.0))))
-				.AddChild(siblingBegin, sibling => sibling.WithDuration(Ms(25)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(1, 20.0)))
-				.Build();
-
-			Assert.Equal(PlaybackState.Running, Build(Ms(150)).Begin(new Label()).State);
-
-			var ex = Assert.Throws<InvalidOperationException>(() => Build(Ms(250)).Begin(new Label()));
-			Assert.Contains("MAUIX2307", ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -2033,17 +1955,403 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
-		public void ASequenceOfFastStepsIsNotAnOverlap()
+		public void OverlappingPartsResolveToTheMostRecentlyStarted()
 		{
 			var label = new Label();
-			var player = Storyboard.Create()
-				.Sequence(
-					a => a.WithDuration(Ms(100)).WithSpeedRatio(3).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.5)),
-					b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(1, 1.0)))
+			Storyboard.Create()
+				.AddChild(TimeSpan.Zero, a => a.WithDuration(Ms(200)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.AddChild(Ms(50), b => b.WithDuration(Ms(100)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.5).At(1, 0.5)))
 				.Build()
 				.Begin(label);
 
+			Advance(25);
+			Assert.Equal(0.125, label.Opacity, 10); // only the first part is active
+
+			Advance(75);
+			Assert.Equal(0.5, label.Opacity, 10); // the later-started part wins while both are active
+
+			Advance(75);
+			Assert.Equal(0.875, label.Opacity, 10); // the later part has ended (no fill), the first is still active
+		}
+
+		[Fact]
+		public void OverlapAcrossNestingLevelsAndSpeedsIsDefined()
+		{
+			var label = new Label();
+			var player = Storyboard.Create()
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(200)).WithRepeat(new RepeatBehavior(300))
+					.AddChild(TimeSpan.Zero, inner => inner.WithDuration(Ms(100)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(0, 0.0).At(1, 10.0))))
+				.AddChild(Ms(50), sibling => sibling.WithDuration(Ms(25)).AddTrack<double>(VisualElement.TranslationXProperty, t => t.At(0, 20.0).At(1, 20.0)))
+				.Build()
+				.Begin(label);
+
+			Advance(60);
+
 			Assert.Equal(PlaybackState.Running, player.State);
+			Assert.Equal(20, label.TranslationX, 10);
+		}
+
+		[Fact]
+		public void FillOrderingComparesInRootTimeAcrossSpeeds()
+		{
+			// An Opacity step ending at root 40 ms beside a 10x container whose Opacity child runs at local 450-500 ms,
+			// root 45-50 ms. At root 60 ms both are filling; the one that ended more recently (root 50 ms) must win.
+			var label = new Label();
+			Storyboard.Create()
+				.AddChild(TimeSpan.Zero, step => step.WithDuration(Ms(40)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.2)))
+				.AddChild(TimeSpan.Zero, container => container.WithDuration(Ms(1000)).WithSpeedRatio(10)
+					.AddChild(Ms(450), inner => inner.WithDuration(Ms(50)).AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.6).At(1, 0.8))))
+				.Build()
+				.Begin(label);
+
+			Advance(60);
+
+			Assert.Equal(0.8, label.Opacity, 10);
+		}
+
+		[Fact]
+		public void ARunStartedWhileClaimingDoesNotEndAHalfClaimedRun()
+		{
+			var label = new Label();
+			var opacityOnly = Fade(0, 1, 1000);
+			var first = opacityOnly.Begin(label);
+			Advance(100);
+			StoryboardPlayer third = null;
+			first.Completed += (_, _) => third ??= Fade(1, 0, 1000).Begin(label);
+
+			var second = Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 2.0))
+				.Build()
+				.Begin(label);
+			Advance(50);
+
+			// The third run took Opacity while the second was claiming; the second still owns and animates Scale.
+			Assert.Equal(PlaybackState.Running, second.State);
+			Assert.Equal(1.5, label.Scale, 10);
+			Assert.Same(third, label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void ARunStartedFromAReleaseCallbackKeepsTheProperty()
+		{
+			var label = new Label { Opacity = 0.9 };
+			StoryboardPlayer second = null;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && label.Opacity == 0.9 && second is null)
+					second = Fade(0, 0.5, 1000).Begin(label);
+			};
+			Storyboard.Create().WithDuration(Ms(200))
+				.AddChild(TimeSpan.Zero, child => child.WithDuration(Ms(100)).WithFillMode(AnimationFillMode.None)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0)))
+				.Build()
+				.Begin(label);
+			Advance(50);
+
+			Advance(100);
+
+			Assert.NotNull(second);
+			Assert.Equal(PlaybackState.Running, second.State);
+			Assert.Same(second, label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void PlayOnLoadedOnAnAlreadyLoadedElementPlaysOnce()
+		{
+			MotionPolicy.TestOverride = MotionPolicy.Instant;
+			var samples = 0;
+			var label = new Label();
+			_ = new Window(new ContentPage { Content = label });
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame
+			{
+				Cue = Cue.FromFraction(1),
+				Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = new Binding(".", converter: new CountingConverter(() => samples++), source: 0.5) } },
+			});
+
+			Storyboard.SetPlayOnLoaded(label, storyboard);
+
+			Assert.Equal(1, samples);
+		}
+
+		sealed class CountingConverter : IValueConverter
+		{
+			readonly Action _onConvert;
+
+			public CountingConverter(Action onConvert) => _onConvert = onConvert;
+
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				_onConvert();
+				return value;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => value;
+		}
+
+		[Fact]
+		public void AnUnresolvedKeyFrameBindingFallsBackToTheAnimatedPropertysDefault()
+		{
+			var label = new Label();
+			Storyboard Bound(BindableProperty property)
+			{
+				var storyboard = new Storyboard { Duration = Ms(100) };
+				storyboard.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = property, Value = new Binding("Missing") } } });
+				return storyboard;
+			}
+
+			Bound(VisualElement.ScaleProperty).Begin(label).SkipToFill();
+			Bound(VisualElement.TranslationXProperty).Begin(label).SkipToFill();
+
+			Assert.Equal(1.0, label.Scale);
+			Assert.Equal(0.0, label.TranslationX);
+		}
+
+		[Fact]
+		public void MultiBindingChildrenResolveRelativeSourcesFromThePlayTarget()
+		{
+			var label = new Label { TranslationX = 7 };
+			var multi = new MultiBinding
+			{
+				Converter = new FirstValueConverter(),
+				Bindings = { new Binding(nameof(VisualElement.TranslationX), source: RelativeBindingSource.Self) },
+			};
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.TranslationYProperty, Value = multi } } });
+
+			storyboard.Begin(label).SkipToFill();
+
+			Assert.Equal(7, label.TranslationY, 10);
+		}
+
+		sealed class FirstValueConverter : IMultiValueConverter
+		{
+			public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture) => values[0];
+
+			public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) => throw new NotSupportedException();
+		}
+
+		[Fact]
+		public void ShortenOnARunUnderATickCompletesAtOnce()
+		{
+			Motion.IsReducedMotionRequested = true;
+			var label = new Label();
+			var storyboard = Storyboard.Create().WithDuration(TimeSpan.FromTicks(5)).WithReducedMotion(ReducedMotionBehavior.Shorten)
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 0.3))
+				.Build();
+
+			var player = storyboard.Begin(label);
+
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+			Assert.Equal(0.3, label.Opacity);
+		}
+
+		sealed class EqualModel
+		{
+			public string Name { get; set; }
+
+			public override bool Equals(object obj) => obj is EqualModel;
+
+			public override int GetHashCode() => 1;
+		}
+
+		[Fact]
+		public void AValueEqualBindingContextInstanceStillReplacesTheContext()
+		{
+			// The two models compare equal, but bindings must follow the new instance, as SetValue does for BindingContext.
+			var a = new EqualModel { Name = "a" };
+			var b = new EqualModel { Name = "b" };
+			var label = new Label { BindingContext = a };
+			label.SetBinding(Label.TextProperty, nameof(EqualModel.Name));
+			Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<object>(BindableObject.BindingContextProperty, t => t.At(1, b))
+				.Build()
+				.Begin(label);
+
+			Advance(110);
+
+			Assert.Same(b, label.BindingContext);
+			Assert.Equal("b", label.Text);
+		}
+
+		[Fact]
+		public void AThrowingStateChangedHandlerStillCompletesTheRun()
+		{
+			var label = new Label();
+			var player = Fade(0, 1).Begin(label);
+			player.StateChanged += (_, e) =>
+			{
+				if (e.NewState == PlaybackState.Stopped)
+					throw new InvalidOperationException("state");
+			};
+
+			Assert.Throws<InvalidOperationException>(() => player.Stop());
+
+			Assert.True(player.Completion.IsCompleted);
+			Assert.Equal(AnimationResult.Stopped, player.Completion.Result);
+		}
+
+		[Fact]
+		public void AnEndValueRefusedWhileThePropertyIsBeingSetIsCommittedAfterIt()
+		{
+			MotionPolicy.TestOverride = MotionPolicy.Instant;
+			var label = new Label();
+			var started = false;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.Opacity) && !started)
+				{
+					started = true;
+					Fade(0, 0.2).Begin(label);
+				}
+			};
+
+			label.Opacity = 0.5;
+
+			Assert.Equal(0.2, label.Opacity);
+			Assert.False(label.HasAnimationValue(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void AThrowingCompletedHandlerKeepsAHeldFill()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var player = Fade(0, 0.3).Begin(label, new PlaybackOptions { FillCompletion = FillCompletion.Hold });
+			player.Completed += (_, _) => throw new InvalidOperationException("completed");
+
+			Advance(110);
+
+			Assert.Equal(PlaybackState.Finished, player.State);
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+			Assert.True(label.HasAnimationValue(VisualElement.OpacityProperty));
+			Assert.Equal(0.3, label.Opacity);
+		}
+
+		[Fact]
+		public void AnotherRunsThrowingCompletedHandlerDoesNotFaultTheTakeover()
+		{
+			var label = new Label();
+			var first = Fade(0, 1, 1000).Begin(label);
+			Advance(100);
+			first.Completed += (_, _) => throw new InvalidOperationException("completed");
+
+			var second = Fade(1, 0, 1000).Begin(label);
+			Advance(50);
+
+			Assert.Equal(AnimationResult.Replaced, first.Completion.Result);
+			Assert.Equal(PlaybackState.Running, second.State);
+			Assert.Same(second, label.GetAnimationOwner(VisualElement.OpacityProperty));
+		}
+
+		[Fact]
+		public void ARunStoppedWhileClaimingClaimsNothingMore()
+		{
+			var label = new Label();
+			var first = Fade(0, 1, 1000).Begin(label);
+			Advance(100);
+			var second = Storyboard.Create().WithDuration(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.AddTrack<double>(VisualElement.ScaleProperty, t => t.At(0, 1.0).At(1, 2.0))
+				.Build()
+				.CreatePlayer(label);
+			first.Completed += (_, _) => second.Stop();
+
+			second.Resume();
+
+			Assert.Equal(PlaybackState.Stopped, second.State);
+			Assert.Null(label.GetAnimationOwner(VisualElement.ScaleProperty));
+			Assert.False(second.HoldsAnything());
+		}
+
+		[Fact]
+		public void AHandlerEchoDuringABeginDelayDoesNotEndTheRun()
+		{
+			var label = new Label { Opacity = 0.9 };
+			var player = Storyboard.Create().WithDuration(Ms(100)).WithBeginTime(Ms(100))
+				.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.0).At(1, 1.0))
+				.Build()
+				.Begin(label);
+			Advance(50);
+
+			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.9);
+
+			Assert.Equal(PlaybackState.Running, player.State);
+			Advance(100);
+			Assert.Equal(0.5, label.Opacity, 10);
+		}
+
+		sealed class ThrowingOnceConverter : IValueConverter
+		{
+			public int Calls { get; private set; }
+
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				Calls++;
+				throw new InvalidOperationException("convert");
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => value;
+		}
+
+		[Fact]
+		public void AThrowingKeyFrameBindingLeavesNothingAttached()
+		{
+			var converter = new ThrowingOnceConverter();
+			var label = new Label { BindingContext = 0.5 };
+			var storyboard = new Storyboard { Duration = Ms(100) };
+			storyboard.KeyFrames.Add(new KeyFrame { Cue = Cue.FromFraction(1), Setters = { new Setter { Property = VisualElement.OpacityProperty, Value = new Binding(".", converter: converter) } } });
+
+			Assert.Throws<InvalidOperationException>(() => storyboard.Begin(label));
+			var calls = converter.Calls;
+			label.BindingContext = 0.7;
+
+			Assert.Equal(calls, converter.Calls);
+		}
+
+		[Fact]
+		public void SkipToFillPlayingBackwardsSettlesAtTheStart()
+		{
+			var label = new Label { Opacity = 0.7 };
+			var player = Fade(0, 1, fill: AnimationFillMode.Both).CreatePlayer(label);
+			player.PlaybackRate = -1;
+			player.Resume();
+
+			player.SkipToFill();
+
+			Assert.Equal(0.0, label.Opacity);
+			Assert.Equal(AnimationResult.Completed, player.Completion.Result);
+		}
+
+		[Fact]
+		public void CompletedIsRaisedEvenWhenStateChangedThrows()
+		{
+			var label = new Label();
+			var player = Fade(0, 1).Begin(label);
+			var completed = 0;
+			player.StateChanged += (_, e) =>
+			{
+				if (e.NewState == PlaybackState.Stopped)
+					throw new InvalidOperationException("state");
+			};
+			player.Completed += (_, _) => completed++;
+
+			Assert.Throws<InvalidOperationException>(() => player.Stop());
+
+			Assert.Equal(1, completed);
+		}
+
+		[Fact]
+		public void SeekingAPausedRunAppliesStraightAway()
+		{
+			var label = new Label();
+			var player = Fade(0, 1).Begin(label);
+			Advance(20);
+			player.Pause();
+
+			player.Seek(0.6);
+
+			Assert.Equal(0.6, label.Opacity, 10);
 		}
 
 		static (ContentView Root, Label Badge, Label Title) CreateNamedTree()

@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 			var previousOwner = context.AnimationOwner;
 			context.AnimationOwner = owner;
 
-			if (Equals(top.Value, value))
+			if (IsSameValue(property, value, top.Value))
 				context.Values.SetValue(SetterSpecificity.Animation, value);
 			else
 				RaiseAnimationChange(context, top.Value, value, AnimationMutation.Store, owner);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls
 				//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
 				property.CoerceValue?.Invoke(this, shown);
 
-				if (Equals(animated, shown))
+				if (IsSameValue(property, shown, animated))
 					context.Values.Remove(SetterSpecificity.Animation);
 				else
 					RaiseAnimationChange(context, animated, shown, AnimationMutation.Remove, null);
@@ -122,21 +122,45 @@ namespace Microsoft.Maui.Controls
 			if (context is null || !ReferenceEquals(context.AnimationOwner, owner))
 				return;
 
-			if (context.Values.GetSpecificity() != SetterSpecificity.Animation)
-			{
-				context.AnimationOwner = null;
-				return;
-			}
-
 			if (!property.TryConvert(ref value))
 				throw new ArgumentException($"Cannot convert {value} to type '{property.ReturnType}'", nameof(value));
 			if (property.ValidateValue != null && !property.ValidateValue(this, value))
 				throw new ArgumentException($"Value is an invalid value for {property.PropertyName}", nameof(value));
+
+			var held = context.Values.GetSpecificity() == SetterSpecificity.Animation;
+
+			// Never promote: the commit replaces the base value at its own rank (default stays default).
+			var baseSpecificity = held ? context.Values.GetClearedSpecificity() : context.Values.GetSpecificity();
+
+			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0 || !held)
+			{
+				// Not shown at animation rank (a claim without a value), or the property is being set (rule 13): the hold,
+				// if any, is released at once and the value is written at the base value's rank as an ordinary write, which
+				// queues behind the property's current write when there is one. That ordinary path also coerces.
+				var outerWrite = (context.Attributes & BindableContextAttributes.IsBeingSet) == 0;
+				if (held)
+					ClearAnimationValue(property, owner);
+				else
+					context.AnimationOwner = null;
+
+				try
+				{
+					SetValueCore(property, value, SetValueFlags.None, SetValuePrivateFlags.Converted, baseSpecificity);
+				}
+				catch when (outerWrite)
+				{
+					// Rule 14: for its own writes the engine leaves the property usable when a handler throws (the stock
+					// path would leave it marked as being set, queueing every later write).
+					context.Attributes &= ~BindableContextAttributes.IsBeingSet;
+					context.DelayedSetters = null;
+					throw;
+				}
+				return;
+			}
+
 			if (property.CoerceValue != null)
 				value = property.CoerceValue(this, value);
 
-			// Never promote: the commit replaces the base value at its own rank (default stays default).
-			var baseSpecificity = context.Values.GetClearedSpecificity();
 			context.Values.SetValue(baseSpecificity, value);
 			ClearAnimationValue(property, owner);
 		}
@@ -272,8 +296,14 @@ namespace Microsoft.Maui.Controls
 				return context.Values.GetClearedSpecificity();
 
 			var owner = context.AnimationOwner;
-			ClearAnimationValue(context.Property, owner);
-			owner?.OnHoldLost(this, context.Property, AnimationHoldLossReason.Excluded);
+			try
+			{
+				ClearAnimationValue(context.Property, owner);
+			}
+			finally
+			{
+				owner?.OnHoldLost(this, context.Property, AnimationHoldLossReason.Excluded);
+			}
 			return context.Values.GetSpecificity();
 		}
 
@@ -298,6 +328,10 @@ namespace Microsoft.Maui.Controls
 		void RaiseAnimationChange(BindablePropertyContext context, object oldValue, object newValue, AnimationMutation mutation, IAnimationHoldOwner owner)
 		{
 			var property = context.Property;
+
+			// Nested inside the property's own write (a commit refused under rule 13 releases its hold here): that write
+			// stays marked as being set and drains the queue itself.
+			var nested = (context.Attributes & BindableContextAttributes.IsBeingSet) != 0;
 			context.Attributes |= BindableContextAttributes.IsBeingSet;
 			try
 			{
@@ -326,10 +360,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (!Equals(oldValue, newValue) || mutation == AnimationMutation.Remove || ReferenceEquals(context.AnimationOwner, owner))
-					OnBindablePropertySet(property, oldValue, newValue, true, true);
+				// Always raised, so PropertyChanging is never left without its PropertyChanged.
+				OnBindablePropertySet(property, oldValue, newValue, !IsSameValue(property, newValue, oldValue), true);
 
-				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
+				Queue<SetValueArgs> delayQueue = nested ? null : context.DelayedSetters;
 				if (delayQueue != null)
 				{
 					while (delayQueue.Count > 0)
@@ -345,12 +379,14 @@ namespace Microsoft.Maui.Controls
 			catch
 			{
 				// Writes queued behind a throwing handler would otherwise land, stale, after some later write.
-				context.DelayedSetters = null;
+				if (!nested)
+					context.DelayedSetters = null;
 				throw;
 			}
 			finally
 			{
-				context.Attributes &= ~BindableContextAttributes.IsBeingSet;
+				if (!nested)
+					context.Attributes &= ~BindableContextAttributes.IsBeingSet;
 			}
 		}
 	}

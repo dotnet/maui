@@ -34,11 +34,9 @@ namespace Microsoft.Maui.Controls.Animations
 			if (newValue is not Storyboard storyboard)
 				return;
 
+			// Subscribing to Loaded on an element that is already loaded raises it straight away, so that plays it.
 			element.Loaded += OnPlayOnLoadedElementLoaded;
 			element.Unloaded += OnPlayOnLoadedElementUnloaded;
-
-			if (element.IsLoaded)
-				Play(element, storyboard);
 		}
 
 		static void OnPlayOnLoadedElementLoaded(object? sender, EventArgs e)

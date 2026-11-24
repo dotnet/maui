@@ -186,15 +186,27 @@ namespace Microsoft.Maui.Controls.Animations
 			if (element.GetValue(RunsProperty) is not List<StoryboardPlayer> runs)
 				return;
 
+			List<Exception>? errors = null;
 			foreach (var run in runs.ToArray())
 			{
 				if (ReferenceEquals(run.Storyboard, storyboard))
 				{
-					run.Stop(behavior);
+					try
+					{
+						run.Stop(behavior);
+					}
+					catch (Exception ex)
+					{
+						(errors ??= new List<Exception>()).Add(ex);
+					}
+
 					if (!run.HoldsAnything())
 						runs.Remove(run);
 				}
 			}
+
+			if (errors is not null)
+				throw new AggregateException(errors);
 		}
 
 		public static void StopAll(VisualElement element, StopBehavior behavior)
@@ -202,10 +214,23 @@ namespace Microsoft.Maui.Controls.Animations
 			if (element.GetValue(RunsProperty) is not List<StoryboardPlayer> runs)
 				return;
 
+			// Every run is stopped and the list pruned even when one stop throws; the failures are rethrown together.
+			List<Exception>? errors = null;
 			foreach (var run in runs.ToArray())
-				run.Stop(behavior);
+			{
+				try
+				{
+					run.Stop(behavior);
+				}
+				catch (Exception ex)
+				{
+					(errors ??= new List<Exception>()).Add(ex);
+				}
+			}
 
 			Prune(runs);
+			if (errors is not null)
+				throw new AggregateException(errors);
 		}
 
 		static void Prune(List<StoryboardPlayer> runs)

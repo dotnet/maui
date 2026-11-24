@@ -74,7 +74,6 @@ namespace Microsoft.Maui.Controls.Animations
 			var services = playTarget.FindMauiContext()?.Services ?? Application.Current?.FindMauiContext()?.Services;
 
 			var root = CompileNode(storyboard, null, playTarget, storyboard.TargetName, slots, slotLookup, services, options, isRoot: true);
-			CheckOverlaps(root, slots.Count);
 			return new CompiledStoryboard(root, slots);
 		}
 
@@ -274,7 +273,7 @@ namespace Microsoft.Maui.Controls.Animations
 		static object? ResolveValue(object? value, BindableProperty property, BindableObject target, VisualElement playTarget)
 		{
 			if (value is BindingBase binding)
-				value = SampleBinding(binding, property, playTarget.BindingContext, target as Element ?? playTarget);
+				value = SampleBinding(binding, property, playTarget);
 			else if (value is DynamicResource dynamicResource)
 				value = (target as Element ?? playTarget).TryGetResource(dynamicResource.Key, out var resource) ? resource : null;
 
@@ -284,35 +283,42 @@ namespace Microsoft.Maui.Controls.Animations
 			return value;
 		}
 
-		static object? SampleBinding(BindingBase binding, BindableProperty property, object? bindingContext, Element relativeSourceTarget)
+		// Sampled on the play target itself (an Element, with its BindingContext), through a private attached property
+		// with the animated property's type and default: relative sources resolve from the play target as for any of its
+		// bindings (MultiBinding children included), and an unresolved binding falls back to the animated property's own
+		// default. The binding is removed straight after.
+		static object? SampleBinding(BindingBase binding, BindableProperty property, VisualElement playTarget)
 		{
-			var probe = new BindingProbe { BindingContext = bindingContext };
-			var probeProperty = BindingProbe.For(property);
-
-			// Sampled read-only: a TwoWay or OneWayToSource clone would write the probe's default into the source.
-			// The probe isn't an Element, so a RelativeSource binding resolves against the animated element instead,
-			// and values a compiled binding's Clone drops (fallback, target-null) are carried over.
+			var probe = SampleProperties.For(property);
 			var clone = binding.Clone();
-			Prepare(binding, clone, relativeSourceTarget);
-			probe.SetBinding(probeProperty, clone);
-			var result = probe.GetValue(probeProperty);
-			probe.RemoveBinding(probeProperty);
-			return result;
+			Prepare(binding, clone);
+			try
+			{
+				// Inside the try: SetBinding stores the binding before applying it, so a throwing converter must not leave
+				// it attached to the play target.
+				playTarget.SetBinding(probe, clone);
+				return playTarget.GetValue(probe);
+			}
+			finally
+			{
+				playTarget.RemoveBinding(probe);
+				playTarget.ClearValue(probe);
+			}
 		}
 
-		// Every binding in the tree reads only (a MultiBinding's clone keeps its children's modes), keeps its fallback and
-		// target-null values, and resolves a relative source against the animated element.
-		static void Prepare(BindingBase original, BindingBase clone, Element relativeSourceTarget)
+		// Every binding in the tree reads only (a TwoWay or OneWayToSource clone would write the probe's value into the
+		// source; a MultiBinding's clone keeps its children's modes) and keeps its fallback and target-null values (a
+		// compiled binding's Clone drops them).
+		static void Prepare(BindingBase original, BindingBase clone)
 		{
 			clone.Mode = BindingMode.OneWay;
 			clone.FallbackValue = original.FallbackValue;
 			clone.TargetNullValue = original.TargetNullValue;
-			clone.RelativeSourceTargetOverride = relativeSourceTarget;
 
 			if (original is MultiBinding multiOriginal && clone is MultiBinding multiClone)
 			{
 				for (var i = 0; i < multiClone.Bindings.Count && i < multiOriginal.Bindings.Count; i++)
-					Prepare(multiOriginal.Bindings[i], multiClone.Bindings[i], relativeSourceTarget);
+					Prepare(multiOriginal.Bindings[i], multiClone.Bindings[i]);
 			}
 		}
 
@@ -322,7 +328,7 @@ namespace Microsoft.Maui.Controls.Animations
 			for (var i = 0; i < results.Length; i++)
 				results[i] = default;
 
-			Root.Evaluate(ticks, results, ContributionKind.None, 0);
+			Root.Evaluate(ticks, results, ContributionKind.None, 0, 1);
 		}
 
 		/// <summary>Evaluates every slot at the root's END state (or START state when <paramref name="start"/>).</summary>
@@ -340,68 +346,6 @@ namespace Microsoft.Maui.Controls.Animations
 		{
 			var scratch = new Contribution[Slots.Count];
 			Root.SnapshotImplicitStarts(currentValue, scratch);
-		}
-
-		// Overlapping active intervals of two nodes on one (target, property) have no composition rule (MAUIX2307).
-		static void CheckOverlaps(TimingNode root, int slotCount)
-		{
-			var intervals = new List<(double Start, double End)>[slotCount];
-			s_periodic = null;
-			root.CollectIntervals(0, 1, intervals);
-			CheckIntervals(intervals);
-			CheckPeriodic(intervals);
-		}
-
-		[ThreadStatic]
-		static List<(int Slot, PeriodicActivity Activity)>? s_periodic;
-
-		internal static void AddPeriodic(int slot, PeriodicActivity activity)
-			=> (s_periodic ??= new List<(int, PeriodicActivity)>()).Add((slot, activity));
-
-		// Each heavily repeated pattern against the plain intervals of the same slot, iteration by iteration but only
-		// over the iterations a plain interval spans; two patterns on one slot are compared by their whole ranges.
-		static void CheckPeriodic(List<(double Start, double End)>[] intervals)
-		{
-			var periodic = s_periodic;
-			s_periodic = null;
-			if (periodic is null)
-				return;
-
-			for (var i = 0; i < periodic.Count; i++)
-			{
-				var (slot, activity) = periodic[i];
-				if (intervals[slot] is { } plain)
-				{
-					foreach (var (start, end) in plain)
-					{
-						if (activity.Overlaps(start, end))
-							throw new InvalidOperationException("Two parts of the storyboard animate the same property at the same time; they need distinct, non-overlapping intervals (MAUIX2307).");
-					}
-				}
-
-				for (var j = i + 1; j < periodic.Count; j++)
-				{
-					var (otherSlot, other) = periodic[j];
-					if (otherSlot == slot && activity.Origin < other.End - TickSnap && other.Origin < activity.End - TickSnap)
-						throw new InvalidOperationException("Two parts of the storyboard animate the same property at the same time; they need distinct, non-overlapping intervals (MAUIX2307).");
-				}
-			}
-		}
-
-		internal static void CheckIntervals(List<(double Start, double End)>[] intervals)
-		{
-			foreach (var list in intervals)
-			{
-				if (list is not null && list.Count > 1)
-				{
-					list.Sort((a, b) => a.Start.CompareTo(b.Start));
-					for (var i = 1; i < list.Count; i++)
-					{
-						if (list[i].Start < list[i - 1].End - TickSnap)
-							throw new InvalidOperationException("Two parts of the storyboard animate the same property at the same time; they need distinct, non-overlapping intervals (MAUIX2307).");
-					}
-				}
-			}
 		}
 
 		internal static double Snap(double ticks)
@@ -425,20 +369,21 @@ namespace Microsoft.Maui.Controls.Animations
 				=> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj.Item1) ^ obj.Item2.GetHashCode();
 		}
 
-		sealed class BindingProbe : BindableObject
+		static class SampleProperties
 		{
-			static readonly Dictionary<Type, BindableProperty> s_properties = new();
+			static readonly Dictionary<BindableProperty, BindableProperty> s_properties = new();
 
+			// One per animated property, so the default an unresolved binding falls back to is that property's own.
 			public static BindableProperty For(BindableProperty property)
 			{
 				lock (s_properties)
 				{
-					if (!s_properties.TryGetValue(property.ReturnType, out var probe))
+					if (!s_properties.TryGetValue(property, out var sample))
 					{
-						probe = BindableProperty.Create("Value", property.ReturnType, typeof(BindingProbe), property.ReturnType.IsValueType ? property.DefaultValue : null);
-						s_properties[property.ReturnType] = probe;
+						sample = BindableProperty.CreateAttached("AnimationSample", property.ReturnType, typeof(SampleProperties), property.DefaultValue);
+						s_properties[property] = sample;
 					}
-					return probe;
+					return sample;
 				}
 			}
 		}
@@ -495,7 +440,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		internal bool Forward(long iteration) => Direction switch
+		bool Forward(long iteration) => Direction switch
 		{
 			AnimationDirection.Reverse => false,
 			AnimationDirection.Alternate => iteration % 2 == 0,
@@ -558,7 +503,7 @@ namespace Microsoft.Maui.Controls.Animations
 				var iteration = span > 0 && !double.IsPositiveInfinity(span) ? (long)Math.Floor(CompiledStoryboard.SnapCount(a / span)) : 0;
 				var u = iteration == 0 ? a : CompiledStoryboard.Snap(a - iteration * span);
 				var x = Math.Min(u, Duration);
-				return (Directed(iteration, x), iteration, ContributionKind.Active, 0);
+				return (Directed(iteration, x), iteration, ContributionKind.Active, a / Speed);
 			}
 
 			var (tau, endIteration) = EndState();
@@ -568,7 +513,12 @@ namespace Microsoft.Maui.Controls.Animations
 		// Larger than any real fill key (ticks), so it only orders "not started" below "started or completed".
 		const double BeforeFillRank = 1e18;
 
-		public void Evaluate(double parentTicks, Contribution[] results, ContributionKind inheritedKind, double inheritedKey)
+		/// <summary>
+		/// Adds this node's contributions at parent time <paramref name="parentTicks"/>. Keys are in root time (ticks), so
+		/// contributions from different nesting levels and speeds compare directly: <paramref name="rootPerParentTick"/>
+		/// converts this node's parent time to root time.
+		/// </summary>
+		public void Evaluate(double parentTicks, Contribution[] results, ContributionKind inheritedKind, double inheritedKey, double rootPerParentTick)
 		{
 			var (tau, _, phase, key) = Locate(parentTicks);
 
@@ -580,11 +530,11 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 			}
 
-			// Inside a parent that is filling, everything below it is a fill too. The parent's key orders it against
-			// other nodes; the child's own key (0 when it is active at the parent's frozen time) still orders siblings
-			// inside it, so of two completed steps in a sequence the later one wins.
-			// A descendant that had not started yet at the parent's frozen time ranks below every descendant that had
-			// (BeforeFillRank), so a completed step beats one still waiting to begin.
+			key *= rootPerParentTick;
+
+			// Inside a parent that is filling, everything below it is a fill too. The parent's key orders it against other
+			// nodes; the child's own key (0 when it was active at the parent's frozen time) orders siblings inside it, so of
+			// two completed steps the later one wins. A child that had not started yet ranks below every child that had.
 			var kind = phase;
 			if (inheritedKind != ContributionKind.None && inheritedKind != ContributionKind.Active)
 			{
@@ -597,25 +547,25 @@ namespace Microsoft.Maui.Controls.Animations
 				};
 			}
 
-			Contribute(tau, kind, key, results);
+			Contribute(tau, kind, key, results, rootPerParentTick / Speed);
 		}
 
-		public void EvaluateEdge(bool start, Contribution[] results)
+		public void EvaluateEdge(bool start, Contribution[] results, double rootPerParentTick = 1)
 		{
 			if (start)
 			{
-				Contribute(Directed(0, 0), ContributionKind.BeforeFill, 0, results);
+				Contribute(Directed(0, 0), ContributionKind.BeforeFill, 0, results, rootPerParentTick / Speed);
 			}
 			else
 			{
 				var (tau, _) = EndState();
-				Contribute(tau, ContributionKind.AfterFill, 0, results);
+				Contribute(tau, ContributionKind.AfterFill, 0, results, rootPerParentTick / Speed);
 			}
 		}
 
 		bool _implicitStartsSet;
 
-		void Contribute(double tau, ContributionKind kind, double key, Contribution[] results)
+		void Contribute(double tau, ContributionKind kind, double key, Contribution[] results, double rootPerLocalTick)
 		{
 			if (Tracks.Count > 0)
 			{
@@ -625,17 +575,19 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			foreach (var child in Children)
-				child.Evaluate(tau, results, kind, key);
+				child.Evaluate(tau, results, kind, key, rootPerLocalTick);
 		}
 
-		// An ACTIVE contribution beats any fill; among AFTER fills the most recently ended wins; a BEFORE fill applies
-		// only while nothing on the property has started, and the one that starts first wins.
+		// One rule for every (target, property): an ACTIVE contribution beats any fill, and of two active ones the most
+		// recently started wins (a later declaration breaks a tie), so parts of a storyboard that overlap have a defined
+		// result. Among AFTER fills the most recently ended wins; a BEFORE fill applies only while nothing on the property
+		// has started, and the one that starts first wins.
 		static void Offer(ref Contribution current, ContributionKind kind, double key, object? value)
 		{
 			var replace = current.Kind switch
 			{
 				ContributionKind.None => true,
-				ContributionKind.Active => false,
+				ContributionKind.Active => kind == ContributionKind.Active && key <= current.Key,
 				ContributionKind.AfterFill => kind == ContributionKind.Active || (kind == ContributionKind.AfterFill && key < current.Key),
 				_ => kind == ContributionKind.Active || kind == ContributionKind.AfterFill || (kind == ContributionKind.BeforeFill && key < current.Key),
 			};
@@ -709,138 +661,6 @@ namespace Microsoft.Maui.Controls.Animations
 			{
 				if (child.Animates(slot))
 					return true;
-			}
-
-			return false;
-		}
-
-		// The most iterations of an ancestor expanded when checking for overlaps; past it a child is treated as active
-		// from its first start onwards, which is conservative (it can only report more overlaps).
-		const int MaxExpandedIterations = 256;
-
-		// Active intervals in root time, including every iteration of every repeating ancestor (a reversed iteration
-		// mirrors a child's interval within the iteration).
-		public void CollectIntervals(double offset, double scale, List<(double Start, double End)>[] intervals)
-		{
-			var start = offset + Begin * scale;
-			var end = double.IsPositiveInfinity(Active) ? double.PositiveInfinity : offset + ParentEnd * scale;
-
-			foreach (var (slot, _) in Tracks)
-				(intervals[slot.Index] ??= new List<(double, double)>()).Add((start, end));
-
-			if (Children.Count == 0)
-				return;
-
-			var childScale = scale / Speed;
-			var span = Duration + IterationDelay;
-			var iterations = double.IsPositiveInfinity(Active) || span <= 0 ? double.PositiveInfinity : Math.Ceiling(CompiledStoryboard.SnapCount(Active / span));
-
-			if (iterations > MaxExpandedIterations)
-			{
-				// Too many iterations to expand: check the children against each other within one iteration (an
-				// iteration clips them, so they can't reach into the next), then let whatever they animate occupy the
-				// container's whole active interval for siblings outside it.
-				var single = new List<(double Start, double End)>[intervals.Length];
-				foreach (var child in Children)
-					child.CollectIntervals(0, 1, single);
-				CompiledStoryboard.CheckIntervals(single);
-
-				// Outside siblings are checked against the repeating pattern itself, so its idle gaps stay usable.
-				for (var i = 0; i < single.Length; i++)
-				{
-					if (single[i] is not null)
-						CompiledStoryboard.AddPeriodic(i, new PeriodicActivity(this, start, span * childScale, Duration * childScale, end, single[i], childScale));
-				}
-				return;
-			}
-
-			var children = new List<(double Start, double End)>[intervals.Length];
-			foreach (var child in Children)
-				child.CollectIntervals(0, 1, children);
-
-			for (var i = 0; i < children.Length; i++)
-			{
-				if (children[i] is { } list)
-				{
-					foreach (var (childStart, childEnd) in list)
-						AddIterations(childStart, childEnd, (long)iterations, span, start, childScale, intervals[i] ??= new List<(double, double)>());
-				}
-			}
-		}
-
-		void AddIterations(double childStart, double childEnd, long iterations, double span, double start, double childScale, List<(double Start, double End)> target)
-		{
-			for (long k = 0; k < iterations; k++)
-			{
-				var iterationStart = k * span;
-				var iterationEnd = Math.Min(iterationStart + Duration, Active);
-				var forward = Forward(k);
-				var localStart = forward ? childStart : Duration - Math.Min(childEnd, Duration);
-				var localEnd = forward ? childEnd : Duration - childStart;
-				var from = Math.Max(iterationStart, iterationStart + localStart);
-				var to = Math.Min(iterationEnd, iterationStart + localEnd);
-				if (to > from)
-					target.Add((start + from * childScale, start + to * childScale));
-			}
-		}
-
-	}
-
-	/// <summary>The activity of one slot inside a container repeated too many times to expand, in root time.</summary>
-	internal sealed class PeriodicActivity
-	{
-		const double Snap = 1e-6;
-		const long MaxCheckedIterations = 1_000_000;
-
-		readonly TimingNode _container;
-		readonly double _period;
-		readonly double _iteration;
-		readonly List<(double Start, double End)> _local;
-
-		public PeriodicActivity(TimingNode container, double origin, double period, double iteration, double end, List<(double Start, double End)> local, double scale)
-		{
-			_container = container;
-			Origin = origin;
-			_period = period;
-			_iteration = iteration;
-			End = end;
-			_local = new List<(double, double)>(local.Count);
-			foreach (var (start, stop) in local)
-				_local.Add((start * scale, stop * scale));
-		}
-
-		public double Origin { get; }
-
-		public double End { get; }
-
-		public bool Overlaps(double start, double end)
-		{
-			if (end <= Origin + Snap || start >= End - Snap)
-				return false;
-
-			if (_period <= 0 || double.IsInfinity(_period))
-				return true;
-
-			var first = Math.Max(0, (long)Math.Floor((start - Origin) / _period) - 1);
-			var last = double.IsPositiveInfinity(end) ? long.MaxValue : (long)Math.Ceiling((end - Origin) / _period) + 1;
-			if (last - first > MaxCheckedIterations)
-				return true; // conservative: too long to check iteration by iteration
-
-			for (var k = first; k <= last; k++)
-			{
-				var iterationStart = Origin + k * _period;
-				if (iterationStart >= End)
-					break;
-
-				var iterationEnd = Math.Min(iterationStart + _iteration, End);
-				var forward = _container.Forward(k);
-				foreach (var (localStart, localEnd) in _local)
-				{
-					var from = iterationStart + (forward ? localStart : _iteration - localEnd);
-					var to = Math.Min(iterationStart + (forward ? localEnd : _iteration - localStart), iterationEnd);
-					if (to > from && from < end - Snap && start < to - Snap)
-						return true;
-				}
 			}
 
 			return false;

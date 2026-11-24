@@ -739,7 +739,13 @@ namespace Microsoft.Maui.Controls
 
 			// User input during a run's begin delay (owned, nothing shown yet) ends the run's claim as well.
 			if (specificity == SetterSpecificity.FromHandler && context.AnimationOwner is not null && originalSpecificity != SetterSpecificity.Animation)
+			{
+				// An echo of the displayed value is dropped, as during a hold: neither stored nor ending the claim.
+				if (IsSameValue(property, value, original))
+					return;
+
 				holdLostToHandler = true;
+			}
 
 			if (originalSpecificity == SetterSpecificity.Animation && specificity != SetterSpecificity.Animation)
 			{
@@ -750,7 +756,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// A handler echoing the displayed value back neither ends the hold nor is stored.
-				if (Equals(value, original))
+				if (IsSameValue(property, value, original))
 					return;
 
 				// User input beats animation: the hold ends and the handler's value stands. The change is
@@ -759,6 +765,10 @@ namespace Microsoft.Maui.Controls
 				originalSpecificity = context.Values.GetSpecificity();
 				holdLostToHandler = true;
 			}
+
+			// The owner is told before any change handler runs, so a throwing handler can't leave its bookkeeping stale.
+			if (holdLostToHandler)
+				OnAnimationHoldLost(context, Microsoft.Maui.Controls.Animations.AnimationHoldLossReason.HandlerWrite);
 
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
@@ -826,8 +836,6 @@ namespace Microsoft.Maui.Controls
 				OnBindablePropertySet(property, original, value, !sameValue, false);
 			}
 
-			if (holdLostToHandler)
-				OnAnimationHoldLost(context, Microsoft.Maui.Controls.Animations.AnimationHoldLossReason.HandlerWrite);
 		}
 
 		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)

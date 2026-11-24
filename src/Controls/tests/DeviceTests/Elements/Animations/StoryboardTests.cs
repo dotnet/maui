@@ -77,11 +77,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
-				label.BeginAnimationFrame();
-				label.TranslationX = 12;
-				label.Scale = 1.25;
-				label.EndAnimationFrame();
+				var rebuilds = 0;
+				Microsoft.Maui.Platform.TransformationDiagnostics.Rebuilt = view =>
+				{
+					if (ReferenceEquals(view, label))
+						rebuilds++;
+				};
+				try
+				{
+					label.BeginAnimationFrame();
+					label.TranslationX = 12;
+					label.Scale = 1.25;
+					label.EndAnimationFrame();
+				}
+				finally
+				{
+					Microsoft.Maui.Platform.TransformationDiagnostics.Rebuilt = null;
+				}
 
+#if IOS || MACCATALYST || WINDOWS
+				// These platforms rebuild the whole transform per update: two properties in one frame, one rebuild.
+				Assert.Equal(1, rebuilds);
+#endif
 				AssertNativeTransform(handler, translationX: 12, scale: 1.25);
 				return Task.CompletedTask;
 			});
@@ -169,6 +186,33 @@ namespace Microsoft.Maui.DeviceTests
 				var result = await player.Completion.WaitAsync(TimeSpan.FromSeconds(10));
 				Assert.Equal(AnimationResult.Stopped, result);
 				Assert.Equal(1.0, label.Opacity);
+			});
+		}
+
+		[Fact]
+		public async Task AForeverRunOnALoadedViewWithoutAWindowWaitsForOne()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Storyboard" };
+
+			// Natively hosted: the platform view is loaded, but there is no Controls Window. Waiting on Loaded here used to
+			// re-enter itself (Loaded fires immediately for a loaded view) until the stack overflowed.
+			await AttachAndRun<LabelHandler>(label, handler =>
+			{
+				Assert.True(label.IsLoaded);
+				Assert.Null(label.Window);
+
+				var player = Storyboard.Create()
+					.WithDuration(TimeSpan.FromMilliseconds(300))
+					.WithRepeat(RepeatBehavior.Forever)
+					.WithReducedMotion(ReducedMotionBehavior.Play)
+					.AddTrack<double>(VisualElement.OpacityProperty, t => t.At(0, 0.2).At(1, 1.0))
+					.Build()
+					.Begin(label);
+
+				Assert.Equal(PlaybackState.Running, player.State);
+				player.Stop();
+				return Task.CompletedTask;
 			});
 		}
 

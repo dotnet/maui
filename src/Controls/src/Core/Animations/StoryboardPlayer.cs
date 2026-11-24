@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Animations
 		bool _observingPolicy;
 		bool _waitingForWindow;
 		bool _observingClock;
+		bool _claiming;
 		bool _ended;
 		double _rate = 1;
 		double _timeTicks;
@@ -204,8 +205,17 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 				}
 
-				_timeTicks = _compiled.EndTicks;
-				ApplyEndFill();
+				// Playing backwards, the end of the run is its start.
+				if (_rate < 0)
+				{
+					_timeTicks = 0;
+					ApplyStartFill();
+				}
+				else
+				{
+					_timeTicks = _compiled.EndTicks;
+					ApplyEndFill();
+				}
 				End(AnimationResult.Completed, finished: true);
 			}
 			catch (Exception ex)
@@ -231,9 +241,17 @@ namespace Microsoft.Maui.Controls.Animations
 				case StopBehavior.ApplyFill:
 					if (!_ended)
 					{
-						if (!_compiled.IsForever)
-							_timeTicks = _compiled.EndTicks;
-						ApplyEndFill();
+						if (_rate < 0)
+						{
+							_timeTicks = 0;
+							ApplyStartFill();
+						}
+						else
+						{
+							if (!_compiled.IsForever)
+								_timeTicks = _compiled.EndTicks;
+							ApplyEndFill();
+						}
 					}
 					break;
 				case StopBehavior.CommitCurrent:
@@ -299,6 +317,10 @@ namespace Microsoft.Maui.Controls.Animations
 
 			ticks = Math.Max(0, _compiled.IsForever ? ticks : Math.Min(ticks, _compiled.EndTicks));
 
+			// A paused run doesn't tick, so a seek on it applies straight away.
+			if (_state == PlaybackState.Paused)
+				now = true;
+
 			if (!now)
 			{
 				_pendingSeekTicks = ticks;
@@ -325,13 +347,32 @@ namespace Microsoft.Maui.Controls.Animations
 				return false;
 			}
 
+			// Claiming tells previous owners, whose handlers can start other runs that take properties from this one.
+			// While claiming, a loss is only recorded; whether anything is left is decided once every slot is claimed.
+			_claiming = true;
+			try
+			{
+				// A previous owner's handler can stop this run mid-loop; nothing is claimed after that.
+				for (var i = 0; i < _slots.Length && !_ended; i++)
+					Claim(_slots[i]);
+			}
+			finally
+			{
+				_claiming = false;
+			}
+
+			if (_ended)
+				return false;
+
 			var anyOwned = false;
 			foreach (var slot in _slots)
-				anyOwned |= Claim(slot);
+				anyOwned |= !slot.Lost && (slot.Owned || slot.Excluded);
 
 			if (!anyOwned)
 			{
-				End(_options.HandoffBehavior == StoryboardHandoffBehavior.Ignore ? AnimationResult.Ignored : AnimationResult.Stopped);
+				var anyTakenOver = _replaced.Count > 0;
+				End(anyTakenOver ? AnimationResult.Replaced
+					: _options.HandoffBehavior == StoryboardHandoffBehavior.Ignore ? AnimationResult.Ignored : AnimationResult.Stopped);
 				return false;
 			}
 
@@ -349,7 +390,7 @@ namespace Microsoft.Maui.Controls.Animations
 			return true;
 		}
 
-		// Returns whether the run takes part in the property (owns it, or is excluded from interpolating it).
+		// Claims one slot: owned, excluded (never interpolated) or lost (no target, or left to its owner under Ignore).
 		bool Claim(SlotState slot)
 		{
 			if (slot.Slot.Target is not BindableObject target)
@@ -389,9 +430,21 @@ namespace Microsoft.Maui.Controls.Animations
 			{
 				if (!instant && _reducedMotion == ReducedMotionBehavior.Shorten && !_compiled.IsForever)
 				{
-					var total = TimeSpan.FromTicks((long)(_compiled.EndTicks / Math.Abs(_rate)));
-					var shortened = TimeSpan.FromTicks(Math.Min(total.Ticks / 10, ShortenCap.Ticks));
-					_shorten = shortened.Ticks > 0 ? total.Ticks / (double)shortened.Ticks : double.PositiveInfinity;
+					var total = _compiled.EndTicks / Math.Abs(_rate);
+					var shortened = Math.Min(total / 10, ShortenCap.Ticks);
+					if (shortened < 1)
+					{
+						// Too short to shorten (under a tick): it completes at once, as a normal completion would.
+						_timeTicks = _rate < 0 ? 0 : _compiled.EndTicks;
+						if (_rate < 0)
+							ApplyStartFill();
+						else
+							ApplyEndFill();
+						End(AnimationResult.Completed, finished: true);
+						return true;
+					}
+
+					_shorten = total / shortened;
 				}
 				else
 				{
@@ -445,7 +498,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 			catch (Exception ex)
 			{
-				Fault(ex);
+				FaultFromCallback(ex);
 			}
 		}
 
@@ -570,7 +623,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 			catch (Exception ex)
 			{
-				Fault(ex);
+				FaultFromCallback(ex);
 			}
 		}
 
@@ -587,8 +640,8 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 			finally
 			{
-				End(AnimationResult.Stopped);
 				StopObservingLifetime();
+				EndQuietly(AnimationResult.Stopped);
 			}
 		}
 
@@ -665,18 +718,24 @@ namespace Microsoft.Maui.Controls.Animations
 					target.ClearAnimationValue(property, this);
 					slot.Held = false;
 
-					// The release's callbacks may have stopped the run; a stopped run reclaims nothing.
+					// The release's callbacks may have stopped the run (it reclaims nothing) or given the property to another
+					// run (it lost the property, and must not take it back).
 					if (!_ended && slot.Owned)
-						target.ClaimAnimation(property, this);
+					{
+						if (target.GetAnimationOwner(property) is null)
+							target.ClaimAnimation(property, this);
+						else
+							((IAnimationHoldOwner)this).OnHoldLost(target, property, AnimationHoldLossReason.TakenOver);
+					}
 				}
 				return;
 			}
 
 			if (commit)
 			{
-				// A source-preserving commit: the value lands in the slot of the base value, then the hold is released.
-				if (slot.Held || target.SetAnimationValue(property, contribution.Value, this) == AnimationWriteResult.Written)
-					target.CommitAnimationValue(property, contribution.Value, this);
+				// A source-preserving commit: the value lands in the slot of the base value and the hold, if any, is released.
+				// When the property is being set (rule 13), the kernel queues it behind the current write.
+				target.CommitAnimationValue(property, contribution.Value, this);
 
 				slot.Held = false;
 				slot.Owned = false;
@@ -767,26 +826,12 @@ namespace Microsoft.Maui.Controls.Animations
 				throw new AggregateException(errors);
 		}
 
+		// A fault before the run ended releases and faults it. After it ended (a StateChanged/Completed handler of this
+		// run threw), the run is already final: nothing is released and the exception just propagates to the caller.
 		void FaultSynchronously(Exception exception)
 		{
 			if (!_ended)
 				Fault(exception);
-			else
-				ReleaseQuietly();
-		}
-
-		void ReleaseQuietly()
-		{
-			try
-			{
-				ReleaseAll();
-			}
-			catch (Exception ex)
-			{
-				Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(ex, "MAUIA1005: A storyboard run faulted while releasing.");
-			}
-
-			StopObservingLifetime();
 		}
 
 		void Fault(Exception exception)
@@ -811,14 +856,56 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_ended)
 				return;
 
-			EndCore(finished ? PlaybackState.Finished : PlaybackState.Stopped);
+			// The run reaches its terminal state (task completed, lifetime observation dropped) even when a StateChanged
+			// handler throws; the handler's exception still propagates afterwards.
+			Exception? stateError = null;
+			try
+			{
+				EndCore(finished ? PlaybackState.Finished : PlaybackState.Stopped);
+			}
+			catch (Exception ex)
+			{
+				stateError = ex;
+			}
 
 			// A fill held at animation rank keeps observing the target's lifetime until it is released.
 			if (!HoldsAnything())
 				StopObservingLifetime();
 
 			_completion.TrySetResult(result);
+
+			// Raised once however the run ends, even when a StateChanged handler threw; that exception propagates after.
 			Completed?.Invoke(this, new StoryboardCompletedEventArgs(result, _replaced.ToArray()));
+
+			if (stateError is not null)
+				System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(stateError).Throw();
+		}
+
+		// Ends the run from a path with no caller of its own (another run's takeover, Unloaded, window teardown): a
+		// StateChanged or Completed handler that throws is logged instead of escaping into that path.
+		void EndQuietly(AnimationResult result)
+		{
+			try
+			{
+				End(result);
+			}
+			catch (Exception ex)
+			{
+				Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(ex, "A storyboard Completed or StateChanged handler threw.");
+			}
+		}
+
+		// A fault on a callback with no caller (frame, policy change): a live run is faulted; once the run has ended, the
+		// exception came from its own StateChanged/Completed handlers and is only logged.
+		void FaultFromCallback(Exception exception)
+		{
+			if (!_ended)
+			{
+				Fault(exception);
+				return;
+			}
+
+			Target?.FindMauiContext()?.CreateLogger<StoryboardPlayer>()?.LogError(exception, "A storyboard Completed or StateChanged handler threw.");
 		}
 
 		void EndCore(PlaybackState state)
@@ -889,7 +976,7 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 
 			StopObservingLifetime();
-			End(AnimationResult.Stopped);
+			EndQuietly(AnimationResult.Stopped);
 		}
 
 		void LogExcluded(BindableProperty property)
@@ -915,10 +1002,13 @@ namespace Microsoft.Maui.Controls.Animations
 				}
 			}
 
-			if (!anyLeft)
+			// While claiming, Start decides once every slot is claimed (a loss here must not end a half-claimed run).
+			// Raised from another run's (or a write's) operation: this run's Completed/StateChanged handlers must not throw
+			// into that caller, so they are isolated here.
+			if (!anyLeft && !_claiming)
 			{
 				if (!_ended)
-					End(AnimationResult.Replaced);
+					EndQuietly(AnimationResult.Replaced);
 				else
 					StopObservingLifetime();
 			}
