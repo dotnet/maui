@@ -3,9 +3,9 @@ $ErrorActionPreference = 'Stop'
 
 function Get-MauiInflightLabelCondition {
     param ([string] $SandboxPrefix)
-    $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
+    $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
     if ($SandboxPrefix) {
-        $condition += " or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/$([Regex]::Escape($SandboxPrefix))/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
+        $condition += " or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/$([Regex]::Escape($SandboxPrefix))/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
     }
     return $condition
 }
@@ -15,7 +15,7 @@ function Get-MauiBranchLabelCondition {
         [Parameter(Mandatory)][ValidateSet('ci.inflight', 'servicing')][string] $Label,
         [string] $SandboxPrefix
     )
-    $branch = if ($Label -ceq 'servicing') { 'release' } else { 'inflight' }
+    $branch = if ($Label -ceq 'servicing') { 'release' } else { '(inflight|candidate)' }
     $condition = "`$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '\Arefs/heads/$branch/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))"
     if ($Label -ceq 'ci.inflight') {
         $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $condition"
@@ -86,7 +86,7 @@ function Get-MauiReleaseVersion {
             $labelIndex + 2 -ge [Array]::IndexOf($properties, $document.SelectSingleNode('/Project/PropertyGroup/IsServicingBuild'))) {
             throw 'Central branch labels must be consecutive properties before IsServicingBuild.'
         }
-        if ($labels[1].GetAttribute('Condition') -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
+        if ($labels[1].GetAttribute('Condition') -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/(?:inflight|\(inflight\|candidate\))/') {
             $labelSandboxPrefix = $Matches.sandbox
         }
     }
@@ -100,16 +100,18 @@ function Get-MauiReleaseVersion {
         if ($label.HasAttribute('Condition')) {
             $condition = $label.GetAttribute('Condition')
             if ($branchDerivedLabels) {
-                if ($condition -cne (Get-MauiBranchLabelCondition -Label $label.InnerText -SandboxPrefix $labelSandboxPrefix)) {
+                $expectedCondition = Get-MauiBranchLabelCondition -Label $label.InnerText -SandboxPrefix $labelSandboxPrefix
+                if ($condition -cnotin @($expectedCondition, $expectedCondition.Replace('/(inflight|candidate)/', '/inflight/'))) {
                     throw 'Unknown central branch-label condition requires review; it will not be replaced automatically.'
                 }
                 continue
             }
-            $sandbox = if ($condition -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
+            $sandbox = if ($condition -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/(?:inflight|\(inflight\|candidate\))/') {
                 $Matches.sandbox
             } else { $null }
-            if ($condition -cne "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'" -and
-                $condition -cne (Get-MauiInflightLabelCondition -SandboxPrefix $sandbox)) {
+            $expectedCondition = Get-MauiInflightLabelCondition -SandboxPrefix $sandbox
+            if ($condition -cnotin @("'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'",
+                    $expectedCondition, $expectedCondition.Replace('/(inflight|candidate)/', '/inflight/'))) {
                 throw 'Unknown CI-label condition requires review; it will not be replaced automatically.'
             }
         }
@@ -632,9 +634,14 @@ function Get-MauiReleaseCompletionPlan {
         throw 'CI housekeeping must update the bug-template version in the same patch-bump commit.'
     }
     $restoreFixes = $Fixes -ceq $LanePlan.mergeSha
-    if (!$restoreFixes) {
+    $normalizationIntegrated = !$restoreFixes -and (Test-MauiReleaseAncestor -RepositoryPath $RepositoryPath `
+        -Ancestor $LanePlan.normalizedSha -Descendant $Fixes)
+    if (!$restoreFixes -and !$normalizationIntegrated) {
+        # A squashed normalization (or a later integration PR) moves the branch forward without the
+        # prepared ancestry. The reviewed normalization PR still gates next-lane work; only
+        # movement away from the approved merge is refused here.
         $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-            'merge-base', '--is-ancestor', $LanePlan.normalizedSha, $Fixes)
+            'merge-base', '--is-ancestor', $LanePlan.mergeSha, $Fixes)
     }
     [pscustomobject]@{
         releaseSha = if ($Release) { $Release } else { $null }
@@ -643,6 +650,22 @@ function Get-MauiReleaseCompletionPlan {
         createStaging = !$Staging
         createRelease = $false
         restoreFixes = $restoreFixes
+        normalizationIntegrated = $normalizationIntegrated
+    }
+}
+
+function Test-MauiReleaseAncestor {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Ancestor,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Descendant
+    )
+    $null = & git -C $RepositoryPath merge-base --is-ancestor $Ancestor $Descendant 2>$null
+    switch ($LASTEXITCODE) {
+        0 { return $true }
+        1 { return $false }
+        default { throw "Release Git operation 'merge-base' failed for $Ancestor and $Descendant." }
     }
 }
 
@@ -719,4 +742,4 @@ Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionCont
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
     New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
     Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge,
-    Get-MauiReleaseGenerationHead
+    Get-MauiReleaseGenerationHead, Test-MauiReleaseAncestor

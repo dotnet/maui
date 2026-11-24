@@ -31,3 +31,4 @@ static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -
 static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T

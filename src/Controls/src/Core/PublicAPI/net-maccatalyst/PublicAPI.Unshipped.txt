@@ -31,3 +31,6 @@ static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButt
 static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
 static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
 static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

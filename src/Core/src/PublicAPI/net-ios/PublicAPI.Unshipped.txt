@@ -20,3 +20,4 @@ static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void

@@ -16,17 +16,42 @@ using Xunit;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WRect = Windows.Foundation.Rect;
 using WSize = Windows.Foundation.Size;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using WWriteableBitmap = Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Button)]
 	public class ContentButtonWindowsTests : CoreHandlerTestBase<ContentButtonHandler, ContentButtonStub>
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BackgroundUpdateSupersedesPendingImage(bool clear)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var button = new ContentButtonStub();
+				var handler = CreateHandler(button);
+				var completion = new TaskCompletionSource<IImageSourceServiceResult<WImageSource>>();
+				var provider = new ControlledImageSourceService { Result = completion.Task };
+				var pending = handler.PlatformView.UpdateBackgroundImageSourceAsync(new FontImageSourceStub(), provider);
+				button.Background = clear ? null : new SolidPaint(Colors.Blue);
+				handler.UpdateValue(nameof(IView.Background));
+				var current = handler.PlatformView.Background;
+				var result = new ImageSourceServiceResult(new WWriteableBitmap(12, 18));
+				completion.SetResult(result);
+				await pending;
+				Assert.Same(current, handler.PlatformView.Background);
+				Assert.True(result.IsDisposed);
+			});
+		}
+
 		[Fact]
 		public async Task ReplacingVirtualViewUpdatesLayoutAndReleasesOldPress()
 		{

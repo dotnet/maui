@@ -85,6 +85,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateBackground(IContentButton button)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(this);
 			CaptureNativeDefaults();
 
 			var brush = button.Background?.ToPlatform();

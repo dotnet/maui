@@ -85,6 +85,30 @@ namespace Microsoft.Maui.Controls
 			return path.Replace(_pathSeparators[1], _pathSeparator[0]);
 		}
 
+		// When an absolute route is prefixed with ".." segments ("//../../Page2"), Uri
+		// normalization inside ConvertToStandardFormat silently discards those segments,
+		// so the number of pages each ".." should pop has to be captured up front
+		internal static int CountLeadingDotDotSegments(Uri request)
+		{
+			if (request == null || request.IsAbsoluteUri)
+				return 0;
+
+			var path = FormatUri(request.OriginalString);
+			if (!path.StartsWith("//", StringComparison.Ordinal))
+				return 0;
+
+			int count = 0;
+			foreach (var segment in RetrievePaths(path.Split('?')[0]))
+			{
+				if (segment != "..")
+					break;
+
+				count++;
+			}
+
+			return count;
+		}
+
 		internal static Uri CreateUri(string path)
 		{
 			path = FormatUri(path);
@@ -112,7 +136,9 @@ namespace Microsoft.Maui.Controls
 			// we need to know this so we don't clear the query parameters off
 			// the destination location
 
-			var dest = request.TargetState?.Location?.OriginalString;
+			// Strip the query string the same way FormatUri does when it resolves "..",
+			// so "..?x=1" is classified as a relative pop too
+			var dest = request.TargetState?.Location?.OriginalString.Split(new[] { '?' }, 2)[0];
 
 			foreach (var path in RetrievePaths(dest))
 			{
@@ -552,6 +578,12 @@ namespace Microsoft.Maui.Controls
 			{
 				bool acceptingTemplates = pass == 1;
 
+				// Among matching literal keys the fewest segments wins, so a parent ("home/savings")
+				// beats a child registered first; templated keys keep first-match order.
+				string bestRouteKey = null;
+				string bestMatch = null;
+				int bestSegmentCount = int.MaxValue;
+
 				// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
 				foreach (var routeKey in routeKeys)
 				{
@@ -585,12 +617,33 @@ namespace Microsoft.Maui.Controls
 					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
-						possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
-						return true;
+						if (acceptingTemplates)
+						{
+							possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
+							return true;
+						}
+
+						int segmentCount = RetrievePaths(collapsedMatch).Length;
+						if (segmentCount < bestSegmentCount)
+						{
+							bestRouteKey = routeKey;
+							bestMatch = collapsedMatch;
+							bestSegmentCount = segmentCount;
+						}
+
+						continue;
 					}
 
 					// If the registered route is a combination of shell items and global routes then we might end up here
-					// without the previous tree search finding the correct path
+					// without the previous tree search finding the correct path.
+					// This runs even when a collapsed match was already found:
+					// resolving the remaining segments through shell NODES wins
+					// over treating them as global pushes, and the completed
+					// builder then deduplicates against the sibling match from
+					// SearchPath. Gating this on "no best match yet" kept two
+					// full matches with the same path alive ("Ambiguous routes
+					// matched") whenever a global key shared a content's route
+					// name and happened to be probed first.
 					if ((possibleRoutePath.Shell != null) &&
 						(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
 					{
@@ -634,6 +687,12 @@ namespace Microsoft.Maui.Controls
 							nextNode = nextNode.WalkToNextNode();
 						}
 					}
+				}
+
+				if (bestRouteKey != null)
+				{
+					possibleRoutePath.AddGlobalRoute(bestRouteKey, bestMatch);
+					return true;
 				}
 			}
 

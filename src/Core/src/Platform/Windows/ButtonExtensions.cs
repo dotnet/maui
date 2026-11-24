@@ -85,7 +85,10 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
-			=> platformButton.UpdateBackgroundBrush(button.Background?.ToPlatform());
+		{
+			ControlExtensions.BackgroundImageRequests.Begin(platformButton);
+			platformButton.UpdateBackgroundBrush(button.Background?.ToPlatform());
+		}
 
 		internal static void UpdateBackgroundBrush(this Button platformButton, WBrush? brush)
 		{

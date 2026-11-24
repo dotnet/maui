@@ -32,3 +32,6 @@ static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microso
 static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.SetAdapter(AndroidX.RecyclerView.Widget.RecyclerView.Adapter adapter) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.SwapAdapter(AndroidX.RecyclerView.Widget.RecyclerView.Adapter adapter, bool removeAndRecycleExistingViews) -> void

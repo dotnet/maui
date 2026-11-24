@@ -523,12 +523,14 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(SafeAreaRegions.SoftInput, true, 80, 20, 80)]
-		[InlineData(SafeAreaRegions.All, true, 10, 40, 10)]
-		[InlineData(SafeAreaRegions.All, false, 10, 40, 40)]
-		[InlineData(SafeAreaRegions.SoftInput, false, 0, 40, 0)]
+		[InlineData(SafeAreaRegions.SoftInput, true, 80, 20, 0, 80)]
+		[InlineData(SafeAreaRegions.All, true, 10, 40, 0, 10)]
+		[InlineData(SafeAreaRegions.All, false, 10, 40, 0, 40)]
+		[InlineData(SafeAreaRegions.SoftInput, false, 0, 40, 0, 0)]
+		[InlineData(SafeAreaRegions.SoftInput, true, 80, 20, 30, 50)]
+		[InlineData(SafeAreaRegions.SoftInput, true, 80, 20, 100, 0)]
 		public async Task AnimatedKeyboardInsetsUpdateContentLayout(
-			SafeAreaRegions bottomRegion, bool opening, int keyboardBottom, int containerBottom, int expectedBottom)
+			SafeAreaRegions bottomRegion, bool opening, int keyboardBottom, int containerBottom, int gapToScreenBottom, int expectedBottom)
 		{
 			var content = new ButtonStub();
 			var button = new ExplicitSafeAreaContentButtonStub
@@ -545,6 +547,13 @@ namespace Microsoft.Maui.DeviceTests
 				var heightSpec = AView.MeasureSpec.MakeMeasureSpec(400, MeasureSpecMode.Exactly);
 				platformView.Measure(widthSpec, heightSpec);
 				platformView.Layout(0, 0, width, 400);
+				var (_, screenHeight) = SafeAreaExtensionsTests.GetScreenSize(MauiContext.Context);
+				var location = new int[2];
+				platformView.GetLocationOnScreen(location);
+				var top = screenHeight - location[1] - 400 - gapToScreenBottom;
+				platformView.Layout(0, top, width, top + 400);
+				platformView.GetLocationOnScreen(location);
+				Assert.Equal(gapToScreenBottom, screenHeight - location[1] - platformView.Height);
 
 				using var builder = new WindowInsetsCompat.Builder();
 				using var initial = builder
@@ -561,7 +570,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedBottom > 0, SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
 					animated, button, MauiContext.Context, platformView, opening));
 				platformView.Measure(widthSpec, heightSpec);
-				platformView.Layout(0, 0, width, 400);
+				platformView.Layout(0, top, width, top + 400);
 
 				var nativeContent = Assert.IsAssignableFrom<AView>(content.Handler.PlatformView);
 				Assert.Equal(20, nativeContent.Left);
