@@ -976,8 +976,25 @@ namespace Microsoft.Maui.Controls
 				specificities = new SetterSpecificityList<string>(2);
 			specificities[specificity] = key;
 			DynamicResources[property] = specificities;
-			if (this.TryGetResource(key, out var value))
+
+			object value;
+			if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+			{
+				value = this.GetMergedStyleClassResource(key);
+				if (value is null && !this.TryGetResource(key, out value))
+				{
+					return;
+				}
+			}
+			else if (!this.TryGetResource(key, out value))
+			{
+				return;
+			}
+
+			if (value is not null)
+			{
 				OnResourceChanged(property, value, specificity);
+			}
 		}
 
 		internal event EventHandler ParentSet;

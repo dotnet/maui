@@ -161,6 +161,77 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Blue, span.TextColor);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SpanClassStyleResolvesAcrossNestedResourceScopes(bool assignAfterParenting)
+		{
+			var span = new Span();
+			if (!assignAfterParenting)
+			{
+				span.StyleClass = new[] { "accent" };
+			}
+
+			var label = new Label
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Label))
+					{
+						Class = "accent",
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Green } }
+					}
+				},
+				FormattedText = new FormattedString { Spans = { span } }
+			};
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { CreateClassStyle("accent", Colors.Blue) },
+				Content = label
+			};
+
+			if (assignAfterParenting)
+			{
+				span.StyleClass = new[] { "accent" };
+			}
+
+			Assert.Equal(Colors.Blue, span.TextColor);
+		}
+
+		[Fact]
+		public void ReplacingSpanClassResolvesAcrossNestedResourceScopes()
+		{
+			var span = new Span();
+			var label = new Label
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Label))
+					{
+						Class = "accent",
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Green } }
+					}
+				},
+				FormattedText = new FormattedString { Spans = { span } }
+			};
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary
+				{
+					CreateClassStyle("accent", Colors.Blue),
+					CreateClassStyle("warning", Colors.Red)
+				},
+				Content = label
+			};
+
+			span.StyleClass = new[] { "warning" };
+			Assert.Equal(Colors.Red, span.TextColor);
+
+			span.StyleClass = new[] { "accent" };
+
+			Assert.Equal(Colors.Blue, span.TextColor);
+		}
+
 		[Fact]
 		public void ClassesApplyIndependentlyAndCompose()
 		{
