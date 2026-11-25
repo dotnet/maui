@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Handlers
 #endif
 #if MACCATALYST || IOS || WINDOWS
 			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled,
-			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 		};
 
