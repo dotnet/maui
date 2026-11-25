@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:ext="clr-namespace:Controls.Xaml.UnitTests.ExternalAssembly;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly"
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionPropertiesQualified">
+	<Label ext:ExternalLabelExtensions.Text="a real container that declares no Text" />
+</ContentPage>

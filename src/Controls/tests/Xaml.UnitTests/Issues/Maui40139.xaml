@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40139"
+             x:DataType="local:Maui40139">
+    <VerticalStackLayout>
+        <Label x:Name="label" Text="{Binding A.B.C.Text}" />
+        <Entry x:Name="entry" Text="{Binding A.B.C.Text, Mode=TwoWay}" />
+    </VerticalStackLayout>
+</ContentPage>

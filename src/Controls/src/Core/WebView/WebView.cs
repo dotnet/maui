@@ -169,17 +169,24 @@ namespace Microsoft.Maui.Controls
 
 			string result;
 
-			if (_evaluateJavaScriptRequested != null) // With Handlers we don't use events, if is null we are using a renderer and a handler otherwise.
+			try
 			{
-				// This is the WebViewRenderer subscribing to these requests; the handler stuff
-				// doesn't use them.
-				result = await _evaluateJavaScriptRequested?.Invoke(script);
+				if (_evaluateJavaScriptRequested != null) // With Handlers we don't use events, if is null we are using a renderer and a handler otherwise.
+				{
+					// This is the WebViewRenderer subscribing to these requests; the handler stuff
+					// doesn't use them.
+					result = await _evaluateJavaScriptRequested?.Invoke(script);
+				}
+				else
+				{
+					// Use the handler command to evaluate the JS
+					result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync),
+						new EvaluateJavaScriptAsyncRequest(script));
+				}
 			}
-			else
+			catch (Exception ex) when (IsEvaluationResultLost(ex))
 			{
-				// Use the handler command to evaluate the JS
-				result = await Handler.InvokeAsync(nameof(IWebView.EvaluateJavaScriptAsync),
-					new EvaluateJavaScriptAsyncRequest(script));
+				result = null;
 			}
 
 			//if the js function errored or returned null/undefined treat it as null
@@ -192,6 +199,20 @@ namespace Microsoft.Maui.Controls
 				result = result.Trim('"');
 
 			return result;
+		}
+
+		static bool IsEvaluationResultLost(Exception exception)
+		{
+#if IOS || MACCATALYST
+			// The script wrapper above only produces values WebKit can return, so WebKit reports an
+			// unsupported result type only when no result arrived: the page running the script was
+			// destroyed first, e.g. by a navigation to another site in a new web content process.
+			return exception is Foundation.NSErrorException { Error: { } error }
+				&& error.Domain == "WKErrorDomain"
+				&& error.Code == (nint)(long)WebKit.WKErrorCode.JavaScriptResultTypeIsUnsupported;
+#else
+			return false;
+#endif
 		}
 
 		/// <summary>

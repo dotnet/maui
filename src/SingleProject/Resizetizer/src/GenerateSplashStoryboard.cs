@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var assetsPath = Path.Combine(IntermediateOutputPath, "Assets.xcassets");
 			if (Directory.Exists(assetsPath))
-				Directory.Delete(assetsPath, recursive: true);
+				Utils.DeleteDirectoryWithRetries(assetsPath);
 		}
 	}
 }
