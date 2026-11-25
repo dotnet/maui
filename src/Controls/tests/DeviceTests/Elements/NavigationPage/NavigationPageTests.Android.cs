@@ -169,8 +169,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(platformToolbar.BackgroundTintList);
 
-				var customBackground = new Android.Graphics.Drawables.GradientDrawable(
-					Android.Graphics.Drawables.GradientDrawable.Orientation.LeftRight,
+				var customBackground = new GradientDrawable(
+					GradientDrawable.Orientation.LeftRight,
 					new int[] { Colors.Red.ToPlatform(), Colors.Blue.ToPlatform() });
 				platformToolbar.Background = customBackground;
 
