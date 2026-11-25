@@ -1048,6 +1048,8 @@ function Update-RunTestsCombinedOverview {
     suite sections (their `run-tests-result` and `run-tests-overview` markers).
     #>
     param([Parameter(Mandatory)][string]$Body)
+    # Comments posted before the overview table existed keep a Result badge per section; leave them.
+    if (-not $Body.Contains('<!-- run-tests-overview -->')) { return $Body }
     $rows = [System.Collections.Generic.List[string]]::new()
     $results = [System.Collections.Generic.List[string]]::new()
     foreach ($section in Get-RunTestsCommentSections $Body) {
@@ -1249,6 +1251,40 @@ function New-RunTestsRunCheckUpdate {
         $update.status = 'in_progress'
     }
     return $update
+}
+
+function New-RunTestsJobChecks {
+    <#
+    .SYNOPSIS
+    One check run per job of the dispatched build, for the PR head.
+
+    .DESCRIPTION
+    The build runs on a run-tests/* dispatch commit, so Azure Pipelines reports its jobs there and
+    the PR's checks panel never shows them. These mirror each job ("maui-pr-uitests (Android UITests
+    ... Shell1)") with its state and a link to its log. external_id ("job:<build id>") marks them
+    as job checks, so a later build on the same commit can retire the ones it does not run.
+    #>
+    param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
+    $buildUrl = [string]$Build._links.web.href
+    return @($Results.jobs | ForEach-Object {
+            $name = Format-RunTestsText "$($script:RunTestsCheckPrefix) ($($_.name))" 180
+            $url = if ($_.url) { [string]$_.url } else { $buildUrl }
+            $check = [ordered]@{
+                name = $name; details_url = $url; external_id = "job:$($Build.id)"
+                output = [ordered]@{
+                    title = "$($_.name): $($_.result)"
+                    summary = "[$($_.name)]($url) in [$($script:RunTestsPipelineName) #$($Build.id)]($buildUrl), the run selected by ``/review`` for this commit."
+                }
+            }
+            switch ($_.result) {
+                { $_ -in 'succeeded', 'succeededWithIssues' } { $check.status = 'completed'; $check.conclusion = 'success' }
+                'failed' { $check.status = 'completed'; $check.conclusion = 'failure' }
+                { $_ -in 'canceled', 'abandoned' } { $check.status = 'completed'; $check.conclusion = 'cancelled' }
+                'pending' { $check.status = 'queued' }
+                default { $check.status = 'in_progress' }
+            }
+            [pscustomobject]$check
+        })
 }
 
 function Get-RunTestsStatus {

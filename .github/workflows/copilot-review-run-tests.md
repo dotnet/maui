@@ -61,6 +61,14 @@ on:
             } catch (e) {
               core.warning(`Could not react to the command: ${e.message}`);
             }
+            // Hide the command as resolved, like review-trigger.yml does for the other /review commands;
+            // the results comment that follows replaces it.
+            try {
+              await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
+                { id: context.payload.comment.node_id });
+            } catch (e) {
+              core.warning(`Could not hide the command comment: ${e.message}`);
+            }
           }
     - name: Checkout trusted scripts
       if: steps.command.outputs.authorized == 'true'

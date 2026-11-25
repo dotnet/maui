@@ -165,6 +165,26 @@ Describe 'Dispatch request' {
         $failed.output.summary | Should -Match 'Android Label'
         (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
+
+    It 'mirrors each job of the build as a check on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/7' } } }
+        $results = [pscustomobject]@{ completed = $false; result = ''; headline = 'running'; jobs = @(
+                [pscustomobject]@{ name = 'Android UITests Shell1'; result = 'succeeded'; url = 'https://dev.azure.com/x/7&j=a' },
+                [pscustomobject]@{ name = 'Android UITests Shell2'; result = 'failed'; url = 'https://dev.azure.com/x/7&j=b' },
+                [pscustomobject]@{ name = 'iOS UITests Label'; result = 'inProgress'; url = $null },
+                [pscustomobject]@{ name = 'Windows UITests Label'; result = 'pending'; url = $null }) }
+        $checks = New-RunTestsJobChecks -Build $build -Results $results
+        $checks.Count | Should -Be 4
+        $checks[0].name | Should -Be "$($script:RunTestsCheckPrefix) (Android UITests Shell1)"
+        $checks[0].conclusion | Should -Be 'success'
+        $checks[0].details_url | Should -Be 'https://dev.azure.com/x/7&j=a'
+        $checks[0].external_id | Should -Be 'job:7'
+        $checks[1].conclusion | Should -Be 'failure'
+        $checks[2].status | Should -Be 'in_progress'
+        $checks[2].details_url | Should -Be 'https://dev.azure.com/x/7'
+        $checks[3].status | Should -Be 'queued'
+        $checks[3].PSObject.Properties['conclusion'] | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Get-RunTestsMergeState' {
@@ -565,6 +585,9 @@ Describe 'Two-model selection' {
         $gpt | Should -Match ([regex]::Escape("let suite = 'all';"))
         $gpt | Should -Match ([regex]::Escape('if (command[1]) suite = command[1].toLowerCase();'))
         $gpt | Should -Match 'options: \[all, ui, device\]'
+        # The command comment is hidden as resolved once acknowledged, like the other /review commands.
+        $gpt | Should -Match ([regex]::Escape('minimizeComment(input: { subjectId: $id, classifier: RESOLVED })'))
+        $gpt | Should -Match ([regex]::Escape('{ id: context.payload.comment.node_id }'))
         foreach ($workflow in $gpt, $mai) {
             foreach ($key in 'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
                 $workflow | Should -Match "(?m)^        $($key):"
@@ -914,6 +937,11 @@ Describe '/review run-tests (both suites)' {
         Update-RunTestsCombinedOverview $mixed | Should -Match '<img alt="Result PASSED"'
         $queued = ([regex]'<!-- run-tests-result: PASSED -->').Replace($done, '<!-- run-tests-result: NOT QUEUED -->', 1)
         Update-RunTestsCombinedOverview $queued | Should -Match '<img alt="Result NOT QUEUED"'
+    }
+
+    It 'leaves comments without an overview table alone' {
+        $legacy = "<!-- review-run-tests-all -->`n<!-- run-tests-section: ui -->`n<!-- review-run-tests-state: done -->`n  <img alt=`"Result PASSED`" src=`"x`">`n<!-- /run-tests-section: ui -->"
+        Update-RunTestsCombinedOverview $legacy | Should -BeExactly $legacy
     }
 
     It 'sends MAI Code 2 over the Responses API' {
