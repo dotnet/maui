@@ -63,6 +63,7 @@ function ConvertFrom-ReviewCommand {
     if ($trimmed -notmatch '(?i)^/review(\s|$)') {
         return $null
     }
+    # Keep retired /review tests excluded from full-review parsing and recovery.
     if ($trimmed -match '(?i)^/review\s+(rerun|tests|run-tests|run-ui-tests|run-device-tests|performance|expert-review(?:er)?)(\s|$)') {
         return $null
     }
