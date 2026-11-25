@@ -28,12 +28,8 @@ public partial class Issue10255 : ContentPage
 		[XamlInflatorData]
 		internal void GenericConverterWithGridLengthWorks(XamlInflator inflator)
 		{
-#if !NET11_0_OR_GREATER
-			if (inflator == XamlInflator.XamlC)
-				return; // Skip: XamlC compilation of implicit string to GridLength cast requires .NET 11 or greater
-#endif
 			var page = new Issue10255(inflator);
-			
+
 			// Test that the converters were created successfully
 			var failedConverter = page.Resources["FailedConverter"] as Issue10255BoolToObjectConverter<GridLength>;
 			Assert.NotNull(failedConverter);

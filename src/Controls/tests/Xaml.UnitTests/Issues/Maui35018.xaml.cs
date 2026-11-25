@@ -37,8 +37,6 @@ public partial class Maui35018 : ContentPage
 		}
 
 #if DEBUG
-		// XamlC is excluded: it generates IL at compile time and doesn't participate in
-		// runtime Hot Reload re-inflation, so it cannot exercise this scenario.
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]

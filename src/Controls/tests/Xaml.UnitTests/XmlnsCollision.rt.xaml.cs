@@ -1,7 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 
@@ -51,19 +50,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Theory]
 			[InlineData(XamlInflator.Runtime)]
-			[InlineData(XamlInflator.XamlC)]
 			[InlineData(XamlInflator.SourceGen)]
 			internal void ConflictInXmlns(XamlInflator inflator)
 			{
 				switch (inflator)
 				{
-					case XamlInflator.XamlC:
-						Assert.Throws<BuildException>(() =>
-						{
-							MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
-							Assert.True(hasLoggedErrors);
-						});
-						break;
 					case XamlInflator.SourceGen:
 						var result = CreateMauiCompilation()
 							.WithAdditionalSource(
@@ -71,7 +62,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
 

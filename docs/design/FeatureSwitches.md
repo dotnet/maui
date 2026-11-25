@@ -13,8 +13,8 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
-| MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
-| MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
+| MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled | Legacy compatibility switch controlling runtime binding type-mismatch diagnostics. SourceGen compiles bindings with `Source` independently of this setting. |
+| MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime XAML inflation |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
@@ -42,7 +42,6 @@ Controls how XAML files are processed and compiled. Starting with .NET 11, the d
 **Available Values:**
 - `SourceGen` (default) - XAML is compiled to C# at build time using a source generator. This provides the best performance and debugging experience, including full XAML Hot Reload support.
 - `Runtime` - XAML is inflated at runtime. This has negative performance impact and is deprecated.
-- `XamlC` - XAML is compiled using the XamlC IL weaver after compilation. This prevents some debugging capabilities like XAML Hot Reload and is deprecated.
 
 **Example:**
 ```xml
@@ -68,7 +67,10 @@ You can override the inflator for individual XAML files using item metadata:
 - The `[XamlCompilation]` attribute is deprecated (produces warning) but still functional.
 
 **Changes in .NET 12:**
-- The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
+- XamlC, its IL weaver, and its post-compilation validation pass are removed. Setting `MauiXamlInflator` or per-file `Inflator` metadata to `XamlC` (including in a list of inflators) fails with `MAUI1004`.
+- Remove `MauiXamlInflator=XamlC` and `Inflator="XamlC"` overrides to use SourceGen. Explicit `Inflator="Runtime"` continues to embed and load XAML at runtime, without XamlC validation.
+- The `[XamlCompilation]` attribute and `XamlCompilationOptions` remain for compatibility, but no longer select compilation behavior. In .NET 12 they are obsolete with `error: true`. Use MSBuild properties or item metadata instead.
+- XamlC-only build properties such as `MauiXamlCValidateOnly`, `_MauiForceXamlCForDebug`, and `MauiKeepXamlResources` no longer have an effect.
 
 ### Source-generated XAML line information
 
@@ -141,7 +143,7 @@ Compiled binding in XAML:
 <Label Text="{Binding Customer.Name}" x:DataType="local:PageViewModel" />
 ```
 
-XamlC skipped compilation of bindings with the `Source` property set to any value in previous releases. Some bindings might start producing build errors or start failing at runtime after this feature is enabled. After enabling this feature, make sure all bindings have the right `x:DataType` so they are compiled correctly. For bindings which should not be compiled, clear the data type like this:
+This property is retained for compatibility with runtime binding diagnostics. It no longer controls a compiler: SourceGen compiles bindings with an explicit `Source` when `x:DataType` is available. Make sure these bindings have the right `x:DataType`. For bindings which should not be compiled, clear the data type like this:
 ```
 {Binding MyProperty, Source={x:Reference MyTarget}, x:DataType={x:Null}}
 ```
@@ -150,7 +152,7 @@ This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`
 
 ## MauiNamescopesSupported
 
-With (upcoming) sourcegen XAML inflation, the xaml infrastructure no longer need Namescopes. Some apps that want to keep XamlC or Runtime inflation, use FindByName in code, or have MarkupExtensions depending on `IReferenceProvider` will want to turn this back on.
+With source-generated XAML inflation, the XAML infrastructure no longer needs Namescopes. Apps that use Runtime inflation, use FindByName in code, or have MarkupExtensions depending on `IReferenceProvider` will want to turn this back on.
 
 Having this off reduce method body size, making them faster to JIT, and release the pressure on the GC as there are way less allocations.
 

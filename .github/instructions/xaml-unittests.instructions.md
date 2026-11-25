@@ -26,7 +26,7 @@ src/Controls/tests/Xaml.UnitTests/Issues/
 Most unit tests will:
 1. Check that the XAML page can be created/inflated
 2. Perform some assertions on the created page
-3. Apply to all `[XamlInflator]` test variations (runtime, XamlC, SourceGen)
+3. Apply to both `XamlInflator` test variations (Runtime and SourceGen)
 
 **XAML file (Maui12345.xaml):**
 ```xaml
@@ -65,24 +65,9 @@ public partial class Maui12345 : ContentPage
 
 **Note**: Only add `[SetUp]` and `[TearDown]` methods if your test requires special initialization (e.g., setting up `DispatcherProvider` or `Application.Current`). Most tests don't need them.
 
-## 3. Testing IL Correctness (XamlC) or Source Generation
+## 3. Testing Source Generation
 
 When the test specifically validates compile-time behavior for a specific inflator:
-
-**XamlC (IL generation):**
-```csharp
-[Test]
-public void MyTest([Values] XamlInflator inflator)
-{
-    if (inflator == XamlInflator.XamlC)
-        Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Maui12345)));
-    else
-    {
-        var page = new Maui12345(inflator);
-        Assert.That(page, Is.Not.Null);
-    }
-}
-```
 
 **Source Generation:**
 ```csharp
@@ -121,9 +106,9 @@ When testing scenarios where code generation is **expected to fail** or produce 
 
 | Extension | Behavior | Use Case |
 |-----------|----------|----------|
-| `.rt.xaml` | Runtime inflation only | XamlC/SourceGen should fail, but runtime should work |
-| `.rtsg.xaml` | Runtime + SourceGen only | XamlC should fail |
-| `.rtxc.xaml` | Runtime + XamlC only | SourceGen should fail |
+| `.rt.xaml` | Runtime inflation only | SourceGen should fail, but runtime should work |
+| `.sgen.xaml` | SourceGen only | Only source-generated inflation is under test |
+| `.rtsg.xaml` | Runtime + SourceGen | Explicitly exercise both supported inflators |
 
 **Why?** These extensions prevent the compiler and build tasks from processing the XAML file, allowing your test to execute and verify the expected behavior.
 
@@ -139,10 +124,10 @@ Issues/
 | Scenario | Location | Naming | Special Extension |
 |----------|----------|--------|-------------------|
 | Issue test | `Issues/` | `MauiXXXXX.*` | None (unless invalid codegen) |
-| Invalid XamlC | `Issues/` | `MauiXXXXX.rt.xaml` | `.rt.xaml` |
-| Invalid SourceGen | `Issues/` | `MauiXXXXX.rt.xaml` or `.rtxc.xaml` | Depends on what should fail |
-| Test XamlC IL | Anywhere | Any | Use `MockCompiler` |
+| Invalid SourceGen | `Issues/` | `MauiXXXXX.rt.xaml` | `.rt.xaml` |
 | Test SourceGen | Anywhere | Any | Use `MockSourceGenerator` |
+
+XamlC and `MockCompiler` were removed in .NET 12. Do not add IL-weaver tests or XamlC inflator variants.
 
 ## Related Documentation
 

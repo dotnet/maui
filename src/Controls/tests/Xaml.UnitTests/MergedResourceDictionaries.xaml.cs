@@ -14,7 +14,6 @@ public partial class MergedResourceDictionaries : ContentPage
 		[XamlInflatorData]
 		internal void MergedResourcesAreFound(XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(MergedResourceDictionaries));
 			var layout = new MergedResourceDictionaries(inflator);
 			Assert.Equal("Foo", layout.label0.Text);
 			Assert.Equal(Colors.Pink, layout.label0.TextColor);

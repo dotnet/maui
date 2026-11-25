@@ -23,25 +23,10 @@ public partial class Maui22714
 		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
-		[InlineData(XamlInflator.XamlC, true)]
-		[InlineData(XamlInflator.XamlC, false)]
-		[InlineData(XamlInflator.SourceGen, false)]
-		[InlineData(XamlInflator.Runtime, false)]
-		internal void TestNonCompiledResourceDictionary(XamlInflator inflator, bool treatWarningsAsErrors)
+		[XamlInflatorData]
+		internal void TestNonCompiledResourceDictionary(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				if (treatWarningsAsErrors)
-				{
-					var ex = Assert.Throws<Build.Tasks.BuildException>(() => MockCompiler.Compile(typeof(Maui22714), treatWarningsAsErrors: true));
-					Assert.Contains(" XC0024 ", ex.Message, StringComparison.Ordinal);
-				}
-				else
-				{
-					MockCompiler.Compile(typeof(Maui22714), treatWarningsAsErrors: false);
-				}
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui22714));
 			}

@@ -34,9 +34,7 @@ public partial class Bz44216 : ContentPage
 		[XamlInflatorData]
 		internal void DonSetValueOnPrivateBP(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(7, 26, s => s.Contains("No property,", StringComparison.Ordinal), () => MockCompiler.Compile(typeof(Bz44216)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				XamlExceptionAssert.ThrowsXamlParseException(7, 26, s => s.StartsWith("Cannot assign property", StringComparison.Ordinal), () => new Bz44216(inflator));
 			if (inflator == XamlInflator.SourceGen)
 			{

@@ -15,8 +15,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			"Microsoft.Maui",
 			"Microsoft.Maui.Controls",
 			"Microsoft.Maui.Controls.Maps",
-			"Microsoft.Maui.Controls.Xaml",
-			"Microsoft.Maui.Controls.Build.Tasks"
+			"Microsoft.Maui.Controls.Xaml"
 		};
 
 		const string s_productName = "Microsoft .NET MAUI";

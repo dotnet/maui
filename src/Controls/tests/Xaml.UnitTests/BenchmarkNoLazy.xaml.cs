@@ -10,9 +10,6 @@ public partial class BenchmarkNoLazy : ContentPage
 			case "Runtime":
 				InitializeComponentRuntime();
 				break;
-			case "XamlC":
-				InitializeComponentXamlC();
-				break;
 			case "SourceGen":
 				InitializeComponentSourceGen();
 				break;

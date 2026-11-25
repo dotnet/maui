@@ -588,10 +588,8 @@ namespace Ns2
 
 	[Theory]
 	[InlineData("Runtime", false, false)]
-	[InlineData("XamlC", false, false)]
 	[InlineData("SourceGen", false, false)]
 	[InlineData("Runtime", true, false)]
-	[InlineData("XamlC", true, false)]
 	[InlineData("SourceGen", true, false)]
 	[InlineData("Runtime", false, true)]
 	[InlineData("SourceGen", false, true)]
@@ -821,7 +819,6 @@ using Microsoft.Maui.Controls;
 
 	[Theory]
 	[InlineData("Runtime", 0)]
-	[InlineData("XamlC", 0)]
 	[InlineData("SourceGen", 2)]
 	[InlineData("Runtime,SourceGen", 2)]
 	public void FindsTypesInSourceGeneratedPropertyElementExpressions(string inflator, int expectedWarnings)
@@ -1029,7 +1026,6 @@ namespace Second
 	[Theory]
 	[InlineData("Runtime", 9)]
 	[InlineData("Runtime,SourceGen", 9)]
-	[InlineData("XamlC", 5)]
 	[InlineData("SourceGen", 5)]
 	public void AnalyzesPlatformBranchesUsedByTheSelectedInflators(string inflator, int expectedWarnings)
 	{

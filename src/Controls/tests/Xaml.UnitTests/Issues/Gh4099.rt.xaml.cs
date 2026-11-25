@@ -1,5 +1,4 @@
 using System.Linq;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -14,24 +13,11 @@ public partial class Gh4099 : ContentPage
 	public class Tests
 	{
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void BetterExceptionReport(XamlInflator inflator)
 		{
 			switch (inflator)
 			{
-				case XamlInflator.XamlC:
-					try
-					{
-						MockCompiler.Compile(typeof(Gh4099));
-					}
-					catch (BuildException xpe)
-					{
-						Assert.Equal(5, xpe.XmlInfo.LineNumber);
-						return;
-					}
-					Assert.Fail("Expected BuildException to be thrown");
-					break;
 				case XamlInflator.SourceGen:
 					var result = CreateMauiCompilation()
 						.WithAdditionalSource(

@@ -16,13 +16,10 @@ public partial class Maui17333 : ResourceDictionary
 		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void CompilerDoesntThrowOnOnPlatform(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				MockCompiler.Compile(typeof(Maui17333), targetFramework: "net-ios");
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui17333));
 				Assert.Empty(result.Diagnostics);

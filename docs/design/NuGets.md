@@ -10,7 +10,7 @@ There are several artifacts in the .NET MAUI "universe":
   * `Microsoft.Maui.Controls` - The super/root package of .NET MAUI Controls
     * `Microsoft.Maui.Controls.Core` - The Controls assemblies
     * `Microsoft.Maui.Controls.Xaml` - The XAML parser
-    * `Microsoft.Maui.Controls.Build.Tasks` - The real set of XAML[C|G] targets and globs
+    * `Microsoft.Maui.Controls.Build.Tasks` - XAML source generators, targets and globs
   * `Microsoft.Maui.Resizetizer` - The framework-and-platform-agnostic asset generator and integrator
   * `Microsoft.Maui.Core` - The base interfaces and handlers for all .NET MAUI things
   * `Microsoft.Maui.Essentials` - The core set of framework-agnostic, cross-platform APIs

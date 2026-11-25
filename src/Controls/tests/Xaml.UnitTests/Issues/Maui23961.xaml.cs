@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Build.Framework;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -29,42 +28,10 @@ public partial class Maui23961 : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
-		internal void ObsoleteWarningIncludesMessage(XamlInflator inflator)
+		internal void ObsoleteTypesAndPropertiesCanBeLoaded(XamlInflator inflator)
 		{
-			// This test verifies that obsolete warnings include the custom message from the ObsoleteAttribute
-			// and that types/properties with [Obsolete(error: false)] produce warnings, not errors
-
-			if (inflator == XamlInflator.XamlC)
-			{
-				// Compile with warnings allowed and capture the emitted warnings
-				MockCompiler.Compile(typeof(Maui23961), out _, out _, out var warnings, treatWarningsAsErrors: false);
-				// Verify the diagnostic messages include the custom [Obsolete] message text
-				Assert.Contains(warnings, w => w.Message.Contains("[Test Message]", StringComparison.Ordinal));
-			}
-			else
-			{
-				var page = new Maui23961(inflator);
-				Assert.NotNull(page);
-			}
-		}
-
-		[Theory]
-		[XamlInflatorData]
-		internal void ObsoleteWarningBecomesErrorWhenTreatWarningsAsErrors(XamlInflator inflator)
-		{
-			// When TreatWarningsAsErrors is true, obsolete warnings should become errors
-			if (inflator == XamlInflator.XamlC)
-			{
-				// Should throw when treating warnings as errors
-				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Maui23961), treatWarningsAsErrors: true));
-				Assert.NotNull(ex);
-			}
-			else
-			{
-				// Runtime and SourceGen don't have treatWarningsAsErrors
-				var page = new Maui23961(inflator);
-				Assert.NotNull(page);
-			}
+			var page = new Maui23961(inflator);
+			Assert.NotNull(page);
 		}
 	}
 }

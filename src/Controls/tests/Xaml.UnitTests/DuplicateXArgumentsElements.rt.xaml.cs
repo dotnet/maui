@@ -14,16 +14,10 @@ public partial class DuplicateXArgumentsElements : BindableObject
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void ThrowXamlParseException(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(DuplicateXArgumentsElements), out var md, out var hasLoggedErrors);
-				Assert.True(hasLoggedErrors);
-			}
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new DuplicateXArgumentsElements(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

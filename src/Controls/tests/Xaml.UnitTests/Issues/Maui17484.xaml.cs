@@ -20,12 +20,7 @@ public partial class Maui17484 : ContentPage
 		[XamlInflatorData]
 		internal void ObsoleteinDT(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				var ex = Record.Exception(() => MockCompiler.Compile(typeof(Maui17484)));
-				Assert.Null(ex);
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui17484));
 				Assert.Empty(result.Diagnostics);

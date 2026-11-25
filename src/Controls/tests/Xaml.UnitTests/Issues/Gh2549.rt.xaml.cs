@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -16,8 +15,6 @@ public partial class Gh2549 : ContentPage
 		[XamlInflatorData]
 		internal void ErrorOnUnknownXmlnsForDataType(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2549)));
 			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh2549(inflator));
 			if (inflator == XamlInflator.SourceGen)

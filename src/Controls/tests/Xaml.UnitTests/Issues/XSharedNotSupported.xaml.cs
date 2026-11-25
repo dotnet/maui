@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -15,18 +14,13 @@ public partial class XSharedNotSupported : ContentPage
 	{
 		[Theory]
 		[XamlInflatorData]
-		internal void XSharedThrowsOnRuntimeAndXamlC(XamlInflator inflator)
+		internal void XSharedRequiresSourceGen(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.Runtime)
 			{
 				// x:Shared is only supported with SourceGen - Runtime should throw
 				var ex = Assert.Throws<XamlParseException>(() => new XSharedNotSupported(inflator));
 				Assert.Contains("x:Shared", ex.Message, StringComparison.Ordinal);
-			}
-			else if (inflator == XamlInflator.XamlC)
-			{
-				// XamlC should also throw for x:Shared
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(XSharedNotSupported)));
 			}
 			else if (inflator == XamlInflator.SourceGen)
 			{

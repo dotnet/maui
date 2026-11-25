@@ -15,9 +15,7 @@ public partial class ResourceDictionaryWithInvalidSource : ContentPage
 		[XamlInflatorData]
 		internal void InvalidSourceThrows(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(8, 33, () => MockCompiler.Compile(typeof(ResourceDictionaryWithInvalidSource)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				XamlExceptionAssert.ThrowsXamlParseException(8, 33, () => new ResourceDictionaryWithInvalidSource(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

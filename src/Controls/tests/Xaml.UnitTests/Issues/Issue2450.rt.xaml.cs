@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -41,8 +40,6 @@ public partial class Issue2450 : ContentPage
 				//FIXME check diagnostic code
 				Assert.NotEmpty(result.Diagnostics);
 			}
-			else if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Issue2450)));
 		}
 	}
 }

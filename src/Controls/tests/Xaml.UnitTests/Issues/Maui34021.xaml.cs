@@ -9,7 +9,7 @@ public enum Maui34021MyEnum { Value1, Value2, Value3 }
 
 internal static class Maui34021MyEnumExtension
 {
-    public static string ToFriendlyString(this Maui34021MyEnum value) => value.ToString();
+	public static string ToFriendlyString(this Maui34021MyEnum value) => value.ToString();
 }
 
 public class Maui34021DataObject<T> : View where T : Enum
@@ -18,22 +18,21 @@ public class Maui34021DataObject<T> : View where T : Enum
 
 public partial class Maui34021 : ContentPage
 {
-    public Maui34021() => InitializeComponent();
+	public Maui34021() => InitializeComponent();
 
-    [Collection("Issue")]
-    public class Tests : IDisposable
-    {
-        public void Dispose() => Application.Current = null;
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public void Dispose() => Application.Current = null;
 
-        [Theory]
-        [InlineData(XamlInflator.Runtime)]
-        [InlineData(XamlInflator.XamlC)]
-        [InlineData(XamlInflator.SourceGen)]
-        internal void SourceGenResolvesEnumTypeNotExtensionClass(XamlInflator inflator)
-        {
-            if (inflator == XamlInflator.SourceGen)
-            {
-                const string xaml = """
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void SourceGenResolvesEnumTypeNotExtensionClass(XamlInflator inflator)
+		{
+			if (inflator == XamlInflator.SourceGen)
+			{
+				const string xaml = """
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -43,7 +42,7 @@ public partial class Maui34021 : ContentPage
 </ContentPage>
 """;
 
-                const string csharp = """
+				const string csharp = """
 using System;
 using Microsoft.Maui.Controls;
 
@@ -66,18 +65,18 @@ public partial class Maui34021SourceGenRepro : ContentPage
 }
 """;
 
-                var result = CreateMauiCompilation()
-                .WithAdditionalSource(csharp)
-                .RunMauiSourceGenerator(new AdditionalXamlFile("Issues/Maui34021SourceGenRepro.xaml", xaml, TargetFramework: "net10.0"));
-                var generated = result.GeneratedInitializeComponent();
-                Assert.DoesNotContain("Maui34021MyEnumExtension", generated, StringComparison.Ordinal);
-                Assert.Contains("Maui34021MyEnum", generated, StringComparison.Ordinal);
-            }
-            else
-            {
-                var page = new Maui34021(inflator);
-                Assert.IsType<Maui34021DataObject<Maui34021MyEnum>>(page.Content);
-            }
-        }
-    }
+				var result = CreateMauiCompilation()
+				.WithAdditionalSource(csharp)
+				.RunMauiSourceGenerator(new AdditionalXamlFile("Issues/Maui34021SourceGenRepro.xaml", xaml, TargetFramework: "net10.0"));
+				var generated = result.GeneratedInitializeComponent();
+				Assert.DoesNotContain("Maui34021MyEnumExtension", generated, StringComparison.Ordinal);
+				Assert.Contains("Maui34021MyEnum", generated, StringComparison.Ordinal);
+			}
+			else
+			{
+				var page = new Maui34021(inflator);
+				Assert.IsType<Maui34021DataObject<Maui34021MyEnum>>(page.Content);
+			}
+		}
+	}
 }

@@ -3,7 +3,6 @@ global using Microsoft.Maui.Controls.ControlGallery;
 
 using System;
 using System.Reflection;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
@@ -45,8 +44,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[XamlInflatorData]
 			internal void GlobalUsingImportsCurrentAssemblyTypes(XamlInflator inflator)
 			{
-				if (inflator == XamlInflator.XamlC)
-					MockCompiler.Compile(typeof(Maui29708));
 
 				var page = new Maui29708(inflator);
 				Assert.IsType<Maui29708Control>(page.control);
@@ -56,7 +53,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Theory]
 			[InlineData(XamlInflator.Runtime)]
-			[InlineData(XamlInflator.XamlC)]
 			internal void GlobalUsingDoesNotImportReferencedAssemblyTypes(XamlInflator inflator)
 			{
 				var mapping = Assert.Single(typeof(Maui29708).Assembly.GetCustomAttributes<XmlnsDefinitionAttribute>(),
@@ -64,10 +60,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						&& attribute.Target == "Microsoft.Maui.Controls.ControlGallery");
 				Assert.Null(mapping.AssemblyName);
 
-				if (inflator == XamlInflator.XamlC)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Maui29708External)));
-				else
-					Assert.Throws<XamlParseException>(() => new Maui29708External(inflator));
+				Assert.Throws<XamlParseException>(() => new Maui29708External(inflator));
 			}
 
 			[Fact]

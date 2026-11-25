@@ -14,16 +14,10 @@ public partial class DuplicatePropertyElements : BindableObject
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void ThrowXamlParseException(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(DuplicatePropertyElements), out var md, out var hasLoggedErrors);
-				Assert.True(hasLoggedErrors);
-			}
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new DuplicatePropertyElements(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

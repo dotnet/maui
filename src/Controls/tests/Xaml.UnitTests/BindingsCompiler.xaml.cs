@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				//testing standalone bindings
 				var binding = layout.picker0.ItemDisplayBinding;
-				if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
+				if (inflator == XamlInflator.SourceGen)
 				{
 					Assert.IsType<TypedBinding<MockItemViewModel, string>>(binding);
 				}

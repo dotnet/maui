@@ -10,14 +10,9 @@ public partial class Gh2034 : ContentPage
 	public class Tests
 	{
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void Compiles(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(Gh2034));
-			}
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Gh2034));

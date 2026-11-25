@@ -29,12 +29,7 @@ public partial class Maui21038
 		[XamlInflatorData]
 		internal void XamlParseErrorsHaveFileInfo(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(Maui21038), out var md, out var hasLoggedErrors);
-				Assert.True(hasLoggedErrors);
-			}
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Maui21038(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

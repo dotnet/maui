@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
@@ -52,8 +51,6 @@ public partial class Gh6192Template : ContentView
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new AB946693(XamlInflator.Runtime));
-			else if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(AB946693)));
 		}
 	}
 }

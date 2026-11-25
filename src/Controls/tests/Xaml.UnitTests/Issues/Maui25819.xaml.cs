@@ -33,7 +33,6 @@ public partial class Maui25819 : ContentPage
 		[XamlInflatorData]
 		internal void DoesntThrow(XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);
 			layout.BindingContext = new Maui25819UserDataViewModel();
 			Assert.Equal("2023", layout.label0.Text);

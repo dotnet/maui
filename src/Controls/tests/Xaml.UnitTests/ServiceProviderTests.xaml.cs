@@ -59,11 +59,10 @@ public partial class ServiceProviderTests : ContentPage
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
 		internal void TestServiceProviders(XamlInflator inflator)
 		{
 			var page = new ServiceProviderTests(inflator);
-			MockCompiler.Compile(typeof(ServiceProviderTests));
 
 			Assert.Null(page.label0.Text);
 			Assert.Contains("IProvideValueTarget", page.label1.Text, StringComparison.Ordinal);

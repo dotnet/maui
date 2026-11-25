@@ -38,7 +38,7 @@ public partial class Maui20616
 			page.LabelA.BindingContext = new ViewModel20616<string> { Value = "ABC" };
 			Assert.Equal("ABC", page.LabelA.Text);
 
-			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var binding = page.LabelA.GetContext(Label.TextProperty).Bindings.GetValue();
 				Assert.IsType<TypedBinding<ViewModel20616<string>, string>>(binding);
@@ -47,7 +47,7 @@ public partial class Maui20616
 			page.LabelB.BindingContext = new ViewModel20616<ViewModel20616<bool>> { Value = new ViewModel20616<bool> { Value = true } };
 			Assert.Equal("True", page.LabelB.Text);
 
-			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var binding = page.LabelB.GetContext(Label.TextProperty).Bindings.GetValue();
 				Assert.IsType<TypedBinding<ViewModel20616<ViewModel20616<bool>>, bool>>(binding);

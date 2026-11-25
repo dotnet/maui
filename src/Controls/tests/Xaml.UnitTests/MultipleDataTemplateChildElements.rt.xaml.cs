@@ -13,12 +13,7 @@ public partial class MultipleDataTemplateChildElements : BindableObject
 		[XamlInflatorData]
 		internal void ThrowXamlParseException(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(MultipleDataTemplateChildElements), out var md, out var hasLoggedErrors);
-				Assert.True(hasLoggedErrors);
-			}
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new MultipleDataTemplateChildElements(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

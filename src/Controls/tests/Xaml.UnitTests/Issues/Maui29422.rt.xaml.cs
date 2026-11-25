@@ -1,6 +1,5 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -20,13 +19,7 @@ public partial class Maui29422 : ContentPage
 		{
 			// Property elements with attributes should parse successfully (attributes are ignored with a warning)
 			// The warning is logged but parsing continues
-			if (inflator == XamlInflator.XamlC)
-			{
-				// XamlC should compile successfully and log a warning (not throw)
-				MockCompiler.Compile(typeof(Maui29422), out var hasLoggedErrors);
-				Assert.False(hasLoggedErrors);
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				// SourceGen should compile successfully and produce a warning diagnostic
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui29422));

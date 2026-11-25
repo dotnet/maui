@@ -7,11 +7,11 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-    public enum Maui32056Enum : byte
-    {
-        A = 0,
-        B = 1
-    }
+public enum Maui32056Enum : byte
+{
+	A = 0,
+	B = 1
+}
 
 public partial class Maui32056 : ContentPage
 {
@@ -35,13 +35,8 @@ public partial class Maui32056 : ContentPage
 		[XamlInflatorData]
 		internal void ByteEnum(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(Maui32056), out var methodDef, out var hasLoggedErrors);
-				Assert.False(hasLoggedErrors);
-			}
 			var page = new Maui32056(inflator);
-			Assert.Equal(Maui32056Enum.A.ToString(), page.label0.Text);			
+			Assert.Equal(Maui32056Enum.A.ToString(), page.label0.Text);
 		}
 	}
 }

@@ -17,7 +17,6 @@ public partial class Maui11467 : ParentButton
 
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void EventHandlerFromBaseType(XamlInflator inflator)
 		{

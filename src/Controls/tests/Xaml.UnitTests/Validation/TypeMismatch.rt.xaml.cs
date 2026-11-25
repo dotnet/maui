@@ -16,9 +16,7 @@ public partial class TypeMismatch : ContentPage
 		[XamlInflatorData]
 		internal void ThrowsOnMismatchingType(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal), () => MockCompiler.Compile(typeof(TypeMismatch)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				XamlExceptionAssert.ThrowsXamlParseException(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal), () => new TypeMismatch(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

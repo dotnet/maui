@@ -15,7 +15,7 @@ public partial class Gh2007 : ContentPage
 		[XamlInflatorData]
 		internal void UsefullxResourceErrorMessages(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.XamlC)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh2007(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
@@ -24,7 +24,7 @@ public partial class Gh2007 : ContentPage
 """
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlProcessing(XamlInflator.Runtime | XamlInflator.XamlC, true)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class Gh2007 : ContentPage
 {
 	public Gh2007() => InitializeComponent();
