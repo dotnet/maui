@@ -7,6 +7,8 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using ColumnDefinition = Microsoft.Maui.Controls.ColumnDefinition;
+using Grid = Microsoft.Maui.Controls.Grid;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -34,6 +36,54 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
+
+		[Theory]
+		[InlineData(-1)]
+		[InlineData(200)]
+		public async Task GridStarColumnsKeepNativeLabelWithinCell(double widthRequest)
+		{
+			SetupBuilder();
+
+			var value = new Label
+			{
+				Text = "1 - Non-Emergency",
+				LineBreakMode = LineBreakMode.TailTruncation,
+				VerticalTextAlignment = TextAlignment.Center
+			};
+			var grid = new Grid
+			{
+				WidthRequest = widthRequest,
+				Padding = 10,
+				ColumnDefinitions =
+				{
+					new ColumnDefinition(new GridLength(0.6, GridUnitType.Star)),
+					new ColumnDefinition(new GridLength(0.2, GridUnitType.Star)),
+					new ColumnDefinition(new GridLength(0.6, GridUnitType.Star))
+				}
+			};
+			grid.Add(new Label { Text = "Run Monitor", VerticalTextAlignment = TextAlignment.Center });
+			grid.Add(value, 2, 0);
+			var layout = new VerticalStackLayout
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				Children = { grid }
+			};
+
+			await AttachAndRun(layout, (LayoutHandler handler) =>
+			{
+				var labelHandler = Assert.IsType<LabelHandler>(value.Handler);
+				var cellWidth = (grid.Width - grid.Padding.HorizontalThickness) * 3 / 7;
+				var expectedX = grid.Padding.Left + (grid.Width - grid.Padding.HorizontalThickness) * 4 / 7;
+
+				Assert.Equal(expectedX, value.X, 1.0);
+				Assert.InRange(labelHandler.PlatformView.ActualWidth, 1, cellWidth + 1);
+				if (labelHandler.ContainerView is not null)
+					Assert.InRange(labelHandler.ContainerView.ActualWidth, 1, cellWidth + 1);
+				Assert.Equal(TextTrimming.CharacterEllipsis, labelHandler.PlatformView.TextTrimming);
+				if (widthRequest > 0)
+					Assert.True(labelHandler.PlatformView.IsTextTrimmed);
+			});
+		}
 
 		// Yes, this looks wrong (because ultimately, it is)
 		// We're returning TextTrimming instead of the obviously more correct TextWrapping because
