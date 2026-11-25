@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					// A selectable text view is clickable, so it consumes touches before the wrapper that
 					// hosts the gestures (shadow, clip) gets to see them.
-					if (platformView is WrapperView wrapper && wrapper.ChildCount > 0 && wrapper.GetChildAt(0) is global::Android.Widget.TextView textView)
+					if (View is Label && platformView is WrapperView wrapper && wrapper.ChildCount > 0 && wrapper.GetChildAt(0) is global::Android.Widget.TextView textView)
 					{
 						_wrappedTextView = new WeakReference<global::Android.Widget.TextView>(textView);
 						textView.Touch += OnWrappedTextViewTouched;

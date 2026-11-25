@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Platform
 			{
 				s_preSelectableInteractionStates.Remove(textView);
 
+				// Assigning a movement method recalculates focusability, so it has to be restored before the focus flags.
+				textView.MovementMethod = state.MovementMethod;
+
 				// Focusable can be "auto" (focusable only while clickable), which a plain bool can't represent.
 				if (state.FocusableMode is { } focusableMode && OperatingSystem.IsAndroidVersionAtLeast(26))
 				{
@@ -64,7 +67,6 @@ namespace Microsoft.Maui.Platform
 				}
 
 				textView.FocusableInTouchMode = state.FocusableInTouchMode;
-				textView.MovementMethod = state.MovementMethod;
 				textView.Clickable = state.Clickable;
 				textView.LongClickable = state.LongClickable;
 			}
