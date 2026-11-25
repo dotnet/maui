@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Platform
 
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
-						Graphics.Color color = gradientPaint.GradientStops[index].Color;
+						Graphics.Color color = gradientPaint.GradientStops[index].Color ?? Colors.Transparent;
 						var uiColor = new UIColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
 						colors[index] = uiColor.CGColor;
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
