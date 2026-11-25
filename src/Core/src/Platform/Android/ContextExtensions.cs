@@ -7,7 +7,9 @@ using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.Content.Resources;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Primitives.Dimension;
 using AActivity = Android.App.Activity;
@@ -20,6 +22,27 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ContextExtensions
 	{
+		internal static Context CreateThemeContext(this Context context, AppTheme appTheme)
+		{
+			using var configuration = new Configuration(context.Resources?.Configuration);
+			if (appTheme is AppTheme.Light or AppTheme.Dark)
+				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+					(appTheme == AppTheme.Dark ? UiMode.NightYes : UiMode.NightNo);
+
+			var originalTheme = context.Theme ?? throw new InvalidOperationException("The Android context has no theme.");
+			var themedContext = context.CreateConfigurationContext(configuration);
+			if (themedContext.Theme is not { } theme)
+			{
+				themedContext.Dispose();
+				throw new InvalidOperationException("The configured Android context has no theme.");
+			}
+
+			// Reapply the original styles against the requested configuration, including app overrides.
+			theme.SetTo(originalTheme);
+			ResourcesCompat.ThemeCompat.Rebase(theme);
+			return themedContext;
+		}
+
 		// Caching this display density here means that all pixel calculations are going to be based on the density
 		// of the first Context these extensions are run against. That's probably fine, but if we run into a 
 		// situation where subsequent activities can be launched with a different display density from the initial

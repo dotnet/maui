@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls.Handlers
         int _navigationContainerId;
         ShellContentStackNavigationView? _navigationViewAdapter;
         ShellSection? _subscribedShellSection; // Cached at subscribe time for reliable unsubscribe
+        ShellPageBackground _pageBackground = new ShellPageBackground();
+        Application? _themeApplication;
 
         // Default constructor required by Android's FragmentManager for fragment restoration.
         // When FragmentStateAdapter (ViewPager2) saves and restores fragment state during tab switches,
@@ -218,11 +220,13 @@ namespace Microsoft.Maui.Controls.Handlers
             if (_rootPage is IView view && view.Background is null && _navigationContainer is not null)
             {
                 var context = _mauiContext!.Context!;
-                bool isDark = Controls.Application.Current?.RequestedTheme == ApplicationModel.AppTheme.Dark;
-                int bgColor = RuntimeFeature.IsMaterial3Enabled
-                    ? GetMaterial3Background(context)
-                    : GetResourceBackground(context, isDark);
-                _navigationContainer.SetBackgroundColor(new global::Android.Graphics.Color(bgColor));
+                _pageBackground.Initialize(_navigationContainer, context, Application.Current?.RequestedTheme ?? ApplicationModel.AppTheme.Unspecified);
+            }
+
+            if (_themeApplication is null && Application.Current is { } application)
+            {
+                _themeApplication = application;
+                _themeApplication.RequestedThemeChanged += OnRequestedThemeChanged;
             }
 
             // Subscribe to navigation events if not already subscribed
@@ -503,7 +507,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public override void OnDestroyView()
         {
-
+            UnsubscribeThemeChanges();
             if (_shellContent is null)
             {
                 base.OnDestroyView();
@@ -524,6 +528,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // leaving HasNavHost == false and navigation requests queued forever.
             _navigationContainer = null;
             _stackNavigationManager = null;
+            _pageBackground = new ShellPageBackground();
 
             // Disconnect the root page and all its child handlers when the ShellContent has been
             // removed from the Shell hierarchy (e.g. Shell.Items.Clear()).
@@ -549,6 +554,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+                UnsubscribeThemeChanges();
+
             if (disposing && _shellContent is null)
             {
                 base.Dispose(disposing);
@@ -579,18 +587,29 @@ namespace Microsoft.Maui.Controls.Handlers
             base.Dispose(disposing);
         }
 
-        static int GetMaterial3Background(Context context)
+        void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs args)
         {
-            // Material3 colorSurface automatically adapts to light/dark theme.
-            // The theme resolution happens in GetThemeAttrColor based on the active theme.
-            return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+            if (sender is not Application application)
+                return;
+
+            application.Dispatcher.DispatchIfRequired(() =>
+            {
+                if (ReferenceEquals(_themeApplication, application) &&
+                    application.RequestedTheme == args.RequestedTheme &&
+                    _rootPage is IView { Background: null } &&
+                    _navigationContainer is { } container &&
+                    _mauiContext?.Context is { } context)
+                {
+                    _pageBackground.Update(container, context, args.RequestedTheme);
+                }
+            });
         }
 
-        static int GetResourceBackground(Context context, bool isDark)
+        void UnsubscribeThemeChanges()
         {
-            return isDark
-                ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
-                : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
+            if (_themeApplication is not null)
+                _themeApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+            _themeApplication = null;
         }
     }
 

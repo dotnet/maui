@@ -11,6 +11,33 @@ namespace Microsoft.Maui.Controls
 	{
 		MauiTextView _mauiTextView;
 		MauiMaterialTextView _mauiMaterialTextView;
+		Application _themeApplication;
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (_themeApplication is not null)
+				_themeApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+			_themeApplication = args.NewHandler is not null ? Application.Current : null;
+			if (_themeApplication is not null)
+				_themeApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs args)
+		{
+			if (sender is not Application application)
+				return;
+
+			Dispatcher.DispatchIfRequired(() =>
+			{
+				if (ReferenceEquals(_themeApplication, application) &&
+					application.RequestedTheme == args.RequestedTheme &&
+					Handler is LabelHandler handler)
+					handler.RefreshDefaultTheme(args.RequestedTheme);
+			});
+		}
 
 		private protected override void OnHandlerChangedCore()
 		{

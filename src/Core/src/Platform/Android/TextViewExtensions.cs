@@ -81,6 +81,15 @@ namespace Microsoft.Maui.Platform
 			textView.SetTextColor(textColor.ToPlatform());
 		}
 
+		internal static bool HasDefaultTextColors(this TextView textView) =>
+			defaultTextColors.TryGetValue(textView, out var colors) && object.Equals(textView.TextColors, colors);
+
+		internal static void SetDefaultTextColors(this TextView textView, ColorStateList colors)
+		{
+			defaultTextColors.Remove(textView);
+			defaultTextColors.Add(textView, colors);
+		}
+
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
 			var font = textStyle.Font;

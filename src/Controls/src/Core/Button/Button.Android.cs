@@ -9,6 +9,34 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
+		Application _themeApplication;
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (_themeApplication is not null)
+				_themeApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+			_themeApplication = args.NewHandler is not null ? Application.Current : null;
+			if (_themeApplication is not null)
+				_themeApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs args)
+		{
+			if (sender is not Application application)
+				return;
+
+			Dispatcher.DispatchIfRequired(() =>
+			{
+				if (ReferenceEquals(_themeApplication, application) &&
+					application.RequestedTheme == args.RequestedTheme &&
+					Handler is ButtonHandler handler)
+					handler.RefreshDefaultTheme(args.RequestedTheme);
+			});
+		}
+
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);

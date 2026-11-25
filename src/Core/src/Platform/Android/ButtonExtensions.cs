@@ -58,13 +58,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateButtonBackground(this MaterialButton platformView, IButton button)
+		internal static void UpdateButtonBackground(this MaterialButton platformView, IButton button, Android.Content.Res.ColorStateList? defaultBackgroundTint = null)
 		{
 			platformView.UpdateMauiRippleDrawableBackground(
 				button.Background,
 				button,
 				() =>
 				{
+					if (defaultBackgroundTint is not null)
+						return defaultBackgroundTint.GetColorForState([R.Attribute.StateEnabled], AColor.Black);
+
 					// Copy the tints from a temporary button.
 					// TODO: optimize this to avoid creating a new button every time.
 

@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Google.Android.Material.Button;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -26,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 		// Cached default Material theme text colors, captured before any MAUI property mapping.
 		// Restored when TextColor is set to null (e.g. when a VisualState setter is unapplied).
 		ColorStateList? _defaultTextColors;
+		ColorStateList? _defaultBackgroundTint;
+		ColorStateList? _refreshedBackgroundTint;
+		Drawable? _defaultBackground;
 
 		protected override MaterialButton CreatePlatformView()
 		{
@@ -53,6 +57,8 @@ namespace Microsoft.Maui.Handlers
 
 			// Capture Material theme defaults before MAUI property mapping is applied
 			_defaultTextColors = platformView.TextColors;
+			_defaultBackgroundTint = platformView.BackgroundTintList;
+			_defaultBackground = platformView.Background;
 
 			base.ConnectHandler(platformView);
 		}
@@ -69,6 +75,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			_defaultTextColors = null;
+			_defaultBackgroundTint = null;
+			_refreshedBackgroundTint = null;
+			_defaultBackground = null;
 
 			ImageSourceLoader.Reset();
 
@@ -78,7 +87,38 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateBackground(button);
+			handler.PlatformView?.UpdateButtonBackground(button, (handler as ButtonHandler)?._refreshedBackgroundTint);
+		}
+
+		internal void RefreshDefaultTheme(AppTheme theme)
+		{
+			if (PlatformViewFactory is not null || GetType() != typeof(ButtonHandler) ||
+				((IElementHandler)this).VirtualView is not IButton button ||
+				((IElementHandler)this).PlatformView is not MaterialButton platformView ||
+				platformView.GetType() != typeof(MauiMaterialButton))
+				return;
+
+			using var themedContext = Context.CreateThemeContext(theme);
+			using var defaultView = new MauiMaterialButton(themedContext);
+			bool applyText = button.TextColor is null && Equals(platformView.TextColors, _defaultTextColors);
+			bool applyBackground = button.Background.IsNullOrEmpty() &&
+				ReferenceEquals(platformView.Background, _defaultBackground) &&
+				Equals(platformView.BackgroundTintList, _defaultBackgroundTint);
+
+			_defaultTextColors = defaultView.TextColors;
+			_defaultBackgroundTint = defaultView.BackgroundTintList;
+			_refreshedBackgroundTint = _defaultBackgroundTint;
+
+			if (applyText)
+				UpdateValue(nameof(ITextStyle.TextColor));
+
+			if (button.Background.IsNullOrEmpty())
+			{
+				if (applyBackground && !platformView.TryGetMauiBackground(out _, out _, out _, out _, out _))
+					platformView.BackgroundTintList = _defaultBackgroundTint;
+
+				UpdateValue(nameof(IView.Background));
+			}
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButton button)
@@ -183,7 +223,7 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
 			if (sender is MaterialButton platformView && VirtualView is not null)
-				platformView.UpdateBackground(VirtualView);
+				platformView.UpdateButtonBackground(VirtualView, _refreshedBackgroundTint);
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener

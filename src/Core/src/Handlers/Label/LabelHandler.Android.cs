@@ -1,6 +1,7 @@
 using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -12,6 +13,30 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatTextView CreatePlatformView()
 			=> new MauiTextView(Context);
+
+		internal void RefreshDefaultTheme(AppTheme theme)
+		{
+			if (PlatformViewFactory is not null ||
+				(GetType() != typeof(LabelHandler) && GetType() != typeof(LabelHandler2)) ||
+				((IElementHandler)this).VirtualView is not ILabel label ||
+				((IElementHandler)this).PlatformView is not AppCompatTextView platformView)
+				return;
+
+			using var themedContext = Context.CreateThemeContext(theme);
+			using AppCompatTextView? defaultView = platformView.GetType() == typeof(MauiTextView)
+				? new MauiTextView(themedContext)
+				: platformView.GetType() == typeof(MauiMaterialTextView)
+					? new MauiMaterialTextView(themedContext)
+					: null;
+
+			if (defaultView?.TextColors is not { } colors)
+				return;
+
+			bool applyDefault = label.TextColor is null && platformView.HasDefaultTextColors();
+			platformView.SetDefaultTextColors(colors);
+			if (applyDefault)
+				UpdateValue(nameof(ITextStyle.TextColor));
+		}
 
 		public override void PlatformArrange(Rect frame)
 		{
