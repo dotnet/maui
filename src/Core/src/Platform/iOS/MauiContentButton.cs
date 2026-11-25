@@ -171,14 +171,15 @@ namespace Microsoft.Maui.Platform
 		internal void UpdateBackground(IContentButton button)
 		{
 			CaptureNativeDefaults();
-			this.RemoveBackgroundLayer();
 
 			if (button.Background.IsNullOrEmpty())
 			{
+				this.RemoveBackgroundLayer();
 				BackgroundColor = _defaultBackgroundColor;
 				return;
 			}
 
+			// The shared helper removes the previous background layer itself.
 			ViewExtensions.UpdateBackground(this, button.Background, button);
 		}
 

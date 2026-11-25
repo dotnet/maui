@@ -968,6 +968,115 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task NonConfirmKeysDoNotActivate()
+		{
+			var pressed = 0;
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => pressed++,
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.FocusableInTouchMode = true;
+				Assert.True(platformView.RequestFocus());
+
+				foreach (var key in new[] { Keycode.A, Keycode.Tab })
+				{
+					using var keyDown = new KeyEvent(KeyEventActions.Down, key);
+					using var keyUp = new KeyEvent(KeyEventActions.Up, key);
+					platformView.DispatchKeyEvent(keyDown);
+					platformView.DispatchKeyEvent(keyUp);
+				}
+
+				await DrainPostedWork(platformView);
+				Assert.Equal(0, pressed);
+				Assert.Equal(0, released);
+				Assert.Equal(0, clicked);
+
+				using var down = new KeyEvent(KeyEventActions.Down, Keycode.Enter);
+				using var up = new KeyEvent(KeyEventActions.Up, Keycode.Enter);
+				platformView.DispatchKeyEvent(down);
+				platformView.DispatchKeyEvent(up);
+				await DrainPostedWork(platformView);
+
+				Assert.Equal(1, pressed);
+				Assert.Equal(1, released);
+				Assert.Equal(1, clicked);
+			});
+		}
+
+		[Fact]
+		public async Task ContentReplacedWhileDetachingPreviousParentKeepsNewestContent()
+		{
+			var second = new LabelStub { Text = "Second" };
+			var third = new LabelStub { Text = "Third" };
+			var button = new ContentButtonStub { Content = new LabelStub { Text = "First" } };
+
+			await AttachAndRun(button, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var host = new FrameLayout(platformView.Context!);
+				var root = Assert.IsAssignableFrom<ViewGroup>(platformView.Parent);
+				root.AddView(host);
+
+				var secondView = second.ToPlatform(MauiContext);
+				host.AddView(secondView);
+				Assert.True(secondView.IsAttachedToWindow);
+
+				var replaced = false;
+				secondView.ViewDetachedFromWindow += (_, _) =>
+				{
+					if (replaced)
+						return;
+
+					// A native detach callback replaces the content while the previous one is being re-parented.
+					replaced = true;
+					button.Content = third;
+					handler.UpdateValue(nameof(IContentView.Content));
+				};
+
+				button.Content = second;
+				handler.UpdateValue(nameof(IContentView.Content));
+
+				Assert.True(replaced);
+				var container = Assert.IsAssignableFrom<ViewGroup>(Assert.Single(Children(platformView)));
+				Assert.Same(third.Handler?.PlatformView, Assert.Single(Children(container)));
+				Assert.Null(secondView.Parent);
+				root.RemoveView(host);
+				return Task.CompletedTask;
+			});
+
+			static AView[] Children(ViewGroup group) =>
+				Enumerable.Range(0, group.ChildCount).Select(group.GetChildAt).OfType<AView>().ToArray();
+		}
+
+		[Fact]
+		public async Task ClearingStrokeColorRestoresHandlerProvidedColor()
+		{
+			var button = new ContentButtonStub { StrokeColor = Colors.Blue, StrokeThickness = 3 };
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, RedStrokeContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				Assert.Equal(AColor.Blue.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+
+				button.StrokeColor = null;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
+
+				Assert.Equal(AColor.Red.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+				Assert.Equal((int)platformView.Context!.ToPixels(3), platformView.StrokeWidth);
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -1498,6 +1607,16 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var button = base.CreatePlatformView();
 				button.StrokeWidth = Width;
+				return button;
+			}
+		}
+
+		sealed class RedStrokeContentButtonHandler : ContentButtonHandler
+		{
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.SetStrokeColor(ColorStateList.ValueOf(AColor.Red));
 				return button;
 			}
 		}

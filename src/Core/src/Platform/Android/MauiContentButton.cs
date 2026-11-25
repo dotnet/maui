@@ -161,17 +161,25 @@ namespace Microsoft.Maui.Platform
 			if (ReferenceEquals(_content, content) && content?.Parent == _contentContainer)
 				return;
 
-			_contentContainer?.RemoveAllViews();
-			RemoveAllViews();
-
+			// Removing or adding views runs native attach/detach callbacks, which can map newer
+			// content before this call finishes. Stop as soon as this content is superseded.
 			_content = content;
-			if (content is null)
+			_contentContainer?.RemoveAllViews();
+			if (!ReferenceEquals(_content, content))
+				return;
+
+			RemoveAllViews();
+			if (!ReferenceEquals(_content, content) || content is null)
 				return;
 
 			content.RemoveFromParent();
+			if (!ReferenceEquals(_content, content))
+				return;
+
 			_contentContainer ??= new ContentContainer(_context);
 			_contentContainer.AddView(content);
-			AddView(_contentContainer);
+			if (ReferenceEquals(_content, content) && _contentContainer.Parent is null)
+				AddView(_contentContainer);
 		}
 
 		internal void UpdateButtonBackground(IContentButton button)
@@ -216,26 +224,31 @@ namespace Microsoft.Maui.Platform
 				Equals(ShapeAppearanceModel, _mappedShapeAppearanceModel);
 			updateColor |= _mappedStrokeColor is null || _mappedStrokeColor.Equals(StrokeColorStateList);
 
+			// Unset stroke values use the native defaults. A handler-customized native width or
+			// color is kept even when only the other stroke property is set explicitly.
 			var useDefaultWidth = button.StrokeThickness < 0 &&
 				(button.StrokeColor is null || _preserveDefaultStrokeWidth);
+			var useDefaultColor = button.StrokeColor is null &&
+				(button.StrokeThickness < 0 || _preserveDefaultStrokeColor);
 
 			if (this.TryGetMauiBackground(out _, out _, out var background, out var stroke, out var mask))
 			{
 				if (refreshRippleStroke)
 					this.UpdateMauiRippleDrawableStroke(button);
 
-				if (useDefaultWidth)
+				if (useDefaultWidth || useDefaultColor)
 				{
-					var strokeColor = button.StrokeColor is null
+					var strokeWidth = useDefaultWidth ? _defaultStrokeWidth : (int)_context.ToPixels(button.StrokeThickness);
+					var strokeColor = useDefaultColor
 						? _defaultStrokeColor
-						: ColorStateListExtensions.CreateButton(button.StrokeColor.ToPlatform());
-					stroke.SetStroke(_defaultStrokeWidth, strokeColor);
-					background.SetStroke(_defaultStrokeWidth, AColor.Transparent);
+						: ColorStateListExtensions.CreateButton(button.StrokeColor!.ToPlatform());
+					stroke.SetStroke(strokeWidth, strokeColor);
+					background.SetStroke(strokeWidth, AColor.Transparent);
 
 					if (button.CornerRadius >= 0)
 					{
 						// Match GetStrokeProperties, which insets the radius by half the stroke width.
-						var radius = (int)_context.ToPixels(button.CornerRadius) - _defaultStrokeWidth / 2;
+						var radius = (int)_context.ToPixels(button.CornerRadius) - strokeWidth / 2;
 						background.SetCornerRadius(radius);
 						stroke.SetCornerRadius(radius);
 						mask.SetCornerRadius(radius);
@@ -262,9 +275,15 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (button.StrokeColor is null && button.StrokeThickness < 0)
+			if (useDefaultWidth && useDefaultColor)
 			{
 				StrokeWidth = _defaultStrokeWidth;
+				if (updateColor)
+					SetMappedStrokeColor(_defaultStrokeColor);
+			}
+			else if (useDefaultColor)
+			{
+				StrokeWidth = (int)_context.ToPixels(button.StrokeThickness);
 				if (updateColor)
 					SetMappedStrokeColor(_defaultStrokeColor);
 			}
