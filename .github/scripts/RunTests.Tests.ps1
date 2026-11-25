@@ -585,6 +585,9 @@ Describe 'Two-model selection' {
         $gpt | Should -Match ([regex]::Escape("let suite = 'all';"))
         $gpt | Should -Match ([regex]::Escape('if (command[1]) suite = command[1].toLowerCase();'))
         $gpt | Should -Match 'options: \[all, ui, device\]'
+        # The command comment is hidden as resolved once acknowledged, like the other /review commands.
+        $gpt | Should -Match ([regex]::Escape('minimizeComment(input: { subjectId: $id, classifier: RESOLVED })'))
+        $gpt | Should -Match ([regex]::Escape('{ id: context.payload.comment.node_id }'))
         foreach ($workflow in $gpt, $mai) {
             foreach ($key in 'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
                 $workflow | Should -Match "(?m)^        $($key):"
