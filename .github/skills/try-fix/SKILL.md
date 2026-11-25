@@ -367,7 +367,7 @@ This step runs BEFORE testing so you can catch design flaws before spending time
    Each entry has exactly 3 fields:
    - **`path`** (string) — file relative to repo root, must be a file present in your diff
    - **`line`** (integer ≥ 1) — line number on the changed (right) side of the diff. The line MUST appear in your diff — picking an unchanged line is wrong. Use `1` only as a fallback for file-level concerns where no single line captures the issue (e.g., missing import, structural concern).
-   - **`body`** (string) — format `**[severity] Dimension** — description`. Severity is one of `critical`/`major`/`moderate`/`minor`.
+   - **`body`** (string) — format `**[severity] Dimension** — description`. Severity is `critical` or `major`.
 
 5. **Validate the JSON parses and capture the count:**
    ```powershell
@@ -390,7 +390,7 @@ This step runs BEFORE testing so you can catch design flaws before spending time
 
 6. **Fix critical/major findings BEFORE testing:**
    - If there are any `[critical]` or `[major]` findings → apply fixes for them in a single batch and rewrite `reviewer-findings.json` to reflect the new diff.
-   - All `[moderate]` and `[minor]` findings → note in `analysis.md` (Step 8); do NOT iterate.
+   - The expert reviewer emits only `[critical]` and `[major]` findings; lower-impact observations are suppressed.
    - Only ONE correction round. Then proceed to Step 7 (Test).
 
 **Threshold guidance.** Only record findings with a concrete failing scenario. Stylistic preferences and bikeshedding (see the **`## What NOT to Flag`** table in `maui-expert-reviewer.md`) are not findings. An empty `[]` is the correct output for a clean fix — do not invent findings to fill the file.
@@ -600,7 +600,7 @@ Provide structured output to the invoker:
 
 **Result:** ✅ PASS / ❌ FAIL
 
-**Self-Review:** N findings (X critical, Y major, Z moderate/minor) — see `reviewer-findings.json`
+**Self-Review:** N findings (X critical, Y major) — see `reviewer-findings.json`
 
 **Analysis:**
 [Why it worked, or why it failed and what was learned]

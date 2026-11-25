@@ -474,8 +474,8 @@ validation and final JSON validation finish. Validate every worker file's
 exact keys and types before merging; an absent or malformed worker must not
 be reported as completed. Do not manufacture or rename a worker's completion
 flag yourself. Validate every persisted worker finding's header, including
-candidates excluded from the final array: only `critical`, `major`, `moderate`,
-and `minor` are valid lowercase severity tokens. An exception entry is
+candidates excluded from the final array: only `critical` and `major` are valid
+lowercase severity tokens. An exception entry is
 `{"kind":"committed-credential","path":"changed/path","line":42}` or
 `{"kind":"archive-path-escape","path":"changed/path","line":42}`, referring to a
 retained `[major] Input and Path Correctness` finding. Do not invent exceptions.
@@ -543,8 +543,8 @@ with exactly these three keys (`complete`, never `completed`):
 Replace the example ID, dimension name, and findings with your actual pass;
 write `findings: []` when the complete pass finds none. Use the exact canonical
 finding fields and at most 17 prioritized candidates. Finding headers accept
-only `critical`, `major`, `moderate`, and `minor`, never `medium`, `high`, or `low`;
-read back and validate every header while preserving per-dimension severity caps.
+only `critical` and `major`, never `moderate`, `minor`, `medium`, `high`, or
+`low`; read back and validate every header while preserving per-dimension severity caps.
 Keep `complete: false`
 when unable to finish the source/history pass. Unavailable device, test or
 build execution alone is not incomplete: runtime execution is outside this

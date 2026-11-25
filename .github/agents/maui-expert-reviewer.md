@@ -81,7 +81,7 @@ Correct usage of mapper/command-mapper, lifecycle symmetry, and chained mapper h
 - CHECK: `ConnectHandler` calls `base.ConnectHandler()` before custom setup; `DisconnectHandler` cleans up before calling `base.DisconnectHandler()` — reversed ordering can access disposed resources
 - CHECK: Centralize listener instances via static registry for per-CoordinatorLayout or per-DrawerLayout listeners to reduce allocations
 
-### 4. Architectural Layer Placement `[moderate]`
+### 4. Architectural Layer Placement
 
 Code lives at the correct abstraction: Core vs Controls, handler vs extension method, shared vs platform-specific.
 
@@ -186,7 +186,7 @@ Correct async/await, UI thread dispatching, cancellation tokens, and race condit
 - **iOS**: `MainThread.BeginInvokeOnMainThread` or `DispatchQueue.MainQueue`
 - **Windows**: `DispatcherQueue.TryEnqueue`; be aware of COM apartment model
 
-### 9. Null Safety and Defensive Coding `[moderate]`
+### 9. Null Safety and Defensive Coding
 
 Null checks, early returns, and nullable annotations to prevent NREs where object availability timing varies by platform.
 
@@ -201,7 +201,7 @@ Null checks, early returns, and nullable annotations to prevent NREs where objec
 - CHECK: Try-catch for fire-and-forget platform calls that can fail non-critically — unhandled exceptions crash the app
 - CHECK: Guard against empty collections in chained calls — `collection?.FirstOrDefault().ToPlatform()` throws if collection is empty (not null); check `.Any()` first
 
-### 10. Cross-Platform Behavioral Consistency `[moderate]`
+### 10. Cross-Platform Behavioral Consistency
 
 Same feature produces equivalent user-visible behavior across all target platforms.
 
@@ -240,7 +240,7 @@ Breaking changes, Xamarin.Forms migration paths, and third-party renderer impact
 - CHECK: Default property value changes are evaluated for impact on existing apps
 - CHECK: Compatibility renderers maintain behavioral parity with handler equivalents
 
-### 13. Platform-Specific Code Scoping `[moderate]`
+### 13. Platform-Specific Code Scoping
 
 Correct `#if` guards, API-level checks, platform file extensions, and namespace conventions.
 
@@ -259,7 +259,7 @@ Correct `#if` guards, API-level checks, platform file extensions, and namespace 
 - **iOS**: `.ios.cs` compiles for BOTH iOS and MacCatalyst; use `.maccatalyst.cs` for MacCatalyst-only
 - **Windows**: WinUI version checks may be needed for specific Windows App SDK features
 
-### 14. Native Platform Defaults Preservation `[moderate]`
+### 14. Native Platform Defaults Preservation
 
 Storing and restoring native defaults before applying cross-platform overrides.
 
@@ -289,7 +289,7 @@ Safe area adjustments, keyboard insets, and ancestor hierarchy walks. See `safe-
 - **iOS/MacCatalyst**: See `safe-area-ios.instructions.md` for `IsParentHandlingSafeArea`, `EqualsAtPixelLevel`, and the Window Guard anti-pattern. macCatalyst defaults `UseSafeArea` to `true` (unlike iOS where it's `false`).
 - **Android**: `WindowInsetsCompat` for keyboard and system bar; `fitsSystemWindows` behavior differs by API level
 
-### 16. Complexity Reduction `[minor]`
+### 16. Complexity Reduction
 
 Flagging overcomplicated solutions when simpler alternatives or existing infrastructure exist.
 
@@ -298,7 +298,7 @@ Flagging overcomplicated solutions when simpler alternatives or existing infrast
 - CHECK: Abstraction layers add clear value — no wrapper classes that only delegate
 - CHECK: Conditional logic can be simplified (nested if/else → single expression)
 
-### 17. Type Choice and Data Modeling `[moderate]`
+### 17. Type Choice and Data Modeling
 
 Correct type selection based on boxing, equality semantics, and API evolution.
 
@@ -307,7 +307,7 @@ Correct type selection based on boxing, equality semantics, and API evolution.
 - CHECK: Flags enums validate that combined values are meaningful
 - CHECK: Interface vs abstract class choice considers default implementations and state needs
 
-### 18. Trimming and AOT Compatibility `[moderate]`
+### 18. Trimming and AOT Compatibility
 
 Patterns that work with .NET trimmer and NativeAOT.
 
@@ -343,7 +343,7 @@ RecyclerView-based handler. This is the ONLY Android CollectionView implementati
 - CHECK: Scroll position restoration works after adapter data changes
 - CHECK: Changes go to `Items/Android/` — Items2/ has NO Android code
 
-### 21. CollectionView — Shared Models `[moderate]`
+### 21. CollectionView — Shared Models
 
 Platform-independent CollectionView code: item source adapters, selection models, grouping, ItemsLayout.
 
@@ -352,7 +352,7 @@ Platform-independent CollectionView code: item source adapters, selection models
 - CHECK: GroupHeaderTemplate/GroupFooterTemplate changes invalidate the correct scope
 - CHECK: ItemsLayout changes trigger full handler reconfiguration, not partial updates
 
-### 22. Android Platform Specifics `[moderate]`
+### 22. Android Platform Specifics
 
 Android-specific patterns: JNI, resources, native logging, and Glide.
 
@@ -374,7 +374,7 @@ iOS-specific patterns: reference counting, lifecycle, UIKit, and macCatalyst dif
 - CHECK: `UIImage.FromImage` creates a copy — if you only need to transform the existing image, modify in place when possible
 - CHECK: Use `IUITextInput` interface for cursor/text range APIs across `UITextField`/`UITextView` — avoids duplicating code per concrete type
 
-### 24. Windows Platform Specifics `[moderate]`
+### 24. Windows Platform Specifics
 
 Windows/WinUI-specific patterns: Appium accessibility, WebView2, MSBuild, and theming.
 
@@ -395,7 +395,7 @@ Shell tab switching, flyout lifecycle, and WebView URL security.
 - CHECK: Validate WebView URL mapping — local file mapping hostname should be random or scoped to prevent cross-origin file access
 - CHECK: iOS "More" tab for overflow Shell items may not have standard Apple HIG behavior — verify push navigation correctness
 
-### 26. XAML & Bindings `[moderate]`
+### 26. XAML & Bindings
 
 Compiled bindings, source generation, and XAML compilation correctness.
 
@@ -407,7 +407,7 @@ Compiled bindings, source generation, and XAML compilation correctness.
 - CHECK: Markup extension recognition should be semantic — query the compilation for `IMarkupExtension` types, not just suffix matching
 - CHECK: Auto-escape XML-unfriendly characters (`<`, `>`, `&&`, `||`) in XAML expression contexts — users should not need to type `&gt;`
 
-### 27. Image Handling `[moderate]`
+### 27. Image Handling
 
 Image source services, Glide callbacks, bitmap lifecycle, and clipping.
 
@@ -416,7 +416,7 @@ Image source services, Glide callbacks, bitmap lifecycle, and clipping.
 - CHECK: Clean up bitmaps on overlay add/remove cycles — disposal without a reload path causes blank overlays
 - CHECK: Inner vs outer corner radius for clipping — `RoundRectangle` clip inside a `Border` uses the inner radius, not the outer border radius; outer value leaves visible gaps
 
-### 28. Gestures `[moderate]`
+### 28. Gestures
 
 Tap/click semantics, precondition verification, and span calculations.
 
@@ -424,7 +424,7 @@ Tap/click semantics, precondition verification, and span calculations.
 - CHECK: Gesture tests must verify their precondition — a test for "GetPosition returns correct coordinates" must confirm the element was actually tapped; untappable elements make the test pass trivially
 - CHECK: Span tap region calculation across multiple lines — the `CGRect` for each `Span` in `FormattedString` is incorrect when text wraps (inherited from Xamarin.Forms)
 
-### 29. Build & MSBuild `[moderate]`
+### 29. Build & MSBuild
 
 NuGet feed security, build task dependencies, feature flags, and auto-generated files.
 
@@ -435,7 +435,7 @@ NuGet feed security, build task dependencies, feature flags, and auto-generated 
 - CHECK: NuGet vs workload import timing — moving MSBuild targets between them changes relative import order; test: install VS → new project → restore → build
 - CHECK: Never commit `cgmanifest.json` or `templatestrings.json` — auto-generated during CI
 
-### 30. Accessibility `[moderate]`
+### 30. Accessibility
 
 Font scaling, WinUI accessible elements, and property propagation.
 
@@ -621,6 +621,7 @@ For each activated dimension, launch a sub-agent. The sub-agent:
 5. Returns a count: "N inline findings written" (and if any text fallbacks: "M could not be placed on a file")
 
 **Threshold**: only record findings with a concrete failing scenario. Stylistic preferences are not findings.
+**Severity threshold**: report findings only as `[critical]` or `[major]`. A check from any dimension may produce a finding only when its demonstrated consequence meets one of those definitions; suppress suboptimal patterns, speculative edge cases, API design preferences, simplification opportunities, and documentation gaps that do not meet that bar. Dimension severity tags are guidance, not permission to report without meeting the impact threshold.
 
 Run sub-agents in parallel batches of 6 dimensions at a time.
 
@@ -635,8 +636,7 @@ For each potential finding from Wave 1:
 **Severity assignment**:
 - `critical` — data loss, crash, infinite loop, security issue
 - `major` — incorrect behavior visible to users, memory leak, performance regression on hot path
-- `moderate` — suboptimal pattern, missing edge case, API design concern
-- `minor` — style, simplification opportunity, documentation gap
+- Do not emit lower-severity findings. If the concrete scenario does not meet the critical or major definition, discard it.
 - When a dimension defines an explicit severity cap (e.g. Input and Path Correctness (#31) and Behavioral Change Disclosure (#32) report every finding at `[major]` and do not escalate to `[critical]`), that per-dimension cap takes precedence over the general rubric above for findings in that dimension.
 
 ### Wave 3 — Record and Post Findings
@@ -660,7 +660,7 @@ For each potential finding from Wave 1:
 Each entry has exactly 3 fields matching the GitHub Pull Request Review API:
 - **`path`** (string) — file relative to repo root, must exist in the PR diff
 - **`line`** (integer ≥ 1) — line number **in the file on the PR branch** (right side of the diff). Must be a line that appears in the diff — the GitHub API rejects lines not in the diff with a 422 error. Use line 1 only as a fallback for file-level concerns.
-- **`body`** (string) — the comment text. Embed severity and dimension in the text: `**[severity] Dimension** — description`
+- **`body`** (string) — the comment text. Embed severity and dimension in the text: `**[critical] Dimension**` or `**[major] Dimension**` — description
 
 Rules:
 - Group related findings on adjacent lines into a single entry
