@@ -178,6 +178,19 @@ Describe 'Dispatch request' {
         (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; headline = 'x' })).state | Should -Be 'success'
     }
 
+    It 'reads the latest statuses of a commit as a flat list' {
+        # @(Get-RunTestsStatuses ...) nested the list and the dispatch failed on $_.context (#40439).
+        function gh { $global:LASTEXITCODE = 0; '[{"statuses":[{"context":"maui-pr-uitests (skipped) Label","description":"x"},{"context":"other","description":"y"}]}]' }
+        try {
+            $statuses = Get-RunTestsStatuses -Repository 'dotnet/maui' -Sha ('a' * 40)
+            $statuses.Count | Should -Be 2
+            @($statuses | Where-Object { ([string]$_.context).StartsWith('maui-pr-uitests (skipped)') }).Count | Should -Be 1
+        } finally { Remove-Item function:gh }
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match '@\(Get-RunTestsStatuses'
+        $invoke | Should -Match '\$existingStatuses = Get-RunTestsStatuses'
+    }
+
     It 'reports through commit statuses, not check runs' {
         $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
         $invoke | Should -Not -Match 'repos/\$Repository/check-runs'

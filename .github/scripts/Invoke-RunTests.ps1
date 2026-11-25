@@ -260,7 +260,17 @@ function New-RunTestsDispatch {
         "Test-merge $($MergeCommit.sha) with $($script:RunTestsTrustedPaths -join ', ') from $sourceSha.`nRequested in $runUrl"
     $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($sourceSha) } | ConvertTo-Json)
     $branch = Get-RunTestsDispatchBranch -PrNumber $PrNumber -RunId $DispatchRunId
-    Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
+    try {
+        Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
+    } catch {
+        # Say what the rejected commit changes, so a refusal (e.g. HTTP 403) can be diagnosed from the log.
+        Write-Host "Creating $branch at $($commit.sha) (parent $sourceSha, test-merge $($MergeCommit.sha) of base $(@($MergeCommit.parents)[0].sha)) was refused."
+        try {
+            $files = @((Invoke-GhJson @("repos/$Repository/compare/$sourceSha...$($commit.sha)")).files | ForEach-Object { "$($_.status) $($_.filename)" })
+            Write-Host "The dispatch commit changes $($files.Count) file(s) from its parent:`n$(($files | Select-Object -First 100) -join "`n")"
+        } catch { Write-Host 'Could not compare the dispatch commit with its parent.' }
+        throw
+    }
     Write-Host "Pushed dispatch commit $($commit.sha) to $branch."
     return @{ sha = $commit.sha; branch = $branch }
 }
@@ -377,8 +387,10 @@ function Invoke-SuiteRun {
         # Commit statuses, not check runs: see Publish-RunTestsStatus.
         # A later run on the same commit may select something an earlier run skipped: retire those.
         $planned = @($checks | ForEach-Object { $_.name })
-        foreach ($stale in @(Get-RunTestsStatuses -Repository $Repository -Sha $sha) | Where-Object {
-                $_.context.StartsWith($script:RunTestsSkippedCheckPrefix) -and $_.context -notin $planned -and $_.description -notlike 'Selected by a later*' }) {
+        # Assign first: Get-RunTestsStatuses returns its list as one object, which @(...) would nest.
+        $existingStatuses = Get-RunTestsStatuses -Repository $Repository -Sha $sha
+        foreach ($stale in $existingStatuses | Where-Object {
+                ([string]$_.context).StartsWith($script:RunTestsSkippedCheckPrefix) -and $_.context -notin $planned -and $_.description -notlike 'Selected by a later*' }) {
             Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $stale.context -State success `
                 -Description "Selected by a later /review $($script:RunTestsCommand)" -TargetUrl $runUrl
         }
