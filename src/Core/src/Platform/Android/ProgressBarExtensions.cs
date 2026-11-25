@@ -1,6 +1,9 @@
-﻿using Android.Content.Res;
+﻿using Android.Graphics.Drawables;
 using Google.Android.Material.ProgressIndicator;
 using Microsoft.Maui.Graphics;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using APorterDuff = Android.Graphics.PorterDuff;
+using APorterDuffColorFilter = Android.Graphics.PorterDuffColorFilter;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Platform
@@ -30,24 +33,31 @@ namespace Microsoft.Maui.Platform
 		{
 			Color color = progress.ProgressColor;
 
-			if (color == null)
+			var drawable = platformProgressBar.Indeterminate
+				? platformProgressBar.IndeterminateDrawable
+				: platformProgressBar.ProgressDrawable?.GetProgressLayer();
+
+			if (color is null)
 			{
-				(platformProgressBar.Indeterminate ? platformProgressBar.IndeterminateDrawable :
-					platformProgressBar.ProgressDrawable)?.ClearColorFilter();
+				drawable?.ClearColorFilter();
 			}
 			else
 			{
-				var tintList = ColorStateList.ValueOf(color.ToPlatform());
+				var mode = platformProgressBar.Indeterminate
+					? platformProgressBar.IndeterminateTintMode
+					: platformProgressBar.ProgressTintMode;
 
-				if (platformProgressBar.Indeterminate)
-				{
-					platformProgressBar.IndeterminateTintList = tintList;
-				}
-				else
-				{
-					platformProgressBar.ProgressTintList = tintList;
-				}
+				drawable?.SetColorFilter(new APorterDuffColorFilter(color.ToPlatform(), mode ?? APorterDuff.Mode.SrcIn!));
 			}
+		}
+
+		static ADrawable GetProgressLayer(this ADrawable progressDrawable)
+		{
+			progressDrawable.Mutate();
+
+			return progressDrawable is LayerDrawable layerDrawable
+				? layerDrawable.FindDrawableByLayerId(global::Android.Resource.Id.Progress) ?? progressDrawable
+				: progressDrawable;
 		}
 
 		static void UpdateLinearProgressIndicatorColor(this LinearProgressIndicator materialProgressBar, IProgress progress)
