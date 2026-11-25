@@ -50,6 +50,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IDisposable _moreContentOffsetObserver;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared when the element is detached and in Dispose.")]
 		IDisposable _nativeSubscriptionWatcher;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The More delegate holds a weak page reference and is detached and disposed when the element changes or the renderer is disposed.")]
+		MoreNavigationDelegate _moreNavigationDelegate;
 
 		Brush _currentBarBackground;
 		WeakBrushChangedProxy _barBackgroundProxy;
@@ -119,6 +121,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_nativeMoreRegistrations.Clear();
 			DetachMoreTableView();
 			_tabRegistrationGenerations.Clear();
+			if (_moreNavigationDelegate is not null)
+			{
+				if (MoreNavigationController.Delegate == _moreNavigationDelegate)
+					MoreNavigationController.Delegate = null;
+				_moreNavigationDelegate.Dispose();
+				_moreNavigationDelegate = null;
+			}
+			if (element is TabbedPage moreTabbedPage)
+			{
+				_moreNavigationDelegate = new MoreNavigationDelegate(moreTabbedPage);
+				MoreNavigationController.Delegate = _moreNavigationDelegate;
+			}
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 			_element = element is null ? null : new(element);
 
@@ -205,6 +219,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_nativeMoreRegistrations.Clear();
 				DetachMoreTableView();
 				_tabRegistrationGenerations.Clear();
+				if (MoreNavigationController.Delegate == _moreNavigationDelegate)
+					MoreNavigationController.Delegate = null;
+				_moreNavigationDelegate?.Dispose();
+				_moreNavigationDelegate = null;
 				_tabBarAppearance?.Dispose();
 				_tabBarAppearance = null;
 
@@ -361,7 +379,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 				SetNeedsStatusBarAppearanceUpdate();
-				SelectedViewController = controller;
+				if (_moreNavigationDelegate?.IsSelecting(current) != true &&
+					SelectedViewController != controller &&
+					!(SelectedViewController == MoreNavigationController &&
+						MoreNavigationController.TopViewController == controller))
+					SelectedViewController = controller;
 			}
 			else if (e.PropertyName == nameof(TabbedPage.FlowDirection))
 				UpdateFlowDirection();

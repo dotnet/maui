@@ -26,13 +26,34 @@ public class Issue21814TabbedPage : _IssuesUITest
 
 	public override string Issue => "Add better parameters for navigation args (TabbedPage)";
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST // The native iOS More list is specific to iOS.
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void SelectingMoreTabRaisesNavigatedToAndSelectsPage()
+	{
+		// Issue 16175: exercise UIKit's real More-list selection, not a programmatic push.
+		App.TapTab("Tab 1");
+		App.WaitForElement(Tab1Content);
+		App.WaitForElement("More");
+		App.Tap("More");
+		App.WaitForElement("Tab 6");
+		App.Tap("Tab 6");
+		App.WaitForElement("MoreTabContent");
+
+		Assert.That(App.WaitForTextEqualToElement("MoreTabNavigationStatus", "Navigated"), Is.True,
+			"OnNavigatedTo should be raised for the More child.");
+		Assert.That(App.WaitForTextEqualToElement("MoreTabSelectionStatus", "Selected"), Is.True,
+			"The More child should become TabbedPage.CurrentPage.");
+	}
+#endif
+
 	[Test, Order(1)]
 	[Category(UITestCategories.TabbedPage)]
 	public void InitialTabLoadShowsCorrectNavigationInfo()
 	{
 		// Verify Tab 1 is initially loaded and shows correct navigation info
 		App.WaitForElement(Tab1Content);
-		
+
 		var onNavigatedToText = App.FindElement(Tab1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
@@ -40,7 +61,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
 		var onNavigatingFromText = App.FindElement(Tab1OnNavigatingFromLabel).GetText();
 		Assert.That(onNavigatingFromText, Does.Contain("-"));
-		
+
 		var onNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(onNavigatedFromText, Is.EqualTo("-"));
 	}
@@ -64,7 +85,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Go back to Tab 1 to check its OnNavigatingFrom and OnNavigatedFrom
 		App.TapTab("Tab 1");
 		App.WaitForElement(Tab1Content);
-		
+
 		var tab1OnNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(tab1OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem2"));
 	}
@@ -89,7 +110,7 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Go back to Tab 2 to verify its navigation from parameters
 		App.TapTab("Tab 2");
 		App.WaitForElement(Tab2Content);
-		
+
 		var tab2OnNavigatedFromText = App.FindElement(Tab2OnNavigatedFromLabel).GetText();
 		Assert.That(tab2OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem3"));
 	}
@@ -114,11 +135,11 @@ public class Issue21814TabbedPage : _IssuesUITest
 		// Verify Tab 1's navigation from parameters point to Tab 3
 		App.TapTab("Tab 1");
 		App.WaitForElement(Tab1Content);
-		
+
 		var tab1OnNavigatedFromText = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(tab1OnNavigatedFromText, Does.Contain("DestinationPage: Issue21814TabItem3"));
 	}
-	
+
 	[Test, Order(5)]
 	[Category(UITestCategories.TabbedPage)]
 	[Description("Edge case: Verify behavior when tapping the same tab multiple times")]
@@ -126,15 +147,15 @@ public class Issue21814TabbedPage : _IssuesUITest
 	{
 		// Start on Tab 1
 		App.WaitForElement(Tab1Content);
-            
+
 		// Get initial state
 		var initialOnNavigatedFrom = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
-            
+
 		// Tap Tab 1 multiple times (should not trigger navigation events)
 		App.TapTab("Tab 1");
 		App.TapTab("Tab 1");
 		App.TapTab("Tab 1");
-            
+
 		// Verify no navigation events were triggered
 		var currentOnNavigatedFrom = App.FindElement(Tab1OnNavigatedFromLabel).GetText();
 		Assert.That(currentOnNavigatedFrom, Is.EqualTo(initialOnNavigatedFrom));
