@@ -12,10 +12,38 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeComboBox.Header = string.IsNullOrEmpty(picker.Title) ? null : picker;
 
-			var headerTemplateKey = picker.TitleColor.IsDefault() ? "ComboBoxHeaderDefaultTitleColor" : "ComboBoxHeader";
-			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
-				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources[headerTemplateKey];
+			if (string.IsNullOrEmpty(picker.Title))
+			{
+				nativeComboBox.HeaderTemplate = null;
+				return;
+			}
 
+			var resources = UI.Xaml.Application.Current.Resources;
+			var headerTemplate = (UI.Xaml.DataTemplate)resources["ComboBoxHeader"];
+			if (picker.TitleColor.IsDefault() && IsDefaultHeaderTemplate(resources, headerTemplate))
+				headerTemplate = (UI.Xaml.DataTemplate)resources["ComboBoxHeaderDefaultTitleColor"];
+
+			nativeComboBox.HeaderTemplate = headerTemplate;
+		}
+
+		static bool IsDefaultHeaderTemplate(UI.Xaml.ResourceDictionary resources, UI.Xaml.DataTemplate headerTemplate)
+		{
+			foreach (var key in resources.Keys)
+			{
+				if (key is string resourceKey && resourceKey == "ComboBoxHeaderDefaultTitleColor")
+					return ReferenceEquals(resources["ComboBoxHeader"], headerTemplate);
+			}
+
+			if (resources.MergedDictionaries is { } mergedDictionaries)
+			{
+				foreach (var dictionary in mergedDictionaries)
+				{
+					if (IsDefaultHeaderTemplate(dictionary, headerTemplate))
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)

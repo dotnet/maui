@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -78,6 +79,43 @@ namespace Microsoft.Maui.DeviceTests
 							message: $"The Picker title color was incorrect after switching to the {theme} theme (customTitleColor: {customTitleColor}).");
 					}
 				}, MauiContext);
+			});
+		}
+
+		[Fact]
+		public async Task TitleColorUnsetPreservesApplicationHeaderTemplate()
+		{
+			var picker = new Picker
+			{
+				Title = "Select an option",
+				TitleColor = null
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var resources = UI.Xaml.Application.Current.Resources;
+				var hadHeaderTemplate = resources.Keys.Contains("ComboBoxHeader");
+				var previousHeaderTemplate = hadHeaderTemplate ? resources["ComboBoxHeader"] : null;
+				var customHeaderTemplate = (UI.Xaml.DataTemplate)UI.Xaml.Markup.XamlReader.Load("""
+					<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+						<TextBlock Text="Custom header" />
+					</DataTemplate>
+					""");
+
+				try
+				{
+					resources["ComboBoxHeader"] = customHeaderTemplate;
+					var handler = CreateHandler<PickerHandler>(picker);
+
+					Assert.Same(customHeaderTemplate, handler.PlatformView.HeaderTemplate);
+				}
+				finally
+				{
+					if (hadHeaderTemplate)
+						resources["ComboBoxHeader"] = previousHeaderTemplate;
+					else
+						resources.Remove("ComboBoxHeader");
+				}
 			});
 		}
 
