@@ -1,5 +1,4 @@
-# Pipeline for full /review and existing-test-only /review gate.
-# Full review remains the default; gate-only runs do not invoke Copilot.
+# Pipeline for the full /review workflow.
 #
 # For more information, see:
 # https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
@@ -22,11 +21,6 @@ parameters:
       - ios
       - catalyst
       - windows
-
-  - name: GateOnly
-    displayName: 'Verify existing PR tests only'
-    type: boolean
-    default: false
 
   - name: androidPool
     type: object
@@ -81,17 +75,6 @@ variables:
     value: 150
 
 stages:
-- ${{ if eq(parameters.GateOnly, true) }}:
-  - template: pr-review-gate.yml
-    parameters:
-      PRNumber: ${{ parameters.PRNumber }}
-      Platform: ${{ parameters.Platform }}
-      GateTaskTimeoutMinutes: ${{ variables.GateTaskTimeoutMinutes }}
-      androidPool: ${{ parameters.androidPool }}
-      iosPool: ${{ parameters.iosPool }}
-      macPool: ${{ parameters.macPool }}
-      windowsPool: ${{ parameters.windowsPool }}
-- ${{ else }}:
   - stage: ReviewPR
     displayName: 'Review Pull Request'
     jobs:

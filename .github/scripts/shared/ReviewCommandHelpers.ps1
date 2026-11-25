@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Parsing and authorization helpers for manual /review and /review gate commands.
+    Parsing and authorization helpers for manual /review commands.
 #>
 
 function ConvertTo-DateTimeOffset {
@@ -63,19 +63,14 @@ function ConvertFrom-ReviewCommand {
     if ($trimmed -notmatch '(?i)^/review(\s|$)') {
         return $null
     }
-    if ($trimmed -match '(?i)^/review\s+(rerun|tests|run-tests|run-ui-tests|run-device-tests|performance|expert-review(?:er)?)(\s|$)') {
+    if ($trimmed -match '(?i)^/review\s+(gate|rerun|tests|run-tests|run-ui-tests|run-device-tests|performance|expert-review(?:er)?)(\s|$)') {
         return $null
     }
 
-    $combined = $trimmed -match '(?i)^/review\s+expert-review(?:er)?-with-gate$'
-    if (-not $combined -and $trimmed -match '(?i)^/review\s+expert-review') {
+    if ($trimmed -match '(?i)^/review\s+expert-review') {
         return $null
     }
-    $gateOnly = $combined -or $trimmed -match '(?i)^/review\s+gate(\s|$)'
     $argsText = [regex]::Replace($trimmed, '(?i)^/review(?:\s+|$)', '')
-    if ($gateOnly) {
-        $argsText = [regex]::Replace($argsText, '(?i)^(gate|expert-review(?:er)?-with-gate)(?:\s+|$)', '')
-    }
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {
         $tokens = @($argsText -split '\s+' | Where-Object { $_ })
@@ -122,7 +117,6 @@ function ConvertFrom-ReviewCommand {
 
     return [pscustomobject]@{
         IsReviewCommand = $true
-        GateOnly        = [bool]$gateOnly
         Platform        = $platform
         PipelineRef     = $pipelineRef
         Body            = $trimmed
