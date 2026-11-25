@@ -1,4 +1,3 @@
-#if IOS && !MACCATALYST
 #nullable enable
 using System;
 using System.Threading.Tasks;
@@ -7,8 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
 
-[Category(TestCategory.HybridWebView)]
-public class HybridWebViewTests_RoutedDocument : HybridWebViewTestsBase
+public partial class HybridWebViewTests_InvokeDotNet
 {
 	[Fact]
 	public Task RoutedDocumentCanInvokeDotNet() =>
@@ -47,4 +45,3 @@ public class HybridWebViewTests_RoutedDocument : HybridWebViewTestsBase
 		public void MarkInvoked() => WasCalled = true;
 	}
 }
-#endif
