@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				value = parts[parts.Length - 1];
 
-			var assemblyTypeInfo = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", nameof(Easing));
+			// Easing lives in Microsoft.Maui (Core), not in Controls.
+			var assemblyTypeInfo = ("Microsoft.Maui", "Microsoft.Maui", nameof(Easing));
 
 			var module = context.Body.Method.Module;
 			var fieldReference = module.ImportFieldReference(context.Cache, assemblyTypeInfo, value, isStatic: true, caseSensitive: false);
