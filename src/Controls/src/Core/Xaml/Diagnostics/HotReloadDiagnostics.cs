@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics;
 // XamlTools team (VS repo: src\Xaml Diagnostics) — thank you!
 //   • This namespace + type name, and the event names UpdateRequested / UpdateApplied / UpdateFailed
 //     / UpdateSkipped (each an EventHandler<T>). Please don't rename/remove them or change the delegate shape.
-//   • The event-arg property names/types XamlTools reads (see HotReloadEventArgs.cs).
+//   • The event-arg property names/types XamlTools reads (see HotReloadEventArgs.cs). New members
+//     (e.g. ReloadRequiredTypes) are additive and don't change the meaning of existing ones.
 //   • The firing order/semantics from XamlIncrementalHotReloadHandler: UpdateRequested is synchronous
 //     and pre-dispatch; a DISPATCHED batch raises UpdateApplied once as its terminal event, AFTER every
 //     UpdateFailed for that batch; a recognized-but-empty batch raises UpdateSkipped instead. Please
@@ -62,9 +63,9 @@ public static class HotReloadDiagnostics
 		Raise(UpdateRequested, new HotReloadRequestedEventArgs(updatedTypes, handledTypes, DateTimeOffset.Now));
 	}
 
-	internal static void OnUpdateApplied(IReadOnlyList<Type> updatedTypes, int instanceCount, int fromVersion, int toVersion, TimeSpan duration)
+	internal static void OnUpdateApplied(IReadOnlyList<Type> updatedTypes, int instanceCount, int fromVersion, int toVersion, TimeSpan duration, IReadOnlyList<Type>? reloadRequiredTypes = null)
 	{
-		Raise(UpdateApplied, new HotReloadAppliedEventArgs(updatedTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now));
+		Raise(UpdateApplied, new HotReloadAppliedEventArgs(updatedTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now, reloadRequiredTypes));
 	}
 
 	internal static void OnUpdateFailed(Type updatedType, object instance, Exception exception, int version)
@@ -72,9 +73,9 @@ public static class HotReloadDiagnostics
 		Raise(UpdateFailed, new HotReloadErrorEventArgs(updatedType, instance, exception, version, DateTimeOffset.Now));
 	}
 
-	internal static void OnUpdateSkipped(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes)
+	internal static void OnUpdateSkipped(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes, IReadOnlyList<Type>? reloadRequiredTypes = null)
 	{
-		Raise(UpdateSkipped, new HotReloadSkippedEventArgs(updatedTypes, handledTypes, DateTimeOffset.Now));
+		Raise(UpdateSkipped, new HotReloadSkippedEventArgs(updatedTypes, handledTypes, DateTimeOffset.Now, reloadRequiredTypes));
 	}
 
 	// Diagnostics are observational only: a throwing or slow subscriber must never abort the
