@@ -41,6 +41,24 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.True(latestResult.IsDisposed);
 		}
 
+		[Fact]
+		public void LoadCompletingDuringCancellationCannotCompleteTheCurrentLoad()
+		{
+			var manager = new ImageSourceServiceResultManager();
+			var first = manager.BeginLoad();
+			var firstResult = new ImageSourceServiceLoadResult();
+			using var registration = first.Register(() => manager.CompleteLoad(firstResult, first));
+
+			var second = manager.BeginLoad();
+
+			Assert.True(firstResult.IsDisposed);
+			Assert.True(manager.IsLoading);
+
+			var third = manager.BeginLoad();
+			Assert.True(second.IsCancellationRequested);
+			manager.CompleteLoad(null, third);
+		}
+
 		[Theory]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
