@@ -2,3 +2,6 @@
 Microsoft.Maui.Controls.Picker.IsClearButtonVisible.get -> bool
 Microsoft.Maui.Controls.Picker.IsClearButtonVisible.set -> void
 ~static readonly Microsoft.Maui.Controls.Picker.IsClearButtonVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

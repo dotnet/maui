@@ -9,6 +9,8 @@ trigger:
     - inflight/*
     - candidate/*
     - darc-*
+    # `/review run-device-tests` dispatch commits (see eng/pipelines/common/run-devicetests-request.yml).
+    - run-devicetests/*
   tags:
     include:
     - '*'
@@ -54,6 +56,9 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# A `/review run-device-tests` dispatch branch carries the AI selection for one PR (RunDeviceTests* variables).
+- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/') }}:
+  - template: /eng/pipelines/common/run-devicetests-request.yml@self
 # Include Helix access token for internal builds
 - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
   - group: DotNet-HelixApi-Access
@@ -138,6 +143,15 @@ stages:
         runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      # A `/review run-device-tests` dispatch: only the selected platforms (CoreCLR only), projects and
+      # categories. Only RunTestsMode 'full' keeps everything; any other value narrows to the listed
+      # platforms, so an unfilled request runs nothing.
+      ${{ if and(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'), ne(variables['RunTestsMode'], 'full')) }}:
+        selectedRun: true
+        selectedPlatforms:
+        - ${{ each platform in split(variables['RunDeviceTestsPlatforms'], ',') }}:
+          - ${{ platform }}
+        extraHelixArguments: /p:RunDeviceTestsProjects=${{ variables['RunDeviceTestsProjects'] }} /p:RunDeviceTestsControlsSkip=${{ variables['RunDeviceTestsControlsSkip'] }} /p:RunDeviceTestsCoreSkip=${{ variables['RunDeviceTestsCoreSkip'] }} /p:RunDeviceTestsControlsRun=${{ variables['RunDeviceTestsControlsRun'] }} /p:RunDeviceTestsCoreRun=${{ variables['RunDeviceTestsCoreRun'] }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:

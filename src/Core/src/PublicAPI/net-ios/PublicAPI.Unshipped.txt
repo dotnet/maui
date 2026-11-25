@@ -2,3 +2,4 @@
 Microsoft.Maui.IPickerClearButton
 Microsoft.Maui.IPickerClearButton.IsClearButtonVisible.get -> bool
 static Microsoft.Maui.Handlers.PickerHandler.MapIsClearButtonVisible(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void

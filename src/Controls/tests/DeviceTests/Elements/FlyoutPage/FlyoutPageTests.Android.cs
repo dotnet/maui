@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
@@ -14,6 +15,52 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		DrawerLayout FindPlatformFlyoutView(AView aView) =>
 			aView.GetParentOfType<DrawerLayout>();
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/14609
+		public async Task TapOnTheOpenFlyoutDoesNotReachTheDetailPage()
+		{
+			SetupBuilder();
+
+			var flyoutPage = CreateFlyoutPage(
+				typeof(FlyoutPage),
+				new ContentPage() { Title = "Detail", Content = new Label() { Text = "Detail" } },
+				new ContentPage() { Title = "Flyout", Content = new Label() { Text = "Flyout" } });
+
+			// On tablets the default layout behavior is split mode, where the flyout isn't
+			// hosted in the drawer; force the overlapping drawer so the test is deterministic
+			flyoutPage.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Controls.Window(flyoutPage), async (handler) =>
+			{
+				bool detailTouched = false;
+				var detailView = flyoutPage.Detail.ToPlatform();
+				detailView.Touch += (_, e) =>
+				{
+					detailTouched = true;
+					e.Handled = false;
+				};
+
+				var flyoutView = flyoutPage.Flyout.ToPlatform();
+				var drawerLayout = FindPlatformFlyoutView(flyoutView);
+
+				flyoutPage.IsPresented = true;
+				await AssertHelpers.AssertEventually(() => drawerLayout.IsDrawerOpen(flyoutView), timeout: 5000, message: "Flyout did not open");
+
+				// Tap the middle of the open flyout
+				var x = flyoutView.GetX() + flyoutView.Width / 2f;
+				var y = flyoutView.GetY() + flyoutView.Height / 2f;
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+				using (var up = MotionEvent.Obtain(time, time, MotionEventActions.Up, x, y, 0))
+				{
+					drawerLayout.DispatchTouchEvent(down);
+					drawerLayout.DispatchTouchEvent(up);
+				}
+
+				Assert.False(detailTouched, "A tap on the open flyout reached the detail page behind it");
+			});
+		}
 
 		[Fact]
 		public async Task SwappingDetailPageKeepsASingleToolbar()
@@ -103,6 +150,57 @@ namespace Microsoft.Maui.DeviceTests
 
 				AssertPageAttachedToRoot(replacementRoot, rootManager);
 			});
+		}
+
+		[Fact]
+		public async Task ToolbarItemsShowWhenSameFlyoutPageReturnsAsWindowRoot()
+		{
+			SetupBuilder();
+
+			var firstItem = new ToolbarItem { Text = "Page 1 Item" };
+			var firstPage = new ContentPage { Title = "Page 1", ToolbarItems = { firstItem } };
+			var firstDetail = new NavigationPage(firstPage);
+			var secondItem = new ToolbarItem { Text = "Page 2 Item" };
+			var secondPage = new ContentPage { Title = "Page 2", ToolbarItems = { secondItem } };
+			var secondDetail = new NavigationPage(secondPage);
+			var flyoutPage = CreateFlyoutPage(
+				typeof(FlyoutPage),
+				new NavigationPage(new ContentPage { Title = "Initial Detail" }),
+				new ContentPage { Title = "Flyout" });
+			var window = new Controls.Window(flyoutPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				flyoutPage.Detail = firstDetail;
+				await OnLoadedAsync(firstPage);
+				AssertToolbarShows(handler, firstItem);
+
+				// Swap the window away from the FlyoutPage and back to the same instance, selecting
+				// the same detail and then a different one. A stale toolbar kept the old page's items.
+				await ReturnToFlyoutPage(firstDetail, firstPage);
+				AssertToolbarShows(handler, firstItem);
+
+				await ReturnToFlyoutPage(secondDetail, secondPage);
+				AssertToolbarShows(handler, secondItem);
+			});
+
+			void AssertToolbarShows(IElementHandler handler, ToolbarItem item)
+			{
+				Assert.True(GetPlatformToolbar(handler)?.IsShown, "The toolbar is not shown");
+				ToolbarItemsMatch(handler, item);
+			}
+
+			async Task ReturnToFlyoutPage(NavigationPage detail, ContentPage detailPage)
+			{
+				var otherRoot = new ContentPage { Title = "Other Root" };
+				window.Page = otherRoot;
+				await OnLoadedAsync(otherRoot);
+				await AssertEventually(() => flyoutPage.Handler is null, message: "The outgoing FlyoutPage was not disconnected");
+
+				window.Page = flyoutPage;
+				flyoutPage.Detail = detail;
+				await OnLoadedAsync(detailPage);
+			}
 		}
 
 		static void AssertPageAttachedToRoot(Page page, NavigationRootManager rootManager)

@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackground(this WebView2 platformWebView, IWebView webView)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(platformWebView);
 			Color? backgroundColor = null;
 
 			if (webView.Background is SolidPaint solidPaint)
