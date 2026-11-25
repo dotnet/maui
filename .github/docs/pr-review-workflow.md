@@ -3,7 +3,6 @@
 This guide explains the automated investigation commands used in dotnet/maui:
 
 - `/review`
-- `/review tests`
 - `/review expert-review`
 - `/evaluate-tests`
 - `/issue triage` (on open issues)
@@ -17,7 +16,6 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | --- | --- | --- | --- |
 | `/review` | Repository users with write, maintain, or admin access | Queues the existing full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Runs the full review on `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
-| `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review expert-review` | Repository users with write, maintain, or admin access | Runs only the read-only MAUI expert reviewer on GitHub, with independent GPT dimension passes. | Posts one consolidated COMMENT review with inline findings and an `Expert Review` summary. |
 | `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
 | `/issue triage` | Repository users with write, maintain, or admin access | Applies evidence-backed manual labels to an open issue. | Labels only; explanation retained in Actions artifacts, not a public report. |
@@ -39,9 +37,8 @@ current effective repository permission, not the team name alone.
 | [`/issue triage`](../workflows/issue-triage.md) | Native roles and pre-activation accept write/maintain/admin. Trusted `IssueTriage.ps1` rechecks that permission during Gather, Validate and Complete. Requires a new exact human command on an open issue, trusted default-branch infrastructure and attempt one; freshness, evidence authority and exact label postconditions remain mandatory. |
 | [`/issue trace-regression`](../workflows/issue-trace-regression.md) | Native roles, collector checks before/after gathering and command completion accept write/maintain/admin. Requires a new exact human issue comment; publication validates the triggering issue and completion requires the actual report receipt. |
 | [`/evaluate-tests`](../workflows/copilot-evaluate-tests.md) | Native roles accept write/maintain/admin. The compiled association prefilter retains OWNER/MEMBER/COLLABORATOR; collaborator access includes repository write access, not only public organization membership. Requires a PR comment and an open PR with test source changes. |
-| [`/review tests`](../workflows/copilot-review-tests.md) | Native roles, exact-command authorization/minimization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR; reporting uses the triggering target. |
 | [`/review expert-review`](../workflows/copilot-review-expert.md) | Native roles, exact human-command intake, collector, publisher and completion recheck current write/maintain/admin. Requires an open PR, default-branch infrastructure and a fresh run. PAT-pool access follows successful frozen-context collection; completion verifies the actual review receipt. |
-| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests` and `/review expert-review` are separate workflows; unsupported legacy commands are ignored. |
+| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review expert-review` is a separate workflow; retired commands are ignored. |
 | [`/evaluate-skills`](../workflows/skill-validation.yml) | The slash gate accepts write/maintain/admin on PR comments. Static-only mode can disable live evaluation independently of caller access; trusted-source and evaluation-content validation still apply. |
 | [`/rebase`](../workflows/rebase.yml) | The commenter must have write/maintain/admin and post exactly `/rebase` on an open PR. Conflicts or unavailable maintainer edits can prevent branch updates after authorization. |
 | [`/backport [to] <branch>`](../workflows/backport.yml) | Delegates to `dotnet/arcade`'s `backport-base.yml@main`; its current caller gate accepts write/admin, so partner write access qualifies. Requires a merged source PR and an existing target branch; upstream behavior can change independently. |
@@ -82,14 +79,10 @@ The expert lane uses the trusted exact-command matcher on newly created PR
 comments, rather than the native slash-command prefilter, and accepts leading
 whitespace and case-insensitive command text.
 
-Use `/review tests` when the question is specifically about CI/test failures, for example:
-
-- "Is this failure likely caused by the PR?"
-- "Is CI red because of a known flaky test?"
-- "Did this PR introduce a missing snapshot/baseline?"
-- "Are these failures unrelated infrastructure or existing failures?"
-
-Do not use `/review tests` as a substitute for a code review. It does not approve, request changes, apply labels, trigger reruns, or change the PR. It only posts evidence-based failure classification.
+The standalone `/review tests` command and its local runner are retired.
+Use the `azdo-build-investigator` skill for CI failure investigations.
+`/review run-tests`, `/review run-ui-tests`, `/review run-device-tests`, and
+`/evaluate-tests` remain separate supported features.
 
 Use `/issue trace-regression` on an **issue** to investigate which change introduced
 the reported behavior. This is different from the full PR review's regression-risk
@@ -272,7 +265,7 @@ the publication boundary.
 Both agent-failure and custom failed-job issue reporters are disabled, so a failed
 completion job cannot open an untargeted repository issue.
 
-The comment follows `/review tests` styling: author/issue header, Scope/Range
+The comment follows the shared review styling: author/issue header, Scope/Range
 badges, closed **Regression Analysis** and **Follow-up** accordions, and linked
 candidate evidence. **Verdict** and **Evidence** (including degraded coverage)
 remain visible above the accordions. A green run is not proof of healthy tooling:
@@ -295,15 +288,15 @@ The Azure pipeline runs Setup, test verification, Copilot review and alternative
 publication, selected Deep UI tests, final AI Summary updates, lock cleanup,
 and token-usage aggregation. Local full-review tooling remains available too.
 
-`/review tests` remains an independent command. `/review gate`, `/review rerun`
-and the retired `/review performance` are unsupported and ignored, including by
+`/review tests`, `/review gate`, `/review rerun`, and `/review performance`
+are unsupported and ignored, including by
 missed-command recovery. Full-review requests use the same permission checks,
 per-PR concurrency, and in-progress lock.
 
 Review commands do not post routine status or "already running" skip comments.
 When a full review is already running, the trigger records the skip in
 the Actions step summary and acknowledges and collapses the command comment
-without posting a reply. `/review tests` also disables routine status comments.
+without posting a reply.
 Result reports and actionable failure notices remain enabled.
 
 ### Test verification within `/review`
@@ -414,7 +407,7 @@ Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
 Completion verifies the review ID returned by this run's write, its exact body
 and commit, and the exact count and membership of its inline comments. Manual
-dispatch and combined commands perform the same receipt checks; only command
+dispatch and standalone comment runs perform the same receipt checks; only command
 acknowledgement differs. Publication plans share a 4 MB UTF-8 bound through
 submission and completion, including long or non-ASCII finding text.
 
@@ -473,10 +466,7 @@ found on the correct PR, bot identity and pinned commit, and the exact compact
 review receipt has been posted, including for zero findings. Incomplete/stale/failed runs
 leave it visible. The completion job then rechecks the command and requester
 before minimizing only that command.
-For the combined command, only the existing Gate trigger acknowledges/minimizes
-the request. Scheduled missed-command recovery can recover its Gate half, but
-does not dispatch a second expert review. The standalone expert workflow still
-has no scheduled recovery.
+The standalone expert workflow has no scheduled recovery.
 
 Manual dispatch requires the default branch and a positive integer
 `pr_number`; the shared slash-command trigger prevents marking that input
@@ -514,165 +504,6 @@ validated findings, explicit gaps and an actual published review/comment
 receipt. Artifacts or a publication preview alone do not prove publication.
 Do not treat the hosted lane as operational before that GitHub canary succeeds.
 
-## `/review tests`: test-failure review
-
-### Trigger
-
-Comment `/review tests` on a pull request.
-
-The trigger is implemented by `.github/workflows/copilot-review-tests.md`, compiled to `.github/workflows/copilot-review-tests.lock.yml`.
-
-Because gh-aw slash commands match only the first command token, the workflow
-listens for `/review` and neutrally skips unless the comment uses the canonical
-`/review tests` subcommand. The full/gate trigger excludes `/review tests`,
-so the two workflows do not both run.
-
-**Note**: The command comment is minimized (collapsed as
-"Resolved") after authorization and processing to reduce conversation clutter.
-
-### What it does
-
-`/review tests` is comment-only. It does not:
-
-- approve or request changes;
-- apply labels;
-- trigger CI reruns;
-- change code;
-- start the full PR review pipeline.
-
-The workflow uses one skill,
-[`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
-and comment formatting. The local runner uses that same skill. The hosted workflow,
-uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
-API. The local runner and offline evaluations keep their independently configured
-models.
-
-The pinned gh-aw **v0.86.2** runtime does not yet include this model's pricing or
-wire-protocol metadata. Each workflow explicitly sets
-`COPILOT_PROVIDER_WIRE_API: responses` and imports
-[`shared/gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) for model-specific
-pricing, preserving AI-credit accounting without a fallback to another model.
-The per-token prices come from the
-[OpenAI model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
-
-It gathers evidence from:
-
-- GitHub PR metadata, the actual code diff, changed files, and check rollup;
-- Azure DevOps build metadata, timelines, and build logs;
-- Helix references when available for device tests;
-- optional authenticated AzDO data when `AZDO_TOKEN` or local Azure CLI auth is available;
-- the latest five completed runs on the PR's target branch for each pipeline.
-
-It always covers `maui-pr`, `maui-pr-devicetests`, and `maui-pr-uitests`. For each,
-it compares the current run with the latest five completed runs of the same
-pipeline definition on `refs/heads/<pr.baseRefName>` (for example,
-`refs/heads/net11.0` for a PR targeting `net11.0`), never the PR source/merge ref.
-These are the latest runs at review time, not only runs predating the PR build.
-When there is current evidence to evaluate, it queries all three target-branch
-windows even if one current PR build is missing or unreadable. Missing or
-unreadable historical samples are disclosed when they affect attribution.
-An optional build or check input
-prioritizes evidence; it does not remove the other pipelines from the report.
-
-Previous PR runs are not required and their absence is not a coverage gap.
-The skill connects failure diagnostics to changed code and compares matching
-reasons/configurations across all five target samples to distinguish existing defects.
-Green device jobs require actual test-result confirmation.
-
-Then it posts a `Test Failure Review` comment that classifies failures as:
-
-- **Likely PR-caused**
-- **Likely unrelated**
-- **Needs human investigation**
-- **Insufficient data**
-
-The workflow posts exactly one concise comment using the original styled layout:
-a visible author/commit header, Scope/Commit badges, and two closed
-top-level sibling accordions, **CI Analysis** and **Follow-up**. CI Analysis
-contains three nested sections: **maui-pr**,
-**maui-pr-devicetests**, and **maui-pr-uitests**. Each failure gets its attribution,
-a direct test-result/log/Helix link, and one short reason. Passing pipelines get
-one line; missing evidence is mentioned only in its pipeline. Sampling inventories
-and repeated coverage summaries stay out of the comment; detailed evidence stays
-in the context artifact. There is no overall verdict, Verdict badge, or Summary
-section; attribution is reported per failure rather than obscured by an aggregate
-`Inconclusive` label. Follow-up contains an action only when needed and the
-`/review tests` refresh instruction.
-
-If no current-PR results exist, gathering stops before diff, known-issue,
-and target-history analysis. It still posts a short **Evaluation skipped** report
-asking for `/azp run` (or to wait if CI is already running). The local runner uses
-that deterministic report, with the same badges and accordions, without invoking
-Copilot. If just one pipeline lacks
-results, the others are evaluated and the report requests `/azp run <pipeline>`
-for the missing one. Actual build/restore/linker or host failures remain actionable
-even when they prevent tests from starting; zero failed tests is not zero results.
-Existing runs whose evidence was omitted, inaccessible, or not verified are
-reported as **Insufficient data**, with a run link and `/review tests` refresh
-guidance, not `No results available` or an unnecessary `/azp run`. Check discovery
-deduplicates explicitly by name and URL so all three pipelines survive the
-collector's ordered-dictionary representation.
-
-This is failure attribution, not merge approval. The skill does not use the
-legacy gatherer's deterministic merge-readiness verdict as a causal conclusion.
-The workflow no longer publishes visual asset branches or appends image panels.
-
-### Local usage
-
-Maintainers can run the same flow locally:
-
-```powershell
-pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464
-```
-
-By default this writes local artifacts only:
-
-```text
-CustomAgentLogsTmp/TestFailureReview/<PRNumber>/context.json
-CustomAgentLogsTmp/TestFailureReview/<PRNumber>/context.md
-CustomAgentLogsTmp/TestFailureReview/<PRNumber>/report.md
-CustomAgentLogsTmp/TestFailureReview/<PRNumber>/comment.md
-```
-
-To post the generated comment:
-
-```powershell
-pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464 -PostComment
-```
-
-The local runner preserves the same styled, pipeline-grouped report; it does
-not wrap or replace the skill's report. It retains the canonical
-`<!-- Tests Failure -->` marker and adds a separate hidden local-ownership marker
-so subsequent local runs update the local comment, not a workflow-owned report.
-`-DryRun` prevents posting even when `-PostComment` is also supplied.
-The report process has scoped access to the run's artifact directory, including
-when `-OutputDirectory` is outside the checkout. Its default tools can only inspect
-the frozen evidence (file readers and `jq`); the runner saves the final response
-instead of granting model write access or reusing an earlier report. A missing or
-unreadable context is an access problem, not proof that CI has no results.
-
-To gather evidence without invoking Copilot:
-
-```powershell
-pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464 -GatherOnly
-```
-
-Local runs can use Azure CLI to acquire an Azure DevOps bearer token. If available, the gatherer records that in the generated context. If builds are still inaccessible after authenticated access, the report should say so and classify affected checks as `Insufficient data`.
-
-### Interpreting `Insufficient data`
-
-`Insufficient data` means the workflow saw a failing check but did not have enough reliable evidence to attribute it.
-
-Common causes:
-
-- AzDO build records returned 404 or expired;
-- logs were inaccessible;
-- the build is still running;
-- authenticated AzDO test APIs were unavailable;
-- device-test failures may be hidden in Helix and no Helix data was available.
-
-Do not treat `Insufficient data` as "unrelated." It means a human or a rerun with better data is needed.
-
 ## How to read the review comments
 
 ### Test verification
@@ -680,28 +511,6 @@ Do not treat `Insufficient data` as "unrelated." It means a human or a rerun wit
 The test-verification gate is included in the full `/review` run and its
 results appear in the `AI Summary` comment. It is not a separate command or
 standalone PR comment.
-
-### Test Failure Review
-
-`/review tests` posts a separate failure-attribution comment. It answers "Why is
-CI red?" rather than checking the gate's without-fix/with-fix test outcomes.
-
-The top-level title is always:
-
-```markdown
-## Tests Failure Analysis
-```
-
-The header gives the author and analyzed commit, with two badges showing the
-`CI failures` scope and short SHA. Expand **CI Analysis** for the
-three pipeline sections with related/unrelated/uncertain failures and direct
-evidence links. Expand its sibling **Follow-up** for actions and refresh.
-Failure labels use &#x1F534; for **Likely PR-caused**, &#x1F7E2; for
-**Likely unrelated**, and &#x1F7E1; for **Needs human investigation**.
-Green indicates attribution, not a passing test; yellow indicates unresolved causality.
-Missing results produce `/azp run` guidance, not a long evaluation.
-This is not merge approval; incomplete evidence remains explicit in its pipeline.
-The canonical layout lives in the skill rather than a separate caller template.
 
 ### Expert Review
 
@@ -717,7 +526,7 @@ new commits; history/source review is never a test pass or human approval.
 1. Make sure the PR has appropriate `area-*` and `platform/*` labels. The agentic labeler normally handles this on PR open/reopen.
 2. Run `/review` for the complete review.
 3. Read the `AI Summary` and inspect the evidence, including test-verification results.
-4. If CI is red or ambiguous, run `/review tests` to get a focused failure-causality report.
+4. If CI is red or ambiguous, investigate with the `azdo-build-investigator` skill.
 5. If the author changes the fix or tests, repeat the relevant command for a fresh snapshot.
 6. Use human judgment for merge decisions. These workflows provide evidence and recommendations, not final approval authority.
 
@@ -726,7 +535,7 @@ new commits; history/source review is never a test pass or human approval.
 1. Open the PR with a clear description and linked issue when possible.
 2. Wait for labels and CI to run.
 3. Ask a maintainer to run `/review` for a full review.
-4. If CI is red and you are unsure whether it is caused by your changes, ask a maintainer to run `/review tests`.
+4. If CI is red and you are unsure whether it is caused by your changes, ask a maintainer to investigate the failing runs.
 5. When an automated comment is posted, read the summary first, then expand evidence sections for details.
 6. Push fixes or tests, then ask a maintainer to repeat the relevant review command.
 
@@ -737,7 +546,6 @@ The review automation analyzes untrusted PR code and untrusted comments. The wor
 Important safeguards:
 
 - `/review` requires repository write-level permissions and queues a trusted Azure pipeline.
-- `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
 - `/review expert-review` inspects frozen read-only source and publishes only
   through a fresh validated native COMMENT-review job with GPT-only detection.
 - The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
@@ -749,7 +557,6 @@ Important safeguards:
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
 | `/review` does nothing | The commenter lacks write/maintain/admin access, the PR is closed, or the webhook was delayed. | Authorized commands should be recovered within about 35 minutes. Check GitHub Status if Actions is degraded. |
-| `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
 | `/review expert-review` is stale, incomplete or failed | The PR changed, a worker/evidence source was unavailable, or trusted publication rejected the output. | Inspect the linked run and artifacts; request a fresh command after resolving the gap. Do not rerun old jobs. |
 | `/review expert-review` does not start | The new workflow is not registered on the default branch, the command/target is invalid, or permission is insufficient. | Check default-branch rollout and exact command syntax; the standalone lane has no scheduled recovery. |
 | Test-verification results are outdated | The PR head changed after Setup captured its snapshot. | Run `/review` again for a fresh snapshot. |
@@ -768,7 +575,4 @@ Important safeguards:
 - `.github/agents/ghaw-expert-reviewer.agent.md` — trusted hosted adapter.
 - `.github/agents/maui-expert-reviewer.md` — canonical expert dimensions and review contract.
 - `.github/scripts/Review-Expert.ps1` — frozen context, validated publication and receipt checks.
-- `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
-- `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
-- `.github/scripts/Review-Tests.ps1` — local runner for `/review tests`.
 - `.github/docs/trigger-azdo-pipeline-setup.md` — OIDC setup for triggering AzDO pipelines from GitHub Actions.
