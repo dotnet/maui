@@ -1,3 +1,4 @@
+using System;
 using Android.OS;
 using Android.Views;
 using AndroidX.Activity;
@@ -76,7 +77,35 @@ namespace Microsoft.Maui
 			if (_mauiOnBackPressedCallback is null)
 				return;
 
-			_mauiOnBackPressedCallback.Enabled = ShouldRegisterPredictiveBackCallback();
+			_mauiOnBackPressedCallback.Enabled = _modalBackHandler is not null || ShouldRegisterPredictiveBackCallback();
+		}
+
+		Action? _modalBackHandler;
+
+		// A modal is shown in its own dialog, which has its own back press dispatcher. Forward the press
+		// to the activity's dispatcher so callbacks registered by the app still run. MAUI's callback stays
+		// enabled meanwhile and handles the modal, so the press never reaches the activity's default action,
+		// also when an app callback disables itself and dispatches again.
+		internal void DispatchModalBackPress(Action modalBackHandler)
+		{
+			if (_mauiOnBackPressedCallback is null)
+			{
+				modalBackHandler();
+				return;
+			}
+
+			var previousHandler = _modalBackHandler;
+			_modalBackHandler = modalBackHandler;
+			try
+			{
+				_mauiOnBackPressedCallback.Enabled = true;
+				OnBackPressedDispatcher.OnBackPressed();
+			}
+			finally
+			{
+				_modalBackHandler = previousHandler;
+				UpdatePredictiveBackRegistration();
+			}
 		}
 
 		bool ShouldRegisterPredictiveBackCallback()
@@ -109,7 +138,10 @@ namespace Microsoft.Maui
 
 			public override void HandleOnBackPressed()
 			{
-				_activity.HandleBackNavigation();
+				if (_activity._modalBackHandler is { } modalBackHandler)
+					modalBackHandler();
+				else
+					_activity.HandleBackNavigation();
 			}
 		}
 	}

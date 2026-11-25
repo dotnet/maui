@@ -152,24 +152,9 @@
   <data name="DuplicateTypeError" xml:space="preserve">
     <value>"{0}" için birden çok Tür bulundu.</value>
   </data>
-  <data name="ConflictingXmlnsTypeTitle" xml:space="preserve">
-    <value>Conflicting XAML namespace types</value>
-  </data>
-  <data name="ConflictingXmlnsTypeMessage" xml:space="preserve">
-    <value>Type "{1}" in XML namespace "{0}" is ambiguous between: {2}.</value>
-    <comment>{0} is the XML namespace, {1} is the type name, and {2} is the list of matching types and assemblies.</comment>
-  </data>
   <data name="MemberResolution" xml:space="preserve">
     <value>“{0}” için erişilebilir özellik, BindableProperty veya olay bulunamadı veya değer ile özellik arasında uyumsuzluk var.</value>
     <comment>{0} is a property name</comment>
-  </data>
-  <data name="ExtensionPropertyAmbiguous" xml:space="preserve">
-    <value>Ambiguous extension property "{0}" for "{2}" in {1}. Multiple declarations apply, but none has a uniquely most-specific receiver.</value>
-    <comment>{0} is a property name, {1} is the namespace or container, {2} is the target type name</comment>
-  </data>
-  <data name="ExtensionPropertyResolution" xml:space="preserve">
-    <value>Cannot resolve the extension property "{0}" on "{1}". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a receiver type matching "{2}" and an accessor for the requested operation, and it must be unambiguous.</value>
-    <comment>{0} is a property name, {1} is the extension container type name, {2} is the target type name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
     <value>"{0}" Easing'e dönüştürülemiyor, beklenen değer "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" veya "SpringOut".</value>
