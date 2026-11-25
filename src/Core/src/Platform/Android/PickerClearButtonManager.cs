@@ -106,6 +106,13 @@ namespace Microsoft.Maui.Platform
 
 		void OnTouch(object? sender, AView.TouchEventArgs e)
 		{
+			if (_picker is not { IsEnabled: true } picker ||
+				picker is not IPickerClearButton { IsClearButtonVisible: true })
+			{
+				_trackingTouch = false;
+				return;
+			}
+
 			e.Handled = false;
 			if (!_visible)
 			{
@@ -172,7 +179,9 @@ namespace Microsoft.Maui.Platform
 		public void Dispose()
 		{
 			_view.Touch -= OnTouch;
-			SetDialog(null);
+			if (_dialog?.GetButton((int)DialogButtonType.Neutral) is { } button)
+				button.SetOnClickListener(null);
+			_dialog = null;
 			if (_visible)
 			{
 				_view.SetCompoundDrawablesRelative(
