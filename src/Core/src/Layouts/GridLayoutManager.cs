@@ -760,6 +760,47 @@ namespace Microsoft.Maui.Layouts
 			{
 				MinimizeStarRows();
 				MinimizeStarColumns();
+
+				if (_rowStarCount > 0 && !double.IsInfinity(_gridHeightConstraint)
+					&& (Dimension.IsExplicitSet(_explicitGridHeight) || _grid.VerticalLayoutAlignment == LayoutAlignment.Fill))
+				{
+					NormalizeStarMinimums(_rows);
+				}
+
+				if (_columnStarCount > 0 && !double.IsInfinity(_gridWidthConstraint)
+					&& (Dimension.IsExplicitSet(_explicitGridWidth) || _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill))
+				{
+					NormalizeStarMinimums(_columns);
+				}
+			}
+
+			static void NormalizeStarMinimums(Definition[] definitions)
+			{
+				if (definitions.Length < 2)
+				{
+					return;
+				}
+
+				double minimumStarSize = 0;
+				for (int n = 0; n < definitions.Length; n++)
+				{
+					var definition = definitions[n];
+					if (definition.IsStar && definition.GridLength.Value > 0)
+					{
+						minimumStarSize = Math.Max(minimumStarSize, definition.MinimumSize / definition.GridLength.Value);
+					}
+				}
+
+				// Include empty stars in the measured minimum so arranging at that size
+				// can preserve the star ratios without shrinking occupied cells.
+				for (int n = 0; n < definitions.Length; n++)
+				{
+					var definition = definitions[n];
+					if (definition.IsStar)
+					{
+						definition.MinimumSize = minimumStarSize * definition.GridLength.Value;
+					}
+				}
 			}
 
 			void MinimizeStarRows()
