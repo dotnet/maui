@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform
 			progressDrawable.Mutate();
 
 			return progressDrawable is LayerDrawable layerDrawable
-				? layerDrawable.FindDrawableByLayerId(Android.Resource.Id.Progress) ?? progressDrawable
+				? layerDrawable.FindDrawableByLayerId(global::Android.Resource.Id.Progress) ?? progressDrawable
 				: progressDrawable;
 		}
 

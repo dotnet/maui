@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler(progressBar);
 				var platformProgressBar = GetNativeProgressBar(handler);
 				var progressLayer = (platformProgressBar.ProgressDrawable as LayerDrawable)?
-					.FindDrawableByLayerId(Android.Resource.Id.Progress) ?? platformProgressBar.ProgressDrawable;
+					.FindDrawableByLayerId(global::Android.Resource.Id.Progress) ?? platformProgressBar.ProgressDrawable;
 				var red = progressLayer?.ColorFilter;
 
 				progressBar.ProgressColor = null;
