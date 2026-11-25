@@ -226,5 +226,98 @@
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
     </Target>
 
+    <!--
+        `/review run-device-tests` selection (eng/pipelines/common/run-devicetests-request.yml). Only set for
+        run-devicetests/* dispatch builds; every other build runs the work items above unchanged.
+          RunDeviceTestsProjects      scenarios to run, '+'-separated (Controls+Core+Graphics+Essentials+MauiBlazorWebView)
+          RunDeviceTestsControlsSkip  Controls.DeviceTests categories to skip, '+'-separated (empty: run all)
+          RunDeviceTestsCoreSkip      Core.DeviceTests categories to skip, '+'-separated (empty: run all)
+          RunDeviceTestsControlsRun   Controls.DeviceTests categories to run on Windows, '+'-separated (empty: all)
+          RunDeviceTestsCoreRun       Core.DeviceTests categories to run on Windows, '+'-separated (empty: all)
+        The test apps read TestFilter=SkipCategories=... (DeviceTestSharedHelpers.GetExcludedTestCategories);
+        on Windows, eng/devices/run-windows-devicetests.cmd runs the listed categories one by one.
+    -->
+    <Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="'$(RunDeviceTestsProjects)' != ''">
+        <PropertyGroup>
+            <_RunDeviceTestsProjects>+$(RunDeviceTestsProjects)+</_RunDeviceTestsProjects>
+            <_RunDeviceTestsControlsFilter Condition="'$(RunDeviceTestsControlsSkip)' != ''">SkipCategories=$(RunDeviceTestsControlsSkip.Replace('+', ','))</_RunDeviceTestsControlsFilter>
+            <_RunDeviceTestsCoreFilter Condition="'$(RunDeviceTestsCoreSkip)' != ''">SkipCategories=$(RunDeviceTestsCoreSkip.Replace('+', ','))</_RunDeviceTestsCoreFilter>
+            <_RunDeviceTestsAppleCommand>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout"</_RunDeviceTestsAppleCommand>
+        </PropertyGroup>
+
+        <!-- iOS splits Controls.DeviceTests by category; a selection runs it as one filtered work item. -->
+        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+            <XHarnessAppBundleToTest Remove="@(XHarnessAppBundleToTest)" Condition="$([System.String]::Copy('%(Identity)').StartsWith('Controls.DeviceTests-'))" />
+            <XHarnessAppBundleToTest Include="Controls.DeviceTests-Selected" Condition="$(_RunDeviceTestsProjects.Contains('+Controls+'))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:15:00</TestTimeout>
+                <LaunchTimeout>00:10:00</LaunchTimeout>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <CustomCommands Condition="'$(_RunDeviceTestsControlsFilter)' != ''">$(_RunDeviceTestsAppleCommand) --set-env="TestFilter=$(_RunDeviceTestsControlsFilter)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+        </ItemGroup>
+
+        <!-- Drop the scenarios that were not selected (work items are named after or located in <Scenario>.DeviceTests). -->
+        <ItemGroup>
+            <_RunDeviceTestsDropped Include="Controls" Condition="!$(_RunDeviceTestsProjects.Contains('+Controls+'))" />
+            <_RunDeviceTestsDropped Include="Core" Condition="!$(_RunDeviceTestsProjects.Contains('+Core+'))" />
+            <_RunDeviceTestsDropped Include="Graphics" Condition="!$(_RunDeviceTestsProjects.Contains('+Graphics+'))" />
+            <_RunDeviceTestsDropped Include="Essentials" Condition="!$(_RunDeviceTestsProjects.Contains('+Essentials+'))" />
+            <_RunDeviceTestsDropped Include="MauiBlazorWebView" Condition="!$(_RunDeviceTestsProjects.Contains('+MauiBlazorWebView+'))" />
+            <_RunDeviceTestsDroppedPattern Include="@(_RunDeviceTestsDropped->'%(Identity).DeviceTests')" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_RunDeviceTestsDroppedPatterns>|@(_RunDeviceTestsDroppedPattern, '|')|</_RunDeviceTestsDroppedPatterns>
+        </PropertyGroup>
+        <ItemGroup>
+            <_RunDeviceTestsWorkItem Include="@(XHarnessAppBundleToTest);@(XHarnessApkToTest);@(HelixWorkItem)">
+                <_Scenario>$([System.Text.RegularExpressions.Regex]::Match('%(Identity)', '(Controls|Core|Graphics|Essentials|MauiBlazorWebView)\.DeviceTests').Value)</_Scenario>
+            </_RunDeviceTestsWorkItem>
+            <_RunDeviceTestsRemove Include="@(_RunDeviceTestsWorkItem)" Condition="'%(_Scenario)' != '' and $(_RunDeviceTestsDroppedPatterns.Contains('|%(_Scenario)|'))" />
+            <XHarnessAppBundleToTest Remove="@(_RunDeviceTestsRemove)" />
+            <XHarnessApkToTest Remove="@(_RunDeviceTestsRemove)" />
+            <HelixWorkItem Remove="@(_RunDeviceTestsRemove)" />
+        </ItemGroup>
+
+        <!-- MacCatalyst: filter Controls and Core by category. -->
+        <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
+            <XHarnessAppBundleToTest Condition="'$(_RunDeviceTestsControlsFilter)' != '' and $([System.String]::Copy('%(Identity)').Contains('Controls.DeviceTests'))">
+                <CustomCommands>$(_RunDeviceTestsAppleCommand) --set-env="TestFilter=$(_RunDeviceTestsControlsFilter)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+            <XHarnessAppBundleToTest Condition="'$(_RunDeviceTestsCoreFilter)' != '' and $([System.String]::Copy('%(Identity)').Contains('Core.DeviceTests'))">
+                <CustomCommands>$(_RunDeviceTestsAppleCommand) --set-env="TestFilter=$(_RunDeviceTestsCoreFilter)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+        </ItemGroup>
+        <!-- iOS: Core.DeviceTests by category. -->
+        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+            <XHarnessAppBundleToTest Condition="'$(_RunDeviceTestsCoreFilter)' != '' and $([System.String]::Copy('%(Identity)').Contains('Core.DeviceTests'))">
+                <CustomCommands>$(_RunDeviceTestsAppleCommand) --set-env="TestFilter=$(_RunDeviceTestsCoreFilter)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+        </ItemGroup>
+        <!-- Android: the filter is an instrumentation argument. -->
+        <ItemGroup Condition="'$(TargetOS)' == 'android'">
+            <XHarnessApkToTest Condition="'$(_RunDeviceTestsControlsFilter)' != '' and $([System.String]::Copy('%(Identity)').Contains('Controls.DeviceTests'))">
+                <Arguments>--arg TestFilter=$(_RunDeviceTestsControlsFilter)</Arguments>
+            </XHarnessApkToTest>
+            <XHarnessApkToTest Condition="'$(_RunDeviceTestsCoreFilter)' != '' and $([System.String]::Copy('%(Identity)').Contains('Core.DeviceTests'))">
+                <Arguments>--arg TestFilter=$(_RunDeviceTestsCoreFilter)</Arguments>
+            </XHarnessApkToTest>
+        </ItemGroup>
+        <!-- Windows: Controls.DeviceTests and Core.DeviceTests run only the selected categories. -->
+        <ItemGroup Condition="'$(TargetOS)' == 'windows' and '$(RunDeviceTestsControlsRun)' != ''">
+            <HelixWorkItem Condition="$([System.String]::Copy('%(Identity)').StartsWith('Controls.DeviceTests-'))">
+                <Command>%(Command) "$(RunDeviceTestsControlsRun)"</Command>
+            </HelixWorkItem>
+        </ItemGroup>
+        <ItemGroup Condition="'$(TargetOS)' == 'windows' and '$(RunDeviceTestsCoreRun)' != ''">
+            <HelixWorkItem Condition="$([System.String]::Copy('%(Identity)').StartsWith('Core.DeviceTests-'))">
+                <Command>%(Command) "$(RunDeviceTestsCoreRun)"</Command>
+            </HelixWorkItem>
+        </ItemGroup>
+
+        <Message Text="/review run-device-tests: $(RunDeviceTestsProjects); work items: @(XHarnessAppBundleToTest->Count()) apple, @(XHarnessApkToTest->Count()) android, @(HelixWorkItem->Count()) windows" Importance="high" />
+    </Target>
+
 
 </Project>

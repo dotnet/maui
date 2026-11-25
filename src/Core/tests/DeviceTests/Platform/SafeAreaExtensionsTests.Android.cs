@@ -18,18 +18,27 @@ namespace Microsoft.Maui.DeviceTests
 		const int TopInset = 100;
 
 		[Theory]
-		[InlineData(0, true, TopInset)]
-		[InlineData(1, true, TopInset)]
-		[InlineData(TopInset - 1, true, TopInset)]
-		[InlineData(TopInset, true, TopInset)]
-		[InlineData(TopInset + 1, true, TopInset)]
-		[InlineData(1, false, 0)]
-		public async Task TopInsetRetainedOnlyForFullHeightTransitions(int offset, bool fullHeight, int expectedTopInset)
+		[InlineData(0, true, TopInset, false)]
+		[InlineData(1, true, TopInset, false)]
+		[InlineData(TopInset - 1, true, TopInset, false)]
+		[InlineData(TopInset, true, TopInset, false)]
+		[InlineData(TopInset + 1, true, TopInset, false)]
+		[InlineData(1, false, 0, false)]
+		[InlineData(1, false, 0, true)]
+		public async Task TopInsetRetainedOnlyForFullHeightTransitions(int offset, bool fullHeight, int expectedTopInset, bool useNewContext)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var context = MauiProgram.DefaultContext;
-				var (screenWidth, screenHeight) = GetScreenSize(context);
+				var activityContext = MauiProgram.DefaultContext;
+				using var newContext = useNewContext
+					? activityContext.CreateConfigurationContext(activityContext.Resources.Configuration)
+					: null;
+				var context = newContext ?? activityContext;
+				// Keep the new context's window-service peer alive while insets are applied.
+				using var windowService = useNewContext ? context.GetSystemService(Context.WindowService) : null;
+				if (useNewContext)
+					Assert.NotNull(windowService);
+				var (screenWidth, screenHeight) = GetScreenSize(activityContext);
 
 				var height = fullHeight ? screenHeight : screenHeight / 2;
 				var top = fullHeight ? offset : screenHeight - height + offset;
@@ -54,15 +63,23 @@ namespace Microsoft.Maui.DeviceTests
 		const int ImeBottom = 800;
 
 		[Theory]
-		[InlineData(0, ImeBottom)]
-		[InlineData(200, ImeBottom - 200)]
-		[InlineData(ImeBottom + 100, 0)]
-		public async Task AnimatedSoftInputInsetCoversOnlyTheKeyboardOverlap(int gapToScreenBottom, int expectedBottomInset)
+		[InlineData(0, ImeBottom, false)]
+		[InlineData(200, ImeBottom - 200, false)]
+		[InlineData(ImeBottom + 100, 0, false)]
+		[InlineData(200, ImeBottom - 200, true)]
+		public async Task AnimatedSoftInputInsetCoversOnlyTheKeyboardOverlap(int gapToScreenBottom, int expectedBottomInset, bool useNewContext)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var context = MauiProgram.DefaultContext;
-				var (screenWidth, screenHeight) = GetScreenSize(context);
+				var activityContext = MauiProgram.DefaultContext;
+				using var newContext = useNewContext
+					? activityContext.CreateConfigurationContext(activityContext.Resources.Configuration)
+					: null;
+				var context = newContext ?? activityContext;
+				using var windowService = useNewContext ? context.GetSystemService(Context.WindowService) : null;
+				if (useNewContext)
+					Assert.NotNull(windowService);
+				var (screenWidth, screenHeight) = GetScreenSize(activityContext);
 
 				// Keep a laid-out view even when the bottom gap exceeds the screen height.
 				using var view = new PositionedView(context, -gapToScreenBottom);
@@ -85,12 +102,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static (int Width, int Height) GetScreenSize(Context context)
+		internal static (int Width, int Height) GetScreenSize(Context context)
 		{
-			// Resolve the typed Java peer before the inset helper calls GetSystemService.
 			var windowManager = context.GetActivity()?.WindowManager;
 			Assert.NotNull(windowManager);
-			Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(Context.WindowService));
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				using var windowMetrics = windowManager.MaximumWindowMetrics;

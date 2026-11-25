@@ -5,7 +5,7 @@ REM   ScenarioName: Controls.DeviceTests, Core.DeviceTests, etc.
 REM   Device: packaged or unpackaged
 REM   PackageId: Package ID for the app
 REM   TargetFrameworkVersion: net10.0, etc.
-REM   CategoryFilter (optional): Name of single category to run (e.g., Lifecycle)
+REM   CategoryFilter (optional): Category to run (e.g., Lifecycle), or several joined with + (e.g., Button+Label)
 REM
 REM This script runs Windows device tests directly without requiring Cake.
 REM It handles certificate import, MSIX installation, test execution, and result merging.
@@ -43,6 +43,9 @@ if /i "%DEVICE%"=="packaged" set IS_PACKAGED=1
 
 set IS_CONTROLS_TEST=0
 echo %SCENARIO_NAME% | findstr /i "Controls.DeviceTests" >nul && set IS_CONTROLS_TEST=1
+REM Controls.DeviceTests always runs category by category; any app does when a category filter is given.
+set USE_CATEGORY_RUNS=%IS_CONTROLS_TEST%
+if defined CATEGORY_FILTER set USE_CATEGORY_RUNS=1
 
 REM Set up paths
 set SCENARIO_DIR=%HELIX_WORKITEM_PAYLOAD%
@@ -55,6 +58,7 @@ echo Scenario directory: %SCENARIO_DIR%
 echo Test results file: %TEST_RESULTS_FILE%
 echo Is packaged: %IS_PACKAGED%
 echo Is Controls test: %IS_CONTROLS_TEST%
+echo Category runs: %USE_CATEGORY_RUNS%
 
 REM ========================================
 REM Install Windows App SDK Runtime
@@ -198,7 +202,7 @@ if %IS_PACKAGED%==1 (
     REM NOTE: Labels cannot be inside if blocks in cmd.exe - causes "... was unexpected" error
     REM Using goto to jump to labels that are outside the if block
     
-    if %IS_CONTROLS_TEST%==1 (
+    if %USE_CATEGORY_RUNS%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
         echo App URI: !APP_URI!
@@ -267,7 +271,7 @@ if %IS_PACKAGED%==1 (
     
     pushd "!EXE_DIR!"
     
-    if %IS_CONTROLS_TEST%==1 (
+    if %USE_CATEGORY_RUNS%==1 (
         REM Category discovery
         echo Starting app for category discovery...
         echo Command: "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
@@ -317,6 +321,14 @@ if %IS_PACKAGED%==1 (
             set CATEGORY_NAME=%%c
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
             
+            set CATEGORY_MATCH=1
+            if defined CATEGORY_FILTER (
+                set CATEGORY_MATCH=0
+                echo +%CATEGORY_FILTER%+| findstr /i /l /c:"+!CATEGORY_NAME!+" >nul && set CATEGORY_MATCH=1
+            )
+            if "!CATEGORY_MATCH!"=="0" (
+                echo Skipping category !CATEGORY_INDEX!: !CATEGORY_NAME! ^(filter: %CATEGORY_FILTER%^)
+            ) else (
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
             start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
             set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
@@ -332,6 +344,7 @@ if %IS_PACKAGED%==1 (
                 echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
                 call :dump_diagnostics
                 set EXIT_CODE=1
+            )
             )
             
             set /a CATEGORY_INDEX+=1
@@ -384,9 +397,13 @@ for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
     set CATEGORY_NAME=%%c
     set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
     
-    REM If category filter is set, only run matching category
+    REM If category filter is set, only run matching categories (+-separated list)
+    set CATEGORY_MATCH=0
     if defined CATEGORY_FILTER (
-        if /i "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" (
+        echo +%CATEGORY_FILTER%+| findstr /i /l /c:"+!CATEGORY_NAME!+" >nul && set CATEGORY_MATCH=1
+    )
+    if defined CATEGORY_FILTER (
+        if "!CATEGORY_MATCH!"=="1" (
             echo Running filtered category !CATEGORY_INDEX!: !CATEGORY_NAME!
             call :launch_packaged "%PACKAGE_ID%" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
             set LAUNCH_EXIT=!ERRORLEVEL!

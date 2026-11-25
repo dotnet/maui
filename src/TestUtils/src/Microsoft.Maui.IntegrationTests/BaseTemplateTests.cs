@@ -4,8 +4,6 @@ namespace Microsoft.Maui.IntegrationTests;
 
 public abstract class BaseTemplateTests : BaseBuildTest
 {
-	protected const string AvaloniaBuildSkipReason = "Avalonia packages are not available on dotnet-public. See https://github.com/dotnet/maui/pull/35950";
-
 	protected BaseTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output)
 	{
 		// Constructor setup (equivalent to [SetUp])
@@ -45,6 +43,8 @@ public abstract class BaseTemplateTests : BaseBuildTest
 				new XAttribute("value", "https://api.nuget.org/v3/index.json"),
 				new XAttribute("protocolVersion", "3")));
 
+		RemoveDuplicatePackageSources(packageSources);
+
 		var sourceMapping = new XElement("packageSourceMapping");
 		foreach (var source in packageSources.Elements("add"))
 		{
@@ -62,6 +62,25 @@ public abstract class BaseTemplateTests : BaseBuildTest
 		var path = Path.Combine(projectDir, "NuGet.config");
 		config.Save(path);
 		return path;
+	}
+
+	internal static void RemoveDuplicatePackageSources(XElement packageSources)
+	{
+		var uniqueSources = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
+		foreach (var source in packageSources.Elements("add").ToList())
+		{
+			var key = source.Attribute("key")!.Value;
+			if (uniqueSources.TryGetValue(key, out var existing))
+			{
+				if (!XNode.DeepEquals(existing, source))
+					throw new InvalidOperationException($"Package source '{key}' has conflicting definitions.");
+				source.Remove();
+			}
+			else
+			{
+				uniqueSources.Add(key, source);
+			}
+		}
 	}
 
 	protected void AssertIncludesRootGitIgnore(string projectDir)

@@ -1,4 +1,4 @@
-# Updates `/review run-tests` comments and their "maui-pr-uitests (selected run)" check when the
+# Updates `/review run-tests` (and run-ui-tests / run-device-tests) comments and their "maui-pr-uitests (selected run)" check when the
 # maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
 # Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
 # check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
@@ -29,15 +29,17 @@ concurrency:
 
 jobs:
   update:
-    # check_run fires for every check; only the overall maui-pr-uitests check matters.
+    # check_run fires for every check; only the overall maui-pr-uitests and maui-pr-devicetests checks matter.
     if: >-
       github.repository_owner == 'dotnet' &&
       (github.event_name != 'check_run' ||
-       (github.event.check_run.name == 'maui-pr-uitests' && github.event.check_run.app.slug == 'azure-pipelines'))
+       ((github.event.check_run.name == 'maui-pr-uitests' || github.event.check_run.name == 'maui-pr-devicetests') && github.event.check_run.app.slug == 'azure-pipelines'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       checks: write
+      # One commit status per job of the selected build.
+      statuses: write
       # Deletes expired run-tests/* dispatch branches.
       contents: write
       issues: write

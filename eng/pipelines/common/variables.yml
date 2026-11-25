@@ -13,9 +13,17 @@ variables:
 - name: DOTNET_VERSION
   value: 10.0.100
 - name: REQUIRED_XCODE
-  value: 27.0.0
+  value: 27.1.0
 - name: XCODE
-  value: 27.0
+  value: 27.1
+# The .NET 12 Apple workloads require Xcode 27.1. Agents without it fall back to Xcode_27.app (27.0)
+# during "Select Xcode Version", so keep validation off until every image has Xcode 27.1.
+- name: ValidateXcodeVersion
+  value: false
+# Tools such as Cake target net10.0; let them run on the repo's .NET 12 preview runtime when
+# no .NET 10 runtime is installed (their own roll-forward setting skips prerelease runtimes).
+- name: DOTNET_ROLL_FORWARD
+  value: Major
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Workaround for PowerShell/PowerShell#20802 (open since Nov 2023):
@@ -70,9 +78,10 @@ variables:
 - name: nugetMultiFeedWarnLevel
   value: none
 
-# `/review run-tests` dispatch branches (refs/heads/run-tests/*) build pull-request code as a branch
-# build, so they never get this group's secret; pull-request builds from forks don't get it either.
-- ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:
+# `/review run-ui-tests` and `/review run-device-tests` dispatch branches (refs/heads/run-tests/*,
+# refs/heads/run-devicetests/*) build pull-request code as a branch build, so they never get this
+# group's secret; pull-request builds from forks don't get it either.
+- ${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:
   - group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
 
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
