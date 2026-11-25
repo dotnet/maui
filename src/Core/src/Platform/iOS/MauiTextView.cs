@@ -149,14 +149,24 @@ namespace Microsoft.Maui.Platform
 		{
 			var result = base.SizeThatFits(size);
 
-			if (!AllowAutoGrowth || _placeholderLabel is null || _placeholderLabel.Hidden || string.IsNullOrEmpty(_placeholderLabel.Text))
+			if (!IsPlaceholderMeasured)
 				return result;
 
-			var width = (size.Width > 0 && size.Width < nfloat.MaxValue ? size.Width : result.Width) - (TextContainer.LineFragmentPadding * 2);
-			var placeholderHeight = _placeholderLabel.SizeThatFits(new CGSize(width, nfloat.MaxValue)).Height + TextContainerInset.Top + TextContainerInset.Bottom;
+			var constraint = size.Width > 0 && size.Width < nfloat.MaxValue ? size.Width : nfloat.MaxValue;
+			var placeholderWidth = GetPlaceholderSize(constraint).Width + (TextContainer.LineFragmentPadding * 2);
+			var width = (nfloat)Math.Max(result.Width, Math.Min(constraint, placeholderWidth));
 
-			return new CGSize(result.Width, (nfloat)Math.Max(result.Height, placeholderHeight));
+			return new CGSize(width, (nfloat)Math.Max(result.Height, GetPlaceholderContentHeight(width)));
 		}
+
+		bool IsPlaceholderMeasured =>
+			AllowAutoGrowth && _placeholderLabel is not null && !_placeholderLabel.Hidden && !string.IsNullOrEmpty(_placeholderLabel.Text);
+
+		CGSize GetPlaceholderSize(nfloat width) =>
+			_placeholderLabel.SizeThatFits(new CGSize(width - (TextContainer.LineFragmentPadding * 2), nfloat.MaxValue));
+
+		nfloat GetPlaceholderContentHeight(nfloat width) =>
+			GetPlaceholderSize(width).Height + TextContainerInset.Top + TextContainerInset.Bottom;
 
 		public override void LayoutSubviews()
 		{
@@ -216,9 +226,16 @@ namespace Microsoft.Maui.Platform
 		void ShouldCenterVertically()
 		{
 			var contentHeight = ContentSize.Height;
+			if (IsPlaceholderMeasured)
+				contentHeight = (nfloat)Math.Max(contentHeight, GetPlaceholderContentHeight(Bounds.Width));
+
 			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
 			if (availableSpace <= 0)
+			{
+				if (IsPlaceholderMeasured && ContentOffset.Y < 0)
+					ContentOffset = default;
 				return;
+			}
 			ContentOffset = VerticalTextAlignment switch
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
