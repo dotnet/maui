@@ -85,7 +85,7 @@ function Select-ProposalFields {
 function Get-Proposals {
     # model id -> proposal, in a stable model order.
     $proposals = [ordered]@{}
-    if ($ProposalJson) { $proposals['gpt-6.1-sol'] = Select-ProposalFields ($ProposalJson | ConvertFrom-Json -AsHashtable) }
+    if ($ProposalJson) { $proposals['gpt-6.2-sol'] = Select-ProposalFields ($ProposalJson | ConvertFrom-Json -AsHashtable) }
     foreach ($path in @($ProposalPath | Where-Object { $_ })) {
         if (-not (Test-Path -LiteralPath $path)) { throw "Proposal file $path does not exist." }
         if ((Get-Item -LiteralPath $path).Length -gt 65536) { throw 'The proposal file is unexpectedly large.' }
@@ -98,7 +98,7 @@ function Get-Proposals {
         $output = Get-Content -LiteralPath $AgentOutputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 20
         $items = @($output.items | Where-Object { $_.type -eq 'run_selected_ui_tests' })
         # The tool is documented as call-once; use the last call if the agent corrected itself.
-        if ($items.Count) { $proposals['gpt-6.1-sol'] = Select-ProposalFields $items[-1] }
+        if ($items.Count) { $proposals['gpt-6.2-sol'] = Select-ProposalFields $items[-1] }
     }
     $ordered = [ordered]@{}
     foreach ($model in $script:RunTestsModels.Keys) { if ($proposals.Contains($model)) { $ordered[$model] = $proposals[$model] } }
@@ -179,14 +179,23 @@ function New-RunTestsDispatch {
     Pushes the dispatch commit for this request and returns { sha; branch } (or { error }).
     #>
     param([Parameter(Mandatory)]$PullRequest, [Parameter(Mandatory)]$MergeCommit, [Parameter(Mandatory)]$Selection)
-    # The trusted half: pipeline and workflows of the target branch (or the trial's pipeline source).
-    $sourceSha = if ($PipelineSource) { $PipelineSource } else {
-        (Invoke-GhJson @("repos/$Repository/git/ref/heads/$($PullRequest.base.ref)")).object.sha
+    # The trusted half: pipeline and workflows of the target branch, or of the default branch when the
+    # target branch's pipeline cannot take dispatches (servicing branches cut before run-tests support).
+    # The PR's own code still comes from its test-merge commit.
+    $sourceSha = $PipelineSource
+    if (-not $sourceSha) {
+        foreach ($ref in @($PullRequest.base.ref, $PullRequest.base.repo.default_branch) | Where-Object { $_ } | Select-Object -Unique) {
+            $sha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$ref")).object.sha
+            if (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sha)) { $sourceSha = $sha; break }
+            Write-Host "``$ref`` cannot build run-tests/* dispatches; trying the default branch's pipeline."
+        }
+        if (-not $sourceSha) {
+            return @{ error = "Neither ``$($PullRequest.base.ref)`` nor the default branch can build ``/review run-tests`` dispatches (eng/pipelines/ci-uitests.yml does not build run-tests/* branches). Use ``/azp run maui-pr-uitests`` for the full suite." }
+        }
+    } elseif (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
+        return @{ error = "The pipeline source $sourceSha cannot build run-tests/* dispatches." }
     }
     if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
-    if (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
-        return @{ error = "``$($PullRequest.base.ref)`` cannot run ``/review run-tests`` dispatches yet (its eng/pipelines/ci-uitests.yml does not build run-tests/* branches). Use ``/azp run maui-pr-uitests`` for the full suite." }
-    }
     $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
     $sourceRoot = Invoke-GhJson @("repos/$Repository/git/trees/$($source.tree.sha)")
     $githubTree = @($sourceRoot.tree | Where-Object { $_.path -ceq '.github' -and $_.type -eq 'tree' })[0].sha
@@ -356,6 +365,7 @@ if ($DryRun) {
     Write-Host "Dry run complete. Outputs are in $OutputDirectory."
     return
 }
-Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json) | Out-Null
+$posted = Invoke-GhJson @('-X', 'POST', "repos/$Repository/issues/$PrNumber/comments") -InputJson (@{ body = $comment } | ConvertTo-Json)
 Write-Host "Posted the run-tests comment on #$PrNumber."
+Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId $posted.id
 if ($queueError) { Write-Host "::warning::$queueError" }

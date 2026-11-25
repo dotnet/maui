@@ -33,15 +33,22 @@ function Invoke-GhJson {
 $pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
 if ($pr.state -ne 'open') { throw "PR #$PrNumber is not open." }
 
-# The dispatch commit carries the target branch's pipeline. Unless that pipeline builds run-tests/*
-# dispatch branches, nothing would run, so say so now instead of running both models for nothing.
-$basePipeline = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$([uri]::EscapeDataString($pr.base.ref))" 2>$null
-if ($LASTEXITCODE -eq 0 -and -not (Test-RunTestsPipelineSupportsDispatch ($basePipeline -join "`n"))) {
-    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: that branch's maui-pr-uitests pipeline does not build run-tests/* dispatches. Use ``/azp run maui-pr-uitests`` for the full suite."
+# The dispatch commit carries the target branch's pipeline, or the default branch's when the target
+# branch's cannot build run-tests/* dispatches (see Invoke-RunTests.ps1). Only if neither can would
+# nothing run, so say so now instead of running both models for nothing.
+function Test-RunTestsDispatchAt([string]$Ref) {
+    if (-not $Ref) { return $false }
+    $pipeline = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$([uri]::EscapeDataString($Ref))" 2>$null
+    # An unreadable pipeline is not a reason to refuse; the dispatch re-checks it.
+    return ($LASTEXITCODE -ne 0) -or (Test-RunTestsPipelineSupportsDispatch ($pipeline -join "`n"))
+}
+if (-not (Test-RunTestsDispatchAt $pr.base.ref) -and -not (Test-RunTestsDispatchAt $pr.base.repo.default_branch)) {
+    $message = "``/review run-tests`` can't run on PRs that target ``$($pr.base.ref)`` yet: neither that branch's nor the default branch's maui-pr-uitests pipeline builds run-tests/* dispatches. Use ``/azp run maui-pr-uitests`` for the full suite."
     Write-Host $message
     if ($PostUnsupportedComment) {
         $body = @{ body = "<!-- review-run-tests-unsupported -->`n$message" } | ConvertTo-Json
-        $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input - | Out-Null
+        $posted = $body | & gh api -X POST "repos/$Repository/issues/$PrNumber/comments" --input -
+        if ($LASTEXITCODE -eq 0) { Hide-RunTestsOutdatedComments -Repository $Repository -PrNumber $PrNumber -KeepId (($posted -join "`n") | ConvertFrom-Json).id }
     }
     if ($env:GITHUB_OUTPUT) { "ready=false" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }
     return

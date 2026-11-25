@@ -1,1 +1,4 @@
 #nullable enable
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.HasMaterializedStyle(Microsoft.Maui.Controls.ResourceDictionary! dictionary, string! key) -> bool
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateClassStyle(Microsoft.Maui.Controls.ResourceDictionary! dictionary, string! nodeId, Microsoft.Maui.Controls.Style! replacement) -> bool
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle(Microsoft.Maui.Controls.ResourceDictionary! dictionary, string! key, Microsoft.Maui.Controls.Style! replacement) -> bool
