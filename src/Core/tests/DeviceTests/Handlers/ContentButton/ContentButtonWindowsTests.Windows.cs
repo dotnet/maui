@@ -545,8 +545,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(StyledContentButtonHandler.Border, resources["ButtonBorderBrushPressed"]);
 				Assert.Equal(StyledContentButtonHandler.BorderThickness, resources["ButtonBorderThemeThickness"]);
 				Assert.Equal(StyledContentButtonHandler.CornerRadius, resources["ControlCornerRadius"]);
-				Assert.False(resources.Keys.Contains("ButtonBackgroundPointerOver"));
-				Assert.False(resources.Keys.Contains("ButtonBorderBrush"));
+				// Mapping null styling must not add local resources beyond those the native view started with.
+				Assert.Equal(handler.InitialLocalKeys, LocalStylingKeys(resources));
 
 				button.Background = new SolidPaintStub(Colors.Blue);
 				button.StrokeColor = Colors.Green;
@@ -575,14 +575,27 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(StyledContentButtonHandler.Border, resources["ButtonBorderBrushPressed"]);
 				Assert.Equal(StyledContentButtonHandler.BorderThickness, resources["ButtonBorderThemeThickness"]);
 				Assert.Equal(StyledContentButtonHandler.CornerRadius, resources["ControlCornerRadius"]);
-				Assert.False(resources.Keys.Contains("ButtonBackgroundPointerOver"));
-				Assert.False(resources.Keys.Contains("ButtonBackgroundPressed"));
-				Assert.False(resources.Keys.Contains("ButtonBackgroundDisabled"));
-				Assert.False(resources.Keys.Contains("ButtonBorderBrush"));
-				Assert.False(resources.Keys.Contains("ButtonBorderBrushPointerOver"));
-				Assert.False(resources.Keys.Contains("ButtonBorderBrushDisabled"));
+				// Every resource MAUI wrote for the explicit styling is removed again.
+				Assert.Equal(handler.InitialLocalKeys, LocalStylingKeys(resources));
 			});
 		}
+
+		static readonly string[] StylingResourceKeys =
+		{
+			"ButtonBackground",
+			"ButtonBackgroundPointerOver",
+			"ButtonBackgroundPressed",
+			"ButtonBackgroundDisabled",
+			"ButtonBorderBrush",
+			"ButtonBorderBrushPointerOver",
+			"ButtonBorderBrushPressed",
+			"ButtonBorderBrushDisabled",
+			"ButtonBorderThemeThickness",
+			"ControlCornerRadius",
+		};
+
+		static string[] LocalStylingKeys(Microsoft.UI.Xaml.ResourceDictionary resources) =>
+			StylingResourceKeys.Where(key => resources.Keys.Contains(key)).ToArray();
 
 		[Fact]
 		public async Task NativePaddingAndStrokeReserveInsetsOnce()
@@ -647,6 +660,8 @@ namespace Microsoft.Maui.DeviceTests
 			internal static readonly WThickness BorderThickness = new(3);
 			internal static readonly WCornerRadius CornerRadius = WinUIHelpers.CreateCornerRadius(5);
 
+			internal string[] InitialLocalKeys { get; private set; } = Array.Empty<string>();
+
 			protected override WButton CreatePlatformView()
 			{
 				var button = base.CreatePlatformView();
@@ -654,6 +669,7 @@ namespace Microsoft.Maui.DeviceTests
 				button.Resources["ButtonBorderBrushPressed"] = Border;
 				button.Resources["ButtonBorderThemeThickness"] = BorderThickness;
 				button.Resources["ControlCornerRadius"] = CornerRadius;
+				InitialLocalKeys = LocalStylingKeys(button.Resources);
 				return button;
 			}
 		}

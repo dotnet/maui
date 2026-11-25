@@ -178,7 +178,8 @@ namespace Microsoft.Maui.DeviceTests
 #elif IOS || MACCATALYST
 			return ((UIKit.UIView)platformView).Superview;
 #elif WINDOWS
-			return ((Microsoft.UI.Xaml.FrameworkElement)platformView).Parent;
+			// FrameworkElement.Parent is the logical parent; the visual parent reflects panel membership.
+			return Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent((Microsoft.UI.Xaml.FrameworkElement)platformView);
 #endif
 		}
 #endif

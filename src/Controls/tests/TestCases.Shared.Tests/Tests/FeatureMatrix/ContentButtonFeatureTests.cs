@@ -98,13 +98,14 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		var rect = App.WaitForElement("ContentButtonControl").GetRect();
 
 		// The button moves with the scrolled content, so the pointer remains inside it.
-		// Only the ancestor's cancellation can prevent activation on release.
+		// Only the ancestor's cancellation can prevent activation on release. UIScrollView delays
+		// content touches, so a quick drag may begin scrolling before the button sees a press;
+		// either way any press must be released without activating.
 		App.DragCoordinates(rect.X + rect.Width / 2, rect.Y + rect.Height * 0.8f,
 			rect.X + rect.Width / 2, rect.Y + rect.Height * 0.2f);
 
 		Assert.That(GetStatusValue("ScrollY"), Is.GreaterThan(0));
 		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
-		Assert.That(GetStatusValue("Pressed"), Is.GreaterThan(0));
 		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(GetStatusValue("Released")));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
