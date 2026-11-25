@@ -1234,14 +1234,22 @@ namespace Microsoft.Maui.Controls.Platform
 					return (ButtonsMask)0;
 				}
 
-				foreach (var faker in _fakeRightClickInteractions)
+				for (int i = _fakeRightClickInteractions.Count - 1; i >= 0; i--)
 				{
+					var faker = _fakeRightClickInteractions[i];
+
 					// check if this gesture was already added
-					if (faker.TapGestureRecognizer == tapRecognizer)
+					if (faker.TapGestureRecognizer != tapRecognizer)
+						continue;
+
+					if (faker.View == PlatformView)
 					{
 						_interactions.Add(faker);
 						return tapRecognizer.Buttons;
 					}
+
+					_fakeRightClickInteractions.RemoveAt(i);
+					_interactions.Remove(faker);
 				}
 
 				var fakeInteraction = new FakeRightClickContextMenuInteraction(tapRecognizer, this);

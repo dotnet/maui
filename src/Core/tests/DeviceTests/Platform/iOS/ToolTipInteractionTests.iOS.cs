@@ -38,14 +38,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
-		public Task UpdateToolTipWithoutToolTipDoesNotReadInteractions() =>
+		public Task UpdateToolTipNullClearsExistingInteractionOnFirstUpdate() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+				var existing = new UIToolTipInteraction("old");
+				view.AddInteraction(existing);
+
+				view.UpdateToolTip(null);
+
+				Assert.True(string.IsNullOrEmpty(existing.DefaultToolTip));
+				Assert.Single(view.CountedInteractions());
+			});
+
+		[Fact]
+		public Task UpdateToolTipNullWithoutInteractionDoesNotAddOne() =>
 			InvokeOnMainThreadAsync(() =>
 			{
 				using var view = new CountingView();
 
 				view.UpdateToolTip(null);
 
-				Assert.Equal(0, view.Reads);
+				Assert.Empty(view.CountedInteractions());
+			});
+
+		[Fact]
+		public Task UpdateToolTipNullClearsInteractionReplacedNatively() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+				view.UpdateToolTip(new ToolTip { Content = "first" });
+				view.RemoveInteraction(Assert.Single(view.CountedInteractions()));
+				var replacement = new UIToolTipInteraction("old");
+				view.AddInteraction(replacement);
+
+				view.UpdateToolTip(null);
+
+				Assert.True(string.IsNullOrEmpty(replacement.DefaultToolTip));
 			});
 
 		[Fact]

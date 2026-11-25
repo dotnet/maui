@@ -711,7 +711,7 @@ namespace Microsoft.Maui.Platform
 				|| OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				string? text = tooltip?.Content?.ToString();
-				var interaction = platformView.GetToolTipInteraction(searchInteractions: tooltip is not null);
+				var interaction = platformView.GetToolTipInteraction(searchInteractions: true);
 
 				if (interaction is null)
 				{

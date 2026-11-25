@@ -98,6 +98,30 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if MACCATALYST
+		[Fact]
+		public async Task SecondaryTapInteractionIsRecreatedAfterNativeRemoval()
+		{
+			var label = new Label();
+			var tap = new TapGestureRecognizer() { Buttons = ButtonsMask.Secondary };
+			label.GestureRecognizers.Add(tap);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				var first = Assert.Single(handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>());
+
+				handler.PlatformView.RemoveInteraction((IUIInteraction)first);
+				label.GestureRecognizers.Add(new TapGestureRecognizer());
+
+				var recreated = Assert.Single(handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>());
+				Assert.NotSame(first, recreated);
+
+				tap.Buttons = ButtonsMask.Primary;
+
+				Assert.Empty(handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>());
+			});
+		}
+
 		[Fact(
 #if MACCATALYST
 			Skip = "Fails on Mac Catalyst, fixme"
