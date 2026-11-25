@@ -5,32 +5,45 @@ themselves. The PR template has one checkbox:
 
 > - [ ] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**
 
-The workflow ([`.github/workflows/pr-autopilot.md`](../workflows/pr-autopilot.md)) does nothing unless that box
-is ticked. Maintainers always decide whether a PR is merged.
+Nothing happens unless that box is ticked. Maintainers always decide whether a PR is merged.
 
-## When it runs
+## The review → fix loop
 
-- The AI review (`/review`) adds `s/agent-changes-requested`.
-- A maintainer comments `/autopilot` on the PR, for example after leaving review comments.
-- A maintainer runs the workflow manually with a PR number.
+```mermaid
+flowchart LR
+    S["/autopilot or<br/>s/agent-changes-requested"] --> R["MAUI expert reviewer<br/>(copilot-review-expert)"]
+    R -- "findings, opted in,<br/>fewer than 3 rounds" --> F["PR Autopilot<br/>fixes findings, pushes"]
+    F -- "pushed" --> R
+    R -- "no findings" --> M["Maintainer review"]
+    F -- "nothing fixed" --> M
+```
 
-## What it does
-
-1. It reads the reviews from maintainers (owner, member, or collaborator), the latest AI review, and the failing
-   checks. Comments from anyone else, the PR description, and the diff are treated as data, not instructions.
-2. It fixes the actionable items with the smallest change that keeps the contributor's approach. It runs the unit
-   tests it can.
-3. It publishes the fixes:
+1. **Start.** A maintainer comments `/autopilot`, the AI review (`/review`) adds `s/agent-changes-requested`, or a
+   maintainer runs the workflow manually.
+2. **Review.** If the PR head has no MAUI expert review yet, [`pr-autopilot`](../workflows/pr-autopilot.md)
+   dispatches [`copilot-review-expert`](../workflows/copilot-review-expert.md). That is the same expert reviewer as
+   `/review expert-review`, with its dimension workers. It posts `## Expert Review — N findings` with inline comments.
+3. **Fix.** When the PR is opted in, N > 0, and fewer than 3 autopilot rounds have run, the expert workflow's
+   `autopilot_next` job dispatches PR Autopilot. The agent fixes the critical and major findings. It also fixes
+   small, safe moderate and minor findings, maintainer feedback, the AI review findings, and failing checks.
+   Wherever it fixes a bug, it adds a regression test. It runs the unit tests it can, then publishes:
    - **Same-repository PRs:** it pushes one commit per fix to the PR branch.
-   - **Fork PRs:** gh-aw cannot push to contributor forks, so it opens an `[autopilot]` follow-up PR that keeps the
-     contributor's commits and adds the fixes.
-4. It posts one comment that lists what was addressed, what was not and why, and what was validated.
+   - **Fork PRs:** gh-aw cannot push to contributor forks, so it opens an `[autopilot]` follow-up PR. That PR keeps
+     the contributor's commits and adds the fixes. The loop continues on the follow-up PR.
 
-It only changes files under `src/`. It never merges, approves, retargets, or closes PRs.
+   It posts one comment per round: what it fixed, what it didn't fix and why, and what it validated.
+4. **Repeat.** After a push, `next_review` asks the expert reviewer for the next round. The loop stops when a review
+   has no findings, when nothing could be fixed, or after 3 rounds. Then maintainers take over.
 
 ## Security
 
+- The agent never merges, approves, retargets, or closes PRs. It only changes files under `src/`.
 - The agent job has read-only GitHub permissions. Pushes, PRs, and comments go through gh-aw safe outputs, which
-  only target the opted-in PR. Threat detection checks the patch first.
-- Only users with write access (or the AI review's label) can start it, and only on PRs whose author opted in.
+  target only the opted-in PR. Threat detection checks the patch first.
+- It acts only on feedback from the expert reviewer, maintainers (owner, member, or collaborator), and the AI
+  review. It treats the PR description, diff, and other comments as data.
+- The Copilot CLI loads `.github/` and `AGENTS.md` from the trusted base checkout, overlaid on the PR checkout and
+  hidden from git. A PR cannot change the agent's instructions.
+- Only users with write access, the AI review's label, or the two workflows themselves (as `github-actions[bot]`)
+  can start a round.
 - Pushed commits use `GITHUB_TOKEN`, so they don't start CI by themselves. A maintainer starts CI as usual.

@@ -17,6 +17,8 @@ on:
   issue_comment:
     types: [created]
   roles: [admin, maintain, write]
+  # PR Autopilot dispatches the next review round with GITHUB_TOKEN.
+  bots: ["github-actions[bot]"]
   reaction: none
   status-comment: false
   permissions:
@@ -61,10 +63,15 @@ on:
           if (!Number.isSafeInteger(number) || number < 1 || number > 2147483647) {
             throw new Error('Expert review requires a positive integer PR number.');
           }
-          const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
-            ...context.repo, username: actor
-          });
-          if (!['admin', 'maintain', 'write'].includes(permission.permission)) return;
+          // Only workflows in this repository can dispatch as github-actions[bot] (PR Autopilot).
+          const fromAutopilot = context.eventName === 'workflow_dispatch' &&
+            actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot';
+          if (!fromAutopilot) {
+            const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+              ...context.repo, username: actor
+            });
+            if (!['admin', 'maintain', 'write'].includes(permission.permission)) return;
+          }
           const { data: pr } = await github.rest.pulls.get({
             ...context.repo, pull_number: number
           });
@@ -181,6 +188,51 @@ jobs:
             -Stage Complete -PRNumber "$PR_NUMBER" -Repository "$GITHUB_REPOSITORY" \
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
+  autopilot_next:
+    # Review -> fix loop: when the PR author opted in to PR Autopilot and this review found
+    # something, hand the findings to PR Autopilot. See .github/docs/pr-autopilot.md.
+    needs: [pre_activation, activation, complete_request]
+    if: needs.complete_request.result == 'success' && !cancelled()
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+      issues: read
+      pull-requests: read
+    timeout-minutes: 5
+    steps:
+      - name: Continue the PR Autopilot loop
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
+          HEAD_SHA: ${{ needs.pre_activation.outputs.review_head }}
+        with:
+          script: |
+            const MAX_ROUNDS = 3;
+            const number = Number(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
+            if (pr.state !== 'open') return;
+            if (!/^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m.test(pr.body || '')) {
+              core.info(`#${number}: the author did not opt in to PR Autopilot.`);
+              return;
+            }
+            const reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number: number, per_page: 100 });
+            const review = reviews.filter(r => r.user?.login === 'github-actions[bot]' &&
+              (r.body || '').startsWith('## Expert Review') && r.commit_id === process.env.HEAD_SHA).pop();
+            const findings = Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(review?.body || '')?.[1]);
+            if (!(findings > 0)) {
+              core.info(`#${number}: no expert findings on ${process.env.HEAD_SHA}; the loop is done.`);
+              return;
+            }
+            const comments = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
+            const rounds = comments.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- pr-autopilot -->')).length;
+            if (rounds >= MAX_ROUNDS) {
+              core.info(`#${number}: PR Autopilot already ran ${rounds} rounds; leaving it to maintainers.`);
+              return;
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+            core.info(`#${number}: ${findings} findings; dispatched PR Autopilot round ${rounds + 1}.`);
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]
