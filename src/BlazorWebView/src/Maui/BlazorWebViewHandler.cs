@@ -94,6 +94,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal void UrlLoading(UrlLoadingEventArgs args) =>
 			VirtualView.UrlLoading(args);
 
+		internal void ProcessTerminated(WebProcessTerminatedEventArgs args) =>
+			VirtualView.ProcessTerminated(args);
+
 		private RootComponentsCollection? _rootComponents;
 
 		private void DisconnectRootComponents()

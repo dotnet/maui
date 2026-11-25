@@ -24,6 +24,101 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		const string TestPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY/jPwPAfAAUAAf+mXJtdAAAAAElFTkSuQmCC";
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task PendingNavigationTitleFontDoesNotOverwriteClearedOrDisconnectedToolbar(bool disconnect)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var navigationPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), async handler =>
+			{
+				await OnLoadedAsync(page);
+				var toolbar = (Toolbar)((IToolbarElement)navigationPage.Window).Toolbar;
+				var nativeToolbar = (MauiToolbar)toolbar.Handler.PlatformView;
+				var context = toolbar.Handler.MauiContext;
+				context.Services.GetRequiredService<IFontRegistrar>().Register("dokdo_regular.ttf", "Dokdo");
+				var font = new FontImageSource { FontFamily = "Dokdo", Glyph = "X", Size = 24 };
+				NavigationPage.SetTitleIconImageSource(page, font);
+				Assert.Same(font, toolbar.TitleIcon);
+				using var initial = await ((IImageSource)font).GetPlatformImageAsync(context);
+				Assert.NotNull(initial);
+				Assert.Same(nativeToolbar, toolbar.Handler.PlatformView);
+				Assert.NotNull(nativeToolbar.TitleIconImageSource);
+
+				var pendingFont = new FontImageSource { FontFamily = "Dokdo", Glyph = "Y", Size = 24 };
+				NavigationPage.SetTitleIconImageSource(page, pendingFont);
+				if (disconnect)
+					toolbar.Handler = null;
+				else
+					NavigationPage.SetTitleIconImageSource(page, null);
+
+				var expected = nativeToolbar.TitleIconImageSource;
+				if (!disconnect)
+					Assert.Null(expected);
+				using var completed = await ((IImageSource)pendingFont).GetPlatformImageAsync(context);
+				Assert.Same(expected, nativeToolbar.TitleIconImageSource);
+			});
+		}
+
+		[Theory]
+		[InlineData("Clear")]
+		[InlineData("Replace")]
+		[InlineData("Disconnect")]
+		[InlineData("Reassign")]
+		public async Task ObsoleteTitleIconResultIsDisposed(string update)
+		{
+			var completion = new TaskCompletionSource<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>>();
+			var service = new WindowsTitleIconService { Result = completion.Task };
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureImageSources(services => services.AddService<IFontImageSource>(_ => service));
+				builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<Toolbar, ToolbarHandler>());
+			});
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var toolbar = new Toolbar(new ContentPage()) { ToolbarItems = Array.Empty<ToolbarItem>() };
+				var handler = CreateHandler<ToolbarHandler>(toolbar);
+				var nativeToolbar = handler.PlatformView;
+				toolbar.TitleIcon = new FontImageSource { Glyph = "X" };
+				Assert.Equal(1, service.LoadCount);
+				var current = new ImageSourceServiceResult(new UI.Xaml.Media.Imaging.WriteableBitmap(12, 18));
+				service.Result = Task.FromResult<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>>(current);
+				if (update == "Disconnect")
+					toolbar.Handler = null;
+				else if (update == "Reassign")
+					handler.SetVirtualView(new Toolbar(new ContentPage())
+					{
+						ToolbarItems = Array.Empty<ToolbarItem>(),
+						TitleIcon = new FontImageSource { Glyph = "Y" }
+					});
+				else
+					toolbar.TitleIcon = update == "Clear" ? null : new FontImageSource { Glyph = "Y" };
+				var expected = nativeToolbar.TitleIconImageSource;
+				var obsolete = new ImageSourceServiceResult(new UI.Xaml.Media.Imaging.WriteableBitmap(37, 43));
+				completion.SetResult(obsolete);
+				await AssertionExtensions.AssertEventually(() => obsolete.IsDisposed);
+				Assert.Same(expected, nativeToolbar.TitleIconImageSource);
+				Assert.False(current.IsDisposed);
+			});
+		}
+
+		sealed class WindowsTitleIconService : IImageSourceService<IFontImageSource>
+		{
+			public Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>> Result { get; set; }
+			public int LoadCount { get; private set; }
+
+			public Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>> GetImageSourceAsync(
+				IImageSource source, float scale = 1, System.Threading.CancellationToken cancellationToken = default)
+			{
+				LoadCount++;
+				return Result;
+			}
+		}
+
 		[Fact(DisplayName = "Toolbar FontImageSource icon is shown with text")]
 		public async Task ToolbarFontImageSourceIconIsShownWithText()
 		{

@@ -167,7 +167,10 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Windows tests run directly on the local machine
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
-- Class-filtered XHarness retries use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
+- XHarness runs use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
+- Results come from fresh XML, including Apple's target-specific `xunit-test-<target>-<timestamp>.xml`, rather than console summaries or XHarness exit zero alone
+- Class-filtered runs still reject results containing any unrelated class; when canonical and Apple-prefixed XML both exist, only the canonical result is counted
+- Android explicitly selects the generated `<application-id>.TestInstrumentation` component rather than relying on XHarness's package-only default
 - Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
 
 ## Test Filtering
@@ -310,6 +313,7 @@ dotnet xharness apple test \
 dotnet xharness android test \
   --app path/to/app.apk \
   --package-name com.microsoft.maui.controls.devicetests \
+  --instrumentation com.microsoft.maui.controls.devicetests.TestInstrumentation \
   --device-id emulator-5554 \
   -o artifacts/log \
   --timeout 01:00:00 \
