@@ -145,6 +145,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			var result = base.SizeThatFits(size);
+
+			if (!AllowAutoGrowth || _placeholderLabel is null || _placeholderLabel.Hidden || string.IsNullOrEmpty(_placeholderLabel.Text))
+				return result;
+
+			var width = (size.Width > 0 && size.Width < nfloat.MaxValue ? size.Width : result.Width) - (TextContainer.LineFragmentPadding * 2);
+			var placeholderHeight = _placeholderLabel.SizeThatFits(new CGSize(width, nfloat.MaxValue)).Height + TextContainerInset.Top + TextContainerInset.Bottom;
+
+			return new CGSize(result.Width, (nfloat)Math.Max(result.Height, placeholderHeight));
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
