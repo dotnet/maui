@@ -263,7 +263,8 @@ public class XamlGenerator : IIncrementalGenerator
 						// Instead, keep the last few generations, newest first: a throwaway run with different XAML
 						// advances the cache to a generation the app never got, so UpdateComponent() patches each live
 						// instance from the generation it is at (https://github.com/dotnet/maui/issues/36937).
-						// An empty diff (a revert to the previous state, or a formatting/comment-only edit) needs
+						// An empty diff (a revert to the previous state, or a formatting/comment-only edit that moves no
+						// element when diagnostics are enabled, see XamlTreeDiff.SourceInfoChanges) needs
 						// no patch for instances at the previous generation, but still does for older ones.
 						var newKey = parsedNewRoot is null || effectiveNewIds is null ? null : NodeIdHelper.ComputeGenerationKey(xamlItem.Xaml!, parsedNewRoot, effectiveNewIds);
 						var baselines = new List<XamlHotReloadState.GenerationSnapshot>();
@@ -290,8 +291,10 @@ public class XamlGenerator : IIncrementalGenerator
 						{
 							freshIds = NodeIdHelper.AssignIds(parsedNewRoot, 0, out freshNextId);
 						}
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken);
-						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken, requiresReload: true);
+						// The empty UpdateComponent() is not dispatched; the companion signal tells the runtime that
+						// live instances were left at the previous XAML (https://github.com/dotnet/maui/issues/40605).
+						ucCode = GenerateStructuralResetUpdateComponent(xamlItem, rootType, accessModifier, assemblyName, targetFramework, stateKey);
 					}
 				}
 				else if (hadPreviousEntry
@@ -308,6 +311,15 @@ public class XamlGenerator : IIncrementalGenerator
 					// (https://github.com/dotnet/maui/issues/36937). The baselines are left untouched, so the
 					// output only depends on the inputs, never on evaluation order.
 					ucCode = GenerateUpdateComponentFromBaselines(xamlItem, ucRootType!, ucAccessModifier, assemblyName, targetFramework, stateKey, compilation, xmlnsCache, typeCache, sourceProductionContext);
+				}
+				else if (hadPreviousEntry
+					&& previousXaml == xamlItem.Xaml
+					&& canEmitUC
+					&& XamlHotReloadState.GetRequiresReload(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken))
+				{
+					// Same XAML as a structural-change generation: re-emit its output, so the signal doesn't
+					// change (and isn't reported again) on a re-evaluation or a C#-only edit.
+					ucCode = GenerateStructuralResetUpdateComponent(xamlItem, ucRootType!, ucAccessModifier, assemblyName, targetFramework, stateKey);
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
@@ -610,6 +622,19 @@ $"""
 			return null;
 		return UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, current.Key, defaultPatchBody, baselinePatches);
 	}
+
+	static string GenerateStructuralResetUpdateComponent(
+		XamlProjectItemForIC xamlItem,
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		string assemblyName,
+		string targetFramework,
+		string stateKey)
+		=> UpdateComponentCodeWriter.GenerateStructuralResetUpdateComponent(
+			rootType,
+			accessModifier,
+			XamlHotReloadState.GetGenerationKey(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem!.HotReloadSessionToken)
+				?? xamlItem.Xaml!.Replace("\r\n", "\n"));
 
 	static bool HasSyntaxErrors(string? generatedCode, Compilation compilation, CancellationToken cancellationToken)
 	{

@@ -81,6 +81,11 @@ public static class XamlIncrementalHotReloadHandler
 		// Roots generated without a companion fall back to the non-empty-body check alone.
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
 		var handledTypes = new List<Type>();
+		// Roots whose XAML changed in a way live instances can't be patched to (a structural change): the
+		// generator empties UpdateComponent() and makes the companion's RequiresReload() return true.
+		// Reported separately (not in HandledTypes, whose meaning tooling relies on) so tools know the
+		// live instances, and their VisualDiagnostics source info, still reflect the previous XAML.
+		var reloadRequiredTypes = new List<Type>();
 
 		HashSet<Type>? signaledRoots = null;
 		foreach (var type in updatedTypes)
@@ -123,7 +128,12 @@ public static class XamlIncrementalHotReloadHandler
 				continue; // the patch didn't change in this delta (e.g. a pure C# edit) — not a XAML change
 
 			if (IsEmptyUpdateComponent(ucMethod))
-				continue; // no patch (e.g. a structural change or a pure C# edit) — not a XAML change
+			{
+				// no patch (e.g. a structural change or a pure C# edit) — not an incremental XAML change
+				if (signaledRoots?.Contains(type) == true && RequiresReload(type))
+					reloadRequiredTypes.Add(type);
+				continue;
+			}
 
 			handledTypes.Add(type);
 
@@ -143,7 +153,7 @@ public static class XamlIncrementalHotReloadHandler
 			// UpdateApplied never fires on this path, so XamlTools uses UpdateSkipped as the definitive
 			// "no apply coming" signal and stops waiting. No version is allocated here, keeping the
 			// diagnostic version stream gap-free (every increment is paired with an UpdateApplied).
-			HotReloadDiagnostics.OnUpdateSkipped(typesArray, handledTypes);
+			HotReloadDiagnostics.OnUpdateSkipped(typesArray, handledTypes, reloadRequiredTypes);
 			return;
 		}
 
@@ -181,7 +191,7 @@ public static class XamlIncrementalHotReloadHandler
 			// ALWAYS be raised here, after every per-instance OnUpdateFailed above — even if all failed
 			// (instanceCount == 0). XamlTools blocks briefly awaiting it to fold the stats into its
 			// report; never returning it strands that wait until timeout.
-			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
+			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed, reloadRequiredTypes);
 		});
 	}
 
@@ -195,6 +205,38 @@ public static class XamlIncrementalHotReloadHandler
 		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); HasSignalType is never reached there.")]
 	static bool HasSignalType(Type rootType) =>
 		rootType.GetNestedType(SignalTypeName, BindingFlags.NonPublic) is not null;
+
+	/// <summary>
+	/// Name of the static method of the companion signal type that returns whether the generation is a
+	/// structural change live instances can't be patched to. Must match
+	/// <c>UpdateComponentCodeWriter.RequiresReloadMethodName</c> in the source generator.
+	/// </summary>
+	internal const string RequiresReloadMethodName = "RequiresReload";
+
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); RequiresReload is never reached there.")]
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2075",
+		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); RequiresReload is never reached there.")]
+	static bool RequiresReload(Type rootType)
+	{
+		try
+		{
+			var method = rootType.GetNestedType(SignalTypeName, BindingFlags.NonPublic)?.GetMethod(
+				RequiresReloadMethodName,
+				BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static,
+				binder: null,
+				types: Type.EmptyTypes,
+				modifiers: null);
+			return method?.ReturnType == typeof(bool) && method.Invoke(null, null) is true;
+		}
+#pragma warning disable CA1031
+		catch
+		{
+			// Observational only: never let it break the hot reload batch.
+			return false;
+		}
+#pragma warning restore CA1031
+	}
 
 	// The generator emits an EMPTY UpdateComponent() body when there is no pending patch, and a patched
 	// (non-empty) one otherwise. An empty method compiles to a trivial body (just a
