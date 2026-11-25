@@ -15,8 +15,6 @@ namespace Maui.Controls.Sample.Controls
 		Android.Graphics.Color backgroundColor = default!;
 #elif __IOS__
 		UIKit.UIColor backgroundColor = default!;
-#elif TIZEN
-		Tizen.NUI.Color backgroundColor = default!;
 #endif
 
 		public FocusPlatformEffect()
@@ -35,8 +33,6 @@ namespace Maui.Controls.Sample.Controls
 				Control.SetBackgroundColor(backgroundColor);
 #elif __IOS__
 				Control.BackgroundColor = backgroundColor = UIKit.UIColor.FromRGB(204, 153, 255);
-#elif TIZEN
-				(Control as Tizen.NUI.BaseComponents.View).BackgroundColor = backgroundColor = Tizen.NUI.Color.LightGreen;
 #endif
 			}
 			catch (Exception ex)
@@ -73,18 +69,6 @@ namespace Maui.Controls.Sample.Controls
 					if (Control.BackgroundColor == backgroundColor)
 					{
 						Control.BackgroundColor = UIKit.UIColor.White;
-					}
-					else
-					{
-						Control.BackgroundColor = backgroundColor;
-					}
-				}
-#elif TIZEN
-				if (args.PropertyName == "IsFocused")
-				{
-					if (Control.BackgroundColor == backgroundColor)
-					{
-						Control.BackgroundColor = Tizen.NUI.Color.White;
 					}
 					else
 					{

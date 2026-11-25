@@ -9,6 +9,11 @@
     },
     "IncludeSampleContent": {
       "isHidden": true
+    },
+    "LegacyEmpty": {
+      "longName": "Empty",
+      "shortName": "",
+      "isHidden": true
     }
   },
   "usageExamples": [

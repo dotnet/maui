@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
@@ -274,6 +275,66 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task SwitchingShellItemsDoesNotAnimateSectionPager()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			var firstItem = new FlyoutItem { Items = { new ShellContent { Content = firstPage } } };
+			var secondItem = new FlyoutItem { Items = { new ShellContent { Content = secondPage } } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+				shell.CurrentItem = firstItem;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				// A fade-out/fade-in between the old and new section shows the window background (#39831).
+				var itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				var recyclerView = Assert.IsAssignableFrom<RecyclerView>(itemHandler._viewPager.GetChildAt(0));
+				Assert.False(recyclerView.IsAnimating, "The section pager animated the ShellItem switch");
+				Assert.Null(recyclerView.GetItemAnimator());
+			});
+		}
+
+		[Fact]
+		public async Task ResumingFragmentOfRemovedShellSectionDoesNotThrow()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var removedSection = new ShellSection
+			{
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent { Content = firstPage });
+				shell.Items.Add(new FlyoutItem { Items = { removedSection } });
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				// Removing a section disposes its renderer (see ShellItemHandler.UpdateSections).
+				var renderer = ((IShellContext)shell.Handler).CreateShellSectionRenderer(removedSection);
+				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
+				renderer.Dispose();
+
+				Assert.Null(Record.Exception(fragment.OnResume));
+			});
+		}
+
 		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
@@ -313,13 +374,13 @@ namespace Microsoft.Maui.DeviceTests
 		// NativeShellHandler nests the toolbar inside an outer CoordinatorLayout — walk up to find it.
 		protected override bool IsBackButtonVisible(IElementHandler handler)
 		{
-			if (GetShellHandlerToolbar(handler)?.NavigationIcon is DrawerArrowDrawable drawerArrow)
+			if (GetShellToolbar(handler)?.NavigationIcon is DrawerArrowDrawable drawerArrow)
 				return drawerArrow.Progress == 1;
 
 			return false;
 		}
 
-		MaterialToolbar GetShellHandlerToolbar(IElementHandler handler)
+		protected override MaterialToolbar GetShellToolbar(IElementHandler handler)
 		{
 			// Direct NativeShellHandler: toolbar lives in nested CoordinatorLayout of shell.CurrentPage.
 			if (handler is NativeShellHandler nativeShell)
@@ -357,7 +418,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class ModalHandlerTests : ModalTests
 	{
-		protected override void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -426,6 +487,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(ReentrantFlyoutPage), typeof(ReentrantFlyoutViewHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 				});

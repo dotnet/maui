@@ -13,18 +13,11 @@ public class Issue12320 : _IssuesUITest
 	public override string Issue => "[iOS] TabBarIsVisible = True/False doesn't work on Back Navigation When using BackButtonBehavior";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void PopLogicExecutesWhenUsingBackButtonBehavior()
 	{
 		App.WaitForElementTillPageNavigationSettled("TestReady");
-		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			App.Back(); // In iOS 26, the AutomationID set on the Back button is not found by Appium, so the Back method is used for iOS 26.
-		}
-		else
-		{
-			App.TapBackArrow("BackButtonImage");
-		}
+		App.TapShellBackArrowWithImageOverride("BackButtonImage");
 		App.WaitForElement("Tab 1");
 	}
 }

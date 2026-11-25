@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>iframe-parent</title>
+    <script>
+        // Record whatever the nested iframe reports back.
+        window.addEventListener('message', function (e) {
+            document.title = 'child:' + e.data;
+        });
+        window.addEventListener('load', function () {
+            // A data: URL iframe has an opaque origin (not https://appdir), so any
+            // fetch it makes to https://appdir/ is a cross-origin request. The child
+            // reports the outcome back to this parent via postMessage. The closing
+            // script tag is split so the outer HTML parser does not end this script
+            // block early.
+            var childHtml =
+                "<script>" +
+                "fetch('https://appdir/appdir-subresource-test.js')" +
+                ".then(function (r) { return r.ok ? 'ok' : 'status'; })" +
+                ".then(function (v) { parent.postMessage(v, '*'); })" +
+                ".catch(function () { parent.postMessage('denied', '*'); });" +
+                "<\/script>";
+            var frame = document.createElement('iframe');
+            frame.src = 'data:text/html,' + encodeURIComponent(childHtml);
+            document.body.appendChild(frame);
+        });
+    </script>
+</head>
+<body>
+    <p>iframe parent</p>
+</body>
+</html>

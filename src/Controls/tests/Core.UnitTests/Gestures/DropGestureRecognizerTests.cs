@@ -11,6 +11,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class DropGestureRecognizerTests : BaseTestFixture
 	{
 		[Fact]
+		public void DataPackageOperationsAreIndependentFlags()
+		{
+			Assert.True(typeof(DataPackageOperation).IsDefined(typeof(FlagsAttribute), false));
+			Assert.Equal(0, (int)DataPackageOperation.None);
+			Assert.Equal(1, (int)DataPackageOperation.Copy);
+			Assert.Equal(2, (int)DataPackageOperation.Move);
+			Assert.Equal(3, (int)(DataPackageOperation.Copy | DataPackageOperation.Move));
+			Assert.Equal(DataPackageOperation.None, DataPackageOperation.Copy & DataPackageOperation.Move);
+		}
+
+		[Fact]
+		public void DragOverDefaultsToCopy()
+		{
+			var args = new DragEventArgs(new DataPackage());
+			var dropRec = new DropGestureRecognizer();
+			Assert.Equal(DataPackageOperation.Copy, args.AcceptedOperation);
+
+			dropRec.SendDragOver(args);
+
+			Assert.Equal(DataPackageOperation.Copy, args.AcceptedOperation);
+		}
+
+		[Theory]
+		[InlineData(DataPackageOperation.None)]
+		[InlineData(DataPackageOperation.Copy)]
+		[InlineData(DataPackageOperation.Move)]
+		[InlineData(DataPackageOperation.Copy | DataPackageOperation.Move)]
+		public void DragOverPreservesAcceptedOperation(DataPackageOperation operation)
+		{
+			var args = new DragEventArgs(new DataPackage()) { AcceptedOperation = operation };
+			var dropRec = new DropGestureRecognizer();
+
+			dropRec.SendDragOver(args);
+
+			Assert.Equal(operation, args.AcceptedOperation);
+		}
+
+		[Theory]
+		[InlineData(DataPackageOperation.None)]
+		[InlineData(DataPackageOperation.Copy)]
+		[InlineData(DataPackageOperation.Move)]
+		[InlineData(DataPackageOperation.Copy | DataPackageOperation.Move)]
+		public void DragOverCanUpdateAcceptedOperation(DataPackageOperation operation)
+		{
+			var package = new DataPackage();
+			var args = new DragEventArgs(package);
+			var dropRec = new DropGestureRecognizer();
+			var raised = false;
+			dropRec.DragOver += (_, e) =>
+			{
+				raised = true;
+				Assert.Same(args, e);
+				Assert.Same(package, e.Data);
+				e.AcceptedOperation = operation;
+			};
+
+			dropRec.SendDragOver(args);
+
+			Assert.True(raised);
+			Assert.Equal(operation, args.AcceptedOperation);
+		}
+
+		[Fact]
 		public void PropertySetters()
 		{
 			var dropRec = new DropGestureRecognizer() { AllowDrop = true };

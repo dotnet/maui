@@ -18,7 +18,7 @@ public class Issue12652 : _IssuesUITest
 	public override string Issue => "[Bug] NullReferenceException in the Shell on UWP when navigating back to Shell Section with multiple content items";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
 	{
 		// On the Windows platform, there is a dropdown menu that has to be accessed to view the "TopTab" choices.

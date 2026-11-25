@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Microsoft.Maui.Handlers;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
 using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
@@ -57,6 +58,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ITextWatcher.AfterTextChanged(IEditable s)
 		{
+			var searchHandler = SearchHandler;
+			if (searchHandler == null)
+			{
+				return;
+			}
+
 			var text = _textBlock.Text;
 
 			if (text == ShellSearchViewAdapter.DoNotUpdateMarker)
@@ -66,19 +73,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateClearButtonState();
 
-			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
-
-			if (SearchHandler.ShowsResults)
+			// Let the mapping know that the update is coming from changes to the platform control.
+			var previousDirection = searchHandler.DataFlowDirection;
+			searchHandler.DataFlowDirection = DataFlowDirection.FromPlatform;
+			try
 			{
-				if (string.IsNullOrEmpty(text))
+				var query = searchHandler.Query ?? string.Empty;
+				var nativeText = text ?? string.Empty;
+				var transformedQuery = Microsoft.Maui.Controls.Platform.EditTextExtensions.GetTexts(_textBlock, query, searchHandler).newText;
+
+				if (transformedQuery != nativeText)
 				{
-					_textBlock.DismissDropDown();
-				}
-				else
-				{
-					_textBlock.ShowDropDown();
+					if (query == nativeText)
+					{
+						Microsoft.Maui.Controls.Platform.EditTextExtensions.UpdateTextFromPlatform(_textBlock, searchHandler);
+					}
+					else
+					{
+						searchHandler.SetValue(SearchHandler.QueryProperty, text);
+					}
 				}
 			}
+			finally
+			{
+				// Restore the previous direction.
+				searchHandler.DataFlowDirection = previousDirection;
+			}
+
+			UpdateShowsResults();
 		}
 
 		void ITextWatcher.BeforeTextChanged(ICharSequence s, int start, int count, int after)
@@ -205,6 +227,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_textBlock.SetSingleLine(true);
 			_textBlock.Threshold = 1;
 			_textBlock.Adapter = new ShellSearchViewAdapter(SearchHandler, _shellContext);
+			UpdateShowsResults();
 			_textBlock.ItemClick += OnTextBlockItemClicked;
 			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
@@ -245,21 +268,57 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_textBlock.Enabled = SearchHandler.IsSearchEnabled;
 			}
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+			{
+				UpdateShowsResults();
+			}
 			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
 			{
-				ApplyImageSource(_searchButton, SearchHandler.QueryIcon, Resource.Drawable.abc_ic_search_api_material, SearchHandler.TextColor?.ToPlatform());
+				ApplyImageSource(
+					_searchButton,
+					SearchHandler.QueryIcon,
+					Resource.Drawable.abc_ic_search_api_material,
+					SearchHandler.TextColor?.ToPlatform());
 			}
 			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
 			{
-				ApplyImageSource(_clearButton, SearchHandler.ClearIcon, Resource.Drawable.abc_ic_clear_material, SearchHandler.CancelButtonColor?.ToPlatform());
+				ApplyImageSource(
+					_clearButton,
+					SearchHandler.ClearIcon,
+					Resource.Drawable.abc_ic_clear_material,
+					SearchHandler.CancelButtonColor?.ToPlatform());
 			}
 			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
 			{
-				ApplyImageSource(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIcon, -1, SearchHandler.TextColor?.ToPlatform());
+				ApplyImageSource(
+					_clearPlaceholderButton,
+					SearchHandler.ClearPlaceholderIcon,
+					-1,
+					SearchHandler.TextColor?.ToPlatform());
+
+				UpdateClearButtonState();
 			}
 			else if (e.PropertyName == SearchHandler.ClearPlaceholderEnabledProperty.PropertyName)
 			{
 				UpdateClearButtonState();
+			}
+		}
+
+		void UpdateShowsResults()
+		{
+			// Prevent AutoCompleteTextView from triggering filtering/suggestions
+			// when results are disabled.
+			_textBlock.Threshold = SearchHandler.ShowsResults ? 1 : int.MaxValue;
+
+			if (!SearchHandler.ShowsResults || string.IsNullOrEmpty(_textBlock.Text))
+			{
+				_textBlock.DismissDropDown();
+				return;
+			}
+
+			if (_textBlock.IsAttachedToWindow)
+			{
+				_textBlock.ShowDropDown();
 			}
 		}
 
@@ -282,7 +341,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (image is not null)
 			{
 				AutomationPropertiesProvider.SetContentDescription(button, image, null, null);
-				image.LoadImage(MauiContext, (r) =>
+
+				image.LoadImage(MauiContext, r =>
 				{
 					if (_disposed)
 					{
@@ -293,7 +353,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ApplyTint();
 				});
 			}
-			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
+			else if (defaultImage > 0 &&
+				ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
 			{
 				button.SetImageDrawable(defaultDrawable);
 				ApplyTint();
@@ -316,6 +377,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_disposed)
 				return;
+
+			UpdateShowsResults();
 		}
 
 		protected virtual void OnClearButtonClicked(object sender, EventArgs e)

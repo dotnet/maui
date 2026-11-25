@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.TestCases;
@@ -120,6 +121,59 @@ namespace Microsoft.Maui.DeviceTests
 
 							Assert.True(initialEntryBox == finalEntryBox);
 							Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+						}
+					});
+				});
+			}
+
+			[Fact]
+			public async Task SoftInputParentDoesNotBlockScrollRectToVisible()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handler =>
+					{
+						handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+						handler.AddHandler<ScrollView, ScrollViewHandler>();
+						handler.AddHandler<Entry, EntryHandler>();
+					});
+				});
+
+				var entry = new Entry();
+				var scrollView = new ScrollView
+				{
+					HeightRequest = 300,
+					Content = new VerticalStackLayout { entry, new VerticalStackLayout { HeightRequest = 2000 } }
+				};
+				var layout = new VerticalStackLayout { scrollView };
+				layout.WidthRequest = 300;
+				layout.HeightRequest = 400;
+				layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.SoftInput);
+
+				await InvokeOnMainThreadAsync(async () =>
+				{
+					var layoutHandler = CreateHandler<LayoutHandler>(layout);
+					await layoutHandler.PlatformView.AttachAndRun(() =>
+					{
+						var textField = (UITextField)entry.Handler.PlatformView;
+						var platformScrollView = (UIScrollView)scrollView.Handler.PlatformView;
+						Assert.True(MauiView.IsSoftInputHandledByParent(textField), "The Entry should be inside a SoftInput parent");
+
+						KeyboardAutoManagerScroll.Connect();
+						try
+						{
+							Assert.True(textField.BecomeFirstResponder(), "The Entry should become first responder");
+
+							var offsetBefore = platformScrollView.ContentOffset.Y;
+							platformScrollView.ScrollRectToVisible(new CGRect(0, platformScrollView.ContentSize.Height - 10, 10, 10), false);
+
+							Assert.True(platformScrollView.ContentOffset.Y > offsetBefore, $"ScrollRectToVisible should scroll while editing (offset stayed {offsetBefore})");
+							Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+						}
+						finally
+						{
+							textField.ResignFirstResponder();
+							KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling = false;
 						}
 					});
 				});
@@ -252,16 +306,31 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.Entry)]
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		// This base class exercises TabbedRenderer (via ControlsPageTypesTestCases.Setup) on
+		// iOS/MacCatalyst for the TabbedPage/TabbedPageWithNavigationPage cases; the
+		// EntryTestsWithWindow_TabbedViewHandler subclass overrides registration to exercise
+		// TabbedViewHandler instead, so those cases run against both variants.
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 		public partial class EntryTestsWithWindow : ControlsHandlerTestBase
 		{
 			[Theory]
 			[ClassData(typeof(ControlsPageTypesTestCases))]
-			public async Task NextMovesToNextEntry(ControlsPageTypesTestCase page)
+			public Task NextMovesToNextEntry(ControlsPageTypesTestCase page) =>
+				NextMovesToNextEntryCore(page, includeNavigationViewHandler: true);
+
+			// Also verify NavigationPage doesn't break entry focus advancement when using the
+			// legacy NavigationRenderer, not just the NavigationViewHandler above.
+			// See RendererHandlerVariant.cs.
+			[Fact]
+			public Task NextMovesToNextEntry_NavigationPageRenderer() =>
+				NextMovesToNextEntryCore(ControlsPageTypesTestCase.NavigationPage, includeNavigationViewHandler: false);
+
+			async Task NextMovesToNextEntryCore(ControlsPageTypesTestCase page, bool includeNavigationViewHandler)
 			{
 				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
 				{
-					ControlsPageTypesTestCases.Setup(builder);
+					RegisterPageTypeHandlers(builder, includeNavigationViewHandler);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -300,6 +369,21 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
+
+			// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+			// EntryTestsWithWindow_TabbedViewHandler overrides this to exercise TabbedViewHandler
+			// instead.
+			protected virtual void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler);
+		}
+
+		[Category(TestCategory.Entry)]
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedViewHandler)] // See RendererHandlerVariant.cs
+		public class EntryTestsWithWindow_TabbedViewHandler : EntryTestsWithWindow
+		{
+			protected override void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler, useTabbedViewHandler: true);
 		}
 
 		[Category(TestCategory.Entry)]

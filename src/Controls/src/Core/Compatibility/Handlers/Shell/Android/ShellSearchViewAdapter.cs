@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class CustomFilter : Filter
 		{
-			private readonly BaseAdapter _adapter;
+			private readonly BaseAdapter _adapter = null;
 
 			// Required by Android JNI bridge for native handle activation
 			protected CustomFilter(IntPtr javaReference, global::Android.Runtime.JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -174,7 +174,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			protected override void PublishResults(ICharSequence constraint, FilterResults results)
 			{
-				_adapter?.NotifyDataSetChanged();
+				if (_adapter is not null)
+					_adapter.NotifyDataSetChanged();
 			}
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Text.Json;
@@ -14,8 +15,7 @@ namespace Microsoft.Maui.UnitTests
 	[Category(TestCategory.Core)]
 	public class LocalizationTests : IClassFixture<CultureFixture>, IClassFixture<GlobalLogSetup>
 	{
-		string _mauiRoot = Path.Combine("..", "..", "..", "..", "..");
-		static string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
+		static string _globalFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "GlobalLog.txt");
 
 		// Since one word phrases are sometimes not translated, we can filter them out if needed
 		bool _ignoreOneWordPhrases = true;
@@ -25,12 +25,13 @@ namespace Microsoft.Maui.UnitTests
 		/// <tgt> element with their translations. Since there may be times that we have untranslated
 		/// elements, instead of failing the test when something is missing, the strings without
 		/// translations will be stored in a txt file for viewing: artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationMissingTargets.txt
+		/// LCL files are packaged with the tests so no repository checkout is required on Helix.
 		/// </summary>
-		[Fact(Skip = "Skipped because doesn t work on helix")]
+		[Fact]
 		public void ResxLocalizationStringsAreTranslated()
 		{
-			string lclFilePath = Path.Combine(_mauiRoot, "loc");
-			string outputFilePath = Path.Combine("localizationTestsOutput", "ResxLocalizationMissingTargets.txt");
+			string lclFilePath = GetLocalizationRoot();
+			string outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "ResxLocalizationMissingTargets.txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -55,7 +56,6 @@ namespace Microsoft.Maui.UnitTests
 					{
 						if (key.Value.Target is null)
 						{
-							var filePath = file.Replace(_mauiRoot, "", StringComparison.Ordinal);
 							sb.AppendLine($"    Missing Target:");
 							sb.AppendLine($"        Key: {key.Key}");
 							sb.AppendLine($"        Source: {key.Value.Source}");
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.UnitTests
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationTranslationsNotDisplayed_<locale>.txt
 		/// NOTE: Link any new resx files as EmbeddedResource in the Core.UnitTests.csproj file.
 		/// </summary>
-		[Theory(Skip = "Skipped because doesn t work on helix")]
+		[Theory]
 		[InlineData("cs", "cs-CZ")]
 		[InlineData("de", "de-DE")]
 		[InlineData("es", "es-ES")]
@@ -96,16 +96,18 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant", "zh-Hant")]
 		public void ResxLocalizationStringsAreDisplayedProperly(string cultureAbbreviation, string culture)
 		{
-			string lclFilePath = Path.Combine(_mauiRoot, "loc", cultureAbbreviation);
+			string localizationRoot = GetLocalizationRoot();
+			string lclFilePath = Path.Combine(localizationRoot, cultureAbbreviation);
 
 			var lclFiles = Directory.GetFiles(lclFilePath, "*.resx.lcl", SearchOption.AllDirectories);
+			Assert.NotEmpty(lclFiles);
 
 			CultureInfo.CurrentCulture = new CultureInfo(culture);
 			CultureInfo.CurrentUICulture = new CultureInfo(culture);
 
 			var count = 0;
 
-			var outputFilePath = Path.Combine("localizationTestsOutput", "ResxLocalizationTranslationsNotDisplayed_" + cultureAbbreviation + ".txt");
+			var outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "ResxLocalizationTranslationsNotDisplayed_" + cultureAbbreviation + ".txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -124,31 +126,32 @@ namespace Microsoft.Maui.UnitTests
 				{
 					string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
 					string resourceName = fileNameWithoutExtension.Split('.')[0];
-					var filePath = file.Replace(_mauiRoot, "", StringComparison.Ordinal);
+					var filePath = Path.GetRelativePath(localizationRoot, file);
 					var localizedKeys = LoadKeysFromLcl(file);
 					var sb = new StringBuilder();
+					var translatedKeys = localizedKeys.Where(key => key.Value.Target is not null).ToArray();
+					Assert.NotEmpty(translatedKeys);
+					var resourceManager = new ResourceManager("Core.UnitTests.Resources." + resourceName, typeof(LocalizationTests).Assembly);
+					Assert.NotNull(resourceManager.GetResourceSet(new CultureInfo(cultureAbbreviation), createIfNotExists: true, tryParents: false));
 
 					// Check each key in the localization
-					foreach (var key in localizedKeys)
+					foreach (var key in translatedKeys)
 					{
-						if (key.Value.Target is not null)
-						{
-							// Get the actual translation from the assembly
-							var keyName = key.Key[1..];
-							string actualTranslation = GetLocalizedString(resourceName, keyName);
+						// Get the actual translation from the assembly
+						var keyName = key.Key[1..];
+						string actualTranslation = resourceManager.GetString(keyName, CultureInfo.CurrentUICulture);
+						Assert.NotNull(actualTranslation);
 
-							// Compare with the expected translation in the .lcl file
-							// if (key.Value.Target != actualTranslation)
-							if (!IsDifferenceOnly5D(key.Value.Target, actualTranslation) && FilterOneWordPhrases(key.Value.Target))
-							{
-								sb.AppendLine($"    Key: {keyName}");
-								sb.AppendLine($"        Expected: {key.Value.Target}");
-								sb.AppendLine($"        Actual: {actualTranslation}");
-							}
-							else
-							{
-								count++;
-							}
+						// Compare with the expected translation in the .lcl file
+						if (!IsDifferenceOnly5D(key.Value.Target, actualTranslation) && FilterOneWordPhrases(key.Value.Target))
+						{
+							sb.AppendLine($"    Key: {keyName}");
+							sb.AppendLine($"        Expected: {key.Value.Target}");
+							sb.AppendLine($"        Actual: {actualTranslation}");
+						}
+						else
+						{
+							count++;
 						}
 					}
 
@@ -168,6 +171,8 @@ namespace Microsoft.Maui.UnitTests
 		/// <summary>
 		/// This test compares the localized json translations with the standard json files and makes sure they are not equal.
 		/// This test will not be able to compare if both strings are still english but just different, so it is not a perfect test.
+		/// Template localization files are copied to the test output so the test also runs from an isolated Helix payload.
+		/// The packaged baseline count must match the source count captured in the test assembly at build time.
 		/// Strings that are not translated will be stored in a txt file for viewing:
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/JsonLocalizationTranslationsIncorrect_<locale>.txt
 		/// </summary>
@@ -187,9 +192,10 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant")]
 		public void JsonLocalizationStringsAreTranslated(string culture)
 		{
-			var jsonfiles = GetFilesExcludingArtifacts(_mauiRoot, "*templatestrings.json");
+			var templateLocalizationRoot = Path.Combine(AppContext.BaseDirectory, "TemplateLocalization");
+			var jsonfiles = GetTemplateLocalizationBaselines();
 
-			var outputFilePath = Path.Combine("localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
+			var outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -209,12 +215,7 @@ namespace Microsoft.Maui.UnitTests
 					string directory = Path.GetDirectoryName(file);
 					string localizedJson = Path.Combine(directory, $"templatestrings.{culture}.json");
 
-					if (!File.Exists(localizedJson))
-					{
-						writer.WriteLine($"*** File does not exist!!: {localizedJson}");
-						WriteToGlobalLog($"*** File does not exist!!: {localizedJson}");
-						return;
-					}
+					Assert.True(File.Exists(localizedJson), $"Localized template strings file does not exist: {localizedJson}");
 
 					var originalJson = File.ReadAllText(file);
 					var localizedJsonContent = File.ReadAllText(localizedJson);
@@ -247,9 +248,10 @@ namespace Microsoft.Maui.UnitTests
 
 						if (sb.Length > 0)
 						{
-							writer.WriteLine($"File: {GetRelativePathFromSrc(localizedJson)}");
+							var relativePath = Path.GetRelativePath(templateLocalizationRoot, localizedJson);
+							writer.WriteLine($"File: {relativePath}");
 							writer.WriteLine(sb.ToString());
-							WriteToGlobalLog($"File: {GetRelativePathFromSrc(localizedJson)}");
+							WriteToGlobalLog($"File: {relativePath}");
 							WriteToGlobalLog(sb.ToString());
 						}
 					}
@@ -262,7 +264,7 @@ namespace Microsoft.Maui.UnitTests
 		/// Keys that are not included will be stored in a txt file for viewing:
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/LclFilesMissingJsonKeys_<locale>.txt
 		/// </summary>
-		[Theory(Skip = "Skipped because doesn t work on helix")]
+		[Theory]
 		[InlineData("cs")]
 		[InlineData("de")]
 		[InlineData("es")]
@@ -278,12 +280,11 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant")]
 		public void LclFilesMissingJsonKeys(string culture)
 		{
-			var jsonfiles = GetFilesExcludingArtifacts(_mauiRoot, "*templatestrings.json");
+			var templateLocalizationRoot = Path.Combine(AppContext.BaseDirectory, "TemplateLocalization");
+			var jsonfiles = GetTemplateLocalizationBaselines();
+			string lclFilePath = Path.Combine(GetLocalizationRoot(), culture, "src", "Templates", "src", "templates");
 
-			string lclFilePath = Path.Combine(_mauiRoot, "loc", culture);
-			var lclFiles = GetFilesExcludingArtifacts(lclFilePath, "*.json.lcl");
-
-			var outputFilePath = Path.Combine("localizationTestsOutput", "LclFilesMissingJsonKeys_" + culture + ".txt");
+			var outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "LclFilesMissingJsonKeys_" + culture + ".txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -301,51 +302,17 @@ namespace Microsoft.Maui.UnitTests
 				{
 					var sb = new StringBuilder();
 
-					string directory = Path.GetDirectoryName(file);
-
-					while (directory is not null)
-					{
-						if (Path.GetFileName(directory) == ".template.config")
-						{
-							directory = Directory.GetParent(directory)?.FullName;
-							break;
-						}
-
-						directory = Directory.GetParent(directory)?.FullName;
-					}
-
-					if (directory is null)
-					{
-						throw new Exception("Could not find the directory above '.template.config'");
-					}
-
-					directory = Path.GetFileName(directory);
-
-					var correspondingLclFile = string.Empty;
-
-					foreach (var lcl in lclFiles)
-					{
-						if (lcl.Contains(directory, StringComparison.Ordinal))
-						{
-							correspondingLclFile = lcl;
-							break;
-						}
-					}
-
-					if (correspondingLclFile == string.Empty)
-					{
-						writer.WriteLine($"*** No corresponding lcl file for: {directory}\n");
-						WriteToGlobalLog($"*** No corresponding lcl file for: {directory}\n");
-						continue;
-					}
+					var relativePath = Path.GetRelativePath(templateLocalizationRoot, file);
+					var correspondingLclFile = Path.Combine(lclFilePath, relativePath + ".lcl");
+					Assert.True(File.Exists(correspondingLclFile), $"No corresponding LCL file for '{relativePath}' in '{culture}': {correspondingLclFile}");
 
 					var originalJson = File.ReadAllText(file);
+					var lclKeys = LoadKeysFromLcl(correspondingLclFile);
 
 					using (JsonDocument originalDoc = JsonDocument.Parse(originalJson))
 					{
 						foreach (JsonProperty property in originalDoc.RootElement.EnumerateObject())
 						{
-							var lclKeys = LoadKeysFromLcl(correspondingLclFile);
 							var isFound = false;
 
 							foreach (var lclKey in lclKeys)
@@ -366,10 +333,10 @@ namespace Microsoft.Maui.UnitTests
 
 					if (sb.Length > 0)
 					{
-						writer.WriteLine($"Json File: {GetRelativePathFromSrc(file)}");
+						writer.WriteLine($"Json File: {relativePath}");
 						writer.WriteLine($"Lcl File: {correspondingLclFile}");
 						writer.WriteLine(sb.ToString());
-						WriteToGlobalLog($"Json File: {GetRelativePathFromSrc(file)}");
+						WriteToGlobalLog($"Json File: {relativePath}");
 						WriteToGlobalLog($"Lcl File: {correspondingLclFile}");
 						WriteToGlobalLog(sb.ToString());
 					}
@@ -401,26 +368,35 @@ namespace Microsoft.Maui.UnitTests
 				}
 			}
 
+			Assert.NotEmpty(translations);
 			return translations;
 		}
 
-		string GetLocalizedString(string resourceString, string key)
+		static string[] GetTemplateLocalizationBaselines()
 		{
-			var resourceManager = new ResourceManager("Core.UnitTests.Resources." + resourceString, typeof(LocalizationTests).Assembly);
-			return resourceManager.GetString(key, CultureInfo.CurrentUICulture);
+			var root = Path.Combine(AppContext.BaseDirectory, "TemplateLocalization");
+			Assert.True(Directory.Exists(root), $"Template localization files were not copied to '{root}'.");
+			var files = Directory.GetFiles(root, "templatestrings.json", SearchOption.AllDirectories);
+			Assert.NotEmpty(files);
+			var metadata = Assert.Single(
+				typeof(LocalizationTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>(),
+				attribute => attribute.Key == "TemplateLocalizationBaselineCount");
+			Assert.Equal(int.Parse(metadata.Value, CultureInfo.InvariantCulture), files.Length);
+			return files;
 		}
 
-		static string GetRelativePathFromSrc(string path)
+		static string GetLocalizationRoot()
 		{
-			var srcDirectory = "src";
-			var index = path.IndexOf(srcDirectory, StringComparison.Ordinal);
+			var root = Path.Combine(AppContext.BaseDirectory, "Localization");
+			Assert.True(Directory.Exists(root), $"LCL localization files were not copied to '{root}'.");
+			var files = Directory.GetFiles(root, "*.lcl", SearchOption.AllDirectories);
+			Assert.NotEmpty(files);
+			var metadata = Assert.Single(
+				typeof(LocalizationTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>(),
+				attribute => attribute.Key == "LocalizationFileCount");
+			Assert.Equal(int.Parse(metadata.Value, CultureInfo.InvariantCulture), files.Length);
 
-			if (index >= 0)
-			{
-				return path.Substring(index);
-			}
-
-			return path;
+			return root;
 		}
 
 		private static void WriteToGlobalLog(string message)
@@ -457,11 +433,6 @@ namespace Microsoft.Maui.UnitTests
 
 			return true;
 		}
-
-		string[] GetFilesExcludingArtifacts(string root, string searchPattern) =>
-			Directory.GetFiles(root, searchPattern, SearchOption.AllDirectories)
-				.Where(file => !file.Contains("/artifacts/", StringComparison.Ordinal))
-				.ToArray();
 	}
 
 	public class CultureFixture : IDisposable
@@ -486,7 +457,7 @@ namespace Microsoft.Maui.UnitTests
 
 	public class GlobalLogSetup : IDisposable
 	{
-		string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
+		string _globalFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "GlobalLog.txt");
 
 		public GlobalLogSetup()
 		{

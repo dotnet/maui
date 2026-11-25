@@ -13,7 +13,7 @@ public class Issue7045 : _IssuesUITest
 	public override string Issue => "Shell BackButtonBehavior binding Command to valid ICommand causes back button to disappear";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShellBackButtonBehaviorShouldWork()
 	{
 		App.WaitForElement("NavigateButton");

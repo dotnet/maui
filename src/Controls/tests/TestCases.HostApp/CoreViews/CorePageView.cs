@@ -52,6 +52,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new DefaultThemePage(), "App Theme"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
 			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
+			new GalleryPageFactory(() => new ContentButtonControlPage(), "ContentButton Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),

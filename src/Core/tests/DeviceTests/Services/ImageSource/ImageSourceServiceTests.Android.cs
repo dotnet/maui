@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -91,13 +92,15 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[DynamicDependency("Glide", typeof(RequestManager))]
 		public void GlideStaticEqualsGlideGet()
 		{
 			var fromGet = Glide.Get(MauiProgram.DefaultContext);
 
 			var manager = Glide.With(MauiProgram.DefaultContext);
-			var glideField = manager.GetType().GetProperty("Glide", BindingFlags.NonPublic | BindingFlags.Instance);
-			var fromField = glideField.GetValue(manager);
+			var glideProperty = typeof(RequestManager).GetProperty("Glide", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(glideProperty);
+			var fromField = glideProperty.GetValue(manager);
 
 			Assert.Equal(fromGet, fromField);
 		}

@@ -26,7 +26,7 @@ public partial class ShellFeatureMainPage : ContentPage
 	{
 		Application.Current.MainPage = new ShellTabbedControlPage();
 	}
-
+	
 	private void OnShellPageButtonClicked(object sender, EventArgs e)
 	{
 		this.Window.Page = new ShellControlPage();
@@ -35,5 +35,9 @@ public partial class ShellFeatureMainPage : ContentPage
   private void OnShellNavigationButtonClicked(object sender, EventArgs e)
 	{
 		this.Window.Page = new ShellNavigationControlPage();
+	}
+	private void OnShellSearchButtonClicked(object sender, EventArgs e)
+	{
+		this.Window.Page = new ShellSearchControlPage();
 	}
 }

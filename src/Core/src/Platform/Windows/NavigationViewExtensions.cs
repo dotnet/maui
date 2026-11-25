@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
+		static readonly ImageSourceRequestManager FlyoutIconRequests = new();
+
 		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
@@ -27,7 +29,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint)
 		{
+			navigationView.UpdateTopNavigationViewItemTextColor(paint, null);
+		}
+
+		internal static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
+		{
 			var brush = paint?.ToPlatform();
+			var disabledBrush = disabledPaint?.ToPlatform() ?? brush;
 
 			if (navigationView.TopNavArea is not null)
 			{
@@ -36,7 +44,6 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForeground");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPressed");
-					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
 
 					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForeground");
 					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPointerOver");
@@ -47,12 +54,20 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForeground"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
 
 					//The NavigationViewItemForeground color is applied to the Expand/Collapse Chevron icon
 					navigationView.TopNavArea.Resources["NavigationViewItemForeground"] = brush;
 					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPressed"] = brush;
+				}
+
+				if (disabledBrush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
+				}
+				else
+				{
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = disabledBrush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
@@ -69,7 +84,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
+			navigationView.UpdateTopNavigationViewItemTextSelectedColor(paint, null);
+		}
+
+		internal static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
+		{
 			var brush = paint?.ToPlatform();
+			var disabledBrush = disabledPaint?.ToPlatform() ?? brush;
 
 			if (navigationView.TopNavArea is not null)
 			{
@@ -78,14 +99,21 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelected");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
-					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
 				}
 				else
 				{
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelected"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPressed"] = brush;
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+				}
+
+				if (disabledBrush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
+				}
+				else
+				{
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = disabledBrush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
@@ -137,6 +165,29 @@ namespace Microsoft.Maui.Platform
 				foreach (var item in items)
 				{
 					item.UnselectedForeground = brush;
+				}
+			}
+		}
+
+		internal static void UpdateTopNavigationViewItemDisabledColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			// Theme resources are updated by the text-color methods. Updating them again
+			// here replaces brushes after WinUI has already refreshed its theme resources.
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.DisabledForeground = brush;
+
+					if (item.MenuItemsSource is { } subItems)
+					{
+						foreach (var subItem in subItems)
+						{
+							subItem.DisabledForeground = brush;
+						}
+					}
 				}
 			}
 		}
@@ -208,6 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (paneContentGrid is null)
 				return;
 
+			ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
 			var brush = paint?.ToPlatform();
 
 			if (brush is null)
@@ -277,28 +329,34 @@ namespace Microsoft.Maui.Platform
 
 		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
 		{
-			if (provider is null || imageSource is null)
-			{
-				return;
-			}
 			var paneContentGrid = navigationView.PaneContentGrid;
 			if (paneContentGrid is null)
 			{
 				return;
 			}
 
+			var request = ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
+			if (imageSource is null)
+				return;
+			if (provider is null)
+				return;
+
 			var service = provider.GetRequiredImageSourceService(imageSource);
 			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
-
-			if (nativeImageSource is null)
+			if (!ControlExtensions.BackgroundImageRequests.IsCurrent(paneContentGrid, request) ||
+				navigationView.PaneContentGrid != paneContentGrid)
 			{
-				paneContentGrid.Background = null;
+				nativeImageSource?.Dispose();
 				return;
 			}
 
-			var BackgroundImage = new ImageBrush
+			if (nativeImageSource is null)
+				return;
+
+			var background = paneContentGrid.Background;
+			var backgroundImage = new ImageBrush
 			{
-				ImageSource = nativeImageSource?.Value,
+				ImageSource = nativeImageSource.Value,
 				Stretch = aspect switch
 				{
 					Aspect.AspectFit => Stretch.Uniform,
@@ -308,7 +366,13 @@ namespace Microsoft.Maui.Platform
 				}
 			};
 
-			paneContentGrid.Background = BackgroundImage;
+			paneContentGrid.Background = backgroundImage;
+			ControlExtensions.BackgroundImageRequests.SetCleanup(paneContentGrid, request, () =>
+			{
+				if (paneContentGrid.Background == backgroundImage)
+					paneContentGrid.Background = background;
+				nativeImageSource.Dispose();
+			});
 		}
 
 		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
@@ -331,11 +395,18 @@ namespace Microsoft.Maui.Platform
 			if (platformView is null)
 				return;
 
+			var request = FlyoutIconRequests.Begin(platformView);
+
 			if (provider is not null && imageSource is not null)
 			{
 				// Custom Icon
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+				if (!FlyoutIconRequests.IsCurrent(platformView, request))
+				{
+					nativeImageSource?.Dispose();
+					return;
+				}
 
 				platformView.Source = null;
 

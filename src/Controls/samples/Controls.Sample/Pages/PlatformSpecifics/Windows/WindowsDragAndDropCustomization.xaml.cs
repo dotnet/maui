@@ -23,15 +23,29 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
+		void DragGestureRecognizer_DragStarting(object? sender, DragStartingEventArgs e)
+		{
+#if WINDOWS
+			if (MoveSwitch.IsToggled)
+			{
+				e.PlatformArgs!.DragStartingEventArgs.AllowedOperations =
+					global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy |
+					global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
+				e.PlatformArgs.Handled = true;
+			}
+#endif
+		}
+
 		void DropGestureRecognizer_DragOver(System.Object? sender, Microsoft.Maui.Controls.DragEventArgs e)
 		{
+			e.AcceptedOperation = MoveSwitch.IsToggled ? DataPackageOperation.Move : DataPackageOperation.Copy;
 #if WINDOWS
 			var dragUI = e.PlatformArgs!.DragEventArgs.DragUIOverride;
 			dragUI.IsCaptionVisible = ShowCaptionSwitch.IsToggled;
 			dragUI.IsGlyphVisible = ShowGlyphSwitch.IsToggled;
 			dragUI.IsContentVisible = ShowContentSwitch.IsToggled;
 
-			dragUI.Caption = string.IsNullOrEmpty (CustomCaptionEntry.Text) ? "Copy" : CustomCaptionEntry.Text;
+			dragUI.Caption = string.IsNullOrEmpty (CustomCaptionEntry.Text) ? e.AcceptedOperation.ToString() : CustomCaptionEntry.Text;
 #endif
 		}
 

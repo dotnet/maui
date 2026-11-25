@@ -13,15 +13,22 @@ public class Issue28657 : _IssuesUITest
     }
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {
+        Exception? exception = null;
+
         App.WaitForElement("StubLabel");
         App.SetOrientationLandscape();
         // Use retryTimeout to wait for orientation change to complete
-        VerifyScreenshot("Issue28657_Landscape", retryTimeout: TimeSpan.FromSeconds(2));
+        VerifyScreenshotOrSetException(ref exception, "Issue28657_Landscape", retryTimeout: TimeSpan.FromSeconds(2));
         App.SetOrientationPortrait();
-        VerifyScreenshot("Issue28657_Portrait", retryTimeout: TimeSpan.FromSeconds(2));
+        VerifyScreenshotOrSetException(ref exception, "Issue28657_Portrait", retryTimeout: TimeSpan.FromSeconds(2));
+
+        if (exception is not null)
+        {
+            throw exception;
+        }
     }
 }
 #endif

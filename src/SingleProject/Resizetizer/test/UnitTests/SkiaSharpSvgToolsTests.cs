@@ -2,27 +2,22 @@ using System;
 using System.IO;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class SkiaSharpSvgToolsTests
 	{
-		public class Resize : IDisposable
+		public class Resize : BaseTest
 		{
 			readonly string DestinationFilename;
 			readonly TestLogger Logger;
 
-			public Resize()
+			public Resize(ITestOutputHelper output) : base(output)
 			{
-				DestinationFilename = Path.GetTempFileName();
+				Directory.CreateDirectory(DestinationDirectory);
+				DestinationFilename = Path.Combine(DestinationDirectory, "output.png");
 				Logger = new TestLogger();
-			}
-
-			public void Dispose()
-			{
-				//Logger.Persist();
-				File.Copy(DestinationFilename, "output.png", true);
-				File.Delete(DestinationFilename);
 			}
 
 			[Fact]
@@ -334,23 +329,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 		}
 
-		public class ResizeQualityTests : IDisposable
+		public class ResizeQualityTests : BaseTest
 		{
 			readonly string DestinationFilename;
 			readonly string DestinationFilename2;
 			readonly TestLogger Logger;
 
-			public ResizeQualityTests()
+			public ResizeQualityTests(ITestOutputHelper output) : base(output)
 			{
-				DestinationFilename = Path.GetTempFileName();
-				DestinationFilename2 = Path.GetTempFileName();
+				Directory.CreateDirectory(DestinationDirectory);
+				DestinationFilename = Path.Combine(DestinationDirectory, "output.png");
+				DestinationFilename2 = Path.Combine(DestinationDirectory, "output2.png");
 				Logger = new TestLogger();
-			}
-
-			public void Dispose()
-			{
-				File.Delete(DestinationFilename);
-				File.Delete(DestinationFilename2);
 			}
 
 			[Fact]

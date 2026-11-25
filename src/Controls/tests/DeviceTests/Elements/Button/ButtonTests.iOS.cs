@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -18,6 +20,16 @@ namespace Microsoft.Maui.DeviceTests
 		Task<string?> GetPlatformText(ButtonHandler buttonHandler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
+		}
+
+		Task<(string? Value, double CharacterSpacing)> GetPlatformAttributedText(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var attributedTitle = GetPlatformButton(buttonHandler).CurrentAttributedTitle;
+
+				return (attributedTitle?.Value, attributedTitle?.GetCharacterSpacing() ?? 0);
+			});
 		}
 
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
@@ -91,6 +103,75 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(button.Width < gridWidth, $"Button shouldn't occupy entire layout width. Expected: {gridWidth}<, was {button.Width}");
 			Assert.True(button.Height < gridHeight, $"Button shouldn't occupy entire layout height. Expected: {gridHeight}<, was {button.Height}");
+		}
+
+		[Theory]
+		[InlineData(false, TextTransform.Default, "Initial", "Updated")]
+		[InlineData(true, TextTransform.Default, "Initial", "Updated")]
+		[InlineData(false, TextTransform.Uppercase, "INITIAL", "UPDATED")]
+		[Description("The Text property of a Button should update the native attributed title when CharacterSpacing is applied")]
+		public async Task TextUpdatesAttributedTitleWhenCharacterSpacingApplied(bool useContentLayout, TextTransform textTransform, string initialText, string updatedText)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
+
+			var button = new Button
+			{
+				Text = "Initial",
+				CharacterSpacing = 15,
+				TextTransform = textTransform
+			};
+
+			if (useContentLayout)
+				button.ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Right, 8);
+
+			await CreateHandlerAndAddToWindow(button, async () =>
+			{
+				var handler = Assert.IsType<ButtonHandler>(button.Handler);
+				var initialAttributedText = await GetPlatformAttributedText(handler);
+
+				Assert.Equal(initialText, initialAttributedText.Value);
+				Assert.Equal(button.CharacterSpacing, initialAttributedText.CharacterSpacing);
+
+				button.Text = "Updated";
+				var updatedAttributedText = await GetPlatformAttributedText(handler);
+
+				Assert.Equal(updatedText, updatedAttributedText.Value);
+				Assert.Equal(button.CharacterSpacing, updatedAttributedText.CharacterSpacing);
+			});
+		}
+
+		[Fact]
+		[Description("Changing the Text of a Button in a window should not fade its title label out")]
+		public async Task TextChangeKeepsTitleLabelVisible()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
+
+			var button = new Button { Text = "Initial" };
+
+			await CreateHandlerAndAddToWindow<ButtonHandler>(button, async handler =>
+			{
+				var titleLabel = GetPlatformButton(handler).TitleLabel;
+				await AssertEventually(() => titleLabel.Bounds.Width > 0);
+
+				button.Text = "Updated with a much longer title";
+
+				// A system UIButton cross-fades its title on change. The fade-out sets the label's
+				// alpha to 0 and only the animation's completion restores it.
+				Assert.Equal(1, (double)titleLabel.Alpha);
+				Assert.Null(titleLabel.Layer.AnimationForKey("opacity"));
+			});
 		}
 
 		[Fact]

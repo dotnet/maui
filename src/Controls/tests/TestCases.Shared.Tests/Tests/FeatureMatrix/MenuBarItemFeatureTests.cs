@@ -6,7 +6,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Shell)]
 public class MenuBarItemFeatureTests : _GalleryUITest
 {
 	public const string MenuBarItemFeatureMatrix = "MenuBarItem Feature Matrix";
@@ -20,6 +19,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 #if WINDOWS
 	[Test, Order(1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_FileMenuExit()
 	{
 		App.WaitForElement("ResetButton");
@@ -37,6 +37,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_RefreshMenuItemProperties()
 	{
 		App.WaitForElement("ResetButton");
@@ -49,6 +50,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 	[Test, Order(3)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_MenuFlyoutSeparatorPresent()
 	{
 		App.WaitForElement("ResetButton");
@@ -69,6 +71,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(4)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_MediaMenuBarItemPresent()
 	{
 		App.WaitForElement("ResetButton");
@@ -86,6 +89,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 
 	[Test, Order(5)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_LocationsMenuChangeLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -115,6 +119,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_LocationsMenuAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -141,6 +146,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_LocationsMenuEditLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -169,6 +175,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_LocationsMenuRemoveLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -191,6 +198,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_ViewMenuRefreshCommand()
 	{
 		App.WaitForElement("ResetButton");
@@ -211,6 +219,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //For more info, see: https://github.com/dotnet/maui/issues/34038
 	[Test, Order(10)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_DisableFileMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -230,6 +239,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(11)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_DisableLocationsMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -249,6 +259,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(12)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_DisableViewMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -269,6 +280,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(13)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_VerifyAllMenusAndItemsAccessible()
 	{
 		App.WaitForElement("ResetButton");
@@ -306,6 +318,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(14)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_DynamicLocationMenuItems()
 	{
 		App.WaitForElement("ResetButton");
@@ -332,6 +345,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(15)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_VerifyAllMenusPresent()
 	{
 		App.WaitForElement("ResetButton");
@@ -357,6 +371,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_AddMultipleLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -390,6 +405,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_CancelAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -411,6 +427,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_ResetRestoresDefaultLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -441,6 +458,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(19)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_ToggleMenusOnOff()
 	{
 		App.WaitForElement("ResetButton");
@@ -471,6 +489,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(20)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_VerifyInitialLocationState()
 	{
 		App.WaitForElement("ResetButton");
@@ -488,6 +507,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(21)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_EntryVisibilityToggling()
 	{
 		App.WaitForElement("ResetButton");
@@ -513,6 +533,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(22)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MenuBarItem_AddEmptyLocationValidation()
 	{
 		App.WaitForElement("ResetButton");

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -649,23 +650,9 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				// Store local reference to allow cancellation inside the Post callback
-				var localDisposable = disposable;
+				disposable?.Dispose();
 				disposable = null;
-				view.Post(() =>
-				{
-					if (view.IsAttachedToWindow && localDisposable is not null)
-					{
-						action();
-						localDisposable.Dispose();
-					}
-					else if (localDisposable is not null)
-					{
-						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
-						// Restore disposable so the next ViewAttachedToWindow can retry.
-						disposable = localDisposable;
-					}
-				});
+				action();
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
@@ -834,7 +821,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool HideSoftInput(this AView inputView)
 		{
-			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+			// The input method service is shared by the context and must not be disposed.
+			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService)?.JavaCast<InputMethodManager>();
 			var windowToken = inputView.WindowToken;
 
 			if (windowToken is not null && inputMethodManager is not null)
@@ -847,7 +835,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool ShowSoftInput(this TextView inputView)
 		{
-			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService)?.JavaCast<InputMethodManager>();
 
 			// The zero value for the second parameter comes from 
 			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)

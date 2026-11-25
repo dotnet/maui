@@ -1,0 +1,112 @@
+name: CI Comment Cleanup
+
+on:
+  issue_comment:
+    types: [created, edited]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to clean up (omit to scan all open PRs)'
+        required: false
+        type: number
+
+permissions: {}
+
+jobs:
+  minimize:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      (github.event_name != 'issue_comment' ||
+       (github.event.issue.pull_request &&
+        (contains(github.event.comment.body, '/azp') ||
+         github.event.comment.user.login == 'azure-pipelines[bot]' ||
+         github.event.comment.user.login == 'github-actions[bot]')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Minimize CI commands, acknowledgments, and workflow failure notices
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number || '' }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const runUrlPrefix = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/`;
+            function shouldMinimize(comment) {
+              const body = comment.body.trim();
+              const isCommand = /^\/azp[ \t]+run(?:[ \t]+[^\r\n]+)?$/i.test(body);
+              const isBot = comment.author?.__typename === 'Bot';
+              const isSuccess = isBot && comment.author.login === 'azure-pipelines' &&
+                /^(?:<!-- AzurePipelinesStatusComment -->\s*)?<samp>\s*Azure Pipelines:<br>\s*Successfully started running [1-9][0-9]* pipeline\(s\)\.<br>\s*(?:There may be pipelines that require an authorized user to comment \/azp run to run\.<br>\s*)?<\/samp>$/.test(body);
+              const isActionsFailure = isBot && comment.author.login === 'github-actions' &&
+                body.includes(runUrlPrefix) &&
+                (/^<!-- review-[a-z0-9-]+-failure -->/.test(body) ||
+                 /^Agent job \[[0-9]+\]\([^\r\n)]+\) failed\.(?:\r?\n|$)/.test(body) ||
+                 /^\u274c [^\r\n]*\b(?:failed|failure|timed out|timed_out|cancelled|canceled)\b/i.test(body) ||
+                 /^\u26a0\ufe0f Security scanning failed for \[/.test(body));
+              return isCommand || isSuccess || isActionsFailure;
+            }
+
+            let prNumbers;
+            if (context.eventName === 'issue_comment') {
+              prNumbers = [context.payload.issue.number];
+            } else if (process.env.PR_NUMBER) {
+              const number = Number(process.env.PR_NUMBER);
+              if (!Number.isSafeInteger(number) || number <= 0) {
+                throw new Error('A positive PR number is required.');
+              }
+              prNumbers = [number];
+            } else {
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                owner, repo, state: 'open', sort: 'updated', direction: 'desc', per_page: 100
+              });
+              prNumbers = pulls.map(pr => pr.number);
+            }
+
+            // GITHUB_TOKEN comments do not trigger issue_comment; reconcile them on the schedule.
+            for (const number of prNumbers) {
+              let cursor = null;
+              do {
+                // Read live bodies and minimized state, including on delayed edit events.
+                const { repository } = await github.graphql(
+                  `query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
+                    repository(owner: $owner, name: $repo) {
+                      pullRequest(number: $number) {
+                        comments(first: 100, after: $cursor) {
+                          nodes {
+                            id databaseId body isMinimized
+                            author { login __typename }
+                          }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }
+                  }`,
+                  { owner, repo, number, cursor }
+                );
+                if (!repository.pullRequest) {
+                  throw new Error(`PR #${number} was not found.`);
+                }
+                const { comments } = repository.pullRequest;
+                for (const comment of comments.nodes) {
+                  if (comment.isMinimized || !shouldMinimize(comment)) continue;
+                  const result = await github.graphql(
+                    `mutation($id: ID!) {
+                      minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {
+                        minimizedComment { isMinimized }
+                      }
+                    }`,
+                    { id: comment.id }
+                  );
+                  if (!result.minimizeComment.minimizedComment.isMinimized) {
+                    throw new Error(`Could not minimize comment ${comment.databaseId}.`);
+                  }
+                  core.info(`Minimized CI comment ${comment.databaseId} on PR #${number} as resolved.`);
+                }
+                cursor = comments.pageInfo.hasNextPage ? comments.pageInfo.endCursor : null;
+              } while (cursor);
+            }

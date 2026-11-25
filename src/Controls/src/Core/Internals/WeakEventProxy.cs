@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Devices;
 
 // NOTE: warning disabled for netstandard projects
 #pragma warning disable 0436
@@ -25,7 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetSource([MaybeNullWhen(false)] out TSource source)
 		{
-			if (_source is not null && _source.TryGetTarget(out source))
+			var sourceReference = _source;
+			if (sourceReference is not null && sourceReference.TryGetTarget(out source))
 			{
 				return source is not null;
 			}
@@ -36,7 +38,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetHandler([MaybeNullWhen(false)] out TEventHandler handler)
 		{
-			if (_handler is not null && _handler.TryGetTarget(out handler))
+			var handlerReference = _handler;
+			if (handlerReference is not null && handlerReference.TryGetTarget(out handler))
 			{
 				return handler is not null;
 			}
@@ -255,6 +258,46 @@ namespace Microsoft.Maui.Controls
 					pathGeometry.InvalidatePathGeometryRequested -= OnGeometryChanged;
 			}
 
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
+	/// A "proxy" class for subscribing IDeviceDisplay.MainDisplayInfoChanged via WeakReference.
+	/// Don't call Unsubscribe() from a finalizer: removing the last handler stops the platform display listeners.
+	/// A proxy whose handler was collected unsubscribes on the next display change.
+	/// </summary>
+	class WeakDisplayInfoChangedProxy : WeakEventProxy<IDeviceDisplay, EventHandler<DisplayInfoChangedEventArgs>>
+	{
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(IDeviceDisplay source, EventHandler<DisplayInfoChangedEventArgs> handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			}
+
+			source.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			}
 			base.Unsubscribe();
 		}
 	}

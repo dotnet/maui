@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -28,6 +29,7 @@ public partial class ViewHandler
 
 	partial void DisconnectingHandler(PlatformView platformView)
 	{
+		ControlExtensions.BackgroundImageRequests.Begin(platformView);
 		FocusManagerMapping.Remove(platformView);
 		UpdateIsFocused(false);
 	}
@@ -37,6 +39,32 @@ public partial class ViewHandler
 		// Both Clip and Shadow depend on the Control size.
 		handler.ToPlatform().UpdateClip(view);
 		handler.ToPlatform().UpdateShadow(view);
+	}
+
+	internal void ReconnectContainer()
+	{
+		if (PlatformView is null ||
+			ContainerView is not WrapperView wrapper ||
+			ReferenceEquals(wrapper.Child, PlatformView))
+		{
+			return;
+		}
+
+		wrapper.Child = PlatformView;
+
+		// Reset to a fresh wrapper's state so the mappers (which skip defaults while connecting) stay authoritative.
+		wrapper.ClearValue(UIElement.VisibilityProperty);
+		wrapper.ClearValue(UIElement.OpacityProperty);
+		wrapper.ClearValue(UIElement.RenderTransformProperty);
+		wrapper.ClearValue(UIElement.RenderTransformOriginProperty);
+		wrapper.ClearValue(UIElement.ProjectionProperty);
+		wrapper.Clip = null;
+
+		// Clearing a shadow disposes and recreates it, so only clear one the view no longer has; MapShadow updates a kept one in place.
+		if (wrapper.Shadow is not null && VirtualView?.Shadow is null)
+		{
+			wrapper.Shadow = null;
+		}
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)

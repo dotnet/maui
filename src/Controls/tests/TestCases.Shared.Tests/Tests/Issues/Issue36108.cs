@@ -20,7 +20,7 @@ public class Issue36108 : _IssuesUITest
 	// If _displayedPage is not reset during ShellItem switch, UpdateDisplayedPage
 	// early-returns on the stale same-page reference and the tab bar is misconfigured.
 	[Test, Order(0)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabContentVisibleAfterFlyoutItemRoundTrip()
 	{
 		App.WaitForElement("Tab1Label");
@@ -49,7 +49,7 @@ public class Issue36108 : _IssuesUITest
 	// This guards against ViewPager2 page-change callbacks being dropped when the
 	// ShellItem view is recreated after returning from Section B.
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabSwitchingWorksAfterFlyoutItemRoundTrip()
 	{
 		App.WaitForElement("Tab1Label");

@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
+		WeakValuesChangedProxy _mergedInstanceChangedProxy;
+		EventHandler<ResourcesChangedEventArgs> _mergedInstanceChanged;
 		Uri _source;
 
 		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
@@ -82,6 +84,66 @@ namespace Microsoft.Maui.Controls
 			s_setAndLoadSource(this, value, resourcePath, assembly, lineInfo);
 		}
 
+		[ThreadStatic]
+		static List<ResourceDictionary> s_mergeTargets;
+
+		//Used by XamlC and SourceGen generated code
+		/// <summary>For internal use by the MAUI platform.</summary>
+		/// <typeparam name="T">The type of resource dictionary to create.</typeparam>
+		/// <param name="mergeTarget">The resource dictionary the new instance will be merged into.</param>
+		/// <returns>The new resource dictionary.</returns>
+		/// <remarks>Resources already available from <paramref name="mergeTarget"/> can be resolved by <c>{StaticResource}</c> while the new instance is initialized.</remarks>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static T CreateMergedDictionary<T>(ResourceDictionary mergeTarget)
+			where T : ResourceDictionary, new()
+			=> (T)CreateMergedDictionary(mergeTarget, static () =>
+			{
+				try
+				{
+					return new T();
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
+
+		internal static ResourceDictionary CreateMergedDictionary(ResourceDictionary mergeTarget, Func<ResourceDictionary> factory)
+		{
+			if (mergeTarget is null)
+				return factory();
+
+			var targets = s_mergeTargets ??= new List<ResourceDictionary>();
+			var depth = targets.Count;
+			targets.Add(mergeTarget);
+			try
+			{
+				return factory();
+			}
+			finally
+			{
+				targets.RemoveRange(depth, targets.Count - depth);
+			}
+		}
+
+		internal static bool TryGetValueFromMergeTargets(string key, out object value, out ResourceDictionary source)
+		{
+			var targets = s_mergeTargets;
+			if (targets is not null)
+			{
+				for (int i = targets.Count - 1; i >= 0; i--)
+				{
+					if (targets[i].TryGetValueAndSource(key, out value, out source))
+						return true;
+				}
+			}
+
+			value = null;
+			source = null;
+			return false;
+		}
+
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			return s_instances.GetValue(type, _ =>
@@ -102,7 +164,38 @@ namespace Microsoft.Maui.Controls
 		{
 			_source = source;
 			_mergedInstance = sourceInstance;
+			_mergedInstanceChangedProxy ??= new WeakValuesChangedProxy();
+			_mergedInstanceChanged ??= Item_ValuesChanged;
+			_mergedInstanceChangedProxy.Subscribe(sourceInstance, _mergedInstanceChanged);
 			OnKeysChanged(_mergedInstance.MergedResourcesKeys);
+		}
+
+		sealed class WeakValuesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var previousSource))
+					previousSource.ValuesChanged -= OnValuesChanged;
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.ValuesChanged -= OnValuesChanged;
+
+				base.Unsubscribe();
+			}
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
@@ -128,7 +221,7 @@ namespace Microsoft.Maui.Controls
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+					RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 					break;
 			}
 		}
@@ -393,6 +486,21 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		/// <summary>
+		/// Gets a value stored directly in this dictionary (not in merged dictionaries) without
+		/// invoking lazy factories. Lazy entries are returned only when they are shared and
+		/// already materialized; otherwise <paramref name="value"/> is <see langword="null"/>.
+		/// </summary>
+		/// <returns><see langword="true"/> if the key is stored in this dictionary.</returns>
+		internal bool TryGetLocalMaterializedValue(string key, out object value)
+		{
+			if (!_innerDictionary.TryGetValue(key, out value))
+				return false;
+			if (value is LazyResource lazy)
+				value = lazy.TryGetCachedValue(out var cached) ? cached : null;
+			return true;
+		}
+
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
 			var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
@@ -447,7 +555,7 @@ namespace Microsoft.Maui.Controls
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
 			StyleSheets.Add(styleSheet);
-			ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+			RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 		}
 
 		void OnValueChanged(string key, object value)
@@ -459,17 +567,25 @@ namespace Microsoft.Maui.Controls
 		{
 			if (keys == null)
 				return;
-			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(keys, ResolveKey));
+			RaiseValuesChanged(new ResourcesChangedEventArgs(keys, ResolveKey));
 		}
 
 		object ResolveKey(string key) => TryGetValue(key, out var value) ? value : null;
+
+		void RaiseValuesChanged(ResourcesChangedEventArgs e) => _weakEventManager.HandleEvent(this, e, nameof(ValuesChanged));
 
 		internal void Reload()
 		{
 			OnKeysChanged(MergedResourcesKeys);
 		}
 
-		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		event EventHandler<ResourcesChangedEventArgs> ValuesChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
@@ -540,6 +656,12 @@ namespace Microsoft.Maui.Controls
 			/// Gets whether this is a shared (cached) resource.
 			/// </summary>
 			public bool Shared => _shared;
+
+			internal bool TryGetCachedValue(out object value)
+			{
+				value = _hasValue ? _cachedValue : null;
+				return _hasValue;
+			}
 
 #if DEBUG
 			/// <summary>

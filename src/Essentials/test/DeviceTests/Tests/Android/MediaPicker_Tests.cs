@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -50,12 +51,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			return file.AbsolutePath;
 		}
 
-		static string CanonicalCacheRoot()
-			=> new Java.IO.File(FileSystem.CacheDirectory).CanonicalPath;
-
 		// Resolves symlinks (e.g. /data/user/0 -> /data/data) so cache-root prefix checks are stable.
 		static string Canonical(string path)
-			=> new Java.IO.File(path).CanonicalPath;
+		{
+			using var file = new Java.IO.File(path);
+			return file.CanonicalPath;
+		}
+
+		static string[] FindCacheFiles(string baseName)
+		{
+			var cacheDirectory = Path.Combine(FileSystem.CacheDirectory, FileSystemUtils.EssentialsFolderHash);
+			return Directory.Exists(cacheDirectory)
+				? Directory.GetFiles(cacheDirectory, baseName + ".*", SearchOption.AllDirectories)
+				: Array.Empty<string>();
+		}
 
 		static void CleanUp(params string[] paths)
 		{
@@ -66,15 +75,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			}
 		}
 
-		[Fact]
-		public async Task ProcessPhoto_Compress_DoesNotModifyOrDeleteSource()
+		[Theory]
+		[InlineData(false, 50)]
+		[InlineData(true, 100)]
+		[InlineData(true, 50)]
+		public async Task ProcessPhoto_WritesOneCacheFileWithoutModifyingSource(bool rotateImage, int compressionQuality)
 		{
-			var sourcePath = CreateSourceImage("compress_source.jpg");
+			var baseName = "mp_source_" + Guid.NewGuid().ToString("N");
+			var sourcePath = CreateSourceImage(baseName + ".jpg", orientation: rotateImage ? 6 : null);
 			var originalBytes = File.ReadAllBytes(sourcePath);
 			string resultPath = null;
 			try
 			{
-				var options = new MediaPickerOptions { CompressionQuality = 50 };
+				var options = new MediaPickerOptions { RotateImage = rotateImage, CompressionQuality = compressionQuality };
 
 				resultPath = await MediaPickerImplementation.ProcessPhotoAsync(sourcePath, options);
 
@@ -85,38 +98,41 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				// The processed output must be a NEW file inside the app's own cache directory...
 				Assert.NotEqual(sourcePath, resultPath);
 				Assert.True(File.Exists(resultPath));
-				Assert.StartsWith(CanonicalCacheRoot(), Canonical(resultPath), System.StringComparison.Ordinal);
+				Assert.StartsWith(Canonical(FileSystem.CacheDirectory) + Path.DirectorySeparatorChar, Canonical(resultPath), StringComparison.Ordinal);
 
 				// ...while preserving the original file name (issue #33258).
 				Assert.Equal(Path.GetFileName(sourcePath), Path.GetFileName(resultPath));
+				Assert.Equal(Canonical(resultPath), Canonical(Assert.Single(FindCacheFiles(baseName))));
 			}
 			finally
 			{
+				CleanUp(FindCacheFiles(baseName));
 				CleanUp(sourcePath, resultPath);
 			}
 		}
 
 		[Fact]
-		public async Task ProcessPhoto_Rotate_DoesNotModifyOrDeleteSource()
+		public async Task ProcessPhoto_NoProcessingNeeded_ReturnsOriginalPathWithoutCacheCopy()
 		{
-			var sourcePath = CreateSourceImage("rotate_source.jpg");
+			var baseName = "mp_noop_" + Guid.NewGuid().ToString("N");
+			var sourcePath = CreateSourceImage(baseName + ".jpg");
 			var originalBytes = File.ReadAllBytes(sourcePath);
 			string resultPath = null;
 			try
 			{
-				var options = new MediaPickerOptions { RotateImage = true };
+				var options = new MediaPickerOptions { RotateImage = false, CompressionQuality = 100 };
 
 				resultPath = await MediaPickerImplementation.ProcessPhotoAsync(sourcePath, options);
 
 				Assert.True(File.Exists(sourcePath), "Source file was deleted.");
 				Assert.Equal(originalBytes, File.ReadAllBytes(sourcePath));
-				Assert.NotEqual(sourcePath, resultPath);
-				Assert.True(File.Exists(resultPath));
-				Assert.StartsWith(CanonicalCacheRoot(), Canonical(resultPath), System.StringComparison.Ordinal);
+				Assert.Equal(sourcePath, resultPath);
+				Assert.Empty(FindCacheFiles(baseName));
 			}
 			finally
 			{
-				CleanUp(sourcePath, resultPath);
+				CleanUp(FindCacheFiles(baseName));
+				CleanUp(sourcePath);
 			}
 		}
 
@@ -154,7 +170,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task ProcessPhoto_ReclaimsMauiOwnedSourceAfterPublishing()
 		{
-			var sourcePath = CreateMauiOwnedSourceImage("owned_source.jpg");
+			var baseName = "mp_owned_" + Guid.NewGuid().ToString("N");
+			var sourcePath = CreateMauiOwnedSourceImage(baseName + ".jpg");
 			string resultPath = null;
 			try
 			{
@@ -165,9 +182,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				Assert.NotEqual(sourcePath, resultPath);
 				Assert.False(File.Exists(sourcePath), "MAUI-owned temporary source was not reclaimed.");
 				Assert.True(File.Exists(resultPath), "Processed output was not published.");
+				Assert.Equal(baseName, Path.GetFileNameWithoutExtension(resultPath));
+				Assert.Equal(Canonical(resultPath), Canonical(Assert.Single(FindCacheFiles(baseName))));
 			}
 			finally
 			{
+				CleanUp(FindCacheFiles(baseName));
 				CleanUp(sourcePath, resultPath);
 			}
 		}

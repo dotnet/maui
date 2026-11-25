@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View.Accessibility;
 using global::Android.Text;
 using global::Android.Text.Method;
 using global::Android.Views.InputMethods;
@@ -8,13 +10,129 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using AEditText = Android.Widget.EditText;
+using ALinearLayout = Android.Widget.LinearLayout;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
+using FocusSearchDirection = Android.Views.FocusSearchDirection;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory]
+		[InlineData("sk-SK", false, "3,14")]
+		[InlineData("sk-SK", true, "3,14")]
+		[InlineData("pl-PL", false, "3,14")]
+		[InlineData("en-US", false, "3.14")]
+		public async Task NumericKeyboardLocalizesPeriodInput(string culture, bool isPassword, string expected)
+		{
+			var entry = new EntryStub { Keyboard = Keyboard.Numeric, IsPassword = isPassword };
+
+			await GetValueAsync(entry, handler =>
+			{
+				var previousCulture = CultureInfo.CurrentCulture;
+				try
+				{
+					CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+					handler.PlatformView.SetInputType(entry);
+					using var editorInfo = new EditorInfo();
+					using var inputConnection = handler.PlatformView.OnCreateInputConnection(editorInfo);
+					Assert.NotNull(inputConnection);
+
+					foreach (var text in new[] { "3", ".", "14" })
+					{
+						using var source = new Java.Lang.String(text);
+						Assert.True(inputConnection.CommitText(source, 1));
+					}
+
+					Assert.Equal(expected, handler.PlatformView.Text);
+					Assert.Equal(expected, entry.Text);
+					Assert.Equal(expected.Length, handler.PlatformView.SelectionStart);
+					Assert.True(handler.PlatformView.InputType.HasFlag(InputTypes.NumberFlagDecimal));
+					Assert.True(handler.PlatformView.InputType.HasFlag(InputTypes.NumberFlagSigned));
+					Assert.Equal(isPassword, handler.PlatformView.InputType.HasFlag(InputTypes.NumberVariationPassword));
+					return true;
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = previousCulture;
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Numeric keyboard accepts Polish decimal separator")]
+		public async Task NumericKeyboardAcceptsPolishDecimalSeparator()
+		{
+			var entry = new EntryStub
+			{
+				IsPassword = false,
+				Keyboard = Keyboard.Numeric
+			};
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				var previousCulture = CultureInfo.CurrentCulture;
+
+				try
+				{
+					CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("pl-PL");
+					handler.PlatformView.SetInputType(entry);
+
+					using var editorInfo = new EditorInfo();
+					var inputConnection = handler.PlatformView.OnCreateInputConnection(editorInfo);
+
+					Assert.NotNull(inputConnection);
+					Assert.True(inputConnection.CommitText(new Java.Lang.String("1,5"), 1));
+
+					return new
+					{
+						handler.PlatformView.Text,
+						IsLocalizedDigitsKeyListener = handler.PlatformView.KeyListener is LocalizedDigitsKeyListener,
+						handler.PlatformView.InputType
+					};
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = previousCulture;
+				}
+			});
+
+			Assert.Equal("1,5", values.Text);
+			Assert.True(values.IsLocalizedDigitsKeyListener);
+			Assert.True(values.InputType.HasFlag(InputTypes.ClassNumber));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagDecimal));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagSigned));
+			Assert.False(values.InputType.HasFlag(InputTypes.NumberVariationPassword));
+		}
+
+		[Fact(DisplayName = "Semantic description initializes accessibility content description")]
+		public async Task SemanticDescriptionInitializesAccessibilityContentDescription()
+		{
+			const string description = "Entry description";
+			const string text = "Entry text";
+			var entry = new EntryStub { Text = text };
+			entry.Semantics.Description = description;
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				using var info = AccessibilityNodeInfoCompat.Obtain();
+				handler.PlatformView.UpdateSemanticNodeInfo(entry, info);
+
+				return new
+				{
+					info.ContentDescription,
+					info.Text
+				};
+			});
+
+			Assert.Equal(description, values.ContentDescription);
+			Assert.Equal($"{description}, {text}", values.Text);
+		}
+
 		[Theory(DisplayName = "Validates Keyboard updates correctly using IsPassword")]
 		[InlineData(nameof(Keyboard.Text), false)]
 		[InlineData(nameof(Keyboard.Numeric), true)]
@@ -109,6 +227,106 @@ namespace Microsoft.Maui.DeviceTests
 			entry.Focus();
 
 			await ValidateHasColor(entry, expected);
+		}
+
+		[Fact(DisplayName = "ReadOnly Entry Is Still Focusable")]
+		public async Task ReadOnlyEntryIsFocusable()
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(entry, handler =>
+				GetNativeEntry(handler).Focusable && GetNativeEntry(handler).FocusableInTouchMode);
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating Input Properties Keeps Entry ReadOnly")]
+		[InlineData(nameof(IEntry.Keyboard), false)]
+		[InlineData(nameof(IEntry.IsPassword), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), true)]
+		[InlineData(nameof(IEntry.IsSpellCheckEnabled), false)]
+		public async Task UpdatingInputPropertiesKeepsEntryReadOnly(string propertyName, bool isTextPredictionEnabled)
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var (isReadOnly, keyListener) = await GetValueAsync(entry, handler =>
+			{
+				entry.Keyboard = Keyboard.Numeric;
+				entry.IsPassword = true;
+				entry.IsTextPredictionEnabled = isTextPredictionEnabled;
+				entry.IsSpellCheckEnabled = false;
+				handler.UpdateValue(propertyName);
+
+				return (GetNativeIsReadOnly(handler), GetNativeEntry(handler).KeyListener);
+			});
+
+			Assert.True(isReadOnly);
+			// Setting even a TYPE_NULL InputType installs a key listener, which lets hardware keys type into the text
+			Assert.Null(keyListener);
+		}
+
+		[Fact(DisplayName = "ReadOnly Entry Does Not Show Clear Button When Focused")]
+		public async Task ReadOnlyEntryDoesNotShowClearButtonWhenFocused()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				IsReadOnly = true,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			var handler = await CreateHandlerAsync(entry);
+
+			await InvokeOnMainThreadAsync(() => handler.PlatformView.AttachAndRun(async () =>
+			{
+				handler.PlatformView.RequestFocus();
+				await handler.PlatformView.WaitForFocused();
+
+				Assert.Null(handler.PlatformView.GetCompoundDrawables()[2]);
+			}));
+		}
+
+		[Theory(DisplayName = "Tab Navigation Enters And Leaves A ReadOnly Entry")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabNavigationEntersAndLeavesReadOnlyEntry(bool material3)
+		{
+			var entries = new[]
+			{
+				new EntryStub() { Text = "Before" },
+				new EntryStub() { Text = "Read-only", IsReadOnly = true },
+				new EntryStub() { Text = "After" },
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var layout = new ALinearLayout(MauiContext.Context) { Orientation = global::Android.Widget.Orientation.Vertical };
+				var editTexts = new AEditText[entries.Length];
+
+				for (int i = 0; i < entries.Length; i++)
+				{
+					AView platformView = material3
+						? CreateHandler<EntryHandler2>(entries[i]).PlatformView
+						: CreateHandler<EntryHandler>(entries[i]).PlatformView;
+
+					// Android doesn't focus zero-sized views, and nothing lays these out with MAUI here
+					layout.AddView(platformView, new ALinearLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, 150));
+					editTexts[i] = platformView as AEditText ?? ((AViewGroup)platformView).GetChildrenOfType<AEditText>().First();
+				}
+
+				await layout.AttachAndRun(async () =>
+				{
+					editTexts[0].RequestFocus();
+					await editTexts[0].WaitForFocused();
+
+					// Tab and Shift+Tab move the focus to FocusSearch(Forward) and FocusSearch(Backward)
+					Assert.Equal(editTexts[1], editTexts[0].FocusSearch(FocusSearchDirection.Forward));
+					Assert.True(editTexts[1].RequestFocus());
+					Assert.Equal(editTexts[2], editTexts[1].FocusSearch(FocusSearchDirection.Forward));
+					Assert.Equal(editTexts[0], editTexts[1].FocusSearch(FocusSearchDirection.Backward));
+				});
+			});
 		}
 
 		[Fact(DisplayName = "Padding is the same after background changes")]
@@ -262,12 +480,8 @@ namespace Microsoft.Maui.DeviceTests
 			return currentPlaceholderColor.ToColor();
 		}
 
-		bool GetNativeIsReadOnly(EntryHandler entryHandler)
-		{
-			var editText = GetNativeEntry(entryHandler);
-
-			return !editText.Focusable && !editText.FocusableInTouchMode;
-		}
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).OnCheckIsTextEditor();
 
 		bool GetNativeIsNumericKeyboard(EntryHandler entryHandler)
 		{

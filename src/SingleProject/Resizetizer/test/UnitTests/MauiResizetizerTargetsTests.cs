@@ -89,8 +89,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var targetFile = GetTargetFile();
 
 			var doc = XDocument.Load(targetFile);
-			var processSplashScreens = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens"));
-			var generateAndroid = Assert.Single(processSplashScreens.Elements().Where(e => e.Name.LocalName == "GenerateSplashAndroidResources"));
+			var processSplashScreens = Assert.Single(doc.Root.Elements(), e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens");
+			var generateAndroid = Assert.Single(processSplashScreens.Elements(), e => e.Name.LocalName == "GenerateSplashAndroidResources");
 
 			Assert.Equal("@(_MauiSplashScreenWithHashes)", generateAndroid.Attribute("MauiSplashScreen")?.Value);
 		}
@@ -128,14 +128,14 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		static string GetSplashMetadataElements(string targetFile, bool includeWarnings = false)
 		{
 			var doc = XDocument.Load(targetFile);
-			var processSplashScreens = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens"));
+			var processSplashScreens = Assert.Single(doc.Root.Elements(), e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens");
 			var propertyGroups = processSplashScreens
 				.Elements()
 				.Where(e => e.Name.LocalName == "PropertyGroup")
 				.ToArray();
 
-			var firstSplashMetadata = Assert.Single(propertyGroups.Where(e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasSplashScreens")));
-			var themedSplashMetadata = Assert.Single(propertyGroups.Where(e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasThemedSplashScreen")));
+			var firstSplashMetadata = Assert.Single(propertyGroups, e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasSplashScreens"));
+			var themedSplashMetadata = Assert.Single(propertyGroups, e => e.Elements().Any(child => child.Name.LocalName == "_MauiHasThemedSplashScreen"));
 
 			var elements = includeWarnings
 				? new[] { firstSplashMetadata, themedSplashMetadata }.Concat(processSplashScreens.Elements().Where(e => e.Name.LocalName == "Warning"))
@@ -147,16 +147,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		static string GetDarkFileHashElements(string targetFile)
 		{
 			var doc = XDocument.Load(targetFile);
-			var collectItems = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ResizetizeCollectItems"));
-			var darkFileUpdate = Assert.Single(collectItems.Elements().Where(e =>
+			var collectItems = Assert.Single(doc.Root.Elements(), e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ResizetizeCollectItems");
+			var darkFileUpdate = Assert.Single(collectItems.Elements(), e =>
 				e.Name.LocalName == "ItemGroup" &&
-				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenWithHashes" && child.Attribute("DarkFile") is not null)));
-			var firstDarkFileMetadata = Assert.Single(collectItems.Elements().Where(e =>
+				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenWithHashes" && child.Attribute("DarkFile") is not null));
+			var firstDarkFileMetadata = Assert.Single(collectItems.Elements(), e =>
 				e.Name.LocalName == "PropertyGroup" &&
-				e.Elements().Any(child => child.Name.LocalName == "_MauiFirstSplashScreenDarkFileForHash")));
-			var darkFileHashItem = Assert.Single(collectItems.Elements().Where(e =>
+				e.Elements().Any(child => child.Name.LocalName == "_MauiFirstSplashScreenDarkFileForHash"));
+			var darkFileHashItem = Assert.Single(collectItems.Elements(), e =>
 				e.Name.LocalName == "ItemGroup" &&
-				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenDarkFile")));
+				e.Elements().Any(child => child.Name.LocalName == "_MauiSplashScreenDarkFile"));
 
 			return string.Join(Environment.NewLine, new[] { darkFileUpdate, firstDarkFileMetadata, darkFileHashItem }.Select(e => StripNamespace(e).ToString(SaveOptions.DisableFormatting)));
 		}

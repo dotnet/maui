@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ApplyQueryAttributes should Trigger for all navigations";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndPopButton()
 		{
 			App.WaitForElement("HomePageTestLabel");
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if TEST_FAILS_ON_CATALYST
 		//App.TapBackArrow doesnot actually tab the back arrow button instead it taps the first tab element on the screen as both have the same access identifier.
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
 		{
 			App.WaitForElement("HomePageTestLabel");
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ApplyQueryAttributeShouldTriggerforTab()
 		{
 			App.WaitForElement("Favorite");

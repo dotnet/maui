@@ -64,12 +64,12 @@ namespace Microsoft.Maui.DeviceTests
 
 					await Task.Yield();
 
-					// When the scroll view is set to SafeAreaEdges.Container, the uiScrollView 
-					// ContentAdjustmentInsetBehavior is set to Always
-					// This means we should always inset the content by the safe area insets
-					// This way the content doesn't go under the top and bottom bars and notch
-					var contentRect = new CoreGraphics.CGRect(0, 0, uiScrollView.ContentSize.Width, uiScrollView.ContentSize.Height);
-					var contentSize = uiScrollView.SafeAreaInsets.InsetRect(contentRect).Size;
+					// When the ScrollView is set to SafeAreaEdges.Container, the
+					// ContentInsetAdjustmentBehavior is set to Always.
+					// UIKit applies the safe-area insets through AdjustedContentInset,
+					// ensuring the content remains clear of the top and bottom system bars
+					// and the device notch/home indicator.
+					var contentSize = uiScrollView.ContentSize;
 					var viewportSize = uiScrollView.AdjustedContentInset.InsetRect(uiScrollView.Bounds).Size;
 
 					Assert.Equal(viewportSize.Height, contentSize.Height);

@@ -1,6 +1,34 @@
 #!/usr/bin/env pwsh
 #Requires -Modules Pester
 
+Describe 'CI-fixer safe-output helper availability' {
+    It 'keeps <Workflow> environment guidance consistent with the existing helper allowlist' -ForEach @(
+        @{ Workflow = 'ci-status-fix.md' }
+        @{ Workflow = 'ci-status-fix-net11.md' }
+    ) {
+        $workflowPath = Join-Path (Split-Path $PSScriptRoot) "workflows/$Workflow"
+        $source = Get-Content -Raw -LiteralPath $workflowPath
+        $bashAllowlist = [regex]::Match($source, '(?m)^  bash: \[(?<commands>.*)\]\r?$')
+        $environment = [regex]::Match(
+            $source,
+            '(?ms)^## Environment constraints\r?\n(?<guidance>.*?)(?=^## )')
+
+        $bashAllowlist.Success | Should -BeTrue
+        $bashAllowlist.Groups['commands'].Value | Should -Match '"pwsh"'
+        $bashAllowlist.Groups['commands'].Value | Should -Not -Match '"(?:gh|python)"'
+        $environment.Success | Should -BeTrue
+        $guidance = $environment.Groups['guidance'].Value
+        $guidance | Should -Not -Match 'no\s+`pwsh`'
+        $guidance | Should -Match '`pwsh` is available'
+        $guidance | Should -Match 'Register-CiFixSafeOutputExpectation\.ps1'
+        $guidance | Should -Match 'Test-CiFixTransport\.ps1'
+        $guidance | Should -Match 'Hard Rule 11'
+        $guidance | Should -Match 'Step 5\.6'
+        $guidance | Should -Match 'no `gh`, no `python`'
+        $guidance | Should -Match 'Use `curl` \+ `jq` for all API calls'
+    }
+}
+
 Describe 'Register-CiFixSafeOutputExpectation' {
     BeforeEach {
         $script:outputDirectory = Join-Path $TestDrive "expectations-$([Guid]::NewGuid().ToString('N'))"

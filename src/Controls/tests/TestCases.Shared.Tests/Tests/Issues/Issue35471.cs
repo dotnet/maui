@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ShellBackButtonHistoryUpdatesAfterTitleChange()
 		{
 			// iOS 26+ no longer exposes the back button title text via accessibility,

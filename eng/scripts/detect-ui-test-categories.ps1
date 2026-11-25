@@ -2,6 +2,7 @@
 param(
     [string]$TargetBranch,
     [string]$PrNumber,
+    [string]$Platform,
     [string]$Categories,
     [string]$AiCategories,
     [string]$TestRoot = "src/Controls/tests/TestCases.Shared.Tests"
@@ -39,6 +40,57 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 function Write-CategoryListOutput {
     param([string]$Value)
     Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$Value"
+}
+
+# `-AiCategories` is reviewer-derived text and the category constants it is validated
+# against live in a PR-controlled file, so any category string is untrusted. Azure
+# Pipelines honors `##vso[...]` / `##[...]` anywhere on a log line, so neutralize the
+# marker (and fold newlines) before echoing a category to the console.
+function ConvertTo-SafeConsoleCategoryText {
+    param([AllowNull()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) {
+        return ''
+    }
+
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
+# Category names are plain identifiers; anything else is either a hallucination or an
+# injection attempt, and must never reach the matrix or a `task.setvariable` value.
+function Test-CategoryNameIsWellFormed {
+    param([AllowNull()][string]$Category)
+
+    return ($Category -match '^[A-Za-z0-9 _\.\-]+$')
+}
+
+function Test-UITestCategorySupportedOnPlatform {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Category,
+
+        [string]$Platform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Platform)) {
+        return $true
+    }
+
+    $normalizedPlatform = $Platform.Trim().ToLowerInvariant()
+    if ($normalizedPlatform -eq 'catalyst') {
+        $normalizedPlatform = 'maccatalyst'
+    }
+
+    # The only Essentials UI test is Issue32989.cs, compiled under #if WINDOWS.
+    # Selecting this category on Android/iOS/MacCatalyst creates a valid TRX with
+    # zero tests, which used to make the Deep stage look green without exercising
+    # anything (build 14907169). Remove it on unsupported platforms so Essentials
+    # product changes fall through to the bounded cross-platform smoke set.
+    if ($Category.Equals('Essentials', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $normalizedPlatform -eq 'windows'
+    }
+
+    return $true
 }
 
 # True when the current HEAD is already the prepared CI review worktree, i.e. the
@@ -187,8 +239,21 @@ if ($isManualPrTest) {
         # contains the PR changes and the fork-head checkout below is redundant and
         # would abort on the trusted-scripts overlay. In that case use the current
         # HEAD for the diff and skip the checkout. (See Test-PreparedReviewWorktreeSubject.)
+        #
+        # Inflight-targeted PRs (base 'inflight/current' / 'inflight/candidate') are NOT
+        # squash-merged — Review-PR.ps1 resets the review branch to the PR head as-is, so
+        # the subject is the PR's own commit, not "squashed for review". Detect that case
+        # by SHA: when the local HEAD already equals the PR head sha, the worktree is the
+        # PR and the fork-head checkout is likewise redundant.
         $headSubject = (& git log -1 --format=%s HEAD 2>$null)
         $alreadyOnPrWorktree = Test-PreparedReviewWorktreeSubject -HeadSubject $headSubject -PrNumber $PrNumber
+        if (-not $alreadyOnPrWorktree) {
+            $localHeadSha = (& git rev-parse HEAD 2>$null)
+            if ($localHeadSha -and $headSha -and ($localHeadSha.Trim() -eq $headSha.Trim())) {
+                Write-Host "Local HEAD ($localHeadSha) already equals the PR head sha — treating as prepared review worktree (inflight-targeted PR)." -ForegroundColor Cyan
+                $alreadyOnPrWorktree = $true
+            }
+        }
 
         try {
             # Use Invoke-Git so a silent non-zero exit (network drop, bad URL, missing
@@ -356,9 +421,30 @@ $pathToCategoryMap = @(
     @{ Pattern = 'src/Controls/src/Core/VisualStateManager';  Category = 'VisualStateManager' }
     @{ Pattern = 'src/Controls/src/Core/Shadow';              Category = 'Shadow' }
     @{ Pattern = 'src/Controls/src/Core/Brush';               Category = 'Brush' }
+    # Brush-family types live as FLAT files directly under Core/ (not in the
+    # Core/Brush/ folder), so the `Core/Brush*` prefix above does NOT match
+    # them (e.g. `Core/GradientBrush.cs` starts with `Core/G`, not `Core/Brush`).
+    # Map them explicitly so brush PRs (e.g. #36521 GradientBrush leak-fix) get
+    # the specific 'Brush' category instead of falling through to the run-all
+    # path (which the deep stage skips → "No UI test results" warning).
+    @{ Pattern = 'src/Controls/src/Core/GradientBrush';       Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/LinearGradientBrush'; Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/RadialGradientBrush'; Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/SolidColorBrush';     Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/ImageBrush';          Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/ImmutableBrush';      Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/GradientStop';        Category = 'Brush' }
     @{ Pattern = 'src/Core/src/Handlers/HybridWebView';       Category = 'WebView' }
     @{ Pattern = 'src/Core/src/Platform/';                    Category = 'ViewBaseTests' }
     @{ Pattern = 'src/Core/src/Handlers/';                    Category = 'ViewBaseTests' }
+    # The animation infrastructure (PlatformTicker, Animatable, AnimationExtensions,
+    # etc.) drives EVERY animation, so a change here has broad blast radius but no
+    # Controls-level file to key off — without this a PR that only touches
+    # src/Core/src/Animations (e.g. #35846 Reduce-Motion accessibility on the ticker)
+    # detects NO category and the deep stage is SKIPPED, leaving the reviewer with
+    # zero UI-test coverage. Map it to the Animation category (5 tagged tests) so such
+    # PRs at least verify animations still run end-to-end.
+    @{ Pattern = 'src/Core/src/Animations/';                  Category = 'Animation' }
     @{ Pattern = 'src/Essentials/';                           Category = 'Essentials' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/FlyoutPage'; Category = 'FlyoutPage' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/TabbedPage'; Category = 'TabbedPage' }
@@ -491,7 +577,7 @@ if ($tier2Categories.Count -gt 0) {
 # ============================================================================
 
 if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
-    $aiCatList = @($AiCategories -split '[,\n]' | ForEach-Object { ($_ -replace '\s*[-—].*$', '').Trim() } | Where-Object { $_ -and $_ -ne 'NONE' })
+    $aiCatList = @($AiCategories -split '[,\r\n]' | ForEach-Object { ($_ -replace '\s*[-—].*$', '').Trim() } | Where-Object { $_ -and $_ -ne 'NONE' })
     if ($aiCatList.Count -gt 0) {
         # Build a set of valid categories from UITestCategories.cs so we can drop AI hallucinations.
         # An invalid category would otherwise create a matrix job that runs zero tests.
@@ -505,13 +591,32 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
             }
         }
 
-        Write-Host "Tier 3 (AI reasoning): $([string]::Join(', ', $aiCatList))" -ForegroundColor Green
+        Write-Host "Tier 3 (AI reasoning): $(ConvertTo-SafeConsoleCategoryText ([string]::Join(', ', $aiCatList)))" -ForegroundColor Green
         foreach ($c in $aiCatList) {
+            $safeCategory = ConvertTo-SafeConsoleCategoryText $c
+            if (-not (Test-CategoryNameIsWellFormed $c)) {
+                Write-Host "##[warning]AI suggested category '$safeCategory' is not a well-formed category name. Skipping."
+                continue
+            }
             if ($validCategories.Count -gt 0 -and -not $validCategories.Contains($c)) {
-                Write-Host "##[warning]AI suggested category '$c' is not defined in UITestCategories.cs. Skipping to avoid creating an empty matrix job."
+                Write-Host "##[warning]AI suggested category '$safeCategory' is not defined in UITestCategories.cs. Skipping to avoid creating an empty matrix job."
                 continue
             }
             $addedCategories.Add($c) | Out-Null
+        }
+    }
+}
+
+# Category names can be valid globally but compile to zero tests on the selected
+# platform. Filter the small set of known platform-only categories before the
+# final decision; if none remain, the existing product-code fallback below emits
+# the bounded Button/Label/Layout smoke set instead of a vacuous green run.
+if (-not [string]::IsNullOrWhiteSpace($Platform)) {
+    $safePlatform = ConvertTo-SafeConsoleCategoryText $Platform
+    foreach ($category in @($addedCategories)) {
+        if (-not (Test-UITestCategorySupportedOnPlatform -Category $category -Platform $Platform)) {
+            $addedCategories.Remove($category) | Out-Null
+            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$safePlatform'; removing it from the Deep UI selection." -ForegroundColor Yellow
         }
     }
 }
@@ -520,14 +625,17 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # FINAL DECISION
 # ============================================================================
 
-# Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
-# eng/Versions.props, or darc-managed versions in eng/Version.Details.xml) don't
-# touch any specific control, but they CAN cause broad rendering/runtime
-# regressions across the whole app. Rather than skipping UI tests entirely
-# ("No UI-relevant changes"), run a small, fixed, representative smoke set so the
-# bump is actually validated — without falling back to ALL (which the deep stage
-# skips as it can't finish in the time budget). Tunable: keep this set small and
-# fast (core control + text + layout rendering).
+# A small, fixed, representative UI smoke set (core control + text + layout
+# rendering) used as the "always produce results" fallback in two cases below:
+#   1. Product code under src/Controls/Core/Essentials changed but mapped to no
+#      specific category (broad binding/infra changes).
+#   2. Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
+#      eng/Versions.props, or darc-managed versions in eng/Version.Details.xml)
+#      that don't touch any specific control but CAN cause broad regressions.
+# In both cases running this bounded set is strictly better than falling back to
+# ALL — which the deep stage SKIPS (it can't finish the unfiltered suite in the
+# time budget), surfacing the "No UI test results were produced" warning. Keep
+# this set small and fast.
 $dependencyInfraFiles = @('eng/Versions.props', 'eng/Version.Details.xml')
 $dependencyInfraChanged = @($allChangedFiles | Where-Object {
     $f = $_.Replace('\', '/')
@@ -537,9 +645,17 @@ $smokeCategories = @('Button', 'Label', 'Layout')
 
 if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
-        # Changed files under src/Controls/ but couldn't map to specific categories — run all
-        Write-Host "Changed files touch Controls/Core/Essentials but no specific categories identified. Running all." -ForegroundColor Yellow
-        Write-CategoryListOutput ''
+        # Changed files under src/Controls/Core/Essentials but couldn't map to a
+        # specific category (e.g. broad binding / BindableObject / Element / brush
+        # infrastructure changes). Rather than emitting '' — which Review-PR.ps1
+        # maps to 'ALL' and the deep stage SKIPS (the unfiltered full suite can't
+        # finish within the task budget), surfacing the "No UI test results were
+        # produced" warning users complain about — run the same small, fixed,
+        # representative smoke set used for dependency/SDK bumps below. This
+        # GUARANTEES the deep stage always produces UI results for any product-code
+        # change, at a bounded cost (the per-category loop is time-budgeted).
+        Write-Host "Changed files touch Controls/Core/Essentials but no specific category mapped — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories))) instead of ALL (which the deep stage skips) so UI results are always produced." -ForegroundColor Yellow
+        Write-CategoryListOutput ([string]::Join(',', $smokeCategories))
         return
     } elseif ($dependencyInfraChanged) {
         # Dependency/SDK version bump with no specific control mapped — run a
@@ -555,7 +671,7 @@ if ($addedCategories.Count -eq 0) {
     }
 }
 
-Write-Host "Detected categories from PR changes: $([string]::Join(', ', $addedCategories))" -ForegroundColor Green
+Write-Host "Detected categories from PR changes: $(ConvertTo-SafeConsoleCategoryText ([string]::Join(', ', $addedCategories)))" -ForegroundColor Green
 
 # Build matrix JSON expected by Azure Pipelines strategy matrix (CATEGORYGROUP values)
 $matrix = [ordered]@{}

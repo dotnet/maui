@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ShellContent IsVisible=True Does not display Title";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void Issue19783Shell()
 		{
 			App.WaitForElement("click to open pane");

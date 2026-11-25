@@ -5,9 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiLabel;
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
-#elif TIZEN
-using PlatformView = Tizen.UIExtensions.NUI.Label;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS)
 using PlatformView = System.Object;
 #endif
 
@@ -17,16 +15,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if IOS || TIZEN
+#if IOS
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #elif WINDOWS
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
-#endif
-#if TIZEN
-			[nameof(ILabel.Shadow)] = MapShadow,
 #endif
 #if IOS || MACCATALYST
 			// Attributed-text formatting must run after Text creates the native attributed string.

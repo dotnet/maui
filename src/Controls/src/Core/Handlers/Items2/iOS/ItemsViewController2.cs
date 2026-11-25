@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public Items.IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
@@ -33,8 +34,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		bool _initialized;
 		bool _isEmpty = true;
+		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
+		bool _isReconfiguringItems;
+		bool _isRotating;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.CarouselViewController2ControllerDoesNotLeakAfterNavigationPop")]
+		NSObject _orientationObserver;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
@@ -75,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells are arranged according to the new layout
 				ReloadData();
 			}
 		}
@@ -89,6 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (disposing)
 			{
+				DisposeObserver();
 				ItemsSource?.Dispose();
 
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
@@ -110,7 +117,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
+			// UIKit requires reconfiguration to dequeue the existing cell's reuse identifier,
+			// even when a template selector returns a new template instance.
+			var reuseId = _isReconfiguringItems
+				? collectionView.CellForItem(indexPath)?.ReuseIdentifier
+				: null;
+			var cell = collectionView.DequeueReusableCell(reuseId ?? DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
 			// We need to get the index path that is adjusted for the item source
 			// Some ItemsView like CarouselView have a loop feature that will make the index path different from the item source
@@ -142,15 +154,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void CheckForEmptySource()
 		{
 			var wasEmpty = _isEmpty;
+			var hadNoItems = _hasNoItems;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_hasNoItems = ItemsSource.ItemCount == 0;
+			_isEmpty = IsEmptySource();
 
 			if (wasEmpty != _isEmpty)
 			{
 				UpdateEmptyViewVisibility(_isEmpty);
 			}
 
-			if (wasEmpty && !_isEmpty)
+			if (hadNoItems && !_hasNoItems)
 			{
 				// If we're going from empty to having stuff, it's possible that we've never actually measured
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
@@ -187,6 +201,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			RegisterViewTypes();
 
 			EnsureLayoutInitialized();
+
+			// Rotation doesn't invalidate a UICollectionViewCompositionalLayout by default (its
+			// ShouldInvalidateLayoutForBoundsChange override returns false), so cells that were
+			// already measured before the rotation can end up with stale/empty content 
+			var weakController = new WeakReference<ItemsViewController2<TItemsView>>(this);
+			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, _ => DeviceOrientationChanged(weakController));
+		}
+
+		static void DeviceOrientationChanged(WeakReference<ItemsViewController2<TItemsView>> weakController)
+		{
+			var orientation = UIDevice.CurrentDevice.Orientation;
+			if (orientation is not (UIDeviceOrientation.Portrait
+				or UIDeviceOrientation.PortraitUpsideDown
+				or UIDeviceOrientation.LandscapeLeft
+				or UIDeviceOrientation.LandscapeRight))
+			{
+				return;
+			}
+
+			if (weakController.TryGetTarget(out var controller))
+			{
+				controller._isRotating = true;
+			}
 		}
 
 		public override void LoadView()
@@ -205,9 +243,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				collectionView.NeedsCellLayout = false;
 			}
 
+			if (_isRotating)
+			{
+				_isRotating = false;
+
+				// Force a genuine layout invalidation so cells are re-measured/re-rendered with
+				// their new bounds after the rotation completes 
+				CollectionView?.CollectionViewLayout?.InvalidateLayout();
+			}
+
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
+		}
+
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+
+			InvalidateMeasureIfContentSizeChanged(afterLayout: true);
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
@@ -242,9 +296,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					// the scroll position adjustment that would otherwise occur during the layout pass.
 					UIView.PerformWithoutAnimation(() =>
 					{
-						// Use ReconfigureItems (iOS 15+) which is designed for size changes
-						// without full cell recreation - more efficient than ReloadItems
-						collectionView.ReconfigureItems(indexPathsArray);
+						var wasReconfiguringItems = _isReconfiguringItems;
+						_isReconfiguringItems = true;
+						try
+						{
+							// Reconfigure size changes without recreating the existing cells.
+							collectionView.ReconfigureItems(indexPathsArray);
+						}
+						finally
+						{
+							_isReconfiguringItems = wasReconfiguringItems;
+						}
 					});
 				}
 
@@ -259,6 +321,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
+    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
@@ -289,6 +352,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 		}
 
+		// remove the orientation observer when the controller is disposed to avoid a memory leak
+		internal void DisposeObserver()
+		{
+			if (_orientationObserver is null)
+			{
+				return;
+			}
+
+			NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+			_orientationObserver = null;
+			UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+		}
+
 		void EnsureLayoutInitialized()
 		{
 			if (_initialized)
@@ -301,7 +377,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
 
+			var contentOffset = CollectionView.ContentOffset;
+
 			CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
+
+			// UIKit already preserves scrolled content when replacing the layout.
+			// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
+			if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
+			{
+				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
+				CollectionView.ContentOffset = contentOffset;
+			}
 
 			UpdateEmptyView();
 		}
@@ -323,6 +409,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
+
+			// UIKit can defer data-source callbacks while the collection has zero bounds.
+			// Refresh emptiness before measuring so a collapsed collection can grow again.
+			CheckForEmptySource();
 
 			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
 			// ResetScrollTracking must run before the assignment so the UIKit-triggered
@@ -370,6 +460,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewDisplayed)
 			{
+				UpdateEmptyViewFlowDirection();
 				AlignEmptyView();
 			}
 
@@ -447,10 +538,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
-		void InvalidateMeasureIfContentSizeChanged()
+		void InvalidateMeasureIfContentSizeChanged(bool afterLayout = false)
 		{
 			if (CollectionView?.CollectionViewLayout?.CollectionViewContentSize is not { } contentSize)
 			{
+				return;
+			}
+
+			// Native bounds and self-sized content can differ by floating-point rounding.
+			const double sizeTolerance = 0.001;
+			if (afterLayout && CollectionView.Bounds is { } currentBounds &&
+				(IsHorizontal ? contentSize.Width > currentBounds.Width + sizeTolerance : contentSize.Height > currentBounds.Height + sizeTolerance))
+			{
+				// Leave overflowing estimates for the pre-layout check. Caching them here
+				// can prevent an unconstrained collection inside a ScrollView from growing.
+				// UIKit need not schedule another pass when only its content size changed.
+				if (_initialized && contentSize != _previousContentSize)
+				{
+					CollectionView.SetNeedsLayout();
+				}
+
 				return;
 			}
 
@@ -467,8 +574,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var cvWidth = bounds.Width;
-				var cvHeight = bounds.Height;
+				var cvWidth = bounds.Width + sizeTolerance;
+				var cvHeight = bounds.Height + sizeTolerance;
 				bool invalidate = false;
 
 				// If both the previous content size and the current content size are larger
@@ -503,6 +610,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
+
+		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
+		// Exposed so the handler can avoid the expansive-size fallback without
+		// reaching into _emptyViewDisplayed or ItemsSource directly.
+		internal bool IsEmpty
+		{
+			get
+			{
+				// On macOS 27, UIKit can defer data-source callbacks until the CollectionView
+				// has usable bounds. Therefore, _isEmpty may still have its initial value
+				// during the first measurement.
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(27, 0))
+				{
+					return (ItemsSource?.ItemCount ?? 0) == 0 && !_emptyViewDisplayed;
+				}
+
+				return _isEmpty && !_emptyViewDisplayed;
+			}
 		}
 
 		internal UICollectionViewScrollDirection GetScrollDirection()
@@ -546,7 +674,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			UpdateEmptyViewVisibility(IsEmptySource());
+		}
+
+		bool IsEmptySource()
+		{
+			if (ItemsSource is null)
+			{
+				return true;
+			}
+
+			return ItemsView is GroupableItemsView { IsGrouped: true }
+				? ItemsSource.GroupCount == 0
+				: ItemsSource.ItemCount == 0;
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
@@ -573,10 +713,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
+			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
+			var transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? CGAffineTransform.MakeScale(-1, 1)
+				: CGAffineTransform.MakeIdentity();
+
+			if (!_emptyUIView.Transform.Equals(transform))
+			{
+				_emptyUIView.Transform = transform;
+			}
+		}
+
+		void UpdateEmptyViewFlowDirection()
+		{
 			if (_emptyViewFormsElement is not null)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
@@ -605,34 +757,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-
-			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
-			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
-			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
-			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
-			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
-			// Adding to the superview avoids this flip zone entirely.
-			var targetView = CollectionView.Superview;
-			if (targetView is not null)
-			{
-				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
-			}
-			else
-			{
-				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
-				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
-				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
-				CollectionView.AddSubview(_emptyUIView);
-			}
+			CollectionView.AddSubview(_emptyUIView);
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
+			UpdateEmptyViewFlowDirection();
 			LayoutEmptyView();
 
-			AlignEmptyView();
 			_emptyViewDisplayed = true;
 		}
 
@@ -681,7 +815,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			_emptyUIView.Frame = frame;
+			if (!_emptyUIView.Frame.Equals(frame))
+			{
+				// UIKit's Frame is undefined under a non-identity transform.
+				_emptyUIView.Transform = CGAffineTransform.MakeIdentity();
+				_emptyUIView.Frame = frame;
+			}
+
+			AlignEmptyView();
 
 			return frame;
 		}

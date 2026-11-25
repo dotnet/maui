@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var markupString = markupnode.MarkupString;
 			if (ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) is ElementNode node)
 			{
+				// x:DataType only accepts {x:Type} or {x:Null}; like the runtime inflator, leave any other markup unexpanded so it is never instantiated
+				if (propertyName == XmlName.xDataType
+					&& !(node.XmlType.NamespaceUri == XamlParser.X2009Uri && node.XmlType.Name is nameof(TypeExtension) or nameof(NullExtension)))
+					return;
+
 				((ElementNode)parentNode).Properties[propertyName] = node;
 				node.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), parentNode);
 			}

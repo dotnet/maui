@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -18,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					[nameof(ShellItem.Title)] = MapTitle,
 					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+					[nameof(Element.AutomationId)] = MapAutomationId,
 					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
 				};
 
@@ -29,6 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		IShellAppearanceElement? _shellAppearanceElement;
+		readonly HashSet<ShellSection> _trackedShellSections = new();
+		ItemsRepeater? _overflowMenuItemsHost;
 		readonly HashSet<ShellSection> _badgeTrackedSections = new();
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
@@ -39,6 +44,15 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override FrameworkElement CreatePlatformElement()
 		{
 			return new MauiNavigationView();
+		}
+
+		internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+		{
+			if (handler.PlatformView is NavigationView navigationView)
+				navigationView.SetAutomationPropertiesAutomationId(
+					shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs
+						? shellItem.AutomationId
+						: null);
 		}
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
@@ -55,6 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (mauiNavView is not null)
 			{
+				mauiNavView.SetAutomationProperties(VirtualView, MauiContext);
 				mauiNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 				mauiNavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 				mauiNavView.IsSettingsVisible = false;
@@ -75,7 +90,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(platformView);
 
-			mauiNavView?.SelectionChanged += OnNavigationTabChanged;
+			if (mauiNavView is not null)
+			{
+				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+				mauiNavView.OnApplyTemplateFinished += OnNavigationViewApplyTemplateFinished;
+				TrackOverflowMenuItems(mauiNavView.TopNavMenuItemsOverflowHost);
+			}
 
 			if (VirtualView.Parent is Shell shell)
 			{
@@ -90,6 +110,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mnv)
 			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				mnv.OnApplyTemplateFinished -= OnNavigationViewApplyTemplateFinished;
 				if (mnv.AutoSuggestBox is { } autoSuggestBox)
 				{
 					autoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
@@ -102,6 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
+			TrackOverflowMenuItems(null);
 
 			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
@@ -110,6 +132,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+				_currentSearchHandler.SetIsFocused(false);
+				_currentSearchHandler = null;
 			}
 
 			UntrackAllBadgeSections();
@@ -127,13 +151,14 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					shell.Navigated -= OnShellNavigated;
 				}
-
-				foreach (var item in shellItemController.GetItems())
-				{
-					item.PropertyChanged -= OnShellItemPropertyChanged;
-				}
-
 			}
+
+			foreach (var item in _trackedShellSections)
+			{
+				item.PropertyChanged -= OnShellItemPropertyChanged;
+			}
+
+			_trackedShellSections.Clear();
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -175,7 +200,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
-			if (args.SelectedItem == null)
+			// A reentrant navigation can change the selection before WinUI delivers an earlier event.
+			if (args.SelectedItem == null || !ReferenceEquals(args.SelectedItem, sender.SelectedItem))
 				return;
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;
@@ -230,14 +256,88 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void OnNavigationViewApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			if (sender is MauiNavigationView mauiNavView)
+				TrackOverflowMenuItems(mauiNavView.TopNavMenuItemsOverflowHost);
+		}
+
+		void TrackOverflowMenuItems(ItemsRepeater? overflowMenuItemsHost)
+		{
+			if (_overflowMenuItemsHost == overflowMenuItemsHost)
+				return;
+
+			if (_overflowMenuItemsHost is not null)
+			{
+				_overflowMenuItemsHost.ElementPrepared -= OnOverflowMenuItemPrepared;
+				_overflowMenuItemsHost.ElementClearing -= OnOverflowMenuItemClearing;
+			}
+
+			_overflowMenuItemsHost = overflowMenuItemsHost;
+
+			if (_overflowMenuItemsHost is not null)
+			{
+				_overflowMenuItemsHost.ElementPrepared += OnOverflowMenuItemPrepared;
+				_overflowMenuItemsHost.ElementClearing += OnOverflowMenuItemClearing;
+			}
+		}
+
+		static void OnOverflowMenuItemPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+		{
+			if (args.Element is NavigationViewItem item)
+				UpdateOverflowMenuItemSelectsOnInvoked(item);
+		}
+
+		static void OnOverflowMenuItemClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+		{
+			// Containers are reused between the overflow menu and the tab bar
+			if (args.Element is NavigationViewItem item)
+				item.ClearValue(NavigationViewItem.SelectsOnInvokedProperty);
+		}
+
+		// MapMenuItems can add or remove the sub tabs of a tab that already sits in the overflow menu
+		void UpdateOverflowMenuItems()
+		{
+			if (_overflowMenuItemsHost?.ItemsSourceView is not { } overflowMenuItems)
+				return;
+
+			for (int i = 0; i < overflowMenuItems.Count; i++)
+			{
+				if (_overflowMenuItemsHost.TryGetElement(i) is NavigationViewItem item)
+					UpdateOverflowMenuItemSelectsOnInvoked(item);
+			}
+		}
+
+		// WinUI can't select a data bound item that has children while it sits in the overflow menu of the
+		// top tab bar. It doesn't find the item's container there, and expanding the item right after the
+		// click fails with E_BOUNDS (https://github.com/dotnet/maui/issues/37985). So in the overflow menu
+		// a tab with sub tabs only expands, and the navigation happens when one of its sub tabs is picked.
+		static void UpdateOverflowMenuItemSelectsOnInvoked(NavigationViewItem item)
+		{
+			if (item.DataContext is NavigationViewItemViewModel { MenuItemsSource: not null })
+				item.SelectsOnInvoked = false;
+			else
+				item.ClearValue(NavigationViewItem.SelectsOnInvokedProperty);
+		}
+
 		internal void MapMenuItems()
 		{
+			// Unsubscribe from previously tracked sections to prevent duplicate PropertyChanged subscriptions
+			// when MapMenuItems is called multiple times (e.g. after ShellContent.Title changes).
+			foreach (var tracked in _trackedShellSections)
+			{
+				tracked.PropertyChanged -= OnShellItemPropertyChanged;
+			}
+
+			_trackedShellSections.Clear();
+
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
 			foreach (var item in shellItemController.GetItems())
 			{
 				item.PropertyChanged += OnShellItemPropertyChanged;
+				_trackedShellSections.Add(item);
 				if (Routing.IsImplicit(item))
 					items.Add(item.CurrentItem);
 				else
@@ -288,8 +388,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
+					vm.AutomationId = VirtualView is TabBar &&
+						((IShellItemController)VirtualView).ShowTabs
+						? bsi is ShellSection shellSection
+							? shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId
+							: bsi.AutomationId
+						: null;
+					vm.AccessibilityView = (bool?)bsi.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false ? AccessibilityView.Raw : AccessibilityView.Content;
 					vm.Content = bsi.Title;
+
 					vm.IsEnabled = bsi.IsEnabled;
+
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
 					if (iconSource != null)
@@ -312,8 +421,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
-				navView.SelectedItem = selectedItem;
+			UpdateOverflowMenuItems();
+
+			if (PlatformView is NavigationView navView)
+			{
+				if (navView.SelectedItem != selectedItem)
+					navView.SelectedItem = selectedItem;
+			}
+
+			if (_shellAppearanceElement is not null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 			TrackBadgeSections();
@@ -397,6 +516,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 					_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 					_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+					_currentSearchHandler.SetIsFocused(false);
 				}
 
 				_currentSearchHandler = newSearchHandler;
@@ -416,24 +536,25 @@ namespace Microsoft.Maui.Controls.Handlers
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
+					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
 					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
-					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.UpdateTextOnSelect = false;
 					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerFont(_currentSearchHandler, this.GetRequiredService<IFontManager>());
 					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
-
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
-
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
 					if (_currentSearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 					{
@@ -448,6 +569,11 @@ namespace Microsoft.Maui.Controls.Handlers
 					}
 
 					UpdateQueryIcon();
+
+					// The native textbox can retain focus while the search handler changes.
+					_currentSearchHandler.SetIsFocused(
+						autoSuggestBox.FocusState != FocusState.Unfocused ||
+						autoSuggestBox.GetFirstDescendant<TextBox>() is { FocusState: not FocusState.Unfocused });
 				}
 				else
 				{
@@ -558,6 +684,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void UpdateShowsResults()
+		{
+			if (_currentSearchHandler is null)
+				return;
+
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is null)
+				return;
+
+			mauiNavView.AutoSuggestBox.ItemsSource =
+				_currentSearchHandler.ShowsResults
+					? CreateSearchHandlerItemsSource()
+					: null;
+		}
+
 		void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_mainLevelTabs == null || sender is not BaseShellItem shellItem)
@@ -579,6 +719,12 @@ namespace Microsoft.Maui.Controls.Handlers
 						break;
 					case nameof(BaseShellItem.Title):
 						_mainLevelTabs[i].Content = shellItem.Title;
+						break;
+					case var propertyName when propertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName:
+						_mainLevelTabs[i].AccessibilityView =
+							(bool?)shellItem.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false
+								? AccessibilityView.Raw
+								: AccessibilityView.Content;
 						break;
 				}
 				return;
@@ -607,7 +753,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					UpdateShowsResults();
 					break;
 				case nameof(SearchHandler.TextColor):
 					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
@@ -629,6 +775,14 @@ namespace Microsoft.Maui.Controls.Handlers
 					break;
 				case nameof(SearchHandler.VerticalTextAlignment):
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.FontFamily):
+				case nameof(SearchHandler.FontSize):
+				case nameof(SearchHandler.FontAttributes):
+					autoSuggestBox.UpdateSearchHandlerFont(_currentSearchHandler, this.GetRequiredService<IFontManager>());
+					break;
+				case nameof(SearchHandler.ShowsResults):
+					UpdateShowsResults();
 					break;
 				case nameof(SearchHandler.QueryIcon):
 					UpdateQueryIcon();
@@ -734,16 +888,24 @@ namespace Microsoft.Maui.Controls.Handlers
 		void UpdateTabBarVisibility(IShellItemController item)
 		{
 			if (PlatformView is not MauiNavigationView mauiNavView)
+			{
 				return;
+			}
 
 			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
-			mauiNavView.PaneDisplayMode = paneDisplayMode;
+
+			if (mauiNavView.PaneDisplayMode != paneDisplayMode)
+			{
+				mauiNavView.PaneDisplayMode = paneDisplayMode;
+			}
+
 			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
 		}
 
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
 			handler.UpdateTabBarVisibility(item);
+			handler.UpdateValue(nameof(Element.AutomationId));
 		}
 
 		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
@@ -790,12 +952,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
 			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
 			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
+			var disabledColor = _shellAppearanceElement.EffectiveTabBarDisabledColor?.AsPaint();
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
-			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
-			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
+			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor, disabledColor);
+			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor, disabledColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
+			mauiNavView.UpdateTopNavigationViewItemDisabledColor(disabledColor);
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)

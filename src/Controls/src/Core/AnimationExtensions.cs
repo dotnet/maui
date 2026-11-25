@@ -54,6 +54,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		static internal int TweenersCounter => s_tweeners.Count;
 
+		static internal bool HasTweener(int id) => s_tweeners.ContainsKey(id);
+
 		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
@@ -73,12 +75,14 @@ namespace Microsoft.Maui.Controls
 				Step = step
 			};
 			s_tweeners[id] = animation;
+			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
 			animation.Commit(animationManager);
 
 			animation.Finished += () =>
 			{
 				s_tweeners.TryRemove(id, out _);
 				animation.Finished = null;
+				animation.AnimationManagerDisposed = null;
 			};
 			return id;
 		}
@@ -93,12 +97,14 @@ namespace Microsoft.Maui.Controls
 				Easing = Easing.Linear,
 			};
 			s_tweeners[id] = animation;
+			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
 			animation.Commit(animationManager);
 
 			animation.Finished += () =>
 			{
 				s_tweeners.TryRemove(id, out _);
 				animation.Finished = null;
+				animation.AnimationManagerDisposed = null;
 			};
 
 			return id;

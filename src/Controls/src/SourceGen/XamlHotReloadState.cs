@@ -3,9 +3,16 @@
 
 #nullable enable
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
+
+internal sealed class HotReloadSessionToken
+{
+}
+
+internal sealed record HotReloadFieldContract(string Type, string AccessModifier, XmlType XmlType);
 
 /// <summary>
 /// In-process static cache that tracks the last-generated XAML text (and its parsed tree / node IDs)
@@ -27,12 +34,41 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// is exactly what made the generator non-deterministic and could leave reverted code uncompilable.)
 /// </para>
 ///
+/// <para>
+/// Rude edits (https://github.com/dotnet/maui/issues/36156): a generation whose output does not compile
+/// never reaches the running app. The generator rolls the entry back (<see cref="Capture"/> /
+/// <see cref="Restore"/>) so the next edit is diffed against the last generation that could have been
+/// applied, and its patch also carries the changes made together with the rude edit.
+/// </para>
+///
 /// Keyed on <c>(AssemblyName, TargetFramework, RelativePath)</c> to prevent:
 /// <list type="bullet">
 ///   <item>Cross-project cache bleeding when different projects contain identically-named XAML files.</item>
 ///   <item>Cross-TFM cache contamination in multi-target builds where the same XAML file is
 ///         compiled once per target framework in the same generator host process.</item>
 /// </list>
+///
+/// <para>
+/// Repeated evaluation (https://github.com/dotnet/maui/issues/36937): Roslyn may evaluate the same
+/// driver snapshot more than once (driver forks, speculative/design-time requests, cancelled or
+/// discarded runs), possibly with different C# sources and even with different XAML. When a generation
+/// produces a patch, the entry also keeps the generations it can be applied from
+/// (<see cref="CacheEntry.Baselines"/>, newest first). Any later generation with the same XAML
+/// re-derives the patch from them instead of seeing "no change" and emitting an empty
+/// <c>UpdateComponent()</c>, so a throwaway run cannot consume the patch of the real one. Re-emitting
+/// the patch on a C#-only edit is safe: the patch is unchanged, so its companion signal type is
+/// unchanged and the runtime doesn't re-apply it (see <see cref="UpdateComponentCodeWriter.SignalTypeName"/>).
+/// </para>
+///
+/// <para>
+/// The generator can't know which of those generations reached the running app: a throwaway run with
+/// different XAML advances the cache to a generation that was never applied. So the patch has one
+/// branch per retained baseline, and each live instance records the generation it is at
+/// (<see cref="CacheEntry.GenerationKey"/>, see <see cref="UpdateComponentCodeWriter.GenerationMarkerPrefix"/>).
+/// <c>UpdateComponent()</c> applies the branch diffed from that generation, so the patch is right
+/// whether or not the intermediate generations were applied. At most <see cref="MaxBaselines"/>
+/// generations are retained.
+/// </para>
 ///
 /// Thread-safety: the dictionary is protected by a lock. Generator output callbacks may run
 /// on parallel threads in Roslyn's pipeline.
@@ -41,8 +77,18 @@ internal static class XamlHotReloadState
 {
 	static readonly object _lock = new();
 
-	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
-	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
+	/// <summary>
+	/// The number of earlier generations a patch can be applied from.
+	/// </summary>
+	internal const int MaxBaselines = 4;
+
+	static ConditionalWeakTable<HotReloadSessionToken, SessionState> _sessions = new();
+
+	internal sealed class SessionState
+	{
+		public Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> Cache { get; } = new();
+		public Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, HotReloadFieldContract>> Fields { get; } = new();
+	}
 
 	internal sealed class CacheEntry
 	{
@@ -71,21 +117,124 @@ internal static class XamlHotReloadState
 		/// </summary>
 		public int Version { get; set; }
 		/// <summary>
-		/// Names and declared XAML types of fields generated on the originally loaded type. This seed
-		/// remains stable across edits because metadata updates cannot add or remove instance fields.
+		/// Identifies this generation (its XAML and node IDs). <c>InitializeComponent()</c> and
+		/// <c>UpdateComponent()</c> record it on each live instance.
 		/// </summary>
-		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
+		public string? GenerationKey { get; set; }
+		/// <summary>
+		/// The generations the current <c>UpdateComponent()</c> patch can be applied from, newest first,
+		/// or empty when the current generation carries no pending patch.
+		/// </summary>
+		public IReadOnlyList<GenerationSnapshot> Baselines { get; set; } = System.Array.Empty<GenerationSnapshot>();
+
+		public CacheEntry Clone()
+		{
+			var clone = (CacheEntry)MemberwiseClone();
+			clone.NodeIds = NodeIds is null ? null : new Dictionary<ElementNode, string>(NodeIds);
+			return clone;
+		}
+	}
+
+	/// <summary>
+	/// Returns a copy of the current entry for the given file, or <see langword="null"/> when none exists.
+	/// Pass it to <see cref="Restore"/> to roll back a generation that turned out not to compile.
+	/// </summary>
+	public static CacheEntry? Capture(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.Clone()
+					: null;
+		}
+	}
+
+	/// <summary>
+	/// Puts back an entry returned by <see cref="Capture"/>. A generation whose output does not compile
+	/// never reaches the running app (https://github.com/dotnet/maui/issues/36156), so the next edit must be
+	/// diffed against the generation before it.
+	/// </summary>
+	public static void Restore(string assemblyName, string targetFramework, string relativePath, CacheEntry snapshot, HotReloadSessionToken? sessionToken)
+	{
+		if (sessionToken is null)
+			return;
+
+		lock (_lock)
+		{
+			_sessions.GetOrCreateValue(sessionToken).Cache[(assemblyName, targetFramework, relativePath)] = snapshot.Clone();
+		}
+	}
+
+	/// <summary>
+	/// Immutable view of a previous generation, used to derive and re-derive a pending patch deterministically.
+	/// </summary>
+	internal sealed record GenerationSnapshot(string XamlText, SGRootNode? ParsedRoot, Dictionary<ElementNode, string>? NodeIds, int NextNodeId, int Version, string? Key);
+
+	/// <summary>
+	/// Returns the current generation for the given file, or <see langword="null"/> when none exists.
+	/// </summary>
+	public static GenerationSnapshot? GetCurrentGeneration(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? new GenerationSnapshot(
+						entry.XamlText,
+						entry.ParsedRoot,
+						entry.NodeIds is null ? null : new Dictionary<ElementNode, string>(entry.NodeIds),
+						entry.NextNodeId,
+						entry.Version,
+						entry.GenerationKey)
+					: null;
+		}
+	}
+
+	/// <summary>
+	/// Returns the generations the pending patch for the given file can be applied from (newest first),
+	/// or an empty list when the current generation carries no pending patch.
+	/// </summary>
+	public static IReadOnlyList<GenerationSnapshot> GetBaselines(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.Baselines
+					: System.Array.Empty<GenerationSnapshot>();
+		}
+	}
+
+	/// <summary>
+	/// Returns the key of the current generation for the given file, or <see langword="null"/> when none exists.
+	/// </summary>
+	public static string? GetGenerationKey(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.GenerationKey
+					: null;
+		}
 	}
 
 	/// <summary>
 	/// Tries to retrieve the previously stored XAML text, parsed root, and version for the given file.
 	/// Returns <see langword="false"/> when no entry exists (first run).
 	/// </summary>
-	public static bool TryGetPrevious(string assemblyName, string targetFramework, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
+	public static bool TryGetPrevious(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
@@ -106,43 +255,45 @@ internal static class XamlHotReloadState
 
 	/// <summary>
 	/// Stores (or replaces) the current XAML text, parsed root, node IDs, and version for the given
-	/// file. This fully replaces the previous entry — the cache only ever holds the latest generation,
-	/// never an accumulated history.
+	/// file. This fully replaces the previous entry — the cache only ever holds the latest generation
+	/// (plus, when that generation carries a patch, the at most <see cref="MaxBaselines"/> generations it
+	/// can be applied from), never an accumulated patch chain.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, IReadOnlyList<GenerationSnapshot>? baselines = null)
 	{
+		if (sessionToken is null)
+			return;
+
 		lock (_lock)
 		{
-			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			var session = _sessions.GetOrCreateValue(sessionToken);
+			if (!session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
-				entry = new CacheEntry
-				{
-					GeneratedFields = parsedRoot is null
-						? null
-						: XamlGeneratedFieldCollector.Collect(parsedRoot),
-				};
-				_cache[(assemblyName, targetFramework, relativePath)] = entry;
-			}
-			else if (entry.GeneratedFields is null && parsedRoot is not null)
-			{
-				entry.GeneratedFields = XamlGeneratedFieldCollector.Collect(parsedRoot);
+				entry = new CacheEntry();
+				session.Cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
+			entry.GenerationKey = parsedRoot is null || nodeIds is null ? null : NodeIdHelper.ComputeGenerationKey(xamlText, parsedRoot, nodeIds);
+			entry.Baselines = baselines ?? System.Array.Empty<GenerationSnapshot>();
 		}
 	}
 
-	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.GeneratedFields is not null)
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Fields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
 			{
-				return new Dictionary<string, XmlType>(entry.GeneratedFields, System.StringComparer.Ordinal);
+				var result = new Dictionary<string, XmlType>(System.StringComparer.Ordinal);
+				foreach (var field in fields)
+					result[field.Key] = field.Value.XmlType;
+				return result;
 			}
 
 			return null;
@@ -150,13 +301,57 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
+	/// Returns a defensive copy of the fields <see cref="CodeBehindCodeWriter"/> has accumulated for
+	/// this file in the given generator-driver session, or <see langword="null"/> if none have been
+	/// recorded yet.
+	/// </summary>
+	public static Dictionary<string, HotReloadFieldContract>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		if (sessionToken is null)
+			return null;
+
+		lock (_lock)
+		{
+			if (_sessions.TryGetValue(sessionToken, out var session)
+				&& session.Fields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
+			{
+				return new Dictionary<string, HotReloadFieldContract>(fields, System.StringComparer.Ordinal);
+			}
+
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Replaces the accumulated code-behind field set for the given file and generator-driver session.
+	/// Callers are expected to pass the union of the previously accumulated fields and the fields parsed
+	/// from the current XAML.
+	/// </summary>
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, HotReloadFieldContract> fields, HotReloadSessionToken? sessionToken)
+	{
+		if (sessionToken is null)
+			return;
+
+		lock (_lock)
+		{
+			var session = _sessions.GetOrCreateValue(sessionToken);
+			session.Fields[(assemblyName, targetFramework, relativePath)] =
+				new Dictionary<string, HotReloadFieldContract>(fields, System.StringComparer.Ordinal);
+		}
+	}
+
+	/// <summary>
 	/// Returns the cached parsed root for the given file, or null if not cached.
 	/// </summary>
-	public static SGRootNode? GetParsedRoot(string assemblyName, string targetFramework, string relativePath)
+	public static SGRootNode? GetParsedRoot(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) ? entry.ParsedRoot : null;
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.ParsedRoot
+					: null;
 		}
 	}
 
@@ -165,11 +360,14 @@ internal static class XamlHotReloadState
 	/// <see langword="null"/> if not cached. Mirrors <see cref="TryGetPrevious"/>'s contract —
 	/// callers must never see the live <see cref="CacheEntry.NodeIds"/> reference.
 	/// </summary>
-	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.NodeIds != null)
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+				&& entry.NodeIds != null)
 				return new Dictionary<ElementNode, string>(entry.NodeIds);
 			return null;
 		}
@@ -182,7 +380,7 @@ internal static class XamlHotReloadState
 	{
 		lock (_lock)
 		{
-			_cache.Clear();
+			_sessions = new();
 		}
 	}
 }

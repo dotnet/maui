@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
@@ -13,6 +14,14 @@ internal static class SafeAreaExtensions
 		{
 			ISafeAreaView2 sav2 => sav2,
 			IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
+			_ => null
+		};
+
+	internal static ISafeAreaElement? GetSafeAreaElement(object? layout) =>
+		layout switch
+		{
+			ISafeAreaElement safeAreaElement => safeAreaElement,
+			IElementHandler { VirtualView: ISafeAreaElement virtualSafeAreaElement } => virtualSafeAreaElement,
 			_ => null
 		};
 
@@ -35,8 +44,35 @@ internal static class SafeAreaExtensions
 			return safeAreaView2.GetSafeAreaRegionsForEdge(edge);
 		}
 
+		var safeAreaElement = GetSafeAreaElement(layout);
+		if (safeAreaElement is not null)
+		{
+			return safeAreaElement.SafeAreaEdges.GetEdge(edge);
+		}
+
 		var safeAreaView = GetSafeAreaView(layout);
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
+	}
+
+	// Only explicitly opted-in or already padded views need inset reapplication on resize.
+	internal static bool ShouldReapplyInsetsForResize(ICrossPlatformLayout? crossPlatformLayout, View view)
+	{
+		if (crossPlatformLayout is not null &&
+			GetSafeAreaView2(crossPlatformLayout) is { HasExplicitSafeAreaEdges: true } safeAreaView2)
+		{
+			for (var edge = 0; edge < 4; edge++)
+			{
+				var region = safeAreaView2.GetSafeAreaRegionsForEdge(edge);
+
+				// SoftInput-only views are tracked once the keyboard applies padding.
+				if (region != SafeAreaRegions.None && !SafeAreaEdges.IsOnlySoftInput(region))
+				{
+					return true;
+				}
+			}
+		}
+
+		return MauiWindowInsetListener.FindListenerForView(view)?.IsViewTracked(view) == true;
 	}
 
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
@@ -52,9 +88,10 @@ internal static class SafeAreaExtensions
 
 		var layout = crossPlatformLayout;
 		var safeAreaView2 = GetSafeAreaView2(layout);
-		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
+		var safeAreaElement = GetSafeAreaElement(layout);
+		var margins = (safeAreaView2 as IView)?.Margin ?? (safeAreaElement as IView)?.Margin ?? Thickness.Zero;
 
-		if (safeAreaView2 is not null)
+		if (safeAreaView2 is not null || safeAreaElement is not null)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
@@ -83,9 +120,10 @@ internal static class SafeAreaExtensions
 			}
 
 
+			// The root view's layout params are the attributes of the window hosting the view,
+			// which for a modal is its dialog window rather than the activity's
 			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
+				(view.RootView?.LayoutParameters as WindowManagerLayoutParams ?? context.GetActivity()?.Window?.Attributes) is WindowManagerLayoutParams attr)
 			{
 				// When AdjustPan is set, the window pans instead of resizing
 				// so we should not modify any padding - just consume the insets and return
@@ -123,7 +161,7 @@ internal static class SafeAreaExtensions
 				// Get actual screen dimensions (including system UI)
 				// This must be done BEFORE margin adjustment so we can detect
 				// off-screen animation state from raw position values.
-				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+				var windowManager = context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>();
 				if (windowManager?.DefaultDisplay is not null)
 				{
 					var realMetrics = new global::Android.Util.DisplayMetrics();
@@ -137,16 +175,11 @@ internal static class SafeAreaExtensions
 					// making it impossible to detect animation for the RIGHT edge afterward.
 					var viewIsAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
 
-					// Vertical: During Shell navigation animations, the view may be positioned
-					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
-					// extend beyond the screen bottom. This happens because the fragment animation
-					// slides the view in from off-screen. We detect this animating state by checking:
-					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
-					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
-					// 3. viewTop > 0 (view is not at origin)
-					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
-					// When we detect animation state, apply the full top inset since view will settle at Y=0.
-					var viewIsAnimatingVertically = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
+					// A full-height page still needs its final inset while moving through
+					// the status-bar area toward Y=0. Exclude translated child controls.
+					var viewIsAnimatingVertically = viewTop > 0 &&
+						viewBottom > screenHeight &&
+						viewHeight >= screenHeight - top - bottom;
 
 					// Adjust for view's position relative to parent (including margins) to calculate
 					// safe area insets relative to the parent's position, not the view's visual position.
@@ -167,15 +200,14 @@ internal static class SafeAreaExtensions
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
 
-					if (top > 0 && viewTop < top && viewTop >= 0)
+					if (top > 0 && viewIsAnimatingVertically)
+					{
+						// Check animation first so a transient overlap cannot reduce the inset.
+					}
+					else if (top > 0 && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
-					}
-					else if (top > 0 && viewIsAnimatingVertically)
-					{
-						// View is animating - positioned beyond status bar but extends off-screen
-						// Apply full top inset since view will settle at Y=0
 					}
 					else
 					{
@@ -306,6 +338,52 @@ internal static class SafeAreaExtensions
 
 		// Fallback: return the base safe area for legacy views
 		return newWindowInsets;
+	}
+
+	internal static bool ApplyAnimatedSoftInputInsetsPx(WindowInsetsCompat windowInsets, ICrossPlatformLayout crossPlatformLayout, Context context, View view, bool isImeOpening)
+	{
+		var bottomRegion = GetSafeAreaRegionForEdge(3, crossPlatformLayout);
+		if (!SafeAreaEdges.IsSoftInput(bottomRegion))
+		{
+			return false;
+		}
+
+		var keyboardBottom = windowInsets.GetKeyboardInsetsPx(context).Bottom;
+		var containerBottom = windowInsets.ToSafeAreaInsetsPx(context).Bottom;
+
+		// While the keyboard is opening, track it directly so the container's bottom padding
+		// (and the viewport it controls) shrinks in step with every animation frame. Clamping
+		// to containerBottom here would hold the padding flat until keyboardBottom exceeds it,
+		// compressing the real shrink into the last few frames and clipping a focused editor.
+		// While closing, keep the containerBottom floor so padding doesn't dip below the
+		// resting container inset and pop back up once the animation ends.
+		var bottom = SafeAreaEdges.IsOnlySoftInput(bottomRegion) || isImeOpening
+			? keyboardBottom
+			: Math.Max(containerBottom, keyboardBottom);
+
+		// Like the settled path, pad only by how far the view reaches into the inset, so a view
+		// that ends above the screen bottom (e.g. above bottom tabs) doesn't rise past the keyboard.
+		if (bottom > 0 && view.Height > 0 &&
+			context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>()?.DefaultDisplay is { } display)
+		{
+			using var realMetrics = new global::Android.Util.DisplayMetrics();
+			display.GetRealMetrics(realMetrics);
+			var viewLocation = new int[2];
+			view.GetLocationOnScreen(viewLocation);
+			var margins = (GetSafeAreaView2(crossPlatformLayout) as IView)?.Margin ?? (GetSafeAreaElement(crossPlatformLayout) as IView)?.Margin ?? Thickness.Zero;
+			var viewBottom = viewLocation[1] + view.Height + (int)context.ToPixels(margins.Bottom);
+			var gap = realMetrics.HeightPixels - viewBottom;
+			if (gap > 0)
+			{
+				bottom = Math.Max(0, bottom - gap);
+			}
+		}
+
+		if (view is MauiContentButton contentButton)
+			contentButton.SetAnimatedSafeAreaBottom((int)bottom);
+		else
+			view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+		return bottom > 0;
 	}
 
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)

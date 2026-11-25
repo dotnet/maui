@@ -1,6 +1,7 @@
 #nullable disable
 #if __MOBILE__
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	[SupportedOSPlatform("ios11.0")]
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The drag/drop delegate releases the handler reference in Disconnect when the platform interactions are disconnected.")]
 		IPlatformViewHandler _viewHandler;
 		PlatformDragStartingEventArgs _platformDragStartingEventArgs;
 
@@ -102,12 +104,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
 
-			if (HandleDragOver((View)_viewHandler.VirtualView, package, session.LocalDragSession, platformArgs))
+			var acceptedOperation = HandleDragOver((View)_viewHandler.VirtualView, package, session.LocalDragSession, platformArgs);
+			if (acceptedOperation != DataPackageOperation.None)
 			{
 				if (platformArgs.DropProposal is not null)
 					return platformArgs.DropProposal;
 
-				operation = UIDropOperation.Copy;
+				if ((acceptedOperation & DataPackageOperation.Copy) != 0)
+					operation = UIDropOperation.Copy;
+				else if ((acceptedOperation & DataPackageOperation.Move) != 0 && session.AllowsMoveOperation)
+					operation = UIDropOperation.Move;
 			}
 
 			return new UIDropProposal(operation);
@@ -266,27 +272,33 @@ namespace Microsoft.Maui.Controls.Platform
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
 			}, element);
 
+			// The event args only reference the drag session weakly, so keep it alive while handlers can call GetPosition.
+			GC.KeepAlive(session);
+
 			return validTarget;
 		}
 
-		bool HandleDragOver(View element, DataPackage dataPackage, IUIDragSession session, PlatformDragEventArgs platformArgs)
+		DataPackageOperation HandleDragOver(View element, DataPackage dataPackage, IUIDragSession session, PlatformDragEventArgs platformArgs)
 		{
 			var viewHandlerRef = new WeakReference(_viewHandler);
-			var sessionRef = new WeakReference(session);
+			var sessionRef = session is null ? null : new WeakReference(session);
 
 			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef), platformArgs);
 
-			bool validTarget = false;
+			var acceptedOperation = DataPackageOperation.None;
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
 					return;
 
 				rec.SendDragOver(dragEventArgs);
-				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+				acceptedOperation |= dragEventArgs.AcceptedOperation;
 			}, element);
 
-			return validTarget;
+			// The event args only reference the drag session weakly, so keep it alive while handlers can call GetPosition.
+			GC.KeepAlive(session);
+
+			return acceptedOperation;
 		}
 
 		void HandleDrop(View element, DataPackage datapackage, IUIDropSession session, PlatformDropEventArgs platformArgs)
@@ -313,11 +325,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static internal Point? CalculatePosition(IElement relativeTo, WeakReference viewHandlerRef, WeakReference sessionRef)
 		{
-			if (sessionRef is null)
+			if (sessionRef?.Target is not IUIDragDropSession session)
 				return null;
 
 			var viewHandler = viewHandlerRef.Target as IPlatformViewHandler;
-			var session = sessionRef.Target as IUIDragDropSession;
 
 			var virtualView = viewHandler?.VirtualView;
 			var platformView = viewHandler?.PlatformView;
@@ -361,6 +372,7 @@ namespace Microsoft.Maui.Controls.Platform
 		class CustomLocalStateData : NSObject
 		{
 			public View View { get; set; }
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The local drag state is session-scoped and released by UIKit when the drag session ends.")]
 			public IViewHandler Handler { get; set; }
 			public DataPackage DataPackage { get; set; }
 		}

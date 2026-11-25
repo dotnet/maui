@@ -291,6 +291,8 @@ namespace Microsoft.Maui.Media
 				options?.RotateImage ?? false,
 				options?.PreserveMetaData ?? true);
 
+			// Read all UIKit item providers on the picker delegate's main thread before awaiting.
+			var pickedFiles = new List<PHPickerFileResult>(results.Length);
 			var fileResults = new List<FileResult>(results.Length);
 
 			// Tracks the result being built but not yet handed to the list, so it (and anything it owns)
@@ -298,11 +300,13 @@ namespace Microsoft.Maui.Media
 			FileResult pending = null;
 			try
 			{
-				foreach (var file in results)
+				foreach (var result in results)
+					pickedFiles.Add(new PHPickerFileResult(result.ItemProvider));
+
+				foreach (var pickedFile in pickedFiles)
 				{
 					// Materialize the picked item to a real file up-front so FullPath is immediately usable for
 					// direct filesystem access (for example File.Copy(result.FullPath, ...)) — see #32832.
-					var pickedFile = new PHPickerFileResult(file.ItemProvider);
 					pending = pickedFile;
 					await pickedFile.LoadFileRepresentationAsync().ConfigureAwait(false);
 
@@ -324,6 +328,8 @@ namespace Microsoft.Maui.Media
 			{
 				(pending as IDisposable)?.Dispose();
 				DisposeFileResults(fileResults);
+				for (var i = fileResults.Count + (pending is null ? 0 : 1); i < pickedFiles.Count; i++)
+					pickedFiles[i].Dispose();
 				throw;
 			}
 

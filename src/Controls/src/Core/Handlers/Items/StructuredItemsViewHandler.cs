@@ -19,12 +19,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static PropertyMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewMapper = new(ItemsViewMapper)
 		{
-#if TIZEN
-			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
-			[StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
-			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeader,
-			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooter,
-#endif
 			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,

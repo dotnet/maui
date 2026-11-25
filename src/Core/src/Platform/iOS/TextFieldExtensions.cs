@@ -247,7 +247,10 @@ namespace Microsoft.Maui.Platform
 					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 					clearButton.TintColor = entry.TextColor.ToPlatform();
 
-					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
+					var tintedClearImage = GetClearButtonTintImage(
+						defaultClearImage,
+						entry.TextColor.ToPlatform(),
+						(nfloat)textField.GetDisplayScale());
 					if (tintedClearImage is not null)
 					{
 						clearButton.SetImage(tintedClearImage, UIControlState.Normal);
@@ -257,7 +260,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color)
+		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color, nfloat scale)
 		{
 			if (image is null)
 			{
@@ -269,7 +272,7 @@ namespace Microsoft.Maui.Platform
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+				Scale = scale,
 			});
 
 			if (renderer is null)
@@ -279,7 +282,19 @@ namespace Microsoft.Maui.Platform
 
 			return renderer.CreateImage((context) =>
 			{
-				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				// Draw a bitmap-backed copy of the clear button's image rather than the image itself.
+				// Drawing the image directly produced reduced alpha, and since the SourceIn fill below
+				// caps the final color's alpha at the drawn shape's alpha, that reduced alpha made the
+				// tinted clear button appear dimmed. Drawing a plain CGImage-backed UIImage avoids this
+				// and renders at full opacity.
+				var bitmapImage = image.CGImage is CGImage cgImage
+					? new UIImage(cgImage, image.CurrentScale, image.Orientation)
+					: image;
+				// bitmapImage's Size can be smaller than the original image's Size, so drawing it at
+				// CGPoint.Empty shifts it to the top-left instead of centering it. Center it manually
+				// to preserve the original image's rendered position.
+				var origin = new CGPoint((size.Width - bitmapImage.Size.Width) / 2, (size.Height - bitmapImage.Size.Height) / 2);
+				bitmapImage.Draw(origin, CGBlendMode.Normal, 1.0f);
 				color.ColorWithAlpha(1.0f).SetFill();
 
 				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);

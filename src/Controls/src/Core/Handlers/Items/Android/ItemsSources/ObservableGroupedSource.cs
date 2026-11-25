@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal int GroupCount => _groups.Count;
+
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 		public bool ObserveChanges { get; set; } = true;
@@ -317,12 +319,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var groupIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var groupCount = args.NewItems.Count;
+			var previousGroupCount = _groups.Count;
 
 			UpdateGroupTracking();
 
 			// Determine the absolute starting position and the number of items in the groups being added
 			var absolutePosition = GetAbsolutePosition(_groups[groupIndex], 0);
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
+
+			if (itemCount == 0)
+			{
+				if (previousGroupCount == 0 && GroupCount > 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
+
+				return;
+			}
 
 			if (itemCount == 1)
 			{
@@ -370,19 +383,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Figure out how many items are in the groups we're removing
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
+			var previousGroupCount = _groups.Count;
 
-			if (itemCount == 1)
+			UpdateGroupTracking();
+
+			if (itemCount == 0)
 			{
-				_notifier.NotifyItemRemoved(this, absolutePosition);
-
-				UpdateGroupTracking();
+				if (previousGroupCount > 0 && GroupCount == 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
 
 				return;
 			}
 
-			_notifier.NotifyItemRangeRemoved(this, absolutePosition, itemCount);
+			if (itemCount == 1)
+			{
+				_notifier.NotifyItemRemoved(this, absolutePosition);
+				return;
+			}
 
-			UpdateGroupTracking();
+			_notifier.NotifyItemRangeRemoved(this, absolutePosition, itemCount);
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)
@@ -458,23 +479,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			absolutePosition = AdjustIndexForHeader(absolutePosition);
 
-			var group = 0;
-			var localIndex = 0;
-
-			while (absolutePosition > 0)
+			// The ItemsView header sits before every group; keep returning (0, 0) for it as before.
+			if (absolutePosition < 0)
 			{
-				localIndex += 1;
-
-				if (localIndex == _groups[group].Count)
-				{
-					group += 1;
-					localIndex = 0;
-				}
-
-				absolutePosition -= 1;
+				return (0, 0);
 			}
 
-			return (group, localIndex);
+			// Walk group by group rather than position by position: this is called for every span-size
+			// lookup, so an O(position) walk here makes large grouped grids O(n²) to lay out.
+			// Counts are read live on purpose; ReorderableItemsViewAdapter mutates groups with
+			// ObserveChanges disabled, so a cached prefix table could not be kept in sync.
+			var lastGroup = _groups.Count - 1;
+
+			for (int group = 0; group < lastGroup; group++)
+			{
+				var groupCount = _groups[group].Count;
+
+				if (absolutePosition < groupCount)
+				{
+					return (group, absolutePosition);
+				}
+
+				absolutePosition -= groupCount;
+			}
+
+			// Positions past the end resolve into the final group instead of indexing outside _groups.
+			return (Math.Max(lastGroup, 0), absolutePosition);
 		}
 
 		int AdjustIndexForHeader(int index)

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue33415(TestDevice device) : base(device) { }
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ApplyQueryAttributesShouldNotBeCalledWithEmptyDictionaryOnBack()
 		{
 			// Start on landing page - tap to navigate TO MainPage WITH parameters

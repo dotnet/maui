@@ -235,6 +235,12 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// </summary>
 		/// <remarks>Needs to be a valid URI, else an exception may be thrown when sharing.</remarks>
 		public string? Uri { get; set; }
+
+		/// <summary>
+		/// Gets or sets an image file to show as a preview of the shared content in the operating system's share dialog.
+		/// </summary>
+		/// <remarks>Used on iOS, Mac Catalyst, and Android 10 (API 29) and later. Other platforms ignore this value.</remarks>
+		public ShareFile? PreviewImage { get; set; }
 	}
 
 	/// <summary>

@@ -10,6 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	internal static class KeyboardScrolling
 	{
+		const string DoneButtonId = "Done";
 		internal static readonly string IgnoreMessage = "These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.";
 
 		internal static void EntriesScrollingTest(IApp app, string galleryName)
@@ -103,7 +104,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
 		{
 			if (isEditor)
-				CloseiOSEditorKeyboard(app, driver);
+				CloseiOSEditorKeyboard(driver);
 			else
 				app.DismissKeyboard();
 		}
@@ -118,10 +119,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			return null;
 		}
 
-		internal static void CloseiOSEditorKeyboard(IApp app, AppiumDriver? driver)
+		internal static void CloseiOSEditorKeyboard(AppiumDriver? driver)
 		{
-			var doneButtonName = app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
-			var keyboardDoneButton = driver?.FindElement(MobileBy.Name(doneButtonName));
+			var keyboardDoneButton = driver?.FindElement(MobileBy.Name(DoneButtonId));
 			keyboardDoneButton?.Click();
 		}
 

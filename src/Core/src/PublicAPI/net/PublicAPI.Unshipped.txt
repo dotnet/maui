@@ -1,39 +1,19 @@
 ﻿#nullable enable
-Microsoft.Maui.HybridWebViewInvoker
-Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
-Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
-Microsoft.Maui.IHybridWebView.Invoker.set -> void
-Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
-Microsoft.Maui.ISwipeItemMenuItemIconColor
-Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
-Microsoft.Maui.ITab
-Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
-Microsoft.Maui.ITab.IsEnabled.get -> bool
-Microsoft.Maui.ITab.Title.get -> string!
-Microsoft.Maui.IToolbarDrawerToggleVisible
-Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
-Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
-Microsoft.Maui.StatusBarTheme
-Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
-Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
-Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
-Microsoft.Maui.TabBarPlacement
-Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
-Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
-abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
-static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapDetail(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyout(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutBehavior(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutWidth(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsGestureEnabled(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsPresented(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
-static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
-static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.IImageSourcePaint
-Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
-Microsoft.Maui.Handlers.ViewHandler.SetContainerView(object? containerView) -> void
-virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(object! containerView) -> void
+Microsoft.Maui.Handlers.ContentButtonHandler
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.IContentButtonHandler
+Microsoft.Maui.Handlers.IContentButtonHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
+Microsoft.Maui.IContentButton
+override Microsoft.Maui.Handlers.ContentButtonHandler.CreatePlatformView() -> object!
+static Microsoft.Maui.Handlers.ContentButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapBackground(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapContent(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!

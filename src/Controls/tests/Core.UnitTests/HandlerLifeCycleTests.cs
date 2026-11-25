@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout>(static _ => new HandlerStub()))
 				.Build();
 
 
@@ -74,13 +74,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DisconnectHandlersReachesPageInsideShell()
+		{
+			// https://github.com/dotnet/maui/issues/36584
+			// ShellItem/ShellSection don't implement IView, so DisconnectHandlers() must
+			// keep traversing through them (instead of stopping) to reach the pages/handlers
+			// hosted inside a Shell.
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage>(static _ => new HandlerStub());
+					handlers.AddHandler<Button>(static _ => new HandlerStub());
+					handlers.AddHandler<Shell>(static _ => new HandlerStub());
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var button = new Button();
+			var page = new ContentPage { Content = button };
+			var shellContent = new ShellContent { Content = page };
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var shellItem = new ShellItem();
+			shellItem.Items.Add(shellSection);
+			var shell = new Shell();
+			shell.Items.Add(shellItem);
+
+			shell.ToHandler(mauiContext);
+			page.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+
+			Assert.NotNull(shell.Handler);
+			Assert.NotNull(page.Handler);
+			Assert.NotNull(button.Handler);
+
+			shell.DisconnectHandlers();
+
+			Assert.Null(shell.Handler);
+			Assert.Null(page.Handler);
+			Assert.Null(button.Handler);
+		}
+
+		[Fact]
 		public void InterruptDisconnect()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout>(static _ => new HandlerStub()))
 				.Build();
 
 
@@ -133,7 +177,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			LifeCycleButton button = new LifeCycleButton();
@@ -149,7 +193,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			LifeCycleButton button = new LifeCycleButton();
@@ -159,7 +203,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mauiApp2 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			MauiContext mauiContext2 = new MauiContext(mauiApp2.Services);

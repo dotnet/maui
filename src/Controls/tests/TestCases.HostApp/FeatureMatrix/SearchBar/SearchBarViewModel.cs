@@ -30,6 +30,9 @@ public class SearchBarViewModel : INotifyPropertyChanged
 	private TextAlignment _verticalTextAlignment = TextAlignment.Center;
 	private int _cursorPosition = 0;
 	private bool _fontAutoScalingEnabled = true;
+	private Color _searchIconColor;
+	private ReturnType _returnType = ReturnType.Default;
+	private Brush _background;
 
 	public SearchBarViewModel()
 	{
@@ -166,6 +169,55 @@ public class SearchBarViewModel : INotifyPropertyChanged
 	{
 		get => _isVisible;
 		set { _isVisible = value; OnPropertyChanged(); }
+	}
+
+	public Color SearchIconColor
+	{
+		get => _searchIconColor;
+		set { _searchIconColor = value; OnPropertyChanged(); }
+	}
+
+	public ReturnType ReturnType
+	{
+		get => _returnType;
+		set { _returnType = value; OnPropertyChanged(); }
+	}
+
+	public Brush Background
+	{
+		get => _background;
+		set { _background = value; OnPropertyChanged(); }
+	}
+
+	public void Reset()
+	{
+		CancelButtonColor = null;
+		CharacterSpacing = 0;
+		FlowDirection = FlowDirection.MatchParent;
+		FontAttributes = FontAttributes.None;
+		FontFamily = string.Empty;
+		FontSize = 14;
+		HorizontalTextAlignment = TextAlignment.Start;
+		IsEnabled = true;
+		IsVisible = true;
+		IsReadOnly = false;
+		IsSpellCheckEnabled = true;
+		IsTextPredictionEnabled = true;
+		Keyboard = Keyboard.Default;
+		MaxLength = 100;
+		Placeholder = string.Empty;
+		PlaceholderColor = null;
+		SelectionLength = 0;
+		Text = string.Empty;
+		TextColor = null;
+		Shadow = null;
+		TextTransform = TextTransform.Default;
+		VerticalTextAlignment = TextAlignment.Center;
+		CursorPosition = 0;
+		FontAutoScalingEnabled = true;
+		SearchIconColor = null;
+		ReturnType = ReturnType.Default;
+		Background = null;
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;

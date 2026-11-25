@@ -15,7 +15,6 @@ public class Bugzilla41271 : _IssuesUITest
 	string _cell = string.Empty;
 
 	// [Test]
-	// [Category(UITestCategories.ListView)]
 	// public void MemoryLeakInListViewTabbedPageUWP()
 	// {
 	// 	_cell = "California #60";

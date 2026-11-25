@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue25436(TestDevice testDevice) : base(testDevice) { }
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void FlyoutMenuShouldNotDisappearWhenNavigateUsingServices()
 		{
 			App.WaitForElement("BackButton");

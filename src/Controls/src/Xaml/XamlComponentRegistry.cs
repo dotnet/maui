@@ -62,6 +62,32 @@ public static class XamlComponentRegistry
 	}
 
 	/// <summary>
+	/// Registers a realized component created by a data or control template.
+	/// Multiple live components may share the same XAML node ID.
+	/// </summary>
+	public static void RegisterTemplateComponent(object page, string nodeId, object component)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeId is null)
+			throw new ArgumentNullException(nameof(nodeId));
+		if (component is null)
+			throw new ArgumentNullException(nameof(component));
+
+		var map = s_table.GetOrCreateValue(page);
+		bool firstRegistration;
+		lock (map)
+		{
+			firstRegistration = map.IsNew;
+			map.IsNew = false;
+			map.AddTemplateComponent(nodeId, component);
+		}
+
+		if (firstRegistration)
+			TrackInstance(page);
+	}
+
+	/// <summary>
 	/// Tries to retrieve the live component registered under <paramref name="nodeId"/> for <paramref name="page"/>.
 	/// Called from generated <c>UpdateComponent()</c>.
 	/// </summary>
@@ -83,6 +109,28 @@ public static class XamlComponentRegistry
 
 		component = null;
 		return false;
+	}
+
+	/// <summary>
+	/// Returns a snapshot of the live components realized from the template node identified by
+	/// <paramref name="nodeId"/>.
+	/// </summary>
+	public static IReadOnlyList<object> GetTemplateComponents(object page, string nodeId)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeId is null)
+			throw new ArgumentNullException(nameof(nodeId));
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				return map.GetTemplateComponents(nodeId);
+			}
+		}
+
+		return Array.Empty<object>();
 	}
 
 	/// <summary>
@@ -305,6 +353,82 @@ public static class XamlComponentRegistry
 		return null;
 	}
 
+	/// <summary>
+	/// Updates the setters of a <see cref="Style"/> already materialized in <paramref name="dictionary"/>
+	/// and reapplies them to every element currently using that style.
+	/// </summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's <c>x:Key</c>.</param>
+	/// <param name="replacement">A freshly built style whose setters replace those of the live style.</param>
+	/// <returns>
+	/// <see langword="true"/> if a live, shared style compatible with <paramref name="replacement"/> was updated;
+	/// <see langword="false"/> if the caller must replace the dictionary entry instead (style not materialized yet,
+	/// <c>x:Shared="False"</c>, or a change other than setters).
+	/// </returns>
+	/// <remarks>
+	/// Generator-only helper used by <c>UpdateComponent()</c> during incremental hot reload. Updating the live instance
+	/// refreshes consumers that hold it directly (<c>StaticResource</c>, <c>StyleClass</c>, derived styles), which
+	/// replacing the dictionary entry alone does not.
+	/// </remarks>
+	public static bool TryUpdateStyle(ResourceDictionary dictionary, string key, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+
+		if (!dictionary.TryGetLocalMaterializedValue(key, out var value) || value is not Style live)
+			return false;
+
+		return TryUpdateStyle(live, replacement);
+	}
+
+	/// <summary>Checks for a materialized keyed style without invoking a lazy factory.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="key">The style's resource key.</param>
+	/// <returns>Whether the dictionary contains a materialized style.</returns>
+	public static bool HasMaterializedStyle(ResourceDictionary dictionary, string key)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		return dictionary.TryGetLocalMaterializedValue(key, out var value) && value is Style;
+	}
+
+	/// <summary>Updates a class style identified by its generated node ID.</summary>
+	/// <param name="dictionary">The dictionary that declares the style.</param>
+	/// <param name="nodeId">The generated identity of the style declaration.</param>
+	/// <param name="replacement">The replacement style.</param>
+	/// <returns>Whether the style was updated.</returns>
+	public static bool TryUpdateClassStyle(ResourceDictionary dictionary, string nodeId, Style replacement)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (replacement is null)
+			throw new ArgumentNullException(nameof(replacement));
+		if (!TryGet(dictionary, nodeId, out var value) || value is not Style live)
+			return false;
+		if (!dictionary.TryGetLocalMaterializedValue(Style.StyleClassPrefix + live.Class, out var classes)
+			|| classes is not IList<Style> styles || !styles.Contains(live))
+			return false;
+		return TryUpdateStyle(live, replacement);
+	}
+
+	static bool TryUpdateStyle(Style live, Style replacement)
+	{
+		if (ReferenceEquals(live, replacement) || !IsSetterOnlyChange(live, replacement))
+			return false;
+
+		live.ReplaceSetters(replacement.Setters);
+		return true;
+	}
+
+	static bool IsSetterOnlyChange(Style live, Style replacement)
+		=> live.TargetType == replacement.TargetType
+			&& live.Class == replacement.Class
+			&& live.ApplyToDerivedTypes == replacement.ApplyToDerivedTypes
+			&& live.CanCascade == replacement.CanCascade
+			&& live.BaseResourceKey == replacement.BaseResourceKey;
+
 	static void TrackInstance(object page)
 	{
 		var type = page.GetType();
@@ -353,7 +477,10 @@ public static class XamlComponentRegistry
 	/// </summary>
 	sealed class ComponentMap
 	{
+		const int TemplateComponentPruneThreshold = 64;
+
 		readonly Dictionary<string, WeakReference<object>> _entries = new(StringComparer.Ordinal);
+		readonly Dictionary<string, List<WeakReference<object>>> _templateEntries = new(StringComparer.Ordinal);
 
 		/// <summary>True until the first call to <see cref="Set"/>, used to detect first registration.</summary>
 		public bool IsNew { get; set; } = true;
@@ -364,6 +491,54 @@ public static class XamlComponentRegistry
 				existing.SetTarget(component);
 			else
 				_entries[nodeId] = new WeakReference<object>(component);
+		}
+
+		public void AddTemplateComponent(string nodeId, object component)
+		{
+			if (!_templateEntries.TryGetValue(nodeId, out var entries))
+			{
+				entries = new List<WeakReference<object>>();
+				_templateEntries[nodeId] = entries;
+			}
+
+			entries.Add(new WeakReference<object>(component));
+
+			// Compact at geometrically spaced sizes. This keeps registration amortized O(1)
+			// when all realizations are live, while steady virtualization churn cannot grow
+			// dead wrappers past the next doubling (or the initial threshold).
+			if (entries.Count >= TemplateComponentPruneThreshold
+				&& (entries.Count & (entries.Count - 1)) == 0)
+			{
+				PruneDeadEntries(entries);
+			}
+		}
+
+		public IReadOnlyList<object> GetTemplateComponents(string nodeId)
+		{
+			if (!_templateEntries.TryGetValue(nodeId, out var entries))
+				return Array.Empty<object>();
+
+			var result = new List<object>(entries.Count);
+			for (int i = entries.Count - 1; i >= 0; i--)
+			{
+				if (entries[i].TryGetTarget(out var target))
+					result.Add(target);
+			}
+
+			PruneDeadEntries(entries);
+			if (entries.Count == 0)
+				_templateEntries.Remove(nodeId);
+
+			return result;
+		}
+
+		static void PruneDeadEntries(List<WeakReference<object>> entries)
+		{
+			for (int i = entries.Count - 1; i >= 0; i--)
+			{
+				if (!entries[i].TryGetTarget(out _))
+					entries.RemoveAt(i);
+			}
 		}
 
 		public bool TryGet(string nodeId, out object? component)
@@ -395,11 +570,23 @@ public static class XamlComponentRegistry
 				_entries.Remove(r.OldKey);
 			foreach (var r in renames)
 				_entries[r.NewKey] = r.Value;
+
+			var templateRenames = new List<(string OldKey, string NewKey, List<WeakReference<object>> Value)>();
+			foreach (var key in _templateEntries.Keys)
+			{
+				if (IsNodeOrDescendant(key, oldPrefix))
+					templateRenames.Add((key, newPrefix + key.Substring(oldPrefix.Length), _templateEntries[key]));
+			}
+			foreach (var r in templateRenames)
+				_templateEntries.Remove(r.OldKey);
+			foreach (var r in templateRenames)
+				_templateEntries[r.NewKey] = r.Value;
 		}
 
 		public void Remove(string nodeId)
 		{
 			_entries.Remove(nodeId);
+			_templateEntries.Remove(nodeId);
 		}
 
 		public void RemoveSubtree(string nodeIdPrefix)
@@ -412,6 +599,15 @@ public static class XamlComponentRegistry
 			}
 			foreach (var key in keysToRemove)
 				_entries.Remove(key);
+
+			keysToRemove.Clear();
+			foreach (var key in _templateEntries.Keys)
+			{
+				if (IsNodeOrDescendant(key, nodeIdPrefix))
+					keysToRemove.Add(key);
+			}
+			foreach (var key in keysToRemove)
+				_templateEntries.Remove(key);
 		}
 
 		/// <summary>

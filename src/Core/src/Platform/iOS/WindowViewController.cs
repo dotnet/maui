@@ -1,7 +1,6 @@
 #if MACCATALYST
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CoreGraphics;
 using UIKit;
 using System.Threading.Tasks;
 
@@ -50,6 +49,8 @@ internal class WindowViewController : UIViewController
 			{
 				TranslatesAutoresizingMaskIntoConstraints = false
 			};
+
+			contentViewController.View.TranslatesAutoresizingMaskIntoConstraints = false;
 			View.AddSubview(_contentWrapperView);
 			_contentWrapperView.AddSubview(contentViewController.View);
 			_contentWrapperTopConstraint = _contentWrapperView.TopAnchor.ConstraintEqualTo(View.TopAnchor, 0);
@@ -59,7 +60,11 @@ internal class WindowViewController : UIViewController
 				_contentWrapperView.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor),
 				_contentWrapperView.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor),
 				_contentWrapperTopConstraint,
-				_contentWrapperView.BottomAnchor.ConstraintEqualTo(View.BottomAnchor)
+				_contentWrapperView.BottomAnchor.ConstraintEqualTo(View.BottomAnchor),
+				contentViewController.View.LeadingAnchor.ConstraintEqualTo(_contentWrapperView.LeadingAnchor),
+				contentViewController.View.TrailingAnchor.ConstraintEqualTo(_contentWrapperView.TrailingAnchor),
+				contentViewController.View.TopAnchor.ConstraintEqualTo(_contentWrapperView.TopAnchor),
+				contentViewController.View.BottomAnchor.ConstraintEqualTo(_contentWrapperView.BottomAnchor)
 			});
 
 		}
@@ -91,20 +96,7 @@ internal class WindowViewController : UIViewController
 
 	public override void ViewDidLayoutSubviews()
 	{
-		UpdateContentWrapperContentFrame();
 		base.ViewDidLayoutSubviews();
-	}
-
-	void UpdateContentWrapperContentFrame()
-	{
-		// At this point the _contentWrapperView bounds haven't been set
-		// so we just use the windows bounds to set this value
-		var frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - (_contentWrapperTopConstraint?.Constant ?? 0));
-
-		if (_contentWrapperView is not null && _contentWrapperView.Subviews[0].Frame != frame)
-		{
-			_contentWrapperView.Subviews[0].Frame = frame;
-		}
 	}
 
 	/// <summary>
@@ -157,9 +149,14 @@ internal class WindowViewController : UIViewController
 		{
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
 		}
-
+		
 		IsFirstLayout = true;
 		LayoutTitleBar();
+		if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+		{
+			// Force immediate constraint processing so _contentWrapperView repositions below the TitleBar.
+			View?.LayoutIfNeeded();
+		}
 	}
 
 	/// <summary>
@@ -185,8 +182,6 @@ internal class WindowViewController : UIViewController
 		}
 
 		_contentWrapperTopConstraint.Constant = titleBarHeight;
-
-		UpdateContentWrapperContentFrame();
 	}
 
 	public void SetTitleBarVisibility(bool isVisible)

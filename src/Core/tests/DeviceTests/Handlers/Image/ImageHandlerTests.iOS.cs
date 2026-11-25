@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using Xunit;
 
@@ -84,6 +87,87 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.Null(platformImageView.AnimationImages);
 					}
 				});
+			});
+		}
+
+		[Fact]
+		public async Task CancelledLoadThatFailsDoesNotUpdateDisconnectedHandler()
+		{
+			// https://github.com/dotnet/maui/issues/38845
+			var image = new TStub();
+
+			var events = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+				await image.WaitUntilLoaded();
+
+				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var imageService = provider.GetRequiredImageSourceService<CountedImageSourceStub>();
+				var countedService = Assert.IsType<CountedImageSourceServiceStub>(imageService);
+
+				image.LoadingCompleted += successful => events.Add($"LoadingCompleted({successful})");
+				image.LoadingFailed += exception => events.Add($"LoadingFailed({exception.Message})");
+
+				image.Source = new CountedImageSourceStub(Colors.Blue, true) { FailWhenCancelled = true };
+				var loadTask = handler.SourceLoader.UpdateImageSourceAsync();
+
+				await Task.Run(() => countedService.Starting.WaitOne());
+
+				// Disconnecting the handler cancels the pending load, as ListView does
+				// after measuring a cell with uneven rows
+				((IElementHandler)handler).DisconnectHandler();
+
+				// The service then reports the cancelled load as a failure
+				countedService.DoWork.Set();
+
+				await loadTask;
+			});
+
+			Assert.Equal(new[] { "LoadingCompleted(False)" }, events);
+		}
+
+		[Fact]
+		public async Task OnWindowChangedAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(image);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit still fires MovedToWindow on the detached UIImageView, e.g. while a
+				// navigation bar title view leaves the window during a pop
+				var exception = Record.Exception(() => handler.OnWindowChanged());
+
+				Assert.Null(exception);
+			});
+		}
+
+		[Fact]
+		public async Task MovingToWindowAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub
+			{
+				Source = new FileImageSourceStub("dotnet_bot.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+				await image.WaitUntilLoaded();
+
+				var platformImageView = GetPlatformImageView(handler);
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit can remove the view from its window after the handler was disconnected,
+				// e.g. the TitleView of a page that is popped
+				platformImageView.MovedToWindow();
 			});
 		}
 

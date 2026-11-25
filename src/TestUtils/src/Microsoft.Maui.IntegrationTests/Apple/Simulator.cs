@@ -11,10 +11,18 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		public Simulator(ITestOutputHelper? output = null)
 		{
 			_output = output;
+			var deviceUdid = TestEnvironment.IosTestDeviceUdid;
+			if (!string.IsNullOrEmpty(deviceUdid))
+			{
+				if (!IsValidUDID(deviceUdid))
+					throw new ArgumentException("IOS_TEST_DEVICE_UDID must be a simulator UUID.");
+
+				_udid = deviceUdid;
+			}
 		}
 
 		string? _xharnessID;
-		
+
 		/// <summary>
 		/// Gets the XHarness target ID (e.g., "ios-simulator-64_18.5").
 		/// If IOS_TEST_DEVICE is not set or doesn't include a version, auto-detects
@@ -36,7 +44,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		string ResolveXHarnessID()
 		{
 			var envValue = TestEnvironment.IosTestDevice;
-			
+
 			// If env var is set and includes a version (has underscore), use it directly
 			if (!string.IsNullOrEmpty(envValue) && envValue.Contains('_', StringComparison.Ordinal))
 			{
@@ -74,41 +82,63 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 					return null;
 
 				using var doc = JsonDocument.Parse(output);
-				var runtimes = doc.RootElement.GetProperty("runtimes");
-
-				Version? preferredVersion = null; // iOS 18.x
-				Version? latestVersion = null;    // Any iOS version
-
-				foreach (var runtime in runtimes.EnumerateArray())
-				{
-					if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
-						continue;
-					if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
-						continue;
-					if (!runtime.TryGetProperty("version", out var versionProp))
-						continue;
-
-					var versionStr = versionProp.GetString();
-					if (Version.TryParse(versionStr, out var version))
-					{
-						// Track latest overall
-						if (latestVersion == null || version > latestVersion)
-							latestVersion = version;
-
-						// Prefer iOS 18.x for XHarness compatibility (has iPhone XS device type)
-						if (version.Major == 18 && (preferredVersion == null || version > preferredVersion))
-							preferredVersion = version;
-					}
-				}
-
-				// Use 18.x if available, otherwise fall back to latest
-				return preferredVersion ?? latestVersion;
+				return SelectLatestIOSVersion(doc.RootElement.GetProperty("runtimes"));
 			}
 			catch (Exception ex)
 			{
 				_output?.WriteLine($"Failed to detect iOS version: {ex.Message}");
 				return null;
 			}
+		}
+
+		internal static Version? SelectLatestIOSVersion(JsonElement runtimes)
+		{
+			Version? preferredVersion = null; // iOS 18.x
+			Version? latestVersion = null;    // Any iOS version
+
+			foreach (var runtime in runtimes.EnumerateArray())
+			{
+				if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
+					continue;
+				if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
+					continue;
+				if (!runtime.TryGetProperty("version", out var versionProp))
+					continue;
+				// XHarness creates its iOS simulator as an iPhone 11 Pro, which newer runtimes (iOS 27.1+) no longer support.
+				if (!SupportsDeviceType(runtime, XHarnessIOSDeviceType))
+					continue;
+
+				var versionStr = versionProp.GetString();
+				if (Version.TryParse(versionStr, out var version))
+				{
+					// Track latest overall
+					if (latestVersion == null || version > latestVersion)
+						latestVersion = version;
+
+					// Prefer iOS 18.x for XHarness compatibility (has iPhone XS device type)
+					if (version.Major == 18 && (preferredVersion == null || version > preferredVersion))
+						preferredVersion = version;
+				}
+			}
+
+			// Use 18.x if available, otherwise fall back to latest
+			return preferredVersion ?? latestVersion;
+		}
+
+		const string XHarnessIOSDeviceType = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro";
+
+		static bool SupportsDeviceType(JsonElement runtime, string deviceType)
+		{
+			// Older simctl versions don't report supportedDeviceTypes; assume support there.
+			if (!runtime.TryGetProperty("supportedDeviceTypes", out var deviceTypes))
+				return true;
+
+			foreach (var supported in deviceTypes.EnumerateArray())
+			{
+				if (supported.TryGetProperty("identifier", out var identifier) && identifier.GetString() == deviceType)
+					return true;
+			}
+			return false;
 		}
 
 		string _udid = "";
@@ -118,7 +148,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 				return _udid;
 
 			var xharnessOutput = XHarness.GetSimulatorUDID(XHarnessID, output: _output).Trim();
-			
+
 			// XHarness returns a UDID on success, or an error message on failure.
 			// A valid UDID is a UUID format (e.g., "DE87D078-70D4-47F6-9F21-82612D9D4F7E")
 			if (IsValidUDID(xharnessOutput))
@@ -189,4 +219,3 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		}
 	}
 }
-

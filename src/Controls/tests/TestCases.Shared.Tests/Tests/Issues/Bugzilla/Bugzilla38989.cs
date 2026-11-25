@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] NullReferenceException when using a custom ViewCellRenderer ";
 
 		[Test]
-		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.CustomRenderers)]
 		public void Bugzilla38989Test()
 		{
 			App.WaitForElement(Success);

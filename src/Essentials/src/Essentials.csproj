@@ -68,10 +68,6 @@
     <Compile Include="**\*.watchos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.watchos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup> -->
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen' ">
-    <Compile Include="**\*.tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Include="**\*.tizen.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup>
   <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'macos' ">
     <Compile Include="**\*.macos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.macos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

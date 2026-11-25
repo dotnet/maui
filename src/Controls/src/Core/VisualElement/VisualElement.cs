@@ -228,42 +228,52 @@ namespace Microsoft.Maui.Controls
 				var transformName = transform.Substring(0, openBracket);
 				var value = transform.Substring(openBracket + 1, closeBracket - openBracket - 1);
 				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
-				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
+				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out translationX))
 					bindable.SetValue(TranslationXProperty, translationX);
-				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationY))
+				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out translationY))
 					bindable.SetValue(TranslationYProperty, translationY);
 				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase))
 				{
+					// translate(tx) is the same as translate(tx, 0)
 					var translate = value.Split(',');
-					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY))
+					translationY = 0;
+					if (TryParseTransformValue(translate[0], out translationX) && (translate.Length == 1 || TryParseTransformValue(translate[1], out translationY)))
 					{
 						bindable.SetValue(TranslationXProperty, translationX);
 						bindable.SetValue(TranslationYProperty, translationY);
 					}
 				}
-				else if (transformName.StartsWith("scaleX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleX))
+				else if (transformName.StartsWith("scaleX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out scaleX))
 					bindable.SetValue(ScaleXProperty, scaleX);
-				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleY))
+				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out scaleY))
 					bindable.SetValue(ScaleYProperty, scaleY);
 				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase))
 				{
+					// scale(s) is the same as scale(s, s)
 					var scale = value.Split(',');
-					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY))
+					if (TryParseTransformValue(scale[0], out scaleX))
 					{
-						bindable.SetValue(ScaleXProperty, scaleX);
-						bindable.SetValue(ScaleYProperty, scaleY);
+						scaleY = scaleX;
+						if (scale.Length == 1 || TryParseTransformValue(scale[1], out scaleY))
+						{
+							bindable.SetValue(ScaleXProperty, scaleX);
+							bindable.SetValue(ScaleYProperty, scaleY);
+						}
 					}
 				}
-				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateX))
+				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotateX))
 					bindable.SetValue(RotationXProperty, rotateX);
-				else if (transformName.StartsWith("rotateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateY))
+				else if (transformName.StartsWith("rotateY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotateY))
 					bindable.SetValue(RotationYProperty, rotateY);
-				else if (transformName.StartsWith("rotate", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotate))
+				else if (transformName.StartsWith("rotate", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotate))
 					bindable.SetValue(RotationProperty, rotate);
 				else
 					throw new FormatException("Invalid transform name");
 			}
 		}
+
+		static bool TryParseTransformValue(string value, out double result)
+			=> double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
 
 		internal static readonly BindableProperty TransformOriginProperty =
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
@@ -273,8 +283,16 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
+		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d,
+			coerceValue: (bindable, value) =>
+			{
+				var original = (double)value;
+				var clamped = original.Clamp(0, 1);
+				return clamped == original ? value : (object)clamped;
+			});
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
@@ -717,7 +735,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that determines whether this element will be visible on screen and take up space in layouts. This is a bindable property.
 		/// </summary>
-		/// <remarks>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		/// <remarks>
+		/// <para>This property represents the visibility set directly on the element. The effective visibility, available through <see cref="IView.Visibility"/>, also depends on the visibility of the element's ancestors.</para>
+		/// <para>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</para>
+		/// </remarks>
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
@@ -1592,12 +1613,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IView fe)
-			{
-				fe.Handler?.UpdateValue(nameof(IView.Visibility));
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -1973,7 +1989,28 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
+			var effectiveVisibilityChanged = false;
+			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
+				effectiveVisibilityChanged = UpdateEffectiveVisibility();
+
+			if (propertyName == IsVisibleProperty.PropertyName && !effectiveVisibilityChanged)
+				return;
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+
+			if (effectiveVisibilityChanged)
+				InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
+
+		bool UpdateEffectiveVisibility()
+		{
+			var isVisible = IsVisible && (Parent is not VisualElement parent || parent._isVisibleCumulative);
+			if (_isVisibleCumulative == isVisible)
+				return false;
+
+			_isVisibleCumulative = isVisible;
+			Handler?.UpdateValue(nameof(IView.Visibility));
+			return true;
 		}
 
 		/// <summary>
@@ -2226,7 +2263,7 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
 		/// <inheritdoc/>
-		Visibility IView.Visibility => IsVisible.ToVisibility();
+		Visibility IView.Visibility => _isVisibleCumulative.ToVisibility();
 
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();

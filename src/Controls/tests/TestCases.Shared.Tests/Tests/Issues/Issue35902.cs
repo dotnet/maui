@@ -12,7 +12,7 @@ public class Issue35902 : _IssuesUITest
 	public override string Issue => "[iOS] Transparent Shell Navigation Bar Breaks After Keyboard Interaction on Secondary Pages";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TransparentShellNavBarShouldRemainTransparentAfterKeyboardDismiss()
 	{
 		App.WaitForElement("NavigateButton");

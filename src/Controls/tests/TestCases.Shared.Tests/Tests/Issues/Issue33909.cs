@@ -13,7 +13,7 @@ public class Issue33909 : _IssuesUITest
     }
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue33909ForegroundColorReset()
     {
         App.WaitForElement("ApplyColorButton");

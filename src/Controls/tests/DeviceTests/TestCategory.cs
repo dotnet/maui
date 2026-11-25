@@ -27,7 +27,6 @@
 		public const string Label = "Label";
 		public const string Layout = "Layout";
 		public const string Lifecycle = nameof(Lifecycle);
-		public const string ListView = "ListView";
 		public const string MenuFlyout = nameof(MenuFlyout);
 		public const string Map = nameof(Map);
 		public const string Mapper = nameof(Mapper);
@@ -45,6 +44,7 @@
 		public const string Shell = "Shell";
 		public const string Slider = "Slider";
 		public const string SwipeView = "SwipeView";
+		public const string Switch = "Switch";
 		public const string TabbedPage = "TabbedPage";
 		public const string TextInput = "TextInput";
 		public const string Toolbar = "Toolbar";

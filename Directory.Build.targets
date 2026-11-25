@@ -34,14 +34,14 @@
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
     <!-- Ignoring trimming error AD0001 https://github.com/dotnet/runtime/issues/123503-->
-    <NoWarn>$(NoWarn);NETSDK1206;NU1702;IL6001;AD0001</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1206;NU1702;AD0001</NoWarn>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011;MSB3277;NETSDK1206;NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
@@ -59,11 +59,6 @@
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>24.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
-    <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
-  </PropertyGroup>
-
   <!--
     NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...

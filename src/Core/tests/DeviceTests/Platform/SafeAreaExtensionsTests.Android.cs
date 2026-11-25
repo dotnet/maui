@@ -1,0 +1,150 @@
+using System;
+using System.Threading.Tasks;
+using Android.Content;
+using Android.Util;
+using Android.Views;
+using AndroidX.Core.View;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
+using Xunit;
+using AInsets = AndroidX.Core.Graphics.Insets;
+using AView = Android.Views.View;
+
+namespace Microsoft.Maui.DeviceTests
+{
+	[Category(TestCategory.Layout)]
+	public class SafeAreaExtensionsTests : TestBase
+	{
+		const int TopInset = 100;
+
+		[Theory]
+		[InlineData(0, true, TopInset, false)]
+		[InlineData(1, true, TopInset, false)]
+		[InlineData(TopInset - 1, true, TopInset, false)]
+		[InlineData(TopInset, true, TopInset, false)]
+		[InlineData(TopInset + 1, true, TopInset, false)]
+		[InlineData(1, false, 0, false)]
+		[InlineData(1, false, 0, true)]
+		public async Task TopInsetRetainedOnlyForFullHeightTransitions(int offset, bool fullHeight, int expectedTopInset, bool useNewContext)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activityContext = MauiProgram.DefaultContext;
+				using var newContext = useNewContext
+					? activityContext.CreateConfigurationContext(activityContext.Resources.Configuration)
+					: null;
+				var context = newContext ?? activityContext;
+				// Keep the new context's window-service peer alive while insets are applied.
+				using var windowService = useNewContext ? context.GetSystemService(Context.WindowService) : null;
+				if (useNewContext)
+					Assert.NotNull(windowService);
+				var (screenWidth, screenHeight) = GetScreenSize(activityContext);
+
+				var height = fullHeight ? screenHeight : screenHeight / 2;
+				var top = fullHeight ? offset : screenHeight - height + offset;
+				using var view = new PositionedView(context, top);
+				view.Layout(0, 0, screenWidth, height);
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var systemBars = AInsets.Of(0, TopInset, 0, 40);
+				using var insets = builder
+					.SetInsets(WindowInsetsCompat.Type.SystemBars(), systemBars)
+					.Build();
+				using var remainingInsets = SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(
+					insets, new SafeAreaLayoutStub(), context, view);
+
+				Assert.Equal(expectedTopInset, view.PaddingTop);
+				Assert.NotNull(remainingInsets);
+				using var remainingSystemBars = remainingInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				Assert.Equal(expectedTopInset > 0 ? 0 : TopInset, remainingSystemBars.Top);
+			});
+		}
+
+		const int ImeBottom = 800;
+
+		[Theory]
+		[InlineData(0, ImeBottom, false)]
+		[InlineData(200, ImeBottom - 200, false)]
+		[InlineData(ImeBottom + 100, 0, false)]
+		[InlineData(200, ImeBottom - 200, true)]
+		public async Task AnimatedSoftInputInsetCoversOnlyTheKeyboardOverlap(int gapToScreenBottom, int expectedBottomInset, bool useNewContext)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activityContext = MauiProgram.DefaultContext;
+				using var newContext = useNewContext
+					? activityContext.CreateConfigurationContext(activityContext.Resources.Configuration)
+					: null;
+				var context = newContext ?? activityContext;
+				using var windowService = useNewContext ? context.GetSystemService(Context.WindowService) : null;
+				if (useNewContext)
+					Assert.NotNull(windowService);
+				var (screenWidth, screenHeight) = GetScreenSize(activityContext);
+
+				// Keep a laid-out view even when the bottom gap exceeds the screen height.
+				using var view = new PositionedView(context, -gapToScreenBottom);
+				view.Layout(0, 0, screenWidth, screenHeight);
+				var viewLocation = new int[2];
+				view.GetLocationOnScreen(viewLocation);
+				Assert.True(view.Height > 0);
+				Assert.Equal(gapToScreenBottom, screenHeight - (viewLocation[1] + view.Height));
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var ime = AInsets.Of(0, 0, 0, ImeBottom);
+				using var insets = builder
+					.SetInsets(WindowInsetsCompat.Type.Ime(), ime)
+					.Build();
+				var padded = SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
+					insets, new SafeAreaLayoutStub { Regions = SafeAreaRegions.SoftInput }, context, view, isImeOpening: true);
+
+				Assert.Equal(expectedBottomInset, view.PaddingBottom);
+				Assert.Equal(expectedBottomInset > 0, padded);
+			});
+		}
+
+		internal static (int Width, int Height) GetScreenSize(Context context)
+		{
+			var windowManager = context.GetActivity()?.WindowManager;
+			Assert.NotNull(windowManager);
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				using var windowMetrics = windowManager.MaximumWindowMetrics;
+				using var bounds = windowMetrics.Bounds;
+				return (bounds.Width(), bounds.Height());
+			}
+
+			using var metrics = new DisplayMetrics();
+			Assert.NotNull(windowManager.DefaultDisplay);
+			windowManager.DefaultDisplay.GetRealMetrics(metrics);
+			return (metrics.WidthPixels, metrics.HeightPixels);
+		}
+
+		class SafeAreaLayoutStub : LayoutStub, ISafeAreaView2
+		{
+			public bool HasExplicitSafeAreaEdges => true;
+
+			public Thickness SafeAreaInsets { get; set; }
+
+			public SafeAreaRegions Regions { get; set; } = SafeAreaRegions.Container;
+
+			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => Regions;
+		}
+
+		class PositionedView : AView
+		{
+			readonly int _top;
+
+			public PositionedView(Context context, int top) : base(context)
+			{
+				_top = top;
+			}
+
+			public override void GetLocationOnScreen(int[] outLocation)
+			{
+				ArgumentNullException.ThrowIfNull(outLocation);
+				outLocation[0] = 0;
+				outLocation[1] = _top;
+			}
+		}
+	}
+}

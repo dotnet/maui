@@ -15,7 +15,7 @@ public class Issue35764 : _IssuesUITest
 	public override string Issue => "[Android] SearchHandler.ClearPlaceholderEnabled has no effect";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ClearPlaceholderIconShouldHideWhenDisabled()
 	{
 		App.WaitForElement("ToggleClearPlaceholderEnabled");

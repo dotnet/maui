@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -40,14 +41,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		const int DefaultRowHeight = 44;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Background view is owned for the renderer lifetime and disposed in CleanUpResources.")]
 		UIView _backgroundUIView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Data source is owned for the renderer lifetime and disposed in CleanUpResources.")]
 		ListViewDataSource _dataSource;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Header handler is owned for the renderer lifetime and cleared in CleanUpResources.")]
 		IPlatformViewHandler _headerRenderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Footer handler is owned for the renderer lifetime and cleared in CleanUpResources.")]
 		IPlatformViewHandler _footerRenderer;
 
 		RectangleF _previousFrame;
 		ScrollToRequestedEventArgs _requestedScroll;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Table view controller is owned for the renderer lifetime and disposed in CleanUpResources.")]
 		FormsUITableViewController _tableViewController;
 #pragma warning disable CS0618 // Type or member is obsolete
 		ListView ListView => Element;
@@ -201,6 +207,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control?.TableFooterView?.Dispose();
 		}
 #pragma warning disable CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ListView and templated-items subscriptions are removed for the old element and in CleanUpResources.")]
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
@@ -485,6 +492,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Footer MeasureInvalidated subscription is removed when the footer changes and in CleanUpResources.")]
 		void UpdateFooter()
 		{
 			var footer = ListView.FooterElement;
@@ -524,6 +532,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Header MeasureInvalidated subscription is removed when the header changes and in CleanUpResources.")]
 		void UpdateHeader()
 		{
 			var header = ListView.HeaderElement;
@@ -838,6 +847,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal sealed class UnevenListViewDataSource : ListViewDataSource
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Prototype handler is disconnected and cleared in ClearPrototype from Dispose(bool).")]
 			IPlatformViewHandler _prototype;
 			bool _disposed;
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -1068,6 +1078,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ListView ItemSelected subscription is removed in ListViewDataSource.Dispose(bool).")]
 			public ListViewDataSource(ListView list, FormsUITableViewController uiTableViewController)
 #pragma warning restore CS0618 // Type or member is obsolete
 			{
@@ -1541,6 +1552,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				WatchShortNameCollection(list.IsGroupingEnabled);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ShortNames CollectionChanged subscription is removed by WatchShortNameCollection(false) in Dispose(bool).")]
 			void WatchShortNameCollection(bool watch)
 			{
 				if (!_list.TryGetTarget(out var list))
@@ -1630,6 +1642,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Header/footer wrapper owns the table view cell as a UIKit subview for the wrapper lifetime.")]
 		UITableViewCell _tableViewCell;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -1658,6 +1671,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 		readonly WeakReference<ListView> _list;
 #pragma warning restore CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Refresh control is owned by the table controller and disposed in Dispose(bool).")]
 		UIRefreshControl _refresh;
 
 		bool _refreshAdded;
@@ -1667,6 +1681,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _isStartRefreshingPending;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Refresh control ValueChanged subscription is removed in FormsUITableViewController.Dispose(bool).")]
 		public FormsUITableViewController(ListView element, bool usingLargeTitles)
 		: base(element.OnThisPlatform().GetGroupHeaderStyle() == GroupHeaderStyle.Plain
 			? UITableViewStyle.Plain

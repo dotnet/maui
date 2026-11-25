@@ -10,6 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <DefineConstants Condition="'$(MauiEnableHandlerInstrumentation)' == 'true'">$(DefineConstants);HANDLER_INSTRUMENTATION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
@@ -71,10 +72,6 @@
     </XcodeProject>
     <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinition.cs" />
     <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
-    <PackageReference Include="Tizen.UIExtensions.NUI" />
-    <ProjectReference Include="..\..\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />

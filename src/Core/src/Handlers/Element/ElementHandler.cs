@@ -1,4 +1,7 @@
 ﻿using System;
+#if HANDLER_INSTRUMENTATION
+using Microsoft.Maui.Diagnostics;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -47,6 +50,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+#if HANDLER_INSTRUMENTATION
+			using var setVirtualViewActivity = HandlerInstrumentation.Start("SetVirtualView", this, view);
+#endif
+
 			var oldVirtualView = VirtualView;
 
 			bool setupPlatformView = oldVirtualView == null;
@@ -55,45 +62,70 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView is null)
 			{
 				_handlerState = ElementHandlerState.Connecting;
-				PlatformView = CreatePlatformElement();
+#if HANDLER_INSTRUMENTATION
+				using (HandlerInstrumentation.Start("CreatePlatformElement", this, view))
+#endif
+				{
+					PlatformView = CreatePlatformElement();
+				}
 			}
 			else
 			{
 				_handlerState = ElementHandlerState.Reconnecting;
 			}
 
-			if (VirtualView.Handler != this)
+#if HANDLER_INSTRUMENTATION
+			using (HandlerInstrumentation.Start("AssignHandler", this, view))
+#endif
 			{
-				VirtualView.Handler = this;
-			}
+				if (VirtualView.Handler != this)
+				{
+					VirtualView.Handler = this;
+				}
 
-			// We set the previous virtual view to null after setting it on the incoming virtual view.
-			// This makes it easier for the incoming virtual view to have influence
-			// on how the exchange of handlers happens.
-			// We will just set the handler to null ourselves as a last resort cleanup
-			if (oldVirtualView?.Handler != null)
-			{
-				oldVirtualView.Handler = null;
+				// We set the previous virtual view to null after setting it on the incoming virtual view.
+				// This makes it easier for the incoming virtual view to have influence
+				// on how the exchange of handlers happens.
+				// We will just set the handler to null ourselves as a last resort cleanup
+				if (oldVirtualView?.Handler != null)
+				{
+					oldVirtualView.Handler = null;
+				}
 			}
 
 			if (setupPlatformView)
 			{
-				ConnectHandler(PlatformView);
-			}
-
-			_mapper = _defaultMapper;
-
-			if (VirtualView is IPropertyMapperView imv)
-			{
-				var map = imv.GetPropertyMapperOverrides();
-				if (map is not null)
+#if HANDLER_INSTRUMENTATION
+				using (HandlerInstrumentation.Start("ConnectHandler", this, view))
+#endif
 				{
-					map.Chained = new[] { _defaultMapper };
-					_mapper = map;
+					ConnectHandler(PlatformView);
 				}
 			}
 
-			_mapper.UpdateProperties(this, VirtualView);
+#if HANDLER_INSTRUMENTATION
+			using (HandlerInstrumentation.Start("ResolveMapper", this, view))
+#endif
+			{
+				_mapper = _defaultMapper;
+
+				if (VirtualView is IPropertyMapperView imv)
+				{
+					var map = imv.GetPropertyMapperOverrides();
+					if (map is not null)
+					{
+						map.Chained = new[] { _defaultMapper };
+						_mapper = map;
+					}
+				}
+			}
+
+#if HANDLER_INSTRUMENTATION
+			using (HandlerInstrumentation.Start("UpdateProperties", this, view))
+#endif
+			{
+				_mapper.UpdateProperties(this, VirtualView);
+			}
 
 			_handlerState = ElementHandlerState.Connected;
 		}

@@ -13,39 +13,46 @@ public class Issue21375 : _IssuesUITest
 	public override string Issue => "Selected CollectionView item is not announced";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void SelectedItemsShowSelected()
 	{
+		Exception? exception = null;
+
 		var collectionView = App.WaitForElement("collectionView");
 
 		App.Tap("Item 1");
 		App.WaitForElement("calculateButton").Tap();
 
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_single");
 
 		App.WaitForElement("multipleButton").Tap();
 		App.Tap("Item 2");
 		App.Tap("Item 3");
 		App.WaitForElement("calculateButton").Tap();
 
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_multiple");
 
 		App.WaitForElement("noneButton").Tap();
 		App.WaitForElement("calculateButton").Tap();
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_none");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_none");
 
 		App.WaitForElement("singleButton").Tap();
 		App.WaitForElement("calculateButton").Tap();
 
 #if !WINDOWS // Windows clears out the selected items when we switch back
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_single");
 
 		App.WaitForElement("multipleButton").Tap();
 		App.WaitForElement("calculateButton").Tap();
 
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_multiple");
 #endif
 
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
 #endif

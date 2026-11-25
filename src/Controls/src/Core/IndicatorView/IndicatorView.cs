@@ -40,7 +40,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IndicatorTemplate"/>.</summary>
 		public static readonly BindableProperty IndicatorTemplateProperty = BindableProperty.Create(nameof(IndicatorTemplate), typeof(DataTemplate), typeof(IndicatorView), default(DataTemplate), propertyChanging: (bindable, oldValue, newValue)
-			=> UpdateIndicatorLayout((IndicatorView)bindable, newValue));
+			=> UpdateIndicatorLayout((IndicatorView)bindable, newValue), propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				var indicatorView = (IndicatorView)bindable;
+				indicatorView.Handler?.UpdateValue(nameof(ITemplatedIndicatorView.IndicatorsLayoutOverride));
+				indicatorView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			});
 
 		/// <summary>Bindable property for <see cref="HideSingle"/>.</summary>
 		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), BooleanBoxes.TrueBox);
@@ -60,10 +65,18 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IndicatorView"/> class.
 		/// </summary>
-		public IndicatorView() { }
+		public IndicatorView()
+		{
+			_collectionChangedEventHandler = OnCollectionChanged;
+		}
+
+		~IndicatorView() => _collectionChangedProxy.Unsubscribe();
 
 		/// <summary>
 		/// Gets or sets the shape of the indicators.
@@ -138,6 +151,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// When set, this allows full customization of indicator appearance. When <see langword="null"/>,
 		/// indicators are rendered using <see cref="IndicatorsShape"/>, <see cref="IndicatorSize"/>, and color properties.
+		/// Changing this property updates the displayed indicators, including when a template is assigned after the view is displayed.
 		/// </remarks>
 		public DataTemplate IndicatorTemplate
 		{
@@ -224,24 +238,25 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
+			(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
+
 			if (newValue != null)
 			{
 				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
 			else if (indicatorView.IndicatorLayout is not null)
 			{
-				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
 			}
 		}
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
-			if (oldItemsSource is INotifyCollectionChanged oldCollection)
-				oldCollection.CollectionChanged -= OnCollectionChanged;
+			if (oldItemsSource is INotifyCollectionChanged)
+				_collectionChangedProxy.Unsubscribe();
 
 			if (ItemsSource is INotifyCollectionChanged collection)
-				collection.CollectionChanged += OnCollectionChanged;
+				_collectionChangedProxy.Subscribe(collection, _collectionChangedEventHandler);
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 

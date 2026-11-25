@@ -9,6 +9,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerEntryFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerEntryFeatureTests;
+	protected override string GallerySubPageButton => "VSMEntryButton";
 
 	public VisualStateManager_EntryFeatureTests(TestDevice device)
 		: base(device)
@@ -18,12 +19,10 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Entry_InitialState()
 	{
-		App.WaitForElement("VSMEntryButton");
-		App.Tap("VSMEntryButton");
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -43,7 +42,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		if(App.IsKeyboardShown())
 			App.DismissKeyboard();
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -54,7 +53,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("NormalEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -64,7 +63,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -74,7 +73,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ResetEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -98,7 +97,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]
@@ -114,7 +113,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -128,7 +127,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]
@@ -156,7 +155,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
@@ -176,7 +175,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(11)]
@@ -259,7 +258,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(16)]
@@ -277,7 +276,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Invalid"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(17)]
@@ -342,7 +341,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Completed"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(20)]

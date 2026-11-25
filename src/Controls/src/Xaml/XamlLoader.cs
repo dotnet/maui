@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -50,7 +51,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			var xaml = GetXamlForType(callingType, view, out var useDesignProperties);
 			if (string.IsNullOrEmpty(xaml))
 				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
-			Load(view, xaml, useDesignProperties);
+
+			// Only the SourceGen fallback has already compiled the inline code.
+			var sourceGenFallback = xaml.IndexOf("Code", StringComparison.Ordinal) >= 0
+				&& callingType.GetMethod("InitializeComponentRuntime",
+					BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+					null, Type.EmptyTypes, null)?.GetCustomAttribute<GeneratedCodeAttribute>()?.Tool == "Microsoft.Maui.Controls.SourceGen";
+			Load(view, xaml, null, useDesignProperties, removeCodeDirectives: sourceGenFallback);
 		}
 
 		public static void Load(object view, string xaml) => Load(view, xaml, false);
@@ -58,11 +65,14 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void Load(object view, string xaml, Assembly rootAssembly) => Load(view, xaml, rootAssembly, false);
 
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
+			=> Load(view, xaml, rootAssembly, useDesignProperties, removeCodeDirectives: false);
+
+		static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties, bool removeCodeDirectives)
 		{
 			rootAssembly ??= view.GetType().Assembly;
 
 			if (XamlParser.s_xmlnsPrefixes == null)
-				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
+				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes();
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
@@ -88,13 +98,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootnode, reader);
+					if (removeCodeDirectives && xaml.IndexOf("Code", StringComparison.Ordinal) >= 0)
+						PruneIgnoredNodesVisitor.RemoveCodeDirectives(rootnode);
 					var doNotThrow = ResourceLoader.ExceptionHandler2 != null;
-					void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
 					Visit(rootnode, new HydrationContext
 					{
 						RootElement = view,
 						RootAssembly = rootAssembly,
-						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
+						ExceptionHandler = doNotThrow ? CreateExceptionHandler(view) : null
 					}, useDesignProperties);
 
 					VisualDiagnostics.OnChildAdded(null, view as Element);
@@ -151,8 +162,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static IResourceDictionary LoadResources(string xaml, IResourcesProvider rootView)
 		{
-			void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(rootView)));
-
 			using (var textReader = new StringReader(xaml))
 			using (var reader = XmlReader.Create(textReader))
 			{
@@ -178,7 +187,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					var visitorContext = new HydrationContext
 					{
-						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
+						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? CreateExceptionHandler(rootView) : null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
 					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.MauiUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary)))
@@ -212,6 +221,27 @@ namespace Microsoft.Maui.Controls.Xaml
 			return null;
 		}
 
+		static Action<Exception> CreateExceptionHandler(object view)
+			=> e => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
+
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AppThemeBindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ArrayExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DataTemplateExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DynamicResourceExtension))]
+#pragma warning disable CS0618 // FontImageExtension is retained for runtime XAML compatibility.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FontImageExtension))]
+#pragma warning restore CS0618
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NullExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OnIdiomExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OnPlatformExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ReferenceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RelativeSourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StaticExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StaticResourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StyleSheetExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TemplateBindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TypeExtension))]
 		static void Visit(RootNode rootnode, HydrationContext visitorContext, bool useDesignProperties)
 		{
 			rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}

@@ -13,7 +13,7 @@ public class Issue35416 : _IssuesUITest
 	public override string Issue => "[Android] Shell.FlyoutHeader background is incorrect";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutBackgroundShowsThroughFlyoutHeader()
 	{
 		App.WaitForElement("Issue35416Label");

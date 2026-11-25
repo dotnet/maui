@@ -477,7 +477,7 @@ likely being `AuthenticatorAttachment` for UX messaging) can be added later with
 Each platform gets a `PasskeysImplementation` partial, following the existing `WebAuthenticator` file
 convention (see `src/Essentials/src/WebAuthenticator/`): `Passkeys.android.cs`, `Passkeys.ios.cs`
 (compiles for **both** iOS and Mac Catalyst), `Passkeys.windows.cs`, and a not-supported stub
-`Passkeys.netstandard.tvos.tizen.cs`. A `Passkeys.maccatalyst.cs` would be added only if Mac Catalyst
+`Passkeys.netstandard.tvos.cs`. A `Passkeys.maccatalyst.cs` would be added only if Mac Catalyst
 needs behavior that differs from iOS. Note Essentials does **not** currently build a standalone `net-macos`
 target (the `macos` compile group in `Essentials.csproj` is commented out), so there is no
 `Passkeys.macos.cs` in v1 — see §7.2.
@@ -688,9 +688,9 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   generated bindings.
 
 ### 7.4 Unsupported platforms
-- **Built by Essentials but no passkey support in v1** — `netstandard`, tvOS, Tizen: `IsSupported == false`;
+- **Built by Essentials but no passkey support in v1** — `netstandard`, tvOS: `IsSupported == false`;
   `CreateAsync`/`AssertAsync` throw `FeatureNotSupportedException` (consistent with other Essentials APIs).
-  Covered by the `Passkeys.netstandard.tvos.tizen.cs` stub. (tvOS *does* have an
+  Covered by the `Passkeys.netstandard.tvos.cs` stub. (tvOS *does* have an
   `AuthenticationServices` passkey API and could be added later; it is out of scope for v1.)
 - **Not built by Essentials today** — standalone macOS and watchOS compile groups are commented out in
   `Essentials.csproj`, so they need no stub until those targets are enabled.

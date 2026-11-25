@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		Task<Page> PopModalPlatformAsync(bool animated)
+		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
@@ -105,7 +105,14 @@ namespace Microsoft.Maui.Controls.Platform
 			// If for the dialog is null what we want to do?
 			if (dialogFragment is null)
 			{
-				return Task.FromResult(modal);
+				return modal;
+			}
+
+			// A deferred pop can arrive before the first layout starts the entrance animation.
+			// Wait for it so the entrance and exit animations cannot replace each other.
+			if (animated && dialogFragment.IsAnimated && dialogFragment.View is not null)
+			{
+				await dialogFragment.AnimationTask;
 			}
 
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -134,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 				source.TrySetResult(modal);
 			}
 
-			return source.Task;
+			return await source.Task;
 
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
@@ -161,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
-		async Task PushModalPlatformAsync(Page modal, bool animated)
+		async Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			var viewToHide = GetCurrentRootView();
 
@@ -194,17 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-				dialogFragment.AnimationEnded += OnAnimationEnded;
-
-				void OnAnimationEnded(object? sender, EventArgs e)
-				{
-					dialogFragment.AnimationEnded -= OnAnimationEnded;
-					animationCompletionSource.SetResult(true);
-				}
-
-				await animationCompletionSource.Task;
+				await dialogFragment.AnimationTask;
 			}
 			else
 			{
@@ -229,10 +226,10 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
-			bool _pendingAnimation = true;
+			readonly TaskCompletionSource<bool> _animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			bool _pendingNavigation = true;
 
-			internal event EventHandler? AnimationEnded;
+			internal Task AnimationTask => _animationCompletionSource.Task;
 			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
@@ -240,6 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
 				_modal = modal;
+				_modal.Loaded += OnModalLoaded;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
 				_modal.HandlerChanged += OnPageHandlerChanged;
 				_mauiWindowContext = mauiContext;
@@ -398,7 +396,8 @@ namespace Microsoft.Maui.Controls.Platform
 					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 
 				_navigationRootManager = modalContext.GetNavigationRootManager();
-				_navigationRootManager.Connect(_modal, modalContext);
+				if (!_navigationRootManager.Connect(_modal, modalContext))
+					throw new InvalidOperationException("A modal navigation root must be initialized synchronously.");
 
 				UpdateBackgroundColor();
 
@@ -457,12 +456,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnResume();
 
-				// Signal that the modal is fully presented and ready
-				FirePresentationCompleted();
+				// OnResume can precede attachment; an immediate pop requires a loaded platform view.
+				if (_modal.IsLoaded)
+					FirePresentationCompleted();
+			}
+
+			void OnModalLoaded(object? sender, EventArgs e)
+			{
+				if (IsResumed)
+					FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
+				_modal.Loaded -= OnModalLoaded;
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
 
@@ -490,13 +497,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void FireAnimationEnded()
 			{
-				if (!_pendingAnimation)
-				{
-					return;
-				}
-
-				_pendingAnimation = false;
-				AnimationEnded?.Invoke(this, EventArgs.Empty);
+				_animationCompletionSource.TrySetResult(true);
 			}
 
 			void FirePresentationCompleted()
@@ -505,6 +506,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				_pendingNavigation = false;
+				_modal?.Loaded -= OnModalLoaded;
 				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 

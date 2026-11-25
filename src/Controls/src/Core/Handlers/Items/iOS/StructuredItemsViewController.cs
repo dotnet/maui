@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -7,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView> instead.")]
 	public class StructuredItemsViewController<TItemsView> : ItemsViewController<TItemsView>
 		where TItemsView : StructuredItemsView
 	{
@@ -15,9 +17,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _disposed;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _headerUIView;
 		VisualElement _headerViewFormsElement;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _footerUIView;
 		VisualElement _footerViewFormsElement;
 

@@ -33,7 +33,17 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			RunWithTimeout(() => FindElement(app, element).Click());
+			RunWithTimeout(() =>
+			{
+				try
+				{
+					FindElement(app, element).Click();
+				}
+				catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+				{
+					app.WaitForElement(element).Click();
+				}
+			});
 		}
 
 		/// <summary>
@@ -44,7 +54,17 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Tap(this IApp app, IQuery query)
 		{
-			RunWithTimeout(() => app.FindElement(query).Tap());
+			RunWithTimeout(() =>
+			{
+				try
+				{
+					app.FindElement(query).Tap();
+				}
+				catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+				{
+					app.WaitForElement(query).Tap();
+				}
+			});
 		}
 
 		/// <summary>
@@ -80,8 +100,8 @@ namespace UITest.Appium
 		/// <summary>
 		/// Closes a picker dialog using platform-specific dismiss actions.
 		/// For Android, taps the "Cancel" button.
+		/// For iOS/MacCatalyst, taps the "Done" button.
 		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
-		/// For iOS, taps the "selected" button on iOS 26+, otherwise taps the "Done" button. For MacCatalyst, taps the "Done" button.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
@@ -91,10 +111,6 @@ namespace UITest.Appium
 			if (app is AppiumAndroidApp)
 			{
 				app.Tap("Cancel");
-			}
-			else if (app is AppiumIOSApp iosApp && IsIOS26OrHigher(iosApp))
-			{
-				app.Tap("selected");
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
 			{
@@ -181,6 +197,39 @@ namespace UITest.Appium
 
 				throw new InvalidOperationException($"Could not get Rect of element");
 			})!;
+		}
+
+		/// <summary>
+		/// Waits for an element and reads its on-screen rectangle, re-querying and retrying if the
+		/// element reference becomes stale. A navigation or tab-switch animation can recycle the
+		/// underlying view between the element query and the geometry read, which surfaces as a
+		/// <see cref="StaleElementReferenceException"/> from <see cref="GetRect(IUIElement)"/>. Re-finding
+		/// the element and reading again once it has settled keeps the geometry read deterministic
+		/// without changing what the caller asserts on. This mirrors the existing stale-element handling
+		/// used elsewhere in the framework (see AppiumMouseActions).
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="elementId">The id of the element to locate and measure.</param>
+		/// <param name="timeout">Optional timeout for each wait operation. Default is null, which uses the default timeout.</param>
+		public static Rectangle WaitForElementAndGetRect(this IApp app, string elementId, TimeSpan? timeout = null)
+		{
+			StaleElementReferenceException? lastStale = null;
+
+			for (int attempt = 0; attempt < 3; attempt++)
+			{
+				try
+				{
+					return app.WaitForElement(elementId, timeout: timeout).GetRect();
+				}
+				catch (StaleElementReferenceException ex)
+				{
+					// The view was recycled between the query and the geometry read (typically
+					// mid-animation); re-find the element and read again now that it should have settled.
+					lastStale = ex;
+				}
+			}
+
+			throw lastStale!;
 		}
 
 		/// <summary>
@@ -1379,9 +1428,15 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToScroll = FindElement(app, marked);
-
-			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			try
+			{
+				var elementToScroll = FindElement(app, marked);
+				app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			}
+			catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+			{
+				app.ScrollDown(app.WaitForElement(marked), strategy, swipePercentage, swipeSpeed, withInertia);
+			}
 		}
 
 		/// <summary>
@@ -3052,6 +3107,16 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Clears text from the search handler element for the shell.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <exception cref="InvalidOperationException">The search handler element cannot be found.</exception>
+		public static void ClearTextInShellSearchHandler(this IApp app)
+		{
+			app.GetShellSearchHandler().Clear();
+		}
+
+		/// <summary>
 		/// Executes a function with a timeout to prevent tests from hanging indefinitely
 		/// when the application becomes unresponsive (e.g., due to an infinite layout loop).
 		/// WDA (WebDriverAgent) waits for the app's main thread to be idle before executing
@@ -3069,18 +3134,18 @@ namespace UITest.Appium
 				{
 					// Signal cancellation (Appium driver won't respect it, but good hygiene)
 					cts.Cancel();
-					
+
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
-					
+
 					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
 					task.ContinueWith(t =>
 					{
 						if (t.Exception is not null)
 							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
 					}, TaskContinuationOptions.OnlyOnFaulted);
-					
+
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");

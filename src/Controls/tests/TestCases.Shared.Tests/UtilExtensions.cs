@@ -1,5 +1,9 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -9,6 +13,115 @@ namespace Microsoft.Maui.TestCases.Tests
 	public static class UtilExtensions
 	{
 		const string goToTestButtonId = "GoToTestButton";
+
+		/// <summary>
+		/// Retries transient NUnit assertions without retaining failed observations in the test result.
+		/// </summary>
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			var deadline = timeout ?? TimeSpan.FromSeconds(15);
+			var interval = retryFrequency ?? TimeSpan.FromMilliseconds(500);
+			var stopwatch = Stopwatch.StartNew();
+
+			while (true)
+			{
+				try
+				{
+					// NUnit records caught assertion failures in the enclosing test result.
+					var enclosingResult = TestExecutionContext.CurrentContext.CurrentResult;
+					using var context = new TestExecutionContext.IsolatedContext();
+					try
+					{
+						assertToRetry();
+						var result = TestExecutionContext.CurrentContext.CurrentResult;
+						if (result.AssertionResults.Any(assertion => assertion.Status == AssertionStatus.Failed))
+							throw new MultipleAssertException(result);
+						return;
+					}
+					finally
+					{
+						foreach (var assertion in TestExecutionContext.CurrentContext.CurrentResult.AssertionResults)
+						{
+							if (assertion.Status == AssertionStatus.Warning)
+								enclosingResult.RecordAssertion(assertion);
+						}
+					}
+				}
+				catch (Exception exception) when (
+					(exception is AssertionException or MultipleAssertException or StaleElementReferenceException or NoSuchElementException)
+					&& stopwatch.Elapsed < deadline)
+				{
+					var remaining = deadline - stopwatch.Elapsed;
+					if (remaining > TimeSpan.Zero)
+						Thread.Sleep(interval < remaining ? interval : remaining);
+				}
+			}
+		}
+
+		public static IQuery GetCollapsibleShellSearchQuery(this IApp app, string placeholder)
+		{
+			// Android's collapsed menu item uses SearchHandler.Placeholder as its title.
+			// iOS exposes the native search field, as in GetShellSearchHandler.
+			return app.GetTestDevice() == TestDevice.Android
+				? AppiumQuery.ByAccessibilityId(placeholder)
+				: AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Renderer configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellRenderer(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Handler configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellHandler(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && !string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView1 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV1(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) == true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView2 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV2(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) != true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
 
 		public static void Back(this UITestContextBase testBase)
 		{
@@ -157,10 +270,35 @@ namespace Microsoft.Maui.TestCases.Tests
 				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
 				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
 			}
+			else if (app is AppiumCatalystApp)
+			{
+				// Native clicks wait for idle and can lose the filtered result before dispatching the click.
+				var rect = app.WaitForElementAndGetRect(searchResultIdentifier);
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
 			else
 			{
 				var searchResults = app.FindElements(searchResultIdentifier);
 				searchResults.First().Tap();
+			}
+		}
+
+		public static void TapShellBackArrowWithImageOverride(this IApp app, string imageAutomationId)
+		{
+			if (app is AppiumCatalystApp)
+			{
+				// Tahoe exposes the image-overridden button without its identifier and as disabled.
+				// Use pointer input on the navigation button rather than bypassing its command.
+				var rect = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeNavigationBar/XCUIElementTypeButton[1]")).GetRect();
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
+			else if (app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				app.Back();
+			}
+			else
+			{
+				app.TapBackArrow(imageAutomationId);
 			}
 		}
 	}

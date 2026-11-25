@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/38055
 		[Fact]
 		[Category(TestCategory.RadioButton)]
 		public async Task RadioButtonHandlerShouldNotLeak()

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		public Task Transition(IShellItemRenderer oldRenderer, IShellItemRenderer newRenderer)
 		{
-			TaskCompletionSource<bool> task = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> task = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var oldView = oldRenderer.ViewController.View;
 			var newView = newRenderer.ViewController.View;
 

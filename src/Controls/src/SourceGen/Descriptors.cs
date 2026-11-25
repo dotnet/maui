@@ -162,6 +162,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		internal static DiagnosticDescriptor ConflictingXmlnsType = new DiagnosticDescriptor(
+			id: "MAUIX2020",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
 			id: "MAUIX2002",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
@@ -301,14 +309,6 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Info,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor CSharpExpressionsRequirePreviewFeatures = new DiagnosticDescriptor(
-			id: "MAUIX2012",
-			title: "C# Expressions require EnablePreviewFeatures",
-			messageFormat: "XAML C# Expressions are an experimental feature. Add '<EnablePreviewFeatures>true</EnablePreviewFeatures>' to your project file to enable them.",
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
 		public static DiagnosticDescriptor AsyncLambdaNotSupported = new DiagnosticDescriptor(
 			id: "MAUIX2013",
 			title: "Async lambda event handlers are not supported",
@@ -317,10 +317,75 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
+			id: "MAUIX2019",
+			title: "Lambda body is a method group reference",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation.{1}",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		// x:Code diagnostics
+		public static DiagnosticDescriptor XCodeRequiresPreview = new DiagnosticDescriptor(
+			id: "MAUIX2012",
+			title: "x:Code requires preview features",
+			messageFormat: "x:Code requires EnablePreviewFeatures to be set to true.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
+			id: "MAUIX2015",
+			title: "x:Code must be an immediate child of the root element",
+			messageFormat: "x:Code must be an immediate child of the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresXClass = new DiagnosticDescriptor(
+			id: "MAUIX2016",
+			title: "x:Code requires x:Class on the root element",
+			messageFormat: "x:Code requires x:Class to be specified on the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresSourceGen = new DiagnosticDescriptor(
+			id: "MAUIX2023",
+			title: "x:Code requires XAML source generation",
+			messageFormat: "x:Code requires SourceGen as the only XAML inflator.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
 			id: "MAUIX2014",
 			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandler), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor StructIntermediateNotSettable = new DiagnosticDescriptor(
+			id: "MAUIX2018",
+			title: "Value type property in path has no setter",
+			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExtensionPropertyAmbiguous = new DiagnosticDescriptor(
+			id: "MAUIX2021",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExtensionPropertyAmbiguous), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExtensionPropertyResolution = new DiagnosticDescriptor(
+			id: "MAUIX2022",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExtensionPropertyResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
@@ -392,4 +457,3 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 	}
 }
-

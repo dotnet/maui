@@ -50,6 +50,38 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Keep the net462 native loaders, but bind span APIs to the same System.Memory as Svg.Skia
+    to prevent the SVG filter/text MissingMethodException (dotnet/maui#38319, #39165).
+    Remove this adjustment only when the unmodified rendering assemblies have compatible
+    System.Memory references and PackagedResizetizerRendersSvgFiltersAndText passes without
+    it in both dotnet MSBuild and Windows full-framework MSBuild. An upgrade alone is not proof.
+    Restore the original package DLL paths in ResizetizerPackages.projitems at the same time;
+    keep the regression test.
+  -->
+  <ItemGroup>
+    <_MemoryAdjustments Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
+    <_MemoryAdjustments Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <_MemoryAdjustments Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
+  </ItemGroup>
+  <PropertyGroup>
+    <_MemoryAdjustmentsReferencedAssembly>$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll</_MemoryAdjustmentsReferencedAssembly>
+  </PropertyGroup>
+  <Target Name="_AdjustSystemMemoryVersion" BeforeTargets="Build;AssignTargetPaths"
+          Inputs="$(MSBuildAllProjects);$(_MemoryAdjustmentsReferencedAssembly);@(_MemoryAdjustments)"
+          Outputs="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')">
+    <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
+    <!-- The adjustment task does not write an output when no reference change is needed. -->
+    <Copy SourceFiles="@(_MemoryAdjustments)"
+          DestinationFiles="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')" />
+    <AdjustReferencedAssemblyVersion
+      Assembly="$(IntermediateOutputPath)adjustments\%(_MemoryAdjustments.Filename)%(_MemoryAdjustments.Extension)"
+      ReferencedAssembly="$(_MemoryAdjustmentsReferencedAssembly)" />
+    <ItemGroup>
+      <FileWrites Include="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
   <Target Name="AfterILRepack">
     <ItemGroup>

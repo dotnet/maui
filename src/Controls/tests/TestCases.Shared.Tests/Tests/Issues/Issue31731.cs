@@ -30,13 +30,9 @@ public class Issue31731 : _IssuesUITest
 		// Open the picker dialog
 		App.Tap("colorPicker");
 
-		// Wait for a moment to ensure dialog is open, then wait for auto navigation
-		// The page will automatically pop after 3 seconds
-		// If the bug exists, this would cause a crash
-		System.Threading.Thread.Sleep(4000); // Wait longer than the 3-second delay
-
-		// If we reach this point without crashing, the test passes
-		// Verify we're back on the main page
+		// Opening the dialog triggers an automatic pop back to the main page.
+		// Wait for the main page to reappear instead of sleeping a fixed amount
+		// of time; if the bug regresses the app crashes and these waits fail.
 		App.WaitForElement("statusLabel");
 		App.WaitForElement("navigateButton");
 	}

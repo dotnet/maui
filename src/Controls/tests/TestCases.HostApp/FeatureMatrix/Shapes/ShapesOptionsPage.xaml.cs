@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls.Shapes;
+
 namespace Maui.Controls.Sample;
 
 public partial class ShapesOptionsPage : ContentPage
@@ -25,36 +27,13 @@ public partial class ShapesOptionsPage : ContentPage
 	}
 	private void UpdatePropertySectionVisibility(ShapeType shapeType)
 	{
-		// Hide all property sections first
-		RectanglePropertiesSection.IsVisible = false;
-		EllipsePropertiesSection.IsVisible = false;
-		LinePropertiesSection.IsVisible = false;
-		PolygonPropertiesSection.IsVisible = false;
-		PolylinePropertiesSection.IsVisible = false;
-		PathPropertiesSection.IsVisible = false;
-
-		// Show the relevant property section
-		switch (shapeType)
-		{
-			case ShapeType.Rectangle:
-				RectanglePropertiesSection.IsVisible = true;
-				break;
-			case ShapeType.Ellipse:
-				EllipsePropertiesSection.IsVisible = true;
-				break;
-			case ShapeType.Line:
-				LinePropertiesSection.IsVisible = true;
-				break;
-			case ShapeType.Polygon:
-				PolygonPropertiesSection.IsVisible = true;
-				break;
-			case ShapeType.Polyline:
-				PolylinePropertiesSection.IsVisible = true;
-				break;
-			case ShapeType.Path:
-				PathPropertiesSection.IsVisible = true;
-				break;
-		}
+		RectanglePropertiesSection.IsVisible = shapeType == ShapeType.Rectangle;
+		RoundRectanglePropertiesSection.IsVisible = shapeType == ShapeType.RoundRectangle;
+		EllipsePropertiesSection.IsVisible = shapeType == ShapeType.Ellipse;
+		LinePropertiesSection.IsVisible = shapeType == ShapeType.Line;
+		PolygonPropertiesSection.IsVisible = shapeType == ShapeType.Polygon;
+		PolylinePropertiesSection.IsVisible = shapeType == ShapeType.Polyline;
+		PathPropertiesSection.IsVisible = shapeType == ShapeType.Path;
 	}
 
 	private void OnFillColorChanged(object sender, CheckedChangedEventArgs e)
@@ -64,7 +43,6 @@ public partial class ShapesOptionsPage : ContentPage
 			if (colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "none")
 			{
 				_viewModel.HasFillColor = false;
-				_viewModel.FillColor = null;
 			}
 			else
 			{
@@ -84,11 +62,47 @@ public partial class ShapesOptionsPage : ContentPage
 		}
 	}
 
-	private Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
+	private void OnAspectChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string aspectName)
+		{
+			if (Enum.TryParse<Stretch>(aspectName, out var aspect))
+				_viewModel.Aspect = aspect;
+		}
+	}
+
+	private void OnStrokeLineCapChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string capName)
+		{
+			if (Enum.TryParse<PenLineCap>(capName, out var cap))
+				_viewModel.StrokeLineCap = cap;
+		}
+	}
+
+	private void OnStrokeLineJoinChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string joinName)
+		{
+			if (Enum.TryParse<PenLineJoin>(joinName, out var join))
+				_viewModel.StrokeLineJoin = join;
+		}
+	}
+
+	private void OnFillRuleChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string fillRuleName)
+		{
+			if (Enum.TryParse<FillRule>(fillRuleName, out var fillRule))
+				_viewModel.FillRule = fillRule;
+		}
+	}
+
+	private static Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
 	{
 		return colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) switch
 		{
-			"red" => Colors.Red,
+			"red" => Microsoft.Maui.Graphics.Colors.Red,
 			"blue" => Microsoft.Maui.Graphics.Colors.Blue,
 			"green" => Microsoft.Maui.Graphics.Colors.Green,
 			"yellow" => Microsoft.Maui.Graphics.Colors.Yellow,

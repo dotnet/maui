@@ -49,10 +49,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+		Task SyncModalStackWhenPlatformIsReadyCoreAsync() =>
 			SyncPlatformModalStackAsync();
 
-		bool IsModalPlatformReady => _platformActivated && !_waitForModalToFinish;
+		bool IsModalPlatformReadyCore => _platformActivated && !_waitForModalToFinish;
 
 		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
@@ -84,9 +84,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		async Task<Page> PopModalPlatformAsync(bool animated)
+		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			var modal = CurrentPlatformModalPage;
+			var isFinalModal = _platformModalPages.Count == 1;
 			_platformModalPages.Remove(modal);
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
@@ -94,6 +95,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (controller?.ParentViewController is ModalWrapper modalWrapper &&
 				modalWrapper.PresentingViewController is not null)
 			{
+				if (isFinalModal &&
+					_window.Page is Shell shell &&
+					shell.Navigation.ModalStack.Count == 0 &&
+					shell.GetCurrentShellPage() is Page shellPage)
+				{
+					// A Shell item change under the modal can leave its toolbar appearance stale.
+					((IShellController)shell).AppearanceChanged(shellPage, false);
+				}
+
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
 				DisposeHelpers.DisposeModalAndChildHandlers(modal);
 				return modal;
@@ -106,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return modal;
 		}
 
-		Task PushModalPlatformAsync(Page modal, bool animated)
+		Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			EndEditing();
 

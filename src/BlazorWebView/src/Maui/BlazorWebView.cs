@@ -113,6 +113,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		public event EventHandler<WebViewWebResourceRequestedEventArgs>? WebResourceRequested;
 
+		/// <summary>
+		/// Raised when the process rendering the web content ends unexpectedly, for example because it crashed or the
+		/// operating system reclaimed it. The page and the UI state of its components are lost.
+		/// <para>
+		/// Currently raised on iOS and Mac Catalyst. There the <see cref="BlazorWebView"/> reloads the page after the
+		/// event, which starts the Blazor app again, so a handler can save state it wants to restore. While the web view
+		/// is not visible (it is not in a window, or its window is in the background), the reload waits until it is.
+		/// If the process ends again before the reloaded page has been loaded for 30 seconds, the page is not reloaded
+		/// that time, to avoid a crash loop.
+		/// </para>
+		/// </summary>
+		public event EventHandler<WebViewProcessTerminatedEventArgs>? ProcessTerminated;
+
 		/// <inheritdoc />
 #if ANDROID
 		[System.Runtime.Versioning.SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
@@ -180,6 +193,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
+
+		/// <inheritdoc />
+		void IBlazorWebView.ProcessTerminated(WebProcessTerminatedEventArgs args)
+		{
+#if ANDROID
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.RenderProcessGoneDetail);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif IOS || MACCATALYST
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif WINDOWS
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.CoreWebView2ProcessFailedEventArgs);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#else
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs();
+#endif
+			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
+		}
 
 		/// <inheritdoc />
 		bool IWebRequestInterceptingWebView.WebResourceRequested(WebResourceRequestedEventArgs args)

@@ -14,17 +14,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionViewHandler assigns Accessibility Traits with SelectionMode correctly";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void AccessibilityTraitsSetCorrectly()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "None");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Single");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Single");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Multiple");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Multiple");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "None");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

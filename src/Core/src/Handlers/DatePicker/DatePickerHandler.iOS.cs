@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -183,6 +184,31 @@ namespace Microsoft.Maui.Handlers
 			public override void DoneClicked()
 			{
 				DatePickerHandler.OnDoneClicked(Handler);
+			}
+		}
+
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler.PlatformView is not MauiDatePicker platformView)
+			{
+				return;
+			}
+
+			if (datePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (datePicker.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(datePicker);
 			}
 		}
 	}

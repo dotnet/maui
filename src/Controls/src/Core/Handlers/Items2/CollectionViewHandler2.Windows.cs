@@ -36,6 +36,12 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
+	bool _selectionUpdateQueued;
+	bool _platformSelectionUpdateQueued;
+	Action<int>? _containerPreparedHandler;
+
+
+	internal override bool PreventGestureBubbling => VirtualView.SelectionMode is not SelectionMode.None;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -162,6 +168,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		if (PlatformView is not null)
 		{
+			PlatformView.IsTabStop = false;
 			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
 					new UI.Xaml.Data.Binding
 					{
@@ -173,19 +180,51 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
 			PlatformView.Loaded += OnPlatformViewLoaded;
+
+			if (PlatformView is MauiItemsView mauiItemsViewConnect)
+			{
+				mauiItemsViewConnect.ReattachAccessibilityHelper();
+			}
 		}
 	}
 
 	void OnPlatformViewLoaded(object? sender, UI.Xaml.RoutedEventArgs e)
 	{
-		// Re-sync visual states to MAUI selection whenever the view re-enters the visual tree.
-		// This is the fix for the stale selection highlight on navigation back
-		if (_selectionDirty)
+		if (sender is not MauiItemsView platformView || _selectionUpdateQueued)
+			return;
+
+		_selectionUpdateQueued = true;
+
+		void OnReady()
 		{
-			_selectionDirty = false;
-			UpdatePlatformSelection();
+			if (!_selectionUpdateQueued || !ReferenceEquals(PlatformView, platformView))
+			{
+				return;
+			}
+
+			_selectionUpdateQueued = false;
+			if (_containerPreparedHandler is not null)
+			{
+				platformView.ContainerPrepared -= _containerPreparedHandler;
+				_containerPreparedHandler = null;
+			}
+
+			PlatformView.IsTabStop = true;
+			if (_selectionDirty)
+			{
+				_selectionDirty = false;
+				UpdatePlatformSelection();
+			}
+		}
+
+		_containerPreparedHandler = _ => OnReady();
+		platformView.ContainerPrepared += _containerPreparedHandler;
+		if (!platformView.DispatcherQueue.TryEnqueue(OnReady))
+		{
+			OnReady();
 		}
 	}
+
 
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
@@ -197,17 +236,36 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		platformView.SelectionChanged -= PlatformSelectionChanged;
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
+		if (platformView is MauiItemsView mauiItemsView)
+		{
+			if (_containerPreparedHandler is not null)
+			{
+				mauiItemsView.ContainerPrepared -= _containerPreparedHandler;
+				_containerPreparedHandler = null;
+			}
+
+			mauiItemsView.CleanUpAccessibilityHelper();
+			mauiItemsView.CleanUpAutomationEvents();
+		}
+		_selectionUpdateQueued = false;
+		_platformSelectionUpdateQueued = false;
 
 		if (ItemsView is not null)
 		{
 			ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		}
 
+
 		base.DisconnectHandler(platformView);
 	}
 
 	protected override void UpdateItemsSource()
 	{
+		if (PlatformView is not null && PlatformView is MauiItemsView mauiItemsView)
+		{
+			mauiItemsView.CancelPendingAccessibilityFocus();
+		}
+
 		_ignorePlatformSelectionChange = true;
 		try
 		{
@@ -233,23 +291,38 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
-		if (PlatformView is null)
+		if (_ignorePlatformSelectionChange ||
+			!ReferenceEquals(((IElementHandler)this).PlatformView, sender) ||
+			_platformSelectionUpdateQueued)
 			return;
 
-		UpdateVirtualSelection();
+		_platformSelectionUpdateQueued = true;
+		if (!sender.DispatcherQueue.TryEnqueue(() =>
+		{
+			_platformSelectionUpdateQueued = false;
+			if (ReferenceEquals(((IElementHandler)this).PlatformView, sender))
+			{
+				UpdateVirtualSelection(sender);
+			}
+		}))
+		{
+			_platformSelectionUpdateQueued = false;
+		}
 	}
 
 	/// <summary>
 	/// Reads the current platform selection state and updates the virtual (MAUI) selection accordingly.
 	/// </summary>
-	void UpdateVirtualSelection()
+	void UpdateVirtualSelection(WItemsView platformView)
 	{
-		if (_ignorePlatformSelectionChange || ItemsView is null || PlatformView is null)
+		if (_ignorePlatformSelectionChange ||
+			!ReferenceEquals(((IElementHandler)this).PlatformView, platformView) ||
+			((IElementHandler)this).VirtualView is null)
 		{
 			return;
 		}
 
-		switch (PlatformView.SelectionMode)
+		switch (platformView.SelectionMode)
 		{
 			case ItemsViewSelectionMode.Single:
 				UpdateVirtualSingleSelection();
@@ -262,7 +335,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 				break;
 		}
 
-		UpdateVisualStates();
+		if (ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
+		{
+			UpdateVisualStates();
+		}
 	}
 
 	void UpdateVisualStates()
@@ -321,7 +397,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		ItemsView.SelectedItem = selectedItem;
 
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		if (((IElementHandler)this).PlatformView is not null &&
+			((IElementHandler)this).VirtualView is not null)
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -337,7 +417,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			ItemsView.UpdateSelectedItems(newSelection);
 		}
 
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		if (((IElementHandler)this).PlatformView is not null &&
+			((IElementHandler)this).VirtualView is not null)
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
 	}
 
 	static bool SelectionListsAreEqual(IList<object> list1, IList<object> list2)
@@ -410,7 +494,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void UpdatePlatformSelection()
 	{
-		if (PlatformView is null || ItemsView is null)
+		if (((IElementHandler)this).PlatformView is null || ((IElementHandler)this).VirtualView is null)
 		{
 			return;
 		}
@@ -453,6 +537,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
 
+				// Use index-based access to avoid issues while the collection is updating.
 				for (int index = 0; index < itemList.Count; index++)
 				{
 					var nativeItem = itemList[index];

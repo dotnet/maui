@@ -11,7 +11,7 @@ public class Issue17521 : _IssuesUITest
 	public override string Issue => "Shell.SearchHandler visible in details page on Windows 11";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShouldUpdateSearchHandlerOnPageNavigation()
 	{
 		App.WaitForElement("MainButton");

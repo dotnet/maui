@@ -137,6 +137,23 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
+			if (handler.PlatformView is null)
+			{
+				return;
+			}
+
+			if (handler is ImageHandler imghandler && !imghandler.PlatformView.IsLoaded)
+			{
+				// Defer container creation until the view is in the active visual tree.
+				// Manipulating the parent panel while the page is not loaded causes a
+				// COMException. See https://github.com/dotnet/maui/issues/36694
+				var platformView = imghandler.PlatformView;
+				platformView.Loaded -= imghandler.OnImageLoaded;
+				platformView.Loaded += imghandler.OnImageLoaded;
+				return;
+			}
+
+			// Applies immediately for a loaded ImageHandler or any other IImageHandler implementation.
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.ToPlatform().UpdateBackground(image);
 		}
@@ -187,6 +204,7 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				UpdateValue(nameof(IViewHandler.ContainerView));
+				UpdateValue(nameof(IImage.Background));
 			}
 		}
 
@@ -305,6 +323,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				image.Source = platformImage;
+
+				// ImageOpened is raised only when WinUI decodes the source itself. A WriteableBitmap, or a
+				// BitmapImage that was already decoded with SetSourceAsync (file path, stream and URI sources),
+				// has its size right away and never raises it, so apply the AspectFit constraints now.
+				if (platformImage is BitmapSource { PixelWidth: > 0, PixelHeight: > 0 } && Handler is ImageHandler handler)
+					handler.UpdatePlatformMaxConstraints();
 			}
 		}
 	}

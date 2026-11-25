@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using CoreFoundation;
 using Foundation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly ILogger _logger;
 		private readonly WKWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
+		private readonly WebContentProcessReloader _webContentProcessReloader;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="IOSWebViewManager"/>
@@ -57,8 +60,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
+			_webContentProcessReloader = new WebContentProcessReloader(blazorMauiWebViewHandler, webview);
 
 			InitializeWebView();
+		}
+
+		/// <inheritdoc />
+		protected override ValueTask DisposeAsyncCore()
+		{
+			_webContentProcessReloader.Dispose();
+			return base.DisposeAsyncCore();
 		}
 
 		/// <inheritdoc />
@@ -67,13 +78,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_logger.NavigatingToUri(absoluteUri);
 			using var nsUrl = new NSUrl(absoluteUri.ToString());
 			using var request = new NSUrlRequest(nsUrl);
+			_webContentProcessReloader.PageRequested(nsUrl);
 			_webview.LoadRequest(request);
 		}
 
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
 		{
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
-			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+
+			// Deliberately goes through the same public seam an external backend uses, so the in-box
+			// handlers dogfood it. The caller owns the response, so applying the content is done here.
+			var hotReloadedResult = BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+				_contentRootRelativeToAppRoot, uri, out var hotReloadedContent, out var hotReloadedContentType);
+			if (hotReloadedResult)
+			{
+				statusCode = 200;
+				content?.Dispose();
+				content = hotReloadedContent!;
+				if (hotReloadedContentType is not null)
+				{
+					headers["Content-Type"] = hotReloadedContentType;
+				}
+			}
+
 			return defaultResult || hotReloadedResult;
 		}
 
@@ -93,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void InitializeWebView()
 		{
-			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler);
+			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler, _webContentProcessReloader);
 			_webview.UIDelegate = new WebViewUIDelegate(_blazorMauiWebViewHandler);
 		}
 
@@ -249,22 +276,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal class WebViewNavigationDelegate : WKNavigationDelegate
 		{
 			private readonly BlazorWebViewHandler _webView;
+			private readonly WebContentProcessReloader _webContentProcessReloader;
 
 			private WKNavigation? _currentNavigation;
 			private Uri? _currentUri;
 
-			public WebViewNavigationDelegate(BlazorWebViewHandler webView)
+			public WebViewNavigationDelegate(BlazorWebViewHandler webView, WebContentProcessReloader webContentProcessReloader)
 			{
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
+				_webContentProcessReloader = webContentProcessReloader;
 			}
 
 			public override void DidStartProvisionalNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				_currentNavigation = navigation;
+				_webContentProcessReloader.NavigationStarted();
 			}
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
+				if (((IViewHandler)_webView).VirtualView is null)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
 				var requestUrl = navigationAction.Request.Url;
 				if (requestUrl?.ToString() is not string requestUrlString)
 				{
@@ -332,6 +368,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					if (uri is not null)
 					{
 						var request = new NSUrlRequest(new NSUrl(uri.AbsoluteUri));
+						_webContentProcessReloader.PageRequested(request.Url);
 						webView.LoadRequest(request);
 					}
 				}
@@ -360,6 +397,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
+				_webContentProcessReloader.NavigationFinished();
+
 				if (_currentUri != null && _currentNavigation == navigation)
 				{
 					// TODO: Determine whether this is needed
@@ -367,6 +406,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_currentUri = null;
 					_currentNavigation = null;
 				}
+			}
+
+			// Implementing this tells WebKit that the app handles the termination, so WebKit no longer reloads the
+			// page by itself. That silent reload restarted the Blazor app without the app ever knowing
+			// (https://github.com/dotnet/maui/issues/24669). The app is now told first, then the page is reloaded here.
+			public override void ContentProcessDidTerminate(WKWebView webView)
+			{
+				if (((IViewHandler)_webView).VirtualView is null)
+				{
+					return;
+				}
+
+				_webView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
+				_webContentProcessReloader.ProcessTerminated();
 			}
 		}
 	}

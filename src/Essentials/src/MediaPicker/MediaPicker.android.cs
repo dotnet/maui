@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
 	{
+		const string MissingComponentActivityMessage =
+			"The current Activity must inherit from AndroidX.Activity.ComponentActivity (for example, Microsoft.Maui.MauiAppCompatActivity) and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.";
+
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
@@ -89,13 +92,13 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					capturePath = useActivityResultCapture
-						? await CapturePhotoWithActivityResultAsync(options)
+						? await CapturePhotoWithActivityResultAsync((ComponentActivity)activity, options)
 						: await ProcessPhotoAsync(await CapturePhotoAsync(captureIntent), options);
 				}
 				else
 				{
 					capturePath = useActivityResultCapture
-						? await CaptureVideoWithActivityResultAsync(options)
+						? await CaptureVideoWithActivityResultAsync((ComponentActivity)activity, options)
 						: await CaptureVideoAsync(captureIntent);
 				}
 
@@ -114,7 +117,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static async Task<string> CapturePhotoWithActivityResultAsync(MediaPickerOptions options)
+		static async Task<string> CapturePhotoWithActivityResultAsync(ComponentActivity launchingActivity, MediaPickerOptions options)
 		{
 			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Jpg;
 			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
@@ -129,7 +132,7 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var result = await CapturePhotoForResult.Instance.Launch(outputUri);
+				var result = await CapturePhotoForResult.Instance.Launch(launchingActivity, outputUri);
 
 				if (result?.BooleanValue() != true || !MediaPickerRecoveryManager.IsFileAvailable(captureFile.AbsolutePath))
 				{
@@ -147,7 +150,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		async Task<string> CaptureVideoWithActivityResultAsync(MediaPickerOptions options)
+		async Task<string> CaptureVideoWithActivityResultAsync(ComponentActivity launchingActivity, MediaPickerOptions options)
 		{
 			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Mp4;
 			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
@@ -160,7 +163,7 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var result = await CaptureVideoForResult.Instance.Launch(outputUri);
+				var result = await CaptureVideoForResult.Instance.Launch(launchingActivity, outputUri);
 
 				if (result?.BooleanValue() != true || !MediaPickerRecoveryManager.IsFileAvailable(captureFile.AbsolutePath))
 				{
@@ -225,6 +228,9 @@ namespace Microsoft.Maui.Media
 			bool photo,
 			RecoveredMediaPickerResultKind? operationKind = null)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException(MissingComponentActivityMessage);
+
 			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
 				.Build();
@@ -239,7 +245,7 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+				var androidUri = await PickVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 				if (androidUri?.Equals(AndroidUri.Empty) ?? true)
 				{
@@ -267,6 +273,9 @@ namespace Microsoft.Maui.Media
 
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException(MissingComponentActivityMessage);
+
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,
 			// otherwise we need to use the multiple pick method.
@@ -300,7 +309,7 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
-				var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+				var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 				if (androidUris?.IsEmpty ?? true)
 					return [];

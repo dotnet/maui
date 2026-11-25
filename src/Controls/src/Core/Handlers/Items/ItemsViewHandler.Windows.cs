@@ -302,8 +302,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			CleanUpCollectionViewSource();
 
-			if (Element.ItemsSource == null)
+			if (Element.ItemsSource is null)
 			{
+				UpdateEmptyViewVisibility();
 				return;
 			}
 
@@ -596,6 +597,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
 				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
+			}
+			else if (CollectionViewSource?.IsSourceGrouped == false && ListViewBase.ItemsPanelRoot is ItemsWrapGrid itemsWrapGrid)
+			{
+				firstVisibleItemIndex = itemsWrapGrid.FirstVisibleIndex;
+				lastVisibleItemIndex = itemsWrapGrid.LastVisibleIndex;
 			}
 			else
 			{

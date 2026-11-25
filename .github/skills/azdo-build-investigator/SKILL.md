@@ -17,9 +17,8 @@ answering "why is CI red?" and "is this PR ready to merge?". Use it together wit
 > using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if
 > available). This skill provides MAUI-specific corrections and context on top of that.
 
-For the **automated** path (a maintainer comments `/review tests` on a PR), the
-`review-test-failures` skill does the same classification deterministically and posts a
-merge-readiness comment. Both skills reason from the same shared facts below.
+The standalone `/review tests` command is retired. Use this skill for CI failure
+investigations; test verification integrated into the full `/review` is unchanged.
 
 ## MAUI CI facts (canonical)
 
@@ -29,8 +28,8 @@ All MAUI-specific facts live in **`.github/docs/maui-ci-facts.md`** — read it.
   `maui-pr-uitests` 313), org/project, and investigation priority order.
 - **AzDO data sources** (anonymous public build/timeline/log REST APIs; `_apis/test` is
   optional enrichment).
-- **XHarness exit-0 blind spot** and the Helix `aggregated` endpoint for hidden
-  device-test failures.
+- **XHarness exit-0 blind spot**, Helix work items, and actual result files for
+  hidden device-test failures.
 - **Container artifact binlogs** (Bearer token + File Container API; `mcp-binlog-tool`).
 - **Test count deduplication** (group by test name + OS platform).
 - **Baseline comparison** (is the failure already red on the base branch?).
@@ -77,11 +76,32 @@ When asked about the **nightly build**, the **inflight feed**, or the **dogfood 
 | **Definition ID** | **1095** |
 | **Org / Project** | `dnceng` / `internal` — requires internal access (**not** the anonymous `dnceng-public` org the PR pipelines use) |
 | **Defined by** | [`eng/pipelines/ci-official.yml`](../../../eng/pipelines/ci-official.yml) |
-| **Schedule** | daily cron `0 5 * * *` (05:00 UTC) on `main`, `net*.0`, and `inflight/current` |
-| **Feeds** | the `ci.inflight` dogfood NuGet stream — the official build on `inflight/current` produces the "shipping next" bits that `release-readiness` tracks. When this build is red, that feed goes stale and the release-readiness banner turns ❌. |
+| **Schedule** | daily cron `0 5 * * *` (05:00 UTC); resolve the selected inflight lane from canonical release state before choosing a build |
+| **Feeds** | the `ci.inflight` dogfood NuGet stream from the selected nightly lane. A fresh feature-branch build or retained old inflight lane is not proof that this stream is current. |
+
+Resolve branch roles before querying builds:
+
+```powershell
+$roles = & ./eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly | ConvertFrom-Json
+$nightlyRef = "refs/heads/$($roles.nightlyBranch)"
+```
+
+In the configured .NET 11 train, fixes belong to literal `net11`, staged SR1
+content to `candidate/11.0.1xx-sr1`, and future SR2 content to
+`inflight/11.0.1xx-sr2`. `main` is the next-major feature branch, not the
+servicing baseline. Historical `net11.0` is a different branch. `nightlyMode`
+`candidate` (checked in) selects `candidate/<band>-sr<currentSr>`; versioned mode
+selects inflight SR `N+1`; legacy keeps `inflight/current`. Both state-derived
+modes advance with the state record.
+
+Use the state deployed at the time of the run and record its commit as evidence.
+Do not treat the local proposal, public branch existence, or a successful sandbox
+as proof that the internal mirror/schedule has been deployed. If deployment
+evidence is missing, report that gap instead of silently querying a convenient
+green `main` or legacy build.
 
 **Investigate** (the AzDO MCP tools accept this internal pipeline — pass `org: dnceng`, `project: internal`):
-- `azdo_builds` with `definitionId: 1095`, `branch: refs/heads/inflight/current` → find the newest `failed` run (and confirm whether it's a one-off or a multi-day streak)
+- `azdo_builds` with `definitionId: 1095`, `branch: <resolved nightlyRef>` → find the newest `failed` run (and confirm whether it's a one-off or a multi-day streak)
 - `azdo_search_timeline` (filter `failed`) on that build → identifies the failing job/step + its `logId`
 - `azdo_search_log` on that `logId` → the actual error
 

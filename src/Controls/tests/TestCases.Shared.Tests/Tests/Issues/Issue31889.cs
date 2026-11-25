@@ -12,7 +12,7 @@ public class Issue31889 : _IssuesUITest
 	private const string TestEditorId = "TestEditor";
 	private const string DarkThemeButtonId = "DarkThemeButton";
 	private const string LightThemeButtonId = "LightThemeButton";
-	string DoneButtonId => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
+	private const string DoneButtonId = "Done";
 	private const string TextColorDarkTheme = "EntryAndEditorTextColorAppThemeBindingUpdatesOnDarkTheme";
 	private const string TextColorLightTheme = "EntryAndEditorTextColorAppThemeBindingUpdatesOnLightTheme";
 	private const string PlaceholderColorDarkTheme = "EntryAndEditorPlaceholderTextColorAppThemeBindingUpdatesOnDarkTheme";
@@ -23,19 +23,28 @@ public class Issue31889 : _IssuesUITest
 	[Category(UITestCategories.Entry)]
 	public void EntryAndEditorTextColorAppThemeBindingUpdatesOnThemeChange()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement(TestEntryId);
 		App.WaitForElement(DarkThemeButtonId);
 		App.Tap(DarkThemeButtonId);
-		VerifyScreenshot(TextColorDarkTheme);
+		VerifyScreenshotOrSetException(ref exception, TextColorDarkTheme);
 		App.WaitForElement(LightThemeButtonId);
 		App.Tap(LightThemeButtonId);
-		VerifyScreenshot(TextColorLightTheme);
+		VerifyScreenshotOrSetException(ref exception, TextColorLightTheme);
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Entry)]
 	public void EntryAndEditorPlaceholderTextColorAppThemeBindingUpdatesOnThemeChange()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement(TestEntryId);
 		App.ClearText(TestEntryId);
 
@@ -53,9 +62,14 @@ public class Issue31889 : _IssuesUITest
 #endif
 		App.WaitForElement(DarkThemeButtonId);
 		App.Tap(DarkThemeButtonId);
-		VerifyScreenshot(PlaceholderColorDarkTheme);
+		VerifyScreenshotOrSetException(ref exception, PlaceholderColorDarkTheme);
 		App.WaitForElement(LightThemeButtonId);
 		App.Tap(LightThemeButtonId);
-		VerifyScreenshot(PlaceholderColorLightTheme);
+		VerifyScreenshotOrSetException(ref exception, PlaceholderColorLightTheme);
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }

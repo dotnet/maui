@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS //Related issue for windows: https://github.com/dotnet/maui/issues/35035
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +14,7 @@ public class Issue34898 : _IssuesUITest
 
     [Test]
 
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void ShellItemsClearShouldDisconnectChildHandlers()
     {
         App.WaitForElement("ClearAndNavigateButton");
@@ -37,4 +36,3 @@ public class Issue34898 : _IssuesUITest
             "Button handler should be disconnected after Shell.Items.Clear()");
     }
 }
-#endif

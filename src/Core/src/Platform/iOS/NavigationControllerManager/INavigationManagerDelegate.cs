@@ -5,13 +5,9 @@ namespace Microsoft.Maui.Platform
 {
     /// <summary>
     /// Delegate interface for consumer-specific navigation behavior.
-    /// Currently implemented by NavigationViewHandler to customize
+    /// Implemented by NavigationPage and Shell handlers to customize
     /// <see cref="NavigationControllerManager"/>.
     /// </summary>
-    /// <remarks>
-    /// In the future, Shell's handler could also implement this interface
-    /// to reuse the same UINavigationController management infrastructure.
-    /// </remarks>
     internal interface INavigationManagerDelegate
     {
         /// <summary>
@@ -24,10 +20,16 @@ namespace Microsoft.Maui.Platform
         (bool isHidden, bool animate) GetNavigationBarVisibility(UIViewController viewController);
 
         /// <summary>
-        /// Called when the user taps the back button or initiates an interactive pop.
+        /// Called when the user taps the back button.
         /// Return true to allow the pop, false to cancel it.
         /// </summary>
         bool ShouldPop();
+
+        /// <summary>
+        /// Called before UIKit begins an interactive pop.
+        /// Return true to allow the gesture without initiating a programmatic pop.
+        /// </summary>
+        bool ShouldBeginInteractivePop();
 
         /// <summary>
         /// Called after a push navigation completes (DidShowViewController fires).

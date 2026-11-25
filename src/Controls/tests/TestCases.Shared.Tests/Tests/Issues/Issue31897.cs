@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/39956
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,7 +13,7 @@ public class Issue31897 : _IssuesUITest
 	public override string Issue => "CollectionView card height appears larger in Developer Balance sample";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("GetHeightButton");
@@ -33,3 +34,4 @@ public class Issue31897 : _IssuesUITest
 		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
 	}
 }
+#endif

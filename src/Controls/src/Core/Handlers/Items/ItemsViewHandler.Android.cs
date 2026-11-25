@@ -105,7 +105,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateEmptyViewSize(double width, double height)
 		{
-			var adapter = PlatformView.GetAdapter();
+			var platformView = PlatformView;
+			var adapter = platformView.GetAdapter();
 
 			if (adapter is EmptyViewAdapter emptyViewAdapter)
 			{
@@ -124,19 +125,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var emptyViewPosition = hasHeader ? 1 : 0;
 
 					// Check if ViewHolder exists and is ready for immediate layout request
-					var viewHolder = PlatformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+					var viewHolder = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
 					if (viewHolder is not null)
 					{
-						// ViewHolder exists, request layout immediately to avoid frame delay
-						viewHolder.ItemView.RequestLayout();
+						// Defer the request if Android is already laying out the view.
+						PlatformInterop.RequestLayoutIfNeeded(viewHolder.ItemView);
 					}
 					else
 					{
 						// ViewHolder not created yet, defer layout request to next UI loop iteration
-						PlatformView.Post(() =>
+						platformView.Post(() =>
 						{
-							var vh = PlatformView.FindViewHolderForAdapterPosition(emptyViewPosition);
-							vh?.ItemView.RequestLayout();
+							if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
+							{
+								return;
+							}
+							var vh = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+							if (vh is not null)
+								PlatformInterop.RequestLayoutIfNeeded(vh.ItemView);
 						});
 					}
 				}

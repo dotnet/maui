@@ -15,7 +15,7 @@ public class Bugzilla44166 : _IssuesUITest
 
 	[Test]
 #if ANDROID
-	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
+	[Ignore("FlyoutPage instances are not collected on Android https://github.com/dotnet/maui/issues/36479")]
 #endif
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla44166Test()

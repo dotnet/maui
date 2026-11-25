@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Controls
 		object _converterParameter;
 		IList<BindingBase> _bindings;
 		BindableProperty _targetProperty;
-		BindableObject _targetObject;
+		WeakReference<BindableObject> _weakTarget;
+		SetterSpecificity _specificity;
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
 		bool _applying;
@@ -119,6 +120,9 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
 
+			if (_weakTarget is null || !_weakTarget.TryGetTarget(out var targetObject))
+				return;
+
 			if (!fromTarget)
 			{
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
@@ -127,11 +131,14 @@ namespace Microsoft.Maui.Controls
 					_applying = true;
 					if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
-						BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+						BindingDiagnostics.SendBindingFailure(this, null, targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 						return;
 					}
 					// ManualValueSetter specificity ensures TwoWay bindings continue updating after ConvertBack.
-					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: SetterSpecificity.ManualValueSetter);
+					// BindingContext is the exception: a ManualValueSetter value there would stop the inherited
+					// binding context from flowing in (see BindableObject.SetInheritedBindingContext, #10792).
+					var specificity = ReferenceEquals(_targetProperty, BindableObject.BindingContextProperty) ? _specificity : SetterSpecificity.ManualValueSetter;
+					targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: specificity);
 					_applying = false;
 				}
 			}
@@ -142,7 +149,7 @@ namespace Microsoft.Maui.Controls
 					_applying = true;
 
 					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
-					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
+					if (!(GetTargetValue(targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
 						return;
 					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
 					{
@@ -169,9 +176,12 @@ namespace Microsoft.Maui.Controls
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged, specificity);
 
-			if (!ReferenceEquals(_targetObject, targetObject))
+			BindableObject currentTarget = null;
+			if (_weakTarget != null)
+				_weakTarget.TryGetTarget(out currentTarget);
+			if (!ReferenceEquals(currentTarget, targetObject))
 			{
-				_targetObject = targetObject;
+				_weakTarget = new WeakReference<BindableObject>(targetObject);
 				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
 				_targetProperty = targetProperty;
 
@@ -190,7 +200,30 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 			}
-			_proxyObject.BindingContext = context;
+			_specificity = specificity;
+
+			if (ReferenceEquals(_targetProperty, BindableObject.BindingContextProperty))
+			{
+				// When bound to BindingContextProperty, the context passed in is the target's own BindingContext
+				// (i.e. the result of this binding); the inherited context is stored in Context instead (#10792).
+				// The target value is computed right below, so don't let each child binding update it on its own.
+				// This is restricted to BindingContext: for other targets, child updates must keep flowing so that
+				// a value previously written at ManualValueSetter specificity gets replaced by the new context's one.
+				var wasApplying = _applying;
+				_applying = true;
+				try
+				{
+					_proxyObject.BindingContext = Context ?? context;
+				}
+				finally
+				{
+					_applying = wasApplying;
+				}
+			}
+			else
+			{
+				_proxyObject.BindingContext = context;
+			}
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
@@ -201,10 +234,10 @@ namespace Microsoft.Maui.Controls
 				_applying = true;
 				if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
-					BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+					BindingDiagnostics.SendBindingFailure(this, context, targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 					return;
 				}
-				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+				targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 				_applying = false;
 			}
 		}
@@ -266,7 +299,7 @@ namespace Microsoft.Maui.Controls
 
 				_bpProxies = null;
 				_proxyObject = null;
-				_targetObject = null;
+				_weakTarget = null;
 			}
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);

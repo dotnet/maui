@@ -17,7 +17,7 @@ public class Issue33352 : _IssuesUITest
 	public Issue33352(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TraitCollectionDidChangeAfterDisposeDoesNotCrash()
 	{
 		// Wait for the page to load
@@ -51,7 +51,7 @@ public class Issue33352 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellThemeChangeDoesNotCrash()
 	{
 		// Wait for the page to load
@@ -84,7 +84,7 @@ public class Issue33352 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void RapidThemeChangesDoNotCrashShell()
 	{
 		// Wait for the page to load
@@ -107,7 +107,7 @@ public class Issue33352 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ThemeChangeDuringWindowCloseDoesNotCrash()
 	{
 		// Wait for the page to load

@@ -85,7 +85,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void FindItemsWrapGrid()
 		{
-			_wrapGrid = this.GetFirstDescendant<ItemsWrapGrid>();
+			var wrapGrid = this.GetFirstDescendant<ItemsWrapGrid>();
+			if (!ReferenceEquals(_wrapGrid, wrapGrid))
+			{
+				if (_wrapGrid is not null)
+				{
+					_wrapGrid.SizeChanged -= WrapGridSizeChanged;
+				}
+
+				_wrapGrid = wrapGrid;
+			}
 
 			if (_wrapGrid == null)
 			{

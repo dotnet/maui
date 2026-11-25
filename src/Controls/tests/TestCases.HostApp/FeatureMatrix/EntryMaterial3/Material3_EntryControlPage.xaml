@@ -5,19 +5,13 @@
              x:DataType="local:EntryViewModel"
              SafeAreaEdges="Container"
              x:Class="Maui.Controls.Sample.Material3_EntryControlMainPage">
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Options"
-                           Clicked="NavigateToOptionsPage_Clicked"
-                           AutomationId="Options"/>
-       </ContentPage.ToolbarItems>
-
        <VerticalStackLayout Padding="20"
                             Spacing="8">
               <Label Text="Material3 Entry Control"
+                     AutomationId="MainLabel"
                      FontSize="20"
                      Margin="0,0,0,50"
                      HorizontalOptions="Center"/>
-
               <Entry x:Name="EntryControl"
                      Text="{Binding Text}"
                      Placeholder="{Binding Placeholder}"
@@ -45,6 +39,9 @@
                      IsEnabled="{Binding IsEnabled}"
                      FlowDirection="{Binding FlowDirection}"
                      HeightRequest="{Binding HeightRequest}"
+                     WidthRequest="{Binding WidthRequest}"
+                     BackgroundColor="{Binding BackgroundColor}"
+                     Opacity="{Binding Opacity}"
                      FontAttributes="{Binding FontAttributes}"
                      TextTransform="{Binding TextTransform}"
                      TextChanged="EntryControl_TextChanged"
@@ -53,7 +50,12 @@
                      Unfocused="EntryControl_Unfocused"
                      AutomationId="TestEntry"/>
 
-              <Grid HeightRequest="130"/>
+              <Grid x:Name="grid"/>
+
+              <Button Text="Options"
+                      FontSize="11"
+                      Clicked="NavigateToOptionsPage_Clicked"
+                      AutomationId="Options"/>
 
               <Grid ColumnSpacing="10"
                     Margin="0,10,0,10">
@@ -66,6 +68,7 @@
                             <ColumnDefinition Width="*"/>
                      </Grid.ColumnDefinitions>
 
+                     <!-- Row 1: Labels -->
                      <Label Text="Selection Length:"
                             FontSize="11"
                             Grid.Row="0"
@@ -75,6 +78,7 @@
                             Grid.Row="0"
                             Grid.Column="1"/>
 
+                     <!-- Row 2: Entries -->
                      <local:UITestEntry x:Name="SelectionLengthEntry"
                                         Text="{Binding SelectionLength}"
                                         AutomationId="SelectionLengthEntry"
@@ -85,6 +89,7 @@
                      <local:UITestEntry x:Name="CursorPositionEntry"
                                         Text="{Binding CursorPosition}"
                                         AutomationId="CursorPositionEntry"
+                                        TextChanged="CursorPositionEntry_TextChanged"
                                         IsCursorVisible="False"
                                         Grid.Row="1"
                                         Grid.Column="1"/>

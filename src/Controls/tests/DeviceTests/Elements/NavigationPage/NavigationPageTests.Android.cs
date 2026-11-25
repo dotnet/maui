@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Shape;
@@ -24,6 +25,36 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		// https://github.com/dotnet/maui/issues/39456
+		public async Task PushCompletesWhenThePlatformPopsDuringTheTransition()
+		{
+			SetupBuilder();
+
+			var root = new ContentPage { Title = "Root", Content = new Label { Text = "Root" } };
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var manager = ((NavigationViewHandler)navPage.Handler).StackNavigationManager;
+
+				// Pop natively in the middle of an animated push, which is what happens when
+				// the system back press gets consumed by a platform callback mid-transition
+				Task pushTask = null;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					pushTask = navPage.Navigation.PushAsync(new ContentPage { Title = "Second" }, true);
+					manager.NavController.PopBackStack();
+				});
+
+				var completed = await Task.WhenAny(pushTask, Task.Delay(5000)) == pushTask;
+				Assert.True(completed, "PushAsync never completed after the platform popped the page");
+				Assert.True(navPage.Navigation.NavigationStack.Count == 1,
+					$"NavigationStack is out of sync with the screen (count {navPage.Navigation.NavigationStack.Count})");
+				Assert.Same(root, navPage.CurrentPage);
+			});
+		}
+
 		// We only want to fire BackButtonVisible Toolbar events if the user
 		// is changing the default behavior of the BackButtonVisibility
 		// this way the platform animations are allowed to just happen naturally
@@ -147,6 +178,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
+		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || !RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+				var materialShapeDrawable = Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				Assert.Null(ViewCompat.GetBackgroundTintList(appBar));
+				Assert.Equal(firstColor.ToPlatform().ToArgb(), GetMaterialShapeDrawableFillColor(materialShapeDrawable));
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() =>
+					appBar.Background is MaterialShapeDrawable drawable &&
+					ViewCompat.GetBackgroundTintList(appBar) is null &&
+					GetMaterialShapeDrawableFillColor(drawable) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
 		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
 		{
@@ -249,6 +314,105 @@ namespace Microsoft.Maui.DeviceTests
 		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)
 		{
 			Assert.Equal(expectedColor.ToPlatform().ToArgb(), GetAppBarBackgroundColor(appBar));
+		}
+
+		static int GetMaterialShapeDrawableFillColor(MaterialShapeDrawable drawable)
+		{
+			Assert.NotNull(drawable.FillColor);
+			return drawable.FillColor.DefaultColor;
+		}
+
+		[Fact(DisplayName = "NavigationPage push to hidden navigation bar clears app bar inset padding")]
+		public async Task PushingToPageWithoutNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+			const int statusBarTopInset = 24;
+			const int displayCutoutTopInset = 96;
+
+			var rootPage = new ContentPage
+			{
+				Title = "Visible Page",
+				Content = new Label { Text = "Root Content" }
+			};
+
+			var hiddenNavBarPage = new ContentPage
+			{
+				Title = "Hidden Page",
+				Content = new Label { Text = "Hidden Content" }
+			};
+
+			NavigationPage.SetHasNavigationBar(hiddenNavBarPage, false);
+
+			var syntheticInsets = CreateTopCutoutInsets(statusBarTopInset, displayCutoutTopInset);
+			var navPage = new NavigationPage(rootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnLoadedAsync(rootPage);
+				await OnNavigatedToAsync(rootPage);
+
+				var rootCoordinator = handler.MauiContext?.GetNavigationRootManager()?.RootView as CoordinatorLayout;
+				Assert.NotNull(rootCoordinator);
+
+				MaterialToolbar platformToolbar = null;
+				await AssertEventually(() =>
+				{
+					platformToolbar = GetPlatformToolbar(handler);
+					return platformToolbar?.LayoutParameters?.Height > 0;
+				},
+					timeout: 2000,
+					message: "Toolbar did not render before navigating to the page with the navigation bar hidden.");
+
+				Assert.NotNull(platformToolbar);
+				var appBar = rootCoordinator.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				Assert.NotNull(appBar);
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
+
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > 0,
+					timeout: 2000,
+					message: "The NavigationPage root did not receive the initial synthetic window insets dispatch.");
+
+				await AssertEventually(() => appBar.PaddingTop == displayCutoutTopInset,
+					timeout: 2000,
+					message: "AppBar never received the synthetic display cutout top inset while the NavigationPage navigation bar was visible.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets, expectedSystemBarsTop: 0, expectedDisplayCutoutTop: 0,
+					message: "Visible NavigationPage app bar should consume the synthetic top insets.");
+
+				var visibleInsetsInvocationCount = capturingListener.InvocationCount;
+
+				await navPage.Navigation.PushAsync(hiddenNavBarPage);
+				await OnLoadedAsync(hiddenNavBarPage);
+				await OnNavigatedToAsync(hiddenNavBarPage);
+
+				await AssertEventually(() =>
+				{
+					var currentToolbar = GetPlatformToolbar(handler);
+					return currentToolbar?.LayoutParameters?.Height == 0 && currentToolbar.Height == 0;
+				},
+					timeout: 2000,
+					message: "Toolbar did not fully collapse after navigating to a page with NavigationPage.HasNavigationBar set to false.");
+
+				await AssertEventually(() => capturingListener.InvocationCount > visibleInsetsInvocationCount && appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "Navigating to a page with the navigation bar hidden did not trigger an inset redispatch that cleared the AppBar top padding.");
+
+				// Re-dispatch the synthetic insets now that the nav bar is hidden so we can assert
+				// with known values that the app bar no longer consumes the top insets.
+				var hiddenInsetsInvocationCount = capturingListener.InvocationCount;
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > hiddenInsetsInvocationCount,
+					timeout: 2000,
+					message: "Expected an additional inset dispatch after re-injecting synthetic insets post-nav-bar-hide.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets,
+					expectedSystemBarsTop: statusBarTopInset,
+					expectedDisplayCutoutTop: displayCutoutTopInset,
+					message: "Hidden NavigationPage app bar should stop consuming the synthetic top insets.");
+			});
 		}
 	}
 }

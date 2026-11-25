@@ -179,8 +179,129 @@ foreach ($case in @(
 }
 
 # Static workflow/renderer contracts must run even when network E2E is skipped.
-$workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml') -Raw
+$releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
+$trackerUpdaterPath = Join-Path $PSScriptRoot '..' 'scripts' 'Update-TrackerIssue.sh'
+$releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+$trackerUpdaterText = Get-Content $trackerUpdaterPath -Raw
+$workflowContractText = "$releaseWorkflowText`n$trackerUpdaterText"
 $srScriptContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+
+function Get-MaxWorkflowRunBlockBytes {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $lines = [System.IO.File]::ReadAllLines($Path)
+    $utf8 = [System.Text.UTF8Encoding]::new($false)
+    $maxBytes = 0
+
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $match = [regex]::Match($lines[$i], '^(?<indent> *)run:\s*[|>][0-9+-]*\s*$')
+        if (-not $match.Success) {
+            continue
+        }
+
+        $parentIndent = $match.Groups['indent'].Value.Length
+        $blockBytes = 0
+        for ($j = $i + 1; $j -lt $lines.Count; $j++) {
+            $line = $lines[$j]
+            if ($line.Length -eq 0) {
+                $blockBytes += 1
+                continue
+            }
+
+            $contentIndent = $line.Length - $line.TrimStart(' ').Length
+            if ($contentIndent -le $parentIndent) {
+                break
+            }
+
+            $blockBytes += $utf8.GetByteCount($line) + 1
+        }
+
+        $maxBytes = [Math]::Max($maxBytes, $blockBytes)
+    }
+
+    return $maxBytes
+}
+
+$maxWorkflowRunBlockBytes = Get-MaxWorkflowRunBlockBytes -Path $releaseWorkflowPath
+Assert-Eq -Label "workflow run blocks stay below the GitHub expression-template limit" `
+    -Expected $true -Actual ($maxWorkflowRunBlockBytes -lt 20000)
+Assert-Eq -Label "workflow passes the trusted repository identifier through env" -Expected $true `
+    -Actual $releaseWorkflowText.Contains('GITHUB_REPOSITORY: ${{ github.repository }}')
+Assert-Eq -Label "workflow invokes the extracted tracker updater" -Expected $true `
+    -Actual $releaseWorkflowText.Contains('run: bash .github/skills/release-readiness/scripts/Update-TrackerIssue.sh')
+Assert-Eq -Label "extracted tracker updater contains no GitHub expression templates" -Expected $false `
+    -Actual $trackerUpdaterText.Contains('${{')
+Assert-Eq -Label "extracted tracker updater uses the trusted repository environment variable" -Expected $true `
+    -Actual ($trackerUpdaterText.Contains('--repo "${GITHUB_REPOSITORY}"') -and
+        $trackerUpdaterText.Contains('"repos/${GITHUB_REPOSITORY}/issues/${CANONICAL}"'))
+
+& bash -n $trackerUpdaterPath
+Assert-Eq -Label "extracted tracker updater passes bash syntax validation" -Expected 0 -Actual $LASTEXITCODE
+
+$trackerUpdaterProbeDir = Join-Path ([System.IO.Path]::GetTempPath()) "release-readiness-updater-$([guid]::NewGuid().ToString('N'))"
+$trackerUpdaterMockBin = Join-Path $trackerUpdaterProbeDir 'bin'
+$trackerUpdaterBody = Join-Path $trackerUpdaterProbeDir 'body.md'
+$trackerUpdaterGhLog = Join-Path $trackerUpdaterProbeDir 'gh.log'
+$trackerUpdaterMockGh = Join-Path $trackerUpdaterMockBin 'gh'
+$trackerUpdaterMock = @'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$RR_GH_LOG"
+if [ "$1" = "issue" ] && [ "$2" = "list" ]; then
+  printf '[]\n'
+  exit 0
+fi
+echo "unexpected mutating gh call: $*" >&2
+exit 90
+'@
+$trackedEnvironmentVariables = @(
+    'PATH',
+    'GITHUB_REPOSITORY',
+    'TRACKER_KEY',
+    'ISSUE_TITLE',
+    'MILESTONE_NAME',
+    'BODY_FILE',
+    'RECENT_COMMIT_COUNT',
+    'MODE',
+    'RR_GH_LOG'
+)
+$savedEnvironment = @{}
+foreach ($name in $trackedEnvironmentVariables) {
+    $savedEnvironment[$name] = [System.Environment]::GetEnvironmentVariable($name, 'Process')
+}
+try {
+    New-Item -ItemType Directory -Path $trackerUpdaterMockBin -Force | Out-Null
+    Set-Content -Path $trackerUpdaterMockGh -Value $trackerUpdaterMock -NoNewline
+    Set-Content -Path $trackerUpdaterBody -Value '<!-- release-readiness-tracker: net11-preview7 -->' -NoNewline
+    & chmod +x $trackerUpdaterMockGh
+
+    $env:PATH = "$trackerUpdaterMockBin$([System.IO.Path]::PathSeparator)$($savedEnvironment['PATH'])"
+    $env:GITHUB_REPOSITORY = 'dotnet/maui'
+    $env:TRACKER_KEY = 'net11-preview7'
+    $env:ISSUE_TITLE = '[Release Readiness] .NET 11 Preview 7'
+    $env:MILESTONE_NAME = '.NET 11.0-preview7'
+    $env:BODY_FILE = $trackerUpdaterBody
+    $env:RECENT_COMMIT_COUNT = '0'
+    $env:MODE = 'candidate'
+    $env:RR_GH_LOG = $trackerUpdaterGhLog
+
+    $trackerUpdaterProbeOutput = (& bash $trackerUpdaterPath 2>&1) -join "`n"
+    $trackerUpdaterProbeExit = $LASTEXITCODE
+    $trackerUpdaterGhCalls = @(Get-Content $trackerUpdaterGhLog)
+} finally {
+    foreach ($name in $trackedEnvironmentVariables) {
+        [System.Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name], 'Process')
+    }
+    Remove-Item $trackerUpdaterProbeDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+Assert-Eq -Label "extracted tracker updater preserves the no-activity no-write gate" -Expected 0 -Actual $trackerUpdaterProbeExit
+Assert-Eq -Label "no-activity updater probe reports the skipped tracker" -Expected $true `
+    -Actual $trackerUpdaterProbeOutput.Contains('no recent commits and no open tracker issue')
+Assert-Eq -Label "no-activity updater probe performs only read-only issue lookups" -Expected $true `
+    -Actual ($trackerUpdaterGhCalls.Count -eq 2 -and @($trackerUpdaterGhCalls | Where-Object {
+        -not $_.StartsWith('issue list ', [System.StringComparison]::Ordinal)
+    }).Count -eq 0)
+
 Assert-Eq -Label "SR auxiliary commits artifact uses the same public-safe data graph as the primary JSON" -Expected $true `
     -Actual $srScriptContractText.Contains('$commitsJson = $outputSrContents | ConvertTo-Json')
 Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
@@ -227,10 +348,9 @@ Assert-Eq -Label "workflow surfaces post-edit metadata lookup failures" -Expecte
     -Actual $workflowContractText.Contains('race compensation could not be evaluated')
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
-$updateStepStart = $workflowContractText.IndexOf('- name: Update or create tracker issue')
-$lifecycleSourceIndex = $workflowContractText.IndexOf('source .github/skills/release-readiness/scripts/TrackerIssueLifecycle.sh')
-Assert-Eq -Label "workflow sources tracker lifecycle helper inside the mutating issue step" -Expected $true `
-    -Actual ($updateStepStart -ge 0 -and $lifecycleSourceIndex -gt $updateStepStart)
+Assert-Eq -Label "extracted tracker updater sources the lifecycle helper relative to its script directory" -Expected $true `
+    -Actual ($trackerUpdaterText.Contains('SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"') -and
+        $trackerUpdaterText.Contains('source "$SCRIPT_DIR/TrackerIssueLifecycle.sh"'))
 
 $lifecycleHelperPath = Join-Path $PSScriptRoot '..' 'scripts' 'TrackerIssueLifecycle.sh'
 $lifecycleProbePath = Join-Path ([System.IO.Path]::GetTempPath()) "release-readiness-lifecycle-$([guid]::NewGuid().ToString('N')).sh"
@@ -1611,8 +1731,7 @@ if (-not $SkipE2E) {
     }
 
     Write-Host "`n[Unit] Workflow preserves active hotfix tracker creation" -ForegroundColor Cyan
-    $releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
-    $releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+    $releaseWorkflowAndUpdaterText = "$releaseWorkflowText`n$trackerUpdaterText"
     Assert-Eq -Label "workflow matrix carries hotfixInProgress signal" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
     Assert-Eq -Label "workflow matrix carries version-specific hotfix identity" `
@@ -1620,17 +1739,17 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow matrix carries hotfix branch generation" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixCommit:\s*\(\.hotfixCommit // ""\)'))
     Assert-Eq -Label "workflow lifecycle decisions use generated report hotfix marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow lifecycle decisions use generated report shipped marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow matrix carries expected tag for report-time lifecycle re-resolution" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'expectedTag:\s*\(\.expectedTag // ""\)'))
     Assert-Eq -Label "workflow re-resolves shipped mode when stable tag lands after detection" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}[\s\S]*MODE="shipped"'))
     Assert-Eq -Label "workflow propagates report-time resolved mode to issue updater" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
+        -Expected $true -Actual ([bool]($releaseWorkflowAndUpdaterText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
     Assert-Eq -Label "workflow propagates report-time resolved issue title" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
+        -Expected $true -Actual ([bool]($releaseWorkflowAndUpdaterText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
     Assert-Eq -Label "workflow derives hotfix title from generated report marker" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_HOTFIX_MARKER=.*BODY_FILE[\s\S]*ISSUE_TITLE=.*hotfix.*REPORT_HOTFIX_VERSION'))
     Assert-Eq -Label "workflow hotfix marker takes precedence over shipped title" `
@@ -1638,18 +1757,18 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow derives plain shipped title when no hotfix marker exists" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_SHIPPED_MARKER[\s\S]*ISSUE_TITLE=.*— shipped'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
-    $closedLookupStart = $releaseWorkflowText.IndexOf('CLOSED_GENERATION=$(gh issue list')
-    $closedLookupEnd = $releaseWorkflowText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    $closedLookupStart = $trackerUpdaterText.IndexOf('CLOSED_GENERATION=$(gh issue list')
+    $closedLookupEnd = $trackerUpdaterText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
     $closedLookupBlock = if ($closedLookupStart -ge 0 -and $closedLookupEnd -gt $closedLookupStart) {
-        $releaseWorkflowText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
+        $trackerUpdaterText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
     } else { '' }
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
         -Expected $false -Actual ([bool]($closedLookupBlock -match 'updatedAt'))
     Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match '\$CREATE_GENERATION.*!=.*true'))
     Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_META=.*gh issue view'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'PRE_EDIT_META=.*gh issue view'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
@@ -5246,6 +5365,31 @@ $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/ma
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "ordinary report omits active-hotfix marker" -Expected $false `
     -Actual ($md -match 'release-readiness-hotfix:')
+$configuredInbound = $mdData.Clone()
+$configuredInbound.metadata = $mdData.metadata.Clone()
+$configuredInbound.metadata.mainBranch = 'net11'
+$configuredInbound.metadata.mode = 'candidate'
+$configuredInbound.metadata.priorSrBranch = $null
+$configuredInbound.metadata.priorSrRef = '11.0.0'
+$configuredInbound.metadata.targetSrBranch = 'release/11.0.1xx-sr1'
+$configuredInbound.metadata.nextSr = 1
+$configuredInbound.metadata.branchRoles = @{
+    configured = $true; inflightBranch = 'inflight/11.0.1xx-sr2'
+}
+$configuredInbound.regressions = @(@{
+    issue = 35003; title = 'Open fix under review'; state = 'OPEN'; classification = 'open-on-main'
+    candidateFixPrs = @(@{ number = 35103; baseRef = 'net11'; state = 'OPEN' })
+    recommendedAction = 'Review and manually retarget to inflight'
+})
+$configuredInbound.summary = @{ 'open-on-main' = 1 }
+$configuredInboundText = Format-MarkdownReport -Data $configuredInbound -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net11-sr1' -MaxBodyBytes 60000
+Assert-Eq -Label "configured populated inbound table directs manual inflight landing" -Expected $true `
+    -Actual ($configuredInboundText -match 'maintainer manually retargets this PR to inflight/11\.0\.1xx-sr2')
+Assert-Eq -Label "configured populated inbound table forbids direct net11 fix merge" -Expected $true `
+    -Actual ($configuredInboundText -match 'do not merge the individual fix into net11')
+Assert-Eq -Label "configured populated inbound table omits obsolete net11 merge instructions" -Expected $false `
+    -Actual ($configuredInboundText -match 'awaiting net11 merge|Watch for merge to net11')
 $internalMdData = $mdData.Clone()
 $internalMdData['ci'] = @{
     overall = 'green'
@@ -6391,7 +6535,9 @@ function Build-VersionsPropsXml {
         # Optional servicing-flip fields. When $null, the element is omitted
         # (mirrors a freshly-cut SR branch that hasn't been flipped yet).
         [string]$PreReleaseVersionLabel,
-        [string]$StabilizePackageVersion
+        [string]$StabilizePackageVersion,
+        [switch]$BranchDerivedLabels,
+        [switch]$AutomaticStabilization
     )
     $labelLine = if ($null -ne $PreReleaseVersionLabel) {
         "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
@@ -6399,13 +6545,35 @@ function Build-VersionsPropsXml {
     $stabilizeLine = if ($null -ne $StabilizePackageVersion) {
         "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$StabilizePackageVersion</StabilizePackageVersion>`n"
     } else { "" }
+    $centralWiring = ''
+    if ($BranchDerivedLabels) {
+        Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $conditions = & (Get-Module MauiReleaseConfiguration) {
+            Get-MauiBranchLabelCondition -Label ci.inflight
+            Get-MauiBranchLabelCondition -Label servicing
+        }
+        $labelLine = "    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[1])`">servicing</PreReleaseVersionLabel>`n"
+        if ($AutomaticStabilization) {
+            $expression = & (Get-Module MauiReleaseConfiguration) { Get-MauiStabilizationDefault }
+            $stabilizeLine = "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$expression</StabilizePackageVersion>`n"
+        }
+        $centralWiring = @"
+    <SdkBandVersion>$Major.$Minor.100</SdkBandVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <IsServicingBuild Condition="'`$(PreReleaseVersionLabel)' == 'servicing'">true</IsServicingBuild>
+    <DotNetFinalVersionKind Condition="'`$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+
+"@
+    }
     @"
 <Project>
   <PropertyGroup>
     <MajorVersion>$Major</MajorVersion>
     <MinorVersion>$Minor</MinorVersion>
     <PatchVersion>$Patch</PatchVersion>
-$labelLine$stabilizeLine  </PropertyGroup>
+$labelLine$stabilizeLine$centralWiring  </PropertyGroup>
 </Project>
 "@
 }
@@ -6486,6 +6654,49 @@ function Get-CheckByAreaPrefix {
     param($Checks, [string]$Prefix)
     @($Checks | Where-Object { $_.Area.StartsWith($Prefix) }) | Select-Object -First 1
 }
+
+$centralSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; StabilizePackageVersion='false' }
+$centralStable = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource
+$centralStableCheck = Get-CheckByAreaPrefix -Checks $centralStable -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: reviewed stable metadata is valid despite the literal ci.main default' `
+    -Expected READY -Actual $centralStableCheck.Status
+Assert-Eq -Label 'Central labels: report explains effective SR label without claiming artifact proof' `
+    -Expected $true -Actual ($centralStableCheck.Details -match 'branch-derived.*not signed-artifact')
+$centralPending = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='false' } `
+    -MainVersion $centralSource
+$centralPendingCheck = Get-CheckByAreaPrefix -Checks $centralPending -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: automatic servicing label does not bypass stabilization review' `
+    -Expected BLOCKED -Actual $centralPendingCheck.Status
+Assert-Eq -Label 'Central labels: pending guidance preserves all three conditions' `
+    -Expected $true -Actual ($centralPendingCheck.NextAction -match 'Preserve.*all three branch-label')
+Assert-Eq -Label 'Central labels: pending guidance does not delete nightly conditions' `
+    -Expected $false -Actual ($centralPendingCheck.NextAction -match 'remove the nightly')
+$centralShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource -Shipped
+Assert-Eq -Label 'Central labels: immutable shipped-tag metadata remains valid' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $centralShipped -Prefix 'Versions.props servicing flip').Status
+$automaticSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; AutomaticStabilization=$true }
+$automaticChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource
+$automaticCheck = Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Automatic stabilization: SR defaults are ready without a separate flip' `
+    -Expected READY -Actual $automaticCheck.Status
+Assert-Eq -Label 'Automatic stabilization: report does not request a redundant PR' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'No separate stabilization PR')
+Assert-Eq -Label 'Automatic stabilization: configuration is not signed/publication evidence' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'not signed-artifact or publication proof')
+Assert-Eq -Label 'Automatic stabilization: development source remains next-cycle CI' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Main bumped').Status
+$automaticShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource -Shipped
+Assert-Eq -Label 'Automatic stabilization: immutable published configuration is supported' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticShipped -Prefix 'Versions.props servicing flip').Status
 
 # Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
 $checks1 = Invoke-ShipChecksWithMockedVersions `
@@ -11915,6 +12126,46 @@ Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentDetails -Verdict $guidanceV))
 Assert-Eq -Label "hash: rendered regression title change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentTitle -Verdict $guidanceV))
+
+Write-Host "`n[Unit] SR nightly provenance requires constrained configured inflight evidence" -ForegroundColor Cyan
+$nfProvOriginalVersions = (Get-Item function:Get-VersionsPropsState).ScriptBlock
+$nfProvOriginalResolve = (Get-Item function:Resolve-NightlyDogfoodFreshness).ScriptBlock
+$nfProvOriginalParameters = (Get-Item function:Get-ReadinessNightlyParameters).ScriptBlock
+$nfProvOriginalLoaded = $Script:NightlyFeedHelperLoaded
+try {
+    $Script:NightlyFeedHelperLoaded = $true
+    function Get-VersionsPropsState { param($Ref) @{ Major=10; Patch=80 } }
+    function Get-ReadinessNightlyParameters {
+        param($Roles,$Major)
+        if ($Roles.configured -and $script:nfProvenanceConstrained) {
+            @{ InflightPrefixRegex='^10\.0\.80-ci\.inflight\.'; RequireInflight=$true }
+        } else { @{} }
+    }
+    function Resolve-NightlyDogfoodFreshness { @{} + $script:nfProvenanceFresh }
+    foreach ($case in @(
+        @{ configured=$false; type='band'; constrained=$false; expected=$false },
+        @{ configured=$false; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='band'; constrained=$true; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$true; expected=$true }
+    )) {
+        $script:nfProvenanceConstrained = $case.constrained
+        $script:nfProvenanceFresh = if ($case.type -eq 'inflight') { $rInf } else { $rPrev }
+        $data = @{ metadata=@{ srRef='release/10.0.1xx-sr8'; branchRoles=@{
+            configured=$case.configured; nightlyBranch='inflight/current'
+        } } }
+        Add-SrNightlyFeedFreshness -Data $data
+        Assert-Eq -Label "Nightly branch provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual $data.nightlyFeed.ContainsKey('branch')
+        Assert-Eq -Label "Nightly label provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual ($data.nightlyFeed.laneLabel -match 'inflight/current')
+    }
+} finally {
+    Set-Item function:Get-VersionsPropsState $nfProvOriginalVersions
+    Set-Item function:Resolve-NightlyDogfoodFreshness $nfProvOriginalResolve
+    Set-Item function:Get-ReadinessNightlyParameters $nfProvOriginalParameters
+    $Script:NightlyFeedHelperLoaded = $nfProvOriginalLoaded
+}
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in

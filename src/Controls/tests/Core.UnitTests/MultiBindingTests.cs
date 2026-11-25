@@ -541,6 +541,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Hello FOO 042 BAZ", bindable.GetValue(property));
 		}
 
+		[Fact, Category(TestCategory.Memory)]
+		public async Task RootedMultiBindingDoesNotRetainTarget()
+		{
+			var (targetReference, multiBinding) = CreateRootedMultiBinding();
+
+			Assert.False(await targetReference.WaitForCollect(), "MultiBinding should not retain its target.");
+			GC.KeepAlive(multiBinding);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference TargetReference, MultiBinding MultiBinding) CreateRootedMultiBinding()
+		{
+			var target = new Label();
+			var multiBinding = new MultiBinding { StringFormat = "{0}" };
+			multiBinding.Bindings.Add(new Binding(".", source: "value"));
+			target.SetBinding(Label.TextProperty, multiBinding);
+
+			return (new WeakReference(target), multiBinding);
+		}
+
 		[Fact]
 		public void ConverterCulturePassedToConvert()
 		{

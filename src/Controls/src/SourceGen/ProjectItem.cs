@@ -11,20 +11,21 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
+	public bool EnablePreviewFeatures => Options.IsTrue("build_property.EnablePreviewFeatures");
+
 	public bool EnableLineInfo
 	{
 		get
 		{
-			if (Options.IsEnabled("build_metadata.additionalfiles.LineInfo"))
+			if (Options.IsEnabled("build_metadata.additionalfiles.LineInfo") || Options.IsTrue("build_metadata.additionalfiles.LineInfo"))
 				return true;
-			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo"))
+			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo") || Options.IsFalse("build_metadata.additionalfiles.LineInfo"))
 				return false;
-			if (Options.IsEnabled("build_property.MauiXamlLineInfo"))
+			if (Options.IsEnabled("build_property.MauiXamlLineInfo") || Options.IsTrue("build_property.MauiXamlLineInfo"))
 				return true;
-			if (Options.IsDisabled("build_property.MauiXamlLineInfo"))
+			if (Options.IsDisabled("build_property.MauiXamlLineInfo") || Options.IsFalse("build_property.MauiXamlLineInfo"))
 				return false;
-			//return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
-			return false; //default to False due to roslyn issues with large pdbs https://github.com/dotnet/roslyn/issues/80952
+			return true;
 		}
 	}
 
@@ -118,22 +119,18 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 
 	/// <summary>
-	/// Stable, project-unique key for incremental hot reload state. Uses the XAML file's absolute
-	/// path (unique per project on disk, constant across incremental builds) so the process-global
-	/// <c>XamlHotReloadState</c> — hosted in a long-lived VBCSCompiler shared across many builds —
-	/// can never leak a patch chain between two projects that merely share an assembly name and a
-	/// file name (e.g. two apps both named "MauiApp.1" with a "MainPage.xaml"). Falls back to the
-	/// relative path when no absolute path is available (e.g. some unit-test harnesses).
+	/// Uses the absolute XAML path to isolate Hot Reload state across projects in the shared
+	/// compiler process. Test harnesses without an absolute path fall back to the relative path.
 	/// </summary>
 	public string HotReloadStateKey
 		=> string.IsNullOrEmpty(AdditionalText.Path) ? (RelativePath ?? string.Empty) : AdditionalText.Path;
+
+	/// <summary>Identifies the generator driver that owns this item's Hot Reload field history.</summary>
+	public HotReloadSessionToken? HotReloadSessionToken { get; init; }
 
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");
 
 	public string? TargetPath
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
-
-	public bool EnablePreviewFeatures
-		=> Options.IsTrue("build_property.EnablePreviewFeatures");
 }

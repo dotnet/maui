@@ -13,7 +13,6 @@ using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
-using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
@@ -23,8 +22,12 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Storage;
+using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 #if ANDROID
 using Android.App;
+#elif __IOS__
+using System.Linq;
+using Foundation;
 #endif
 
 namespace Microsoft.Maui.Hosting
@@ -52,10 +55,10 @@ namespace Microsoft.Maui.Hosting
 		// It is intentionally NOT held across user code, facade reads, or user-implementable
 		// IPlatformGeocoding token accessors. Facade ownership bookkeeping is serialized per
 		// type by FacadeBridgeState<T>.SyncRoot instead. See EssentialsInitializer.InitializeCore.
-#if WINDOWS || TIZEN
+#if WINDOWS
 		static readonly object s_mapTokenLock = new();
 #endif
-#if WINDOWS || TIZEN
+#if WINDOWS
 		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
 		static readonly List<MapTokenImplementationState> s_mapTokenImplementationStates = new();
 		static int s_mapTokenEpoch;
@@ -138,9 +141,12 @@ namespace Microsoft.Maui.Hosting
 					{
 						return ApplicationModel.Platform.OpenUrl(application, url, options);
 					})
-					.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
+					.SceneOpenUrl((scene, urlContexts) =>
+						OpenWebAuthenticatorUrls(urlContexts.Select<UIKit.UIOpenUrlContext, NSUrl>(context => context.Url), WebAuthenticator.Default))
+					.SceneContinueUserActivity((scene, userActivity) =>
 					{
-						ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+						var url = userActivity?.WebPageUrl?.AbsoluteString;
+						return !string.IsNullOrEmpty(url) && WebAuthenticator.Default.OpenUrl(new Uri(url));
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
@@ -160,13 +166,33 @@ namespace Microsoft.Maui.Hosting
 					{
 						ApplicationModel.Platform.OnPlatformWindowInitialized(window);
 					}));
-#elif TIZEN
+#endif
 
+#if IOS || MACCATALYST
+				life.AddiOS(ios => ios
+					.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
+					{
+						ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+					}));
 #endif
 			});
 
 			return builder;
 		}
+
+#if __IOS__
+		internal static bool OpenWebAuthenticatorUrls(IEnumerable<NSUrl> urls, IWebAuthenticator webAuthenticator)
+		{
+			var wasHandled = false;
+			foreach (var url in urls)
+			{
+				if (url?.AbsoluteString is string absoluteUrl)
+					wasHandled = webAuthenticator.OpenUrl(new Uri(absoluteUrl)) || wasHandled;
+			}
+
+			return wasHandled;
+		}
+#endif
 
 		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder>? configureDelegate = null)
 		{
@@ -245,7 +271,7 @@ namespace Microsoft.Maui.Hosting
 				var cleanup = services.GetRequiredService<EssentialsCleanup>();
 				try
 				{
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS)
 					BridgeMainThreadFromDispatcher(services, facadeCleanups);
 #endif
 
@@ -258,7 +284,7 @@ namespace Microsoft.Maui.Hosting
 						}
 					}
 
-#if WINDOWS || TIZEN
+#if WINDOWS
 					var hasExplicitMapServiceToken = _essentialsBuilder.HasMapServiceToken;
 					var explicitMapServiceToken = _essentialsBuilder.MapServiceToken;
 					var preResolvedGeocoding = services.GetService<IGeocoding>();
@@ -281,7 +307,7 @@ namespace Microsoft.Maui.Hosting
 					var versionTrackingDependencies = BridgeEssentialsFromDI(
 						services,
 						facadeCleanups
-#if WINDOWS || TIZEN
+#if WINDOWS
 						, preResolvedGeocoding
 #endif
 					);
@@ -298,7 +324,7 @@ namespace Microsoft.Maui.Hosting
 						versionTrackingDependencies.AppInfoSecureStoragePredecessor,
 						facadeCleanups);
 
-#if WINDOWS || TIZEN
+#if WINDOWS
 					if (hasExplicitMapServiceToken)
 					{
 						var geocoding = versionTrackingDependencies.Geocoding ?? fallbackGeocodingForMapToken;
@@ -326,7 +352,6 @@ namespace Microsoft.Maui.Hosting
 					}
 #endif
 
-#if !TIZEN
 					// Only subscribe to the current AppActions implementation when at least one
 					// handler was actually registered via IEssentialsBuilder.OnAppAction. The
 					// subscription would otherwise pin this initializer instance for the app's
@@ -345,7 +370,6 @@ namespace Microsoft.Maui.Hosting
 							SetAppActions(appActions, logger, _essentialsBuilder.AppActions, preProviderCleanups);
 						}
 					}
-#endif
 
 					if (_essentialsBuilder.TrackVersions)
 					{
@@ -428,7 +452,7 @@ namespace Microsoft.Maui.Hosting
 				throw new AggregateException("Essentials initialization rollback failed.", exceptions);
 			}
 
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS)
 			static void BridgeMainThreadFromDispatcher(IServiceProvider services, List<Action> facadeCleanups)
 			{
 				var dispatcher = services.GetOptionalApplicationDispatcher();
@@ -1210,7 +1234,7 @@ namespace Microsoft.Maui.Hosting
 				return (T?)field.GetValue(null);
 			}
 
-#if WINDOWS || TIZEN
+#if WINDOWS
 			static IGeocoding? CaptureGeocodingDefaultForMapServiceToken(bool createIfMissing)
 			{
 				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<IGeocoding>();
@@ -2312,7 +2336,7 @@ namespace Microsoft.Maui.Hosting
 			public bool IsRemoved { get; set; }
 		}
 
-#if WINDOWS || TIZEN
+#if WINDOWS
 		sealed class MapTokenImplementationState
 		{
 			public MapTokenImplementationState(IPlatformGeocoding implementation)

@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		Queue<NavigationRequest> _navigationQueue = new Queue<NavigationRequest>();
 
 		bool _processingQueue;
+		bool _applyingNavigationRequest;
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -91,6 +92,21 @@ namespace Microsoft.Maui.Platform
 				_navigationQueue.Enqueue(args);
 				return;
 			}
+
+			_applyingNavigationRequest = true;
+
+			try
+			{
+				ApplyNavigationRequestCore(args);
+			}
+			finally
+			{
+				_applyingNavigationRequest = false;
+			}
+		}
+
+		void ApplyNavigationRequestCore(NavigationRequest args)
+		{
 
 			if (args.NavigationStack.Count == 0)
 			{
@@ -184,7 +200,14 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				int popToId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-				navController.PopBackStack(popToId, false);
+
+				// Remove the popped destinations from the graph right away. IterateBackStack below looks up every
+				// destination of the graph on the back stack, which throws an IllegalArgumentException for a popped one
+				if (navController.PopBackStack(popToId, false))
+				{
+					for (int i = newPageStack.Count; i < fragmentNavDestinations.Count; i++)
+						NavGraph.Remove(fragmentNavDestinations[i]);
+				}
 			}
 
 			// We only keep destinations around that are on the backstack
@@ -552,6 +575,36 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		internal void HandleDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
+		{
+			ReconcileExternallyPoppedStack();
+			OnDestinationChanged(navController, navDestination, bundle);
+		}
+
+		// A platform back stack smaller than the one MAUI requested means something popped
+		// natively without a navigation request — e.g. a system back press consumed by an
+		// AndroidX callback while the push transition was still running. Without this the
+		// pending navigation never finishes: the Task returned by PushAsync never completes
+		// and the cross-platform stack keeps a page that is no longer on screen.
+		void ReconcileExternallyPoppedStack()
+		{
+			if (_applyingNavigationRequest || IsInitialNavigation || NavigationStack.Count == 0 || _navHost is null)
+				return;
+
+			int platformCount = 0;
+			NavController.IterateBackStack(_ => platformCount++);
+
+			if (platformCount == 0 || platformCount >= NavigationStack.Count)
+				return;
+
+			var newStack = new List<IView>();
+			for (int i = 0; i < platformCount; i++)
+				newStack.Add(NavigationStack[i]);
+
+			UpdateNavigationStack(newStack);
+			NavigationFinished(NavigationView);
+		}
+
 		FragmentManager? ChildFragmentManager
 		{
 			get
@@ -626,7 +679,7 @@ namespace Microsoft.Maui.Platform
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
 				NavController p0, NavDestination p1, Bundle? p2)
 			{
-				_stackNavigationManager?.OnDestinationChanged(p0, p1, p2);
+				_stackNavigationManager?.HandleDestinationChanged(p0, p1, p2);
 			}
 
 			#endregion

@@ -14,7 +14,7 @@ public class Issue12126 : _IssuesUITest
 
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
 	{
 		App.WaitForElement("TestReady");

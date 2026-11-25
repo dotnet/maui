@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] Unable to open a new Page for the second time in Xamarin.Forms Shell Tabbar";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ClickingOnTabToPopToRootDoesntBreakNavigation()
 		{
 			App.WaitForElement(ClickMe);
@@ -31,7 +31,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElementTillPageNavigationSettled(FinalLabel);
 			App.TapBackArrow(Back);
 			App.WaitForElement("This is the intermediate page");
-			App.TapBackArrow(Tab1);
+			if (App is AppiumCatalystApp)
+			{
+				App.TapBackArrow(AppiumQuery.ByXPath("//XCUIElementTypeNavigationBar/XCUIElementTypeButton[@identifier='BackButton' or @label='Tab 1' or @identifier='Tab 1']"));
+			}
+			else
+			{
+				App.TapBackArrow(Tab1);
+			}
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
 			App.WaitForElementTillPageNavigationSettled(FinalLabel);

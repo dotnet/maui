@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Platform
         void OnViewDidDisappear();
 
         /// <summary>
+        /// Called before the UITabBarController's view lays out its subviews.
+        /// </summary>
+        void OnViewWillLayoutSubviews();
+
+        /// <summary>
         /// Called when the UITabBarController's view needs layout.
         /// </summary>
         void OnViewDidLayoutSubviews();

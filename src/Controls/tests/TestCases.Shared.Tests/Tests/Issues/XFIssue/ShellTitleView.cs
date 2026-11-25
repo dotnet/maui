@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
 public class ShellTitleView : _IssuesUITest
 {
 	public ShellTitleView(TestDevice testDevice) : base(testDevice)
@@ -26,6 +25,7 @@ public class ShellTitleView : _IssuesUITest
 	public override string Issue => "Shell Title View Tests";
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TitleWidthMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure (13949)");
@@ -35,6 +35,7 @@ public class ShellTitleView : _IssuesUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TitleWidthWithToolBarItemMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure and ToolBarItem (13949)");
@@ -44,6 +45,7 @@ public class ShellTitleView : _IssuesUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TitleViewPositionsCorrectly()
 	{
 		var titleView = App.WaitForElement(TitleViewId).GetRect();
@@ -54,6 +56,7 @@ public class ShellTitleView : _IssuesUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement(TitleViewId);

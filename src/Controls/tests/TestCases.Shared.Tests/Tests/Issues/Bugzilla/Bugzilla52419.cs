@@ -38,7 +38,7 @@ public class Bugzilla52419 : _IssuesUITest
 		App.TapTab(TabPage2);
 		App.TapTab(TabPage1);
 		App.WaitForElement(PushNewPage);
-		App.TapBackArrow(BackButtonIdentifier);
+		App.TapShellBackArrowWithImageOverride(BackButtonIdentifier);
 		App.WaitForElement(AppearanceLabel);
 		Assert.That(App.WaitForElement(AppearanceLabel).GetText(), Is.EqualTo("Times Appeared: 2"));
 	}

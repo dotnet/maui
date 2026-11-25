@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		const int DefaultRowHeight = 44;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Original background view is retained so UpdateBackgroundView can restore the UITableView background.")]
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
@@ -43,6 +45,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (disposing)
 			{
+				DisposeSource(Control);
+
 				var viewsToLookAt = new Stack<UIView>(Subviews);
 				while (viewsToLookAt.Count > 0)
 				{
@@ -81,7 +85,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (Control == null || Control.Style != style)
 				{
-					Control?.Dispose();
+					if (Control is not null)
+					{
+						DisposeSource(Control);
+						Control.Dispose();
+					}
 
 					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
@@ -144,7 +152,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void SetSource()
 		{
 			var modeledView = Element;
+			var previousSource = Control.Source;
 			Control.Source = modeledView.HasUnevenRows ? new UnEvenTableViewModelRenderer(modeledView) : new TableViewModelRenderer(modeledView);
+			previousSource?.Dispose();
+		}
+
+		static void DisposeSource(UITableView tableView)
+		{
+			if (tableView is null)
+				return;
+
+			var source = tableView.Source;
+			tableView.Source = null;
+			source?.Dispose();
 		}
 
 		void UpdateBackgroundView()

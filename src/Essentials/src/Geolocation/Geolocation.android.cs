@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Locations;
 using Android.OS;
+using AndroidX.Core.OS;
 using Microsoft.Maui.ApplicationModel;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
@@ -73,13 +75,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
-			var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
-
-			if (!hasProviders)
+			if (!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			// get the best possible provider for the requested accuracy
-			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
+			var providerInfo = GetBestProvider(LocationManager, enabledProviders, request.DesiredAccuracy);
 
 			// if no providers exist, we can't get a location
 			// let's punt and try to get the last known location
@@ -88,16 +88,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var tcs = new TaskCompletionSource<AndroidLocation?>();
 
-			var allProviders = LocationManager.GetProviders(false);
-
-			var providers = new List<string>();
-			if (allProviders.Contains(LocationManager.GpsProvider))
-				providers.Add(LocationManager.GpsProvider);
-			if (allProviders.Contains(LocationManager.NetworkProvider))
-				providers.Add(LocationManager.NetworkProvider);
-
-			if (providers.Count == 0)
-				providers.Add(providerInfo.Provider);
+			var useExplicitProvider = OperatingSystem.IsAndroidVersionAtLeast(34);
+			var availableProviders = useExplicitProvider ? enabledProviders : LocationManager.GetProviders(false);
+			var providers = GetProviders(availableProviders, providerInfo.Provider, useExplicitProvider);
 
 			var listener = new SingleLocationListener(LocationManager, providerInfo.Accuracy, providers);
 			listener.LocationHandler = HandleLocation;
@@ -110,7 +103,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var looper = Looper.MyLooper() ?? Looper.MainLooper;
 
 			foreach (var provider in providers)
-				LocationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
+				RequestLocationUpdates(LocationManager, provider, 0, 0, request.DesiredAccuracy, listener, looper);
 
 			var androidLocation = await tcs.Task;
 
@@ -166,29 +159,19 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
-			var hasProviders = enabledProviders is not null &&
-				enabledProviders.Any(p => !ignoredProviders.Contains(p));
-
-			if (!hasProviders)
+			if (!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			// get the best possible provider for the requested accuracy
-			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
+			var providerInfo = GetBestProvider(LocationManager, enabledProviders, request.DesiredAccuracy);
 
 			// if no providers exist, we can't listen for locations
 			if (string.IsNullOrEmpty(providerInfo.Provider))
 				return false;
 
-			var allProviders = LocationManager.GetProviders(false);
-
-			listeningProviders = new List<string>();
-			if (allProviders.Contains(LocationManager.GpsProvider))
-				listeningProviders.Add(LocationManager.GpsProvider);
-			if (allProviders.Contains(LocationManager.NetworkProvider))
-				listeningProviders.Add(LocationManager.NetworkProvider);
-
-			if (listeningProviders.Count == 0)
-				listeningProviders.Add(providerInfo.Provider);
+			var useExplicitProvider = OperatingSystem.IsAndroidVersionAtLeast(34);
+			var availableProviders = useExplicitProvider ? enabledProviders : LocationManager.GetProviders(false);
+			listeningProviders = GetProviders(availableProviders, providerInfo.Provider, useExplicitProvider);
 
 			continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
@@ -201,7 +184,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
-				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, (float)request.MinimumDistance, continuousListener, looper);
+				RequestLocationUpdates(LocationManager, provider, minTimeMilliseconds, (float)request.MinimumDistance, request.DesiredAccuracy, continuousListener, looper);
 
 			return true;
 
@@ -242,12 +225,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			continuousListener = null;
 		}
 
-		// TODO: android.location.Criteria deprecated in API 34
-		// https://developer.android.com/reference/android/location/Criteria
-#pragma warning disable CA1422
-		static (string? Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
+		static (string? Provider, float Accuracy) GetBestProvider(LocationManager locationManager, IList<string> enabledProviders, GeolocationAccuracy accuracy)
 		{
-			// Criteria: https://developer.android.com/reference/android/location/Criteria
+			var accuracyDistance = GetAccuracyDistance(accuracy);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
+				return (SelectProvider(enabledProviders, accuracy), accuracyDistance);
 
 			var criteria = new Criteria
 			{
@@ -256,48 +239,122 @@ namespace Microsoft.Maui.Devices.Sensors
 				SpeedRequired = false
 			};
 
-			var accuracyDistance = 100;
-
 			switch (accuracy)
 			{
 				case GeolocationAccuracy.Lowest:
 					criteria.Accuracy = Accuracy.NoRequirement;
 					criteria.HorizontalAccuracy = Accuracy.NoRequirement;
 					criteria.PowerRequirement = LocationPower.NoRequirement;
-					accuracyDistance = 500;
 					break;
 				case GeolocationAccuracy.Low:
 					criteria.Accuracy = Accuracy.Coarse;
 					criteria.HorizontalAccuracy = Accuracy.Low;
 					criteria.PowerRequirement = LocationPower.Low;
-					accuracyDistance = 500;
 					break;
 				case GeolocationAccuracy.Default:
 				case GeolocationAccuracy.Medium:
 					criteria.Accuracy = Accuracy.Coarse;
 					criteria.HorizontalAccuracy = Accuracy.Medium;
 					criteria.PowerRequirement = LocationPower.Medium;
-					accuracyDistance = 250;
 					break;
 				case GeolocationAccuracy.High:
 					criteria.Accuracy = Accuracy.Fine;
 					criteria.HorizontalAccuracy = Accuracy.High;
 					criteria.PowerRequirement = LocationPower.High;
-					accuracyDistance = 100;
 					break;
 				case GeolocationAccuracy.Best:
 					criteria.Accuracy = Accuracy.Fine;
 					criteria.HorizontalAccuracy = Accuracy.High;
 					criteria.PowerRequirement = LocationPower.High;
-					accuracyDistance = 50;
 					break;
 			}
 
-			var provider = locationManager.GetBestProvider(criteria, true) ?? locationManager.GetProviders(true).FirstOrDefault();
+			var provider = locationManager.GetBestProvider(criteria, true) ?? SelectFallbackProvider(enabledProviders);
 
 			return (provider, accuracyDistance);
 		}
-#pragma warning restore CA1422
+
+		internal static string? SelectProvider(IList<string>? enabledProviders, GeolocationAccuracy accuracy)
+		{
+			if (enabledProviders is null)
+				return null;
+
+			if (enabledProviders.Contains(LocationManager.FusedProvider))
+				return LocationManager.FusedProvider;
+
+			var preferredProvider = accuracy switch
+			{
+				GeolocationAccuracy.High or GeolocationAccuracy.Best => LocationManager.GpsProvider,
+				_ => LocationManager.NetworkProvider,
+			};
+			var alternateProvider = preferredProvider == LocationManager.GpsProvider
+				? LocationManager.NetworkProvider
+				: LocationManager.GpsProvider;
+
+			if (enabledProviders.Contains(preferredProvider))
+				return preferredProvider;
+			if (enabledProviders.Contains(alternateProvider))
+				return alternateProvider;
+
+			return SelectFallbackProvider(enabledProviders);
+		}
+
+		internal static string? SelectFallbackProvider(IList<string>? enabledProviders) =>
+			enabledProviders?.FirstOrDefault(provider => !ignoredProviders.Contains(provider));
+
+		internal static List<string> GetProviders(IList<string> availableProviders, string selectedProvider, bool useExplicitProvider)
+		{
+			if (useExplicitProvider)
+				return new List<string> { selectedProvider };
+
+			var providers = new List<string>();
+
+			if (availableProviders.Contains(LocationManager.GpsProvider))
+				providers.Add(LocationManager.GpsProvider);
+			if (availableProviders.Contains(LocationManager.NetworkProvider))
+				providers.Add(LocationManager.NetworkProvider);
+			if (providers.Count == 0)
+				providers.Add(selectedProvider);
+
+			return providers;
+		}
+
+		static void RequestLocationUpdates(LocationManager locationManager, string provider, long minTimeMs, float minDistanceMeters, GeolocationAccuracy accuracy, ILocationListener listener, Looper? looper)
+		{
+			// The legacy overload registers every provider except gps as BALANCED, so the fused provider would never turn on GPS.
+			if (OperatingSystem.IsAndroidVersionAtLeast(34) && looper is not null &&
+				ExecutorCompat.Create(new Handler(looper)) is { } executor)
+				locationManager.RequestLocationUpdates(provider, CreateLocationRequest(minTimeMs, minDistanceMeters, accuracy), executor, listener);
+			else
+				locationManager.RequestLocationUpdates(provider, minTimeMs, minDistanceMeters, listener, looper);
+		}
+
+		[SupportedOSPlatform("android31.0")]
+		internal static LocationRequest CreateLocationRequest(long minTimeMs, float minDistanceMeters, GeolocationAccuracy accuracy)
+		{
+			var quality = accuracy switch
+			{
+				GeolocationAccuracy.Lowest or GeolocationAccuracy.Low => LocationRequestQuality.LowPower,
+				GeolocationAccuracy.High or GeolocationAccuracy.Best => LocationRequestQuality.HighAccuracy,
+				_ => LocationRequestQuality.BalancedPowerAccuracy,
+			};
+
+			// Same min update interval as the legacy overload, so updates don't arrive faster than minTimeMs.
+			return new LocationRequest.Builder(minTimeMs)
+				.SetQuality((int)quality)
+				.SetMinUpdateIntervalMillis(minTimeMs)
+				.SetMinUpdateDistanceMeters(minDistanceMeters)
+				.Build();
+		}
+
+		internal static float GetAccuracyDistance(GeolocationAccuracy accuracy) =>
+			accuracy switch
+			{
+				GeolocationAccuracy.Lowest or GeolocationAccuracy.Low => 500,
+				GeolocationAccuracy.Default or GeolocationAccuracy.Medium => 250,
+				GeolocationAccuracy.Best => 50,
+				_ => 100,
+			};
 
 		internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation? bestLocation)
 		{

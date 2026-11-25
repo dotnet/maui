@@ -5,6 +5,7 @@ namespace UITest.Appium
 {
 	public class AppiumCatalystTouchActions : ICommandExecutionGroup
 	{
+		const string TapCommand = "tap";
 		const string TapCoordinatesCommand = "tapCoordinates";
 		const string DoubleTapCommand = "doubleTap";
 		const string DragAndDropCommand = "dragAndDrop";
@@ -12,6 +13,7 @@ namespace UITest.Appium
 
 		readonly List<string> _commands = new()
 		{
+			TapCommand,
 			TapCoordinatesCommand,
 			DoubleTapCommand,
 			DragAndDropCommand,
@@ -34,12 +36,25 @@ namespace UITest.Appium
 		{
 			return commandName switch
 			{
+				TapCommand => Tap(parameters),
 				TapCoordinatesCommand => TapCoordinates(parameters),
 				DoubleTapCommand => DoubleTap(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				DragCoordinatesCommand => DragCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
+		}
+
+		CommandResponse Tap(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("button", out var button) &&
+				string.Equals(button?.ToString(), "right", StringComparison.OrdinalIgnoreCase))
+			{
+				return new AppiumTouchActions(_appiumApp).Execute(TapCommand, parameters);
+			}
+
+			// Element/query taps need the same stale-element recovery and mouse fallback as string taps.
+			return _appiumApp.CommandExecutor.Execute("click", parameters);
 		}
 
 		CommandResponse TapCoordinates(IDictionary<string, object> parameters)

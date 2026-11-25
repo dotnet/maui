@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
@@ -85,7 +86,30 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
-			var brush = button.Background?.ToPlatform();
+			ControlExtensions.BackgroundImageRequests.Begin(platformButton);
+			platformButton.UpdateBackgroundBrush(button.Background?.ToPlatform());
+		}
+
+		internal static void UpdateBackgroundBrush(this Button platformButton, WBrush? brush)
+		{
+			if (brush is UI.Xaml.Media.SolidColorBrush newBrush &&
+				BackgroundResourceKeys.Length > 0 &&
+				platformButton.Resources.Keys.Contains(BackgroundResourceKeys[0]) &&
+				platformButton.Resources.TryGetValue(BackgroundResourceKeys[0], out var value) &&
+				value is UI.Xaml.Media.SolidColorBrush currentBrush)
+			{
+				// Keep transparent endpoints the same hue so WinUI's brush transition only fades alpha.
+				if (currentBrush.Color.A == 0)
+				{
+					var color = newBrush.Color;
+					currentBrush.Color = global::Windows.UI.Color.FromArgb(0, color.R, color.G, color.B);
+				}
+				else if (newBrush.Color.A == 0)
+				{
+					var color = currentBrush.Color;
+					newBrush.Color = global::Windows.UI.Color.FromArgb(0, color.R, color.G, color.B);
+				}
+			}
 
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);

@@ -26,9 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 								.OpenUrl((app, url, options) =>
 									ApplicationModel.Platform.OpenUrl(app, url, options))
 								.ContinueUserActivity((application, userActivity, completionHandler) =>
-									ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler))
-								.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
-									ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
+									ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler)));
 #elif WINDOWS
 						lifecycle
 							.AddWindows(windows =>
@@ -48,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 						handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 						handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 						handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
-#if ANDROID || IOS || MACCATALYST
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 						// Add Maps handlers for device tests
 						handlers.AddMauiMaps();
 #endif

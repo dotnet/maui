@@ -44,6 +44,7 @@ abstract Microsoft.Maui.Handlers.ViewHandler.PlatformArrange(Microsoft.Maui.Grap
 abstract Microsoft.Maui.Handlers.ViewHandler.RemoveContainer() -> void
 abstract Microsoft.Maui.Handlers.ViewHandler.SetupContainer() -> void
 abstract Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.CreatePlatformView() -> TPlatformView!
+abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 abstract Microsoft.Maui.Layouts.LayoutManager.ArrangeChildren(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 abstract Microsoft.Maui.Layouts.LayoutManager.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 const Microsoft.Maui.Primitives.Dimension.Maximum = Infinity -> double
@@ -743,6 +744,7 @@ Microsoft.Maui.Handlers.ViewHandler.ContainerView.get -> object?
 Microsoft.Maui.Handlers.ViewHandler.HasContainer.get -> bool
 Microsoft.Maui.Handlers.ViewHandler.HasContainer.set -> void
 Microsoft.Maui.Handlers.ViewHandler.PlatformView.get -> object?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(object? containerView) -> void
 Microsoft.Maui.Handlers.ViewHandler.ViewHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Handlers.ViewHandler.VirtualView.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>
@@ -824,6 +826,8 @@ Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
+Microsoft.Maui.HybridWebViewInvoker
+Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
 Microsoft.Maui.HybridWebViewRawMessage
 Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
 Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
@@ -909,6 +913,9 @@ Microsoft.Maui.IElementHandler.SetMauiContext(Microsoft.Maui.IMauiContext! mauiC
 Microsoft.Maui.IElementHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 Microsoft.Maui.IElementHandler.UpdateValue(string! property) -> void
 Microsoft.Maui.IElementHandler.VirtualView.get -> Microsoft.Maui.IElement?
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.PlatformView.get -> TPlatformView!
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
 Microsoft.Maui.IEmbeddedFontLoader
 Microsoft.Maui.IEmbeddedFontLoader.LoadFont(Microsoft.Maui.EmbeddedFont! font) -> string?
 Microsoft.Maui.IEntry
@@ -983,8 +990,11 @@ Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
 Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
 Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
 Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
+Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.IHybridWebView.Invoker.set -> void
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.IImage
 Microsoft.Maui.IImage.Aspect.get -> Microsoft.Maui.Aspect
@@ -992,6 +1002,8 @@ Microsoft.Maui.IImage.IsOpaque.get -> bool
 Microsoft.Maui.IImageButton
 Microsoft.Maui.IImageSource
 Microsoft.Maui.IImageSource.IsEmpty.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.IImageSourcePart
 Microsoft.Maui.IImageSourcePart.IsAnimationPlaying.get -> bool
 Microsoft.Maui.IImageSourcePart.Source.get -> Microsoft.Maui.IImageSource?
@@ -1047,6 +1059,13 @@ Microsoft.Maui.ILayoutHandler.Remove(Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ILayoutHandler.Update(int index, Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ILayoutHandler.UpdateZIndex(Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ILayoutHandler.VirtualView.get -> Microsoft.Maui.ILayout!
+Microsoft.Maui.ILayoutHandler<TPlatformView>
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Add(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Clear() -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Insert(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Remove(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Update(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.UpdateZIndex(Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ImageSourceExtensions
 Microsoft.Maui.ImageSourceService
 Microsoft.Maui.ImageSourceService.ImageSourceService(Microsoft.Extensions.Logging.ILogger? logger = null) -> void
@@ -1139,6 +1158,8 @@ Microsoft.Maui.IRefreshView.IsRefreshing.set -> void
 Microsoft.Maui.IRefreshView.RefreshColor.get -> Microsoft.Maui.Graphics.Paint?
 Microsoft.Maui.IReplaceableView
 Microsoft.Maui.IReplaceableView.ReplacedView.get -> Microsoft.Maui.IView!
+Microsoft.Maui.ISafeAreaElement
+Microsoft.Maui.ISafeAreaElement.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.ISafeAreaView
 Microsoft.Maui.ISafeAreaView.IgnoreSafeArea.get -> bool
 Microsoft.Maui.IScrollView
@@ -1197,6 +1218,8 @@ Microsoft.Maui.ISwipeItem.OnInvoked() -> void
 Microsoft.Maui.ISwipeItemMenuItem
 Microsoft.Maui.ISwipeItemMenuItem.Background.get -> Microsoft.Maui.Graphics.Paint?
 Microsoft.Maui.ISwipeItemMenuItem.Visibility.get -> Microsoft.Maui.Visibility
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 Microsoft.Maui.ISwipeItems
 Microsoft.Maui.ISwipeItems.Mode.get -> Microsoft.Maui.SwipeMode
 Microsoft.Maui.ISwipeItems.SwipeBehaviorOnInvoked.get -> Microsoft.Maui.SwipeBehaviorOnInvoked
@@ -1220,6 +1243,10 @@ Microsoft.Maui.ISwitch.IsOn.get -> bool
 Microsoft.Maui.ISwitch.IsOn.set -> void
 Microsoft.Maui.ISwitch.ThumbColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.ISwitch.TrackColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
 Microsoft.Maui.ITabbedView
 Microsoft.Maui.ItemDelegateList<T>
 Microsoft.Maui.ItemDelegateList<T>.Count.get -> int
@@ -1270,6 +1297,8 @@ Microsoft.Maui.IToolbar.BackButtonVisible.set -> void
 Microsoft.Maui.IToolbar.IsVisible.get -> bool
 Microsoft.Maui.IToolbar.IsVisible.set -> void
 Microsoft.Maui.IToolbar.Title.get -> string!
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
 Microsoft.Maui.IToolbarElement
 Microsoft.Maui.IToolbarElement.Toolbar.get -> Microsoft.Maui.IToolbar?
 Microsoft.Maui.IToolTipElement
@@ -1330,6 +1359,8 @@ Microsoft.Maui.IViewHandler.HasContainer.get -> bool
 Microsoft.Maui.IViewHandler.HasContainer.set -> void
 Microsoft.Maui.IViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 Microsoft.Maui.IViewHandler.VirtualView.get -> Microsoft.Maui.IView?
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
 Microsoft.Maui.IVisualDiagnosticsOverlay
 Microsoft.Maui.IVisualDiagnosticsOverlay.AddAdorner(Microsoft.Maui.IAdorner! adorner, bool scrollToElement) -> bool
 Microsoft.Maui.IVisualDiagnosticsOverlay.AddAdorner(Microsoft.Maui.IVisualTreeElement! visualElement, bool scrollToElement) -> bool
@@ -1394,6 +1425,7 @@ Microsoft.Maui.IWindow.Overlays.get -> System.Collections.Generic.IReadOnlyColle
 Microsoft.Maui.IWindow.RemoveOverlay(Microsoft.Maui.IWindowOverlay! overlay) -> bool
 Microsoft.Maui.IWindow.RequestDisplayDensity() -> float
 Microsoft.Maui.IWindow.Resumed() -> void
+Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.IWindow.Stopped() -> void
 Microsoft.Maui.IWindow.VisualDiagnosticsOverlay.get -> Microsoft.Maui.IVisualDiagnosticsOverlay!
 Microsoft.Maui.IWindow.Width.get -> double
@@ -1667,6 +1699,7 @@ Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions horizo
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions left, Microsoft.Maui.SafeAreaRegions top, Microsoft.Maui.SafeAreaRegions right, Microsoft.Maui.SafeAreaRegions bottom) -> void
 Microsoft.Maui.SafeAreaEdges.SafeAreaEdges(Microsoft.Maui.SafeAreaRegions uniformValue) -> void
 Microsoft.Maui.SafeAreaEdges.Top.get -> Microsoft.Maui.SafeAreaRegions
+Microsoft.Maui.SafeAreaElementExtensions
 Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.All = 32768 -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.SafeAreaRegions.Container = 2 -> Microsoft.Maui.SafeAreaRegions
@@ -1729,6 +1762,10 @@ Microsoft.Maui.SourceInfo.LineNumber.get -> int
 Microsoft.Maui.SourceInfo.LinePosition.get -> int
 Microsoft.Maui.SourceInfo.SourceInfo(System.Uri! sourceUri, int lineNumber, int linePosition) -> void
 Microsoft.Maui.SourceInfo.SourceUri.get -> System.Uri!
+Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.StreamImageSourceService
 Microsoft.Maui.StreamImageSourceService.StreamImageSourceService() -> void
 Microsoft.Maui.StreamImageSourceService.StreamImageSourceService(Microsoft.Extensions.Logging.ILogger<Microsoft.Maui.StreamImageSourceService!>? logger = null) -> void
@@ -1783,6 +1820,9 @@ Microsoft.Maui.SwipeViewSwipeStarted.SwipeDirection.get -> Microsoft.Maui.SwipeD
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeDirection.init -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeDirection SwipeDirection) -> void
 Microsoft.Maui.SwipeViewSwipeStarted.SwipeViewSwipeStarted(Microsoft.Maui.SwipeViewSwipeStarted! original) -> void
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.Center = 1 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.TextAlignment.End = 2 -> Microsoft.Maui.TextAlignment
@@ -2134,6 +2174,7 @@ static Microsoft.Maui.FontFile.FromString(string! input) -> Microsoft.Maui.FontF
 static Microsoft.Maui.Graphics.PaintExtensions.IsNullOrEmpty(this Microsoft.Maui.Graphics.Paint? paint) -> bool
 static Microsoft.Maui.Graphics.PaintExtensions.ToColor(this Microsoft.Maui.Graphics.Paint? paint) -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(double absoluteValue) -> Microsoft.Maui.GridLength
+static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IActivityIndicatorHandler!>!
@@ -2230,6 +2271,12 @@ static Microsoft.Maui.Handlers.EntryHandler.MapText(Microsoft.Maui.Handlers.IEnt
 static Microsoft.Maui.Handlers.EntryHandler.MapTextColor(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapVerticalTextAlignment(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.FlyoutViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.IFlyoutViewHandler!>!
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapDetail(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyout(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutBehavior(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutWidth(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsGestureEnabled(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsPresented(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Handlers.FlyoutViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.IFlyoutViewHandler!>!
 static Microsoft.Maui.Handlers.GraphicsViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IGraphicsView!, Microsoft.Maui.Handlers.IGraphicsViewHandler!>!
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapDrawable(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
@@ -2371,6 +2418,7 @@ static Microsoft.Maui.Handlers.SearchBarHandler.CommandMapper -> Microsoft.Maui.
 static Microsoft.Maui.Handlers.SearchBarHandler.MapBackground(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCancelButtonColor(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCharacterSpacing(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapFont(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapHorizontalTextAlignment(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsEnabled(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
@@ -2383,6 +2431,7 @@ static Microsoft.Maui.Handlers.SearchBarHandler.Mapper -> Microsoft.Maui.IProper
 static Microsoft.Maui.Handlers.SearchBarHandler.MapPlaceholder(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapPlaceholderColor(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapText(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapTextColor(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapVerticalTextAlignment(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
@@ -2390,6 +2439,7 @@ static Microsoft.Maui.Handlers.ShapeViewHandler.CommandMapper -> Microsoft.Maui.
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapAspect(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapBackground(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapFill(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IShapeView!, Microsoft.Maui.Handlers.IShapeViewHandler!>!
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapShape(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapStroke(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
@@ -2418,6 +2468,7 @@ static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microso
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapBackground(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ITextStyle! view) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapFont(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ITextStyle! view) -> void
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler!>!
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapSource(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! image) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapSourceAsync(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! image) -> System.Threading.Tasks.Task!
@@ -2648,10 +2699,12 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SafeAreaEdges.All.get -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.Default.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.None.get -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.SafeAreaEdges.operator !=(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
 static Microsoft.Maui.SafeAreaEdges.operator ==(Microsoft.Maui.SafeAreaEdges left, Microsoft.Maui.SafeAreaEdges right) -> bool
+static Microsoft.Maui.SafeAreaElementExtensions.GetEffectiveSafeAreaEdges(this Microsoft.Maui.ISafeAreaElement! safeAreaElement) -> Microsoft.Maui.SafeAreaEdges
 static Microsoft.Maui.ScrollToRequest.operator !=(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.ScrollToRequest.operator ==(Microsoft.Maui.ScrollToRequest? left, Microsoft.Maui.ScrollToRequest? right) -> bool
 static Microsoft.Maui.SemanticExtensions.SetSemanticFocus(this Microsoft.Maui.IView! element) -> void
@@ -2766,6 +2819,7 @@ virtual Microsoft.Maui.Handlers.OpenWindowRequest.Equals(Microsoft.Maui.Handlers
 virtual Microsoft.Maui.Handlers.OpenWindowRequest.PrintMembers(System.Text.StringBuilder! builder) -> bool
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.ViewHandler.NeedsContainer.get -> bool
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(object! containerView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.ConnectHandler(TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.DisconnectHandler(TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetVirtualView(Microsoft.Maui.IView! view) -> void

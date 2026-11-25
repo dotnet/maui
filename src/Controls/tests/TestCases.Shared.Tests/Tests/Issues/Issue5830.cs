@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Enhancement] EntryCellTableViewCell should be public";
 
 		[Test]
-		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Cells)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue5830Test()
 		{

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+  </ItemGroup>
+
+</Project>

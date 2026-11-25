@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 #if IOS || MACCATALYST
@@ -7,9 +7,7 @@ using PlatformView = UIKit.UIMenuElement;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutItem;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
@@ -23,10 +21,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
 			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
-			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 #if MACCATALYST || IOS || WINDOWS
-			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
+			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled,
+			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 		};
 

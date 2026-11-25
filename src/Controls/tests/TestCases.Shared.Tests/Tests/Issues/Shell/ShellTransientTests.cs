@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ValidateBasicServiceLifetimePageBehavior()
 		{
 			// Navigate to Transient Page for the First time
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void SwappingShellInstancesRecreatesPages()
 		{
 			// Navigate to Scoped Page so we can test that it's resued in Swapped Shell

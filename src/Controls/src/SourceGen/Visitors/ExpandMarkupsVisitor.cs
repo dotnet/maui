@@ -57,13 +57,6 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// Check if it's a C# expression
 		if (CSharpExpressionHelpers.IsExpression(trimmed, name => TryResolveMarkupExtensionType(name, node.NamespaceResolver)))
 		{
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, node, trimmed);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				return;
-			}
-
 			// Async lambda event handlers are not supported
 			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(trimmed))
 			{
@@ -74,6 +67,12 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 			// Extract expression code - single quotes are always transformed to double quotes
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed);
+			ResolveExpressionContext(parentNode, out var thisType, out var dataType);
+			// Resolve xmlns prefixes (e.g., local:Helper → fully qualified) before ABP syntax (e.g., target.(Grid.Row) → Grid.GetRow(target)).
+			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, node.NamespaceResolver, Context, dataType, thisType);
+			if (ReportStandaloneAttachedProperty(node, expressionCode))
+				return;
+			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 			node.Value = new Expression(expressionCode);
 		}
 	}
@@ -90,19 +89,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		var markupString = markupnode.MarkupString;
 		INode? node = null;
 
-		// Get thisType and dataType for ambiguity checking
-		ITypeSymbol? thisType = null;
-		ITypeSymbol? dataType = null;
-		if (Context.ProjectItem.EnablePreviewFeatures)
-		{
-			// Try to get the page/view type (this)
-			var rootElement = GetRootElement(parentElement);
-			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
-				thisType = resolvedThisType;
-			
-			// Try to get x:DataType
-			XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
-		}
+		// Get thisType and dataType for ambiguity checking and expression scope resolution
+		ResolveExpressionContext(parentElement, out var thisType, out var dataType);
 
 		// Check if this is a C# expression (consolidates all detection logic)
 		var classification = CSharpExpressionHelpers.ClassifyExpression(
@@ -111,7 +99,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			name => CanResolveAsProperty(name, thisType, dataType));
 
 		// Report ambiguity warning if both markup extension and property exist
-		if (classification.IsAmbiguous && classification.Name != null && Context.ProjectItem.EnablePreviewFeatures)
+		if (classification.IsAmbiguous && classification.Name != null)
 		{
 			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 			Context.ReportDiagnostic(Diagnostic.Create(
@@ -122,15 +110,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 		if (classification.IsExpression)
 		{
-			// C# expressions require EnablePreviewFeatures
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				// Fall through to parse as markup extension (will likely fail, but gives better error context)
-			}
 			// Async lambda event handlers are not supported
-			else if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
+			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
 			{
 				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.AsyncLambdaNotSupported, location));
@@ -140,12 +121,23 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			{
 				// Extract expression code - single quotes are always transformed to double quotes
 				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+				// Resolve xmlns prefixes before ABP syntax so prefixed ABPs become fully qualified type names.
+				expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupnode.NamespaceResolver, Context, dataType, thisType);
+				if (ReportStandaloneAttachedProperty(markupnode, expressionCode))
+					return;
+				expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 				node = new ValueNode(new Expression(expressionCode), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
 			}
 		}
 
 		// If not an expression, parse as markup extension
 		node ??= ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode);
+
+		// x:DataType only accepts {x:Type} or {x:Null}; like the runtime inflator, leave any other markup unexpanded so it is never instantiated
+		if (propertyName == XmlName.xDataType && node is ElementNode
+			&& !node.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
+			&& !node.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
+			return;
 
 		if (node != null)
 		{
@@ -154,33 +146,34 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		}
 	}
 
+	void ResolveExpressionContext(INode parentNode, out ITypeSymbol? thisType, out ITypeSymbol? dataType)
+	{
+		thisType = Context.RootType;
+		dataType = null;
+
+		var elementNode = parentNode as ElementNode ?? (parentNode as ListNode)?.Parent as ElementNode;
+		if (elementNode == null)
+			return;
+
+		if (thisType == null)
+		{
+			var rootElement = GetRootElement(elementNode);
+			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+				thisType = resolvedThisType;
+		}
+
+		XDataTypeResolver.TryGetXDataType(elementNode, Context, out dataType);
+	}
+
 	/// <summary>
 	/// Checks if a bare identifier can be resolved as a property on thisType or dataType.
 	/// </summary>
 	bool CanResolveAsProperty(string name, ITypeSymbol? thisType, ITypeSymbol? dataType)
 	{
-		if (thisType != null && HasMember(thisType, name))
+		if (thisType != null && MemberResolver.HasMember(thisType, name, includeMethods: false, Context.Compilation))
 			return true;
-		if (dataType != null && HasMember(dataType, name))
+		if (dataType != null && MemberResolver.HasMember(dataType, name, includeMethods: false, Context.Compilation))
 			return true;
-		return false;
-	}
-
-	/// <summary>
-	/// Checks if a type has a property or field with the given name.
-	/// </summary>
-	static bool HasMember(ITypeSymbol type, string memberName)
-	{
-		var currentType = type;
-		while (currentType != null)
-		{
-			foreach (var member in currentType.GetMembers(memberName))
-			{
-				if (member is IPropertySymbol || member is IFieldSymbol)
-					return true;
-			}
-			currentType = currentType.BaseType;
-		}
 		return false;
 	}
 
@@ -202,6 +195,19 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			else
 				return current;
 		}
+	}
+
+	bool ReportStandaloneAttachedProperty(IXmlLineInfo lineInfo, string expressionCode)
+	{
+		if (!CSharpExpressionHelpers.TryGetStandaloneAttachedProperty(expressionCode, Context.Compilation, out var attachedProperty))
+			return false;
+
+		var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, attachedProperty);
+		Context.ReportDiagnostic(Diagnostic.Create(
+			Descriptors.MemberResolution,
+			location,
+			$"Standalone attached property expression '{attachedProperty}' is not supported. Use a target such as 'this.{attachedProperty}' or 'element.{attachedProperty}'."));
+		return true;
 	}
 
 	bool TryResolveMarkupExtensionType(string name, IXmlNamespaceResolver nsResolver)
@@ -352,7 +358,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 					if (childname == XmlName.xTypeArguments)
 					{
-						typeArguments = TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
+						typeArguments = parsed.value is ElementNode typeExtension
+							? new[] { TypeArgumentsParser.ParseTypeExtension(typeExtension, xmlLineInfo) }
+							: TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
 						childnodes.Add((childname, new ValueNode(typeArguments, nsResolver, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1)));
 					}
 					else

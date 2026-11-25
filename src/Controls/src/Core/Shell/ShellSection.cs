@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -277,7 +276,7 @@ namespace Microsoft.Maui.Controls
 
 				_displayedPage = value;
 
-				foreach (var item in _displayedPageObservers)
+				foreach (var item in _displayedPageObservers.ToArray())
 					item.Callback(_displayedPage);
 			}
 		}
@@ -383,6 +382,11 @@ namespace Microsoft.Maui.Controls
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
+#if IOS || MACCATALYST
+							// Remove obsolete pages beneath the modal without dismissing and presenting it again.
+							while (_navStack.Count > navIndex)
+								OnRemovePage(_navStack[_navStack.Count - 1]);
+#endif
 							break;
 						}
 						else if (!isLast && navIndex < _navStack.Count)
@@ -519,17 +523,17 @@ namespace Microsoft.Maui.Controls
 
 		Page GetOrCreateFromRoute(string route, string resolvedRoute, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route, services) as Page;
-			if (content == null)
+			var element = Routing.GetOrCreateContent(route, services);
+			if (element is not Page content)
 			{
-				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
+				throw new InvalidOperationException($"Content for route {route} should be of type {nameof(Page)}, but was {element?.GetType().FullName ?? "null"}");
 			}
 
 			// For template routes (e.g. "product/{sku}"), store the resolved value
 			// (e.g. "product/seed-tomato") in a separate attached property. The
 			// page's Route stays as the registered template key so factory
 			// lookups and stack-reuse comparisons still work.
-			if (content != null && resolvedRoute != null && resolvedRoute != route
+			if (resolvedRoute != null && resolvedRoute != route
 				&& Routing.IsTemplateRoute(route))
 			{
 				Routing.SetResolvedRoute(content, resolvedRoute);
@@ -568,7 +572,10 @@ namespace Microsoft.Maui.Controls
 			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				whereToStartNavigation = currentNavStack.Count - 1;
 
-			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
+			// A relative pop ("..") must never create pages. Its routes were captured from
+			// the stack as it was when the pop was requested; if a concurrent navigation
+			// already popped some of them, re-creating them here would undo that pop.
+			for (int i = whereToStartNavigation; !isRelativePopping && i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
 				var content = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, isLast, false);
@@ -722,13 +729,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (child is IShellContentController sc && (sc.Page?.IsPlatformEnabled == true))
 			{
-				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
-				void WaitForRendererToGetRemoved(object s, EventArgs p)
-				{
-					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
-					base.OnChildRemoved(child, oldLogicalIndex);
-				}
-				;
+				OnChildRemovedWhenPlatformDisabled(sc, child, oldLogicalIndex);
 			}
 			else
 			{
@@ -736,6 +737,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnVisibleChildRemoved(child);
+		}
+
+		void OnChildRemovedWhenPlatformDisabled(IShellContentController sc, Element child, int oldLogicalIndex)
+		{
+			sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
+
+			void WaitForRendererToGetRemoved(object s, EventArgs p)
+			{
+				sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
+				base.OnChildRemoved(child, oldLogicalIndex);
+			}
 		}
 
 		void OnVisibleChildAdded(Element child)
@@ -1078,6 +1090,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue == null)
 				return;
 
+			((ShellContent)newValue).ApplyQueryAttributesFromSelection();
 			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)

@@ -7,7 +7,11 @@
     Reads inline-findings.json (produced by the maui-expert-reviewer agent) and posts
     them as a GitHub PR review with inline file:line comments.
 
-    Also posts review-summary.md as the review body.
+    Posts review-summary.md as the review body when present. Otherwise it generates a
+    compact body with the finding count and, for Behavioral Change Disclosure findings
+    (breaking changes for existing apps), a warning that counts them and links their
+    locations. When only breaking-change findings that can't be attached inline remain,
+    it posts that summary as a review without inline comments.
 
     Uses the GitHub Pulls Review API to create a single review with all inline comments
     attached at their exact file:line locations.
@@ -45,10 +49,140 @@ param(
     [string]$SummaryFile,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ReviewedCommit = '',
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not (Get-Command ConvertTo-AzdoSafeConsole -CommandType Function -ErrorAction SilentlyContinue)) {
+    function ConvertTo-AzdoSafeConsole {
+        param([string]$Text)
+        return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+    }
+}
+
+function New-InlineReviewMarker {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReviewedHead,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Comments,
+
+        # Findings that could not be attached inline still change the summary, so they change the marker.
+        [AllowEmptyCollection()]
+        [string[]]$UnattachedFindingBodies = @()
+    )
+
+    $normalized = @($Comments | ForEach-Object {
+        [pscustomobject][ordered]@{
+            path = [string]$_.path
+            line = [int]$_.line
+            body = [string]$_.body
+        }
+    } | Sort-Object path, line, body)
+    $canonicalJson = if ($normalized.Count -gt 0) { $normalized | ConvertTo-Json -Depth 5 -Compress } else { '[]' }
+    if ($UnattachedFindingBodies.Count -gt 0) {
+        $unattachedJson = ConvertTo-Json -InputObject @($UnattachedFindingBodies | Sort-Object) -Compress
+        $canonicalJson = "$canonicalJson`n$unattachedJson"
+    }
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonicalJson))
+    } finally {
+        $sha256.Dispose()
+    }
+    $findingsHash = ($hashBytes | ForEach-Object { $_.ToString('x2') }) -join ''
+    return "<!-- maui-copilot-inline-review:$($ReviewedHead.ToLowerInvariant()):$findingsHash -->"
+}
+
+function Test-InlineReviewMarkerExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$ReviewBodies,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Marker
+    )
+
+    foreach ($body in $ReviewBodies) {
+        if (-not [string]::IsNullOrEmpty($body) -and
+            $body.IndexOf($Marker, [StringComparison]::Ordinal) -ge 0) {
+            return $true
+        }
+    }
+    return $false
+}
+
+function Get-InlineFindingBody {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [object]$Finding
+    )
+
+    if ($Finding.body) { return [string]$Finding.body }
+    if ($Finding.message) { return [string]$Finding.message }
+    if ($Finding.content) { return [string]$Finding.content }
+    return "(no description)"
+}
+
+function Test-BreakingFindingBody {
+    param([AllowNull()][string]$Body)
+
+    # Behavioral Change Disclosure findings; grouped findings start that label on its own line.
+    return [string]$Body -cmatch '(?m)^\*\*\[(?:critical|major|moderate|minor)\]\s+Behavioral Change Disclosure\*\*'
+}
+
+function New-InlineReviewSummary {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$FindingBodies,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Comments,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[0-9a-fA-F]{40}$')]
+        [string]$CommitSha
+    )
+
+    $breakingCount = @($FindingBodies | Where-Object { Test-BreakingFindingBody $_ }).Count
+    $noun = if ($FindingBodies.Count -eq 1) { 'finding' } else { 'findings' }
+    $summary = "## Expert Review — $($FindingBodies.Count) $noun"
+    if ($breakingCount -gt 0) {
+        $breakingNoun = if ($breakingCount -eq 1) { 'breaking change' } else { 'breaking changes' }
+        $summary += " · ⚠️ $breakingCount $breakingNoun"
+        # Locations only: finding text stays in the inline comments.
+        $summary += "`n`n> [!WARNING]`n> Existing apps would look or behave differently without opting in. See the ``Behavioral Change Disclosure`` findings at:"
+        $linked = 0
+        foreach ($c in $Comments) {
+            if (-not (Test-BreakingFindingBody ([string]$c.body))) { continue }
+            $path = [string]$c.path
+            $target = @($path -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+            $label = if ($path -cmatch '^[A-Za-z0-9._/+-]+$') { "``$path``" } else { 'changed file' }
+            $summary += "`n> - [$label line $([int]$c.line)](https://github.com/dotnet/maui/blob/$($CommitSha.ToLowerInvariant())/$($target)?plain=1#L$([int]$c.line))"
+            $linked++
+        }
+        $unattached = $breakingCount - $linked
+        if ($unattached -gt 0) {
+            $more = if ($linked -gt 0) { 'more ' } else { '' }
+            $summary += "`n> - $unattached $($more)could not be attached inline."
+        }
+    }
+    if ($Comments.Count -gt 0) {
+        $summary += "`n`nSee inline comments for details."
+    }
+    return $summary
+}
 
 # ============================================================================
 # RESOLVE FILE PATHS
@@ -81,12 +215,38 @@ if (-not (Test-Path $FindingsFile)) {
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
-$parsed = $rawJson | ConvertFrom-Json
+
+# Guard: an empty or whitespace-only findings file means the expert review
+# produced ZERO inline findings. Check this before ConvertFrom-Json so malformed
+# non-empty JSON still surfaces as a parse error instead of being treated as no
+# findings.
+if ([string]::IsNullOrWhiteSpace($rawJson)) {
+    Write-Host "Findings file is empty — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
+
+try {
+    $parsed = $rawJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    throw "Findings file '$FindingsFile' contains malformed JSON: $($_.Exception.Message)"
+}
+
+# Guard: a literal-"null" findings file parses to $null. The expert review writes
+# the inline-findings.post.ok sentinel whenever the PR fix won, even when it
+# produced ZERO inline findings — so this block can legitimately run against a
+# null findings file. Calling .GetType() or .PSObject on $null throws "You cannot
+# call a method on a null-valued expression" (surfaced as a scary non-fatal error
+# in the deferred-post catch). Treat it as "no findings" and exit cleanly.
+if ($null -eq $parsed) {
+    Write-Host "Findings file parsed to null ('null') — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
 
 # Diagnostic: log what the parser sees
 Write-Host "  Parsed type: $($parsed.GetType().FullName)" -ForegroundColor Gray
 if ($parsed -is [System.Management.Automation.PSCustomObject]) {
-    Write-Host "  Object properties: $(($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+    $propertyNames = ($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', '
+    Write-Host "  Object properties: $(ConvertTo-AzdoSafeConsole $propertyNames)" -ForegroundColor Gray
 }
 
 # The agent may produce:
@@ -110,7 +270,8 @@ if ($parsed -is [System.Collections.IEnumerable] -and $parsed -isnot [string]) {
     $findings = @($parsed)
 } else {
     Write-Host "  ⚠️ Unrecognized findings format — dumping first 200 chars:" -ForegroundColor Yellow
-    Write-Host "  $($rawJson.Substring(0, [Math]::Min(200, $rawJson.Length)))" -ForegroundColor Gray
+    $rawPreview = $rawJson.Substring(0, [Math]::Min(200, $rawJson.Length))
+    Write-Host "  $(ConvertTo-AzdoSafeConsole $rawPreview)" -ForegroundColor Gray
 }
 
 if (-not $findings -or $findings.Count -eq 0) {
@@ -119,15 +280,14 @@ if (-not $findings -or $findings.Count -eq 0) {
 }
 
 Write-Host "  Found $($findings.Count) inline findings" -ForegroundColor Gray
-Write-Host "  First finding keys: $(($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+$findingKeys = ($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', '
+Write-Host "  First finding keys: $(ConvertTo-AzdoSafeConsole $findingKeys)" -ForegroundColor Gray
 
-# Load summary if available
-$summaryBody = ""
+# Load summary if available; otherwise one is generated after diff validation.
+$summaryBody = $null
 if (Test-Path $SummaryFile) {
     $summaryBody = Get-Content -Path $SummaryFile -Raw -Encoding UTF8
     Write-Host "  Loaded summary ($($summaryBody.Length) chars)" -ForegroundColor Gray
-} else {
-    $summaryBody = "## Expert Review — $($findings.Count) findings`n`nSee inline comments for details."
 }
 
 # ============================================================================
@@ -137,11 +297,21 @@ if (Test-Path $SummaryFile) {
 Write-Host "Fetching PR #$PRNumber head commit..." -ForegroundColor Cyan
 $prJson = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{sha: .head.sha}' 2>&1
 if ($LASTEXITCODE -ne 0) {
+    if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
+        Write-Host "Could not verify the current PR head; skipping snapshot-bound inline findings." -ForegroundColor Yellow
+        exit 0
+    }
     throw "Failed to fetch PR #${PRNumber}: $prJson"
 }
 $prData = $prJson | ConvertFrom-Json
-$commitSha = $prData.sha
-Write-Host "  HEAD: $commitSha" -ForegroundColor Gray
+$currentHeadSha = [string]$prData.sha
+$commitSha = if ([string]::IsNullOrWhiteSpace($ReviewedCommit)) { $currentHeadSha } else { $ReviewedCommit }
+if (-not [string]::IsNullOrWhiteSpace($currentHeadSha) -and
+    -not $currentHeadSha.Equals($commitSha, [StringComparison]::OrdinalIgnoreCase)) {
+    Write-Host "PR advanced after the review snapshot; skipping stale inline findings." -ForegroundColor Yellow
+    exit 0
+}
+Write-Host "  Reviewed commit: $commitSha" -ForegroundColor Gray
 
 # ============================================================================
 # BUILD REVIEW PAYLOAD
@@ -160,11 +330,11 @@ foreach ($f in $findings) {
         $p.Contains('\') -or
         $p -match '[\x00-\x1F]' -or
         $p -match '^[A-Za-z]:') {
-        Write-Host "  ⚠️ Skipping finding with suspicious path: '$p'" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Skipping finding with suspicious path: '$(ConvertTo-AzdoSafeConsole $p)'" -ForegroundColor Yellow
         continue
     }
 
-    $rawBody = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
+    $rawBody = Get-InlineFindingBody $f
     $aiMarker = "> 🔍 **AI-Generated Review** (multi-model)`n`n"
     
     $comment = @{
@@ -186,7 +356,8 @@ foreach ($f in $findings) {
 Write-Host "Fetching PR diff for line validation..." -ForegroundColor Cyan
 $filesJson = gh api --paginate "repos/dotnet/maui/pulls/$PRNumber/files" 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ⚠️ Could not fetch PR files for validation: $filesJson" -ForegroundColor Yellow
+    $filesError = ($filesJson | Out-String).Trim()
+    Write-Host "  ⚠️ Could not fetch PR files for validation: $(ConvertTo-AzdoSafeConsole $filesError)" -ForegroundColor Yellow
     Write-Host "  Posting all findings without pre-validation." -ForegroundColor Yellow
 } else {
     $files = $filesJson | ConvertFrom-Json
@@ -229,23 +400,41 @@ if ($LASTEXITCODE -ne 0) {
     if ($dropped.Count -gt 0) {
         Write-Host "  ⚠️ Dropping $($dropped.Count) finding(s) whose lines aren't in the PR diff:" -ForegroundColor Yellow
         foreach ($d in $dropped) {
-            Write-Host "      $($d.path):$($d.line)" -ForegroundColor Gray
+            Write-Host "      $(ConvertTo-AzdoSafeConsole ([string]$d.path)):$($d.line)" -ForegroundColor Gray
         }
     }
     Write-Host "  ✅ $($kept.Count) of $($comments.Count) findings target lines in the diff" -ForegroundColor Gray
     $comments = $kept
 }
 
-if ($comments.Count -eq 0) {
+$findingBodies = @($findings | ForEach-Object { Get-InlineFindingBody $_ })
+$unattachedBodies = [System.Collections.Generic.List[string]]::new()
+foreach ($b in $findingBodies) { $unattachedBodies.Add($b) }
+foreach ($c in $comments) {
+    [void]$unattachedBodies.Remove(([string]$c.body).Substring($aiMarker.Length))
+}
+$unattachedBodies = @($unattachedBodies)
+
+if ($comments.Count -eq 0 -and -not @($unattachedBodies | Where-Object { Test-BreakingFindingBody $_ })) {
     Write-Host "No inline-commentable findings remain after diff validation. Skipping review post." -ForegroundColor Yellow
     exit 0
 }
+if ($comments.Count -eq 0) {
+    Write-Host "Only unattachable breaking-change findings remain; posting a summary-only review." -ForegroundColor Yellow
+}
 
+if ([string]::IsNullOrWhiteSpace($summaryBody)) {
+    $summaryBody = New-InlineReviewSummary -FindingBodies $findingBodies -Comments $comments -CommitSha $commitSha
+}
+
+$reviewMarker = New-InlineReviewMarker -ReviewedHead $commitSha -Comments $comments -UnattachedFindingBodies $unattachedBodies
 $reviewPayload = @{
     commit_id = $commitSha
-    body      = $summaryBody
+    body      = "$reviewMarker`n$summaryBody"
     event     = "COMMENT"  # Never APPROVE or REQUEST_CHANGES — that's a human decision
-    comments  = $comments
+}
+if ($comments.Count -gt 0) {
+    $reviewPayload['comments'] = $comments
 }
 
 $payloadJson = $reviewPayload | ConvertTo-Json -Depth 10
@@ -280,6 +469,38 @@ if ($DryRun) {
 # ============================================================================
 
 Write-Host "Posting review with $($comments.Count) inline comments..." -ForegroundColor Cyan
+
+$viewerLogin = [string](gh api user --jq '.login' 2>$null)
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($viewerLogin)) {
+    throw "Could not resolve the authenticated GitHub identity before checking inline-review idempotency."
+}
+
+$existingReviewsJson = gh api --paginate --slurp "repos/dotnet/maui/pulls/$PRNumber/reviews?per_page=100" 2>&1
+if ($LASTEXITCODE -ne 0) {
+    $reviewsError = ($existingReviewsJson | Out-String).Trim()
+    throw "Could not query existing inline reviews before posting: $(ConvertTo-AzdoSafeConsole $reviewsError)"
+}
+
+try {
+    $reviewPages = $existingReviewsJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    throw "Could not parse existing inline reviews before posting: $($_.Exception.Message)"
+}
+
+$reviewBodies = @()
+foreach ($page in @($reviewPages)) {
+    foreach ($review in @($page)) {
+        $reviewAuthor = if ($review.user -and $review.user.login) { [string]$review.user.login } else { '' }
+        if ($reviewAuthor.Equals($viewerLogin, [StringComparison]::OrdinalIgnoreCase) -and
+            $review.PSObject.Properties.Match('body').Count -gt 0) {
+            $reviewBodies += [string]$review.body
+        }
+    }
+}
+if (Test-InlineReviewMarkerExists -ReviewBodies $reviewBodies -Marker $reviewMarker) {
+    Write-Host "Inline review already posted for reviewed head and findings hash; skipping duplicate." -ForegroundColor Green
+    return
+}
 
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {

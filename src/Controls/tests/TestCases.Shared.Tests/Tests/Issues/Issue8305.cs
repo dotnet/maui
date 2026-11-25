@@ -11,7 +11,7 @@ public class Issue8305 : _IssuesUITest
 	public Issue8305(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBadgeInitialBadgeIsVisible()
 	{
 		// Tab2 ("Messages") is initialized with BadgeText = "3" in the HostApp
@@ -23,7 +23,7 @@ public class Issue8305 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBadgeCanBeSetAtRuntime()
 	{
 		App.WaitForElement("SetBadgeButton");
@@ -39,7 +39,7 @@ public class Issue8305 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBadgeCanBeCleared()
 	{
 		App.WaitForElement("ClearBadgeButton");
@@ -52,7 +52,7 @@ public class Issue8305 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBadgeMultipleTabsCanHaveBadges()
 	{
 		App.WaitForElement("SetBadgeButton");

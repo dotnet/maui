@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34499">
+    <VerticalStackLayout Spacing="8" Padding="20">
+        <Label Text="Items from BindableLayout:" FontSize="16" FontAttributes="Bold" />
+
+        <VerticalStackLayout x:Name="ItemsLayout" BindableLayout.ItemsSource="{Binding Items}" Spacing="4">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="LightBlue" Padding="10"
+                            StrokeShape="RoundRectangle 5">
+                        <Label Text="{Binding .}" FontSize="14" />
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+
+        <Label x:Name="CountLabel" Text="{Binding Items.Count, StringFormat='Total items: {0}'}"
+               FontSize="12" TextColor="Gray" />
+    </VerticalStackLayout>
+</ContentView>

@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WAccessibilityView = Microsoft.UI.Xaml.Automation.Peers.AccessibilityView;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -11,8 +15,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// </summary>
 internal partial class ItemFactory(ItemsView view) : IElementFactory
 {
-	readonly ItemsView _view = view;
-	Dictionary<DataTemplate, List<ItemContainer>> _recyclePool = new();
+	// WinUI retains this factory through COM; it must not own the MAUI view.
+	readonly WeakReference<ItemsView> _view = new(view);
+	// Keep recycled views alive only while their owner is alive, not while WinUI retains the factory.
+	readonly ConditionalWeakTable<ItemsView, Dictionary<DataTemplate, List<ItemContainer>>> _recyclePools = new();
 
 	/// <summary>
 	/// A minimal ControlTemplate for ItemContainer that contains no selection visuals
@@ -37,24 +43,31 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	/// </summary>
 	public UIElement? GetElement(ElementFactoryGetArgs args)
 	{
+		if (!_view.TryGetTarget(out var itemsView))
+		{
+			return null;
+		}
+
+		var recyclePool = _recyclePools.GetOrCreateValue(itemsView);
+
 		// NOTE: 1.6: replace w/ RecyclePool
 		if (args.Data is ItemTemplateContext2 templateContext)
 		{
 			DataTemplate? template = templateContext.MauiDataTemplate;
 			if (template is DataTemplateSelector selector)
 			{
-				template = selector.SelectTemplate(templateContext.Item, _view);
+				template = selector.SelectTemplate(templateContext.Item, itemsView);
 			}
 
 			if (template is null)
 			{
-				template = _view.EmptyViewTemplate;
+				template = itemsView.EmptyViewTemplate;
 			}
 
 			ItemContainer? container = null;
 			ElementWrapper? wrapper = null;
 
-			if (_recyclePool.TryGetValue(template, out var itemContainers))
+			if (recyclePool.TryGetValue(template, out var itemContainers))
 			{
 				if (itemContainers.Count > 0)
 				{
@@ -71,9 +84,9 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			if (wrapper is null)
 			{
 				var viewContent = template.CreateContent() as View;
-				if (_view.Handler?.MauiContext is not null && viewContent is not null)
+				if (itemsView.Handler?.MauiContext is not null && viewContent is not null)
 				{
-					wrapper = new ElementWrapper(_view.Handler.MauiContext);
+					wrapper = new ElementWrapper(itemsView.Handler.MauiContext);
 					wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
 					{
 						LayoutAlignment.Start => HorizontalAlignment.Left,
@@ -107,17 +120,18 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// blank — matching CV1 behaviour and avoiding the parent viewmodel leaking
 				// into the cell when the source contains null elements.
 				view.BindingContext = (templateContext.IsHeader || templateContext.IsFooter)
-					? (templateContext.Item ?? _view.BindingContext)
+					? (templateContext.Item ?? itemsView.BindingContext)
 					: templateContext.Item;
-				_view.AddLogicalChild(view);
+				wrapper.UpdateAccessibilityView();
+				itemsView.AddLogicalChild(view);
 
 				// Sync the CommonStates VSM group to match actual selection state on every
 				// rebind (new or recycled container). GoToState(Normal) only transitions
 				// within the CommonStates VisualStateGroup and cannot affect states in other
 				// groups, so it will not clobber app-defined custom states. This matches the
-				// Selected : Normal contract that Android, iOS, and Tizen all honour.
+				// Selected : Normal contract that Android and iOS both honour.
 				if (view is VisualElement visualElement &&
-					_view is SelectableItemsView selectableItemsView)
+					itemsView is SelectableItemsView selectableItemsView)
 				{
 					bool isSelected = selectableItemsView.SelectionMode != SelectionMode.None &&
 						(selectableItemsView.SelectionMode == SelectionMode.Single
@@ -146,13 +160,40 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				var isHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
+				container.IsTabStop = true;
+
+				if (wrapper.VirtualView is View semanticView)
+				{
+					RefreshContainerAutomationProperties(container, semanticView);
+
+					// Live-refresh automation metadata (and the wrapper's AccessibilityView) when
+					// the item's semantics change after binding — e.g. a bound
+					// SemanticProperties.Description updates via INotifyPropertyChanged. Subscribed
+					// once per wrapper; wrapper/container pairs are recycled together for their
+					// lifetime, so the captured `container` stays valid for as long as `semanticView`
+					// (the wrapper's persistent VirtualView) is alive.
+					if (wrapper.TryAttachSemanticsRefresh())
+					{
+						semanticView.PropertyChanged += (_, e) =>
+						{
+							if (e.Is(SemanticProperties.DescriptionProperty) ||
+								e.Is(SemanticProperties.HintProperty) ||
+								e.Is(SemanticProperties.HeadingLevelProperty))
+							{
+								RefreshContainerAutomationProperties(container, semanticView);
+								wrapper.UpdateAccessibilityView();
+							}
+						};
+					}
+				}
+
 				// Refresh the flag from the current context for both new and recycled wrappers.
 				// The pool is keyed by DataTemplate, so a recycled container can be reused for
 				// different purposes (header vs. item) if they share the same template. Without
 				// refreshing, the wrapper keeps its original role, causing incorrect template or
 				// selectability behavior.
-				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				wrapper.IsHeaderOrFooter = isHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
 					// Cache the default template once for later restoration
@@ -169,7 +210,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 					// When in multi-select mode, push content right so it doesn't
 					// overlap the WinUI ItemContainer checkbox.
-					if (_view is SelectableItemsView selectable && selectable.SelectionMode == SelectionMode.Multiple)
+					if (itemsView is SelectableItemsView selectable && selectable.SelectionMode == SelectionMode.Multiple)
 					{
 						wrapper.Margin = CollectionViewHandler2.MultiSelectContentMargin;
 					}
@@ -206,7 +247,8 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		// WinUI's ItemsRepeater only creates as many containers as fit on screen — so the
 		// pool can never grow to O(total-list-size). References are released as soon as:
 		//   (a) GetElement reuses the container and overwrites BindingContext, or
-		//   (b) CleanUp() runs when ItemsSource changes (which nulls all pooled BCs).
+		//   (b) CleanUp() runs when ItemsSource changes (which nulls all pooled BCs), or
+		//   (c) the owner is collected, releasing its dependent recycle pool.
 		// CleanUp() is the correct place for full teardown; RecycleElement is not.
 
 		if (wrapper is not null)
@@ -218,19 +260,42 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		}
 
 		DataTemplate? template = wrapperView?.GetValue(OriginTemplateProperty) as DataTemplate;
+		if (!_view.TryGetTarget(out var itemsView))
+		{
+			return;
+		}
+
+		var recyclePool = _recyclePools.GetOrCreateValue(itemsView);
 		if (template != null && item is not null)
 		{
-			if (_recyclePool.TryGetValue(template, out var itemContainers))
+			if (recyclePool.TryGetValue(template, out var itemContainers))
 			{
 				itemContainers.Add(item);
 			}
 			else
 			{
-				_recyclePool[template] = new List<ItemContainer> { item };
+				recyclePool[template] = new List<ItemContainer> { item };
 			}
 		}
 
-		_view.RemoveLogicalChild(wrapperView);
+		itemsView.RemoveLogicalChild(wrapperView);
+	}
+
+	/// <summary>
+	/// Refreshes the WinUI automation Name/HelpText/HeadingLevel on <paramref name="container"/>
+	/// from <paramref name="semanticView"/>'s current <see cref="SemanticProperties"/> values.
+	/// Called both when a container is bound/recycled and whenever those semantics change later.
+	/// </summary>
+	static void RefreshContainerAutomationProperties(ItemContainer container, View semanticView)
+	{
+		container.ClearValue(WAutomationProperties.NameProperty);
+		container.ClearValue(WAutomationProperties.HelpTextProperty);
+		container.ClearValue(WAutomationProperties.HeadingLevelProperty);
+		container.UpdateSemantics(semanticView);
+		if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
+		{
+			WAutomationProperties.SetName(container, semanticView.BindingContext?.ToString() ?? string.Empty);
+		}
 	}
 
 	/// <summary>
@@ -240,7 +305,12 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	/// </summary>
 	internal void CleanUp()
 	{
-		foreach (var kvp in _recyclePool)
+		if (!_view.TryGetTarget(out var itemsView) || !_recyclePools.TryGetValue(itemsView, out var recyclePool))
+		{
+			return;
+		}
+
+		foreach (var kvp in recyclePool)
 		{
 			foreach (var container in kvp.Value)
 			{
@@ -249,7 +319,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				if (wrapperView is not null)
 				{
 					wrapperView.BindingContext = null;
-					_view.RemoveLogicalChild(wrapperView);
+					itemsView.RemoveLogicalChild(wrapperView);
 				}
 
 				if (wrapper is not null)
@@ -259,7 +329,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			}
 		}
 
-		_recyclePool.Clear();
+		recyclePool.Clear();
 	}
 }
 
@@ -279,6 +349,24 @@ internal partial class ElementWrapper : ContentControl
 	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
 	SizeChangedEventHandler? _contentSizeChangedHandler;
 	FrameworkElement? _observedContent;
+	WAccessibilityView? _defaultAccessibilityView;
+	bool _semanticsRefreshAttached;
+
+	/// <summary>
+	/// Returns true only the first time it's called for this wrapper instance, so callers can
+	/// guard a one-time semantics-changed subscription against being registered again on every
+	/// recycle/rebind of the same wrapper.
+	/// </summary>
+	internal bool TryAttachSemanticsRefresh()
+	{
+		if (_semanticsRefreshAttached)
+		{
+			return false;
+		}
+
+		_semanticsRefreshAttached = true;
+		return true;
+	}
 
 	/// <summary>
 	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.
@@ -297,6 +385,7 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
+		IsTabStop = false;
 	}
 
 	/// <summary>
@@ -333,8 +422,26 @@ internal partial class ElementWrapper : ContentControl
 			}
 
 			var platformView = VirtualView.ToPlatform(_context);
+			_defaultAccessibilityView = WAutomationProperties.GetAccessibilityView(platformView);
 			Content = platformView;
+			UpdateAccessibilityView();
 		}
+	}
+
+	internal void UpdateAccessibilityView()
+	{
+		if (Content is not FrameworkElement platformView || VirtualView is not Element element)
+		{
+			return;
+		}
+
+		var semantics = VirtualView.Semantics;
+		var accessibilityView = !string.IsNullOrWhiteSpace(semantics?.Description) ||
+			!string.IsNullOrWhiteSpace(semantics?.Hint)
+				? WAccessibilityView.Raw
+				: _defaultAccessibilityView;
+
+		platformView.SetAutomationPropertiesAccessibilityView(element, accessibilityView);
 	}
 
 	void OnLoadedCreatePlatformView(object sender, RoutedEventArgs e)

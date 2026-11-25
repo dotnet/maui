@@ -31,11 +31,11 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public interface IPlatformGeocoding : IGeocoding
 	{
-#if WINDOWS || TIZEN
+#if WINDOWS
 		/// <summary>
 		/// Gets or sets the map service API key for this platform.
 		/// </summary>
-		/// <remarks>Only needed for Windows and Tizen.</remarks>
+		/// <remarks>Only needed for Windows.</remarks>
 		string? MapServiceToken { get; set; }
 #endif
 	}
@@ -104,12 +104,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			return geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
 		}
 
-#if WINDOWS || TIZEN
+#if WINDOWS
 		/// <summary>
 		/// Gets the map service API key for this platform.
 		/// </summary>
 		/// <param name="geocoding">The object this method is invoked on.</param>
-		/// <remarks>Only needed for Windows and Tizen.</remarks>
+		/// <remarks>Only needed for Windows.</remarks>
 		/// <returns>The currently configured map service API key, or <see langword="null"/> if it's not set.</returns>
 		/// <exception cref="PlatformNotSupportedException">
 		/// Thrown when the current platform does not require any API key for geocoding.
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		/// <param name="geocoding">The object this method is invoked on.</param>
 		/// <param name="mapServiceToken">The map service API key.</param>
-		/// <remarks>Only needed for Windows and Tizen.</remarks>
+		/// <remarks>Only needed for Windows.</remarks>
 		/// <exception cref="PlatformNotSupportedException">
 		/// Thrown when the current platform does not require any API key for geocoding.
 		/// This is checked by confirming that <see cref="IGeocoding"/> implements the <see cref="IPlatformGeocoding"/> interface.

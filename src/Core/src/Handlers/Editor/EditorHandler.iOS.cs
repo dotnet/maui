@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 
 					if (!PlatformView.AllowAutoGrowth
 						&& currentHeight > 0
-						&& PlatformView.ContentSize.Height > currentHeight)
+						&& sizeThatFits.Height > currentHeight)
 					{
 						heightConstraint = currentHeight; // real MAUI-arranged bound — cap will apply
 					}
@@ -214,8 +214,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
-		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor)
+		{
 			handler.PlatformView?.UpdateIsEnabled(editor);
+
+			// MauiTextView is not a UIControl, so UserInteractionEnabled must be
+			// recomputed explicitly here; it is not updated by the call above.
+			ViewHandler.MapIsEnabled(handler, editor);
+		}
 
 		class MauiTextViewEventProxy
 		{

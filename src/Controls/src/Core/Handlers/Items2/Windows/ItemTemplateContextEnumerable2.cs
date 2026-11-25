@@ -1,16 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
 /// Wraps a non-list <see cref="IEnumerable"/> items source, yielding an
 /// <see cref="ItemTemplateContext2"/> for each item on enumeration.
 /// Used when the source does not implement <see cref="System.Collections.IList"/>.
+/// References the owner weakly so a retained enumerable does not extend its lifetime.
 /// </summary>
 internal class ItemTemplateContextEnumerable2 : IEnumerable
 {
 	readonly IEnumerable _itemsSource;
 	readonly DataTemplate _itemTemplate;
-	readonly BindableObject _container;
+	readonly WeakReference<BindableObject> _container;
 	readonly IMauiContext? _mauiContext;
 	readonly double _itemHeight;
 	readonly double _itemWidth;
@@ -21,7 +23,7 @@ internal class ItemTemplateContextEnumerable2 : IEnumerable
 	{
 		_itemsSource = itemsSource;
 		_itemTemplate = itemTemplate;
-		_container = container;
+		_container = new(container);
 		_mauiContext = mauiContext;
 		_itemHeight = itemHeight ?? 0;
 		_itemWidth = itemWidth ?? 0;

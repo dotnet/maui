@@ -11,7 +11,7 @@ public class Issue34318 : _IssuesUITest
 	public override string Issue => "Shell Navigating event should fire on ShellContent change";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void NavigatingFiresWhenShellContentChanges()
 	{
 		App.WaitForElement("ChangeContentButton");

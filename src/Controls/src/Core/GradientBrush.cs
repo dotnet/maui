@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -9,10 +10,39 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
+		// Keyed by reference identity so distinct GradientStop instances that compare equal by value
+		// still get independent subscriptions. System.Collections.Generic.ReferenceEqualityComparer
+		// is .NET 5+ only, but Controls.Core also targets netstandard2.0/2.1, so use a small
+		// cross-TFM reference-equality comparer instead (avoids a netstandard build break).
+		Dictionary<GradientStop, (int Count, WeakNotifyPropertyChangedProxy Proxy)> _stopSubscriptions;
+
+		// Cached delegates: WeakNotifyXProxy only holds a WeakReference to the handler, so an
+		// inline method-group delegate would have no other root and could be collected on its own.
+		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
+		PropertyChangedEventHandler _stopChangedHandler;
+
+		readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
+			_collectionChangedHandler = OnGradientStopCollectionChanged;
 			GradientStops = new GradientStopCollection();
+		}
+
+		~GradientBrush()
+		{
+			_collectionProxy.Unsubscribe();
+
+			if (_stopSubscriptions is null)
+			{
+				return;
+			}
+
+			foreach (var subscription in _stopSubscriptions.Values)
+			{
+				subscription.Proxy.Unsubscribe();
+			}
 		}
 
 		public event EventHandler InvalidateGradientBrushRequested;
@@ -42,64 +72,173 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 
 			foreach (var gradientStop in GradientStops)
+			{
 				SetInheritedBindingContext(gradientStop, BindingContext);
+			}
 		}
 
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
 		{
-			if (oldCollection != null)
+			DetachCollection(oldCollection);
+			AttachCollection(newCollection);
+			Invalidate();
+		}
+
+		void AttachCollection(GradientStopCollection collection)
+		{
+			if (collection is null)
 			{
-				oldCollection.CollectionChanged -= OnGradientStopCollectionChanged;
-
-				foreach (var oldStop in oldCollection)
-				{
-					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
-				}
-			}
-
-			if (newCollection == null)
 				return;
-
-			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
-
-			foreach (var newStop in newCollection)
-			{
-				if (newStop is not null)
-				{
-					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
-				}
 			}
+
+			_collectionProxy.Subscribe(collection, _collectionChangedHandler);
+
+			foreach (var stop in collection)
+			{
+				SubscribeToGradientStop(stop);
+			}
+		}
+
+		void DetachCollection(GradientStopCollection collection)
+		{
+			if (collection is null)
+			{
+				return;
+			}
+
+			_collectionProxy.Unsubscribe();
+			UnsubscribeFromAllGradientStops();
 		}
 
 		void OnGradientStopCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			switch (e.Action)
 			{
-				foreach (var oldItem in e.OldItems)
-				{
-					if (!(oldItem is GradientStop oldStop))
-						continue;
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewItems is not null)
+					{
+						foreach (GradientStop stop in e.NewItems)
+						{
+							SubscribeToGradientStop(stop);
+						}
+					}
+					break;
 
-					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
-				}
-			}
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldItems is not null)
+					{
+						foreach (GradientStop stop in e.OldItems)
+						{
+							UnsubscribeFromGradientStop(stop);
+						}
+					}
+					break;
 
-			if (e.NewItems != null)
-			{
-				foreach (var newItem in e.NewItems)
-				{
-					if (!(newItem is GradientStop newStop))
-						continue;
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldItems is not null)
+					{
+						foreach (GradientStop stop in e.OldItems)
+						{
+							UnsubscribeFromGradientStop(stop);
+						}
+					}
+					if (e.NewItems is not null)
+					{
+						foreach (GradientStop stop in e.NewItems)
+						{
+							SubscribeToGradientStop(stop);
+						}
+					}
+					break;
 
-					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
-				}
+				case NotifyCollectionChangedAction.Move:
+					// No subscription changes required.
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					ResubscribeCollection(sender as GradientStopCollection);
+					break;
 			}
 
 			Invalidate();
+		}
+
+		void SubscribeToGradientStop(GradientStop stop)
+		{
+			if (stop is null)
+			{
+				return;
+			}
+
+			var subscriptions = _stopSubscriptions ??= new(GradientStopReferenceComparer.Instance);
+
+			if (subscriptions.TryGetValue(stop, out var subscription))
+			{
+				subscriptions[stop] = (subscription.Count + 1, subscription.Proxy);
+				return;
+			}
+
+			stop.Parent = this;
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			_stopChangedHandler ??= OnGradientStopPropertyChanged;
+			proxy.Subscribe(stop, _stopChangedHandler);
+			subscriptions[stop] = (1, proxy);
+		}
+
+		void UnsubscribeFromGradientStop(GradientStop stop)
+		{
+			if (stop is null)
+			{
+				return;
+			}
+
+			var subscriptions = _stopSubscriptions;
+			if (subscriptions is null || !subscriptions.TryGetValue(stop, out var subscription))
+			{
+				return;
+			}
+
+			if (subscription.Count > 1)
+			{
+				subscriptions[stop] = (subscription.Count - 1, subscription.Proxy);
+				return;
+			}
+
+			subscriptions.Remove(stop);
+			stop.Parent = null;
+			subscription.Proxy.Unsubscribe();
+		}
+
+		void UnsubscribeFromAllGradientStops()
+		{
+			var subscriptions = _stopSubscriptions;
+			if (subscriptions is null)
+			{
+				return;
+			}
+
+			foreach (var subscription in subscriptions)
+			{
+				subscription.Key.Parent = null;
+				subscription.Value.Proxy.Unsubscribe();
+			}
+
+			subscriptions.Clear();
+		}
+
+		void ResubscribeCollection(GradientStopCollection collection)
+		{
+			UnsubscribeFromAllGradientStops();
+
+			if (collection is null)
+			{
+				return;
+			}
+
+			foreach (var stop in collection)
+			{
+				SubscribeToGradientStop(stop);
+			}
 		}
 
 		void OnGradientStopPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -110,6 +249,16 @@ namespace Microsoft.Maui.Controls
 		void Invalidate()
 		{
 			InvalidateGradientBrushRequested?.Invoke(this, EventArgs.Empty);
+		}
+
+		// Reference-identity comparer usable on every Controls.Core TFM (netstandard2.0/2.1 lack the
+		// BCL System.Collections.Generic.ReferenceEqualityComparer). Matches its semantics: equality by
+		// object reference, hash from RuntimeHelpers.GetHashCode.
+		sealed class GradientStopReferenceComparer : IEqualityComparer<GradientStop>
+		{
+			public static readonly GradientStopReferenceComparer Instance = new();
+			public bool Equals(GradientStop x, GradientStop y) => ReferenceEquals(x, y);
+			public int GetHashCode(GradientStop obj) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
 		}
 	}
 }

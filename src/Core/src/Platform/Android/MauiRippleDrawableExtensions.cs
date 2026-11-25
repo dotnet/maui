@@ -54,15 +54,18 @@ static class MauiRippleDrawableExtensions
 
 		if (platformView is ShapeableImageView shapeableImageView)
 		{
+			var maxRadius = Math.Min(platformView.Width, platformView.Height) / 2;
+			var shapeRadius = maxRadius > 0 ? Math.Min(radius, maxRadius) : radius;
+
 			// Update the ShapeAppearanceModel to match the stroke radius
 			// so that the corners are rounded correctly.
 			shapeableImageView.ShapeAppearanceModel =
 				shapeableImageView.ShapeAppearanceModel
 					.ToBuilder()
-					.SetTopLeftCorner(CornerFamily.Rounded, radius)
-					.SetTopRightCorner(CornerFamily.Rounded, radius)
-					.SetBottomLeftCorner(CornerFamily.Rounded, radius)
-					.SetBottomRightCorner(CornerFamily.Rounded, radius)
+					.SetTopLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetTopRightCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomRightCorner(CornerFamily.Rounded, shapeRadius)
 					.Build();
 		}
 
@@ -92,7 +95,7 @@ static class MauiRippleDrawableExtensions
 			recreateRipple = true;
 		}
 
-		var (width, color, radius) = stroke.GetStrokeProperties(platformView.Context!, false);
+		var (width, radius) = stroke.GetStrokeMetrics(platformView.Context!, false);
 
 		// The previous background may have had transparency or a gradient which cannot
 		// be un-set, so we need an entirely new drawable.
@@ -184,7 +187,14 @@ static class MauiRippleDrawableExtensions
 	{
 		var strokeColor = button.StrokeColor ?? DefaultStrokeColor;
 		var strokeColorList = ColorStateListExtensions.CreateButton(strokeColor.ToPlatform());
+		var (strokeWidthPixels, cornerRadiusPixels) = button.GetStrokeMetrics(context, defaultButtonLogic);
 
+		return (strokeWidthPixels, strokeColorList, cornerRadiusPixels);
+	}
+
+	// Avoids allocating a ColorStateList when only the stroke geometry is needed.
+	static (int Thickness, int Radius) GetStrokeMetrics(this IButtonStroke button, Context context, bool defaultButtonLogic)
+	{
 		var strokeWidth = button.StrokeThickness >= 0 && button.StrokeColor is not null
 			? button.StrokeThickness
 			: button.StrokeColor is not null
@@ -214,7 +224,7 @@ static class MauiRippleDrawableExtensions
 			cornerRadiusPixels -= strokeWidthPixels / 2;
 		}
 
-		return (strokeWidthPixels, strokeColorList, cornerRadiusPixels);
+		return (strokeWidthPixels, cornerRadiusPixels);
 	}
 
 	internal static bool TryGetMauiBackground(

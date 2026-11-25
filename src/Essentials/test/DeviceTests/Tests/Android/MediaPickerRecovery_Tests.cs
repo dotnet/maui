@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		const string ActiveOperationPreferenceKey = "active_operation";
 		const string RecoveredResultsPreferenceKey = "recovered_results";
 		static string RecoveryPreferencesSharedName => MediaPickerRecoveryStore.PreferencesSharedName;
+		readonly List<string> externalMediaFiles = new();
 
 		// These tests drive the recovery manager and AndroidX callback wrappers directly.
 		// They avoid launching real camera/picker apps while still preserving the important
@@ -35,7 +36,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			=> ResetRecoveryState();
 
 		public void Dispose()
-			=> ResetRecoveryState();
+		{
+			try
+			{
+				ResetRecoveryState();
+			}
+			finally
+			{
+				foreach (var path in externalMediaFiles)
+					File.Delete(path);
+			}
+		}
 
 		[Fact]
 		public void Activity_State_Manager_Registers_All_MediaPicker_Launchers()
@@ -678,7 +689,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Single_Photo_Pick_Publishes_Recovered_Result_And_Completes_Waiter()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateExternalMediaFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -736,7 +747,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			RecoveredMediaPickerResultKind kind,
 			string extension)
 		{
-			var pickPath = CreateNonEmptyMediaFile(extension);
+			var pickPath = CreateExternalMediaFile(extension);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -759,8 +770,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Multiple_Photo_Pick_Publishes_Recovered_Result_With_Multiple_Files()
 		{
-			var firstPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
-			var secondPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var firstPickPath = CreateExternalMediaFile(FileExtensions.Jpg);
+			var secondPickPath = CreateExternalMediaFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickMultipleVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -808,7 +819,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task Accepted_Pick_Materialization_Writes_Accepted_File_Paths()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateExternalMediaFile(FileExtensions.Jpg);
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -1008,18 +1019,51 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public async Task ActivityForResultRequest_Rejects_Concurrent_Launch()
+		public async Task ActivityForResultRequest_Rejects_Concurrent_Launch_For_Same_Owner()
 		{
-			var captureForResult = new TestMediaCaptureForResult(RecoveredMediaPickerResultKind.CapturePhoto);
-			var activeTaskCompletionSource = new TaskCompletionSource<JavaBoolean>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var activeLaunchCompletionSourceField = typeof(ActivityForResultRequest<TakePicture, JavaBoolean>)
-				.GetField("activeLaunchCompletionSource", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(activeLaunchCompletionSourceField);
+			var requestState = new ActivityForResultRequestState<JavaBoolean>("MediaPickerRecovery_Tests.RequestOwner");
+			var owner = requestState.RestoreOrCreateOwner(null);
+			var otherOwner = requestState.RestoreOrCreateOwner(null);
+			var pendingRequest = requestState.BeginRequest(owner);
 
-			// Seed the base request as if Launch already has one in-process activity result pending.
-			activeLaunchCompletionSourceField.SetValue(captureForResult, activeTaskCompletionSource);
+			await Assert.ThrowsAsync<InvalidOperationException>(() => requestState.BeginRequest(owner));
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => captureForResult.Launch(AndroidUri.Empty));
+			var otherPendingRequest = requestState.BeginRequest(otherOwner);
+			Assert.False(pendingRequest.IsCompleted);
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(owner, JavaBoolean.True,
+				_ => Assert.False(pendingRequest.IsCompleted)));
+			Assert.True((await WaitForCompletion(pendingRequest)).BooleanValue());
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(otherOwner, JavaBoolean.False));
+			Assert.False((await WaitForCompletion(otherPendingRequest)).BooleanValue());
+
+			var nextRequest = requestState.BeginRequest(owner);
+			Assert.False(nextRequest.IsCompleted);
+			Assert.True(requestState.TrySetCanceled(owner));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => nextRequest);
+		}
+
+		[Fact]
+		public async Task ActivityForResultRequest_Result_Callback_Failure_Faults_Only_Owning_Launch()
+		{
+			var requestState = new ActivityForResultRequestState<JavaBoolean>("MediaPickerRecovery_Tests.RequestOwner");
+			var owner = requestState.RestoreOrCreateOwner(null);
+			var otherOwner = requestState.RestoreOrCreateOwner(null);
+			var pendingRequest = requestState.BeginRequest(owner);
+			var otherPendingRequest = requestState.BeginRequest(otherOwner);
+			var expectedException = new IOException("Unable to record the accepted result.");
+
+			Assert.True(requestState.TrySetResult(owner, JavaBoolean.True, _ => throw expectedException));
+			var exception = await Assert.ThrowsAsync<IOException>(() => WaitForCompletion(pendingRequest));
+			Assert.Same(expectedException, exception);
+			Assert.False(requestState.HasPendingRequest(owner));
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(otherOwner, JavaBoolean.True));
+			Assert.True((await WaitForCompletion(otherPendingRequest)).BooleanValue());
 		}
 
 		[Fact]
@@ -1795,6 +1839,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task PickPhotosAsync_Throws_While_Another_Operation_Is_In_Progress()
+		{
+			// Without the photo picker, PickPhotosAsync launches the legacy chooser activity instead.
+			if (!MediaPickerImplementation.IsPhotoPickerAvailable)
+				return;
+
+			// Same state as a double tap: the first pick is still waiting for the photo picker result.
+			var firstPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhotos,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => MediaPicker.PickPhotosAsync());
+
+			Assert.Equal("A MediaPicker operation is already in progress.", exception.Message);
+
+			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(firstPick.Id, activePick.Id);
+			Assert.Equal(PendingMediaPickerState.Pending, activePick.State);
+		}
+
+		[Fact]
 		public async Task BeginOperationWithRecoveryAsync_Promotes_Callback_Race_And_Starts_New_Operation()
 		{
 			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
@@ -1877,6 +1943,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string CreateNonEmptyMediaFile(string extension)
 		{
 			var path = CreateCacheFilePath(extension);
+			WriteNonEmptyMediaFile(path);
+			return path;
+		}
+
+		// File-backed picker results must be outside private app storage.
+		string CreateExternalMediaFile(string extension)
+		{
+			var cacheDirectory = Application.Context.ExternalCacheDir ??
+				throw new InvalidOperationException("External cache directory is not available.");
+			using var file = new Java.IO.File(cacheDirectory, $"{Guid.NewGuid():N}{extension}");
+			var path = file.CanonicalPath;
+			externalMediaFiles.Add(path);
 			WriteNonEmptyMediaFile(path);
 			return path;
 		}

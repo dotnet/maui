@@ -30,6 +30,9 @@ dotnet_diagnostic.CA1309.severity = error
 dotnet_diagnostic.CA1311.severity = error
 dotnet_diagnostic.CA1815.severity = error
 dotnet_diagnostic.CA1825.severity = error
+# System.Random is not cryptographically secure; shipping code needs a justified suppression to use it.
+# Tests, samples and benchmarks are exempted at the end of this file.
+dotnet_diagnostic.CA5394.severity = error
 
 # nullability checks
 
@@ -195,3 +198,11 @@ end_of_line = crlf
 # This is currently being used for the banned Services/Application APIs
 [**/obj/**/XamlTypeInfo.g.cs]
 dotnet_diagnostic.RS0030.severity = none
+
+# CA5394 (insecure randomness) is only enforced for shipping code: tests, samples, benchmarks
+# and the test infrastructure use System.Random to generate test data.
+[src/**/{test,tests,samples}/**.cs]
+dotnet_diagnostic.CA5394.severity = none
+
+[src/TestUtils/**.cs]
+dotnet_diagnostic.CA5394.severity = none

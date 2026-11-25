@@ -37,6 +37,11 @@
 
                 <Entry Text="{Binding Uri}" Placeholder="Enter URI to share here." />
 
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Preview image (screenshot)" HorizontalOptions="StartAndExpand" VerticalOptions="End" />
+                    <Switch HorizontalOptions="End" IsToggled="{Binding SharePreviewImage}" VerticalOptions="End" />
+                </StackLayout>
+
                 <Button Text="Share Text" Command="{Binding RequestCommand}" CommandParameter="{Binding Source={RelativeSource Self}}" />
 
                 <BoxView Margin="0,4,0,4" HeightRequest="1" BackgroundColor="Gray" HorizontalOptions="FillAndExpand" />

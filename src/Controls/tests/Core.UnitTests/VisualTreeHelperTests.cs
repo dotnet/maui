@@ -367,5 +367,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_treeEvents.Clear();
 		}
+
+		// The static VisualDiagnostics.VisualTreeChanged event must not keep
+		// its subscribers alive; otherwise every page/view that subscribes leaks.
+		class VisualTreeChangedSubscriber
+		{
+			public int Fired;
+			public void Handler(object? sender, VisualTreeChangeEventArgs e) => Fired++;
+		}
+
+		[Fact]
+		public async Task VisualTreeChangedSubscriberIsCollectedWithoutExplicitUnsubscribe()
+		{
+			WeakReference? weak = null;
+
+			new Action(() =>
+			{
+				var s = new VisualTreeChangedSubscriber();
+				weak = new WeakReference(s);
+				VisualDiagnostics.VisualTreeChanged += s.Handler;
+			})();
+
+			Assert.NotNull(weak);
+			Assert.False(await weak!.WaitForCollect(),
+				"Subscriber to VisualDiagnostics.VisualTreeChanged was not garbage collected (issue #37242).");
+		}
+
+		[Fact]
+		public async Task VisualTreeChangedSubscriberIsCollectedAfterExplicitUnsubscribe()
+		{
+			WeakReference? weak = null;
+
+			new Action(() =>
+			{
+				var s = new VisualTreeChangedSubscriber();
+				weak = new WeakReference(s);
+				VisualDiagnostics.VisualTreeChanged += s.Handler;
+				VisualDiagnostics.VisualTreeChanged -= s.Handler;
+			})();
+
+			Assert.NotNull(weak);
+			Assert.False(await weak!.WaitForCollect(),
+				"Subscriber was still alive after unsubscribing from VisualDiagnostics.VisualTreeChanged.");
+		}
 	}
 }

@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
+		// Replaced by device tests, so the 30 seconds after a reload can pass without waiting for them.
+		internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+
 		/// <inheritdoc />
 		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
@@ -91,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			var webview = new WKWebView(RectangleF.Empty, config)
+			var webview = new BlazorWKWebView(RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
 				AutosizesSubviews = true
@@ -112,10 +115,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = webview
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(webview));
 
 			// Disable bounce scrolling to make Blazor apps feel more native
 			if (webview.ScrollView != null)
@@ -138,11 +138,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			platformView.StopLoading();
 			_staticContentResponseCache.Clear();
 
 			if (_webviewManager != null)
 			{
+				// Disposing the manager tears down the hot reload notifier along with the renderer, and
+				// this handler always builds a new manager on reconnect, so there is nothing to detach.
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
@@ -203,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				hostPageRelativePath,
 				Logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			if (RootComponents != null)
 			{
@@ -274,6 +278,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				if (_webViewHandler is null || _webViewHandler is IViewHandler ivh && ivh.VirtualView is null)
+				{
+					return;
+				}
+
 				var url = urlSchemeTask.Request.Url.AbsoluteString;
 				if (string.IsNullOrEmpty(url))
 				{
@@ -287,6 +296,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// 1. First check if the app wants to modify or override the request.
 				if (WebRequestInterceptingWebView.TryInterceptResponseStream(_webViewHandler, webView, urlSchemeTask, url, logger))
 				{
+					return;
+				}
+
+				if (_webViewHandler._webviewManager is not { } webviewManager)
+				{
+					logger.LogDebug("Ignoring request for {Url} because the BlazorWebView has been disconnected.", url);
 					return;
 				}
 
@@ -312,7 +327,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					}
 				}
 
-				var responseBytes = GetResponseBytes(url, out var contentType, statusCode: out var statusCode);
+				var responseBytes = GetResponseBytes(webviewManager, url, out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
 					// By default local caching is disabled so that user scripts are always re-executed. Applications can
@@ -416,14 +431,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				urlSchemeTask.DidFinish();
 			}
 
-			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
+			private byte[] GetResponseBytes(IOSWebViewManager webviewManager, string? url, out string contentType, out int statusCode)
 			{
+				// The typed VirtualView property throws when disconnected; use the nullable interface property.
+				if (((IViewHandler)_webViewHandler).VirtualView is null || _webViewHandler._webviewManager is null)
+				{
+					statusCode = 404;
+					contentType = string.Empty;
+					return Array.Empty<byte>();
+				}
+
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 
 				_webViewHandler.Logger.HandlingWebRequest(url);
 
-				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
+				if (webviewManager.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
 					using var ms = new MemoryStream();

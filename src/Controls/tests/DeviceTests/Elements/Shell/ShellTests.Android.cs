@@ -11,24 +11,303 @@ using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
-using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)]
+	public class ShellRendererTransitionTests : ControlsHandlerTestBase
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task NavigatingFromModalToShellItemPreservesContentPosition(bool useTabBar) =>
+			VerifyModalNavigationAsync(useTabBar: useTabBar);
+
+		[Fact]
+		public Task CustomItemRendererPreservesContentPositionAfterModalNavigation() =>
+			VerifyModalNavigationAsync(useCustomRenderer: true);
+
+		[Fact]
+		public Task ResumingShellItemRequestsInsetsWithoutAnotherTransition() =>
+			VerifyModalNavigationAsync(resumeAgain: true);
+
+		[Fact]
+		public Task CenteredEdgeToEdgeContentRemainsCenteredAfterModalNavigation() =>
+			VerifyModalNavigationAsync(centerContent: true);
+
+		[Fact]
+		public async Task ResumingUnrelatedFragmentDoesNotRequestInsets()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
+
+			var page = new ContentPage { Content = new Label { Text = "Shell content" } };
+			var shell = await InvokeOnMainThreadAsync(() => new Shell { Items = { page } });
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				var current = renderer.LatestItemRenderer.Fragment;
+				await AssertEventually(() => current.IsResumed);
+				var manager = current.ParentFragmentManager;
+				var container = Assert.IsAssignableFrom<ViewGroup>(current.View.Parent);
+				using var unrelated = new InsetsRecordingFragment();
+				try
+				{
+					manager.BeginTransaction()
+						.Add(container.Id, unrelated)
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					var view = Assert.IsType<InsetsRecordingView>(unrelated.View);
+					Assert.True(view.IsAttachedToWindow);
+					Assert.False(unrelated.IsResumed);
+					var requests = view.InsetRequestCount;
+
+					// Observe direct requests synchronously, not window-wide inset redispatches.
+					manager.BeginTransaction()
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+
+					Assert.True(unrelated.IsResumed);
+					Assert.Same(current, renderer.LatestItemRenderer.Fragment);
+					Assert.Equal(requests, view.InsetRequestCount);
+				}
+				finally
+				{
+					manager.BeginTransaction().Remove(unrelated).CommitNow();
+				}
+			});
+		}
+
+		async Task VerifyModalNavigationAsync(
+			bool useTabBar = false, bool useCustomRenderer = false, bool resumeAgain = false, bool centerContent = false)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
+
+			var label = new Label { Text = "First line\nSecond line", HorizontalOptions = LayoutOptions.Center };
+			var contentLayout = new VerticalStackLayout
+			{
+				VerticalOptions = centerContent ? LayoutOptions.Center : LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Center,
+				Children = { label }
+			};
+			if (centerContent)
+				contentLayout.SafeAreaEdges = SafeAreaEdges.None;
+
+			var targetPage = new ContentPage
+			{
+				Content = contentLayout
+			};
+			Shell.SetNavBarIsVisible(targetPage, false);
+			ShellItem target = useTabBar ? new TabBar() : new ShellItem();
+			target.Route = "TransitionProbeTarget";
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = targetPage } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
+
+			var homePage = new ContentPage { Content = new Label { Text = "Home" } };
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
+				var shell = new Shell();
+				shell.Items.Add(homePage);
+				shell.Items.Add(target);
+				return shell;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(homePage);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				renderer.UseCustomItemRenderer = useCustomRenderer || resumeAgain;
+				await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
+				await shell.GoToAsync("//TransitionProbeTarget");
+				await AssertEventually(() => renderer.LatestItemRenderer?.Fragment.IsResumed == true);
+
+				Assert.Same(target, renderer.LatestItemRenderer.ShellItem);
+				Assert.Empty(homePage.Navigation.ModalStack);
+
+				await OnLoadedAsync(label);
+				var pageView = (AView)targetPage.Handler.PlatformView;
+				var labelView = (AView)label.Handler.PlatformView;
+				using var insets = ViewCompat.GetRootWindowInsets(pageView);
+				Assert.NotNull(insets);
+				var topInset = insets.GetInsets(WindowInsetsCompat.Type.StatusBars()).Top;
+				Assert.True(topInset > 0);
+				var fragment = renderer.LatestItemRenderer.Fragment;
+				var root = fragment.View;
+
+				if (resumeAgain)
+				{
+					await AssertEventually(() => root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1);
+					var manager = fragment.ParentFragmentManager;
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					Assert.False(fragment.IsResumed);
+					Assert.True(root.IsAttachedToWindow);
+					var recordingView = Assert.IsType<InsetsRecordingView>(root);
+					var requests = recordingView.InsetRequestCount;
+
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+					Assert.True(fragment.IsResumed);
+					Assert.Same(root, fragment.View);
+					Assert.Equal(requests + 1, recordingView.InsetRequestCount);
+				}
+
+				var pageLocation = new int[2];
+				var labelLocation = new int[2];
+				var expectedY = 0;
+				var positionMatches = await Wait(() =>
+				{
+					pageView.GetLocationOnScreen(pageLocation);
+					labelView.GetLocationOnScreen(labelLocation);
+					expectedY = centerContent
+						? pageLocation[1] + (pageView.Height - labelView.Height) / 2
+						: Math.Max(pageLocation[1], topInset);
+					return pageView.Height > 0 && labelView.Height > 0 &&
+						root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1 &&
+						Math.Abs(labelLocation[1] - expectedY) <= 1;
+				});
+				Assert.True(positionMatches,
+					$"Expected label Y={expectedY}, actual={labelLocation[1]}, page Y={pageLocation[1]}, " +
+					$"page height={pageView.Height}, label height={labelView.Height}, status bar={topInset}, " +
+					$"layout padding={((AView)contentLayout.Handler.PlatformView).PaddingTop}, page padding={pageView.PaddingTop}, " +
+					$"root scale={root.ScaleY}, alpha={root.Alpha}");
+			});
+		}
+
+		class TransitionProbeShellRenderer : ShellRenderer
+		{
+			public TransitionProbeShellRenderer()
+			{
+			}
+
+			public IShellItemRenderer LatestItemRenderer { get; private set; }
+			public bool UseCustomItemRenderer { get; set; }
+
+			protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+			{
+				return LatestItemRenderer = UseCustomItemRenderer
+					? new CustomShellItemRenderer(this)
+					: base.CreateShellItemRenderer(shellItem);
+			}
+		}
+
+		class CustomShellItemRenderer : ShellItemRenderer
+		{
+			public CustomShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			{
+			}
+
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState)
+			{
+				var view = new InsetsRecordingView(inflater.Context);
+				view.AddView(base.OnCreateView(inflater, container, savedInstanceState),
+					new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+				return view;
+			}
+		}
+
+		class InsetsRecordingFragment : AndroidX.Fragment.App.Fragment
+		{
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState) =>
+				new InsetsRecordingView(inflater.Context);
+		}
+
+		class InsetsRecordingView : global::Android.Widget.FrameLayout
+		{
+			public InsetsRecordingView(global::Android.Content.Context context) : base(context)
+			{
+			}
+
+			public int InsetRequestCount { get; private set; }
+
+			public override void RequestApplyInsets()
+			{
+				InsetRequestCount++;
+				base.RequestApplyInsets();
+			}
+		}
+	}
+
+	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
+			GetPlatformToolbar(handler);
+
+		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
+		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			Shell.SetSearchHandler(page, new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Collapsible });
+
+			// The color is set on the TabBar, not on the page or on the Shell.
+			var tabBar = new TabBar { Items = { new ShellContent { Content = page } } };
+			Shell.SetBackgroundColor(tabBar, Colors.White);
+			Shell.SetTitleColor(tabBar, Colors.Black);
+			Shell.SetForegroundColor(tabBar, Colors.Red);
+
+			var shell = await CreateShellAsync(shell => shell.Items.Add(tabBar));
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+
+				var toolbar = GetShellToolbar(shell.Handler);
+				Assert.Equal(1, toolbar.Menu.Size());
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+					await bitmap.AssertContainsColor(Colors.Red);
+
+				Shell.SetForegroundColor(tabBar, Colors.Lime);
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+				{
+					await bitmap.AssertContainsColor(Colors.Lime);
+					await bitmap.AssertDoesNotContainColor(Colors.Red);
+				}
+			});
+
+			static global::Android.Graphics.Bitmap RenderSearchIcon(MaterialToolbar toolbar)
+			{
+				// The collapsible SearchHandler is the only menu item.
+				var icon = toolbar.Menu.GetItem(0).Icon;
+				var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(icon.IntrinsicWidth, icon.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using var canvas = new global::Android.Graphics.Canvas(bitmap);
+				icon.SetBounds(0, 0, canvas.Width, canvas.Height);
+				icon.Draw(canvas);
+				return bitmap;
+			}
+		}
+
 		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
 		public async Task GoingBackUsingGoToAsyncMethod()
 		{
@@ -84,6 +363,63 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Overlapping GoToAsync(\"..\") calls each pop one page")]
+		public async Task OverlappingRelativePopsEachPopAPage()
+		{
+			SetupBuilder();
+
+			Routing.RegisterRoute("overlapPopFirst", typeof(QueryTrackingPage));
+			Routing.RegisterRoute("overlapPopSecond", typeof(ContentPage));
+			Routing.RegisterRoute("overlapPopThird", typeof(ContentPage));
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent()
+				{
+					Route = "Item1",
+					Content = new ContentPage()
+				});
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await shell.GoToAsync($"overlapPopFirst?{nameof(QueryTrackingPage.TestValue)}=1");
+				var firstPage = (QueryTrackingPage)shell.CurrentPage;
+				await shell.GoToAsync("overlapPopSecond");
+				await shell.GoToAsync("overlapPopThird");
+
+				// Fire two relative pops without awaiting the first,
+				// like a double tap on the hardware back button
+				var pop1 = shell.GoToAsync("..");
+				var pop2 = shell.GoToAsync("..");
+				await Task.WhenAll(pop1, pop2);
+
+				// Wait until the navigation stack stops changing before asserting
+				int settledCount = -1;
+				await AssertEventually(() =>
+				{
+					var count = shell.Navigation.NavigationStack.Count;
+					if (count == settledCount)
+						return true;
+
+					settledCount = count;
+					return false;
+				}, timeout: 4000, interval: 500, message: "Navigation stack never settled");
+
+				Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+				Assert.Same(firstPage, shell.CurrentPage);
+				Assert.Equal("1", firstPage.TestValue);
+			});
+		}
+
+		class QueryTrackingPage : ContentPage, IQueryAttributable
+		{
+			public string TestValue { get; private set; }
+
+			public void ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) =>
+				TestValue = query.TryGetValue(nameof(TestValue), out var value) ? (string)value : null;
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -116,6 +452,216 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);
+			});
+		}
+
+		[Fact(DisplayName = "Back button IconOverride keeps its aspect ratio")]
+		public async Task BackButtonIconOverrideKeepsItsAspectRatio()
+		{
+			SetupBuilder();
+
+			var icon = new FontImageSource { Glyph = "\u2039" };
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = icon });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is not null);
+
+				var backButton = GetShellToolbar(shell.Handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				var iconDrawable = (await icon.GetPlatformImageAsync(MauiContext)).Value;
+				iconDrawable.SetBounds(0, 0, iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight);
+				using var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using (var canvas = new global::Android.Graphics.Canvas(iconBitmap))
+				{
+					iconDrawable.Draw(canvas);
+				}
+
+				var expected = GetDrawnBounds(iconBitmap);
+				var actual = GetDrawnBounds(backButtonBitmap);
+				Assert.Equal((double)expected.Width() / expected.Height(), (double)actual.Width() / actual.Height(), 0.15);
+			});
+		}
+
+		[Fact(DisplayName = "Back button IconOverride with an extreme aspect ratio is still drawn")]
+		public async Task BackButtonIconOverrideWithExtremeAspectRatioIsDrawn()
+		{
+			SetupBuilder();
+
+			byte[] iconBytes;
+			using (var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(1000, 1, global::Android.Graphics.Bitmap.Config.Argb8888))
+			using (var stream = new System.IO.MemoryStream())
+			{
+				iconBitmap.EraseColor(global::Android.Graphics.Color.White);
+				iconBitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+				iconBytes = stream.ToArray();
+			}
+
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = ImageSource.FromStream(() => new System.IO.MemoryStream(iconBytes)) });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is not null);
+
+				var backButton = GetShellToolbar(shell.Handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);
+			});
+		}
+
+		static global::Android.Graphics.Rect GetDrawnBounds(global::Android.Graphics.Bitmap bitmap)
+		{
+			var pixels = new int[bitmap.Width * bitmap.Height];
+			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+
+			int left = bitmap.Width, top = bitmap.Height, right = -1, bottom = -1;
+			for (int i = 0; i < pixels.Length; i++)
+			{
+				if (global::Android.Graphics.Color.GetAlphaComponent(pixels[i]) > 127)
+				{
+					left = Math.Min(left, i % bitmap.Width);
+					right = Math.Max(right, i % bitmap.Width);
+					top = Math.Min(top, i / bitmap.Width);
+					bottom = Math.Max(bottom, i / bitmap.Width);
+				}
+			}
+
+			return new global::Android.Graphics.Rect(left, top, right + 1, bottom + 1);
+		}
+
+		[Fact(DisplayName = "Shell BackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
+		public async Task BackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || !RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var backgroundColor = Colors.Orange;
+			var contentPage = new ContentPage { Title = "Shell Content" };
+			Shell.SetBackgroundColor(contentPage, backgroundColor);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { contentPage } };
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(contentPage);
+
+				var platformToolbar = GetPlatformToolbar((IPlatformViewHandler)shell.Handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+				Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+
+				appBar.SetLifted(true);
+				var liftedColor = new Color(
+					backgroundColor.Red + ((1f - backgroundColor.Red) * 0.3f),
+					backgroundColor.Green + ((1f - backgroundColor.Green) * 0.3f),
+					backgroundColor.Blue + ((1f - backgroundColor.Blue) * 0.3f),
+					backgroundColor.Alpha);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == liftedColor.ToPlatform().ToArgb(),
+					message: "Shell AppBar did not apply the Material 3 lifted background color after Shell.BackgroundColor was customized.");
+			});
+		}
+
+		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]
+		public async Task HiddenShellNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+			const int statusBarTopInset = 24;
+			const int displayCutoutTopInset = 96;
+
+			var contentPage = new ContentPage()
+			{
+				Title = "Test",
+				Content = new Label { Text = "Content" }
+			};
+
+			var syntheticInsets = CreateTopCutoutInsets(statusBarTopInset, displayCutoutTopInset);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(contentPage);
+				await OnNavigatedToAsync(contentPage);
+
+				MaterialToolbar platformToolbar = null;
+				await AssertEventually(() =>
+				{
+					platformToolbar = GetPlatformToolbar(handler);
+					return platformToolbar?.LayoutParameters?.Height > 0;
+				},
+					timeout: 2000,
+					message: "Toolbar did not render before Shell.NavBarIsVisible was toggled.");
+
+				Assert.NotNull(platformToolbar);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				var rootCoordinator = appBar?.Parent.GetParentOfType<CoordinatorLayout>();
+				Assert.NotNull(appBar);
+				Assert.NotNull(rootCoordinator);
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
+
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > 0,
+					timeout: 2000,
+					message: "The Shell root did not receive the initial synthetic window insets dispatch.");
+
+				await AssertEventually(() => appBar.PaddingTop == displayCutoutTopInset,
+					timeout: 2000,
+					message: "AppBar never received the synthetic display cutout top inset before the Shell navigation bar was hidden.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets, expectedSystemBarsTop: 0, expectedDisplayCutoutTop: 0,
+					message: "Visible Shell app bar should consume the synthetic top insets.");
+
+				var visibleInsetsInvocationCount = capturingListener.InvocationCount;
+
+				Shell.SetNavBarIsVisible(contentPage, false);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height == 0 && platformToolbar.Height == 0,
+					timeout: 2000,
+					message: "Toolbar did not fully collapse after Shell.NavBarIsVisible was set to false.");
+
+				await AssertEventually(() => capturingListener.InvocationCount > visibleInsetsInvocationCount && appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "Shell.NavBarIsVisible did not trigger an inset redispatch that cleared the AppBar top padding.");
+
+				// Re-dispatch the synthetic insets now that the nav bar is hidden so we can assert
+				// with known values that the app bar no longer consumes the top insets.
+				var hiddenInsetsInvocationCount = capturingListener.InvocationCount;
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > hiddenInsetsInvocationCount,
+					timeout: 2000,
+					message: "Expected an additional inset dispatch after re-injecting synthetic insets post-nav-bar-hide.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets,
+					expectedSystemBarsTop: statusBarTopInset,
+					expectedDisplayCutoutTop: displayCutoutTopInset,
+					message: "Hidden Shell app bar should stop consuming the synthetic top insets.");
 			});
 		}
 
@@ -676,7 +1222,7 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredWidth - (platformView.PaddingLeft + platformView.PaddingRight)),
 				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 
@@ -802,6 +1348,16 @@ namespace Microsoft.Maui.DeviceTests
 			return shellContext.CurrentDrawerLayout;
 		}
 
+		static int GetAppBarBackgroundColor(AppBarLayout appBar)
+		{
+			var background = Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+			Assert.NotNull(background.FillColor);
+
+			return background.FillColor.GetColorForState(
+				appBar.GetDrawableState(),
+				new global::Android.Graphics.Color(background.FillColor.DefaultColor));
+		}
+
 		protected virtual RecyclerView GetFlyoutMenuReyclerView(IShellContext shellContext)
 		{
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
@@ -840,6 +1396,89 @@ namespace Microsoft.Maui.DeviceTests
 
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
+		}
+	}
+
+	[Category(TestCategory.Shell)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)]
+	public class ShellRendererTopTabTests : ControlsHandlerTestBase
+	{
+		[Fact]
+		public async Task ProgrammaticTopTabNavigationUpdatesToolbar()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, ShellRenderer>();
+			}));
+
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			var otherPage = new ContentPage();
+			var firstTitle = new Label { Text = "First" };
+			var secondTitle = new Label { Text = "Second" };
+			var updatedTitle = new Label { Text = "Updated First" };
+			Shell.SetTitleView(firstPage, firstTitle);
+			Shell.SetTitleView(secondPage, secondTitle);
+			Shell.SetBackgroundColor(firstPage, Colors.Green);
+			Shell.SetBackgroundColor(secondPage, Colors.Red);
+
+			var shell = await InvokeOnMainThreadAsync(() => new Shell
+			{
+				Items =
+				{
+					new TabBar
+					{
+						Items =
+						{
+							new Tab
+							{
+								Route = "TabA",
+								Items =
+								{
+									new ShellContent { Route = "First", Title = "First", Content = firstPage },
+									new ShellContent { Route = "Second", Title = "Second", Content = secondPage }
+								}
+							},
+							new Tab
+							{
+								Route = "TabB",
+								Items = { new ShellContent { Route = "Other", Content = otherPage } }
+							}
+						}
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				Assert.IsType<ShellRenderer>(shell.Handler);
+				await OnNavigatedToAsync(firstPage);
+
+				var pager = ((IPlatformViewHandler)firstPage.Handler).PlatformView.GetParentOfType<ViewPager2>();
+				Assert.NotNull(pager);
+				pager.CurrentItem = 1;
+				await OnNavigatedToAsync(secondPage);
+				await AssertTitleViewText(shell, "Second");
+
+				await shell.GoToAsync("//TabB/Other");
+				await OnNavigatedToAsync(otherPage);
+				await shell.GoToAsync("//TabA/First");
+				await OnNavigatedToAsync(firstPage);
+
+				Assert.Same(firstPage, shell.CurrentPage);
+				await AssertTitleViewText(shell, "First");
+
+				Shell.SetTitleView(firstPage, updatedTitle);
+				await AssertTitleViewText(shell, "Updated First");
+			});
+		}
+
+		async Task AssertTitleViewText(Shell shell, string expected)
+		{
+			_ = await Wait(() => (GetTitleView(shell.Handler) as global::Android.Widget.TextView)?.Text == expected);
+			Assert.Equal(expected, (GetTitleView(shell.Handler) as global::Android.Widget.TextView)?.Text);
 		}
 	}
 }

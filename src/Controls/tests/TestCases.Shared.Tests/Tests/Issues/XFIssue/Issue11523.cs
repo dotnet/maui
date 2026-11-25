@@ -17,7 +17,7 @@ public class Issue11523 : _IssuesUITest
 	public override string Issue => "[Bug] FlyoutBehavior.Disabled removes back-button from navbar";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void BackButtonStillVisibleWhenFlyoutBehaviorDisabled()
 	{
 		App.WaitForElement("PageLoaded");

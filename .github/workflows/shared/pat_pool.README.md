@@ -120,6 +120,21 @@ The `environment` must be specified both to the `pat_pool.md` import and to the 
 
 ### Customizing the pool
 
+Workflows with an exact-command or authorization collector can pass an optional
+`condition` to gate the entire credential-bearing job on its trusted output:
+
+```yml
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+      condition: ${{ needs.pre_activation.outputs.should_run == 'true' }}
+```
+
+The default is `success()`, preserving the existing behavior for other consumers.
+Set this import input instead of replacing `jobs.pat_pool` locally: gh-aw replaces
+custom imported job definitions rather than merging their selection steps.
+
 The import declares 10 optional inputs (`COPILOT_PAT_0` through `COPILOT_PAT_9`), each defaulting to `secrets.COPILOT_PAT_#` of the matching number. To point a workflow at a different pool of repository secrets, use the parameterized `uses`/`with` form when importing and pass the substitute secrets as the `COPILOT_PAT_#` inputs:
 
 ```yml

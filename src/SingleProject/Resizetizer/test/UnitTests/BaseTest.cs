@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void DeleteDirectoryWithRetries(string directory)
 		{
-			const int attempts = 3;
+			const int attempts = 10;
 
 			for (var attempt = 1; ; attempt++)
 			{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Output.WriteLine($"Retrying cleanup for {directory} after attempt {attempt}: {cleanupException.Message}");
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(100 * attempt);
 			}
 		}
 

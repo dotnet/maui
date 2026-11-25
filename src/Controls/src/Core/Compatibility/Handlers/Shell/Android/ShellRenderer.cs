@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
@@ -93,13 +94,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 		// These are the primary colors in our styles.xml file
-		public static Color DefaultBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"), RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
-		public static Color DefaultForegroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		public static Color DefaultTitleColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		public static Color DefaultUnselectedColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#49454F") : Color.FromRgba(255, 255, 255, 180),
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#CAC4D0") : Color.FromRgba(255, 255, 255, 180));
-		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#F3EDF7") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Color.FromArgb("#1B3147"));
+		public static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
+		public static Color DefaultForegroundColor => ResolveThemeColor(Colors.Black, Colors.White);
+		public static Color DefaultTitleColor => Colors.White;
+		public static Color DefaultUnselectedColor => Color.FromRgba(255, 255, 255, 180);
+		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(Colors.White, Color.FromArgb("#1B3147"));
 		internal static bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
 
 		static Color ResolveThemeColor(Color light, Color dark)
@@ -114,6 +113,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
+		FragmentManager _fragmentManager;
+		ShellItemInsetsCallbacks _shellItemInsetsCallbacks;
 		IMauiContext _mauiContext;
 		bool _disposed;
 
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected Context AndroidContext { get; private set; }
 		protected Shell Element { get; private set; }
 		FragmentManager FragmentManager =>
-			Element.FindMauiContext().GetFragmentManager();
+			_fragmentManager ??= _mauiContext.GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
@@ -183,6 +184,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed)
+				return;
+
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
 
@@ -211,6 +215,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_flyoutView.AttachFlyout(this, _frameLayout);
 
 			((IShellController)shell).AddAppearanceObserver(this, shell);
+
+			if (_shellItemInsetsCallbacks is null)
+			{
+				_shellItemInsetsCallbacks = new ShellItemInsetsCallbacks(this);
+				FragmentManager.RegisterFragmentLifecycleCallbacks(_shellItemInsetsCallbacks, false);
+			}
 
 			SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
 		}
@@ -315,7 +325,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect)
 		{
-			//TODO I don't think we need this
+			// The flyout root is arranged from OnElementSizeChanged.
 		}
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
@@ -339,6 +349,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+				return;
+
+			if (_flyoutView is ShellFlyoutRenderer shellFlyoutRenderer)
+				shellFlyoutRenderer.ReleaseDrawerCallbackBeforePageChange();
+		}
+
 		void IElementHandler.DisconnectHandler()
 		{
 			if (_disposed)
@@ -346,25 +365,69 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_disposed = true;
 
+			if (_shellItemInsetsCallbacks is not null)
+			{
+				if (_fragmentManager is not null && !_fragmentManager.IsDestroyed(AndroidContext))
+					_fragmentManager.UnregisterFragmentLifecycleCallbacks(_shellItemInsetsCallbacks);
+
+				_shellItemInsetsCallbacks.Dispose();
+				_shellItemInsetsCallbacks = null;
+			}
+
 			Element.PropertyChanged -= OnElementPropertyChanged;
 			Element.SizeChanged -= OnElementSizeChanged;
 			((IShellController)Element).RemoveAppearanceObserver(this);
+
+			if (_currentView is ShellItemRendererBase)
+			{
+				var currentFragment = _currentView.Fragment;
+				if (_fragmentManager is not null &&
+					!_fragmentManager.IsDestroyed(AndroidContext))
+				{
+					var transaction = _fragmentManager.BeginTransactionEx();
+					transaction.RemoveEx(currentFragment);
+					transaction.CommitAllowingStateLossEx();
+				}
+			}
+			else
+				_currentView?.Dispose();
+
+			_currentView = null;
 
 			if (_flyoutView is ShellFlyoutRenderer sfr)
 				sfr.Disconnect();
 			else
 				(_flyoutView as IDisposable)?.Dispose();
 
-			if (_currentView is ShellItemRendererBase sir)
-				sir.Disconnect();
-			else
-				_currentView.Dispose();
+			if (ReferenceEquals(Element.Handler, this))
+			{
+				Element.Handler = null;
+			}
 
-			_currentView = null;
+			// FragmentManager owns deferred destruction, which still reads IShellContext.Shell.
+		}
 
-			Element = null;
+		// TODO (.NET 12): Move the inset refresh to ShellItemRenderer.OnResume.
+		sealed class ShellItemInsetsCallbacks : FragmentManager.FragmentLifecycleCallbacks
+		{
+			readonly ShellRenderer _renderer;
 
-			_disposed = true;
+			public ShellItemInsetsCallbacks(ShellRenderer renderer)
+			{
+				_renderer = renderer;
+			}
+
+			public override void OnFragmentResumed(FragmentManager fm, Fragment fragment)
+			{
+				base.OnFragmentResumed(fm, fragment);
+
+				if (_renderer._disposed || !ReferenceEquals(_renderer._currentView?.Fragment, fragment))
+					return;
+
+				// Entering effects can leave safe-area padding based on transient screen coordinates.
+				if (fragment.View is { } view && !view.IsDisposed() && view.IsAttachedToWindow)
+					ViewCompat.RequestApplyInsets(view);
+			}
 		}
 	}
 }

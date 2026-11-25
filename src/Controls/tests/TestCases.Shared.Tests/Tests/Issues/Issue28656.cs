@@ -12,7 +12,7 @@ public class Issue28656 : _IssuesUITest
 	public override string Issue => "CollectionView CollectionViewHandler2 does not change ItemsLayout on DataTrigger";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void CollectionViewShouldChangeItemsLayout()
 	{
 		App.WaitForElement("ChangeLayoutButton");

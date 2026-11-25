@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Controls.Platform
 		View _content;
 		object _previousDataContext;
 		Shell _shell;
-		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
+		bool _updatingVisualState;
+		ShellView ShellView => _shell?.Handler?.PlatformView as ShellView;
 
 		public ShellFlyoutItemView()
 		{
@@ -38,24 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			_previousDataContext = args.NewValue;
-			if (_content != null)
-			{
-				if (_content.BindingContext is INotifyPropertyChanged inpc)
-					inpc.PropertyChanged -= ShellElementPropertyChanged;
-
-				if (_content.Parent is BaseShellItem bsi)
-					bsi.RemoveLogicalChild(_content);
-				else
-					_shell?.RemoveLogicalChild(_content);
-
-				// Remove resource listener from previous content
-				if (_content is IElementDefinition contentDef)
-					contentDef.RemoveResourcesChangedListener(OnResourcesChanged);
-				_content.Cleanup();
-				_content.BindingContext = null;
-				_content.Parent = null;
-				_content = null;
-			}
+			ReleaseContent();
 
 			BindableObject bo = null;
 
@@ -97,6 +81,38 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = platformView;
 				UpdateVisualState();
 			}
+		}
+
+		// Called when the shell's handler disconnects. The DataContext does not change then, and WinUI keeps
+		// this view alive past that, so without it the view would keep the shell and its pages alive too.
+		internal void Disconnect()
+		{
+			ReleaseContent();
+			Content = null;
+			_shell = null;
+			_previousDataContext = null;
+		}
+
+		void ReleaseContent()
+		{
+			if (_content == null)
+				return;
+
+			if (_content.BindingContext is INotifyPropertyChanged inpc)
+				inpc.PropertyChanged -= ShellElementPropertyChanged;
+
+			if (_content.Parent is BaseShellItem bsi)
+				bsi.RemoveLogicalChild(_content);
+			else
+				_shell?.RemoveLogicalChild(_content);
+
+			// Remove resource listener from previous content
+			if (_content is IElementDefinition contentDef)
+				contentDef.RemoveResourcesChangedListener(OnResourcesChanged);
+			_content.Cleanup();
+			_content.BindingContext = null;
+			_content.Parent = null;
+			_content = null;
 		}
 
 		void ShellElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -154,9 +170,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem)
+			if (_updatingVisualState || _content?.BindingContext is not BaseShellItem baseShellItem)
 			{
+				return;
+			}
+
+			try
+			{
+				_updatingVisualState = true;
 				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+			}
+			finally
+			{
+				_updatingVisualState = false;
 			}
 		}
 

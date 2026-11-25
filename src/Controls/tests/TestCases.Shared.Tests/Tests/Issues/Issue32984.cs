@@ -6,7 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32984 : _IssuesUITest
 {
-	string doneButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
+	const string DoneButtonId = "Done";
+
 	public Issue32984(TestDevice device)
 		: base(device)
 	{
@@ -24,8 +25,8 @@ public class Issue32984 : _IssuesUITest
 		App.WaitForElement("Cancel");
 		App.Tap("Cancel");
 #elif IOS || MACCATALYST
-		App.WaitForElement(doneButton);
-		App.Tap(doneButton);
+		App.WaitForElement(DoneButtonId);
+		App.Tap(DoneButtonId);
 #elif WINDOWS
 		App.TapCoordinates(10, 10); 
 #endif

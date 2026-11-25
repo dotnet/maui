@@ -58,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			public void OnViewDidAppear() { }
 			public void OnViewDidDisappear() { }
 			public void OnViewDidLayoutSubviews() { }
+			public void OnViewWillLayoutSubviews() { }
 		}
 #endif
 

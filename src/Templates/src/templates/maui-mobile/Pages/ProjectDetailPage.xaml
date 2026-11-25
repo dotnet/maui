@@ -33,19 +33,19 @@
                         Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
-              <sf:SfTextInputLayout
-                    Hint="Category"
-                    SemanticProperties.Description="ComboBox to select a category. Activate to browse and select a category">
+                <sf:SfTextInputLayout
+                    Hint="Category">
                     <Picker ItemsSource="{Binding Categories}"
                             SelectedItem="{Binding Category}"
                             SelectedIndex="{Binding CategoryIndex}"
-                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"/>
+                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"
+                            SemanticProperties.Hint="ComboBox to select a category. Activate to browse and select a category. State Collapsed"/>
                 </sf:SfTextInputLayout>
 
                 <Label 
                     Text="Icon" 
                     Style="{StaticResource Title2}"/>
-                <CollectionView 
+                <CollectionView x:Name="IconsCollectionView"
                     HeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
@@ -62,6 +62,7 @@
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="Transparent"/>
                                                 <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="False"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{Binding Description, StringFormat='{0}, Unselected'}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Selected">
@@ -69,6 +70,7 @@
                                                 <Setter Property="BackgroundColor" Value="Transparent"/>
                                                 <Setter Property="Background" Value="Transparent"/>
                                                 <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="True"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{OnPlatform Default={Binding Description}, iOS={Binding Description, StringFormat='{0}, Selected'}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -96,11 +98,12 @@
                     Text="Tags" 
                     Style="{StaticResource Title2}"/>
 
-                <CollectionView
+                <CollectionView x:Name="TagsCollectionView"
                     ItemsSource="{Binding AllTags}"
                     SelectionMode="Multiple"
                     HeightRequest="44"
                     Margin="0,0,0,15"
+                    SemanticProperties.Description="Tags Collection"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
                     SelectionChangedCommandParameter="{Binding SelectedTags}">
@@ -120,12 +123,14 @@
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{Binding Title, StringFormat='{0}, Unselected'}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="{Binding DisplayColor}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}"/>
+                                                <Setter Property="SemanticProperties.Description" Value="{OnPlatform Default={Binding Title}, iOS={Binding Title, StringFormat='{0}, Selected'}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>

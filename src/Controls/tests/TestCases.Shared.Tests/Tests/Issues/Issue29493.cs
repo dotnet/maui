@@ -14,7 +14,7 @@ public class Issue29493 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifySearchHandlerValues()
 	{
 		App.WaitForElement("button");

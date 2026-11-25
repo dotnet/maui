@@ -1,4 +1,5 @@
 #nullable disable
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	internal class GlobalCloseContextGestureRecognizer : UIGestureRecognizer
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The scroll view is needed by ShouldReceiveTouch and is cleared in Dispose.")]
 		UIScrollView _scrollView;
 
 		public GlobalCloseContextGestureRecognizer(UIScrollView scrollView, NSAction activated) : base(activated)

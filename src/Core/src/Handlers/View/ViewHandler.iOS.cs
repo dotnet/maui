@@ -159,6 +159,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			if (handler.PlatformView is PlatformView platformView)
+			{
+				MauiView.InvalidateSafeArea(platformView);
+			}
+
 			view.InvalidateMeasure();
 		}
 	}

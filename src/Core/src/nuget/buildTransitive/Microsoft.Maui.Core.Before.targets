@@ -1,6 +1,26 @@
 <Project>
 
   <PropertyGroup>
+    <_MauiAspireWasExplicitlyConfigured Condition="'$(_EnableMauiAspire)' != ''">true</_MauiAspireWasExplicitlyConfigured>
+    <!-- Keep Aspire environment propagation in non-optimized builds, but substitute it away from optimized apps. -->
+    <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
+    <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+                                    Value="$(_EnableMauiAspire)"
+                                    Trim="true" />
+  </ItemGroup>
+
+  <Target Name="_MauiValidateAspireConfiguration" BeforeTargets="PrepareForBuild">
+    <Warning
+      Code="MA002"
+      Text="The _EnableMauiAspire property should not be set manually. Enabling Aspire when Optimize=true may introduce performance and security risks in production. This property is automatically configured based on optimization settings."
+      Condition="'$(_MauiAspireWasExplicitlyConfigured)' == 'true' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
+  </Target>
+
+  <PropertyGroup>
     <!-- Include the pre-processed xaml files in the output folder -->
     <GenerateLibraryLayout Condition=" '$(GenerateLibraryLayout)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">true</GenerateLibraryLayout>
   </PropertyGroup>

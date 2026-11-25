@@ -5,6 +5,7 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 
+
 	public class CollectionViewGroupingTests : CollectionViewUITests
 	{
 		protected override bool ResetAfterEachTest => true;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void GroupingAndHeaderWorks()
 		{
 			VisitInitialGallery("Grouping");

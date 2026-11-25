@@ -13,7 +13,7 @@ public class Issue32899 : _IssuesUITest
 	public override string Issue => "Dotnet bot image is not showing up when using iOS 26 and macOS 26.1";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TitleViewImageShouldBeVisible()
 	{
 		// Wait for the page to load

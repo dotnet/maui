@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use the Items2 handler implementation with UIKit.UICollectionViewLayout instead.")]
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
 		readonly ItemsLayout _itemsLayout;
@@ -90,6 +92,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
 			HandlePropertyChanged(propertyChanged);
@@ -498,7 +501,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ForceScrollToLastItem(CollectionView, _itemsLayout);
+				var position = _itemsLayout.Orientation == ItemsLayoutOrientation.Vertical
+					? UICollectionViewScrollPosition.Bottom
+					: UICollectionViewScrollPosition.Right;
+				ItemsViewScrollHelper.ForceScrollToLastItem(CollectionView, position);
+			}
+			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& CollectionView?.DataSource is not CarouselViewController)
+			{
+				ItemsViewScrollHelper.ScrollToFirstItem(CollectionView, _itemsLayout.Orientation);
 			}
 		}
 
@@ -563,32 +574,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return false;
-		}
-
-		static void ForceScrollToLastItem(UICollectionView collectionView, ItemsLayout itemsLayout)
-		{
-			var sections = (int)collectionView.NumberOfSections();
-
-			if (sections == 0)
-			{
-				return;
-			}
-
-			for (int section = sections - 1; section >= 0; section--)
-			{
-				var itemCount = collectionView.NumberOfItemsInSection(section);
-				if (itemCount > 0)
-				{
-					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
-
-					if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
-					else
-						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Right, true);
-
-					return;
-				}
-			}
 		}
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)

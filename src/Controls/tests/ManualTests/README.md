@@ -271,7 +271,6 @@ The project supports multiple target frameworks based on `$(MauiManualTestsPlatf
 - `net10.0-ios` - iOS applications
 - `net10.0-maccatalyst` - macOS Catalyst applications
 - `net10.0-windows10.0.17763.0` - Windows applications
-- `net10.0-tizen` - Tizen applications
 
 ### Building for Specific Platforms
 

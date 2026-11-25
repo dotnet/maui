@@ -15,7 +15,7 @@ public class Issue5132 : _IssuesUITest
 
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellFlyoutAndHamburgerAutomationProperties()
 	{
 		App.WaitForElement(AppiumQuery.ByAccessibilityId(_idIconElement));

@@ -11,7 +11,7 @@ public class Issue34662 : _IssuesUITest
 	public override string Issue => "Shell OnNavigated not called for route navigation";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellCurrentStateLocationCorrectAfterAbsoluteNavigation()
 	{
 		const string expectedCurrentState = "//DashboardPage/Page1/Page2";

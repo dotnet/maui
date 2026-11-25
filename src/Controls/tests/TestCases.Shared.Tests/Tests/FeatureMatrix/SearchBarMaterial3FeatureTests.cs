@@ -494,5 +494,33 @@ public class SearchBarMaterial3FeatureTests : _GalleryUITest
         App.EnterText("SearchBar", "Search Text");
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
+
+    [Test, Order(30)]
+    [Category(UITestCategories.Material3)]
+    public void SearchBar_Material3_SetSearchIconColor_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("SearchIconColorBlueButton");
+        App.Tap("SearchIconColorBlueButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("SearchBar");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(31)]
+    [Category(UITestCategories.Material3)]
+    public void SearchBar_Material3_SetBackgroundColor_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("BackgroundLightBlueButton");
+        App.Tap("BackgroundLightBlueButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("SearchBar");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
 }
 #endif

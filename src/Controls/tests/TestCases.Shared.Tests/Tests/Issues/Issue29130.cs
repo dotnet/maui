@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void ItemSizeShouldRespondForItemSizingStrategy()
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/29130
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void ItemTemplateShouldUpdateDynamicallyWithCacheClear()
 		{
 			App.WaitForElement("29130Grid");

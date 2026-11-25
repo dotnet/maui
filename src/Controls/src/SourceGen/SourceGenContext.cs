@@ -36,6 +36,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
+	public IReadOnlyDictionary<ElementNode, string>? NodeIds { get; set; }
+	public bool UseLocalResourceFactories { get; set; }
 	public void ReportDiagnostic(Diagnostic diagnostic)
 	{
 		if (ParentContext is not null)
@@ -45,22 +47,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		}
 
 		// Check if this diagnostic should be suppressed based on NoWarn
-		var noWarn = ProjectItem?.NoWarn;
-		if (!string.IsNullOrEmpty(noWarn))
-		{
-			var suppressedIds = noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			foreach (var id in suppressedIds)
-			{
-				var code = id.Trim();
-				// Match full ID (e.g., "MAUIX2015") or bare numeric suffix (e.g., "2015")
-				if (code.Equals(diagnostic.Id, StringComparison.OrdinalIgnoreCase) ||
-					(diagnostic.Id.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
-					 code == diagnostic.Id.Substring("MAUIX".Length)))
-				{
-					return; // Suppress this diagnostic
-				}
-			}
-		}
+		if (XamlDiagnosticHelpers.IsSuppressed(ProjectItem?.NoWarn, diagnostic.Id))
+			return;
 
 		if (_bufferedDiagnostics is not null)
 		{
@@ -109,6 +97,9 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 
 	public Dictionary<string, int> lastIdForName = [];
 
+	//extension containers brought in scope by a xmlns, keyed by the xmlns uri
+	internal Dictionary<string, INamedTypeSymbol[]>? extensionContainersInScope;
+
 	public void AddLocalMethod(string code)
 	{
 		if (ParentContext != null)
@@ -129,6 +120,18 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	// redeclaring it. Returns true the first time a name is seen, false afterwards. See dotnet/maui#36682.
 	public bool TryReserveTemplateMethod(string name)
 		=> ParentContext != null ? ParentContext.TryReserveTemplateMethod(name) : _emittedTemplateMethods.Add(name);
+
+	public bool TryGetNodeId(ElementNode node, out string nodeId)
+	{
+		if (ParentContext != null)
+			return ParentContext.TryGetNodeId(node, out nodeId);
+
+		if (NodeIds != null && NodeIds.TryGetValue(node, out nodeId!))
+			return true;
+
+		nodeId = string.Empty;
+		return false;
+	}
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
 	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;

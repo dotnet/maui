@@ -33,7 +33,7 @@ public class Issue11869 : _IssuesUITest
 	public override string Issue => "[Bug] ShellContent.IsVisible issue on Android";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{
 		// Ignored on Windows: The BottomTabs are displayed as a popup with a dropdown icon on Windows. 

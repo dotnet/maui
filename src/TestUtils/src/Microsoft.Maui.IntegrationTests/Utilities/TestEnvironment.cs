@@ -37,15 +37,20 @@ namespace Microsoft.Maui.IntegrationTests
 			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE")
 			?? null; // ← Set to a specific device string if needed locally (e.g., "ios-simulator-64_18.5")
 
+		/// <summary>
+		/// Optional dedicated simulator UUID, used by both the fixture and XHarness.
+		/// The fixture boots and shuts down this simulator; do not select a shared device.
+		/// </summary>
+		public static string? IosTestDeviceUdid =>
+			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE_UDID");
+
 		#endregion
 
 		/// <summary>
-		/// Gets the appropriate iOS simulator runtime identifier based on the host architecture.
-		/// Returns "iossimulator-arm64" on ARM64 Macs and "iossimulator-x64" on Intel Macs.
+		/// Gets the iOS simulator runtime identifier. The .NET 12 iOS SDK only ships
+		/// "iossimulator-arm64" (iossimulator-x64 is no longer a valid RID).
 		/// </summary>
-		public static string IOSSimulatorRuntimeIdentifier =>
-			IsArm64 ? "iossimulator-arm64" : "iossimulator-x64";
-
+		public static string IOSSimulatorRuntimeIdentifier => "iossimulator-arm64";
 
 		static string _mauiDir = "";
 		public static string GetMauiDirectory()

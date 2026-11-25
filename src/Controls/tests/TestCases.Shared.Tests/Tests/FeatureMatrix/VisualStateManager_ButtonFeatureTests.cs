@@ -9,6 +9,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerButtonFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerButtonFeatureTests;
+	protected override string GallerySubPageButton => "VSMButton";
 
 	public VisualStateManager_ButtonFeatureTests(TestDevice device)
 		: base(device)
@@ -18,12 +19,10 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Button_InitialState()
 	{
-		App.WaitForElement("VSMButton");
-		App.Tap("VSMButton");
 		App.WaitForElement("ButtonStateLabel");
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -34,7 +33,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ButtonStateLabel");
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -45,7 +44,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("DemoButton").IsEnabled(), Is.True);
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID // Related issue link: https://github.com/dotnet/maui/issues/19289
@@ -57,7 +56,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ButtonStateLabel");
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal/Released"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]

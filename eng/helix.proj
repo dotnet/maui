@@ -10,6 +10,8 @@
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnTestFailure>true</FailOnTestFailure>
     <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion> 
+    <!-- The Helix SDK defaults this to its own Arcade NetCurrent, which can lag behind the repo's TFM. -->
+    <XUnitPublishTargetFramework>$(_MauiDotNetTfm)</XUnitPublishTargetFramework>
     <!-- Staging directory for MSBuild test payloads -->
     <MauiHelixPayloadDir>$(RepoRoot)artifacts/helix-payload/</MauiHelixPayloadDir>
   </PropertyGroup>
@@ -24,15 +26,15 @@
     process is launched with DOTNET_MODIFIABLE_ASSEMBLIES=debug (VS sets it automatically when
     debugging; Helix does not). Without it those tests are skipped (see MetadataUpdateFactAttribute).
 
-    This single Helix send targets both a Windows (cmd) and an osx (bash) queue, so a per-shell
-    condition on $(IsPosixShell) can only ever be right for one of them. Emit both forms
-    unconditionally instead — each is a harmless no-op in the other shell (an unrecognized command
-    on the non-native shell), and the correct one exports the variable for that queue's work item.
+    The SDK evaluates each queue separately and resolves IsPosixShell in its targets import.
+    Append the native shell command at target execution time, preserving the SDK's precommands.
   -->
-  <ItemGroup>
-    <HelixPreCommand Include="export DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
-    <HelixPreCommand Include="set DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
-  </ItemGroup>
+  <Target Name="EnableHotReloadMetadataUpdates" BeforeTargets="CoreTest" Condition="'$(HelixTargetQueue)' != ''">
+    <PropertyGroup>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export DOTNET_MODIFIABLE_ASSEMBLIES=debug</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set DOTNET_MODIFIABLE_ASSEMBLIES=debug</HelixPreCommands>
+    </PropertyGroup>
+  </Target>
 
   <!-- Local build outside of Azure Pipeline -->
   <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
@@ -53,7 +55,12 @@
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/ExternalBackendTests/Essentials.ExternalBackend.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/TestUtils/tests/VisualTestUtils.MagickNet.Tests/VisualTestUtils.MagickNet.Tests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj" />
+    <XUnitProject Condition="$(HelixTargetQueue.StartsWith('Windows'))" Include="$(RepoRoot)src/BlazorWebView/tests/BlazorWebView.Windows.UnitTests/BlazorWebView.Windows.UnitTests.csproj">
+      <TargetFramework>$(_MauiDotNetTfm)-windows</TargetFramework>
+    </XUnitProject>
+    <XUnitProject Include="$(RepoRoot)src/BlazorWebView/tests/MauiBlazorWebView.ExternalHandler.UnitTests/MauiBlazorWebView.ExternalHandler.UnitTests.csproj" />
   </ItemGroup>
 
   <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->
@@ -76,6 +83,7 @@
       <BuildTasksNugetFiles Include="$(RepoRoot)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(BuildTasksNugetFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets" DestinationFolder="$(MauiHelixPayloadDir)src/Core/src/nuget/buildTransitive" SkipUnchangedFiles="true" />
     
     <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
   </Target>
@@ -93,7 +101,7 @@
       <Destination>buildtasks</Destination>
     </HelixCorrelationPayload>
     
-    <!-- MSBuild test support files (Maui.InTree.props/targets and Workload SDK) -->
+    <!-- MSBuild test support files (Core/Controls targets, Maui.InTree.props/targets and Workload SDK) -->
     <HelixCorrelationPayload Include="$(MauiHelixPayloadDir)src">
       <Destination>src</Destination>
     </HelixCorrelationPayload>

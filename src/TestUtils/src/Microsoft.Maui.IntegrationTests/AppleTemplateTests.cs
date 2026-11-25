@@ -52,40 +52,31 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		private readonly IOSSimulatorFixture _simulatorFixture;
 
-		public AppleTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, IOSSimulatorFixture simulatorFixture) 
+		public AppleTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, IOSSimulatorFixture simulatorFixture)
 			: base(fixture, output)
 		{
 			_simulatorFixture = simulatorFixture;
-			
+
 			// Per-test setup: skip if not on macOS
 			if (!TestEnvironment.IsMacOS)
-				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
+				if (true)
+					return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
-		// [InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		
-
-		// Individual test methods for each configuration to enable parallel CI runs
-		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
+		// DotNetPrevious test methods
 		[Fact]
-		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+		public void RunOniOS_Previous_MauiDebug() => RunOniOS("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null);
 
 		[Fact]
-		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+		public void RunOniOS_Previous_MauiRelease() => RunOniOS("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
 		[Fact]
-		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
+		public void RunOniOS_Previous_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null);
 
 		[Fact]
-		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+		public void RunOniOS_Previous_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
-		[Fact]
-		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
-
-		// CoreCLR test variants
+		// DotNetCurrent test methods. .NET 12 removed Mono for mobile, so these use CoreCLR or NativeAOT.
 		[Fact]
 		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 
@@ -101,22 +92,6 @@ namespace Microsoft.Maui.IntegrationTests
 		[Fact]
 		public void RunOniOS_BlazorRelease_CoreCLR() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 
-		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
-		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
-		// 
-		// When building maui-blazor template with TrimMode=full, the Razor source generator produces code
-		// that accesses Router.NotFoundPage via reflection, triggering IL2111:
-		//
-		//   error IL2111: Method 'Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set' with
-		//   parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection.
-		//   Trimmer can't guarantee availability of the requirements of the method.
-		//
-		// This is a known limitation - Blazor doesn't fully support TrimMode=full for application assemblies.
-		// See: https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/configure-trimmer
-		//
-		// [Test, Category(Categories.RunOniOS)]
-		// public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
-
 		[Fact]
 		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);
 
@@ -128,10 +103,25 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			var completionMarker = $"MAUI_APP_COMPLETED_{Guid.NewGuid():N}";
+			var probeFile = Path.Combine(projectDir, "Platforms", "iOS", "AppleTemplateLaunchProbe.cs");
+			FileUtilities.CreateFileFromResource("AppleTemplateLaunchProbe.cs", probeFile);
+			FileUtilities.ReplaceInFile(probeFile, "__MAUI_APP_COMPLETION_MARKER__", completionMarker);
+			FileUtilities.ReplaceInFile(Path.Combine(projectDir, "MauiProgram.cs"), "return builder.Build();",
+				"#if IOS\n\t\tAppleTemplateLaunchProbe.Configure(builder);\n#endif\n\t\treturn builder.Build();");
+
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
-			if (runtimeVariant == RuntimeVariant.CoreCLR)
+			if (runtimeVariant == RuntimeVariant.Mono)
+			{
+				buildProps.Add("UseMonoRuntime=true");
+				// .NET 11+ SDKs reject Mono for mobile TFMs (NETSDK1242) unless opted out. Restrict the template to iOS
+				// so the global UseMonoRuntime does not also apply to its Android target, which has no Mono runtime.
+				buildProps.Add("_DisableCheckForUnsupportedMonoMobileRuntime=true");
+				buildProps.Add($"TargetFrameworks={framework}-ios");
+			}
+			else if (runtimeVariant == RuntimeVariant.CoreCLR)
 			{
 				buildProps.Add("UseMonoRuntime=false");
 			}
@@ -140,8 +130,8 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 				buildProps.Add("_IsPublishing=true"); // using dotnet build with -p:_IsPublishing=true enables targeting simulators
-				// Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
-				// which may not be available in the configured NuGet sources
+													  // Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
+													  // which may not be available in the configured NuGet sources
 				buildProps.Add($"TargetFrameworks={framework}-ios");
 				// NativeAOT builds default to device (ios-arm64) when using PublishAot=true.
 				// We must explicitly specify the simulator RID so the app can run on the simulator in our tests.
@@ -168,9 +158,9 @@ namespace Microsoft.Maui.IntegrationTests
 			Directory.CreateDirectory(xhResultsDir);
 
 			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
-			// Don't pass a specific UDID - this gives XHarness full control over the simulator
-			// lifecycle and avoids race conditions with watchdog disabling.
-			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, output: _output),
+			// Only pin a UDID when a dedicated simulator was explicitly selected.
+			Assert.True(XHarness.RunApple(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, completionMarker,
+				deviceUdid: TestEnvironment.IosTestDeviceUdid, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -418,12 +420,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					case UIGestureRecognizerState.Began:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
+						lpRecognizer.SendLongPressed(view, getPosition);
 						break;
 					case UIGestureRecognizerState.Changed:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
 						break;
 					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, getPosition);
 						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 						break;
 					case UIGestureRecognizerState.Cancelled:
@@ -998,9 +1000,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				for (int i = PlatformView.Interactions.Length - 1; i >= 0; i--)
+				// Cache Interactions; each access marshals the whole native array (see #34396).
+				var interactions = PlatformView.Interactions;
+				for (int i = interactions.Length - 1; i >= 0; i--)
 				{
-					var interaction = (IUIInteraction)PlatformView.Interactions[i];
+					var interaction = (IUIInteraction)interactions[i];
 					if (interaction is FakeRightClickContextMenuInteraction && !_interactions.Contains(interaction))
 					{
 						PlatformView.RemoveInteraction(interaction);
@@ -1012,7 +1016,37 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.Is(TapGestureRecognizer.ButtonsProperty))
+			{
 				LoadRecognizers();
+			}
+			else if (e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty) && sender is TapGestureRecognizer tapGesture)
+			{
+				UpdateNumberOfTapsRequired(tapGesture);
+			}
+		}
+
+		void UpdateNumberOfTapsRequired(TapGestureRecognizer tapGesture)
+		{
+			foreach (var kvp in _gestureRecognizers)
+			{
+				var key = kvp.Key;
+
+				// Direct case: key IS the TapGestureRecognizer
+				// Span case: key is a ChildGestureRecognizer wrapping it
+				var resolvedGesture = key as TapGestureRecognizer
+					?? (key as ChildGestureRecognizer)?.GestureRecognizer as TapGestureRecognizer;
+
+				if (resolvedGesture != tapGesture)
+					continue;
+
+				foreach (var uiRecognizer in kvp.Value)
+				{
+					if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
+					{
+						uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
+					}
+				}
+			}
 		}
 
 		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1082,6 +1116,13 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
+				if (recognizer is UITapGestureRecognizer &&
+					IsTouchOnSelectableCollectionViewItem(touch, platformView, out var touchedCollectionView) &&
+					(virtualView is not SelectableItemsView || !ReferenceEquals(touchedCollectionView, platformView)))
+				{
+					return false;
+				}
+
 				if (touch.View == platformView)
 				{
 					return true;
@@ -1095,6 +1136,32 @@ namespace Microsoft.Maui.Controls.Platform
 					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 				{
 					return true;
+				}
+
+				return false;
+			}
+
+			// Checks whether the touch occurred on an actual item within a selectable CollectionView.
+			static bool IsTouchOnSelectableCollectionViewItem(UITouch touch, UIView platformView, out MauiCollectionView? touchedCollectionView)
+			{
+				touchedCollectionView = null;
+				for (var view = touch.View; view is not null; view = view.Superview)
+				{
+					if (view is MauiCollectionView { AllowsSelection: true } collectionView &&
+						(ReferenceEquals(collectionView, platformView) || collectionView.IsDescendantOfView(platformView)))
+					{
+						var location = touch.LocationInView(collectionView);
+						if (collectionView.IndexPathForItemAtPoint(location) is not null)
+						{
+							touchedCollectionView = collectionView;
+							return true;
+						}
+					}
+
+					if (ReferenceEquals(view, platformView))
+					{
+						break;
+					}
 				}
 
 				return false;
@@ -1212,6 +1279,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickDelegate? _dontCollectMePlease;
 
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
@@ -1250,6 +1318,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickPointerDelegate? _dontCollectMePlease;
 			bool _disposed;
 
@@ -1313,7 +1382,7 @@ namespace Microsoft.Maui.Controls.Platform
 								}
 						}
 					}
-					
+
 					// Return null to prevent actual context menu from appearing
 					// We only want to detect the right-click, not show a menu
 					return null;

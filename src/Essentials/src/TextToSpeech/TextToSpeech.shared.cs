@@ -211,19 +211,19 @@ namespace Microsoft.Maui.Media
 			if (options?.Volume.HasValue ?? false)
 			{
 				if (options.Volume.Value < VolumeMin || options.Volume.Value > VolumeMax)
-					throw new ArgumentOutOfRangeException($"Volume must be >= {VolumeMin} and <= {VolumeMax}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Volume must be >= {VolumeMin} and <= {VolumeMax}");
 			}
 
 			if (options?.Pitch.HasValue ?? false)
 			{
 				if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
-					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Pitch must be >= {PitchMin} and <= {PitchMax}");
 			}
 
 			if (options?.Rate.HasValue ?? false)
 			{
 				if (options.Rate.Value < RateMin || options.Rate.Value > RateMax)
-					throw new ArgumentOutOfRangeException($"Rate must be >= {RateMin} and <= {RateMin}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Rate must be >= {RateMin} and <= {RateMax}");
 			}
 
 			if (semaphore == null)
@@ -280,11 +280,11 @@ namespace Microsoft.Maui.Media
 		public string Language { get; }
 
 		/// <summary>
-		/// Gets the country name or code.
+		/// Gets the country/region name or code.
 		/// </summary>
 		/// <remarks>
-		/// <para>This value may vary between platforms and is never <see langword="null"/>; an unknown or unused country is represented by <see cref="string.Empty"/>.</para>
-		/// <para>For Android this used the ISO 3166 alpha-2 country code or UN M.49 numeric-3 area code.</para>
+		/// <para>This value may vary between platforms and is never <see langword="null"/>; an unknown or unused country/region is represented by <see cref="string.Empty"/>.</para>
+		/// <para>For Android this uses the ISO 3166 alpha-2 country/region code or UN M.49 numeric-3 area code.</para>
 		/// <para>For iOS and Windows this field is not used and is <see cref="string.Empty"/>. On those platforms the region is already part of <see cref="Language"/> (for example <c>en-US</c>).</para>
 		/// </remarks>
 		public string Country { get; }
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Media
 		/// Initializes a new instance of the <see cref="Locale"/> class.
 		/// </summary>
 		/// <param name="language">The language name or code, as described by <see cref="Language"/>.</param>
-		/// <param name="country">The country name or code, as described by <see cref="Country"/>. Pass <see langword="null"/> when the language already carries the region, or when the engine does not report one.</param>
+		/// <param name="country">The country/region name or code, as described by <see cref="Country"/>. Pass <see langword="null"/> when the language already carries the region, or when the engine does not report one.</param>
 		/// <param name="name">The display name of the locale, as described by <see cref="Name"/>.</param>
 		/// <param name="id">The engine specific identifier of the locale, as described by <see cref="Id"/>.</param>
 		/// <remarks>

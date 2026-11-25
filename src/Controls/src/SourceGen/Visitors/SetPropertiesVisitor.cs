@@ -200,6 +200,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		&& skips.Contains(propertyName) || parentNode is ElementNode epn && epn.SkipProperties.Contains(propertyName))
 			return;
 
+		if (Context.Variables.TryGetValue(node, out var deferredVar)
+			&& node.IsDeferredMergedDictionary(originalParentNode, deferredVar.Type, Context, out var mergeTargetNode)
+			&& Context.Variables.TryGetValue(mergeTargetNode!, out var mergeTargetVar))
+		{
+			Writer.WriteLine($"{deferredVar.ValueAccessor} = global::Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<{deferredVar.Type.ToFQDisplayString()}>({mergeTargetVar.ValueAccessor});");
+			node.RegisterSourceInfo(Context, Writer);
+		}
+
 		// Handle lazy RD resources - they weren't created in CreateValuesVisitor
 		if (node.IsLazyResource(originalParentNode, Context))
 		{
@@ -287,6 +295,19 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 						node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
 						node.Accept(new SetResourcesVisitor(templateContext), null);
 						node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
+						var templateRegistrations = new List<(string NodeId, ILocalValue Value)>();
+						foreach (var entry in templateContext.Variables)
+						{
+							if (entry.Key is ElementNode element
+								&& Context.TryGetNodeId(element, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								templateRegistrations.Add((nodeId, entry.Value));
+							}
+						}
+						templateRegistrations.Sort((left, right) => StringComparer.Ordinal.Compare(left.NodeId, right.NodeId));
+						foreach (var registration in templateRegistrations)
+							Writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterTemplateComponent(this, \"{registration.NodeId}\", {registration.Value.ValueAccessor});");
 						Writer.WriteLine($"return {templateContext.Variables[node].ValueAccessor};");
 					}
 				}

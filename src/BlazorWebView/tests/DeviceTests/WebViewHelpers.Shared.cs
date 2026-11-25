@@ -34,6 +34,26 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			throw await createExceptionWithTimeoutMS(MaxWaitTimes * WaitTimeInMS);
 		}
 
+		public static async Task WaitForCondition(PlatformWebView webView, string jsCondition)
+		{
+			await Retry(
+				async () =>
+				{
+					// Use .toString() to normalize booleans across platforms (iOS returns
+					// NSNumber "1" for true, Android returns "true", some platforms quote).
+					var result = await ExecuteScriptAsync(webView, $"({jsCondition}).toString()");
+					return
+						result == "true" ||
+						result == "\"true\"" ||
+						result == "1" ||
+						result == "\"1\"";
+				},
+				timeoutInMS =>
+				{
+					return Task.FromResult(new Exception($"Waited {timeoutInMS}ms but condition '{jsCondition}' never became true."));
+				});
+		}
+
 		/// <summary>
 		/// Executes an async JavaScript function body and waits for the result to be stored in controlDiv.
 		/// This method handles all the boilerplate for script injection and Promise avoidance.

@@ -13,6 +13,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 	}
 
+	public sealed class WindowsFact : FactAttribute
+	{
+		public WindowsFact()
+			: base()
+		{
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				Skip = $"Ignored unless on Windows";
+		}
+	}
+
 	public sealed class UnixTheory : TheoryAttribute
 	{
 		public UnixTheory()

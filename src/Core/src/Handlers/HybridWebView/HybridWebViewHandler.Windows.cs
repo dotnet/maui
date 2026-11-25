@@ -97,6 +97,13 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
+			if (!Uri.TryCreate(args.Source, UriKind.Absolute, out var sourceUri) ||
+				!AppOriginUri.IsBaseOf(sourceUri))
+			{
+				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from an unrecognized source.");
+				return;
+			}
+
 			// The JS transport URL-encodes messages so embedded NUL characters survive WebView2's
 			// null-terminated string marshalling (TryGetWebMessageAsString returns an LPWSTR). Decode
 			// the payload before dispatching it.
@@ -305,10 +312,22 @@ namespace Microsoft.Maui.Handlers
 				var initializingArgs = new WebViewInitializationStartedEventArgs();
 				VirtualView?.WebViewInitializationStarted(initializingArgs);
 
+				var environmentOptions = initializingArgs.EnvironmentOptions ?? new CoreWebView2EnvironmentOptions();
+				if (string.IsNullOrEmpty(environmentOptions.Language))
+				{
+					// Match WinUI's default environment so WebViews sharing a user data folder
+					// can share a browser process, including when controller options are customized.
+					var languages = Windows.Globalization.ApplicationLanguages.Languages;
+					if (languages.Count > 0)
+					{
+						environmentOptions.Language = languages[0];
+					}
+				}
+
 				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
 					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
 					userDataFolder: initializingArgs.UserDataFolder,
-					options: initializingArgs.EnvironmentOptions);
+					options: environmentOptions);
 
 				var options = env.CreateCoreWebView2ControllerOptions();
 				options.ScriptLocale = initializingArgs.ScriptLocale;

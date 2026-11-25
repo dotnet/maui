@@ -147,7 +147,7 @@ $UnitTestProjects = [ordered]@{
     "Essentials"        = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
     "Graphics"          = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer"       = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
-    "DualScreen"        = "src/Controls/Foldable/test/Controls.DualScreen.UnitTests.csproj"
+    "DualScreen"        = "src/Controls/Foldable/test/Controls.Foldable.UnitTests.csproj"
 }
 
 # Device test projects: Key → matches Run-DeviceTests.ps1 -Project parameter

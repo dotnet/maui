@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -11,26 +14,49 @@ namespace Microsoft.Maui
 	[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 	public class MauiUISceneDelegate : UIResponder, IUIWindowSceneDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002",
+			Justification = "Retains shortcut metadata until activation, with no scene/delegate back-reference. Cleared on activation, disconnect, initialization failure, or reconnect.")]
+		UIApplicationShortcutItem? _pendingShortcutItem;
+
 		[Export("window")]
 		public virtual UIWindow? Window { get; set; }
 
 		[Export("scene:willConnectToSession:options:")]
 		public virtual void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
-			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
+			_pendingShortcutItem = null;
+			var connected = false;
 
-			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && IPlatformApplication.Current?.Application != null)
+			try
 			{
-				this.CreatePlatformWindow(IPlatformApplication.Current.Application, scene, session, connectionOptions);
+				_pendingShortcutItem = connectionOptions.ShortcutItem;
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
-				if (Window != null)
-					GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
+				if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && IPlatformApplication.Current?.Application != null)
+				{
+					this.CreatePlatformWindow(IPlatformApplication.Current.Application, scene, session, connectionOptions);
+
+					if (Window is UIWindow window && GetServiceProvider() is IServiceProvider services)
+					{
+						services.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(window));
+						connected = true;
+					}
+				}
+
+				if (!connected && _pendingShortcutItem is UIApplicationShortcutItem shortcutItem)
+					LogUnavailableWindow(shortcutItem);
+			}
+			finally
+			{
+				if (!connected)
+					_pendingShortcutItem = null;
 			}
 		}
 
 		[Export("sceneDidDisconnect:")]
 		public virtual void DidDisconnect(UIScene scene)
 		{
+			_pendingShortcutItem = null;
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
 
 			// for iOS 13 only where active apperance is not supported yet
@@ -69,13 +95,43 @@ namespace Microsoft.Maui
 		IServiceProvider? GetServiceProvider() =>
 			Window?.GetWindow()?.Handler?.GetServiceProvider();
 
+		// The application provider is only used for diagnostics, never to route another window's action.
+		static void LogUnavailableWindow(UIApplicationShortcutItem shortcutItem) =>
+			IPlatformApplication.Current?.Services?
+				.GetService<ILoggerFactory>()?
+				.CreateLogger<MauiUISceneDelegate>()
+				.LogWarning("Unable to dispatch shortcut '{ShortcutType}' because its MAUI window is unavailable.", shortcutItem.Type);
+
+		// A cold scene connection supplies no native completion handler.
+		static void IgnoreColdShortcutCompletion(bool _)
+		{
+		}
+
 		[Export("sceneWillEnterForeground:")]
 		public virtual void WillEnterForeground(UIScene scene) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneWillEnterForeground>(del => del(scene));
 
 		[Export("sceneDidBecomeActive:")]
-		public virtual void OnActivated(UIScene scene) =>
+		public virtual void OnActivated(UIScene scene)
+		{
+			var shortcutItem = _pendingShortcutItem;
+			_pendingShortcutItem = null;
+			var window = Window;
+
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneOnActivated>(del => del(scene));
+
+			if (shortcutItem is null)
+				return;
+
+			var services = ReferenceEquals(window, Window) ? GetServiceProvider() : null;
+			if (services is null)
+			{
+				LogUnavailableWindow(shortcutItem);
+				return;
+			}
+
+			services.DispatchShortcutItem(UIApplication.SharedApplication, shortcutItem, IgnoreColdShortcutCompletion);
+		}
 
 		[Export("sceneWillResignActive:")]
 		public virtual void OnResignActivation(UIScene scene) =>
@@ -84,6 +140,38 @@ namespace Microsoft.Maui
 		[Export("sceneDidEnterBackground:")]
 		public virtual void DidEnterBackground(UIScene scene) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneDidEnterBackground>(del => del(scene));
+
+		/// <summary>
+		/// Handles a quick action delivered to an existing window scene.
+		/// </summary>
+		/// <param name="windowScene">The scene receiving the action.</param>
+		/// <param name="shortcutItem">The user-selected quick action.</param>
+		/// <param name="completionHandler">
+		/// The native completion callback used to report whether the action was handled.
+		/// When completion is determined, it is invoked once on the main thread.
+		/// </param>
+		/// <remarks>
+		/// Dispatches through the existing <see cref="iOSLifecycle.PerformActionForShortcutItem"/> registrations.
+		/// Each registration must acknowledge exactly once with <see langword="true"/> if it handled the action,
+		/// or <see langword="false"/> otherwise, including logging-only observers.
+		/// Acknowledgement may be deferred for asynchronous work; returning from a handler does not acknowledge it.
+		/// When dispatch does not throw, native completion waits until all handler invocations have returned
+		/// and either one registration has reported <see langword="true"/> or every registration has reported
+		/// <see langword="false"/>. If a registration never replies and none reports <see langword="true"/>,
+		/// native completion can remain pending.
+		/// </remarks>
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.1")]
+		[Export("windowScene:performActionForShortcutItem:completionHandler:")]
+		// Match the protocol method name and delegate type for native block marshalling.
+		public virtual void PerformAction(UIWindowScene windowScene, UIApplicationShortcutItem shortcutItem, Action<bool> completionHandler)
+		{
+			var services = GetServiceProvider();
+			services.DispatchShortcutItem(UIApplication.SharedApplication, shortcutItem, completionHandler.Invoke);
+
+			if (services is null)
+				LogUnavailableWindow(shortcutItem);
+		}
 
 		[Export("scene:openURLContexts:")]
 		public virtual bool OpenUrl(UIScene scene, NSSet<UIOpenUrlContext> urlContexts)

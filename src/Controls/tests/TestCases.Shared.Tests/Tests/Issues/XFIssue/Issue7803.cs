@@ -14,7 +14,7 @@ public class Issue7803 : _IssuesUITest
 	public override string Issue => "[Bug] CarouselView/RefreshView pull to refresh command firing twice on a single pull";
 
 	//[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView)]
 	public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 	{
 		var collectionView = App.WaitForElement("CollectionView7803");

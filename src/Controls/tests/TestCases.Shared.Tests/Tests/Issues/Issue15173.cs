@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue15173(TestDevice device) : base(device) { }
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void FlyoutOverlayResizesOnRotation()
 		{
 			// Open the flyout

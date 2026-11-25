@@ -23,12 +23,12 @@ public class Issue33034 : _IssuesUITest
 		App.SetOrientationLandscape();
 		//Adding delay to allow for orientation change to complete
 		Thread.Sleep(2000);
-		var initialRect = App.WaitForElement(FirstEdgeLabel).GetRect();
+		var initialRect = App.WaitForElementAndGetRect(FirstEdgeLabel);
 
 		void AssertEdgeLabelSettled(string automationId) =>
 			App.RetryAssert(() =>
 			{
-				var rect = App.WaitForElement(automationId).GetRect();
+				var rect = App.WaitForElementAndGetRect(automationId);
 				Assert.That(rect.X, Is.EqualTo(initialRect.X).Within(5));
 				Assert.That(rect.Width, Is.EqualTo(initialRect.Width).Within(5));
 			});

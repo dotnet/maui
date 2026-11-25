@@ -7,6 +7,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Shape;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -209,25 +210,88 @@ namespace Microsoft.Maui.Controls.Platform
 				appBarLayout,
 				static appBar => new OriginalAppBarBackground(appBar.Background));
 
+			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
+			ViewCompat.SetBackgroundTintList(appBarLayout, null);
 			if (Brush.IsNullOrEmpty(background))
 			{
-				ViewCompat.SetBackgroundTintMode(appBarLayout, null);
-				ViewCompat.SetBackgroundTintList(appBarLayout, null);
 				appBarLayout.Background = originalBackground.CreateDrawable();
+				appBarLayout.SetLiftOnScrollColor(null);
 				return;
 			}
 
 			if (background is SolidColorBrush { Color: not null } solidColorBrush)
 			{
-				appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
-				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
-				ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
+				var materialShapeDrawable = appBarLayout.Background as MaterialShapeDrawable;
+
+				if (RuntimeFeature.IsMaterial3Enabled && materialShapeDrawable is null)
+				{
+					materialShapeDrawable = originalBackground.CreateDrawable() as MaterialShapeDrawable;
+
+					if (materialShapeDrawable is not null)
+					{
+						appBarLayout.Background = materialShapeDrawable;
+					}
+				}
+
+				if (RuntimeFeature.IsMaterial3Enabled && materialShapeDrawable is not null)
+				{
+					var platformColor = solidColorBrush.Color.ToPlatform();
+					materialShapeDrawable.FillColor = ColorStateList.ValueOf(platformColor);
+					appBarLayout.SetLiftOnScrollColor(
+						ColorStateList.ValueOf(GetLiftOnScrollColor(solidColorBrush.Color).ToPlatform()));
+				}
+				else
+				{
+					appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
+					ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
+					ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
+					appBarLayout.SetLiftOnScrollColor(null);
+				}
+
 				return;
 			}
 
-			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
-			ViewCompat.SetBackgroundTintList(appBarLayout, null);
+			// Gradient/image/non-solid background.
+			appBarLayout.SetLiftOnScrollColor(null);
 			appBarLayout.UpdateBackground(background);
+		}
+
+		static Color GetLiftOnScrollColor(Color color)
+		{
+			float luminance = GetLuminance(color);
+
+			float factor = luminance switch
+			{
+				> 0.9f => 0.04f,
+				> 0.7f => 0.08f,
+				_ => 0.30f
+			};
+
+			if (luminance > 0.5f)
+			{
+				// Light color -> darken
+				float multiplier = 1f - factor;
+
+				return new Color(
+					color.Red * multiplier,
+					color.Green * multiplier,
+					color.Blue * multiplier,
+					color.Alpha);
+			}
+
+			// Dark color -> lighten
+			return new Color(
+				color.Red + ((1f - color.Red) * factor),
+				color.Green + ((1f - color.Green) * factor),
+				color.Blue + ((1f - color.Blue) * factor),
+				color.Alpha);
+		}
+
+		static float GetLuminance(Color color)
+		{
+			return (0.2126f * color.Red) +
+				   (0.7152f * color.Green) +
+				   (0.0722f * color.Blue);
 		}
 
 		static Color? GetChromeColor(Brush? background, ChromeEdge edge)

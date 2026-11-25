@@ -1316,6 +1316,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SettingItemsSourceUpdatesPinsOnce()
+		{
+			// The pins mapper rebuilds every native marker, so one update per created pin was quadratic.
+			var map = new Map { ItemTemplate = GetItemTemplate() };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ItemsSource = new ObservableCollection<int>(Enumerable.Range(0, 100));
+
+			Assert.Equal(100, map.Pins.Count);
+			Assert.Single(handler.UpdatedProperties, nameof(IMap.Pins));
+		}
+
+		[Fact]
+		public void ChangingItemTemplateUpdatesPinsOnce()
+		{
+			var map = new Map { ItemTemplate = GetItemTemplate(), ItemsSource = Enumerable.Range(0, 100).ToList() };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ItemTemplate = GetItemTemplate();
+
+			Assert.Equal(100, map.Pins.Count);
+			Assert.Single(handler.UpdatedProperties, nameof(IMap.Pins));
+		}
+
+		[Fact]
+		public void ItemsSourceCollectionChangeUpdatesPinsOnce()
+		{
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			var map = new Map { ItemTemplate = GetItemTemplate(), ItemsSource = itemsSource };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			itemsSource.Add(10);
+
+			Assert.Equal(11, map.Pins.Count);
+			Assert.Single(handler.UpdatedProperties, nameof(IMap.Pins));
+		}
+
+		[Fact]
+		public void AddingAPinUpdatesPinsImmediately()
+		{
+			// Direct changes keep updating the handler synchronously, pin by pin.
+			var map = new Map();
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.Pins.Add(new Pin { Label = "A" });
+			map.Pins.Add(new Pin { Label = "B" });
+
+			Assert.Equal(2, handler.UpdatedProperties.Count(p => p == nameof(IMap.Pins)));
+		}
+
+		[Fact]
 		public void SettingClusterImageSourceRebuildsPins()
 		{
 			var map = new Map { IsClusteringEnabled = true };

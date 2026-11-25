@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Devices
 
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;
-#elif ANDROID || TIZEN
+#elif ANDROID
 		internal const float BaseLogicalDpi = 160.0f;
 #endif
 
@@ -110,6 +110,9 @@ namespace Microsoft.Maui.Devices
 		{
 			add
 			{
+				if (value is null)
+					return;
+
 				if (MainDisplayInfoChangedInternal is null)
 				{
 					SetCurrent(MainDisplayInfo);

@@ -21,7 +21,17 @@
       "persistenceScopeName": "maui"
     },
     {
+      "id": "UI",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "maui"
+    },
+    {
       "id": "IncludeSampleContent",
+      "isVisible": false
+    },
+    {
+      "id": "IncludeSampleContentIde",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
