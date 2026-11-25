@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics;
 //     the apply's stats. A MISSING terminal is non-fatal (XamlTools waits a bounded time, then reports
 //     without the apply stats), but UpdateApplied must stay the LAST event so the failure list it reads
 //     is complete. Keep the version stream gap-free (each increment paired with an UpdateApplied).
+//   • The [DynamicDependency] attributes on OnUpdateRequested, which keep the events and arg properties
+//     when Debug builds trim this assembly (e.g. Mac Catalyst arm64, where the default is TrimMode=partial).
 public static class HotReloadDiagnostics
 {
 	static int _version;
@@ -57,6 +60,15 @@ public static class HotReloadDiagnostics
 
 	internal static int IncrementVersion() => Interlocked.Increment(ref _version);
 
+	// Subscribers bind these events and read their argument properties by reflection, and nothing in
+	// MAUI references the event accessors or getters. Without these dependencies, Debug builds that
+	// trim framework assemblies (for example, Mac Catalyst arm64 TrimMode=partial) strip them while
+	// keeping this type. They apply only when the XIHR handler keeps this method.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicEvents | DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotReloadDiagnostics))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotReloadRequestedEventArgs))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotReloadAppliedEventArgs))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotReloadErrorEventArgs))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HotReloadSkippedEventArgs))]
 	internal static void OnUpdateRequested(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes)
 	{
 		Raise(UpdateRequested, new HotReloadRequestedEventArgs(updatedTypes, handledTypes, DateTimeOffset.Now));
