@@ -46,7 +46,7 @@
                     Text="Icon" 
                     Style="{StaticResource Title2}"/>
                 <CollectionView x:Name="IconsCollectionView"
-                    HeightRequest="44" Margin="0,0,0,15"
+                   MinimumHeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
                     SelectionChangedCommand="{Binding IconSelectedCommand}"
