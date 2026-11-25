@@ -224,7 +224,7 @@ function computeJourney(f, saved = {}) {
 
   // CI
   const cs = f.ciSummary || { total: 0, done: 0, failing: [] };
-  if (f.ci === 'SUCCESS') Object.assign(s.ci, { status: 'done', note: `Passed on \`${short(f.headSha)}\` (${cs.total} checks)` });
+  if (f.ci === 'SUCCESS') Object.assign(s.ci, { status: 'done', note: `Passed on \`${short(f.headSha)}\` (${cs.total} ${cs.total === 1 ? 'check' : 'checks'})` });
   else if (f.ci === 'FAILURE') {
     const names = cs.failing.slice(0, 3).map(x => x.url ? `[${x.name}](${x.url})` : x.name).join(', ');
     const more = cs.failing.length > 3 ? ` and ${cs.failing.length - 3} more` : '';
