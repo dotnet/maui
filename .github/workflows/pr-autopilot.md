@@ -83,6 +83,8 @@ jobs:
       autopilot_head_ref: ${{ steps.optin.outputs.head_ref }}
       autopilot_base_ref: ${{ steps.optin.outputs.base_ref }}
       autopilot_is_fork: ${{ steps.optin.outputs.is_fork }}
+  agent:
+    needs: [pre_activation, activation, pat_pool]
   publication_context:
     needs: [pre_activation, activation]
     runs-on: ubuntu-slim
