@@ -222,21 +222,15 @@ function New-RunTestsDispatch {
     Pushes the dispatch commit for this request and returns { sha; branch } (or { error }).
     #>
     param([Parameter(Mandatory)]$PullRequest, [Parameter(Mandatory)]$MergeCommit, [Parameter(Mandatory)]$Selection)
-    # The trusted half: pipeline and workflows of the target branch, or of the default branch when the
-    # target branch's pipeline cannot take dispatches (servicing branches cut before run-tests support).
+    # The trusted half: pipeline and workflows of the PR's target branch. Never another branch's: its
+    # pipeline would build this PR's code with that branch's SDK and test lanes (a net11 PR built as net12).
     # The PR's own code still comes from its test-merge commit.
     $sourceSha = $PipelineSource
     if (-not $sourceSha) {
-        foreach ($ref in @($PullRequest.base.ref, $PullRequest.base.repo.default_branch) | Where-Object { $_ } | Select-Object -Unique) {
-            $sha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$ref")).object.sha
-            if (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sha)) { $sourceSha = $sha; break }
-            Write-Host "``$ref`` cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches; trying the default branch's pipeline."
-        }
-        if (-not $sourceSha) {
-            return @{ error = "Neither ``$($PullRequest.base.ref)`` nor the default branch can build ``/review $($script:RunTestsCommand)`` dispatches ($($script:RunTestsPipelinePath) does not build $($script:RunTestsDispatchBranchPrefix)* branches). Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite." }
-        }
-    } elseif (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
-        return @{ error = "The pipeline source $sourceSha cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches." }
+        $sourceSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$($PullRequest.base.ref)")).object.sha
+    }
+    if (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
+        return @{ error = "``$($PullRequest.base.ref)`` can't build ``/review $($script:RunTestsCommand)`` dispatches yet ($($script:RunTestsPipelinePath) there does not build $($script:RunTestsDispatchBranchPrefix)* branches). Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite." }
     }
     if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
     $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
