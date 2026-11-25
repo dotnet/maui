@@ -363,6 +363,96 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task HandlerProvidedNativeBackgroundAlphaSurvivesThemeRefresh()
+		{
+			var button = new ContentButtonStub();
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, TranslucentBackgroundContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					Assert.Equal(TranslucentBackgroundContentButtonHandler.Alpha, handler.PlatformView.Background!.Alpha);
+
+					using var configuration = new Configuration(handler.PlatformView.Resources!.Configuration!);
+					var nightMode = configuration.UiMode & UiMode.NightMask;
+					configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+						(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+					handler.PlatformView.DispatchConfigurationChanged(configuration);
+					await DrainPostedWork(handler.PlatformView);
+
+					Assert.Equal(TranslucentBackgroundContentButtonHandler.Alpha, handler.PlatformView.Background!.Alpha);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task StrokeColorMapperCustomizationSurvivesOtherStylingUpdates()
+		{
+			var button = new ContentButtonStub { StrokeColor = Colors.Blue, StrokeThickness = 1 };
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			mapper.AppendToMapping(nameof(IButtonStroke.StrokeColor), (handler, _) =>
+				handler.PlatformView.SetStrokeColor(ColorStateList.ValueOf(AColor.Red)));
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				var platformView = handler.PlatformView;
+				Assert.Equal(AColor.Red.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+
+				button.StrokeThickness = 2;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+				button.CornerRadius = 6;
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+				Assert.Equal(AColor.Red.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+				Assert.Equal((int)platformView.Context!.ToPixels(2), platformView.StrokeWidth);
+
+				button.Background = new SolidPaint(Colors.Green);
+				handler.UpdateValue(nameof(IView.Background));
+				button.Background = null;
+				handler.UpdateValue(nameof(IView.Background));
+				Assert.Equal(AColor.Red.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+
+				button.StrokeThickness = -1;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+				Assert.Equal(AColor.Red.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+			});
+		}
+
+		[Fact]
+		public async Task ClearingStrokeThicknessRestoresHandlerProvidedWidth()
+		{
+			var button = new ContentButtonStub { StrokeColor = Colors.Blue, StrokeThickness = 3 };
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, WideStrokeContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				Assert.Equal((int)platformView.Context!.ToPixels(3), platformView.StrokeWidth);
+
+				button.StrokeThickness = -1;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+
+				Assert.Equal(WideStrokeContentButtonHandler.Width, platformView.StrokeWidth);
+				Assert.Equal(AColor.Blue.ToArgb(), platformView.StrokeColorStateList!.DefaultColor);
+
+				button.Background = new LinearGradientPaintStub(Colors.Red, Colors.Green);
+				button.CornerRadius = 18;
+				handler.UpdateValue(nameof(IView.Background));
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+
+				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var background, out var stroke, out var mask));
+				var expectedRadius = (int)platformView.Context!.ToPixels(18) - WideStrokeContentButtonHandler.Width / 2;
+				Assert.Equal(expectedRadius, background.CornerRadius, 1);
+				Assert.Equal(expectedRadius, stroke.CornerRadius, 1);
+				Assert.Equal(expectedRadius, mask.CornerRadius, 1);
+			});
+		}
+
+		[Fact]
 		public async Task DisableDuringPressCanDisconnectDuringRelease()
 		{
 			var pressed = 0;
@@ -1384,6 +1474,30 @@ namespace Microsoft.Maui.DeviceTests
 				var button = base.CreatePlatformView();
 				button.Background!.SetTint(AColor.Magenta);
 				InitialColor = BackgroundCenterPixel(button);
+				return button;
+			}
+		}
+
+		sealed class TranslucentBackgroundContentButtonHandler : ContentButtonHandler
+		{
+			internal const int Alpha = 128;
+
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.Background!.Alpha = Alpha;
+				return button;
+			}
+		}
+
+		sealed class WideStrokeContentButtonHandler : ContentButtonHandler
+		{
+			internal const int Width = 6;
+
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.StrokeWidth = Width;
 				return button;
 			}
 		}

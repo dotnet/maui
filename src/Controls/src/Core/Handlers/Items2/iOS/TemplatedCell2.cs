@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal UIView PlatformView { get; set; }
 
 		MauiView CellSafeAreaView =>
-			PlatformView as MauiView ?? PlatformHandler?.PlatformView as MauiView;
+			MauiView.GetCellSafeAreaView(PlatformView) ?? MauiView.GetCellSafeAreaView(PlatformHandler?.PlatformView);
 
 		CollectionViewHandler2 CollectionViewHandler
 		{

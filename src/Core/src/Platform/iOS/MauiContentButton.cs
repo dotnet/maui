@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -31,17 +32,40 @@ namespace Microsoft.Maui.Platform
 		{
 			ClipsToBounds = true;
 			IsAccessibilityElement = true;
+			_contentContainer = AddContentContainer();
+			SetVirtualView(virtualView);
+		}
 
+		// UIKit can retain this view after its managed peer is collected; Superview lookups
+		// then recreate the peer from the native handle.
+		MauiContentButton(NativeHandle handle)
+			: base(handle)
+		{
+			ContentContainer? existing = null;
+			foreach (var subview in Subviews)
+			{
+				if (subview is ContentContainer container)
+				{
+					existing = container;
+					break;
+				}
+			}
+
+			_contentContainer = existing ?? AddContentContainer();
+		}
+
+		ContentContainer AddContentContainer()
+		{
 			// Disabling interaction and accessibility on this owned container keeps the
 			// presentation tree inert without changing state that belongs to the content views.
-			_contentContainer = new ContentContainer
+			var container = new ContentContainer
 			{
 				UserInteractionEnabled = false,
 				IsAccessibilityElement = false,
 				AccessibilityElementsHidden = true,
 			};
-			AddSubview(_contentContainer);
-			SetVirtualView(virtualView);
+			AddSubview(container);
+			return container;
 		}
 
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
@@ -59,7 +83,7 @@ namespace Microsoft.Maui.Platform
 
 		IContentButton? VirtualView => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout as IContentButton;
 
-		internal UIView ContentContainerView => _contentContainer;
+		internal MauiView ContentContainerView => _contentContainer;
 
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
@@ -252,6 +276,15 @@ namespace Microsoft.Maui.Platform
 		// Reuses MauiView's safe-area, keyboard and measure-cache behavior for the presented content.
 		sealed class ContentContainer : MauiView
 		{
+			public ContentContainer()
+			{
+			}
+
+			ContentContainer(NativeHandle handle)
+				: base(handle)
+			{
+			}
+
 			internal override void ArrangeAdjustedBounds(CGRect bounds)
 			{
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)

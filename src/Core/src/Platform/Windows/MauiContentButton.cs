@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Platform
 		readonly ConditionalWeakTable<Control, StrongBox<bool>> _contentTabStops = new();
 		readonly Dictionary<string, object> _nativeResourceDefaults = new();
 		FrameworkElement? _presentedContent;
-		bool _presentedContentHitTestVisible;
 		bool _nativeDefaultsCaptured;
 
 		static readonly string[] BackgroundResourceKeys =
@@ -138,8 +137,8 @@ namespace Microsoft.Maui.Platform
 			if (content is null)
 				return;
 
-			_presentedContentHitTestVisible = content.IsHitTestVisible;
-			content.IsHitTestVisible = false;
+			// ContentPanel is not hit-test visible, which excludes this subtree from input.
+			// Leave the content's own IsHitTestVisible to its InputTransparent mapping.
 			content.Loaded += OnPresentedContentLoaded;
 			DisableTabStops(content);
 		}
@@ -147,10 +146,7 @@ namespace Microsoft.Maui.Platform
 		internal void ClearPresentedContent()
 		{
 			if (_presentedContent is not null)
-			{
 				_presentedContent.Loaded -= OnPresentedContentLoaded;
-				_presentedContent.IsHitTestVisible = _presentedContentHitTestVisible;
-			}
 
 			foreach (var pair in _contentTabStops)
 			{

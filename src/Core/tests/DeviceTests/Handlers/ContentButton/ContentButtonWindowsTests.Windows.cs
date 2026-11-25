@@ -366,7 +366,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(button, contentPanel.CrossPlatformLayout);
 				Assert.Same(firstPlatformView, contentPanel.Content);
 				Assert.False(contentPanel.IsHitTestVisible);
-				Assert.False(firstPlatformView.IsHitTestVisible);
+				Assert.True(firstPlatformView.IsHitTestVisible);
 				Assert.False(Assert.IsAssignableFrom<Microsoft.UI.Xaml.Controls.Control>(firstPlatformView).IsTabStop);
 				Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(contentPanel));
 
@@ -378,12 +378,37 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(firstPlatformView.Parent);
 				Assert.True(firstPlatformView.IsHitTestVisible);
 				Assert.True(Assert.IsAssignableFrom<Microsoft.UI.Xaml.Controls.Control>(firstPlatformView).IsTabStop);
-				Assert.False(secondPlatformView.IsHitTestVisible);
+				Assert.False(contentPanel.IsHitTestVisible);
 
 				button.Content = null!;
 				handler.UpdateValue(nameof(IContentView.Content));
 				Assert.Null(contentPanel.Content);
 				Assert.True(secondPlatformView.IsHitTestVisible);
+			});
+		}
+
+		[Fact]
+		public async Task ContentInputTransparencyChangedWhileHostedSurvivesRemoval()
+		{
+			var content = new LabelStub { Text = "Content", InputTransparent = true };
+			var button = new ContentButtonStub { Content = content };
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var platformContent = Assert.IsAssignableFrom<FrameworkElement>(content.Handler?.PlatformView);
+				Assert.False(platformContent.IsHitTestVisible);
+
+				content.InputTransparent = false;
+				content.Handler!.UpdateValue(nameof(IView.InputTransparent));
+				Assert.False(platformButton.ContentPanel.IsHitTestVisible);
+
+				button.Content = null!;
+				handler.UpdateValue(nameof(IContentView.Content));
+
+				Assert.Null(platformContent.Parent);
+				Assert.True(platformContent.IsHitTestVisible);
 			});
 		}
 

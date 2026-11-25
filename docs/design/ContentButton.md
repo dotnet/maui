@@ -65,6 +65,10 @@ requesting the theme default.
 The native implementations target Android, iOS, Mac Catalyst and Windows.
 GTK4 and AppKit backends are outside this implementation.
 
+Handler subclasses can customize the native view by modifying the result of
+`base.CreatePlatformView()`. Content presentation, activation and native-default
+handling depend on that view, so connecting a replacement platform view throws.
+
 ## Coverage and manual checks
 
 Shared command/content tests are in `ContentButtonTests`, layout tests in

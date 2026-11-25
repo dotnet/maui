@@ -40,11 +40,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			if (platformView is MauiContentButton contentButton)
-			{
-				contentButton.CaptureNativeDefaults();
-				_proxy.Connect(VirtualView, contentButton);
-			}
+			if (platformView is not MauiContentButton contentButton)
+				throw new InvalidOperationException(NativeViewRequiredMessage);
+
+			contentButton.CaptureNativeDefaults();
+			_proxy.Connect(VirtualView, contentButton);
 
 			base.ConnectHandler(platformView);
 		}

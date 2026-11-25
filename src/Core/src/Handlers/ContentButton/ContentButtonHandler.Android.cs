@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MaterialCardView platformView)
 		{
 			if (platformView is not MauiContentButton contentButton)
-				throw new InvalidOperationException($"{nameof(ContentButtonHandler)} requires a {nameof(MauiContentButton)} platform view.");
+				throw new InvalidOperationException(NativeViewRequiredMessage);
 
 			contentButton.CaptureNativeDefaults();
 
@@ -139,8 +139,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapBackground(IContentButtonHandler handler, IContentButton button)
 		{
-			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
-				platformView.UpdateButtonBackground(button);
+			if (((IElementHandler)handler).PlatformView is not MauiContentButton platformView)
+				return;
+
+			var hadMauiBackground = platformView.HasMauiBackground;
+			platformView.UpdateButtonBackground(button);
+
+			// Leaving a MAUI background restores the card stroke, so let StrokeColor
+			// mapper customizations apply to it again.
+			if (hadMauiBackground && !platformView.HasMauiBackground && IsConnectedTo(handler, button))
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
 		}
 
 		public static partial void MapIsEnabled(IContentButtonHandler handler, IContentButton button)
@@ -166,7 +174,7 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapStrokeColor(IContentButtonHandler handler, IContentButton button)
 		{
 			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
-				platformView.UpdateButtonStroke(button, updateShape: false);
+				platformView.UpdateButtonStroke(button, updateShape: false, updateColor: true);
 		}
 
 		public static partial void MapStrokeThickness(IContentButtonHandler handler, IContentButton button)

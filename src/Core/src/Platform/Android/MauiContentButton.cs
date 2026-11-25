@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		ColorStateList? _defaultCardBackgroundColor;
 		ColorStateList? _defaultRippleColor;
 		ColorStateList? _defaultStrokeColor;
+		ColorStateList? _mappedStrokeColor;
 		ShapeAppearanceModel? _initialShapeAppearanceModel;
 		ShapeAppearanceModel? _defaultShapeAppearanceModel;
 		ShapeAppearanceModel? _mappedShapeAppearanceModel;
@@ -131,6 +132,7 @@ namespace Microsoft.Maui.Platform
 		static bool HaveEquivalentBackground(Drawable? first, Drawable? second) =>
 			first?.GetType() == second?.GetType() &&
 			first?.GetConstantState()?.GetType() == second?.GetConstantState()?.GetType() &&
+			first?.Alpha == second?.Alpha &&
 			HaveEquivalentColors(GetBackgroundShapeTint(first), GetBackgroundShapeTint(second));
 
 		static ColorStateList? GetBackgroundShapeTint(Drawable? background) =>
@@ -198,57 +200,78 @@ namespace Microsoft.Maui.Platform
 				{
 					BackgroundTintList = null;
 					StrokeWidth = 0;
-					SetStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
+					SetMappedStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
 				});
 
-			UpdateButtonStroke(button, updateShape: false);
+			// The background refresh keeps the existing stroke layer, or recreates it from
+			// the same stroke inputs, so only native-default adjustments need reapplying.
+			UpdateButtonStroke(button, updateShape: false, refreshRippleStroke: false);
 		}
 
-		internal void UpdateButtonStroke(IContentButton button, bool updateShape = true)
+		internal void UpdateButtonStroke(IContentButton button, bool updateShape = true, bool updateColor = false, bool refreshRippleStroke = true)
 		{
-			// Update framework-owned shapes, but leave mapper customizations intact.
+			// Update framework-owned shapes and colors, but leave mapper customizations intact.
 			updateShape |= _mappedShapeAppearanceModel is not null &&
 				Equals(ShapeAppearanceModel, _mappedShapeAppearanceModel);
+			updateColor |= _mappedStrokeColor is null || _mappedStrokeColor.Equals(StrokeColorStateList);
 
-			if (this.UpdateMauiRippleDrawableStroke(button))
+			var useDefaultWidth = button.StrokeThickness < 0 &&
+				(button.StrokeColor is null || _preserveDefaultStrokeWidth);
+
+			if (this.TryGetMauiBackground(out _, out _, out var background, out var stroke, out var mask))
 			{
-				if (this.TryGetMauiBackground(out _, out _, out var background, out var stroke, out var mask))
-				{
-					if (button.StrokeColor is null && button.StrokeThickness < 0)
-					{
-						stroke.SetStroke(_defaultStrokeWidth, _defaultStrokeColor);
-						background.SetStroke(_defaultStrokeWidth, AColor.Transparent);
-					}
+				if (refreshRippleStroke)
+					this.UpdateMauiRippleDrawableStroke(button);
 
-					if (button.CornerRadius < 0)
+				if (useDefaultWidth)
+				{
+					var strokeColor = button.StrokeColor is null
+						? _defaultStrokeColor
+						: ColorStateListExtensions.CreateButton(button.StrokeColor.ToPlatform());
+					stroke.SetStroke(_defaultStrokeWidth, strokeColor);
+					background.SetStroke(_defaultStrokeWidth, AColor.Transparent);
+
+					if (button.CornerRadius >= 0)
 					{
-						background.SetCornerRadius(_defaultRadius);
-						stroke.SetCornerRadius(_defaultRadius);
-						mask.SetCornerRadius(_defaultRadius);
-						if (updateShape)
-							UpdateShape(_defaultRadius, true);
-					}
-					else if (updateShape)
-					{
-						UpdateShape(background.CornerRadius, false);
+						// Match GetStrokeProperties, which insets the radius by half the stroke width.
+						var radius = (int)_context.ToPixels(button.CornerRadius) - _defaultStrokeWidth / 2;
+						background.SetCornerRadius(radius);
+						stroke.SetCornerRadius(radius);
+						mask.SetCornerRadius(radius);
 					}
 				}
 
+				if (button.CornerRadius < 0)
+				{
+					background.SetCornerRadius(_defaultRadius);
+					stroke.SetCornerRadius(_defaultRadius);
+					mask.SetCornerRadius(_defaultRadius);
+					if (updateShape)
+						UpdateShape(_defaultRadius, true);
+				}
+				else if (updateShape)
+				{
+					UpdateShape(background.CornerRadius, false);
+				}
+
 				StrokeWidth = 0;
-				SetStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
+				if (updateColor)
+					SetMappedStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
 				return;
 			}
 
 			if (button.StrokeColor is null && button.StrokeThickness < 0)
 			{
 				StrokeWidth = _defaultStrokeWidth;
-				SetStrokeColor(_defaultStrokeColor);
+				if (updateColor)
+					SetMappedStrokeColor(_defaultStrokeColor);
 			}
 			else
 			{
 				var (width, color, _) = button.GetStrokeProperties(_context, true);
-				StrokeWidth = width;
-				SetStrokeColor(color);
+				StrokeWidth = useDefaultWidth ? _defaultStrokeWidth : width;
+				if (updateColor)
+					SetMappedStrokeColor(color);
 			}
 
 			if (!updateShape)
@@ -257,11 +280,17 @@ namespace Microsoft.Maui.Platform
 			if (button.CornerRadius < 0)
 				UpdateShape(_defaultRadius, true);
 			else
-			{
-				var (_, _, radius) = button.GetStrokeProperties(_context, true);
-				UpdateShape(radius, false);
-			}
+				UpdateShape((int)_context.ToPixels(button.CornerRadius), false);
 		}
+
+		void SetMappedStrokeColor(ColorStateList? color)
+		{
+			SetStrokeColor(color);
+			_mappedStrokeColor = StrokeColorStateList;
+		}
+
+		internal bool HasMauiBackground =>
+			this.TryGetMauiBackground(out _, out _, out _, out _, out _);
 
 		void UpdateShape(float radius, bool useDefaultShape)
 		{

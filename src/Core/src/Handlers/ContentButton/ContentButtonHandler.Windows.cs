@@ -60,12 +60,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(Button platformView)
 		{
+			if (platformView is not MauiContentButton nativeButton)
+				throw new InvalidOperationException(NativeViewRequiredMessage);
+
 			_isPressed = false;
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
-			if (platformView is MauiContentButton nativeButton)
-				nativeButton.CaptureNativeDefaults();
+			nativeButton.CaptureNativeDefaults();
 
 			platformView.Click += OnClick;
 			platformView.Unloaded += OnUnloaded;

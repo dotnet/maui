@@ -11,8 +11,16 @@ using PlatformView = System.Object;
 namespace Microsoft.Maui.Handlers
 {
 	/// <summary>Maps a content button to its native implementation.</summary>
+	/// <remarks>
+	/// Content presentation, activation and native-default handling depend on the platform view created by
+	/// this handler. Subclasses that override <c>CreatePlatformView</c> must customize and return the view
+	/// from <c>base.CreatePlatformView()</c>; connecting any other platform view throws.
+	/// </remarks>
 	public partial class ContentButtonHandler : ViewHandler<IContentButton, PlatformView>, IContentButtonHandler
 	{
+		const string NativeViewRequiredMessage =
+			"ContentButtonHandler requires the platform view returned by base.CreatePlatformView(); customize that view instead of replacing it.";
+
 		/// <summary>The property mapper for content buttons.</summary>
 		public static IPropertyMapper<IContentButton, IContentButtonHandler> Mapper =
 			new PropertyMapper<IContentButton, IContentButtonHandler>(ViewMapper)

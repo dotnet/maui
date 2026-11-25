@@ -108,6 +108,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CellSafeAreaLookupUsesContentContainer()
+		{
+			var handler = await CreateHandlerAsync(new ContentButtonStub { Content = new LabelStub { Text = "Content" } });
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				Assert.Same(platformView.ContentContainerView, MauiView.GetCellSafeAreaView(platformView));
+
+				// Shadows and clips wrap the button, as CollectionView cells see it.
+				using var wrapper = new WrapperView();
+				wrapper.AddSubview(platformView);
+				Assert.Same(platformView.ContentContainerView, MauiView.GetCellSafeAreaView(wrapper));
+				platformView.RemoveFromSuperview();
+			});
+		}
+
+		[Fact]
 		public async Task LiveVirtualViewReplacementReleasesPreviousPress()
 		{
 			var firstPressed = 0;
@@ -321,6 +339,21 @@ namespace Microsoft.Maui.DeviceTests
 				button.Layer.CornerRadius = 5;
 				return button;
 			}
+		}
+
+		[Fact]
+		public async Task ReplacementPlatformViewIsRejected()
+		{
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				InvokeOnMainThreadAsync(() =>
+					CreateHandler<ContentButtonHandler, ReplacementContentButtonHandler>(new ContentButtonStub(), MauiContext)));
+
+			Assert.Contains("base.CreatePlatformView()", exception.Message, StringComparison.Ordinal);
+		}
+
+		sealed class ReplacementContentButtonHandler : ContentButtonHandler
+		{
+			protected override UIButton CreatePlatformView() => new UIButton();
 		}
 
 		[Fact]
