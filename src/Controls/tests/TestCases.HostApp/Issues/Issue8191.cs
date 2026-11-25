@@ -23,32 +23,42 @@ public class Issue8191Page : ContentPage
 		SafeAreaRegions.Container,
 		SafeAreaRegions.None);
 
+	// ContentButton content is hidden from accessibility, so UI tests cannot query these labels.
+	// The page reports their window positions in a visible label instead.
+	readonly Dictionary<string, Label> _labels = new();
+	readonly Label _result = new() { AutomationId = "MeasureResult", HorizontalOptions = LayoutOptions.Center };
+
 	public Issue8191Page()
 	{
 		SafeAreaEdges = SafeAreaEdges.None;
 		Background = Colors.LightGray;
+
+		var measure = new Button { Text = "Measure", AutomationId = "MeasureButton", HorizontalOptions = LayoutOptions.Center };
+		measure.Clicked += (_, _) => _result.Text = string.Join(";", _labels.Select(pair => $"{pair.Key}={WindowX(pair.Value):0}"));
 
 		var root = new Grid
 		{
 			SafeAreaEdges = SafeAreaEdges.None,
 			RowDefinitions =
 			{
+				new RowDefinition(GridLength.Auto),
 				new RowDefinition(GridLength.Star),
 				new RowDefinition(GridLength.Star),
 				new RowDefinition(GridLength.Star),
 			},
 		};
 
+		root.Add(new HorizontalStackLayout { HorizontalOptions = LayoutOptions.Center, Spacing = 12, Children = { measure, _result } }, 0, 0);
 		root.Add(CreateCollectionView(() => new Border
 		{
 			SafeAreaEdges = ItemSafeAreaEdges,
 			Background = Colors.LightGreen,
 			StrokeThickness = 0,
 			Padding = 12,
-			Content = CreateLabel("ReferenceLabel", "Border"),
-		}), 0, 0);
-		root.Add(CreateCollectionView(() => CreateButton("ContentButtonLabel", hasShadow: false)), 0, 1);
-		root.Add(CreateCollectionView(() => CreateButton("ShadowContentButtonLabel", hasShadow: true)), 0, 2);
+			Content = CreateLabel("reference", "Border"),
+		}), 0, 1);
+		root.Add(CreateCollectionView(() => CreateButton("direct", hasShadow: false)), 0, 2);
+		root.Add(CreateCollectionView(() => CreateButton("wrapped", hasShadow: true)), 0, 3);
 
 		Content = root;
 	}
@@ -59,7 +69,7 @@ public class Issue8191Page : ContentPage
 		ItemTemplate = new DataTemplate(createItem),
 	};
 
-	static ContentButton CreateButton(string labelAutomationId, bool hasShadow) => new()
+	ContentButton CreateButton(string name, bool hasShadow) => new()
 	{
 		SafeAreaEdges = ItemSafeAreaEdges,
 		Background = Colors.LightPink,
@@ -68,14 +78,22 @@ public class Issue8191Page : ContentPage
 		Shadow = hasShadow
 			? new Shadow { Brush = Colors.Black, Opacity = 0.4f, Radius = 8, Offset = new Point(0, 2) }
 			: null,
-		Content = CreateLabel(labelAutomationId, "ContentButton"),
+		Content = CreateLabel(name, "ContentButton"),
 	};
 
-	static Label CreateLabel(string automationId, string text) => new()
+	Label CreateLabel(string name, string text)
 	{
-		AutomationId = automationId,
-		Text = text,
-		FontSize = 24,
-		TextColor = Colors.Black,
-	};
+		var label = new Label { Text = text, FontSize = 24, TextColor = Colors.Black };
+		_labels[name] = label;
+		return label;
+	}
+
+	static double WindowX(Label label) =>
+#if IOS || MACCATALYST
+		label.Handler?.PlatformView is UIKit.UIView view
+			? view.ConvertPointToView(CoreGraphics.CGPoint.Empty, null).X
+			: double.NaN;
+#else
+		double.NaN;
+#endif
 }

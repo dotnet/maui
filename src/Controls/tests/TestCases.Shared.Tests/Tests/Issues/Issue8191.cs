@@ -16,15 +16,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ContentButtonItemRootsMatchCellSafeAreaInset()
 		{
 			App.SetOrientationLandscape();
-			var reference = App.WaitForElement("ReferenceLabel").GetRect();
-			var direct = App.WaitForElement("ContentButtonLabel").GetRect();
-			var wrapped = App.WaitForElement("ShadowContentButtonLabel").GetRect();
+			App.WaitForElement("MeasureButton");
+			App.Tap("MeasureButton");
+			var text = App.WaitForElement("MeasureResult").GetText() ?? string.Empty;
+			var positions = text.Split(';', StringSplitOptions.RemoveEmptyEntries)
+				.Select(entry => entry.Split('='))
+				.ToDictionary(parts => parts[0], parts => double.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture));
 
 			// The reference Border root is inset past the landscape notch; ContentButton roots,
 			// including one wrapped for its Shadow, must receive the same per-cell inset.
-			Assert.That(reference.X, Is.GreaterThan(20));
-			Assert.That(direct.X, Is.EqualTo(reference.X).Within(2));
-			Assert.That(wrapped.X, Is.EqualTo(reference.X).Within(2));
+			Assert.That(positions["reference"], Is.GreaterThan(20), text);
+			Assert.That(positions["direct"], Is.EqualTo(positions["reference"]).Within(2), text);
+			Assert.That(positions["wrapped"], Is.EqualTo(positions["reference"]).Within(2), text);
 		}
 
 		[TearDown]
