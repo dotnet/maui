@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -16,8 +15,6 @@ public partial class Gh2063 : ContentPage
 		[XamlInflatorData]
 		internal void DetailedErrorMessageOnMissingXmlnsDeclaration(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2063)));
 			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh2063(inflator));
 			if (inflator == XamlInflator.SourceGen)

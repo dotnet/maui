@@ -8,7 +8,7 @@
     <_MauiControlsBuildTasksProps Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'true'">$(_MauiBuildTasksLocation)net6.0-maccatalyst13.1\Microsoft.Maui.Controls.Build.Tasks.props</_MauiControlsBuildTasksProps>
     <_MauiControlsBuildTasksProps Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'">$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Controls.Build.Tasks.props</_MauiControlsBuildTasksProps>
     <_MauiResizetizerBuildTasksProps>$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.props</_MauiResizetizerBuildTasksProps>
-    <_MauiBuildTasksPropsReady Condition="Exists('$(_MauiCoreBuildTasksProps)') and Exists('$(_MauiControlsBuildTasksProps)') and Exists('$(_MauiResizetizerBuildTasksProps)') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">true</_MauiBuildTasksPropsReady>
+    <_MauiBuildTasksPropsReady Condition="Exists('$(_MauiCoreBuildTasksProps)') and Exists('$(_MauiControlsBuildTasksProps)') and Exists('$(_MauiResizetizerBuildTasksProps)') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.SourceGen.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">true</_MauiBuildTasksPropsReady>
   </PropertyGroup>
 
   <ImportGroup Condition="'$(_MauiBuildTasksPropsReady)' == 'true'">

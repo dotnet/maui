@@ -24,7 +24,6 @@ public partial class Maui21757_2
 		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void TypeLiteralAndXTypeCanBeUsedInterchangeably(XamlInflator inflator)
 		{
@@ -32,11 +31,6 @@ public partial class Maui21757_2
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui21757_2));
 				Assert.NotEmpty(result.Diagnostics);
-			}
-			else if (inflator == XamlInflator.XamlC)
-			{
-				var ex = Record.Exception(() => MockCompiler.Compile(typeof(Maui21757_2)));
-				Assert.Null(ex);
 			}
 		}
 	}

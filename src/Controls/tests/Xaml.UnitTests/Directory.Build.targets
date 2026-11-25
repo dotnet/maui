@@ -1,5 +1,7 @@
 <Project>
   <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="..\XamlC.Tests.targets" />
+  <PropertyGroup>
+    <MauiKeepXamlResources>true</MauiKeepXamlResources>
+  </PropertyGroup>
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
 </Project>

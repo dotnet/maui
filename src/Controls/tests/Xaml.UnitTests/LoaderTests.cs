@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Mono.Cecil;
 using Xunit;
 using Xunit.Sdk;
 
@@ -789,12 +787,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var bindingType = XamlParser.GetElementType(new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null), null, null, true, out var ex);
 			Assert.Null(ex);
 			Assert.Equal(typeof(BindingExtension), bindingType);
-			var module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
-			{
-				AssemblyResolver = new MockAssemblyResolver(),
-				Kind = ModuleKind.Dll,
-			});
-			var bindingTypeRef = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null).GetTypeReference(new XamlCache(), module, null);
 			Assert.Equal("Microsoft.Maui.Controls.Xaml.BindingExtension", bindingType.FullName);
 		}
 	}

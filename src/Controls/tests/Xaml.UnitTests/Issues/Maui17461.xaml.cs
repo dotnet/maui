@@ -18,19 +18,14 @@ public partial class Maui17461 : ContentPage
 		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
-		[InlineData("net7.0-ios", XamlInflator.XamlC)]
-		[InlineData("net7.0-android", XamlInflator.XamlC)]
-		[InlineData("net7.0-macos", XamlInflator.XamlC)]
 		[InlineData("net7.0-ios", XamlInflator.SourceGen)]
 		[InlineData("net7.0-android", XamlInflator.SourceGen)]
 		[InlineData("net7.0-macos", XamlInflator.SourceGen)]
 		internal void MissingKeyException(string targetFramework, XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				MockCompiler.Compile(typeof(Maui17461), out var methodDef, targetFramework: targetFramework);
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
-				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui17461));
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui17461), targetFramework);
 				Assert.Empty(result.Diagnostics);
 			}
 		}

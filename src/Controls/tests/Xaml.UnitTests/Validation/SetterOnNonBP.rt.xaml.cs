@@ -21,9 +21,7 @@ public partial class SetterOnNonBP : ContentPage
 		[XamlInflatorData]
 		internal void ShouldThrow(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(10, 13, () => MockCompiler.Compile(typeof(SetterOnNonBP)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				XamlExceptionAssert.ThrowsXamlParseException(10, 13, () => new SetterOnNonBP(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

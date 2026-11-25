@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -17,13 +16,10 @@ public partial class FactoryMethodMissingMethod : MockView
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void Throw(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(FactoryMethodMissingMethod)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<MissingMemberException>(() => new FactoryMethodMissingMethod(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

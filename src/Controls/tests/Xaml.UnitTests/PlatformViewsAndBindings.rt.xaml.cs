@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -266,8 +266,6 @@ public partial class PlatformViewsAndBindings : ContentPage
 		[Theory(Skip = "fails for now")]
 		[InlineData(XamlInflator.Runtime, "iOS")]
 		[InlineData(XamlInflator.Runtime, "Android")]
-		[InlineData(XamlInflator.XamlC, "iOS")]
-		[InlineData(XamlInflator.XamlC, "Android")]
 		[InlineData(XamlInflator.SourceGen, "iOS")]
 		[InlineData(XamlInflator.SourceGen, "Android")]
 		internal void PlatformInContentView(XamlInflator inflator, string platform)

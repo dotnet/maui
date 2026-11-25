@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
@@ -31,16 +30,7 @@ public partial class Maui23961Error : ContentPage
 		[XamlInflatorData]
 		internal void ObsoleteErrorProducesCompilationError(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				// [Obsolete("msg", error: true)] must always produce a compilation error,
-				// even without TreatWarningsAsErrors
-				// Multiple [Obsolete(error:true)] members produce multiple LoggedErrors wrapped in AggregateException,
-				// so use ThrowsAny rather than Throws (which requires an exact type match).
-				var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Maui23961Error), treatWarningsAsErrors: false));
-				Assert.Contains("XC0619", ex.Message, StringComparison.Ordinal);
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				// SourceGen does not process .rt.xaml files
 				return;

@@ -48,21 +48,18 @@ public partial class ResourceDictionaryWithSource : ContentPage
 				case XamlInflator.SourceGen:
 					key = "Colors.sgen";
 					break;
-				case XamlInflator.XamlC:
-					key = "Colors.xc";
-					break;
 			}
 			var rdLoaded = layout.Resources[key] as ResourceDictionary;
 			Assert.NotNull(rdLoaded);
 			Assert.IsType<Color>(rdLoaded["MediumGrayTextColor"]);
-			Assert.Equal(Color.Parse("#ff4d4d4d"), rdLoaded["MediumGrayTextColor"] as Color);			
+			Assert.Equal(Color.Parse("#ff4d4d4d"), rdLoaded["MediumGrayTextColor"] as Color);
 		}
 
 		[Theory]
 		[XamlInflatorData]
 		internal void XRIDIsGeneratedForRDWithoutCodeBehind(XamlInflator rd)
 		{
-			var path = "AppResources/Colors.xaml";
+			var path = "AppResources/ColorsWithAssembly.rt.xaml";
 			switch (rd)
 			{
 				case XamlInflator.Runtime:
@@ -70,9 +67,6 @@ public partial class ResourceDictionaryWithSource : ContentPage
 					break;
 				case XamlInflator.SourceGen:
 					path = "AppResources/Colors.sgen.xaml";
-					break;
-				case XamlInflator.XamlC:
-					path = "AppResources/Colors.xc.xaml";
 					break;
 			}
 
@@ -85,10 +79,10 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		}
 
 		[Fact]
-		public void CodeBehindIsGeneratedForRDWithXamlComp()
+		public void CodeBehindIsGeneratedForRuntimeResourceDictionary()
 		{
 			var asm = typeof(ResourceDictionaryWithSource).Assembly;
-			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/CompiledColors.rtxc.xaml");
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(asm, "AppResources/CompiledColors.rt.xaml");
 			Assert.NotNull(resourceId);
 			var type = XamlResourceIdAttribute.GetTypeForResourceId(asm, resourceId);
 			Assert.NotNull(type);
@@ -101,7 +95,7 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		internal void LoadResourcesWithAssembly(XamlInflator inflator)
 		{
 			var layout = new ResourceDictionaryWithSource(inflator);
-			Assert.Equal(new Uri("/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source);
+			Assert.Equal(new Uri("/AppResources/ColorsWithAssembly.rt.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inCurrentAssembly"])["MediumGrayTextColor"]);
 			Assert.Equal(new Uri("/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly", UriKind.Relative), ((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inOtherAssembly"])["notBlue"]);

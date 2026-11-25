@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -18,13 +17,10 @@ public partial class FactoryMethodMissingCtor : MockView
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void Throw(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<MissingMethodException>(() => new FactoryMethodMissingCtor(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

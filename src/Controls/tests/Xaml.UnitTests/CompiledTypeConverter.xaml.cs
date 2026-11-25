@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -83,7 +81,6 @@ public partial class CompiledTypeConverter : ContentPage
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void CompiledTypeConverterAreInvoked(XamlInflator xamlInflator)
 		{
@@ -121,26 +118,8 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal(Label.TextProperty, p.BindableProp);
 		}
 
-		[Fact]
-		internal void CompiledStrokeShapeUsesInvariantCulture()
-		{
-			var originalCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-			try
-			{
-				System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
-
-				MockCompiler.Compile(typeof(CompiledTypeConverter), out _, out bool hasLoggedErrors);
-
-				Assert.False(hasLoggedErrors);
-			}
-			finally
-			{
-				System.Threading.Thread.CurrentThread.CurrentCulture = originalCulture;
-			}
-		}
-
 		public static IEnumerable<object[]> ConverterTestData =>
-			from inflator in new[] { XamlInflator.XamlC, XamlInflator.SourceGen }
+			from inflator in new[] { XamlInflator.SourceGen }
 			from converterType in new[]
 			{
 				typeof(BrushTypeConverter),
@@ -158,12 +137,6 @@ public partial class CompiledTypeConverter : ContentPage
 		[MemberData(nameof(ConverterTestData))]
 		internal void ConvertersAreReplaced(XamlInflator inflator, Type converterType)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out bool hasLoggedErrors);
-				Assert.False(hasLoggedErrors);
-				Assert.False(methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
-			}
 
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -175,8 +148,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -268,17 +239,6 @@ public partial class CompiledTypeConverter : ContentPage
 				//check that there are no serviceProvider
 				Assert.False(result.GeneratedInitializeComponent().Contains("new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(", StringComparison.InvariantCulture));
 			}
-		}
-
-		bool HasConstructorForType(MethodDefinition methodDef, Instruction instruction, Type converterType)
-		{
-			if (instruction.OpCode != OpCodes.Newobj)
-				return false;
-			if (!(instruction.Operand is MethodReference methodRef))
-				return false;
-			if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(converterType)))
-				return false;
-			return true;
 		}
 	}
 }

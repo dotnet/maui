@@ -4,6 +4,5 @@ namespace Microsoft.Maui.Controls.Xaml;
 enum XamlInflator
 {
 	Runtime = 1 << 0,
-	XamlC = 1 << 1,
 	SourceGen = 1 << 2,
 }

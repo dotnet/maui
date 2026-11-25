@@ -23,12 +23,7 @@ public partial class Gh12025 : ContentPage
 		[XamlInflatorData]
 		internal void FindMostDerivedABP(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				var ex = Record.Exception(() => MockCompiler.Compile(typeof(Gh12025)));
-				Assert.Null(ex);
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
 					.WithAdditionalSource(

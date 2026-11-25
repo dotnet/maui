@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -22,9 +21,7 @@ public partial class Gh4751 : ContentPage
 		[XamlInflatorData]
 		internal void ErrorOnMissingDefaultCtor(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh4751)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh4751(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

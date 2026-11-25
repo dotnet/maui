@@ -2769,7 +2769,7 @@ try {
         try {
             Copy-Item -LiteralPath $rawBuildTasks -Destination $candidateBuildTasks -Recurse -Force -ErrorAction Stop
             $prPlusBuildTasksReady =
-                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Controls.Build.Tasks.dll')) -and
+                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Controls.SourceGen.dll')) -and
                 (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Resizetizer.dll'))
         } catch {
             Write-Host "  ⚠️ Could not seed candidate .buildtasks; candidate setup must rebuild them if needed: $($_.Exception.Message)" -ForegroundColor Yellow

@@ -232,7 +232,7 @@ public partial class X2009Primitives : ContentPage
 
 			Assert.True(layout.Resources.ContainsKey("defaultUri"));
 			var defaultUri = layout.Resources["defaultUri"];
-			if (inflator == XamlInflator.Runtime || inflator == XamlInflator.XamlC)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Null(defaultUri);
 			else if (inflator == XamlInflator.SourceGen)
 				Assert.Equal("", ((Uri)defaultUri).OriginalString);

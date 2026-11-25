@@ -1,6 +1,4 @@
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -28,8 +26,6 @@ public partial class XArray : MockBindableForArray
 				var result = CreateMauiCompilation().WithAdditionalSource(
 """
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -57,25 +53,6 @@ public partial class XArray : MockBindableForArray
 			Assert.Equal(2, ((string[])layout.Content).Length);
 			Assert.Equal("Hello", ((string[])layout.Content)[0]);
 			Assert.Equal("World", ((string[])layout.Content)[1]);
-		}
-
-		[Fact]
-		public void ArrayExtensionNotPresentInGeneratedCode()
-		{
-			MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
-			Assert.False(hasLoggedErrors);
-			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
-		}
-
-		static bool InstructionIsArrayExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
-		{
-			if (instruction.OpCode != OpCodes.Newobj)
-				return false;
-			if (instruction.Operand is not MethodReference methodRef)
-				return false;
-			if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(ArrayExtension))))
-				return false;
-			return true;
 		}
 	}
 }

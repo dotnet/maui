@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -17,9 +16,7 @@ public partial class Gh3512 : ContentPage
 		[XamlInflatorData]
 		internal void ThrowsOnDuplicateXKey(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh3512)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<ArgumentException>(() => new Gh3512(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

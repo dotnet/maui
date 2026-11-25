@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -16,9 +15,7 @@ public partial class Gh7187 : ContentPage
 		[XamlInflatorData]
 		internal void InvalidMarkupAssignmentThrowsXPE(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh7187)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh7187(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

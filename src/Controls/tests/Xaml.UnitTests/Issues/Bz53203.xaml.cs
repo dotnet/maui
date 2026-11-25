@@ -33,11 +33,6 @@ public partial class Bz53203 : ContentPage
 	[Collection("Issue")]
 	public class Tests
 	{
-		[Fact]
-		internal void MarkupOnAttachedBPDoesNotThrowAtCompileTime()
-		{
-			MockCompiler.Compile(typeof(Bz53203));
-		}
 
 		[Theory]
 		[XamlInflatorData]

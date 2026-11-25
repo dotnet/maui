@@ -33,11 +33,6 @@ public partial class Maui29589StylesLocal : ResourceDictionary
 	public Maui29589StylesLocal() => InitializeComponent();
 }
 
-public partial class Maui29589LibraryXc : ResourceDictionary
-{
-	public Maui29589LibraryXc() => InitializeComponent();
-}
-
 public partial class Maui29589LibrarySg : ResourceDictionary
 {
 	public Maui29589LibrarySg() => InitializeComponent();
@@ -152,11 +147,9 @@ public partial class Maui29589 : ContentPage
 		[Fact]
 		internal void CompiledNestedTypedMergedDictionaries()
 		{
-			foreach (var library in new ResourceDictionary[] { new Maui29589LibraryXc(), new Maui29589LibrarySg() })
-			{
-				var style = Assert.IsType<Style>(library[typeof(Button).FullName]);
-				Assert.Equal(Primary, Assert.Single(style.Setters).Value);
-			}
+			var library = new Maui29589LibrarySg();
+			var style = Assert.IsType<Style>(library[typeof(Button).FullName]);
+			Assert.Equal(Primary, Assert.Single(style.Setters).Value);
 		}
 
 		[Theory]

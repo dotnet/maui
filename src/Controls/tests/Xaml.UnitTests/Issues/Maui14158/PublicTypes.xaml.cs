@@ -12,12 +12,9 @@ public partial class PublicTypes : ContentPage
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void VerifyCorrectTypesUsed(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				MockCompiler.Compile(typeof(PublicTypes));
 
 			var page = new PublicTypes(inflator);
 

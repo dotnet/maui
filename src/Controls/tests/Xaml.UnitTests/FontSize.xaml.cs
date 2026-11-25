@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -16,17 +14,10 @@ public partial class FontSize : ContentPage
 	public class Tests
 	{
 		[Theory]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void FontSizeExtensionsAreReplaced(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-			{
-				MockCompiler.Compile(typeof(FontSize), out var methodDef, out var hasLoggedErrors);
-				Assert.False(hasLoggedErrors);
-				Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsFontSizeConverterCtor(methodDef, instr)), "This Xaml still generates a new FontSizeConverter()");
-			}
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
 					.WithAdditionalSource(
@@ -42,17 +33,6 @@ public partial class FontSize : ContentPage
 					.RunMauiSourceGenerator(typeof(FontSize));
 				Assert.DoesNotContain("new global::Microsoft.Maui.Controls.FontSizeConverter()", result.GeneratedInitializeComponent(), StringComparison.Ordinal);
 			}
-		}
-
-		static bool InstructionIsFontSizeConverterCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
-		{
-			if (instruction.OpCode != OpCodes.Newobj)
-				return false;
-			if (!(instruction.Operand is MethodReference methodRef))
-				return false;
-			if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.FontSizeConverter))))
-				return false;
-			return true;
 		}
 
 		[Theory]

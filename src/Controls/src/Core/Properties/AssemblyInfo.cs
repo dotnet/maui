@@ -26,7 +26,6 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Loader")] // Microsoft.Maui.Controls.Loader.dll, Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider, kzu@microsoft.com
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITest.Validator")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Build.Tasks")]
 [assembly: InternalsVisibleTo("Microsoft.Maui")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages")]

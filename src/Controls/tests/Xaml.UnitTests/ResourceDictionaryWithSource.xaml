@@ -10,10 +10,9 @@
             <ResourceDictionary Source="SharedResourceDictionary.xaml" x:Key="shortURI"/>
             <ResourceDictionary Source="./AppResources/Colors.rt.xaml" x:Key="Colors.rt" />
             <ResourceDictionary Source="./AppResources/Colors.sgen.xaml" x:Key="Colors.sgen" />
-            <ResourceDictionary Source="./AppResources/Colors.xc.xaml" x:Key="Colors.xc" />
-            <ResourceDictionary Source="./AppResources/Colors.rtxc.xaml" x:Key="Colors" />
-            <ResourceDictionary Source="./AppResources/CompiledColors.rtxc.xaml" x:Key="CompiledColors" />
-            <ResourceDictionary Source="/AppResources/Colors.rtxc.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" x:Key="inCurrentAssembly" />
+            <ResourceDictionary Source="./AppResources/ColorsWithAssembly.rt.xaml" x:Key="Colors" />
+            <ResourceDictionary Source="./AppResources/CompiledColors.rt.xaml" x:Key="CompiledColors" />
+            <ResourceDictionary Source="/AppResources/ColorsWithAssembly.rt.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" x:Key="inCurrentAssembly" />
             <ResourceDictionary Source="/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly" x:Key="inOtherAssembly" />
         </ResourceDictionary>
     </ContentPage.Resources>

@@ -148,8 +148,6 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 	[Theory]
 	[InlineData(false, "SourceGen", "MAUIX2012")]
 	[InlineData(true, "Runtime", "MAUIX2023")]
-	[InlineData(true, "XamlC", "MAUIX2023")]
-	[InlineData(true, "SourceGen,XamlC", "MAUIX2023")]
 	[InlineData(true, "SourceGen,Runtime", "MAUIX2023")]
 	public void InlineCodeRequiresPreviewAndSourceGen(bool preview, string inflator, string diagnosticId)
 	{

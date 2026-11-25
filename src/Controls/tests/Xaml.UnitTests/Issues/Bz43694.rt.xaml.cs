@@ -16,9 +16,7 @@ public partial class Bz43694 : ContentPage
 		[XamlInflatorData]
 		internal void xStaticWithOnPlatformChildInRD(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(9, 6, () => MockCompiler.Compile(typeof(Bz43694)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				XamlExceptionAssert.ThrowsXamlParseException(9, 6, () => new Bz43694(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

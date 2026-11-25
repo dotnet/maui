@@ -22,8 +22,6 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 		// Tests only run in DEBUG mode
 		[Fact(Skip = "This test runs only in debug")]
 		public void TestSourceGen() { }
-		[Fact(Skip = "This test runs only in debug")]
-		public void Test() { }
 	}
 #else
 	public class Tests : BaseTestFixture
@@ -73,30 +71,6 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 			Assert.Equal(8, failure.XamlSourceInfo.LineNumber);
 			Assert.IsType<Entry>(failure.Target);
 			Assert.Equal(Entry.TextProperty, failure.TargetProperty);
-		}
-
-		[Fact]
-		public void Test()
-		{
-			List<BindingBaseErrorEventArgs> failures = new();
-			BindingDiagnostics.BindingFailed += (o, e) => failures.Add(e);
-
-			var layout = new BindingDiagnosticsInvalidTwoWayBinding(XamlInflator.XamlC)
-			{
-				BindingContext = new BindingDiagnosticsInvalidTwoWayBindingViewModel("Hello, World!")
-			};
-
-			// XamlC doesn't will not throw any exception or report any binding failures
-			// the binding will simply pull the value from the VM
-			Assert.Empty(failures);
-			Assert.Equal("Hello, World!", layout.Entry.Text);
-
-			layout.Entry.Text = "New Text";
-
-			// after the Entry's Text is changed, it will again try to push its value to the target through
-			// the two way binding - but nothing will happen
-			Assert.Empty(failures);
-			Assert.Equal("New Text", layout.Entry.Text);
 		}
 	}
 #endif

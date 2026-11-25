@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[XamlInflatorData]
 			internal void XStaticWithAggregatedXmlns(XamlInflator inflator)
 			{
-				if (inflator == XamlInflator.XamlC)
-					MockCompiler.Compile(typeof(GlobalXmlnsWithXStatic));
 
 				var page = new GlobalXmlnsWithXStatic(inflator);
 				Assert.Equal("MConstant", page.label0.Text);

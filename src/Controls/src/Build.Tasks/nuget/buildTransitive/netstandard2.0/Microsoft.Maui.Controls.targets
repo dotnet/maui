@@ -1,7 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
-
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
@@ -128,6 +126,9 @@
 	</Target>
 
   <Target Name="_MauiXamlComputeInflator">
+    <Error Code="MAUI1004"
+           Text="The XamlC inflator was removed in .NET 12. Remove MauiXamlInflator to use SourceGen, or set it to Runtime for runtime XAML loading."
+           Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(MauiXamlInflator)', '(?i)(^|[,;])\s*xamlc\s*([,;]|$)'))" />
   	<ItemGroup>
       <!-- Assign the default inflator (SourceGen) to MauiXaml that don't have any -->
       <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
@@ -136,18 +137,19 @@
 
 	    <_MauiXaml_SG Remove="@(_MauiXaml_SG)" />
 	    <_MauiXaml_RT Remove="@(_MauiXaml_RT)" />
-	    <_MauiXaml_XC Remove="@(_MauiXaml_XC)" />
 	    <_MauiXaml_SG Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('sourcegen'))" />
 	    <_MauiXaml_RT Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('runtime'))" />
-	    <_MauiXaml_XC Include="@(MauiXaml)" Condition="$([System.String]::new('%(MauiXaml.Inflator)').ToLowerInvariant().Contains('xamlc'))" />
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_RT)" />
-      <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
 	</ItemGroup>
+
+    <Error Code="MAUI1004"
+           Text="The XamlC inflator was removed in .NET 12. Set Inflator on '%(MauiXaml.Identity)' to SourceGen or Runtime."
+           Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(MauiXaml.Inflator)', '(?i)(^|,)\s*xamlc\s*(,|$)'))" />
 	
-	<!-- Warn when using deprecated Runtime or XamlC inflator -->
+	<!-- Warn when using the deprecated Runtime inflator -->
 	<Warning 
 		Code="MAUI1001"
-		Text="MauiXamlInflator is set to '$(MauiXamlInflator)'. The 'Runtime' and 'XamlC' inflators are deprecated. Consider removing the MauiXamlInflator property to use the default 'SourceGen' inflator for optimal performance and debugging experience." 
+		Text="MauiXamlInflator is set to '$(MauiXamlInflator)'. The 'Runtime' inflator is deprecated. Consider removing the MauiXamlInflator property to use the default 'SourceGen' inflator for optimal performance and debugging experience."
 		Condition="'$(MauiXamlInflator)' != '' And !$([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('sourcegen'))" />
   </Target>
 
@@ -214,7 +216,7 @@
   </Target>
 
 
-  <!-- re-add MauiXaml and MauiCss as EmbeddedResources for runtime inflation and XamlC -->
+  <!-- re-add MauiXaml and MauiCss as EmbeddedResources for runtime inflation -->
   <PropertyGroup>
     <PrepareResourcesDependsOn>
       _MauiAddXamlEmbeddedResources;
@@ -232,58 +234,6 @@
       <EmbeddedResource Include="@(MauiCss)" />
     </ItemGroup>
   </Target>
-
-	<!-- XamlC -->
-	<PropertyGroup>
-		<CompileDependsOn>
-			$(CompileDependsOn);
-			XamlC;
-		</CompileDependsOn>
-	</PropertyGroup>
-
-	<Target Name="XamlC"
-		AfterTargets="AfterCompile"
-		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
-		Outputs="$(IntermediateOutputPath)XamlC.stamp"
-		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' AND ('@(_MauiXaml_XC)' != '' OR '@(_MauiXaml_RT)' != '') ">
-		<PropertyGroup>
-			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
-			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
-			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
-
-			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
-			<_MauiXamlCWarningsNotAsErrors>$(WarningsNotAsErrors)</_MauiXamlCWarningsNotAsErrors>
-			<_MauiXamlCWarningsNotAsErrors Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCWarningsNotAsErrors);XC0022;XC0023;XC0025</_MauiXamlCWarningsNotAsErrors>
-
-      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == '' and '$(GenerateFullPaths)' == 'true'">true</_MauiXamlCGenerateFullPaths>
-      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == ''">false</_MauiXamlCGenerateFullPaths>
-      <_MauiXamlCFullPathPrefix Condition="'$(_MauiXamlCFullPathPrefix)' == '' and '$(_MauiXamlCGenerateFullPaths)' == 'true'">$(MSBuildProjectDirectory)</_MauiXamlCFullPathPrefix>
-		</PropertyGroup>
-		<XamlCTask
-			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
-			ReferencePath = "@(ReferencePath)"
-			OptimizeIL = "true"
-			DebugSymbols = "$(DebugSymbols)"
-			DebugType = "$(DebugType)"
-			DefaultCompile = "true"
-      CompileBindingsWithSource = "$(MauiEnableXamlCBindingWithSourceCompilation)"
-			ValidateOnly = "$(_MauiXamlCValidateOnly)"
-			TargetFramework = "$(TargetFramework)"
-			KeepXamlResources = "$(MauiKeepXamlResources)"
-
-      WarningLevel = "$(WarningLevel)"
-      TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
-      NoWarn = "$(NoWarn)"
-      WarningsAsErrors = "$(WarningsAsErrors)"
-      WarningsNotAsErrors = "$(_MauiXamlCWarningsNotAsErrors)"
-      GenerateFullPaths = "$(_MauiXamlCGenerateFullPaths)"
-      FullPathPrefix = "$(_MauiXamlCFullPathPrefix)" />
-      
-		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
-		<ItemGroup>
-			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
-		</ItemGroup>
-	</Target>
 
  <!--
     Platform Specific Targets.
@@ -317,7 +267,7 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
-  <Target Name="_MauiPrepareForILLink" BeforeTargets="_PrepareTrimConfiguration;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
+  <Target Name="_MauiPrepareForILLink" BeforeTargets="_PrepareTrimConfiguration;_GenerateRuntimeConfigurationFilesInputCache">
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>

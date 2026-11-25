@@ -41,7 +41,7 @@ namespace __XamlGeneratedCode__
 		[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
 		private void InitializeComponent()
 		{
-#pragma warning disable IL2026, IL3050 // The body of InitializeComponent will be replaced by XamlC so LoadFromXaml will never be called in production builds
+#pragma warning disable IL2026, IL3050 // Runtime XAML loading is not compatible with trimming or NativeAOT
 			global::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof(__Type38324563C8074463));
 #pragma warning restore IL2026, IL3050
 		}

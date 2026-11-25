@@ -8,8 +8,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;

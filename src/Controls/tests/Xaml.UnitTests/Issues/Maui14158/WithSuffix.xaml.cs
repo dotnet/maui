@@ -12,12 +12,9 @@ public partial class WithSuffix : ContentPage
 	{
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void VerifyCorrectTypesUsed(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				MockCompiler.Compile(typeof(WithSuffix));
 
 			var page = new WithSuffix(inflator);
 

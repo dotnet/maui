@@ -23,7 +23,7 @@ public partial class TemplateBindingsCompiler : ContentPage
 			var label = (Label)page.ContentView.GetTemplateChild("CardTitleLabel");
 			Assert.Equal("The title", label?.Text);
 
-			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
 				Assert.IsType<TypedBinding<TemplateBindingCompilerTestCardView, string>>(binding);

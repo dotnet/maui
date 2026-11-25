@@ -7,12 +7,6 @@ namespace Microsoft.Maui.Controls.Xaml.Benchmarks;
 public class LayoutBenchmark
 {
 	[Benchmark(Baseline = true)]
-	public void XamlC()
-	{
-		var page = new UnitTests.Benchmark(XamlInflator.XamlC);
-	}
-
-	[Benchmark]
 	public void SourceGen()
 	{
 		var page = new UnitTests.Benchmark(XamlInflator.SourceGen);

@@ -1,5 +1,4 @@
 using System.Linq;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -17,9 +16,7 @@ public partial class Bz43450 : ContentPage
 		[XamlInflatorData]
 		internal void DoesNotAllowGridRowDefinition(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz43450)));
-			else if (inflator == XamlInflator.Runtime)
+			if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Bz43450(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{

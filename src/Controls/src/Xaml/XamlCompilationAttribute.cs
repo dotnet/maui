@@ -1,25 +1,23 @@
 using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 #if NET12_0_OR_GREATER
-	[Obsolete("XamlCompilationOptions is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+	[Obsolete("XamlCompilationOptions is no longer used. Use the default SourceGen inflator, or specify Inflator=\"Runtime\" on MauiXaml items in your .csproj.", error: true)]
 #else
-	[Obsolete("XamlCompilationOptions is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
+	[Obsolete("XamlCompilationOptions is deprecated and no longer used. Use the default SourceGen inflator, or specify Inflator=\"Runtime\" on MauiXaml items in your .csproj.")]
 #endif
 	[Flags]
 	public enum XamlCompilationOptions
 	{
 		Skip = XamlInflator.Runtime,
-		Compile = XamlInflator.XamlC,
+		Compile = 1 << 1,
 	}
 
 #if NET12_0_OR_GREATER
-	[Obsolete("XamlCompilationAttribute is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+	[Obsolete("XamlCompilationAttribute is no longer used. Use the default SourceGen inflator, or specify Inflator=\"Runtime\" on MauiXaml items in your .csproj.", error: true)]
 #else
-	[Obsolete("XamlCompilationAttribute is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
+	[Obsolete("XamlCompilationAttribute is deprecated and no longer used. Use the default SourceGen inflator, or specify Inflator=\"Runtime\" on MauiXaml items in your .csproj.")]
 #endif
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
@@ -31,26 +29,4 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
-
-#if !NET12_0_OR_GREATER
-#pragma warning disable CS0618 // Type or member is obsolete - internal backcompat code
-	static class XamlCExtensions
-	{
-		public static bool IsCompiled(this Type type)
-		{
-			var attr = type.GetCustomAttribute<XamlCompilationAttribute>();
-			if (attr != null)
-				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
-			attr = type.Module.GetCustomAttribute<XamlCompilationAttribute>();
-			if (attr != null)
-				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
-			attr = type.Assembly.GetCustomAttribute<XamlCompilationAttribute>();
-			if (attr != null)
-				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
-
-			return false;
-		}
-	}
-#pragma warning restore CS0618
-#endif
 }

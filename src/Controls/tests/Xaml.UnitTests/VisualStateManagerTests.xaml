@@ -122,7 +122,7 @@
 
 		<Entry x:Name="Entry4" Style="{StaticResource OtherStyle}"></Entry>
 		
-		<!-- This entry is here to verify that XamlG and XamlC don't complain about duplicate VisualStateGroup
+		<!-- This entry is here to verify that source generation doesn't complain about duplicate VisualStateGroup
 			and VisualState names on different VisualElements -->
 		<Entry x:Name="Entry5">
 			<VisualStateManager.VisualStateGroups>

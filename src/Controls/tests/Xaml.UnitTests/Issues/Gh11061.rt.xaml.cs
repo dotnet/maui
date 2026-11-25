@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
@@ -19,9 +18,7 @@ public partial class Gh11061 : ContentPage
 		[XamlInflatorData]
 		internal void BindingOnNonBP(XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh11061)));
-			else if (inflator == XamlInflator.SourceGen)
+			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
 					.WithAdditionalSource(

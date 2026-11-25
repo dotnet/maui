@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SourceGen-only: AncestorType as a bare string (ValueNode form).
-     XamlC does not support this syntax (XC0009), so this file is .sgen.xaml
-     to limit compilation to SourceGen only.
      Previously the string form silently fell back to a runtime Binding; after the fix it produces a TypedBinding. -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"

@@ -40,7 +40,7 @@ static class CodeBehindCodeWriter
 
 		var codeBlocks = GetCodeBlocks(xamlItem, compilation, reportDiagnostic, ct);
 		var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
-		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, ct, reportDiagnostic, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, ct, reportDiagnostic, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
 		{
 			return "";
 		}
@@ -88,24 +88,12 @@ static class CodeBehindCodeWriter
 			throw new Exception("Something went wrong");
 		}
 
-		var rootSymbol = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootType}");
-		bool alreadyHasXamlCompilationAttribute = rootSymbol?.GetAttributes().Any(a => a.AttributeClass != null && a.AttributeClass.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")!, SymbolEqualityComparer.Default)) ?? false;
-
 		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-
-		//if there's only the XamlC inflator, prevent non-assigned errors
-		if (xamlInflators == XamlInflator.XamlC)
-			sb.AppendLine("#pragma warning disable CS0649");
 
 		sb.AppendLine($"namespace {rootClrNamespace}");
 		sb.AppendLine("{");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
-
-#pragma warning disable CS0618 // XamlCompilation is deprecated but still generated for backcompat
-		if (!addXamlCompilationAttribute && (xamlInflators & XamlInflator.XamlC) == 0 && !alreadyHasXamlCompilationAttribute)
-			sb.AppendLine($"\t#pragma warning disable CS0618\n\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]\n\t#pragma warning restore CS0618");
-#pragma warning restore CS0618
 
 		if (hideFromIntellisense)
 		{
@@ -149,10 +137,8 @@ static class CodeBehindCodeWriter
 		//create fields
 		if (namedFields != null)
 		{
-			//with XamlC, the body of the ctor is empty when the compiler is done, raising warnings. disable those
 			if (!generateInflatorSwitch
-				&& ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC
-					|| (projItem.Configuration != null && projItem.Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase))))
+				&& projItem.Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase))
 				sb.AppendLine("#pragma warning disable CS0169, CS0649");
 
 			foreach ((var fname, var ftype, var faccess, _, _) in namedFields)
@@ -166,29 +152,13 @@ static class CodeBehindCodeWriter
 				sb.AppendLine();
 			}
 			if (!generateInflatorSwitch
-				&& ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC
-					|| (projItem.Configuration != null && projItem.Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase))))
+				&& projItem.Configuration.Equals("Release", StringComparison.OrdinalIgnoreCase))
 				sb.AppendLine("#pragma warning restore CS0169, CS0649");
 		}
 
-		// if the generateInflatorSwitch is false, we will, depending on the value of inflators
-		// - treat XamlInflator.Default as XamlInflator.Runtime for Debug, and XamlC for Release
-		// - generate InitializeComponent() with the LoadFromXaml call for XamlInflator.Runtime
-		// - generate an empty InitializeComponent for XamlInflator.XamlC (XamlC will replace the methodbody later)
-		// - generate the partial signature for InitializeComponent for XamlInflator.SourceGen
-
-		// if the generateInflatorSwitch is true, we will generate a switch statement in the constructor
-		// that will call the correct InitializeComponent method depending on the inflator passed in
-		// XamlInflatorDefault means all
-		// - InitializeCompnentRuntime will be used for Runtime
-		// - InitializeComponentXamlC will be used for XamlC
-		// - InitializeComponentSourceGen will be used for SourceGen
-		// - no parameterless InitializeComponent will be generated
 		if (!generateInflatorSwitch)
 		{
 			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime)
-				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
 			{
@@ -202,14 +172,12 @@ static class CodeBehindCodeWriter
 		{
 			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime || projItem.EnableDiagnostics)
 				InitComp("InitializeComponentRuntime");
-			if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
-				InitComp("InitializeComponentXamlC", empty: true);
 			if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
 				InitComp("InitializeComponentSourceGen", partialsignature: true);
 		}
 
 		//initializeComponent
-		void InitComp(string methodName, bool empty = false, bool partialsignature = false)
+		void InitComp(string methodName, bool partialsignature = false)
 		{
 			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 			// add MemberNotNull attributes
@@ -225,9 +193,6 @@ static class CodeBehindCodeWriter
 				sb.AppendLine($"#endif");
 			}
 
-			if (empty)
-				sb.AppendLine("#nullable disable");
-
 			var modifier = partialsignature ? "partial " : "";
 			var semicolon = partialsignature ? ";" : "";
 			sb.AppendLine($"\t\tprivate {modifier}void {methodName}(){semicolon}");
@@ -238,38 +203,30 @@ static class CodeBehindCodeWriter
 			}
 
 			sb.AppendLine("\t\t{");
-			if (!empty)
-			{
-				sb.AppendLine("#pragma warning disable IL2026, IL3050 // The body of InitializeComponent will be replaced by XamlC so LoadFromXaml will never be called in production builds");
-				sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
+			sb.AppendLine("#pragma warning disable IL2026, IL3050 // Runtime XAML loading is not compatible with trimming or NativeAOT");
+			sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
 
-				if (namedFields != null)
+			if (namedFields != null)
+			{
+				var conditionalFieldIndex = 0;
+				foreach ((var fname, var ftype, _, _, var xamlName) in namedFields)
 				{
-					var conditionalFieldIndex = 0;
-					foreach ((var fname, var ftype, _, _, var xamlName) in namedFields)
+					if (fieldState.GhostFieldNames.Contains(fname))
+						continue;
+					if (fieldState.ConditionallyAssignedFieldNames.Contains(fname))
 					{
-						if (fieldState.GhostFieldNames.Contains(fname))
-							continue;
-						if (fieldState.ConditionallyAssignedFieldNames.Contains(fname))
-						{
-							var valueName = $"__xamlField{conditionalFieldIndex++}";
-							sb.AppendLine($"\t\t\tif (global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<object>(this, {SymbolDisplay.FormatLiteral(xamlName, true)}) is {ftype} {valueName})");
-							sb.AppendLine($"\t\t\t\t{EscapeIdentifier(fname)} = {valueName};");
-						}
-						else
-						{
-							sb.AppendLine($"\t\t\t{EscapeIdentifier(fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, {SymbolDisplay.FormatLiteral(xamlName, true)});");
-						}
+						var valueName = $"__xamlField{conditionalFieldIndex++}";
+						sb.AppendLine($"\t\t\tif (global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<object>(this, {SymbolDisplay.FormatLiteral(xamlName, true)}) is {ftype} {valueName})");
+						sb.AppendLine($"\t\t\t\t{EscapeIdentifier(fname)} = {valueName};");
+					}
+					else
+					{
+						sb.AppendLine($"\t\t\t{EscapeIdentifier(fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, {SymbolDisplay.FormatLiteral(xamlName, true)});");
 					}
 				}
-				sb.AppendLine("#pragma warning restore IL2026, IL3050");
 			}
+			sb.AppendLine("#pragma warning restore IL2026, IL3050");
 			sb.AppendLine("\t\t}");
-
-			if (empty)
-			{
-				sb.AppendLine("#nullable enable");
-			}
 
 			sb.AppendLine();
 		}
@@ -296,9 +253,6 @@ static class CodeBehindCodeWriter
 				sb.AppendLine($"\t\tprivate void InitializeComponent() => InitializeComponentRuntime();");
 			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
 				sb.AppendLine($"\t\tprivate void InitializeComponent() => InitializeComponentSourceGen();");
-			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
-				sb.AppendLine($"\t\tprivate void InitializeComponent() => InitializeComponentXamlC();");
-
 
 			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
@@ -310,12 +264,6 @@ static class CodeBehindCodeWriter
 			{
 				sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime:");
 				sb.AppendLine("\t\t\t\t\tInitializeComponentRuntime();");
-				sb.AppendLine("\t\t\t\t\tbreak;");
-			}
-			if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
-			{
-				sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC:");
-				sb.AppendLine("\t\t\t\t\tInitializeComponentXamlC();");
 				sb.AppendLine("\t\t\t\t\tbreak;");
 			}
 			if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
@@ -450,13 +398,12 @@ static class CodeBehindCodeWriter
 		return blocks;
 	}
 
-	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out INamedTypeSymbol? baseType, out IEnumerable<(string, string, string, XmlType, string)>? namedFields)
+	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out INamedTypeSymbol? baseType, out IEnumerable<(string, string, string, XmlType, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
 		rootClrNamespace = null;
 		generateDefaultCtor = false;
-		addXamlCompilationAttribute = false;
 		hideFromIntellisense = false;
 		xamlResourceIdOnly = false;
 		namedFields = null;
@@ -509,7 +456,6 @@ static class CodeBehindCodeWriter
 			rootClrNamespace = "__XamlGeneratedCode__";
 			rootType = $"__Type{uid}";
 			generateDefaultCtor = true;
-			addXamlCompilationAttribute = true;
 			hideFromIntellisense = true;
 		}
 		else if (parseResult?.ProjectItem?.ManifestResourceName != null && parseResult.ProjectItem.TargetPath != null)
