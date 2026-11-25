@@ -49,7 +49,6 @@ Manual labels are applied by MAUI maintainers. The review lock is applied by the
 |-------|-------|-------------|--------------|
 | `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
 | `s/agent-review-in-progress` | 🟡 `#FBCA04` | AI review is currently running for this PR | Applied before triggering the async AzDO review pipeline and removed by pipeline cleanup; stale locks can be recovered after a conservative timeout |
-| `s/agent-fix-allowed` | 🟣 `#7B1FA2` | PR author allows the MAUI agent and maintainers to push fixes for review findings | Kept in sync with the PR template's "Help from the MAUI agent" choice by the [PR Journey](pr-journey.md) workflow |
 
 ---
 
