@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Storage;
@@ -23,6 +25,42 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeSource(WebViewHandler webViewHandler) =>
 			GetNativeWebView(webViewHandler).Url;
+
+		[Fact(DisplayName = "Creating a WebView keeps the night mode AppCompat applied in place")]
+		public async Task CreatingWebViewKeepsInPlaceNightMode()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = Assert.IsAssignableFrom<AppCompatActivity>(MauiContext.Context.GetActivity());
+				var resources = activity.Resources;
+				var systemNight = Application.Context.Resources.Configuration.UiMode & UiMode.NightMask;
+				var initialNightMode = activity.Delegate.LocalNightMode;
+
+				try
+				{
+					// Use the opposite of the system theme, applied in place like UserAppTheme at runtime
+					activity.Delegate.SetLocalNightMode(systemNight == UiMode.NightYes ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes);
+					var appNight = resources.Configuration.UiMode & UiMode.NightMask;
+					Assert.NotEqual(systemNight, appNight);
+
+					// Loading the WebView provider resets the activity's resources to the system uiMode.
+					// Reset them here too, in case an earlier test already loaded the provider.
+					var config = new Configuration(resources.Configuration);
+					config.UiMode = (config.UiMode & ~UiMode.NightMask) | systemNight;
+#pragma warning disable CS0618, CA1422 // Type or member is obsolete
+					resources.UpdateConfiguration(config, resources.DisplayMetrics);
+#pragma warning restore CS0618, CA1422
+
+					CreateHandler(new WebViewStub());
+
+					Assert.Equal(appNight, resources.Configuration.UiMode & UiMode.NightMask);
+				}
+				finally
+				{
+					activity.Delegate.SetLocalNightMode(initialNightMode);
+				}
+			});
+		}
 
 		[Fact]
 		public void FileChooserRejectsFileUriInsideAppDataDirectory()

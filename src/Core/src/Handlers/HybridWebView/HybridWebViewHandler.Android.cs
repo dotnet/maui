@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			};
+			platformView.ReapplyAppCompatNightMode();
 
 			platformView.Settings.DomStorageEnabled = true;
 			platformView.Settings.SetSupportMultipleWindows(true);
