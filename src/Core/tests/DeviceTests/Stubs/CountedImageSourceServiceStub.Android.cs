@@ -12,6 +12,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public CancellationToken LoadCancellationToken { get; private set; }
 
+		public ImageSourceServiceResult LastDrawableResult { get; private set; }
+
 		public async Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, global::Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICountedImageSourceStub imageSourceStub)
@@ -57,6 +59,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			try
 			{
+				LastDrawableResult = null;
 				Starting.Set();
 
 				// simulate actual work
@@ -65,12 +68,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					if (imageSourceStub.Wait)
 						DoWork.WaitOne();
 
+					if (imageSourceStub.FailWhenCancelled && cancellationToken.IsCancellationRequested)
+					{
+						throw new InvalidOperationException("Unable to load image after the load was cancelled.");
+					}
+
 					var color = imageSourceStub.Color.ToPlatform();
 
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
-				return new ImageSourceServiceResult(drawable, imageSourceStub.IsResolutionDependent, drawable.Dispose);
+				return LastDrawableResult = new ImageSourceServiceResult(drawable, imageSourceStub.IsResolutionDependent, drawable.Dispose);
 			}
 			finally
 			{
