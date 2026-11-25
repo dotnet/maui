@@ -166,24 +166,23 @@ Describe 'Dispatch request' {
         (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
 
-    It 'mirrors each job of the build as a check on the PR' {
-        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/7' } } }
+    It 'mirrors each job of the build as a commit status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
         $results = [pscustomobject]@{ completed = $false; result = ''; headline = 'running'; jobs = @(
-                [pscustomobject]@{ name = 'Android UITests Shell1'; result = 'succeeded'; url = 'https://dev.azure.com/x/7&j=a' },
-                [pscustomobject]@{ name = 'Android UITests Shell2'; result = 'failed'; url = 'https://dev.azure.com/x/7&j=b' },
+                [pscustomobject]@{ name = 'Android UITests Shell1'; result = 'succeeded'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=a' },
+                [pscustomobject]@{ name = 'Android UITests Shell2'; result = 'failed'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=b' },
                 [pscustomobject]@{ name = 'iOS UITests Label'; result = 'inProgress'; url = $null },
-                [pscustomobject]@{ name = 'Windows UITests Label'; result = 'pending'; url = $null }) }
-        $checks = New-RunTestsJobChecks -Build $build -Results $results
-        $checks.Count | Should -Be 4
-        $checks[0].name | Should -Be "$($script:RunTestsCheckPrefix) (Android UITests Shell1)"
-        $checks[0].conclusion | Should -Be 'success'
-        $checks[0].details_url | Should -Be 'https://dev.azure.com/x/7&j=a'
-        $checks[0].external_id | Should -Be 'job:7'
-        $checks[1].conclusion | Should -Be 'failure'
-        $checks[2].status | Should -Be 'in_progress'
-        $checks[2].details_url | Should -Be 'https://dev.azure.com/x/7'
-        $checks[3].status | Should -Be 'queued'
-        $checks[3].PSObject.Properties['conclusion'] | Should -BeNullOrEmpty
+                [pscustomobject]@{ name = 'Windows UITests Label'; result = 'canceled'; url = $null }) }
+        $statuses = New-RunTestsJobStatuses -Build $build -Results $results
+        $statuses.Count | Should -Be 4
+        $statuses[0].context | Should -Be "$($script:RunTestsCheckPrefix) (Android UITests Shell1)"
+        $statuses[0].state | Should -Be 'success'
+        $statuses[0].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7&j=a'
+        $statuses[1].state | Should -Be 'failure'
+        $statuses[2].state | Should -Be 'pending'
+        $statuses[2].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7'
+        $statuses[3].state | Should -Be 'error'
+        @($statuses | Where-Object { $_.description.Length -gt 140 }).Count | Should -Be 0
     }
 }
 
