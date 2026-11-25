@@ -48,6 +48,11 @@ namespace Microsoft.Maui.Platform
 			platformLabel.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVertical();
 		}
 
+		public static void UpdateIsTextSelectable(this MauiLabel platformLabel, ILabel label)
+		{
+			platformLabel.IsTextSelectable = label.IsTextSelectable;
+		}
+
 		public static void UpdatePadding(this MauiLabel platformLabel, ILabel label)
 		{
 			platformLabel.TextInsets = new UIEdgeInsets(

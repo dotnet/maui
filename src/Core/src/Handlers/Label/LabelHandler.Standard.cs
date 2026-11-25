@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(ILabelHandler handler, ILabel label) { }
 		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label) { }
 		public static void MapTextDecorations(ILabelHandler handler, ILabel label) { }
+		public static void MapIsTextSelectable(ILabelHandler handler, ILabel label) { }
 		public static void MapMaxLines(ILabelHandler handler, ILabel label) { }
 		public static void MapPadding(ILabelHandler handler, ILabel label) { }
 		public static void MapLineHeight(ILabelHandler handler, ILabel label) { }

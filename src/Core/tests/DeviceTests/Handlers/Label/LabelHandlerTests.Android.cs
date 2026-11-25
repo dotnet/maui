@@ -95,6 +95,121 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
+		bool GetNativeIsTextSelectable(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).IsTextSelectable;
+
+		[Fact(DisplayName = "Disabling IsTextSelectable Restores Interaction State")]
+		public async Task DisablingIsTextSelectableRestoresInteractionState()
+		{
+			var label = new LabelStub() { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var values = await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = GetPlatformLabel(handler);
+				textView.MovementMethod = global::Android.Text.Method.LinkMovementMethod.Instance;
+				var initial = (textView.Focusable, textView.Clickable, textView.LongClickable);
+
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var selectable = (textView.Focusable, textView.Clickable, textView.LongClickable);
+
+				label.IsTextSelectable = false;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var restored = (textView.Focusable, textView.Clickable, textView.LongClickable);
+				var movementMethodRestored = ReferenceEquals(textView.MovementMethod, global::Android.Text.Method.LinkMovementMethod.Instance);
+
+				return (initial, selectable, restored, movementMethodRestored);
+			});
+
+			Assert.Equal((true, true, true), values.selectable);
+			Assert.Equal(values.initial, values.restored);
+			Assert.True(values.movementMethodRestored);
+		}
+
+		[Fact(DisplayName = "Disabling IsTextSelectable Restores Focus Settings")]
+		public async Task DisablingIsTextSelectableRestoresFocusSettings()
+		{
+			var label = new LabelStub() { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var values = await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = GetPlatformLabel(handler);
+
+				// An explicitly non-focusable view that has a movement method, so assigning that method has to happen before the focus flags are restored.
+				textView.MovementMethod = global::Android.Text.Method.LinkMovementMethod.Instance;
+				textView.Focusable = false;
+				textView.FocusableInTouchMode = false;
+				var initial = (textView.Focusable, textView.FocusableInTouchMode);
+
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				label.IsTextSelectable = false;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var restored = (textView.Focusable, textView.FocusableInTouchMode);
+
+				// Focusable "auto" follows Clickable, which a plain boolean can't represent.
+				var autoMode = false;
+				var followsClickable = false;
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					textView.SetFocusable(global::Android.Views.ViewFocusability.FocusableAuto);
+					textView.Clickable = false;
+
+					label.IsTextSelectable = true;
+					handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+					label.IsTextSelectable = false;
+					handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+
+					autoMode = textView.GetFocusable() == global::Android.Views.ViewFocusability.FocusableAuto;
+					textView.Clickable = true;
+					followsClickable = textView.Focusable;
+				}
+
+				// Focusable in touch mode is restored too.
+				textView.FocusableInTouchMode = true;
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				label.IsTextSelectable = false;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var touchModeRestored = textView.FocusableInTouchMode;
+
+				return (initial, restored, autoMode, followsClickable, touchModeRestored);
+			});
+
+			Assert.Equal(values.initial, values.restored);
+			Assert.True(values.touchModeRestored);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				Assert.True(values.autoMode);
+				Assert.True(values.followsClickable);
+			}
+		}
+
+		[Fact(DisplayName = "Unset IsTextSelectable Keeps Native Selection")]
+		public async Task UnsetIsTextSelectableKeepsNativeSelection()
+		{
+			var label = new LabelStub() { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var isSelectable = await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = GetPlatformLabel(handler);
+				textView.SetTextIsSelectable(true);
+
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+
+				return textView.IsTextSelectable;
+			});
+
+			Assert.True(isSelectable);
+		}
+
 		[Fact(DisplayName = "LineHeight Spaces All Lines Evenly")]
 		public async Task LineHeightSpacesAllLinesEvenly()
 		{

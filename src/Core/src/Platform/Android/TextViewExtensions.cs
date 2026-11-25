@@ -16,6 +16,68 @@ namespace Microsoft.Maui.Platform
 	{
 		static readonly ConditionalWeakTable<TextView, StrongBox<int>> s_htmlGenerations = new();
 		static readonly ConditionalWeakTable<TextView, ColorStateList> defaultTextColors = new();
+		static readonly ConditionalWeakTable<TextView, InteractionState> s_preSelectableInteractionStates = new();
+
+		sealed record InteractionState(global::Android.Text.Method.IMovementMethod? MovementMethod, ViewFocusability? FocusableMode, bool Focusable, bool FocusableInTouchMode, bool Clickable, bool LongClickable);
+
+		public static void UpdateIsTextSelectable(this TextView textView, ILabel label)
+		{
+			var isSelectable = label.IsTextSelectable;
+
+			// SetTextIsSelectable rewrites focusable, clickable and long-clickable and replaces the
+			// movement method, so only call it on a change to not disturb other components that
+			// own these flags (for example the gesture manager).
+			if (textView.IsTextSelectable == isSelectable)
+			{
+				return;
+			}
+
+			// Selection that this mapping did not turn on (for example a custom handler calling SetTextIsSelectable)
+			// is left alone while the property is unset.
+			if (!isSelectable && !s_preSelectableInteractionStates.TryGetValue(textView, out _))
+			{
+				return;
+			}
+
+			if (isSelectable)
+			{
+				s_preSelectableInteractionStates.AddOrUpdate(textView, new InteractionState(
+					textView.MovementMethod,
+					OperatingSystem.IsAndroidVersionAtLeast(26) ? textView.GetFocusable() : null,
+					textView.Focusable,
+					textView.FocusableInTouchMode,
+					textView.Clickable,
+					textView.LongClickable));
+
+				textView.SetTextIsSelectable(true);
+				return;
+			}
+
+			textView.SetTextIsSelectable(false);
+
+			// Turning selection off clears the flags, so give them back what they were before.
+			if (s_preSelectableInteractionStates.TryGetValue(textView, out var state))
+			{
+				s_preSelectableInteractionStates.Remove(textView);
+
+				// Assigning a movement method recalculates focusability, so it has to be restored before the focus flags.
+				textView.MovementMethod = state.MovementMethod;
+
+				// Focusable can be "auto" (focusable only while clickable), which a plain bool can't represent.
+				if (state.FocusableMode is { } focusableMode && OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					textView.SetFocusable(focusableMode);
+				}
+				else
+				{
+					textView.Focusable = state.Focusable;
+				}
+
+				textView.FocusableInTouchMode = state.FocusableInTouchMode;
+				textView.Clickable = state.Clickable;
+				textView.LongClickable = state.LongClickable;
+			}
+		}
 
 		public static void UpdateTextPlainText(this TextView textView, IText label)
 		{

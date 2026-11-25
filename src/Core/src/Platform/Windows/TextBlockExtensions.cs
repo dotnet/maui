@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -63,6 +64,25 @@ namespace Microsoft.Maui.Platform
 				platformControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
 				platformControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
+		}
+
+		static readonly ConditionalWeakTable<TextBlock, object> s_selectionManaged = new();
+
+		public static void UpdateIsTextSelectable(this TextBlock platformControl, ILabel label)
+		{
+			if (label.IsTextSelectable)
+			{
+				s_selectionManaged.GetValue(platformControl, static _ => new object());
+				platformControl.IsTextSelectionEnabled = label.IsEnabled;
+				return;
+			}
+
+			// Selection that this mapping did not turn on (for example a custom handler setting
+			// IsTextSelectionEnabled) is left alone while the property is unset.
+			if (s_selectionManaged.Remove(platformControl))
+			{
+				platformControl.IsTextSelectionEnabled = false;
+			}
 		}
 
 		public static void UpdateLineHeight(this TextBlock platformControl, ILabel label)

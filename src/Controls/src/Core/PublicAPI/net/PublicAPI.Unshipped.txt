@@ -1,2 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
+Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
+~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T

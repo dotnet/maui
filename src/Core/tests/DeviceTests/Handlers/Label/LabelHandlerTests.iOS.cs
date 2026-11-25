@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,6 +176,50 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expected, values.PlatformViewValue);
+		}
+
+		bool GetNativeIsTextSelectable(LabelHandler labelHandler) =>
+			GetPlatformLabel(labelHandler).Subviews.OfType<UITextView>().Any(t => t.Selectable && !t.Editable);
+
+		[Fact(DisplayName = "IsTextSelectable Does Not Change Measured Size")]
+		public async Task IsTextSelectableDoesNotChangeMeasuredSize()
+		{
+			var label = new LabelStub() { Text = "Some text that wraps over a couple of lines when constrained" };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var sizes = await InvokeOnMainThreadAsync(() =>
+			{
+				var before = handler.GetDesiredSize(150, double.PositiveInfinity);
+
+				label.IsTextSelectable = true;
+				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+				var after = handler.GetDesiredSize(150, double.PositiveInfinity);
+
+				return (before, after);
+			});
+
+			Assert.Equal(sizes.before, sizes.after);
+		}
+
+		[Fact(DisplayName = "IsTextSelectable Mirrors Text To Selection View")]
+		public async Task IsTextSelectableMirrorsText()
+		{
+			var label = new LabelStub() { Text = "First", IsTextSelectable = true };
+
+			var handler = await CreateHandlerAsync(label);
+
+			var text = await InvokeOnMainThreadAsync(() =>
+			{
+				label.Text = "Second";
+				handler.UpdateValue(nameof(ILabel.Text));
+				var platformLabel = GetPlatformLabel(handler);
+				platformLabel.Frame = new CoreGraphics.CGRect(0, 0, 200, 50);
+				platformLabel.LayoutIfNeeded();
+				return platformLabel.Subviews.OfType<UITextView>().Single().Text;
+			});
+
+			Assert.Equal("Second", text);
 		}
 
 		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
