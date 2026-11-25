@@ -1,4 +1,4 @@
-using Microsoft.Maui.Controls.Animations;
+﻿using Microsoft.Maui.Controls.Animations;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -62,8 +62,16 @@ public class Issue6DetailPage : ContentPage
 		Title = "Detail " + id;
 		SharedTransition.SetGroup(this, id);
 
-		// A Label rather than a BoxView, so Appium finds it on every platform (a textless BoxView isn't exposed on WinUI).
-		var hero = new Label { AutomationId = "DetailTile", Text = "Detail", BackgroundColor = Colors.SteelBlue, TextColor = Colors.White, HeightRequest = 240 };
+		// A Border, so Appium finds it on every platform (it has its own automation peer on WinUI, unlike a textless
+		// BoxView) and reports its laid-out size; a Label's WinUI TextBlock is only as tall as its text.
+		var hero = new Border
+		{
+			AutomationId = "DetailTile",
+			BackgroundColor = Colors.SteelBlue,
+			StrokeThickness = 0,
+			HeightRequest = 240,
+			Content = new Label { Text = "Detail", TextColor = Colors.White, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center },
+		};
 		SharedTransition.SetName(hero, "tile");
 
 		_status = new Label { AutomationId = "DetailStatus", Text = "Arriving" };
