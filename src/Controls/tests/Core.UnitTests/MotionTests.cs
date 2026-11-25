@@ -43,6 +43,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(completed);
 		}
 
+		[Theory]
+		[InlineData(0u, 1u)]
+		[InlineData(32u, 32u)]
+		public void TweenerNormalizesZeroRateButPreservesPositiveRate(uint rate, uint expectedRate)
+		{
+			var tweener = new Tweener(250, rate, new TestAnimationManager());
+
+			Assert.Equal(expectedRate, tweener.Rate);
+		}
+
 		[Fact]
 		public void ThrowsWithNullCallback()
 		{
