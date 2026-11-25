@@ -126,6 +126,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ContentReplacedWhileDetachingPreviousParentKeepsNewestContent()
+		{
+			var second = new LabelStub { Text = "Second" };
+			var third = new LabelStub { Text = "Third" };
+			var button = new ContentButtonStub { Content = new LabelStub { Text = "First" } };
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				using var host = new RemovalCallbackView();
+				var secondView = second.ToPlatform(MauiContext);
+				host.AddSubview(secondView);
+
+				var replaced = false;
+				host.SubviewRemoving = () =>
+				{
+					if (replaced)
+						return;
+
+					// A synchronous UIKit callback replaces the content while it is being re-parented.
+					replaced = true;
+					button.Content = third;
+					handler.UpdateValue(nameof(IContentView.Content));
+				};
+
+				button.Content = second;
+				handler.UpdateValue(nameof(IContentView.Content));
+
+				Assert.True(replaced);
+				Assert.Same(third.Handler?.PlatformView, Assert.Single(platformView.ContentContainerView.Subviews));
+				Assert.Null(secondView.Superview);
+			});
+		}
+
+		sealed class RemovalCallbackView : UIView
+		{
+			internal Action SubviewRemoving;
+
+			public override void WillRemoveSubview(UIView uiview)
+			{
+				base.WillRemoveSubview(uiview);
+				SubviewRemoving?.Invoke();
+			}
+		}
+
+		[Fact]
 		public async Task LiveVirtualViewReplacementReleasesPreviousPress()
 		{
 			var firstPressed = 0;

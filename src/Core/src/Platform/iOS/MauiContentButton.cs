@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Platform
 		bool _isNativeFocused;
 		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<UIView>? _contentView;
+		int _contentRequest;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayout;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
@@ -135,20 +136,32 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetContent(UIView? content)
 		{
+			// Moving views runs synchronous UIKit callbacks (window and superview changes) that can
+			// map newer content or disconnect the handler before this call finishes. Stop as soon
+			// as this request is superseded so stale content is never attached.
+			var request = ++_contentRequest;
+
 			if (_contentView is not null &&
 				_contentView.TryGetTarget(out var previousContent) &&
 				ReferenceEquals(previousContent.Superview, _contentContainer))
 			{
 				previousContent.RemoveFromSuperview();
+				if (request != _contentRequest)
+					return;
 			}
 
-			_contentView = null;
+			// Track the content before adding it so a nested request can remove it again.
+			_contentView = content is null ? null : new(content);
 
 			if (content is not null)
 			{
 				content.RemoveFromSuperview();
+				if (request != _contentRequest)
+					return;
+
 				_contentContainer.AddSubview(content);
-				_contentView = new(content);
+				if (request != _contentRequest)
+					return;
 			}
 
 			this.InvalidateMeasure();
