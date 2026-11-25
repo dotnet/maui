@@ -12,7 +12,12 @@ namespace Microsoft.Maui.Controls
 		{
 			if (handler.PlatformView is Microsoft.Maui.Platform.MauiTextView textView)
 			{
-				textView.AllowAutoGrowth = editor.AutoSize == EditorAutoSizeOption.TextChanges;
+				var allowAutoGrowth = editor.AutoSize == EditorAutoSizeOption.TextChanges;
+				if (textView.AllowAutoGrowth != allowAutoGrowth)
+				{
+					textView.AllowAutoGrowth = allowAutoGrowth;
+					Microsoft.Maui.Platform.ViewExtensions.InvalidateMeasure(textView, editor);
+				}
 			}
 		}
 
