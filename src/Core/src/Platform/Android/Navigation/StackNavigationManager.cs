@@ -283,18 +283,19 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The animation to use, or null to skip animation.</returns>
 		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
 		{
+			// Use MAUI-prefixed resources to avoid AndroidX Navigation's fade-only defaults.
 			int id;
 			if (isPopping)
 			{
 				id = enter
-					? Resource.Animation.nav_default_pop_enter_anim
-					: Resource.Animation.nav_default_pop_exit_anim;
+					? Resource.Animation.maui_nav_default_pop_enter_anim
+					: Resource.Animation.maui_nav_default_pop_exit_anim;
 			}
 			else
 			{
 				id = enter
-					? Resource.Animation.nav_default_enter_anim
-					: Resource.Animation.nav_default_exit_anim;
+					? Resource.Animation.maui_nav_default_enter_anim
+					: Resource.Animation.maui_nav_default_exit_anim;
 			}
 
 			return id > 0 ? AnimationUtils.LoadAnimation(context, id) : null;

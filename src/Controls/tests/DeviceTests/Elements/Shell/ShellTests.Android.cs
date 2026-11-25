@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
@@ -24,6 +25,7 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using AAnimation = Android.Views.Animations.Animation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
@@ -260,6 +262,89 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler);
+
+		[Fact]
+		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage()
+		{
+			SetupBuilder();
+			const string flowRoute = "Issue21749Flow";
+			const string nextStepRoute = "Issue21749NextStep";
+			var shell = await CreateShellAsync(shell => shell.Items.Add(new ContentPage()));
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				Routing.RegisterRoute(flowRoute, typeof(Issue21749ModalFlow));
+				Routing.RegisterRoute(nextStepRoute, typeof(Issue21749FlowEndPage));
+				try
+				{
+					await shell.GoToAsync(flowRoute, animate: true);
+					var flow = Assert.IsType<Issue21749ModalFlow>(Assert.Single(shell.Navigation.ModalStack));
+					var startPage = flow.CurrentPage;
+					var manager = Assert.IsType<NavigationViewHandler>(flow.Handler).StackNavigationManager;
+					manager.SetNavigationViewFragmentType(typeof(SlideProbeFragment));
+
+					await shell.GoToAsync(nextStepRoute, animate: true);
+
+					Assert.Same(flow, Assert.Single(shell.Navigation.ModalStack));
+					Assert.Collection(flow.Navigation.NavigationStack,
+						page => Assert.Same(startPage, page),
+						page => Assert.IsType<Issue21749FlowEndPage>(page));
+					Assert.IsType<Issue21749FlowEndPage>(flow.CurrentPage);
+
+					var fragment = Assert.IsType<SlideProbeFragment>(manager.NavHost.ChildFragmentManager.PrimaryNavigationFragment);
+					var animation = fragment.EnterAnimation;
+					Assert.NotNull(animation);
+					await shell.Navigation.PopModalAsync(animated: false);
+
+					// Sample the actual enter animation after dismissal so the test does not race the renderer.
+					const int size = 200;
+					animation.Reset();
+					animation.Initialize(size, size, size, size);
+					animation.StartTime = 0;
+					using var transformation = new Transformation();
+					animation.GetTransformation(animation.ComputeDurationHint() / 2, transformation);
+					var origin = new float[2];
+					transformation.Matrix.MapPoints(origin);
+
+					Assert.True(origin[0] > 0, $"Expected Step 2 to slide in from the right, but its horizontal offset was {origin[0]}.");
+				}
+				finally
+				{
+					Routing.UnRegisterRoute(nextStepRoute);
+					Routing.UnRegisterRoute(flowRoute);
+				}
+			});
+		}
+
+		public class SlideProbeFragment : NavigationViewFragment
+		{
+			internal AAnimation EnterAnimation { get; private set; }
+
+			public override AAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
+			{
+				var animation = base.OnCreateAnimation(transit, enter, nextAnim);
+				if (enter)
+					EnterAnimation = animation;
+
+				return animation;
+			}
+		}
+
+		class Issue21749ModalFlow : NavigationPage
+		{
+			public Issue21749ModalFlow() : base(new ContentPage { Title = "Step 1" })
+			{
+				Shell.SetPresentationMode(this, PresentationMode.ModalAnimated);
+			}
+		}
+
+		class Issue21749FlowEndPage : ContentPage
+		{
+			public Issue21749FlowEndPage()
+			{
+				Title = "Step 2";
+			}
+		}
 
 		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
 		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
