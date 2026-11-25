@@ -31,4 +31,10 @@ static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -
 static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+~Microsoft.Maui.Controls.Span.TextDecorationColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Span.TextDecorationColor.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationColorProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Span.TextDecorationThickness.get -> double
+Microsoft.Maui.Controls.Span.TextDecorationThickness.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T

@@ -65,6 +65,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(vm.Text, span.Text);
 		}
 
+		[Fact]
+		public void TextDecorationColorDefaultsToNull()
+		{
+			var span = new Span();
+
+			Assert.Null(span.TextDecorationColor);
+		}
+
+		[Fact]
+		public void ChangingTextDecorationColorUpdatesLabelFormattedText()
+		{
+			var span = new Span { Text = "underlined", TextDecorations = TextDecorations.Underline };
+			var label = new Label { FormattedText = new FormattedString { Spans = { span } } };
+
+			var formattedTextChanged = false;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.FormattedText))
+					formattedTextChanged = true;
+			};
+
+			span.TextDecorationColor = Colors.Orange;
+
+			Assert.Equal(Colors.Orange, span.TextDecorationColor);
+			Assert.True(formattedTextChanged);
+		}
+
+		[Fact]
+		public void TextDecorationThicknessDefaultsToFontThickness()
+		{
+			var span = new Span();
+
+			Assert.Equal(-1d, span.TextDecorationThickness);
+		}
+
+		[Fact]
+		public void ChangingTextDecorationThicknessUpdatesLabelFormattedText()
+		{
+			var span = new Span { Text = "underlined", TextDecorations = TextDecorations.Underline };
+			var label = new Label { FormattedText = new FormattedString { Spans = { span } } };
+
+			var formattedTextChanged = false;
+			label.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Label.FormattedText))
+					formattedTextChanged = true;
+			};
+
+			span.TextDecorationThickness = 1;
+
+			Assert.Equal(1d, span.TextDecorationThickness);
+			Assert.True(formattedTextChanged);
+		}
+
 		class ViewModel
 		{
 			public string Text { get; set; }

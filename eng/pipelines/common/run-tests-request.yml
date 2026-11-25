@@ -1,4 +1,4 @@
-# `/review run-tests` request for maui-pr-uitests (eng/pipelines/ci-uitests.yml).
+# `/review run-ui-tests` request for maui-pr-uitests (eng/pipelines/ci-uitests.yml).
 #
 # GitHub Actions cannot queue Azure DevOps builds (Microsoft Entra blocks the federated identity and
 # Azure Pipelines ignores `/azp run` from bots), so .github/scripts/Invoke-RunTests.ps1 pushes a
