@@ -18,6 +18,11 @@ const DOCS_URL = 'https://github.com/dotnet/maui/blob/main/.github/docs/pr-journ
 
 const DEFAULT_BOT_LOGINS = ['mauibot', 'maui-bot', 'maui-bot[bot]', 'github-actions[bot]'];
 const MAINTAINER_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+// CI is Azure Pipelines check runs plus commit statuses (e.g. maui-pr-uitests).
+// GitHub Actions checks (labelers, this tracker, ...) are not CI for contributors.
+const CI_CHECK_APPS = new Set(['azure-pipelines']);
+const IGNORED_STATUS_CONTEXTS = new Set(['license/cla']);
+const CHECK_OK = new Set(['success', 'neutral', 'skipped']);
 
 const MODE_OPTIONS = [
   { mode: 'fix', text: 'Review and improve automatically', line: '- [{x}] **Review and improve automatically**: the MAUI agent and maintainers may push fixes for review findings to this branch. Your approach is kept.' },
@@ -105,7 +110,25 @@ function encodeState(state) {
  * Normalizes a GraphQL pull request node into the plain facts the state
  * machine needs.
  */
-function toFacts(pr) {
+/** Summarizes CI for a commit: { state, total, done, failing: [{ name, url }] }. */
+function summarizeCi(checkRuns, statuses) {
+  const items = [];
+  for (const r of checkRuns) {
+    if (!CI_CHECK_APPS.has(r.app?.slug)) continue;
+    const done = r.status === 'completed';
+    items.push({ name: r.name, url: r.html_url, done, ok: done && CHECK_OK.has(r.conclusion) });
+  }
+  for (const st of statuses) {
+    if (IGNORED_STATUS_CONTEXTS.has(st.context)) continue;
+    const done = st.state !== 'pending';
+    items.push({ name: st.context, url: st.target_url, done, ok: st.state === 'success' });
+  }
+  const failing = items.filter(i => i.done && !i.ok);
+  const state = !items.length ? null : failing.length ? 'FAILURE' : items.every(i => i.done) ? 'SUCCESS' : 'PENDING';
+  return { state, total: items.length, done: items.filter(i => i.done).length, failing };
+}
+
+function toFacts(pr, ci = summarizeCi([], [])) {
   const bots = botLogins();
   const author = pr.author?.login || 'ghost';
   const labels = (pr.labels?.nodes || []).map(l => l.name);
@@ -129,7 +152,8 @@ function toFacts(pr) {
     isDraft: !!pr.isDraft,
     baseRef: pr.baseRefName,
     headSha: head?.oid || '',
-    ci: head?.statusCheckRollup?.state || null,
+    ci: ci.state,
+    ciSummary: ci,
     isCrossRepository: !!pr.isCrossRepository,
     maintainerCanModify: pr.maintainerCanModify !== false,
     mode: parseMode(pr.body),
@@ -172,9 +196,14 @@ function computeJourney(f, saved = {}) {
   const s = Object.fromEntries(steps.map(x => [x.key, x]));
 
   // CI
-  if (f.ci === 'SUCCESS') Object.assign(s.ci, { status: 'done', note: `Passed on \`${short(f.headSha)}\`` });
-  else if (f.ci === 'FAILURE' || f.ci === 'ERROR') Object.assign(s.ci, { status: 'blocked', note: `Failing on \`${short(f.headSha)}\`` });
-  else if (f.ci === 'PENDING' || f.ci === 'EXPECTED') Object.assign(s.ci, { status: 'active', note: 'Running' });
+  const cs = f.ciSummary || { total: 0, done: 0, failing: [] };
+  if (f.ci === 'SUCCESS') Object.assign(s.ci, { status: 'done', note: `Passed on \`${short(f.headSha)}\` (${cs.total} checks)` });
+  else if (f.ci === 'FAILURE') {
+    const names = cs.failing.slice(0, 3).map(x => x.url ? `[${x.name}](${x.url})` : x.name).join(', ');
+    const more = cs.failing.length > 3 ? ` and ${cs.failing.length - 3} more` : '';
+    Object.assign(s.ci, { status: 'blocked', note: `${cs.failing.length} failing on \`${short(f.headSha)}\`: ${names}${more}` });
+  }
+  else if (f.ci === 'PENDING') Object.assign(s.ci, { status: 'active', note: `Running (${cs.done} of ${cs.total} checks done)` });
   else Object.assign(s.ci, { status: 'pending', note: 'Not started yet' });
 
   // AI review
@@ -344,7 +373,7 @@ const PR_FIELDS = `
   number state merged isDraft body baseRefName isCrossRepository maintainerCanModify
   author { login }
   labels(first: 50) { nodes { name } }
-  commits(last: 1) { nodes { commit { oid statusCheckRollup { state } } } }
+  commits(last: 1) { nodes { commit { oid } } }
   reviews(last: 50) { nodes { author { login } state url commit { oid } } }
   latestOpinionatedReviews(first: 30) { nodes { author { login } authorAssociation state } }
 `;
@@ -353,6 +382,13 @@ async function fetchPr(github, owner, repo, number) {
   const q = `query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$number){${PR_FIELDS}}}}`;
   const r = await github.graphql(q, { owner, repo, number });
   return r.repository.pullRequest;
+}
+
+async function fetchCi(github, owner, repo, sha) {
+  if (!sha) return summarizeCi([], []);
+  const runs = await github.paginate(github.rest.checks.listForRef, { owner, repo, ref: sha, filter: 'latest', per_page: 100 });
+  const { data } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: sha, per_page: 100 });
+  return summarizeCi(runs, data.statuses || []);
 }
 
 async function findTracker(github, owner, repo, number) {
@@ -374,12 +410,15 @@ async function syncLabel(github, core, owner, repo, f) {
 async function updatePr({ github, core, owner, repo, number, create = true, mutateSaved }) {
   const pr = await fetchPr(github, owner, repo, number);
   if (!pr) return;
-  const f = toFacts(pr);
-  if (f.state === 'OPEN') await syncLabel(github, core, owner, repo, f);
+  const state = pr.merged ? 'MERGED' : pr.state;
 
   // Trackers are only created for open PRs; closed or merged PRs only refresh an existing one.
   const existing = await findTracker(github, owner, repo, number);
-  if (!existing && (!create || f.state !== 'OPEN')) return;
+  if (!existing && (!create || state !== 'OPEN')) return;
+
+  const ci = state === 'OPEN' ? await fetchCi(github, owner, repo, pr.commits?.nodes?.[0]?.commit?.oid) : undefined;
+  const f = toFacts(pr, ci);
+  if (f.state === 'OPEN') await syncLabel(github, core, owner, repo, f);
 
   let saved = existing ? decodeState(existing.body) : {};
   if (mutateSaved) saved = mutateSaved(saved, f);
@@ -473,4 +512,4 @@ async function main({ github, core, context }) {
   if (number) return updatePr({ github, core, owner, repo, number });
 }
 
-module.exports = { main, parseMode, setMode, parseCommand, toFacts, computeJourney, render, advanceSaved, decodeState, encodeState, MARKER };
+module.exports = { main, summarizeCi, parseMode, setMode, parseCommand, toFacts, computeJourney, render, advanceSaved, decodeState, encodeState, MARKER };
