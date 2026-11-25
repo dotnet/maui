@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.Handlers.ContentButtonHandler
 Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void
 Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
@@ -20,7 +20,6 @@ static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Ha
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
-﻿#nullable enable
 *REMOVED*override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint
 *REMOVED*override Microsoft.Maui.MauiViewGroup.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.PlatformAppCompatTextView.ThresholdClass.get -> nint
