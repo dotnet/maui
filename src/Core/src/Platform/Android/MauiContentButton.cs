@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		ColorStateList? _defaultRippleColor;
 		ColorStateList? _defaultStrokeColor;
 		ColorStateList? _mappedStrokeColor;
+		ColorStateList? _transparentStrokeColor;
 		ShapeAppearanceModel? _initialShapeAppearanceModel;
 		ShapeAppearanceModel? _defaultShapeAppearanceModel;
 		ShapeAppearanceModel? _mappedShapeAppearanceModel;
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Platform
 				{
 					BackgroundTintList = null;
 					StrokeWidth = 0;
-					SetMappedStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
+					SetMappedStrokeColor(TransparentStrokeColor);
 				});
 
 			// The background refresh keeps the existing stroke layer, or recreates it from
@@ -255,8 +256,9 @@ namespace Microsoft.Maui.Platform
 				}
 
 				StrokeWidth = 0;
-				if (updateColor)
-					SetMappedStrokeColor(ColorStateList.ValueOf(AColor.Transparent));
+				// A MAUI background draws the stroke; hide the card stroke without reallocating per refresh.
+				if (updateColor && !TransparentStrokeColor.Equals(StrokeColorStateList))
+					SetMappedStrokeColor(TransparentStrokeColor);
 				return;
 			}
 
@@ -288,6 +290,9 @@ namespace Microsoft.Maui.Platform
 			SetStrokeColor(color);
 			_mappedStrokeColor = StrokeColorStateList;
 		}
+
+		ColorStateList TransparentStrokeColor =>
+			_transparentStrokeColor ??= ColorStateList.ValueOf(AColor.Transparent);
 
 		internal bool HasMauiBackground =>
 			this.TryGetMauiBackground(out _, out _, out _, out _, out _);
