@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.BindingSourceGen;
+using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -80,25 +82,43 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		// Same order as Type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true):
 		// the attributes of the type itself, then those of each base type.
 		var attributes = type.GetAllAttributes(context: null)
-			.Where(attribute => attribute.AttributeClass is { } attributeClass && InheritsFromOrEquals(attributeClass, attributeType))
+			.Where(attribute => attribute.AttributeClass is { } attributeClass && attributeClass.InheritsFrom(attributeType, context: null))
 			.ToList();
 
 		if (attributes.Count == 0)
 			return null;
 
-		if (type.AllInterfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
+		IMethodSymbol? customQueryPropertiesHandler = null;
+		if (type.Implements(interfaceType))
 		{
-			var implementation = type.FindImplementationForInterfaceMember(interfaceType.GetMembers("ApplyQueryAttributes").Single());
+			var applyQueryAttributes = type.FindImplementationForInterfaceMember(interfaceType.GetMembers("ApplyQueryAttributes").Single());
 			// A derived class must replace a generated base implementation to include its own attributes.
-			if (!IsGeneratedQueryPropertyImplementation(implementation))
+			if (!IsGeneratedQueryPropertyImplementation(applyQueryAttributes))
 				return null;
+
+			var applyQueryProperties = (IMethodSymbol)interfaceType.GetMembers("ApplyQueryProperties").Single();
+			var implementation = type.FindImplementationForInterfaceMember(applyQueryProperties);
+			if (implementation is IMethodSymbol userImplementation
+				&& SymbolEqualityComparer.Default.Equals(userImplementation.ContainingType, type)
+				&& !IsGeneratedQueryPropertyImplementation(userImplementation))
+				return null;
+
+			customQueryPropertiesHandler = type.GetMembers("ApplyQueryProperties")
+				.OfType<IMethodSymbol>()
+				.FirstOrDefault(method =>
+					method.MethodKind == MethodKind.Ordinary
+					&& !method.IsStatic
+					&& method.ReturnsVoid
+					&& method.Parameters.Length == applyQueryProperties.Parameters.Length
+					&& method.Parameters.Select(static parameter => parameter.Type)
+						.SequenceEqual(applyQueryProperties.Parameters.Select(static parameter => parameter.Type), SymbolEqualityComparer.Default));
 		}
 
 		var typeName = type.ToFQDisplayString();
 		var location = LocationModel.From(declaration.Identifier.GetLocation());
 		var hintName = GetHintName(typeName);
 
-		var source = TryGenerateSource(compilation, type, attributes, attributeType, out var unsupportedReason);
+		var source = TryGenerateSource(compilation, type, attributes, attributeType, customQueryPropertiesHandler, out var unsupportedReason);
 		return new TypeModel(typeName, type.ToString(), hintName, source, unsupportedReason, location);
 	}
 
@@ -108,7 +128,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 			&& attribute.ConstructorArguments.Length > 0
 			&& attribute.ConstructorArguments[0].Value is "Microsoft.Maui.Controls.SourceGen");
 
-	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, out string? unsupportedReason)
+	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, IMethodSymbol? customQueryPropertiesHandler, out string? unsupportedReason)
 	{
 		unsupportedReason = null;
 
@@ -152,56 +172,63 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 				return null;
 			}
 
-			if (!TryFindProperty(type, name, out var property))
+			if (!TryFindProperty(compilation, type, name, out var property, out var propertyType, out var isGeneratedProperty))
 			{
 				unsupportedReason = $"property '{name}' can't be resolved without reflection";
 				return null;
 			}
 
 			// Reflection only sets properties with a public setter and ignores the attribute otherwise.
-			if (property is null || property.SetMethod is not { DeclaredAccessibility: Accessibility.Public } setMethod)
+			if (propertyType is null || (!isGeneratedProperty && property?.SetMethod is not { DeclaredAccessibility: Accessibility.Public }))
 				continue;
 
-			if (setMethod.IsInitOnly
-				|| property.Type.IsRefLikeType
-				|| property.Type is IPointerTypeSymbol or IFunctionPointerTypeSymbol
-				|| property.Type.TypeKind == TypeKind.Error
-				|| ContainsTypeParameter(property.Type)
-				|| !compilation.IsSymbolAccessibleWithin(property.Type, type)
-				|| !compilation.IsSymbolAccessibleWithin(property.ContainingType, type)
-				|| IsObsoleteError(property) || IsObsoleteError(setMethod))
+			if ((!isGeneratedProperty && property?.SetMethod is { IsInitOnly: true })
+				|| propertyType.IsRefLikeType
+				|| propertyType is IPointerTypeSymbol or IFunctionPointerTypeSymbol
+				|| propertyType.TypeKind == TypeKind.Error
+				|| ContainsTypeParameter(propertyType)
+				|| !compilation.IsSymbolAccessibleWithin(propertyType, type)
+				|| (property is not null && !compilation.IsSymbolAccessibleWithin(property.ContainingType, type))
+				|| (property is not null && (IsObsoleteError(property) || property.SetMethod is { } setter && IsObsoleteError(setter))))
 			{
 				unsupportedReason = $"property '{name}' can't be set from generated code";
 				return null;
 			}
 
-			AppendPropertyAssignment(body, property, queryId);
+			AppendPropertyAssignment(body, type, property, propertyType, name, queryId);
 		}
 
-		return GenerateSource(type, body.ToString());
+		return GenerateSource(type, body.ToString(), customQueryPropertiesHandler);
 	}
 
-	static void AppendPropertyAssignment(StringBuilder builder, IPropertySymbol property, string queryId)
+	static void AppendPropertyAssignment(StringBuilder builder, INamedTypeSymbol type, IPropertySymbol? property, ITypeSymbol propertyTypeSymbol, string propertyName, string queryId)
 	{
-		var propertyType = property.Type.ToFQDisplayString();
-		var member = property.IsStatic
-			? $"{property.ContainingType.ToFQDisplayString()}.{EscapeIdentifier(property.Name)}"
-			// Cast to the declaring type so a member hidden by a more derived type isn't used instead.
-			: $"(({property.ContainingType.ToFQDisplayString()})this).{EscapeIdentifier(property.Name)}";
+		var propertyType = propertyTypeSymbol.ToFQDisplayString();
+		var memberName = EscapeIdentifier(propertyName);
+		var member = property is null
+			? $"this.{memberName}"
+			: property.IsStatic
+				? $"{property.ContainingType.ToFQDisplayString()}.{memberName}"
+				: SymbolEqualityComparer.Default.Equals(property.ContainingType, type)
+					? $"this.{memberName}"
+					// Cast to the declaring type so a member hidden by a more derived type isn't used instead.
+					: $"(({property.ContainingType.ToFQDisplayString()})this).{memberName}";
 		var id = SymbolDisplay.FormatLiteral(queryId, quote: true);
-		var isNullableValueType = property.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
-		var isNonNullableValueType = property.Type.IsValueType && !isNullableValueType;
+		var isNullableValueType = propertyTypeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+		var isNonNullableValueType = propertyTypeSymbol.IsValueType && !isNullableValueType;
 
 		string value;
-		if (property.Type.SpecialType == SpecialType.System_String)
+		if (propertyTypeSymbol.SpecialType == SpecialType.System_String)
 		{
 			value = $"{ConversionName}.ConvertToString(query, {id}, value)";
 		}
 		else
 		{
 			var conversionType = isNullableValueType
-				? ((INamedTypeSymbol)property.Type).TypeArguments[0].ToFQDisplayString()
-				: propertyType;
+				? ((INamedTypeSymbol)propertyTypeSymbol).TypeArguments[0].ToFQDisplayString()
+				: propertyTypeSymbol.TypeKind == TypeKind.Dynamic
+					? "global::System.Object"
+					: propertyType;
 			// PropertyInfo.SetValue(target, null) stores the default value of a value type.
 			value = $"value is null ? default({propertyType}) : ({propertyType})global::System.Convert.ChangeType(value, typeof({conversionType}), {ConversionName}.GetFormatProvider(query, {id}))";
 		}
@@ -210,12 +237,12 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		builder.AppendLine($"				{member} = {value};");
 		builder.AppendLine($"			else if (previousQuery.ContainsKey({id}))");
 		// Matches Activator.CreateInstance(propertyType) for value types and null otherwise.
-		builder.AppendLine(isNonNullableValueType
+		builder.AppendLine(isNonNullableValueType && !propertyTypeSymbol.IsTupleType
 			? $"				{member} = new {propertyType}();"
 			: $"				{member} = default({propertyType});");
 	}
 
-	static string GenerateSource(INamedTypeSymbol type, string body)
+	static string GenerateSource(INamedTypeSymbol type, string body, IMethodSymbol? customQueryPropertiesHandler)
 	{
 		var containingTypes = new List<INamedTypeSymbol>();
 		for (var current = type; current is not null; current = current.ContainingType)
@@ -246,17 +273,26 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		builder.AppendLine($"{indent}[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 		builder.AppendLine($"{indent}void {InterfaceName}.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query) {{ }}");
 		builder.AppendLine();
+		builder.AppendLine("#if !NETSTANDARD");
 		builder.AppendLine($"{indent}[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 		builder.AppendLine($"{indent}void {InterfaceName}.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)");
 		builder.AppendLine($"{indent}{{");
-		builder.AppendLine($"{indent}	{ConversionName}.ValidateGeneratedQueryProperties(this, typeof({type.ToFQDisplayString()}));");
-		builder.AppendLine($"{indent}	object value;");
-		foreach (var line in body.Split('\n'))
+		if (customQueryPropertiesHandler is not null)
 		{
-			if (line.Length > 0)
-				builder.AppendLine(indent + line.TrimEnd('\r'));
+			builder.AppendLine($"{indent}	this.ApplyQueryProperties(query, previousQuery);");
+		}
+		else
+		{
+			builder.AppendLine($"{indent}	{ConversionName}.ValidateGeneratedQueryProperties(this, typeof({GetTypeName(type)}));");
+			builder.AppendLine($"{indent}	object value;");
+			foreach (var line in body.Split('\n'))
+			{
+				if (line.Length > 0)
+					builder.AppendLine(indent + line.TrimEnd('\r'));
+			}
 		}
 		builder.AppendLine($"{indent}}}");
+		builder.AppendLine("#endif");
 
 		for (var i = 0; i < containingTypes.Count; i++)
 		{
@@ -292,8 +328,8 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 	{
 		var builder = new StringBuilder();
 		foreach (var c in typeName.StartsWith("global::", System.StringComparison.Ordinal) ? typeName.Substring("global::".Length) : typeName)
-			builder.Append(char.IsLetterOrDigit(c) || c == '.' ? c : '_');
-		return builder.Append(".QueryProperties.g.cs").ToString();
+			builder.Append(((int)c).ToString("X4")).Append('_');
+		return builder.Append("QueryProperties.g.cs").ToString();
 	}
 
 	static bool ContainsTypeParameter(ITypeSymbol type) => type switch
@@ -309,16 +345,25 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 	/// the type and its base types, public static properties of the type itself. Returns <c>false</c> when reflection
 	/// would throw or bind differently than C# member access.
 	/// </summary>
-	static bool TryFindProperty(INamedTypeSymbol type, string name, out IPropertySymbol? property)
+	static bool TryFindProperty(Compilation compilation, INamedTypeSymbol type, string name, out IPropertySymbol? property, out ITypeSymbol? propertyType, out bool isGeneratedProperty)
 	{
 		property = null;
+		propertyType = null;
+		isGeneratedProperty = false;
+		var hiddenByNonPublicProperty = false;
 
 		for (var current = type; current is not null; current = current.BaseType)
 		{
 			foreach (var member in current.GetMembers(name))
 			{
-				if (member is not IPropertySymbol candidate || candidate.DeclaredAccessibility != Accessibility.Public)
+				if (member is not IPropertySymbol candidate)
 					continue;
+
+				if (candidate.DeclaredAccessibility != Accessibility.Public)
+				{
+					hiddenByNonPublicProperty = true;
+					continue;
+				}
 
 				if (candidate.IsIndexer || candidate.Parameters.Length > 0)
 					return false;
@@ -329,6 +374,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 				if (property is null)
 				{
 					property = candidate;
+					propertyType = candidate.Type;
 				}
 				else if (!SymbolEqualityComparer.Default.Equals(property.Type, candidate.Type))
 				{
@@ -337,6 +383,16 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 					return false;
 				}
 			}
+		}
+
+		if (property is not null && hiddenByNonPublicProperty)
+			return false;
+
+		if (property is null && type.TryGetObservablePropertyType(name, compilation, out var generatedPropertyType))
+		{
+			propertyType = generatedPropertyType;
+			isGeneratedProperty = true;
+			return true;
 		}
 
 		if (property?.SetMethod is null && property?.OverriddenProperty is not null)
@@ -355,25 +411,11 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		return true;
 	}
 
-	static bool InheritsFromOrEquals(INamedTypeSymbol type, INamedTypeSymbol baseType)
-	{
-		for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
-		{
-			if (SymbolEqualityComparer.Default.Equals(current, baseType))
-				return true;
-		}
-
-		return false;
-	}
-
 	static bool IsObsoleteError(ISymbol symbol) =>
 		symbol.GetAttributes().Any(static a =>
 			a.AttributeClass?.ToString() == "System.ObsoleteAttribute"
 			&& a.ConstructorArguments.Length == 2
 			&& a.ConstructorArguments[1].Value is true);
-
-	static string EscapeIdentifier(string identifier) =>
-		SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None ? "@" + identifier : identifier;
 
 	sealed record TypeModel(string TypeName, string DisplayName, string HintName, string? Source, string? UnsupportedReason, LocationModel? Location);
 

@@ -47,39 +47,103 @@ public class QueryPropertyGeneratorTests
 					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
 					void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query) { }
 
+			#if !NETSTANDARD
 					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
 					void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)
 					{
-						global::Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(this, typeof(global::MyApp.DetailsPage));
+						global::Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(this, typeof(DetailsPage));
 						object value;
 						if (query.TryGetValue("name", out value))
-							((global::MyApp.DetailsPage)this).Name = global::Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(query, "name", value);
+							this.Name = global::Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(query, "name", value);
 						else if (previousQuery.ContainsKey("name"))
-							((global::MyApp.DetailsPage)this).Name = default(string);
+							this.Name = default(string);
 						if (query.TryGetValue("count", out value))
-							((global::MyApp.DetailsPage)this).Count = value is null ? default(int) : (int)global::System.Convert.ChangeType(value, typeof(int), global::Microsoft.Maui.Controls.QueryPropertyConversion.GetFormatProvider(query, "count"));
+							this.Count = value is null ? default(int) : (int)global::System.Convert.ChangeType(value, typeof(int), global::Microsoft.Maui.Controls.QueryPropertyConversion.GetFormatProvider(query, "count"));
 						else if (previousQuery.ContainsKey("count"))
-							((global::MyApp.DetailsPage)this).Count = new int();
+							this.Count = new int();
 					}
+			#endif
 				}
 			}
 			"""), Normalize(generated));
 	}
 
 	[Fact]
-	public void GeneratesNothingWithoutQueryPropertyAttributes()
+	public void HandlesGeneratedPropertiesDynamicTuplesNestedGenericsAndHintNameCollisions()
 	{
-		var (result, _) = RunGenerator("""
-			using Microsoft.Maui.Controls;
+			const string source = """
+				using System;
+				using Microsoft.Maui.Controls;
 
-			public partial class PlainPage : ContentPage
-			{
-				public string Name { get; set; }
-			}
-			""");
+				namespace CommunityToolkit.Mvvm.ComponentModel
+				{
+					[AttributeUsage(AttributeTargets.Field)]
+					public sealed class ObservablePropertyAttribute : Attribute { }
+				}
 
-		Assert.Empty(result.GeneratedTrees);
-		Assert.Empty(result.Diagnostics);
+				namespace App
+				{
+					[QueryProperty("Name", "name")]
+					public partial class ObservableModel
+					{
+						[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+						string? _name;
+					}
+
+					[QueryProperty(nameof(Value), "value")]
+					public partial class Model<T>
+					{
+						public string Value { get; set; }
+					}
+
+					[QueryProperty(nameof(Value), "value")]
+					public partial class Model_T_
+					{
+						public string Value { get; set; }
+					}
+
+					public class HiddenBase
+					{
+						public string Value { get; set; }
+					}
+
+					[QueryProperty(nameof(Value), "value")]
+					public partial class PrivateHidden : HiddenBase
+					{
+						private new string Value { get; set; }
+					}
+
+					public partial class Outer<T>
+					{
+						[QueryProperty(nameof(Pair), "pair")]
+						[QueryProperty(nameof(DynamicValue), "dynamic")]
+						public partial class Inner<T>
+						{
+							public (int X, int Y) Pair { get; set; }
+							public dynamic DynamicValue { get; set; }
+						}
+					}
+				}
+				""";
+
+			var compilation = SourceGeneratorDriver.CreateMauiCompilation($"QueryPropertyTests{Guid.NewGuid():N}")
+				.AddReferences(MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.DynamicAttribute).Assembly.Location))
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview)));
+			GeneratorDriver driver = CSharpGeneratorDriver.Create(
+				[new QueryPropertyGenerator().AsSourceGenerator()],
+				parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
+			driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+
+			var generated = driver.GetRunResult().GeneratedTrees.Select(tree => tree.ToString()).ToArray();
+			Assert.Equal(4, generated.Length);
+			Assert.Contains(generated, tree => tree.Contains("this.Name =", StringComparison.Ordinal));
+			Assert.Contains(generated, tree => tree.Contains("typeof(global::System.Object)", StringComparison.Ordinal));
+			Assert.Contains(generated, tree => tree.Contains("default((int X, int Y))", StringComparison.Ordinal));
+			Assert.Contains(generated, tree => tree.Contains("typeof(Inner<T>)", StringComparison.Ordinal));
+			Assert.Empty(updatedCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
+				namespace App;
+				public partial class ObservableModel { public string? Name { get; set; } }
+				""", new CSharpParseOptions(LanguageVersion.Preview))).GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -427,7 +491,7 @@ public class QueryPropertyGeneratorTests
 	}
 
 	[Fact]
-	public void GeneratedBaseImplementationFromReferencedAssemblyIsReplaced()
+	public void GeneratedDerivedTypeForwardsToCustomQueryPropertyHandler()
 	{
 		var (_, baseCompilation) = RunGenerator("""
 			using Microsoft.Maui.Controls;
@@ -445,12 +509,15 @@ public class QueryPropertyGeneratorTests
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation($"QueryPropertyTests{Guid.NewGuid():N}")
 			.AddReferences(MetadataReference.CreateFromImage(stream.ToArray()))
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
+				using System.Collections.Generic;
 				using Microsoft.Maui.Controls;
 
 				[QueryProperty(nameof(Other), "other")]
 				public partial class Derived : GeneratedBase
 				{
 					public string Other { get; set; }
+					public bool CustomCalled { get; private set; }
+					public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) => CustomCalled = true;
 				}
 				""", new CSharpParseOptions(LanguageVersion.Preview)));
 		GeneratorDriver driver = CSharpGeneratorDriver.Create(
@@ -459,9 +526,20 @@ public class QueryPropertyGeneratorTests
 		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
 
 		var generated = Assert.Single(driver.GetRunResult().GeneratedTrees).ToString();
-		Assert.Contains("TryGetValue(\"value\"", generated, StringComparison.Ordinal);
-		Assert.Contains("TryGetValue(\"other\"", generated, StringComparison.Ordinal);
+		Assert.Contains("this.ApplyQueryProperties(query, previousQuery);", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("TryGetValue(\"other\"", generated, StringComparison.Ordinal);
 		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+
+		using var derivedStream = new MemoryStream();
+		emitResult = updatedCompilation.Emit(derivedStream);
+		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
+		stream.Position = 0;
+		_ = AssemblyLoadContext.Default.LoadFromStream(stream);
+		derivedStream.Position = 0;
+		var assembly = AssemblyLoadContext.Default.LoadFromStream(derivedStream);
+		var derived = Activator.CreateInstance(assembly.GetType("Derived", throwOnError: true)!)!;
+		((IQueryAttributable)derived).ApplyQueryProperties(new Dictionary<string, object>(), new Dictionary<string, object>());
+		Assert.True((bool)derived.GetType().GetProperty("CustomCalled")!.GetValue(derived)!);
 	}
 
 	[Fact]

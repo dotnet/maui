@@ -674,12 +674,15 @@ namespace Microsoft.Maui.Controls
 	{
 		void ApplyQueryAttributes(IDictionary<string, object> query);
 
+#if !NETSTANDARD
 #nullable enable
-		/// <summary>Applies query properties using the current and previous queries.</summary>
+		/// <summary>Applies query properties using generated code when available.</summary>
 		/// <param name="query">The current query parameters.</param>
 		/// <param name="previousQuery">The previously applied query parameters.</param>
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery);
+		void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) =>
+			QueryPropertyConversion.ApplyLegacyQueryProperties(this, query, previousQuery);
 #nullable disable
+#endif
 	}
 }

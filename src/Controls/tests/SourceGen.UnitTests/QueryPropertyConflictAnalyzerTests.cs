@@ -49,7 +49,7 @@ public class QueryPropertyConflictAnalyzerTests
 	[InlineData(false, false)]
 	public async Task DoesNotWarnWithoutBothMechanisms(bool hasAttribute, bool hasInterface)
 	{
-		var (_, compilation) = RunGenerator(CreateCompilation($$"""
+		var (result, compilation) = RunGenerator(CreateCompilation($$"""
 			{{(hasAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
 			public partial class Model {{(hasInterface ? ": IQueryAttributable" : "")}}
 			{
@@ -59,6 +59,11 @@ public class QueryPropertyConflictAnalyzerTests
 			}
 			"""));
 
+		if (!hasAttribute)
+		{
+			Assert.Empty(result.GeneratedTrees);
+			Assert.Empty(result.Diagnostics);
+		}
 		Assert.Empty(await GetDiagnostics(compilation));
 	}
 
@@ -151,28 +156,6 @@ public class QueryPropertyConflictAnalyzerTests
 			""");
 
 		Assert.Equal(expectedCount, diagnostics.Length);
-	}
-
-	[Fact]
-	public async Task WarnsForDerivedInterfaceAndAttribute()
-	{
-		var diagnostics = await Analyze("""
-			public interface IQueryHandler : IQueryAttributable { }
-			public class CustomQueryAttribute : QueryPropertyAttribute
-			{
-				public CustomQueryAttribute() : base("Value", "value") { }
-			}
-
-			[CustomQuery]
-			public class Model : IQueryHandler
-			{
-				public string Value { get; set; }
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
-				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
-			}
-			""");
-
-		Assert.Single(diagnostics);
 	}
 
 	[Theory]
@@ -335,12 +318,16 @@ public class QueryPropertyConflictAnalyzerTests
 	}
 
 	[Fact]
-	public async Task WarnsForDerivedInterfaceWhenGeneratorRuns()
+	public async Task WarnsForDerivedInterfaceAndAttributeWhenGeneratorRuns()
 	{
 		var (result, compilation) = RunGenerator(CreateCompilation("""
 			public interface IQueryHandler : IQueryAttributable { }
+			public class CustomQueryAttribute : QueryPropertyAttribute
+			{
+				public CustomQueryAttribute() : base("Value", "value") { }
+			}
 
-			[QueryProperty(nameof(Value), "value")]
+			[CustomQuery]
 			public partial class Model : IQueryHandler
 			{
 				public string Value { get; set; }

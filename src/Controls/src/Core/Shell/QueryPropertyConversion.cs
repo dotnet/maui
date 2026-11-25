@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
@@ -19,8 +20,45 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class QueryPropertyConversion
 	{
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This reflection fallback preserves QueryProperty behavior for already-compiled IQueryAttributable implementations; source-generated implementations avoid it.")]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "This reflection fallback preserves QueryProperty behavior for already-compiled IQueryAttributable implementations; source-generated implementations avoid it.")]
+		internal static void ApplyLegacyQueryProperties(object target, IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+		{
+			var type = target.GetType();
+			foreach (QueryPropertyAttribute attribute in type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true))
+			{
+				var property = type.GetRuntimeProperty(attribute.Name);
+				if (property is null || !property.CanWrite || property.SetMethod?.IsPublic != true)
+					continue;
+
+				if (query.TryGetValue(attribute.QueryId, out var value))
+				{
+					if (property.PropertyType == typeof(string))
+					{
+						property.SetValue(target, ConvertToString(query, attribute.QueryId, value));
+					}
+					else if (value is null)
+					{
+						property.SetValue(target, null);
+					}
+					else
+					{
+						var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+						property.SetValue(target, Convert.ChangeType(value, targetType, GetFormatProvider(query, attribute.QueryId)));
+					}
+				}
+				else if (previousQuery.TryGetValue(attribute.QueryId, out _))
+				{
+					var defaultValue = property.PropertyType.IsValueType && Nullable.GetUnderlyingType(property.PropertyType) is null
+						? Activator.CreateInstance(property.PropertyType)
+						: null;
+					property.SetValue(target, defaultValue);
+				}
+			}
+		}
+
 		/// <summary>Converts a query parameter value for a <see cref="string"/> property.</summary>
-		/// <param name="query">The query passed to <see cref="IQueryAttributable.ApplyQueryProperties"/>.</param>
+		/// <param name="query">The query passed to the query-property application method.</param>
 		/// <param name="queryId">The query parameter name.</param>
 		/// <param name="value">The query parameter value.</param>
 		/// <returns>The value to assign to the property.</returns>
@@ -40,7 +78,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets the culture used to convert a query parameter value for a non-<see cref="string"/> property.</summary>
-		/// <param name="query">The query passed to <see cref="IQueryAttributable.ApplyQueryProperties"/>.</param>
+		/// <param name="query">The query passed to the query-property application method.</param>
 		/// <param name="queryId">The query parameter name.</param>
 		/// <returns>The format provider to pass to <see cref="Convert.ChangeType(object, Type, IFormatProvider)"/>.</returns>
 		public static IFormatProvider GetFormatProvider(IDictionary<string, object> query, string queryId) =>
@@ -51,6 +89,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Validates that the target's runtime type has a generated query-property implementation.</summary>
 		/// <param name="target">The instance receiving query properties.</param>
 		/// <param name="implementationType">The type declaring the generated implementation.</param>
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Only derived runtime types without their own generated handler reach this compatibility guard.")]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "This compatibility guard reflects over derived runtime types to preserve runtime QueryProperty lookup; generated implementations avoid reflection.")]
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Only derived runtime types without their own generated handler reach this compatibility guard.")]
 		public static void ValidateGeneratedQueryProperties(object target, Type implementationType)
 		{
 			if (target is null)
@@ -60,7 +101,21 @@ namespace Microsoft.Maui.Controls
 
 			var type = target.GetType();
 			if (type != implementationType)
-				ThrowQueryPropertySourceGenerationFailure(type);
+			{
+				if (type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: false).Length > 0)
+					ThrowQueryPropertySourceGenerationFailure(type);
+
+				foreach (QueryPropertyAttribute attribute in implementationType.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true))
+				{
+					var generatedProperty = implementationType.GetRuntimeProperty(attribute.Name);
+					var runtimeProperty = type.GetRuntimeProperty(attribute.Name);
+					if (generatedProperty is null
+						|| runtimeProperty is null
+						|| generatedProperty.DeclaringType != runtimeProperty.DeclaringType
+						|| generatedProperty.PropertyType != runtimeProperty.PropertyType)
+						ThrowQueryPropertySourceGenerationFailure(type);
+				}
+			}
 		}
 
 		internal static void ThrowQueryPropertySourceGenerationFailure(Type type)

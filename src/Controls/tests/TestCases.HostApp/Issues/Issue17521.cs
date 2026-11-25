@@ -216,7 +216,7 @@ public class Issue17521 : Shell
 	}
 
 	[QueryProperty(nameof(Name), "name")]
-	public class _17521CatDetailsPage : ContentPage
+	public partial class _17521CatDetailsPage : ContentPage
 	{
 		public string Name
 		{

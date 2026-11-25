@@ -287,7 +287,7 @@ public interface Issue16020IDataStore<T>
 }
 
 [QueryProperty(nameof(Id), nameof(Id))]
-public class Issue16020EditRecipeViewModel : Issue16020BaseViewModel
+public partial class Issue16020EditRecipeViewModel : Issue16020BaseViewModel
 {
 	string _id;
 	string _recipeName;

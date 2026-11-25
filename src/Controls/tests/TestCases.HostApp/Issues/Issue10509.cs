@@ -50,7 +50,7 @@ public class Issue10509Page1 : ContentPage
 }
 
 [QueryProperty(nameof(NavigationData), NavigationDataParam)]
-public class Issue10509Page2 : ContentPage
+public partial class Issue10509Page2 : ContentPage
 {
 	public const string NavigationDataParam = "NavigationDataParam";
 

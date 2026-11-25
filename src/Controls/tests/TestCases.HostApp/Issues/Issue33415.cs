@@ -115,7 +115,7 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 	[QueryProperty(nameof(TestKey), "TestKey")]
-	public class Issue33415SecondPage : ContentPage
+	public partial class Issue33415SecondPage : ContentPage
 	{
 		private readonly Label _receivedLabel;
 		private string _testKey;

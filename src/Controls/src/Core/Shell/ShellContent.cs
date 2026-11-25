@@ -727,7 +727,11 @@ namespace Microsoft.Maui.Controls
 
 			if (content is IQueryAttributable queryPropertyAttributable)
 			{
+#if NETSTANDARD
+				QueryPropertyConversion.ApplyLegacyQueryProperties(queryPropertyAttributable, query, oldQuery);
+#else
 				queryPropertyAttributable.ApplyQueryProperties(query, oldQuery);
+#endif
 			}
 			else if (content.GetType().IsDefined(typeof(QueryPropertyAttribute), inherit: true))
 			{

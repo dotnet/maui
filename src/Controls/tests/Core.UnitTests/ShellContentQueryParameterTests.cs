@@ -100,6 +100,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void HandwrittenQueryAttributableRetainsQueryPropertyBehavior()
+		{
+			var content = CreateQueryStringContent("value=legacy", () => new LegacyQueryAttributablePage());
+			CreateShell(content);
+
+			Assert.Equal("legacy", GetPage<LegacyQueryAttributablePage>(content).Value);
+		}
+
+		[Fact]
 		public void ExplicitQueryAttributableDoesNotGetGeneratedPropertySetters()
 		{
 			var content = CreateQueryStringContent("value=manual", () => new ExplicitQueryAttributablePage());
@@ -187,73 +196,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(0, page.Value);
 		}
 
-		[Fact]
-		public void GeneratedQueryPropertiesAreAppliedWithoutReflection()
-		{
-			var originalCulture = CultureInfo.CurrentCulture;
-			try
-			{
-				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-				var content = CreateQueryStringContent(
-					"text=A%2BB&number=3.5&count=42",
-					() => new GeneratedQueryPropertyPage());
-				CreateShell(content);
-				var page = GetPage<GeneratedQueryPropertyPage>(content);
-
-				Assert.Equal("A+B", page.Text);
-				Assert.Equal(3.5, page.Number);
-				Assert.Equal(42, page.Count);
-				Assert.Equal("42", page.LastQuery["count"]);
-
-				content.QueryString = "text=updated";
-				Assert.Equal("updated", page.Text);
-				Assert.Equal(0, page.Number);
-				Assert.Equal(0, page.Count);
-			}
-			finally
-			{
-				CultureInfo.CurrentCulture = originalCulture;
-			}
-		}
-
-		[Fact]
-		public void DerivedClassWithOwnQueryPropertiesWithoutGeneratedImplementationThrowsAndLogs()
+		[Theory]
+		[InlineData(typeof(NonPartialDerivedQueryPropertyPage), "text=base&count=42")]
+		[InlineData(typeof(NonPartialHiddenPropertyPage), "text=derived")]
+		[InlineData(typeof(UnsupportedQueryPropertyPage), "value=missing")]
+		public void QueryPropertyWithoutGeneratedImplementationThrowsAndLogs(Type pageType, string query)
 		{
 			ApplicationExtensions.CreateAndSetMockApplication();
-			var content = CreateQueryStringContent(
-				"text=base&count=42",
-				() => new NonPartialDerivedQueryPropertyPage());
+			var content = CreateQueryStringContent(query, () => (Page)Activator.CreateInstance(pageType, nonPublic: true));
 			CreateShell(content);
 
-			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<NonPartialDerivedQueryPropertyPage>(content));
-
-			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
-			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
-		}
-
-		[Fact]
-		public void DerivedClassWithHiddenPropertyWithoutGeneratedImplementationThrowsAndLogs()
-		{
-			ApplicationExtensions.CreateAndSetMockApplication();
-			var content = CreateQueryStringContent("text=derived", () => new NonPartialHiddenPropertyPage());
-			CreateShell(content);
-
-			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<NonPartialHiddenPropertyPage>(content));
-
-			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
-			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
-		}
-
-		[Fact]
-		public void QueryPropertyWithoutGeneratedImplementationThrowsAndLogs()
-		{
-			ApplicationExtensions.CreateAndSetMockApplication();
-			var content = CreateQueryStringContent(
-				"value=missing",
-				() => new UnsupportedQueryPropertyPage());
-			CreateShell(content);
-
-			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<UnsupportedQueryPropertyPage>(content));
+			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<Page>(content));
 
 			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
 			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
@@ -1190,6 +1143,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
+#pragma warning disable MAUI1201 // Exercise the binary-compatible default implementation.
+		[QueryProperty(nameof(Value), "value")]
+		sealed class LegacyQueryAttributablePage : ContentPage, IQueryAttributable
+		{
+			public string Value { get; set; }
+
+			public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+		}
+#pragma warning restore MAUI1201
+
 #pragma warning disable MAUI1201 // Exercise the intentionally handwritten implementation.
 		[QueryProperty(nameof(Value), "value")]
 		sealed partial class ExplicitQueryAttributablePage : ContentPage, IQueryAttributable
@@ -1248,35 +1211,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		sealed class UnsupportedQueryPropertyPage : ContentPage
 		{
 			public string Value { get; set; }
-		}
-
-		// Equivalent to the code the QueryProperty source generator emits for [QueryProperty] attributes.
-		sealed class GeneratedQueryPropertyPage : ContentPage, IQueryAttributable
-		{
-			public string Text { get; set; }
-			public double Number { get; set; }
-			public int Count { get; set; }
-			public IDictionary<string, object> LastQuery { get; private set; }
-
-			public void ApplyQueryAttributes(IDictionary<string, object> query) =>
-				LastQuery = new Dictionary<string, object>(query);
-
-			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
-			{
-				object value;
-				if (query.TryGetValue("text", out value))
-					Text = QueryPropertyConversion.ConvertToString(query, "text", value);
-				else if (previousQuery.ContainsKey("text"))
-					Text = null;
-				if (query.TryGetValue("number", out value))
-					Number = value is null ? 0 : (double)Convert.ChangeType(value, typeof(double), QueryPropertyConversion.GetFormatProvider(query, "number"));
-				else if (previousQuery.ContainsKey("number"))
-					Number = 0;
-				if (query.TryGetValue("count", out value))
-					Count = value is null ? 0 : (int)Convert.ChangeType(value, typeof(int), QueryPropertyConversion.GetFormatProvider(query, "count"));
-				else if (previousQuery.ContainsKey("count"))
-					Count = 0;
-			}
 		}
 
 		[QueryProperty(nameof(Text), "text")]
