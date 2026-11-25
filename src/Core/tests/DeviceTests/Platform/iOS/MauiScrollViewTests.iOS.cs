@@ -155,6 +155,347 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
+		const int InflatedHeight = 601;
+		const int RealHeight = 580;
+
+		[Fact]
+		public Task LargeTitleTrackedScrollViewIsNotInflated() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				scrollView.SystemInset = new UIEdgeInsets(44, 0, 0, 0);
+				scrollView.AdjustedContentInsetDidChange();
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				scrollView.SystemInset = new UIEdgeInsets(96, 0, 0, 0);
+				scrollView.AdjustedContentInsetDidChange();
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task LargeTitleScrollViewSetAsControllerViewIsNotInflated() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View = scrollView;
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+
+				Arrange(scrollView);
+
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Theory]
+		[InlineData(false, UINavigationItemLargeTitleDisplayMode.Automatic)]
+		[InlineData(true, UINavigationItemLargeTitleDisplayMode.Never)]
+		public Task ScrollViewKeepsInflationWithoutLargeTitle(bool prefersLargeTitles, UINavigationItemLargeTitleDisplayMode mode) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = prefersLargeTitles;
+				controller.NavigationItem.LargeTitleDisplayMode = mode;
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task UntrackedScrollViewKeepsInflation() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var tracked = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(tracked);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenMovedInHierarchy() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				other.RemoveFromSuperview();
+				scrollView.RemoveFromSuperview();
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenEarlierSiblingIsRemoved() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				other.RemoveFromSuperview();
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenScrollViewIsBroughtToFront() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+				controller.View.AddSubview(other);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				controller.View.BringSubviewToFront(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewResultIsRefreshedWhenScrollViewIsInsertedBefore() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var container = new UIView();
+				using var nested = new UIView();
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(container);
+				container.AddSubview(nested);
+				nested.AddSubview(scrollView);
+
+				Arrange(scrollView);
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+
+				container.InsertSubview(other, 0);
+
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task TrackedScrollViewKeepsContentHeightWhenTitleCollapsesAndExpands() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				const int contentHeight = 524;
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				var layout = new SafeAreaLayoutStub { ContentHeight = contentHeight };
+				using var scrollView = CreateScrollView(layout, null, 96);
+				scrollView.SafeAreaInsetsValue = new UIEdgeInsets(96, 0, 0, 0);
+				controller.View.AddSubview(scrollView);
+
+				foreach (var top in new[] { 96, 44, 96 })
+				{
+					ChangeInset(scrollView, top);
+					Arrange(scrollView);
+					Assert.Equal(contentHeight, (double)scrollView.ContentSize.Height);
+				}
+			});
+
+		[Fact]
+		public Task UntrackedScrollViewInflationFollowsTitleCollapsingAndExpanding() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				const int contentHeight = 524;
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				var layout = new SafeAreaLayoutStub { ContentHeight = contentHeight };
+				using var scrollView = CreateScrollView(layout, null, 96);
+				scrollView.SafeAreaInsetsValue = new UIEdgeInsets(96, 0, 0, 0);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+
+				ChangeInset(scrollView, 96);
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+
+				ChangeInset(scrollView, 44);
+				Arrange(scrollView);
+				Assert.Equal(contentHeight, (double)scrollView.ContentSize.Height);
+
+				ChangeInset(scrollView, 96);
+				Arrange(scrollView);
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task ScrollViewNestedInFirstChildChainIsTracked() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var container = new UIView();
+				using var nested = new UIView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(container);
+				container.AddSubview(nested);
+				nested.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task ScrollViewNotInFirstChildChainIsNotTracked(bool nestedInSecondChild) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var first = new UIView();
+				using var container = new UIView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				if (nestedInSecondChild)
+				{
+					controller.View.AddSubview(container);
+					container.AddSubview(first);
+					container.AddSubview(scrollView);
+				}
+				else
+				{
+					controller.View.AddSubview(first);
+					controller.View.AddSubview(scrollView);
+				}
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task ExplicitContentScrollViewIsTracked() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					return;
+				}
+
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(other);
+				controller.View.AddSubview(scrollView);
+				controller.SetContentScrollView(scrollView, NSDirectionalRectEdge.Top);
+
+				Arrange(scrollView);
+
+				Assert.Equal(RealHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Fact]
+		public Task ExplicitContentScrollViewTakesPrecedenceOverFirstSubviewChain() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					return;
+				}
+
+				using var controller = new UIViewController();
+				using var navigation = new UINavigationController(controller);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				using var other = new UIScrollView();
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				controller.View.AddSubview(scrollView);
+				controller.View.AddSubview(other);
+				controller.SetContentScrollView(other, NSDirectionalRectEdge.Top);
+
+				Arrange(scrollView);
+
+				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		[Theory]
+		[InlineData(UINavigationItemLargeTitleDisplayMode.Never, UINavigationItemLargeTitleDisplayMode.Automatic, InflatedHeight)]
+		[InlineData(UINavigationItemLargeTitleDisplayMode.Always, UINavigationItemLargeTitleDisplayMode.Never, RealHeight)]
+		public Task LargeTitleDisplayModeIsReadFromTheNavigationControllerChild(
+			UINavigationItemLargeTitleDisplayMode parentMode, UINavigationItemLargeTitleDisplayMode childMode, int expectedHeight) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var parent = new UIViewController();
+				using var child = new UIViewController();
+				using var navigation = new UINavigationController(parent);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				parent.NavigationItem.LargeTitleDisplayMode = parentMode;
+				child.NavigationItem.LargeTitleDisplayMode = childMode;
+				parent.AddChildViewController(child);
+				parent.View.AddSubview(child.View);
+				child.DidMoveToParentViewController(parent);
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				child.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(expectedHeight, (double)scrollView.ContentSize.Height);
+			});
+
+		static void ChangeInset(InsetScrollView scrollView, int top)
+		{
+			scrollView.SystemInset = new UIEdgeInsets(top, 0, 0, 0);
+			scrollView.SafeAreaInsetsValue = new UIEdgeInsets(top, 0, 0, 0);
+			scrollView.SafeAreaInsetsDidChange();
+			scrollView.AdjustedContentInsetDidChange();
+		}
+
 		static InsetScrollView CreateScrollView(SafeAreaLayoutStub layout, UIResponder responder, int adjustedTop)
 		{
 			var scrollView = new InsetScrollView
@@ -196,8 +537,9 @@ namespace Microsoft.Maui.DeviceTests
 			public bool HasExplicitSafeAreaEdges => false;
 			public Thickness SafeAreaInsets { private get; set; }
 			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Default;
-			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) => new Size(240, 580);
-			public Size CrossPlatformArrange(Rect bounds) => new Size(240, 580);
+			public double ContentHeight { get; set; } = 580;
+			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) => new Size(240, ContentHeight);
+			public Size CrossPlatformArrange(Rect bounds) => new Size(240, ContentHeight);
 		}
 	}
 }
