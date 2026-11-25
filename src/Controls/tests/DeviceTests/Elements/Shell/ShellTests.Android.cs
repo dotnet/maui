@@ -263,8 +263,10 @@ namespace Microsoft.Maui.DeviceTests
 		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler);
 
-		[Fact]
-		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage()
+		[Theory]
+		[InlineData(FlowDirection.LeftToRight, 1)]
+		[InlineData(FlowDirection.RightToLeft, -1)]
+		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage(FlowDirection flowDirection, int expectedOffsetSign)
 		{
 			SetupBuilder();
 			const string flowRoute = "Issue21749Flow";
@@ -280,6 +282,7 @@ namespace Microsoft.Maui.DeviceTests
 					await shell.GoToAsync(flowRoute, animate: true);
 					var flow = Assert.IsType<Issue21749ModalFlow>(Assert.Single(shell.Navigation.ModalStack));
 					var startPage = flow.CurrentPage;
+					flow.FlowDirection = flowDirection;
 					var manager = Assert.IsType<NavigationViewHandler>(flow.Handler).StackNavigationManager;
 					manager.SetNavigationViewFragmentType(typeof(SlideProbeFragment));
 
@@ -306,7 +309,8 @@ namespace Microsoft.Maui.DeviceTests
 					var origin = new float[2];
 					transformation.Matrix.MapPoints(origin);
 
-					Assert.True(origin[0] > 0, $"Expected Step 2 to slide in from the right, but its horizontal offset was {origin[0]}.");
+					Assert.True(origin[0] * expectedOffsetSign > 0,
+						$"Expected Step 2 to slide in from the {(expectedOffsetSign > 0 ? "right" : "left")}, but its horizontal offset was {origin[0]}.");
 				}
 				finally
 				{

@@ -16,6 +16,17 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
+### Android navigation animation compatibility
+
+Android navigation stacks using MAUI's default transitions slide in the layout direction.
+To restore the previous Android resource lookup (including app overrides of
+`nav_default_*` animation resources), set this switch before creating the MAUI app:
+
+```csharp
+AppContext.SetSwitch("Microsoft.Maui.Platform.Android.UseLegacyNavigationAnimations", true);
+```
+
+The switch does not affect modal presentation or dismissal animations.
 
 ### Cake Commands
 
