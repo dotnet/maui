@@ -233,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 				// The error image of the earlier, failed load arrives after the image was reloaded.
 				releaseErrorImage.SetResult(true);
 				await Task.Delay(500);
-				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, image.Handler.MauiContext);
 			}, image);
 		}
 
@@ -338,13 +338,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The current image stays (no placeholder, not cleared) while the new one loads.
 				await Task.Delay(300);
-				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
-				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, MauiContext);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, image.Handler.MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, image.Handler.MauiContext);
 
 				release.SetResult(true);
 				await WaitFor(() => loaded == 2);
 				await AssertColor(image, Colors.Blue);
-				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, image.Handler.MauiContext);
 			}, image);
 		}
 
@@ -369,7 +369,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The previous image is not left in place of the image that failed to load.
 				await AssertColor(image, Colors.Lime);
-				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, image.Handler.MauiContext);
 			}, image);
 		}
 
@@ -403,8 +403,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await WaitFor(() => loaded == 1 && _server.RequestCount >= 2);
 				await Task.Delay(300);
-				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
-				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, MauiContext);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, image.Handler.MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Lime, image.Handler.MauiContext);
 
 				release.SetResult(true);
 				await WaitFor(() => loaded == 2);
@@ -432,7 +432,7 @@ namespace Microsoft.Maui.DeviceTests
 				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed);
 				await Task.Delay(500);
 
-				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertDoesNotContainColor(Colors.Red, image.Handler.MauiContext);
 			}, image);
 		}
 
@@ -477,7 +477,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				try
 				{
-					await image.ToPlatform().AssertContainsColor(color, MauiContext);
+					// The image is attached to the test window, whose context differs from the test's on Windows.
+					await image.ToPlatform().AssertContainsColor(color, image.Handler.MauiContext);
 					return;
 				}
 				catch (Exception) when (attempt < 20)

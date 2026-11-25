@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(500);
 
 				// The image that is shown does not change when the view grows.
-				await image.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				await image.ToPlatform().AssertContainsColor(Colors.Red, image.Handler.MauiContext);
 			}, image, other);
 		}
 
