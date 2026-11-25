@@ -106,6 +106,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				panel.Measure(new WSize(400, 300));
 				Assert.Equal(new WSize(180, 90), panel.DesiredSize);
+				// WinUI skips Arrange when the rect matches an earlier arrange that wasn't invalidated.
+				panel.InvalidateArrange();
 				panel.Arrange(new WRect(0, 0, 180, 90));
 				Assert.Equal(new Graphics.Rect(5, 5, 170, 80), secondContent.Frame);
 			});

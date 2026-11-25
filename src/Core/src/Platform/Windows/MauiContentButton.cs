@@ -213,9 +213,12 @@ namespace Microsoft.Maui.Platform
 
 		void CaptureNativeDefaults(string[] keys)
 		{
+			// Lookups can resolve theme resources that this button never set. Only capture keys
+			// defined locally (for example by a handler customization) so theme values stay dynamic.
+			var localKeys = Resources.Keys;
 			foreach (var key in keys)
 			{
-				if (Resources.TryGetValue(key, out var value) && value is not null)
+				if (localKeys.Contains(key) && Resources.TryGetValue(key, out var value) && value is not null)
 					_nativeResourceDefaults[key] = value;
 			}
 		}
