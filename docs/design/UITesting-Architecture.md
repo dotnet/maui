@@ -109,22 +109,43 @@ When tests fail, CI produces comparison screenshots showing differences:
 
 #### Android System-Bar Cropping
 
-`VerifyScreenshot()` calculates `cropFromTop` and `cropFromBottom` using the
-physical pixel heights of `statusBar` and `navigationBar` reported by
-`App.GetSystemBars()`. Positive `cropTop` and `cropBottom` arguments override
-the corresponding automatic crop independently:
+`VerifyScreenshot()` calculates `cropFromTop` from the status-bar height
+reported by `App.GetSystemBars()`. Navigation-bar cropping uses its reported
+visibility and bounds relative to the captured screenshot:
+
+- A bottom navigation bar contributes its height to `cropFromBottom`.
+- A left or right navigation bar contributes its width to `cropFromLeft` or
+  `cropFromRight`, respectively, without adding a bottom crop.
+
+Gesture navigation that remains at the bottom in landscape is still cropped.
+Hidden navigation bars do not contribute a crop.
+
+Positive `cropTop`, `cropBottom`, `cropLeft`, and `cropRight` arguments
+override the corresponding automatic crop independently:
 
 ```csharp
 VerifyScreenshot(cropTop: 80, cropBottom: 140);
 ```
 
-Zero or negative arguments retain automatic cropping. Missing or negative
-reported heights fail explicitly instead of falling back to fixed values.
-Cropping on other platforms is unchanged.
+Zero or negative arguments retain automatic cropping. Missing or invalid
+visible navigation-bar bounds fail explicitly instead of falling back to fixed
+values. Android crops must leave a positive image size. The early image-size
+lookup and new validation run only on Android. Status-bar cropping and the
+existing image-editor creation, validation, and cropping flow on other
+platforms are unchanged.
 
 Existing Android baselines must be recropped or regenerated wherever the
 reported heights differ from the previous fixed crops, so screenshot dimensions
-continue to match.
+continue to match. For example, a 1920-high capture with reported top/bottom
+heights of 63/126 produces a 1731-high image, not the previous 1735-high image
+from fixed 60/125 crops. Confirm the reported bounds and capture dimensions
+on the target emulator before migrating its snapshots.
+
+Do not resize baselines or relax comparison tolerances to hide this mismatch.
+Recrop only when the old baseline contains the entire newly selected region;
+otherwise regenerate it. In particular, switching landscape navigation-bar
+cropping from the bottom to a side can expose content absent from the old
+baseline and requires a fresh capture.
 
 ## Advanced Test Patterns
 

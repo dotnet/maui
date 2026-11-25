@@ -425,39 +425,84 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
+				IImageEditor? androidImageEditor = null;
 
 				int androidStatusBarHeight = 0;
 				int androidNavigationBarHeight = 0;
-				if (_testDevice == TestDevice.Android && (cropTop <= 0 || cropBottom <= 0))
+				int androidNavigationBarLeft = 0;
+				int androidNavigationBarRight = 0;
+				if (_testDevice == TestDevice.Android && (cropTop <= 0 || cropBottom <= 0 || cropLeft <= 0 || cropRight <= 0))
 				{
 					var systemBars = App.GetSystemBars();
 					if (cropTop <= 0)
 					{
-						androidStatusBarHeight = GetSystemBarHeight("statusBar");
+						androidStatusBarHeight = GetSystemBarValue("statusBar", "height");
 					}
 
-					if (cropBottom <= 0)
+					if (cropBottom <= 0 || cropLeft <= 0 || cropRight <= 0)
 					{
-						androidNavigationBarHeight = GetSystemBarHeight("navigationBar");
+						if (!systemBars.TryGetValue("navigationBar", out var barObject) ||
+							barObject is not IDictionary<string, object> navigationBar ||
+							!navigationBar.TryGetValue("visible", out var visibleObject) ||
+							visibleObject is not bool visible)
+						{
+							throw new InvalidOperationException("Unable to read Android navigationBar visibility from GetSystemBars().");
+						}
+
+						if (visible)
+						{
+							androidImageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+							(int width, int height) = androidImageEditor.GetSize();
+
+							int x = GetSystemBarValue("navigationBar", "x");
+							int y = GetSystemBarValue("navigationBar", "y");
+							int barWidth = GetSystemBarValue("navigationBar", "width");
+							int barHeight = GetSystemBarValue("navigationBar", "height");
+							if (x > width - barWidth || y > height - barHeight)
+							{
+								throw new InvalidOperationException($"GetSystemBars() returned Android navigationBar bounds outside the {width}x{height} screenshot.");
+							}
+
+							if (barWidth > 0 && barHeight > 0)
+							{
+								// Crop the bar's thickness at its reported edge, not its full landscape height.
+								if (barWidth >= barHeight && y + barHeight == height)
+								{
+									androidNavigationBarHeight = barHeight;
+								}
+								else if (barHeight > barWidth && x == 0)
+								{
+									androidNavigationBarLeft = barWidth;
+								}
+								else if (barHeight > barWidth && x + barWidth == width)
+								{
+									androidNavigationBarRight = barWidth;
+								}
+								else
+								{
+									throw new InvalidOperationException("GetSystemBars() returned Android navigationBar bounds that do not occupy the bottom, left, or right screenshot edge.");
+								}
+							}
+						}
 					}
 
-					int GetSystemBarHeight(string barName)
+					int GetSystemBarValue(string barName, string key)
 					{
 						if (!systemBars.TryGetValue(barName, out var barObject) ||
 							barObject is not IDictionary<string, object> bar ||
-							!bar.TryGetValue("height", out var heightObject) ||
-							heightObject is null)
+							!bar.TryGetValue(key, out var value) ||
+							value is null)
 						{
-							throw new InvalidOperationException($"Unable to read Android {barName}.height from GetSystemBars(). Screenshot cropping requires this value.");
+							throw new InvalidOperationException($"Unable to read Android {barName}.{key} from GetSystemBars(). Screenshot cropping requires this value.");
 						}
 
-						int height = Convert.ToInt32(heightObject);
-						if (height < 0)
+						int result = Convert.ToInt32(value);
+						if (result < 0)
 						{
-							throw new InvalidOperationException($"GetSystemBars() returned an invalid Android {barName} height: {height}.");
+							throw new InvalidOperationException($"GetSystemBars() returned an invalid Android {barName}.{key}: {result}.");
 						}
 
-						return height;
+						return result;
 					}
 				}
 
@@ -480,8 +525,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 #endif
 
-				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For Android, crop the navigation bar here only when it occupies the bottom.
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
@@ -490,11 +534,8 @@ namespace Microsoft.Maui.TestCases.Tests
 					_ => 0,
 				};
 
-				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
-				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
-				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
-				int cropFromLeft = 0;
-				int cropFromRight = 0;
+				int cropFromLeft = androidNavigationBarLeft;
+				int cropFromRight = androidNavigationBarRight;
 
 				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
 				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
@@ -503,8 +544,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
 				{
-					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+					IImageEditor imageEditor = androidImageEditor ?? _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
+
+					if (_testDevice == TestDevice.Android &&
+						(cropFromLeft >= width - cropFromRight || cropFromTop >= height - cropFromBottom))
+					{
+						throw new InvalidOperationException($"Screenshot crops must leave a positive image size within the {width}x{height} screenshot.");
+					}
 
 					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
 
