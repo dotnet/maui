@@ -20,23 +20,33 @@ namespace Microsoft.Maui.DeviceTests
 				ProgressColor = Colors.Red
 			};
 
-			var (filterWhenRed, filterAfterReset, tintAfterReset) = await InvokeOnMainThreadAsync(() =>
+			var values = await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(progressBar);
 				var platformProgressBar = GetNativeProgressBar(handler);
-				var progressLayer = (platformProgressBar.ProgressDrawable as LayerDrawable)?
-					.FindDrawableByLayerId(global::Android.Resource.Id.Progress) ?? platformProgressBar.ProgressDrawable;
-				var red = progressLayer?.ColorFilter;
+				var layers = Assert.IsAssignableFrom<LayerDrawable>(platformProgressBar.ProgressDrawable);
+				var progressLayer = layers.FindDrawableByLayerId(global::Android.Resource.Id.Progress);
+				var trackLayer = layers.FindDrawableByLayerId(global::Android.Resource.Id.Background);
+
+				var progressFilterWhenRed = progressLayer?.ColorFilter;
+				var trackFilterWhenRed = trackLayer?.ColorFilter;
 
 				progressBar.ProgressColor = null;
 				handler.UpdateValue(nameof(IProgress.ProgressColor));
 
-				return (red, progressLayer?.ColorFilter, platformProgressBar.ProgressTintList);
+				return (
+					ProgressFilterWhenRed: progressFilterWhenRed,
+					TrackFilterWhenRed: trackFilterWhenRed,
+					ProgressFilterAfterReset: progressLayer?.ColorFilter,
+					TrackFilterAfterReset: trackLayer?.ColorFilter,
+					TintAfterReset: platformProgressBar.ProgressTintList);
 			});
 
-			Assert.NotNull(filterWhenRed);
-			Assert.Null(filterAfterReset);
-			Assert.Null(tintAfterReset);
+			Assert.NotNull(values.ProgressFilterWhenRed);
+			Assert.Null(values.TrackFilterWhenRed);
+			Assert.Null(values.ProgressFilterAfterReset);
+			Assert.Null(values.TrackFilterAfterReset);
+			Assert.Null(values.TintAfterReset);
 		}
 
 		AProgressBar GetNativeProgressBar(ProgressBarHandler progressBarHandler) =>

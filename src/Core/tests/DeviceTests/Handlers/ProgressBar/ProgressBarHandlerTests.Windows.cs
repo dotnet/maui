@@ -47,6 +47,42 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(values.ResetMatchesDefault);
 		}
 
+		[Fact(DisplayName = "Null Progress Color Restores Native Foreground Binding")]
+		public async Task NullProgressColorRestoresNativeForegroundBinding()
+		{
+			var progressBar = new ProgressBarStub()
+			{
+				Progress = 0.5
+			};
+
+			var handler = await CreateHandlerAsync(progressBar);
+
+			var colors = await InvokeOnMainThreadAsync(() =>
+			{
+				var platformProgressBar = GetNativeProgressBar(handler);
+				var source = new Border { Background = new SolidColorBrush(Microsoft.UI.Colors.Green) };
+				platformProgressBar.SetBinding(Control.ForegroundProperty, new Microsoft.UI.Xaml.Data.Binding
+				{
+					Source = source,
+					Path = new PropertyPath(nameof(Border.Background))
+				});
+
+				progressBar.ProgressColor = Colors.Red;
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+				progressBar.ProgressColor = null;
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+
+				source.Background = new SolidColorBrush(Microsoft.UI.Colors.Blue);
+
+				return (
+					AfterSourceChange: (platformProgressBar.Foreground as SolidColorBrush)?.Color,
+					IsBinding: platformProgressBar.ReadLocalValue(Control.ForegroundProperty) is Microsoft.UI.Xaml.Data.BindingExpression);
+			});
+
+			Assert.True(colors.IsBinding);
+			Assert.Equal(Microsoft.UI.Colors.Blue, colors.AfterSourceChange);
+		}
+
 		[Fact(DisplayName = "Null Progress Color Keeps Native Foreground")]
 		public async Task NullProgressColorKeepsNativeForeground()
 		{
