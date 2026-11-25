@@ -110,6 +110,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public Task DefaultImeOptionsDoesNotOverrideReturnType(bool setBeforeAttach)
+		{
+			SetupBuilder();
+			var entry = new Entry { ReturnType = ReturnType.Search };
+			if (setBeforeAttach)
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+
+			return CreateHandlerAndAddToWindow<EntryHandler>(entry, handler =>
+			{
+				var platformEntry = GetPlatformControl(handler);
+				if (!setBeforeAttach)
+					AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+
+				Assert.Equal(ImeAction.Search, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ReturnType = ReturnType.Go;
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ClearValue(AndroidEntry.ImeOptionsProperty);
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+			});
+		}
+
 		[Fact]
 		[Category(TestCategory.Entry)]
 		public async Task UpdateTextWithTextLongerThanMaxLength()

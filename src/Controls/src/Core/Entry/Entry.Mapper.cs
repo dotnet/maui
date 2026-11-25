@@ -46,9 +46,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if ANDROID
+		static bool HasImeOptionsOverride(Entry entry) =>
+			PlatformConfiguration.AndroidSpecific.Entry.GetImeOptions(entry) != PlatformConfiguration.AndroidSpecific.ImeFlags.Default;
+
 		static void MapImeOptionsOrReturnType(IEntryHandler handler, Entry entry)
 		{
-			if (entry.IsSetExplicitly(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty))
+			if (HasImeOptionsOverride(entry))
 				MapImeOptions(handler, entry);
 			else
 				UpdateReturnTypeFromImeOptions(handler);
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapImeOptionsOrReturnType(EntryHandler2 handler, Entry entry)
 		{
-			if (entry.IsSetExplicitly(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty))
+			if (HasImeOptionsOverride(entry))
 				MapImeOptions(handler, entry);
 			else
 				UpdateReturnTypeFromImeOptions(handler);
@@ -72,13 +75,13 @@ namespace Microsoft.Maui.Controls
 
 		static void MapReturnType(IEntryHandler handler, Entry entry)
 		{
-			if (!entry.IsSetExplicitly(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty))
+			if (!HasImeOptionsOverride(entry))
 				EntryHandler.MapReturnType(handler, entry);
 		}
 
 		static void MapReturnType(EntryHandler2 handler, Entry entry)
 		{
-			if (!entry.IsSetExplicitly(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty))
+			if (!HasImeOptionsOverride(entry))
 				EntryHandler2.MapReturnType(handler, entry);
 		}
 #endif
