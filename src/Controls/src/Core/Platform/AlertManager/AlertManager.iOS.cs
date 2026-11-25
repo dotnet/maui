@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Controls.Platform
 					uiTextField.Placeholder = arguments.Placeholder;
 					uiTextField.Text = arguments.InitialValue;
 #if MACCATALYST
+					if (arguments.InitialSelection is PromptTextSelection selection)
 					{
-						var selection = arguments.InitialSelection ?? PromptTextSelection.FromPreset(PromptTextSelection.None);
 						var applyingSelection = false;
 						void ApplyInitialSelection()
 						{

@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public string InitialValue { get; }
 
 		/// <summary>Gets the one-time initial selection, or null for platform-specific default behavior.</summary>
-		/// <remarks>Mac Catalyst and Windows place the caret at the end for null; other platforms preserve native defaults.</remarks>
+		/// <remarks>Android, iOS, and Mac Catalyst preserve native selection behavior for null; Windows places the caret at the end.</remarks>
 		public PromptTextSelection InitialSelection { get; }
 
 		/// <summary>Gets the maximum input length, or -1 for no limit.</summary>

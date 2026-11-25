@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
 		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
-		/// <remarks>On Mac Catalyst and Windows, the caret initially appears at the end without selecting text. Other platforms retain their native selection behavior.</remarks>
+		/// <remarks>On Windows, the caret initially appears at the end without selecting text. Other platforms retain their native selection behavior.</remarks>
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 			=> DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, initialSelection: null);
 
@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="maxLength">The maximum length of the user response.</param>
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that can be edited by the user.</param>
-		/// <param name="initialSelection">The initial range or caret position. Null places the caret at the end on Mac Catalyst and Windows and preserves native defaults on other platforms.</param>
+		/// <param name="initialSelection">The initial range or caret position. Null preserves native selection behavior on Android, iOS, and Mac Catalyst; on Windows, it places the caret at the end.</param>
 		/// <returns>A task returning the entered text, or null if the prompt is canceled.</returns>
 		/// <remarks>
 		/// Selection uses UTF-16 offsets clamped to the displayed text and is not reapplied on refocus.
