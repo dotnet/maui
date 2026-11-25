@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 			"IsDeleteButtonEnabled", typeof(bool), typeof(MauiTextBox),
 			new PropertyMetadata(true, OnIsDeleteButtonEnabledPropertyChanged));
 
-		static void OnIsDeleteButtonEnabledPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
+		internal static void OnIsDeleteButtonEnabledPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
 			if (d is not FrameworkElement element)
 			{

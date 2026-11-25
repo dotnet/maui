@@ -126,507 +126,695 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async handler =>
 			{
-				var queryEditor = handler.QueryEditor;
-				Assert.NotNull(queryEditor);
-				Assert.True(queryEditor.IsAttachedToWindow);
+			var queryEditor = handler.QueryEditor;
+			Assert.NotNull(queryEditor);
+			Assert.True(queryEditor.IsAttachedToWindow);
 
-				var cursorPosition = searchBar.CursorPosition;
-				var selectionLength = searchBar.SelectionLength;
-				queryEditor.SetSelection(2, 5);
+			var cursorPosition = searchBar.CursorPosition;
+			var selectionLength = searchBar.SelectionLength;
+			queryEditor.SetSelection(2, 5);
 
-				// Queue and disconnect in the same UI-thread turn, before the callback can run.
-				handler.OnQueryEditorSelectionChanged();
-				((IElementHandler)handler).DisconnectHandler();
-				Assert.Null(((IElementHandler)handler).VirtualView);
-
-				// A marker on the same queue ensures the deferred callback has been processed.
-				var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-				Assert.True(queryEditor.Post(() => completionSource.SetResult(true)));
-				await completionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-				Assert.Equal(cursorPosition, searchBar.CursorPosition);
-				Assert.Equal(selectionLength, searchBar.SelectionLength);
-			});
-		}
-
-		// Regression tests for https://github.com/dotnet/maui/issues/30779
-		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
-
-		[Fact(DisplayName = "CursorPosition Updates After SetQuery (Issue 30779)")]
-		public async Task CursorPositionUpdatesAfterSetQuery()
-		{
-			var searchBar = new SearchBarStub();
-
-			await AttachAndRun(searchBar, async (handler) =>
+			// Queue and disconnect in the same UI-thread turn, before the callback can run.
+			[Theory]
+			[InlineData(ClearButtonVisibility.WhileEditing)]
+			[InlineData(ClearButtonVisibility.Never)]
+			public async Task CancelButtonVisibilityFollowsRuntimeChanges(ClearButtonVisibility visibility)
 			{
-				// Simulate user typing by calling the native SetQuery method
-				var searchView = GetNativeSearchBar(handler);
-				searchView.SetQuery("Hello", false);
+				var searchBar = new Controls.SearchBar { Text = "search", ClearButtonVisibility = visibility };
 
-				// The fix uses Post() to defer cursor reads (SearchView timing quirk: setQuery()
-				// calls setText() before setSelection()). Wait for the deferred update.
-				await AssertEventually(() => searchBar.CursorPosition == 5);
-			});
-
-			// After SetQuery("Hello"), cursor should be at position 5 (end of text),
-			// not stuck at 0 as it was before the fix
-			Assert.Equal(5, searchBar.CursorPosition);
-		}
-
-		[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Natively (Issue 30779)")]
-		public async Task SelectionLengthUpdatesWhenTextIsSelectedNatively()
-		{
-			var searchBar = new SearchBarStub { Text = "Hello World" };
-
-			await AttachAndRun(searchBar, async (handler) =>
-			{
-				var control = GetNativeSearchBar(handler);
-				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-
-				// Simulate a native selection gesture: set native selection then trigger
-				// the handler's selection-change reader (mirrors what touch/key listeners do).
-				editText?.SetSelection(0, 5);
-				handler.OnQueryEditorSelectionChanged();
-
-				// The fix uses Post() to defer cursor reads; wait for the deferred update.
-				await AssertEventually(() => searchBar.SelectionLength == 5);
-			});
-
-			// Selection of 5 characters starting at position 0 should be reflected in the VirtualView
-			Assert.Equal(0, searchBar.CursorPosition);
-			Assert.Equal(5, searchBar.SelectionLength);
-		}
-
-		[Fact(DisplayName = "CursorPosition Set Programmatically Updates Native Cursor (Issue 30779)")]
-		public async Task CursorPositionSetProgrammaticallyUpdatesNativeCursor()
-		{
-			var searchBar = new SearchBarStub { Text = "Hello World" };
-
-			await AttachAndRun(searchBar, async (handler) =>
-			{
-				var control = GetNativeSearchBar(handler);
-				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-
-				// Set cursor position via MAUI property (programmatic MAUI → native direction).
-				// UpdateCursorSelection uses Post() when EditText is focused, deferring SetSelection
-				// to the next UI cycle — use AssertEventually to wait for it.
-				searchBar.CursorPosition = 3;
-				SearchBarHandler.MapCursorPosition(handler, searchBar);
-
-				await AssertEventually(() => editText?.SelectionStart == 3);
-			});
-		}
-
-		[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Via Keyboard (Issue 30779)")]
-		public async Task SelectionLengthUpdatesWhenTextIsSelectedViaKeyboard()
-		{
-			var searchBar = new SearchBarStub { Text = "Hello World" };
-
-			await AttachAndRun(searchBar, async (handler) =>
-			{
-				var control = GetNativeSearchBar(handler);
-				var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-
-				// Simulate Shift+Arrow keyboard selection:
-				// 1. Set the native selection as if the user had selected with Shift+Arrow
-				editText?.SetSelection(0, 5);
-
-				// 2. Dispatch a DpadRight KEY_UP which triggers QueryEditorKeyListener.
-				//    The listener checks IsNavigationKey() — arrow/Home/End/PageUp/Down are
-				//    the keys that actually fire OnQueryEditorSelectionChanged(). Modifier-only
-				//    keys like ShiftLeft are intentionally ignored by the listener.
-				//    Using only KEY_UP (no preceding KEY_DOWN) means the EditText won't
-				//    modify the selection; our listener just reads the current state.
-				if (editText != null)
+				await AttachAndRun(searchBar, async handler =>
 				{
-					var keyEvent = new KeyEvent(KeyEventActions.Up, Keycode.DpadRight);
-					editText.DispatchKeyEvent(keyEvent);
-				}
+					var platformView = handler.PlatformView;
+					var cancelButton = Assert.IsAssignableFrom<ImageView>(platformView.GetCancelButton());
+					var editor = Assert.IsAssignableFrom<EditText>(handler.QueryEditor);
+					editor.RequestFocus();
+					await AssertEventually(() => searchBar.IsFocused);
+					Assert.Equal(visibility == ClearButtonVisibility.WhileEditing ? ViewStates.Visible : ViewStates.Gone, cancelButton.Visibility);
 
-				// QueryEditorKeyListener.OnKey fires on ACTION_UP and schedules a Post() read.
-				await AssertEventually(() => searchBar.SelectionLength == 5);
-			});
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+					Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
 
-			Assert.Equal(0, searchBar.CursorPosition);
-			Assert.Equal(5, searchBar.SelectionLength);
-		}
+					platformView.SetQuery("typed", false);
+					Assert.IsAssignableFrom<EditText>(handler.QueryEditor).RequestFocus();
+					await AssertEventually(() => cancelButton.Visibility == ViewStates.Gone);
 
-		[Fact(DisplayName = "ReturnType Initializes Correctly")]
-		public async Task ReturnTypeInitializesCorrectly()
-		{
-			var xplatReturnType = ReturnType.Next;
-			var entry = new SearchBarStub()
-			{
-				Text = "Test",
-				ReturnType = xplatReturnType
-			};
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+					Assert.Equal(ViewStates.Visible, cancelButton.Visibility);
 
-			ImeAction expectedValue = ImeAction.Next;
+					editor.ClearFocus();
+					await AssertEventually(() => !searchBar.IsFocused && cancelButton.Visibility == ViewStates.Gone);
+					editor.RequestFocus();
+					await AssertEventually(() => searchBar.IsFocused && cancelButton.Visibility == ViewStates.Visible);
 
-			var values = await GetValueAsync(entry, (handler) =>
-			{
-				return new
-				{
-					ViewValue = entry.ReturnType,
-					PlatformViewValue = GetNativeReturnType(handler)
-				};
-			});
+					searchBar.Text = string.Empty;
+					Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
 
-			Assert.Equal(xplatReturnType, values.ViewValue);
-			Assert.Equal(expectedValue, values.PlatformViewValue);
-		}
-
-		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
-		public async Task PlaceholderColorInitializesCorrectly()
-		{
-			var searchBar = new SearchBarStub()
-			{
-				Placeholder = "Test",
-				PlaceholderColor = Colors.Yellow
-			};
-
-			await ValidatePropertyInitValue(searchBar, () => searchBar.PlaceholderColor, GetNativePlaceholderColor, searchBar.PlaceholderColor);
-		}
-
-		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
-		public async Task HorizontalTextAlignmentInitializesCorrectly()
-		{
-			var xplatHorizontalTextAlignment = TextAlignment.End;
-
-			var searchBarStub = new SearchBarStub()
-			{
-				Text = "Test",
-				HorizontalTextAlignment = xplatHorizontalTextAlignment
-			};
-
-			global::Android.Views.TextAlignment expectedValue = global::Android.Views.TextAlignment.ViewEnd;
-
-			var values = await GetValueAsync(searchBarStub, (handler) =>
-			{
-				return new
-				{
-					ViewValue = searchBarStub.HorizontalTextAlignment,
-					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
-				};
-			});
-
-			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.PlatformViewValue.AssertHasFlag(expectedValue);
-		}
-
-		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
-		public async Task VerticalTextAlignmentInitializesCorrectly()
-		{
-			var xplatVerticalTextAlignment = TextAlignment.End;
-
-			var searchBarStub = new SearchBarStub()
-			{
-				Text = "Test",
-				VerticalTextAlignment = xplatVerticalTextAlignment
-			};
-
-			global::Android.Views.GravityFlags expectedValue = global::Android.Views.GravityFlags.Bottom;
-
-			var values = await GetValueAsync(searchBarStub, (handler) =>
-			{
-				return new
-				{
-					ViewValue = searchBarStub.VerticalTextAlignment,
-					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-				};
-			});
-
-			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.PlatformViewValue.AssertHasFlag(expectedValue);
-		}
-
-		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
-		public async Task CharacterSpacingInitializesCorrectly()
-		{
-			var xplatCharacterSpacing = 4;
-
-			var searchBar = new SearchBarStub()
-			{
-				CharacterSpacing = xplatCharacterSpacing,
-				Text = "Test"
-			};
-
-			float expectedValue = searchBar.CharacterSpacing.ToEm();
-
-			var values = await GetValueAsync(searchBar, (handler) =>
-			{
-				return new
-				{
-					ViewValue = searchBar.CharacterSpacing,
-					PlatformViewValue = GetNativeCharacterSpacing(handler)
-				};
-			});
-
-			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
-		}
-
-		[Fact]
-		public async Task SearchViewHasEditTextChild()
-		{
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var view = new SearchView(MauiContext.Context);
-
-				var editText = view.GetFirstChildOfType<EditText>();
-
-				Assert.NotNull(editText);
-			});
-		}
-
-		[Fact]
-		public async Task SearchBarTakesFullWidthByDefault()
-		{
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var layout = new LayoutStub()
-				{
-					Width = 500
-				};
-
-				var searchbar = new SearchBarStub
-				{
-					Text = "My Search Term",
-				};
-
-				layout.Add(searchbar);
-
-				var layoutHandler = CreateHandler(layout);
-				await layoutHandler.PlatformView.AttachAndRun(() =>
-				{
-					var layoutSize = layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
-					var rect = new Rect(0, 0, layoutSize.Width, layoutSize.Height);
-					var searchbarSize = searchbar.Measure(rect.Width, rect.Height);
-
-					Assert.Equal(layoutSize.Width, searchbarSize.Width);
+					searchBar.Text = null;
+					Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+					searchBar.Text = "again";
+					Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
 				});
-			});
-		}
-
-		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
-		{
-			var control = GetNativeSearchBar(searchBarHandler);
-			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-			return MauiContext.Context.FromPixels((double)editText.MeasuredHeight);
-		}
-
-
-		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
-			searchBarHandler.PlatformView;
-
-		string GetNativeText(SearchBarHandler searchBarHandler) =>
-			GetNativeSearchBar(searchBarHandler).Query;
-
-		ImeAction GetNativeReturnType(SearchBarHandler searchBarHandler) =>
-			// Mask out ImeFlags (e.g., NoFullscreen) so only the action bits are compared.
-			// ImeOptions may contain 0x02000000 (NoFullscreen) OR'd with the action value
-			// since PR #35197 sets that flag to prevent full-screen extract mode in landscape.
-			(ImeAction)((int)GetNativeSearchBar(searchBarHandler).ImeOptions & (int)ImeAction.ImeMaskAction);
-
-		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
-			GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
-
-
-		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
-		{
-			var control = GetNativeSearchBar(searchBarHandler);
-			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-			return editText.SelectionStart;
-		}
-
-		static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
-		{
-			var control = GetNativeSearchBar(searchBarHandler);
-			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
-			editText.SetSelection(position);
-		}
-
-		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText != null)
-			{
-				int currentTextColorInt = editText.CurrentTextColor;
-				AColor currentTextColor = new AColor(currentTextColorInt);
-				return currentTextColor.ToColor();
 			}
 
-			return Colors.Transparent;
-		}
-
-		global::Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
-			return editText.TextAlignment;
-		}
-
-		global::Android.Views.GravityFlags GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
-			return editText.Gravity;
-		}
-
-		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
-			GetNativeSearchBar(searchBarHandler).QueryHint;
-
-		Color GetNativePlaceholderColor(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText != null)
+			[Theory]
+			[InlineData(ClearButtonVisibility.WhileEditing)]
+			[InlineData(ClearButtonVisibility.Never)]
+			public async Task Material3CancelButtonVisibilityFollowsRuntimeChanges(ClearButtonVisibility visibility)
 			{
-				int currentHintTextColor = editText.CurrentHintTextColor;
-				AColor currentPlaceholderColorr = new AColor(currentHintTextColor);
-				return currentPlaceholderColorr.ToColor();
+				await InvokeOnMainThreadAsync(async () =>
+				{
+					var searchBar = new Controls.SearchBar { Text = "search", ClearButtonVisibility = visibility };
+					var handler = CreateHandler<SearchBarHandler2>(searchBar);
+
+					await handler.PlatformView.AttachAndRun(() =>
+					{
+						var platformView = handler.PlatformView;
+						var editor = Assert.IsAssignableFrom<EditText>(platformView.EditText);
+						editor.RequestFocus();
+						Assert.Equal(visibility == ClearButtonVisibility.WhileEditing, platformView.EndIconVisible);
+
+						searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+						Assert.False(platformView.EndIconVisible);
+
+						editor.Text = "typed";
+						editor.RequestFocus();
+						Assert.False(platformView.EndIconVisible);
+
+						searchBar.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+						Assert.True(platformView.EndIconVisible);
+
+						editor.ClearFocus();
+						Assert.False(platformView.EndIconVisible);
+						editor.RequestFocus();
+						Assert.True(platformView.EndIconVisible);
+
+						searchBar.Text = string.Empty;
+						Assert.False(platformView.EndIconVisible);
+
+						searchBar.Text = null;
+						Assert.False(platformView.EndIconVisible);
+						searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+						searchBar.Text = "again";
+						Assert.False(platformView.EndIconVisible);
+					});
+				});
 			}
 
-			return Colors.Transparent;
-		}
+			// Regression tests for https://github.com/dotnet/maui/issues/30779
+			// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 
-		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText != null)
+			[Fact(DisplayName = "CursorPosition Updates After SetQuery (Issue 30779)")]
+			public async Task CursorPositionUpdatesAfterSetQuery()
 			{
-				return editText.LetterSpacing;
+				var searchBar = new SearchBarStub();
+
+				await AttachAndRun(searchBar, async (handler) =>
+				{
+					// Simulate user typing by calling the native SetQuery method
+					var searchView = GetNativeSearchBar(handler);
+					searchView.SetQuery("Hello", false);
+
+					// The fix uses Post() to defer cursor reads (SearchView timing quirk: setQuery()
+					// calls setText() before setSelection()). Wait for the deferred update.
+					await AssertEventually(() => searchBar.CursorPosition == 5);
+				});
+
+				// After SetQuery("Hello"), cursor should be at position 5 (end of text),
+				// not stuck at 0 as it was before the fix
+				Assert.Equal(5, searchBar.CursorPosition);
 			}
 
-			return -1;
-		}
+			[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Natively (Issue 30779)")]
+			public async Task SelectionLengthUpdatesWhenTextIsSelectedNatively()
+			{
+				var searchBar = new SearchBarStub { Text = "Hello World" };
 
-		global::Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
-			return editText.TextAlignment;
-		}
+				await AttachAndRun(searchBar, async (handler) =>
+				{
+					var control = GetNativeSearchBar(handler);
+					var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 
-		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+					// Simulate a native selection gesture: set native selection then trigger
+					// the handler's selection-change reader (mirrors what touch/key listeners do).
+					editText?.SetSelection(0, 5);
+					handler.OnQueryEditorSelectionChanged();
+					((IElementHandler)handler).DisconnectHandler();
+					Assert.Null(((IElementHandler)handler).VirtualView);
 
-			if (editText is null)
-				return false;
+					// A marker on the same queue ensures the deferred callback has been processed.
+					var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+					Assert.True(queryEditor.Post(() => completionSource.SetResult(true)));
+					await completionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-			return !editText.OnCheckIsTextEditor();
-		}
+					Assert.Equal(cursorPosition, searchBar.CursorPosition);
+					Assert.Equal(selectionLength, searchBar.SelectionLength);
+					[Theory]
+					[InlineData(true)]
+					[InlineData(false)]
+					public async Task CancelButtonVisibilityFollowsRuntimeChanges(bool initiallyVisible)
+					{
+						var searchBar = new Controls.SearchBar { Text = "search", ShowCancelButton = initiallyVisible };
 
-		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+						await AttachAndRun(searchBar, async handler =>
+						{
+							var platformView = handler.PlatformView;
+							var cancelButton = Assert.IsAssignableFrom<ImageView>(platformView.GetCancelButton());
+							Assert.Equal(initiallyVisible ? ViewStates.Visible : ViewStates.Gone, cancelButton.Visibility);
 
-			if (editText is null)
-				return false;
+							searchBar.ShowCancelButton = false;
+							Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
 
-			var inputTypes = editText.InputType;
+							platformView.SetQuery("typed", false);
+							Assert.IsAssignableFrom<EditText>(handler.QueryEditor).RequestFocus();
+							await AssertEventually(() => cancelButton.Visibility == ViewStates.Gone);
 
-			return editText.KeyListener is NumberKeyListener
-				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
-		}
+							searchBar.ShowCancelButton = true;
+							Assert.Equal(ViewStates.Visible, cancelButton.Visibility);
 
-		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+							searchBar.Text = string.Empty;
+							Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
 
-			if (editText is null)
-				return false;
+							searchBar.ShowCancelButton = false;
+							searchBar.Text = "again";
+							Assert.Equal(ViewStates.Gone, cancelButton.Visibility);
+						});
+					}
 
-			var inputTypes = editText.InputType;
+					[Theory]
+					[InlineData(true)]
+					[InlineData(false)]
+					public async Task Material3CancelButtonVisibilityFollowsRuntimeChanges(bool initiallyVisible)
+					{
+						await InvokeOnMainThreadAsync(async () =>
+						{
+							var searchBar = new Controls.SearchBar { Text = "search", ShowCancelButton = initiallyVisible };
+							var handler = CreateHandler<SearchBarHandler2>(searchBar);
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
-		}
+							await handler.PlatformView.AttachAndRun(() =>
+							{
+								var platformView = handler.PlatformView;
+								var editor = Assert.IsAssignableFrom<EditText>(platformView.EditText);
+								Assert.Equal(initiallyVisible, platformView.EndIconVisible);
 
-		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+								searchBar.ShowCancelButton = false;
+								Assert.False(platformView.EndIconVisible);
 
-			if (editText is null)
-				return false;
+								editor.Text = "typed";
+								editor.RequestFocus();
+								Assert.False(platformView.EndIconVisible);
 
-			var inputTypes = editText.InputType;
+								searchBar.ShowCancelButton = true;
+								Assert.True(platformView.EndIconVisible);
 
-			return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
-		}
+								searchBar.Text = string.Empty;
+								Assert.False(platformView.EndIconVisible);
 
-		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+								searchBar.ShowCancelButton = false;
+								searchBar.Text = "again";
+								Assert.False(platformView.EndIconVisible);
+							});
+						});
+					}
 
-			if (editText is null)
-				return false;
+					// Regression tests for https://github.com/dotnet/maui/issues/30779
+					// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 
-			var inputTypes = editText.InputType;
+					[Fact(DisplayName = "CursorPosition Updates After SetQuery (Issue 30779)")]
+					public async Task CursorPositionUpdatesAfterSetQuery()
+					{
+						var searchBar = new SearchBarStub();
 
-			return inputTypes.HasFlag(InputTypes.ClassPhone);
-		}
+						await AttachAndRun(searchBar, async (handler) =>
+						{
+							// Simulate user typing by calling the native SetQuery method
+							var searchView = GetNativeSearchBar(handler);
+							searchView.SetQuery("Hello", false);
 
-		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+							// The fix uses Post() to defer cursor reads (SearchView timing quirk: setQuery()
+							// calls setText() before setSelection()). Wait for the deferred update.
+							await AssertEventually(() => searchBar.CursorPosition == 5);
+						});
 
-			if (editText is null)
-				return false;
+						// After SetQuery("Hello"), cursor should be at position 5 (end of text),
+						// not stuck at 0 as it was before the fix
+						Assert.Equal(5, searchBar.CursorPosition);
+					}
 
-			var inputTypes = editText.InputType;
+					[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Natively (Issue 30779)")]
+					public async Task SelectionLengthUpdatesWhenTextIsSelectedNatively()
+					{
+						var searchBar = new SearchBarStub { Text = "Hello World" };
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
-		}
+						await AttachAndRun(searchBar, async (handler) =>
+						{
+							var control = GetNativeSearchBar(handler);
+							var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 
-		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+							// Simulate a native selection gesture: set native selection then trigger
+							// the handler's selection-change reader (mirrors what touch/key listeners do).
+							editText?.SetSelection(0, 5);
+							handler.OnQueryEditorSelectionChanged();
 
-			if (editText is null)
-				return false;
+							// The fix uses Post() to defer cursor reads; wait for the deferred update.
+							await AssertEventually(() => searchBar.SelectionLength == 5);
+						});
 
-			var inputTypes = editText.InputType;
+						// Selection of 5 characters starting at position 0 should be reflected in the VirtualView
+						Assert.Equal(0, searchBar.CursorPosition);
+						Assert.Equal(5, searchBar.SelectionLength);
+					}
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
-		}
+					[Fact(DisplayName = "CursorPosition Set Programmatically Updates Native Cursor (Issue 30779)")]
+					public async Task CursorPositionSetProgrammaticallyUpdatesNativeCursor()
+					{
+						var searchBar = new SearchBarStub { Text = "Hello World" };
 
-		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+						await AttachAndRun(searchBar, async (handler) =>
+						{
+							var control = GetNativeSearchBar(handler);
+							var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 
-			if (editText is null)
-				return false;
+							// Set cursor position via MAUI property (programmatic MAUI → native direction).
+							// UpdateCursorSelection uses Post() when EditText is focused, deferring SetSelection
+							// to the next UI cycle — use AssertEventually to wait for it.
+							searchBar.CursorPosition = 3;
+							SearchBarHandler.MapCursorPosition(handler, searchBar);
 
-			var inputTypes = editText.InputType;
+							await AssertEventually(() => editText?.SelectionStart == 3);
+						});
+					}
 
-			return inputTypes.HasFlag(InputTypes.TextFlagAutoCorrect);
-		}
+					[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Via Keyboard (Issue 30779)")]
+					public async Task SelectionLengthUpdatesWhenTextIsSelectedViaKeyboard()
+					{
+						var searchBar = new SearchBarStub { Text = "Hello World" };
 
-		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+						await AttachAndRun(searchBar, async (handler) =>
+						{
+							var control = GetNativeSearchBar(handler);
+							var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 
-			if (editText is null)
-				return false;
+							// Simulate Shift+Arrow keyboard selection:
+							// 1. Set the native selection as if the user had selected with Shift+Arrow
+							editText?.SetSelection(0, 5);
 
-			var inputTypes = editText.InputType;
+							// 2. Dispatch a DpadRight KEY_UP which triggers QueryEditorKeyListener.
+							//    The listener checks IsNavigationKey() — arrow/Home/End/PageUp/Down are
+							//    the keys that actually fire OnQueryEditorSelectionChanged(). Modifier-only
+							//    keys like ShiftLeft are intentionally ignored by the listener.
+							//    Using only KEY_UP (no preceding KEY_DOWN) means the EditText won't
+							//    modify the selection; our listener just reads the current state.
+							if (editText != null)
+							{
+								var keyEvent = new KeyEvent(KeyEventActions.Up, Keycode.DpadRight);
+								editText.DispatchKeyEvent(keyEvent);
+							}
 
-			return !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
-		}
+							// QueryEditorKeyListener.OnKey fires on ACTION_UP and schedules a Post() read.
+							await AssertEventually(() => searchBar.SelectionLength == 5);
+						});
+
+						Assert.Equal(0, searchBar.CursorPosition);
+						Assert.Equal(5, searchBar.SelectionLength);
+					}
+
+					[Fact(DisplayName = "ReturnType Initializes Correctly")]
+					public async Task ReturnTypeInitializesCorrectly()
+					{
+						var xplatReturnType = ReturnType.Next;
+						var entry = new SearchBarStub()
+						{
+							Text = "Test",
+							ReturnType = xplatReturnType
+						};
+
+						ImeAction expectedValue = ImeAction.Next;
+
+						var values = await GetValueAsync(entry, (handler) =>
+						{
+							return new
+							{
+								ViewValue = entry.ReturnType,
+								PlatformViewValue = GetNativeReturnType(handler)
+							};
+						});
+
+						Assert.Equal(xplatReturnType, values.ViewValue);
+						Assert.Equal(expectedValue, values.PlatformViewValue);
+					}
+
+					[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
+					public async Task PlaceholderColorInitializesCorrectly()
+					{
+						var searchBar = new SearchBarStub()
+						{
+							Placeholder = "Test",
+							PlaceholderColor = Colors.Yellow
+						};
+
+						await ValidatePropertyInitValue(searchBar, () => searchBar.PlaceholderColor, GetNativePlaceholderColor, searchBar.PlaceholderColor);
+					}
+
+					[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+					public async Task HorizontalTextAlignmentInitializesCorrectly()
+					{
+						var xplatHorizontalTextAlignment = TextAlignment.End;
+
+						var searchBarStub = new SearchBarStub()
+						{
+							Text = "Test",
+							HorizontalTextAlignment = xplatHorizontalTextAlignment
+						};
+
+						global::Android.Views.TextAlignment expectedValue = global::Android.Views.TextAlignment.ViewEnd;
+
+						var values = await GetValueAsync(searchBarStub, (handler) =>
+						{
+							return new
+							{
+								ViewValue = searchBarStub.HorizontalTextAlignment,
+								PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
+							};
+						});
+
+						Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+						values.PlatformViewValue.AssertHasFlag(expectedValue);
+					}
+
+					[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+					public async Task VerticalTextAlignmentInitializesCorrectly()
+					{
+						var xplatVerticalTextAlignment = TextAlignment.End;
+
+						var searchBarStub = new SearchBarStub()
+						{
+							Text = "Test",
+							VerticalTextAlignment = xplatVerticalTextAlignment
+						};
+
+						global::Android.Views.GravityFlags expectedValue = global::Android.Views.GravityFlags.Bottom;
+
+						var values = await GetValueAsync(searchBarStub, (handler) =>
+						{
+							return new
+							{
+								ViewValue = searchBarStub.VerticalTextAlignment,
+								PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+							};
+						});
+
+						Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
+						values.PlatformViewValue.AssertHasFlag(expectedValue);
+					}
+
+					[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+					public async Task CharacterSpacingInitializesCorrectly()
+					{
+						var xplatCharacterSpacing = 4;
+
+						var searchBar = new SearchBarStub()
+						{
+							CharacterSpacing = xplatCharacterSpacing,
+							Text = "Test"
+						};
+
+						float expectedValue = searchBar.CharacterSpacing.ToEm();
+
+						var values = await GetValueAsync(searchBar, (handler) =>
+						{
+							return new
+							{
+								ViewValue = searchBar.CharacterSpacing,
+								PlatformViewValue = GetNativeCharacterSpacing(handler)
+							};
+						});
+
+						Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+						Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
+					}
+
+					[Fact]
+					public async Task SearchViewHasEditTextChild()
+					{
+						await InvokeOnMainThreadAsync(() =>
+						{
+							var view = new SearchView(MauiContext.Context);
+
+							var editText = view.GetFirstChildOfType<EditText>();
+
+							Assert.NotNull(editText);
+						});
+					}
+
+					[Fact]
+					public async Task SearchBarTakesFullWidthByDefault()
+					{
+						await InvokeOnMainThreadAsync(async () =>
+						{
+							var layout = new LayoutStub()
+							{
+								Width = 500
+							};
+
+							var searchbar = new SearchBarStub
+							{
+								Text = "My Search Term",
+							};
+
+							layout.Add(searchbar);
+
+							var layoutHandler = CreateHandler(layout);
+							await layoutHandler.PlatformView.AttachAndRun(() =>
+							{
+								var layoutSize = layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+								var rect = new Rect(0, 0, layoutSize.Width, layoutSize.Height);
+								var searchbarSize = searchbar.Measure(rect.Width, rect.Height);
+
+								Assert.Equal(layoutSize.Width, searchbarSize.Width);
+							});
+						});
+					}
+
+					double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+					{
+						var control = GetNativeSearchBar(searchBarHandler);
+						var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+						return MauiContext.Context.FromPixels((double)editText.MeasuredHeight);
+					}
+
+
+					static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
+						searchBarHandler.PlatformView;
+
+					string GetNativeText(SearchBarHandler searchBarHandler) =>
+						GetNativeSearchBar(searchBarHandler).Query;
+
+					ImeAction GetNativeReturnType(SearchBarHandler searchBarHandler) =>
+						// Mask out ImeFlags (e.g., NoFullscreen) so only the action bits are compared.
+						// ImeOptions may contain 0x02000000 (NoFullscreen) OR'd with the action value
+						// since PR #35197 sets that flag to prevent full-screen extract mode in landscape.
+						(ImeAction)((int)GetNativeSearchBar(searchBarHandler).ImeOptions & (int)ImeAction.ImeMaskAction);
+
+					static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+						GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
+
+
+					static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+					{
+						var control = GetNativeSearchBar(searchBarHandler);
+						var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+						return editText.SelectionStart;
+					}
+
+					static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+					{
+						var control = GetNativeSearchBar(searchBarHandler);
+						var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+						editText.SetSelection(position);
+					}
+
+					Color GetNativeTextColor(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+						if (editText != null)
+						{
+							int currentTextColorInt = editText.CurrentTextColor;
+							AColor currentTextColor = new AColor(currentTextColorInt);
+							return currentTextColor.ToColor();
+						}
+
+						return Colors.Transparent;
+					}
+
+					global::Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+						return editText.TextAlignment;
+					}
+
+					global::Android.Views.GravityFlags GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+						return editText.Gravity;
+					}
+
+					string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
+						GetNativeSearchBar(searchBarHandler).QueryHint;
+
+					Color GetNativePlaceholderColor(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+						if (editText != null)
+						{
+							int currentHintTextColor = editText.CurrentHintTextColor;
+							AColor currentPlaceholderColorr = new AColor(currentHintTextColor);
+							return currentPlaceholderColorr.ToColor();
+						}
+
+						return Colors.Transparent;
+					}
+
+					double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+						if (editText != null)
+						{
+							return editText.LetterSpacing;
+						}
+
+						return -1;
+					}
+
+					global::Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+						return editText.TextAlignment;
+					}
+
+					bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						return !editText.OnCheckIsTextEditor();
+					}
+
+					bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return editText.KeyListener is NumberKeyListener
+							&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+					}
+
+					bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
+					}
+
+					bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
+					}
+
+					bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return inputTypes.HasFlag(InputTypes.ClassPhone);
+					}
+
+					bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
+					}
+
+					bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
+					}
+
+					bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return inputTypes.HasFlag(InputTypes.TextFlagAutoCorrect);
+					}
+
+					bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+					{
+						var searchView = GetNativeSearchBar(searchBarHandler);
+						var editText = searchView.GetChildrenOfType<EditText>().First();
+
+						if (editText is null)
+							return false;
+
+						var inputTypes = editText.InputType;
+
+						return !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+					}
+				}
 	}
-}

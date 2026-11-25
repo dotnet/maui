@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
@@ -182,6 +183,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		/// <summary>Maps the search bar's cancel and clear button visibility.</summary>
+		/// <param name="handler">The search bar handler.</param>
+		/// <param name="searchBar">The search bar.</param>
+		public static void MapClearButtonVisibility(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateCancelButtonVisibility(searchBar);
+		}
+
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateSearchIconColor(searchBar);
@@ -213,7 +222,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnQueryTextChange(object? sender, QueryTextChangeEventArgs e)
 		{
-			VirtualView.UpdateText(e.NewText);
+			if (((IViewHandler)this).VirtualView is ISearchBar searchBar)
+			{
+				searchBar.UpdateText(e.NewText);
+				UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+			}
 			e.Handled = true;
 			// Typing always repositions the cursor; schedule a deferred cursor/selection read.
 			OnQueryEditorSelectionChanged();
@@ -221,9 +234,15 @@ namespace Microsoft.Maui.Handlers
 
 		internal void OnQueryEditorSelectionChanged()
 		{
+			if (((IViewHandler)this).VirtualView is not ISearchBar ||
+				((IViewHandler)this).PlatformView is not SearchView)
+				return;
+
 			QueryEditor?.Post(() =>
 			{
-				if (((IElementHandler)this).VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
+				if (((IViewHandler)this).VirtualView is ISearchBar searchBar &&
+					((IViewHandler)this).PlatformView is SearchView &&
+					QueryEditor is EditText queryEditor)
 				{
 					var cursorPosition = queryEditor.GetCursorPosition();
 					var selectedTextLength = queryEditor.GetSelectedTextLength();
@@ -306,7 +325,8 @@ namespace Microsoft.Maui.Handlers
 
 			public void OnFocusChange(View? v, bool hasFocus)
 			{
-				if (Handler == null)
+				if (Handler is not SearchBarHandler handler ||
+					((IViewHandler)handler).VirtualView is not ISearchBar virtualView)
 					return;
 
 				var virtualView = Handler.VirtualView;
@@ -315,6 +335,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					virtualView.IsFocused = hasFocus;
 					v?.HideSoftInputIfReadOnly(virtualView, hasFocus);
+					handler.UpdateValue(nameof(ISearchBarCancelButtonVisibility.ShowCancelButton));
 				}
 			}
 		}

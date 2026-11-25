@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 			SearchBarHandler.MapFormatting(handler, searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		internal static void MapUserInteraction(ISearchBarHandler handler, SearchBar searchBar)
