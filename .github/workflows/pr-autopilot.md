@@ -32,6 +32,10 @@ on:
         description: PR number to finish
         required: false
         type: number
+      requested_by:
+        description: Maintainer who started the loop (set by the expert reviewer)
+        required: false
+        type: string
   roles: [admin, maintain, write]
   # The expert reviewer dispatches the next round with GITHUB_TOKEN.
   bots: ["github-actions[bot]"]
@@ -69,6 +73,23 @@ on:
             core.info(`#${number}: the author did not tick the "Let AI finish this PR" checkbox.`);
             return;
           }
+          // The maintainer accountable for this loop. The expert reviewer dispatches later rounds
+          // as github-actions[bot] on their behalf; re-check their current write access.
+          let requester = context.actor;
+          if (requester === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
+            requester = String(context.payload.inputs?.requested_by || '');
+          }
+          if (context.eventName === 'pull_request_target') requester = context.payload.sender?.login || '';
+          if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(requester)) {
+            core.info('No maintainer to act on behalf of.');
+            return;
+          }
+          const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({ ...context.repo, username: requester });
+          if (!['admin', 'maintain', 'write'].includes(perm.permission)) {
+            core.info(`@${requester} does not have write access.`);
+            return;
+          }
+          core.setOutput('requested_by', requester);
           const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
           // Without an expert review of the current head, start the loop with a review.
           const reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number: number, per_page: 100 });
@@ -95,6 +116,7 @@ jobs:
       autopilot_is_fork: ${{ steps.optin.outputs.is_fork }}
       autopilot_needs_review: ${{ steps.optin.outputs.needs_review }}
       autopilot_head_sha: ${{ steps.optin.outputs.head_sha }}
+      autopilot_requested_by: ${{ steps.optin.outputs.requested_by }}
   start_review:
     # First round: no expert review of the current head yet, so ask for one. The expert
     # reviewer dispatches this workflow again when it has findings.
@@ -111,11 +133,13 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
+          REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
         with:
           script: |
             await github.rest.actions.createWorkflowDispatch({
               ...context.repo, workflow_id: 'copilot-review-expert.lock.yml',
-              ref: context.payload.repository.default_branch, inputs: { pr_number: process.env.PR_NUMBER } });
+              ref: context.payload.repository.default_branch,
+              inputs: { pr_number: process.env.PR_NUMBER, requested_by: process.env.REQUESTED_BY } });
             core.info(`Requested a MAUI expert review of #${process.env.PR_NUMBER}.`);
   next_review:
     # After fixes are published, ask the expert reviewer for the next round.
@@ -133,6 +157,7 @@ jobs:
           PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
           HEAD_SHA: ${{ needs.pre_activation.outputs.autopilot_head_sha }}
           IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
+          REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
         with:
           script: |
             let target = Number(process.env.PR_NUMBER);
@@ -150,7 +175,8 @@ jobs:
             }
             await github.rest.actions.createWorkflowDispatch({
               ...context.repo, workflow_id: 'copilot-review-expert.lock.yml',
-              ref: context.payload.repository.default_branch, inputs: { pr_number: String(target) } });
+              ref: context.payload.repository.default_branch,
+              inputs: { pr_number: String(target), requested_by: process.env.REQUESTED_BY } });
             core.info(`Requested the next MAUI expert review of #${target}.`);
   agent:
     needs: [pre_activation, activation, pat_pool]

@@ -31,6 +31,10 @@ on:
         # Slash-command dispatch cannot require a manual input; intake enforces it.
         required: false
         type: number
+      requested_by:
+        description: Maintainer who started a PR Autopilot loop (set by PR Autopilot)
+        required: false
+        type: string
   steps:
     - name: Authorize exact expert-review command
       id: command
@@ -57,21 +61,22 @@ on:
           } else if (context.eventName === 'workflow_dispatch') {
             number = Number(context.payload.inputs.pr_number);
             actor = context.actor;
+            // PR Autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+            // on behalf of the maintainer who started the loop; that maintainer's access is checked below.
+            if (actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
+              actor = String(context.payload.inputs.requested_by || '');
+            }
           } else {
             return;
           }
           if (!Number.isSafeInteger(number) || number < 1 || number > 2147483647) {
             throw new Error('Expert review requires a positive integer PR number.');
           }
-          // Only workflows in this repository can dispatch as github-actions[bot] (PR Autopilot).
-          const fromAutopilot = context.eventName === 'workflow_dispatch' &&
-            actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot';
-          if (!fromAutopilot) {
-            const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
-              ...context.repo, username: actor
-            });
-            if (!['admin', 'maintain', 'write'].includes(permission.permission)) return;
-          }
+          if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(actor)) return;
+          const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+            ...context.repo, username: actor
+          });
+          if (!['admin', 'maintain', 'write'].includes(permission.permission)) return;
           const { data: pr } = await github.rest.pulls.get({
             ...context.repo, pull_number: number
           });
@@ -140,6 +145,7 @@ jobs:
       review_pr: ${{ steps.command.outputs.pr_number }}
       review_head: ${{ steps.context.outputs.head_sha }}
       review_base: ${{ steps.context.outputs.base_sha }}
+      review_actor: ${{ steps.command.outputs.actor }}
   agent:
     needs: [pre_activation, activation, pat_pool, publication_context]
   publication_context:
@@ -205,6 +211,7 @@ jobs:
         env:
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
           HEAD_SHA: ${{ needs.pre_activation.outputs.review_head }}
+          REQUESTED_BY: ${{ needs.pre_activation.outputs.review_actor }}
         with:
           script: |
             const MAX_ROUNDS = 3;
@@ -231,7 +238,8 @@ jobs:
             }
             await github.rest.actions.createWorkflowDispatch({
               ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
-              ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              ref: context.payload.repository.default_branch,
+              inputs: { pr_number: String(number), requested_by: process.env.REQUESTED_BY } });
             core.info(`#${number}: ${findings} findings; dispatched PR Autopilot round ${rounds + 1}.`);
 safe-outputs:
   runs-on: ubuntu-latest

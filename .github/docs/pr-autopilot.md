@@ -44,6 +44,6 @@ flowchart LR
   review. It treats the PR description, diff, and other comments as data.
 - The Copilot CLI loads `.github/` and `AGENTS.md` from the trusted base checkout, overlaid on the PR checkout and
   hidden from git. A PR cannot change the agent's instructions.
-- Only users with write access, the AI review's label, or the two workflows themselves (as `github-actions[bot]`)
-  can start a round.
+- Every round acts on behalf of the maintainer who started the loop (`requested_by`). Each workflow re-checks that
+  maintainer's current write access before a round runs, and the expert reviewer records them as the requester.
 - Pushed commits use `GITHUB_TOKEN`, so they don't start CI by themselves. A maintainer starts CI as usual.
