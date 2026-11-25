@@ -98,12 +98,15 @@ function Sync-RunTestsJobStatuses {
     retires this suite's job statuses left by an earlier build on the same commit.
     #>
     param([Parameter(Mandatory)][string]$HeadSha, [Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
-    $raw = & gh api --paginate --slurp "repos/$Repository/commits/$HeadSha/status?per_page=100"
-    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list commit statuses on $HeadSha."; return }
+    $statuses = Get-RunTestsStatuses -Repository $Repository -Sha $HeadSha
+    if ($null -eq $statuses) { return }
     # Job statuses of this suite: "<pipeline> (<job>)" linking to an Azure DevOps build.
     $existing = @{}
-    foreach ($status in @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_.statuses })) {
-        if ($status.context.StartsWith("$($script:RunTestsCheckPrefix) (") -and [string]$status.target_url -match 'buildId=\d+') { $existing[$status.context] = $status }
+    foreach ($status in $statuses) {
+        if (-not $status.context.StartsWith("$($script:RunTestsCheckPrefix) (") -or [string]$status.target_url -notmatch 'buildId=\d+') { continue }
+        # The selection, selected run and skipped statuses are not job statuses.
+        if ($status.context -in $script:RunTestsSelectionCheckName, $script:RunTestsRunCheckName -or $status.context.StartsWith($script:RunTestsSkippedCheckPrefix)) { continue }
+        $existing[$status.context] = $status
     }
     $planned = @(New-RunTestsJobStatuses -Build $Build -Results $Results)
     foreach ($status in $planned) {
@@ -155,9 +158,14 @@ foreach ($comment in $comments) {
     foreach ($result in $refreshed) {
         Set-RunTestsSuite $result.suite
         if ($result.checkId) {
+            # Comments from before the switch to commit statuses follow their build with a check run.
             $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
             $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
             if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        } elseif ($result.headSha) {
+            $status = New-RunTestsRunStatus -Build $result.build -Results $result.results
+            Publish-RunTestsStatus -Repository $Repository -Sha $result.headSha -Context $status.context -State $status.state `
+                -Description $status.description -TargetUrl $status.target_url
         }
         if ($result.headSha) { Sync-RunTestsJobStatuses -HeadSha $result.headSha -Build $result.build -Results $result.results }
     }

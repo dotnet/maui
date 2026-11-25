@@ -45,6 +45,8 @@ jobs:
     permissions:
       actions: read
       checks: write
+      # Skipped, test selection and selected run statuses on the PR head.
+      statuses: write
       # Creates the run-tests/* dispatch branch (Git Data API; no checkout is pushed).
       contents: write
       issues: write
