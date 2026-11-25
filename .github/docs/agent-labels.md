@@ -26,7 +26,7 @@ Additive — **multiple** can coexist on a single PR.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
-| `s/agent-gate-passed` | 🟢 `#4CAF50` | Selected PR-test verification passed; inspect the report for mode and coverage | Validate phase or hosted gate passes |
+| `s/agent-gate-passed` | 🟢 `#4CAF50` | Selected PR-test verification passed; inspect the report for mode and coverage | Full-review Validate phase passes |
 | `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Validate phase fails |
 | `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
 | `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
@@ -72,12 +72,10 @@ Review-PR.ps1
 ```
 
 The full outcome/alternative-fix labels above belong to hosted `/review` and
-local `Review-PR.ps1` reviews. The `/review gate` command applies only the gate pass/fail signals
-through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
-when the live PR head still matches the tested head. It assigns the existing
-gate labels without editing their repository-wide descriptions or colors.
-Required label-operation failures make publication incomplete rather than
-silently reporting success.
+local `Review-PR.ps1` reviews. The integrated test-verification phase also
+drives the gate pass/fail signals only when its trusted verdict applies to the
+live PR head. Required label-operation failures make publication incomplete
+rather than silently reporting success.
 `s/agent-review-in-progress` remains the shared async lock. It normally clears in
 the Azure cleanup stage; very old locks are treated as stale so cancellation
 does not permanently block another review or gate.
@@ -152,10 +150,8 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/workflows/review-trigger.yml` | `/review` and `/review gate` trigger that applies the shared in-progress lock before queueing |
-| `.github/scripts/Post-PRGate.ps1` | Publishes the hosted gate report and commit-bound gate signals only |
-| `eng/pipelines/ci-copilot.yml` | Full review by default; selects gate-only stages when `GateOnly` is true |
-| `eng/pipelines/pr-review-gate.yml` | Gate-only verification, fresh publication, and shared-lock cleanup |
+| `.github/workflows/review-trigger.yml` | `/review` trigger that applies the shared in-progress lock before queueing |
+| `eng/pipelines/ci-copilot.yml` | Full review, including test verification |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions
@@ -175,9 +171,9 @@ is:pr label:s/agent-reviewed
 ### Design Principles
 
 - **Idempotent**: Safe to re-run — checks before add/remove, GitHub ignores duplicate adds
-- **Failure handling**: Local full-review label failures warn; required hosted gate signal failures fail publication explicitly
-- **Shared helpers**: Local full reviews and hosted gate publication use the same PR-label assignment helpers
-- **Self-bootstrapping**: Local full-review helpers create labels on first use; hosted publication uses existing gate signals
+- **Failure handling**: Local full-review label failures warn; required hosted validation-signal failures fail full-review publication explicitly
+- **Shared helpers**: Local full reviews and the hosted validation phase use the same PR-label assignment helpers
+- **Self-bootstrapping**: Local full-review helpers create labels on first use; hosted validation publication uses existing gate signals
 - **Mutual exclusivity enforced**: Outcome labels and same-category signal labels automatically remove their counterpart
 
 ---

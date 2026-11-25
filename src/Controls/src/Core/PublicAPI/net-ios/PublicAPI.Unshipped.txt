@@ -1,4 +1,60 @@
 #nullable enable
+Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.Start = 1 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.None = 0 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.get -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.set -> void
+Microsoft.Maui.Controls.StructuredItemsView.IsAnchored.get -> bool
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> void
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToStart(bool animate = true) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DecelerationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DraggingStarted(UIKit.UIScrollView scrollView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapAnchorMode(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 handler, Microsoft.Maui.Controls.StructuredItemsView itemsView) -> void
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ContentButton
+Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Controls.ContentButton.BorderColor.set -> void
+Microsoft.Maui.Controls.ContentButton.BorderWidth.get -> double
+Microsoft.Maui.Controls.ContentButton.BorderWidth.set -> void
+Microsoft.Maui.Controls.ContentButton.Clicked -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.ContentButton.Command.set -> void
+Microsoft.Maui.Controls.ContentButton.CommandParameter.get -> object?
+Microsoft.Maui.Controls.ContentButton.CommandParameter.set -> void
+Microsoft.Maui.Controls.ContentButton.ContentButton() -> void
+Microsoft.Maui.Controls.ContentButton.CornerRadius.get -> int
+Microsoft.Maui.Controls.ContentButton.CornerRadius.set -> void
+Microsoft.Maui.Controls.ContentButton.IsPressed.get -> bool
+Microsoft.Maui.Controls.ContentButton.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ContentButton!>!
+Microsoft.Maui.Controls.ContentButton.Pressed -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Released -> System.EventHandler?
+override Microsoft.Maui.Controls.ContentButton.ChangeVisualState() -> void
+override Microsoft.Maui.Controls.ContentButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ContentButton.OnPropertyChanged(string? propertyName = null) -> void
+static readonly Microsoft.Maui.Controls.ContentButton.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
+static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+~Microsoft.Maui.Controls.Span.TextDecorationColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Span.TextDecorationColor.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationColorProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Span.TextDecorationThickness.get -> double
+Microsoft.Maui.Controls.Span.TextDecorationThickness.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
 Microsoft.Maui.Controls.Animations.FadeTransition
 Microsoft.Maui.Controls.Animations.FadeTransition.FadeTransition() -> void
 Microsoft.Maui.Controls.Animations.INavigationTransitionProvider
@@ -76,6 +132,3 @@ static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TabTransition
 static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.GroupProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
-override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

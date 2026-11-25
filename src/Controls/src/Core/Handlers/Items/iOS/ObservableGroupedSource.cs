@@ -444,7 +444,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			update();
+			var observer = _collectionViewController.TryGetTarget(out var controller) ? controller as IItemsUpdateObserver : null;
+			observer?.ItemsUpdating();
+			try
+			{
+				update();
+			}
+			finally
+			{
+				observer?.ItemsUpdated();
+			}
 		}
 
 		int GroupsCount()

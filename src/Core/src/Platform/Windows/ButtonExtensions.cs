@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
@@ -86,8 +87,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
 			ControlExtensions.BackgroundImageRequests.Begin(platformButton);
-			var brush = button.Background?.ToPlatform();
+			platformButton.UpdateBackgroundBrush(button.Background?.ToPlatform());
+		}
 
+		internal static void UpdateBackgroundBrush(this Button platformButton, WBrush? brush)
+		{
 			if (brush is UI.Xaml.Media.SolidColorBrush newBrush &&
 				BackgroundResourceKeys.Length > 0 &&
 				platformButton.Resources.Keys.Contains(BackgroundResourceKeys[0]) &&

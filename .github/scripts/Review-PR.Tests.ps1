@@ -323,12 +323,6 @@ Describe 'Copilot reviewer configuration' {
         $content | Should -Not -Match 'transient auth-validation 401'
     }
 
-    It 'keeps the local test reviewer on long context without an environment override' {
-        $reviewTests = Get-Content -Raw (Join-Path $PSScriptRoot 'Review-Tests.ps1')
-        $reviewTests | Should -Not -Match 'COPILOT_REVIEW_TESTS_MODEL'
-        $reviewTests | Should -Match ([regex]::Escape('"--context", "long_context"'))
-    }
-
     It 'delegates Post label transitions to the shared REST helper' {
         $content | Should -Not -Match '(?m)^\s*gh\s+pr\s+edit\b'
         $content | Should -Not -Match ([regex]::Escape('s/agent-gate-skipped'))
