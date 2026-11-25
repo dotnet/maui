@@ -85,8 +85,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal UIView PlatformView { get; set; }
 
+		// Resolve the handler's view first; unwrapping a Shadow/Clip WrapperView allocates its Subviews array.
 		MauiView CellSafeAreaView =>
-			PlatformView as MauiView ?? PlatformHandler?.PlatformView as MauiView;
+			MauiView.GetCellSafeAreaView(PlatformHandler?.PlatformView as UIView) ?? MauiView.GetCellSafeAreaView(PlatformView);
 
 		CollectionViewHandler2 CollectionViewHandler
 		{

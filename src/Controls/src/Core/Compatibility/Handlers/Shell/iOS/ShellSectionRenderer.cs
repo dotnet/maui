@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
 		// until it completes (success or cancel).
 		bool _sendPopPending;
+		Microsoft.Maui.Platform.NavigationTransitionDriver _transitionDriver;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
 		int _tabRegistrationGeneration;
@@ -122,6 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
+			_transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(this);
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
@@ -132,6 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType)
 			: base(navigationBarType, toolbarType)
 		{
+			_transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(this);
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
@@ -385,6 +388,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NativeElementDiscriminators.RealizedView);
 			}
 			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this);
+			_transitionDriver.AttachInteractivePop();
 			UpdateFlowDirection();
 		}
 
@@ -438,6 +442,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				this.RemoveFromParentViewController();
 				_disposed = true;
+				_transitionDriver.Detach();
 				_renderer.Dispose();
 				_appearanceTracker.Dispose();
 				(this as IDisconnectable).Disconnect();
@@ -745,6 +750,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			page?.DisconnectHandlers();
 		}
 
+		internal Page PageForViewController(UIViewController viewController)
+		{
+			var element = ElementForViewController(viewController);
+			if (element is ShellSection section)
+				return (section.CurrentItem as IShellContentController)?.Page;
+
+			if (element is Page page)
+				return page;
+
+			// Shell takes a popped page off its stack before the native pop runs, so the outgoing controller is only
+			// found among the trackers, which are kept until the pop completes.
+			foreach (var tracker in _trackers)
+			{
+				if (tracker.Value.ViewController == viewController)
+					return tracker.Key as Page;
+			}
+
+			return null;
+		}
+
 		Element ElementForViewController(UIViewController viewController)
 		{
 			if (_renderer.ViewController == viewController)
@@ -806,15 +831,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
+
+			// UIKit asks for no animator for an unanimated push, so its transition is resolved and recorded here.
+			if (!animated && TopViewController is { } top)
+			{
+				Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
+					ShellSection as IView, UINavigationControllerOperation.Push, PageForViewController(top), PageForViewController(viewController));
+			}
+
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
+				if (tabBarController is ShellItemRenderer pushingItem)
+					pushingItem.MoreNavigationRunsPageTransition = false;
+
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
 				// UINavigationItem.BackAction requires iOS 16.0+; UIAction.Create requires iOS 14.0+.
 				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
 				{
 					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
 				}
-				HandleMoreNavigationCompletionTasks(viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController, viewController);
 			}
 			else
 			{
@@ -825,14 +861,41 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+
+			if (!animated && ViewControllers is { Length: > 1 } stack)
+			{
+				Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
+					ShellSection as IView, UINavigationControllerOperation.Pop, PageForViewController(stack[stack.Length - 1]), PageForViewController(stack[stack.Length - 2]));
+			}
+
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
+				if (tabBarController is ShellItemRenderer poppingItem)
+					poppingItem.MoreNavigationRunsPageTransition = false;
+
 				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
-				HandleMoreNavigationCompletionTasks(viewController);
+				CompleteMoreNavigationAfterTransition(tabBarController, viewController);
 				return viewController;
 			}
 
 			return base.PopViewController(animated);
+		}
+
+		// With a page transition running, the navigation task completes when it has finished. Otherwise (UIKit's own
+		// animation, or none) it completes straight away, as it always has under the More tab.
+		void CompleteMoreNavigationAfterTransition(UITabBarController tabBarController, UIViewController viewController)
+		{
+			var moreNavigationController = tabBarController.MoreNavigationController;
+
+			// AnimateAlongsideTransition returns false when no transition is running; complete straight away then.
+			if (tabBarController is ShellItemRenderer { MoreNavigationRunsPageTransition: true }
+				&& moreNavigationController.GetTransitionCoordinator() is { } coordinator
+				&& coordinator.AnimateAlongsideTransition(null, _ => HandleMoreNavigationCompletionTasks(viewController)))
+			{
+				return;
+			}
+
+			HandleMoreNavigationCompletionTasks(viewController);
 		}
 
 		private void HandleMoreNavigationCompletionTasks(UIViewController viewController)
@@ -921,7 +984,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_trackers[page] = tracker;
 
 			var parentTabBar = ParentViewController as UITabBarController;
-			var showsPresentation = parentTabBar == null || ReferenceEquals(parentTabBar.SelectedViewController, this);
+
+			// A section under the More tab is shown by the tab bar's More controller (which is then selected), not by
+			// this renderer: its pushes are visible too, and complete through HandleMoreNavigationCompletionTasks, after
+			// a page transition when one runs.
+			var showsPresentation = parentTabBar == null
+				|| ReferenceEquals(parentTabBar.SelectedViewController, this)
+				|| (IsInMoreTab && ReferenceEquals(parentTabBar.SelectedViewController, parentTabBar.MoreNavigationController));
 			if (completionSource != null && showsPresentation)
 				_completionTasks[pageViewController] = completionSource;
 
@@ -1019,7 +1088,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			[Foundation.Preserve(Conditional = true)]
 			public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
 			{
-				return null;
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return null;
+
+				// The page-transition properties and the provider chain; null keeps UIKit's own animation.
+				return self._transitionDriver.GetAnimationController(
+					self.ShellSection as IView,
+					operation,
+					self.PageForViewController(fromViewController),
+					self.PageForViewController(toViewController));
+			}
+
+			[Export("navigationController:interactionControllerForAnimationController:")]
+			[Foundation.Preserve(Conditional = true)]
+			public new IUIViewControllerInteractiveTransitioning GetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+			{
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return null;
+
+				return self._transitionDriver.GetInteractionController();
 			}
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
@@ -1028,6 +1115,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				self._interactivePopGesturePending = false;
+				self._transitionDriver.TransitionEnded();
 				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
 
 				var tasks = self._completionTasks;
@@ -1095,6 +1183,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void OnInteractionChanged(IUIViewControllerTransitionCoordinatorContext context)
 			{
+				if (context.IsCancelled && _self.TryGetTarget(out var cancelled) && !cancelled._disposed)
+					cancelled._transitionDriver.TransitionEnded();
+
 				if (!context.IsCancelled)
 				{
 					if (!_self.TryGetTarget(out var self) || self._disposed)

@@ -32,8 +32,12 @@ public partial class CollectionViewHandler2
 
 	};
 }
-public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>
+public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>, IScrollToEdgeHandler
 {
+	bool IScrollToEdgeHandler.ScrollToStart(bool animate) => ScrollToEdgeItem(end: false, animate);
+
+	bool IScrollToEdgeHandler.ScrollToEnd(bool animate) => ScrollToEdgeItem(end: true, animate);
+
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
 	bool _selectionUpdateQueued;

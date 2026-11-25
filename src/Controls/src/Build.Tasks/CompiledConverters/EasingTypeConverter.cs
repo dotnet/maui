@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				value = parts[parts.Length - 1];
 
-			// Easing lives in Microsoft.Maui (Core), not Microsoft.Maui.Controls: looking it up there resolved no type.
+			// Easing lives in Microsoft.Maui (Core), not in Controls.
 			var assemblyTypeInfo = ("Microsoft.Maui", "Microsoft.Maui", nameof(Easing));
 
 			var module = context.Body.Method.Module;

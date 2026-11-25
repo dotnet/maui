@@ -1,4 +1,130 @@
 #nullable enable
+Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.Start = 1 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.None = 0 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.get -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.set -> void
+Microsoft.Maui.Controls.StructuredItemsView.IsAnchored.get -> bool
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> void
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToStart(bool animate = true) -> void
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ContentButton
+Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Controls.ContentButton.BorderColor.set -> void
+Microsoft.Maui.Controls.ContentButton.BorderWidth.get -> double
+Microsoft.Maui.Controls.ContentButton.BorderWidth.set -> void
+Microsoft.Maui.Controls.ContentButton.Clicked -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.ContentButton.Command.set -> void
+Microsoft.Maui.Controls.ContentButton.CommandParameter.get -> object?
+Microsoft.Maui.Controls.ContentButton.CommandParameter.set -> void
+Microsoft.Maui.Controls.ContentButton.ContentButton() -> void
+Microsoft.Maui.Controls.ContentButton.CornerRadius.get -> int
+Microsoft.Maui.Controls.ContentButton.CornerRadius.set -> void
+Microsoft.Maui.Controls.ContentButton.IsPressed.get -> bool
+Microsoft.Maui.Controls.ContentButton.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ContentButton!>!
+Microsoft.Maui.Controls.ContentButton.Pressed -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Released -> System.EventHandler?
+Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
+static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+override Microsoft.Maui.Controls.ContentButton.ChangeVisualState() -> void
+override Microsoft.Maui.Controls.ContentButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ContentButton.OnPropertyChanged(string? propertyName = null) -> void
+static readonly Microsoft.Maui.Controls.ContentButton.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+~Microsoft.Maui.Controls.Span.TextDecorationColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Span.TextDecorationColor.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationColorProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Span.TextDecorationThickness.get -> double
+Microsoft.Maui.Controls.Span.TextDecorationThickness.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+Microsoft.Maui.Controls.Animations.FadeTransition
+Microsoft.Maui.Controls.Animations.FadeTransition.FadeTransition() -> void
+Microsoft.Maui.Controls.Animations.INavigationTransitionProvider
+Microsoft.Maui.Controls.Animations.INavigationTransitionProvider.GetTransition(Microsoft.Maui.Controls.Animations.NavigationTransitionRequest! request) -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition?
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Pop = 1 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PopModal = 3 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Push = 0 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PushModal = 2 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.TabSwitch = 4 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.FlowDirection.get -> Microsoft.Maui.FlowDirection
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.From.get -> Microsoft.Maui.Controls.Page?
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.IsBack.get -> bool
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.IsInteractive.get -> bool
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.Kind.get -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.To.get -> Microsoft.Maui.Controls.Page?
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.Transition.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+Microsoft.Maui.Controls.Animations.PageTransition
+Microsoft.Maui.Controls.Animations.PageTransition.Background.get -> Microsoft.Maui.Controls.Brush?
+Microsoft.Maui.Controls.Animations.PageTransition.Background.set -> void
+Microsoft.Maui.Controls.Animations.PageTransition.Duration.get -> System.TimeSpan
+Microsoft.Maui.Controls.Animations.PageTransition.Duration.set -> void
+Microsoft.Maui.Controls.Animations.PageTransition.Easing.get -> Microsoft.Maui.Easing?
+Microsoft.Maui.Controls.Animations.PageTransition.Easing.set -> void
+Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter
+Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.PageTransitionTypeConverter() -> void
+Microsoft.Maui.Controls.Animations.PageTransitions
+Microsoft.Maui.Controls.Animations.PlatformNavigationTransition
+Microsoft.Maui.Controls.Animations.ScaleTransition
+Microsoft.Maui.Controls.Animations.ScaleTransition.FromScale.get -> double
+Microsoft.Maui.Controls.Animations.ScaleTransition.FromScale.set -> void
+Microsoft.Maui.Controls.Animations.ScaleTransition.ScaleTransition() -> void
+Microsoft.Maui.Controls.Animations.SharedTransition
+Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Bottom = 3 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.End = 1 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Start = 0 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Top = 2 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideTransition
+Microsoft.Maui.Controls.Animations.SlideTransition.From.get -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideTransition.From.set -> void
+Microsoft.Maui.Controls.Animations.SlideTransition.SlideTransition() -> void
+override Microsoft.Maui.Controls.Animations.FadeTransition.ToString() -> string!
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.Animations.ScaleTransition.ToString() -> string!
+override Microsoft.Maui.Controls.Animations.SlideTransition.ToString() -> string!
+static Microsoft.Maui.Controls.Animations.PageTransition.None.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+static Microsoft.Maui.Controls.Animations.PageTransition.Platform.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetModalTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetTabTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(this Microsoft.Maui.Controls.Shell! shell, Microsoft.Maui.Controls.ShellNavigationState! state, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(this Microsoft.Maui.Controls.Shell! shell, Microsoft.Maui.Controls.ShellNavigationState! state, Microsoft.Maui.Controls.Animations.PageTransition! transition, System.Collections.Generic.IDictionary<string!, object!>? parameters) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PopAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PopModalAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PushAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PushModalAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.ReplacePageAsync(this Microsoft.Maui.Controls.Window! window, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetModalTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetTabTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PlatformNavigationTransition.Platform.get -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition!
+static Microsoft.Maui.Controls.Animations.PlatformNavigationTransition.Suppress.get -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition!
+static Microsoft.Maui.Controls.Animations.SharedTransition.GetGroup(Microsoft.Maui.Controls.BindableObject! bindable) -> string?
+static Microsoft.Maui.Controls.Animations.SharedTransition.GetName(Microsoft.Maui.Controls.BindableObject! bindable) -> string?
+static Microsoft.Maui.Controls.Animations.SharedTransition.SetGroup(Microsoft.Maui.Controls.BindableObject! bindable, string? value) -> void
+static Microsoft.Maui.Controls.Animations.SharedTransition.SetName(Microsoft.Maui.Controls.BindableObject! bindable, string? value) -> void
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.ModalTransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TabTransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.SharedTransition.GroupProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.Alternate = 2 -> Microsoft.Maui.Controls.Animations.AnimationDirection
 [MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.AlternateReverse = 3 -> Microsoft.Maui.Controls.Animations.AnimationDirection
@@ -239,4 +365,3 @@
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
-~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T

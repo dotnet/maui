@@ -34,6 +34,7 @@
 		public const string Memory = nameof(Memory);
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
+		public const string PageTransitions = "PageTransitions";
 		public const string Page = "Page";
 		public const string Path = "Path";
 		public const string Picker = "Picker";
