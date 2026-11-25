@@ -12,13 +12,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	{
 #if WINDOWS
 		[Theory]
-		[InlineData("5550109999", true)]
-		[InlineData("+1 555 010 9999", true)]
-		[InlineData("5550109999", false)]
-		public void Open_Uses_Registered_Tel_Handler(string number, bool launchSucceeded)
+		[InlineData("5550109999", "tel:5550109999")]
+		[InlineData("+1 555 010 9999", "tel:+1 555 010 9999")]
+		[InlineData("123#456", "tel:123%23456")]
+		[InlineData("123?456", "tel:123%3F456")]
+		[InlineData("123%23456", "tel:123%2523456")]
+		[InlineData("+1-555-123-4567;ext=123", "tel:+1-555-123-4567;ext=123")]
+		[InlineData("5550109999;phone-context=+1", "tel:5550109999;phone-context=+1")]
+		[InlineData("+15550109999;ext=12#3", "tel:+15550109999;ext=12%233")]
+		public void Open_Submits_Escaped_Number_To_Launcher(string number, string expectedUri)
 		{
 			var originalLauncher = Launcher.Default;
-			var launcher = new RecordingLauncher(launchSucceeded);
+			var launcher = new RecordingLauncher();
 
 			try
 			{
@@ -27,7 +32,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				PhoneDialer.Default.Open(number);
 
 				Assert.NotNull(launcher.OpenedUri);
-				Assert.Equal($"tel:{number}", launcher.OpenedUri.OriginalString);
+				Assert.Equal(expectedUri, launcher.OpenedUri.OriginalString);
+				Assert.Equal(string.Empty, launcher.OpenedUri.Fragment);
+				Assert.Equal(string.Empty, launcher.OpenedUri.Query);
+				Assert.Equal(number, Uri.UnescapeDataString(launcher.OpenedUri.AbsolutePath));
 			}
 			finally
 			{
@@ -37,17 +45,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		sealed class RecordingLauncher : ILauncher
 		{
-			readonly bool launchSucceeded;
-
-			public RecordingLauncher(bool launchSucceeded) =>
-				this.launchSucceeded = launchSucceeded;
-
 			public Uri OpenedUri { get; private set; }
 
 			public Task<bool> OpenAsync(Uri uri)
 			{
 				OpenedUri = uri;
-				return Task.FromResult(launchSucceeded);
+				return Task.FromResult(true);
 			}
 
 			public Task<bool> CanOpenAsync(Uri uri) =>

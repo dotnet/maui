@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -11,10 +12,16 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 			ValidateOpen(number);
 
+			// Preserve telephone URI syntax such as + and ;ext= while escaping URI delimiters.
+			var escapedNumber = number
+				.Replace("%", "%25", StringComparison.Ordinal)
+				.Replace("#", "%23", StringComparison.Ordinal)
+				.Replace("?", "%3F", StringComparison.Ordinal);
+
 			// PhoneCallManager can be present without opening a dialer on desktop Windows.
-			if (!await Launcher.OpenAsync($"tel:{number}"))
+			if (!await Launcher.OpenAsync($"tel:{escapedNumber}"))
 			{
-				Debug.WriteLine("Unable to open the phone dialer using the registered tel: handler.");
+				Trace.WriteLine("Unable to open the phone dialer using the registered tel: handler.");
 			}
 		}
 	}
