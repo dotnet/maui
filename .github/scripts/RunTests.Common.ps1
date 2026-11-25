@@ -1048,6 +1048,8 @@ function Update-RunTestsCombinedOverview {
     suite sections (their `run-tests-result` and `run-tests-overview` markers).
     #>
     param([Parameter(Mandatory)][string]$Body)
+    # Comments posted before the overview table existed keep a Result badge per section; leave them.
+    if (-not $Body.Contains('<!-- run-tests-overview -->')) { return $Body }
     $rows = [System.Collections.Generic.List[string]]::new()
     $results = [System.Collections.Generic.List[string]]::new()
     foreach ($section in Get-RunTestsCommentSections $Body) {
