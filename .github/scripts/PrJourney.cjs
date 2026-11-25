@@ -27,15 +27,13 @@ const CHECK_OK = new Set(['success', 'neutral', 'skipped']);
 const MODE_OPTIONS = [
   { mode: 'fix', text: 'Review and improve automatically', line: '- [{x}] **Review and improve automatically**: the MAUI agent and maintainers may push fixes for review findings to this branch. Your approach is kept.' },
   { mode: 'suggest', text: 'Review only', line: '- [{x}] **Review only**: I will address review findings myself.' },
-  { mode: 'none', text: 'No AI review', line: '- [{x}] **No AI review**: wait for a human maintainer.' },
 ];
 const MODE_HEADING = '### 🤖 Help from the MAUI agent';
-const MODE_HINT = '<!-- Pick one. You can change it later by commenting /agent fix, /agent stop, or /agent off. -->';
+const MODE_HINT = '<!-- Pick one. You can change it later by commenting /agent fix or /agent stop. -->';
 
 const MODE_LABEL = {
   fix: '🤖 Review and improve automatically',
   suggest: '🙋 Review only',
-  none: '👩‍💻 No AI review',
   unspecified: '❔ Not chosen',
 };
 
@@ -51,7 +49,7 @@ function short(sha) {
   return sha ? String(sha).slice(0, 7) : '';
 }
 
-/** Returns 'fix' | 'suggest' | 'none' | 'unspecified'. */
+/** Returns 'fix' | 'suggest' | 'unspecified'. */
 function parseMode(body) {
   const lines = String(body || '').split(/\r?\n/);
   for (const line of lines) {
@@ -181,7 +179,6 @@ function computeJourney(f, saved = {}) {
   const ciBot = '⚙️ CI';
   const agent = '🤖 The MAUI agent';
   const isFix = f.mode === 'fix';
-  const aiSkipped = f.mode === 'none';
   const updatedSinceAi = !!(f.aiReviewSha && f.headSha && f.aiReviewSha !== f.headSha);
   const readyAfterAi = !!(saved.readySha && saved.readySha === f.headSha);
 
@@ -207,8 +204,7 @@ function computeJourney(f, saved = {}) {
   else Object.assign(s.ci, { status: 'pending', note: 'Not started yet' });
 
   // AI review
-  if (aiSkipped) Object.assign(s.review, { status: 'skipped', note: 'Skipped (you chose no AI review)' });
-  else if (f.aiInProgress) Object.assign(s.review, { status: 'active', note: 'Running now' });
+  if (f.aiInProgress) Object.assign(s.review, { status: 'active', note: 'Running now' });
   else if (f.aiOutcome) {
     const outcome = { approved: 'No changes needed', changes: 'Changes suggested', incomplete: 'Could not finish', reviewed: 'Done' }[f.aiOutcome];
     const link = f.aiReviewUrl ? `[${outcome}](${f.aiReviewUrl})` : outcome;
@@ -216,8 +212,7 @@ function computeJourney(f, saved = {}) {
   } else Object.assign(s.review, { status: 'pending', note: 'A maintainer starts it with `/review`' });
 
   // Improvements
-  if (aiSkipped) Object.assign(s.improve, { status: 'skipped', note: 'Skipped' });
-  else if (f.aiOutcome === 'approved') Object.assign(s.improve, { status: 'skipped', note: 'Nothing to improve' });
+  if (f.aiOutcome === 'approved') Object.assign(s.improve, { status: 'skipped', note: 'Nothing to improve' });
   else if (f.aiOutcome === 'changes' || f.aiOutcome === 'reviewed') {
     if (updatedSinceAi || readyAfterAi) Object.assign(s.improve, { status: 'done', note: readyAfterAi && !updatedSinceAi ? 'Author marked as ready' : `Updated since the AI review (\`${short(f.headSha)}\`)` });
     else Object.assign(s.improve, { status: 'active', note: isFix ? 'The MAUI team applies the findings on your branch' : 'You address the findings' });
@@ -347,7 +342,6 @@ function render(f, journey, saved) {
   lines.push('|---|---|---|');
   lines.push('| `/agent fix` | PR author | Let the MAUI agent and maintainers push fixes for review findings to this branch |');
   lines.push('| `/agent stop` | PR author or maintainer | Switch to review only. You make the changes yourself |');
-  lines.push('| `/agent off` | PR author | No AI review, wait for a human maintainer |');
   lines.push('| `/ready` | PR author or maintainer | Mark the AI review findings as addressed, so the PR moves to maintainer review |');
   lines.push('');
   lines.push('</details>');
@@ -440,8 +434,8 @@ async function updatePr({ github, core, owner, repo, number, create = true, muta
 /** Parses a command from the first line of a comment. */
 function parseCommand(body) {
   const first = String(body || '').trim().split(/\r?\n/)[0].trim().toLowerCase();
-  let m = /^\/agent\s+(fix|stop|off)\s*$/.exec(first);
-  if (m) return { name: m[1] === 'fix' ? 'fix' : m[1] === 'stop' ? 'suggest' : 'none', kind: 'mode' };
+  let m = /^\/agent\s+(fix|stop)\s*$/.exec(first);
+  if (m) return { name: m[1] === 'fix' ? 'fix' : 'suggest', kind: 'mode' };
   if (/^\/ready\s*$/.test(first)) return { kind: 'ready' };
   return null;
 }

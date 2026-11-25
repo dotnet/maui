@@ -27,7 +27,6 @@ The PR template has a **Help from the MAUI agent** section:
   findings to the PR branch. The workflow adds `s/agent-fix-allowed` so that tooling and maintainers can find
   these PRs. On forks this requires **Allow edits by maintainers**; the tracker warns when it is off.
 - **Review only** (`suggest`): the author addresses findings.
-- **No AI review** (`none`): the AI review and improvement steps are skipped.
 
 ## Commands
 
@@ -37,7 +36,6 @@ The command must be the first line of a PR comment:
 |---------|-------------|--------|
 | `/agent fix` | PR author | Switches the PR body choice to "Review and improve automatically" |
 | `/agent stop` | PR author or users with write access | Switches to "Review only" |
-| `/agent off` | PR author | Switches to "No AI review" |
 | `/ready` | PR author or users with write access | Marks the AI review findings as addressed for the current head commit |
 
 The workflow reacts with 👍 when it runs a command and 😕 when it refuses one.
