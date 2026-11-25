@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
-			_clearButtonManager = new PickerClearButtonManager(platformView, ClearSelection);
+			_clearButtonManager = new PickerClearButtonManager(
+				platformView,
+				ClearSelection,
+				() => UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible)));
 		}
 
 		protected override void DisconnectHandler(MauiPicker platformView)

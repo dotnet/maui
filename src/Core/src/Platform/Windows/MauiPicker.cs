@@ -22,12 +22,14 @@ namespace Microsoft.Maui.Platform
 		int _popupContentRow;
 		bool _clearButtonsEnabled;
 		bool _showClearButtons;
+		Style? _applicationComboBoxStyle;
 
 		internal MauiPicker()
 		{
 			if (Application.Current.Resources.TryGetValue(typeof(ComboBox), out var comboBoxStyle) &&
 				comboBoxStyle is Style style)
 			{
+				_applicationComboBoxStyle = style;
 				Style = style;
 			}
 
@@ -72,6 +74,15 @@ namespace Microsoft.Maui.Platform
 
 		void ApplyScopedComboBoxStyle()
 		{
+			var localStyle = ReadLocalValue(StyleProperty);
+			var isApplicationStyle = _applicationComboBoxStyle is not null &&
+				ReferenceEquals(localStyle, _applicationComboBoxStyle);
+			if (GetBindingExpression(StyleProperty) is not null ||
+				(localStyle != DependencyProperty.UnsetValue && !isApplicationStyle))
+			{
+				return;
+			}
+
 			DependencyObject? current = this;
 			while (current is not null)
 			{
