@@ -38,9 +38,9 @@ function Invoke-GhJson {
 $pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
 if ($pr.state -ne 'open') { throw "PR #$PrNumber is not open." }
 
-# The dispatch commit carries the target branch's pipeline, or the default branch's when the target
-# branch's cannot build run-tests/* dispatches (see Invoke-RunTests.ps1). Only if neither can would
-# nothing run, so say so now instead of running both models for nothing.
+# The dispatch commit carries the target branch's pipeline, never another branch's (see
+# Invoke-RunTests.ps1). When that pipeline cannot build the suite's dispatches nothing would run, so
+# say so now instead of running both models for nothing.
 function Test-RunTestsDispatchAt([string]$Ref) {
     if (-not $Ref) { return $false }
     $pipeline = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($script:RunTestsPipelinePath)?ref=$([uri]::EscapeDataString($Ref))" 2>$null
@@ -51,8 +51,8 @@ $suites = [System.Collections.Generic.List[string]]::new()
 $notes = [System.Collections.Generic.List[string]]::new()
 foreach ($candidate in $requested) {
     Set-RunTestsSuite $candidate -Combined:$combined
-    if ((Test-RunTestsDispatchAt $pr.base.ref) -or (Test-RunTestsDispatchAt $pr.base.repo.default_branch)) { $suites.Add($candidate); continue }
-    $notes.Add("$($script:RunTestsKind.Substring(0, 1).ToUpperInvariant() + $script:RunTestsKind.Substring(1)) can't run on PRs that target ``$($pr.base.ref)`` yet: neither that branch's nor the default branch's $($script:RunTestsPipelineName) pipeline builds $($script:RunTestsDispatchBranchPrefix)* dispatches. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite.")
+    if (Test-RunTestsDispatchAt $pr.base.ref) { $suites.Add($candidate); continue }
+    $notes.Add("$($script:RunTestsKind.Substring(0, 1).ToUpperInvariant() + $script:RunTestsKind.Substring(1)) can't run on PRs that target ``$($pr.base.ref)`` yet: that branch's $($script:RunTestsPipelineName) pipeline doesn't build $($script:RunTestsDispatchBranchPrefix)* dispatches. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite.")
 }
 if (-not $suites.Count) {
     $marker = if ($combined) { $script:RunTestsCombined.UnsupportedMarker } else { $script:RunTestsUnsupportedMarker }
