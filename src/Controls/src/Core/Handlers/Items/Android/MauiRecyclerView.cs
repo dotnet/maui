@@ -1205,11 +1205,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
 				&& itemsInserted && ItemsView is not CarouselView)
 			{
-				if (GetLayoutManager().ItemCount > 0)
-				{
 					ScrollTo(new ScrollToRequestEventArgs(0, -1,
 						Microsoft.Maui.Controls.ScrollToPosition.Start, false));
-				}
 			}
 		}
 
