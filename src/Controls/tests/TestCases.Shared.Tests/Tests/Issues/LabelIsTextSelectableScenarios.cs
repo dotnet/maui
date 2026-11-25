@@ -1,3 +1,4 @@
+using System.Threading;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -60,6 +61,8 @@ public class LabelIsTextSelectableScenarios : _IssuesUITest
 	{
 		if (Device == TestDevice.Windows)
 		{
+			// The flyout opens shortly after the tap, so dismissing it right away can happen before it exists.
+			Thread.Sleep(1000);
 			App.TapCoordinates(600, 720);
 		}
 	}

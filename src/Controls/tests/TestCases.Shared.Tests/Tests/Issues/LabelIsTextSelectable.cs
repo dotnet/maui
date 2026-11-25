@@ -1,3 +1,4 @@
+using System.Threading;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -44,6 +45,8 @@ public class LabelIsTextSelectable : _IssuesUITest
 		// Windows starts a selection with a Copy flyout on the tapped text, which hides the page from automation until it is dismissed.
 		if (Device == TestDevice.Windows)
 		{
+			// The flyout opens shortly after the tap, so dismissing it right away can happen before it exists.
+			Thread.Sleep(1000);
 			App.TapCoordinates(600, 720);
 		}
 
