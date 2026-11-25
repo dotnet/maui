@@ -25,6 +25,36 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		// https://github.com/dotnet/maui/issues/39456
+		public async Task PushCompletesWhenThePlatformPopsDuringTheTransition()
+		{
+			SetupBuilder();
+
+			var root = new ContentPage { Title = "Root", Content = new Label { Text = "Root" } };
+			var navPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var manager = ((NavigationViewHandler)navPage.Handler).StackNavigationManager;
+
+				// Pop natively in the middle of an animated push, which is what happens when
+				// the system back press gets consumed by a platform callback mid-transition
+				Task pushTask = null;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					pushTask = navPage.Navigation.PushAsync(new ContentPage { Title = "Second" }, true);
+					manager.NavController.PopBackStack();
+				});
+
+				var completed = await Task.WhenAny(pushTask, Task.Delay(5000)) == pushTask;
+				Assert.True(completed, "PushAsync never completed after the platform popped the page");
+				Assert.True(navPage.Navigation.NavigationStack.Count == 1,
+					$"NavigationStack is out of sync with the screen (count {navPage.Navigation.NavigationStack.Count})");
+				Assert.Same(root, navPage.CurrentPage);
+			});
+		}
+
 		// We only want to fire BackButtonVisible Toolbar events if the user
 		// is changing the default behavior of the BackButtonVisibility
 		// this way the platform animations are allowed to just happen naturally

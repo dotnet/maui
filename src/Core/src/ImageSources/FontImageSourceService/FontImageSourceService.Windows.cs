@@ -9,7 +9,6 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Storage;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui
@@ -19,13 +18,20 @@ namespace Microsoft.Maui
 		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageSourceAsync((IFontImageSource)imageSource, scale, cancellationToken);
 
-		public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
-				return FromResult(null);
+				return null;
 
 			try
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+				// Loading a custom font can pump STA messages. Render after the current
+				// XAML layout tick so those messages cannot reenter its dispatcher.
+				await Task.Yield();
+				cancellationToken.ThrowIfCancellationRequested();
+
 				// TODO: The DPI not working as the view is not respecting the
 				//       value, so just reset to 1 to keep the correct size.
 				//       https://github.com/dotnet/maui/issues/1000
@@ -42,17 +48,14 @@ namespace Microsoft.Maui
 				//       https://github.com/dotnet/maui/issues/1000
 				var result = new ImageSourceServiceResult(image, false);
 
-				return FromResult(result);
+				return result;
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", imageSource.Glyph);
 				throw;
 			}
 		}
-
-		static Task<IImageSourceServiceResult<WImageSource>?> FromResult(IImageSourceServiceResult<WImageSource>? result) =>
-			Task.FromResult(result);
 
 		internal CanvasImageSource RenderImageSource(IFontImageSource imageSource, float scale)
 		{
@@ -67,7 +70,7 @@ namespace Microsoft.Maui
 			var fontSize = (float)imageSource.Font.Size;
 			var color = (imageSource.Color ?? Colors.White).ToWindowsColor();
 
-			var textFormat = new CanvasTextFormat
+			using var textFormat = new CanvasTextFormat
 			{
 				FontFamily = fontFamily,
 				FontSize = fontSize,
@@ -96,7 +99,7 @@ namespace Microsoft.Maui
 			return canvasImageSource;
 		}
 
-		string GetFontSource(IFontImageSource imageSource)
+		internal string GetFontSource(IFontImageSource imageSource)
 		{
 			if (imageSource == null)
 				return string.Empty;
@@ -124,28 +127,30 @@ namespace Microsoft.Maui
 				}
 			}
 
-			// Win2D in unpackaged apps can't load files using packaged schemes, such as `ms-appx://`
-			// so we have to first convert it to a `file://` scheme will the full file path.
 			if (!AppInfoUtils.IsPackagedApp)
 			{
-				// At this part of the load operation, the font URI contains the font family name fragment
-				// component, so we first have to remove it.
-				var fragment = "";
-				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index >= 0)
-				{
-					fragment = fontSource[index..];
-					fontSource = fontSource[..index];
-				}
-
-				// Now we can convert the URI to a `file://` scheme with the full file path.
-				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-				var path = fontUri.LocalPath.TrimStart('/');
-				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
-				{
-					fontSource = uri + fragment;
-				}
+				fontSource = GetUnpackagedFontSource(fontSource);
 			}
 
+			return fontSource;
+		}
+
+		internal static string GetUnpackagedFontSource(string fontSource)
+		{
+			var fragmentIndex = fontSource.IndexOf('#', StringComparison.Ordinal);
+			// Without a fragment, Win2D treats the source as an installed font family.
+			if (fragmentIndex < 0)
+			{
+				return fontSource;
+			}
+
+			var fontUri = new Uri(fontSource[..fragmentIndex], UriKind.RelativeOrAbsolute);
+			if (FontUriHelper.TryGetAppFontFileUri(fontUri, out var uri))
+			{
+				return uri + fontSource[fragmentIndex..];
+			}
+
+			// Preserve the original source if the file cannot be resolved.
 			return fontSource;
 		}
 	}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui29708">
+    <VerticalStackLayout>
+        <Maui29708Control x:Name="control" Text="{Maui29708Text}" />
+        <Maui29708HttpControl x:Name="httpControl" />
+    </VerticalStackLayout>
+</ContentPage>
