@@ -79,16 +79,15 @@ namespace Microsoft.Maui.DeviceTests
 			var originalMapper = MenuFlyoutItemHandler.Mapper;
 			var clicks = 0;
 			var mappings = 0;
-			MenuFlyoutItemHandler.Mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(originalMapper)
+			var mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(originalMapper);
+			mapper.AppendToMapping(nameof(IMenuElement.Text), (handler, _) =>
 			{
-				["ContextFlyoutTestCustomization"] = (handler, _) =>
-				{
-					var action = Assert.IsType<UIAction>(handler.PlatformView);
-					action.Title = "Customized action";
-					action.Attributes |= UIMenuElementAttributes.Disabled;
-					mappings++;
-				}
-			};
+				var action = Assert.IsType<UIAction>(handler.PlatformView);
+				action.Title = "Customized action";
+				action.Attributes |= UIMenuElementAttributes.Disabled;
+				mappings++;
+			});
+			MenuFlyoutItemHandler.Mapper = mapper;
 			try
 			{
 				SetupBuilder();
@@ -104,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 						var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
 						var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
 						var action = Assert.IsType<UIAction>(Assert.Single(section.Children));
-						Assert.Equal(1, mappings);
+						Assert.True(mappings > 0);
 						Assert.Equal("Customized action", action.Title);
 						Assert.True(action.Attributes.HasFlag(UIMenuElementAttributes.Disabled));
 						button.SendAction(action);
@@ -134,6 +133,125 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				MenuFlyoutItemHandler.Mapper = originalMapper;
 			}
+		}
+
+		[Fact]
+		public async Task ProgrammaticNativeMenuTextMappingDoesNotAccumulate()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			var originalMapper = MenuFlyoutItemHandler.Mapper;
+			var mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(originalMapper);
+			mapper.AppendToMapping(nameof(IMenuElement.Text), (handler, _) =>
+				Assert.IsType<UIAction>(handler.PlatformView).Title += "!");
+			MenuFlyoutItemHandler.Mapper = mapper;
+			try
+			{
+				SetupBuilder();
+				var item = new MenuFlyoutItem { Text = "Action" };
+				var label = CreateContextFlyoutTarget();
+				FlyoutBase.SetContextFlyout(label, new MenuFlyout { item });
+				await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+				{
+					try
+					{
+						for (int opening = 0; opening < 2; opening++)
+						{
+							FlyoutBase.ShowContextFlyout(label);
+							var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+							var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+							Assert.Equal("Action!", Assert.IsType<UIAction>(Assert.Single(section.Children)).Title);
+							ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+							await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
+						}
+						item.Text = "Changed";
+						Assert.Equal("Changed!", Assert.IsType<UIAction>(item.Handler.PlatformView).Title);
+					}
+					finally
+					{
+						ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					}
+				});
+			}
+			finally
+			{
+				MenuFlyoutItemHandler.Mapper = originalMapper;
+			}
+		}
+
+		[Fact]
+		public async Task ProgrammaticNativeMenuRebindingUsesCurrentItem()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			SetupBuilder();
+			var originalClicks = 0;
+			var currentClicks = 0;
+			var original = new MenuFlyoutItem { Text = "Original" };
+			original.Clicked += (_, _) => originalClicks++;
+			var current = new MenuFlyoutItem { Text = "Current" };
+			current.Clicked += (_, _) => currentClicks++;
+			var label = CreateContextFlyoutTarget();
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { original });
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				try
+				{
+					FlyoutBase.ShowContextFlyout(label);
+					var itemHandler = original.Handler;
+					var nativeAction = itemHandler.PlatformView;
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
+					FlyoutBase.SetContextFlyout(label, new MenuFlyout { current });
+					itemHandler.SetVirtualView(current);
+					Assert.Same(nativeAction, itemHandler.PlatformView);
+					FlyoutBase.ShowContextFlyout(label);
+					var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+					var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+					button.SendAction(Assert.IsType<UIAction>(Assert.Single(section.Children)));
+					Assert.Equal(0, originalClicks);
+					Assert.Equal(1, currentClicks);
+					GC.KeepAlive(original);
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task ProgrammaticNativeMenuReopensAfterNativeDismissal()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			SetupBuilder();
+			var label = CreateContextFlyoutTarget();
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				try
+				{
+					for (int opening = 0; opening < 2; opening++)
+					{
+						FlyoutBase.ShowContextFlyout(label);
+						var presenter = Assert.Single(handler.PlatformView.Interactions.OfType<ProgrammaticContextFlyoutPresenter>());
+						await AssertEventually(() => presenter.IsNativeMenuPresented);
+						var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+						Assert.NotNull(button.ContextMenuInteraction);
+						button.ContextMenuInteraction.DismissMenu();
+						await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any(),
+							message: "Native dismissal must remove the menu host without calling Remove.");
+						await AssertEventually(() => !handler.PlatformView.Interactions.OfType<ProgrammaticContextFlyoutPresenter>().Any());
+					}
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+				}
+			});
 		}
 
 		[Theory]
@@ -499,7 +617,7 @@ namespace Microsoft.Maui.DeviceTests
 					FlyoutBase.ShowContextFlyout(label);
 					var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
 					Assert.Equal(UIContextMenuConfigurationElementOrder.Fixed, button.PreferredMenuElementOrder);
-					Assert.False(button.UserInteractionEnabled);
+					Assert.True(button.UserInteractionEnabled);
 					Assert.True(button.AccessibilityElementsHidden);
 					FlyoutBase.ShowContextFlyout(label);
 					Assert.Same(button, Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>()));

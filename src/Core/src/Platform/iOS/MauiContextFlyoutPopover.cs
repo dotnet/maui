@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Platform
 				Menu = CreateNativeMenu(sections, context),
 				ShowsMenuAsPrimaryAction = true,
 				PreferredMenuElementOrder = UIContextMenuConfigurationElementOrder.Fixed,
-				UserInteractionEnabled = false,
+				UserInteractionEnabled = true,
 				AccessibilityElementsHidden = true,
 				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight
 			};

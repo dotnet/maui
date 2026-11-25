@@ -9,22 +9,10 @@ namespace Microsoft.Maui.Handlers
 	public partial class MenuFlyoutItemHandler
 	{
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
-		string? _contextText;
-		IImageSource? _contextSource;
-		bool _refreshContextSource;
-
 		internal void RefreshContextMetadata()
 		{
 			UpdateValue(nameof(IMenuElement.Text));
-			_refreshContextSource = VirtualView.Source is not null;
-			try
-			{
-				UpdateValue(nameof(IMenuElement.Source));
-			}
-			finally
-			{
-				_refreshContextSource = false;
-			}
+			UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		bool IsInContextFlyout()
@@ -47,9 +35,7 @@ namespace Microsoft.Maui.Handlers
 			if (IsInContextFlyout())
 			{
 				UIImage? contextUiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
-				_contextText = VirtualView.Text;
-				_contextSource = VirtualView.Source;
-				var owner = new WeakReference<IMenuFlyoutItem>(VirtualView);
+				var owner = new WeakReference<MenuFlyoutItemHandler>(this);
 
 				var uiAction = UIAction.Create(
 					title: VirtualView.Text,
@@ -57,7 +43,8 @@ namespace Microsoft.Maui.Handlers
 					identifier: null,
 					handler: (_) =>
 					{
-						if (owner.TryGetTarget(out var item))
+						if (owner.TryGetTarget(out var handler) &&
+							((IElementHandler)handler).VirtualView is IMenuFlyoutItem item)
 							item.Clicked();
 					});
 
@@ -74,26 +61,14 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapContextText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			if (handler is MenuFlyoutItemHandler menuHandler && handler.PlatformView is UIAction action &&
-				!string.Equals(menuHandler._contextText, view.Text, StringComparison.Ordinal))
-			{
-				menuHandler._contextText = view.Text;
+			if (handler.PlatformView is UIAction action)
 				action.Title = view.Text;
-				menuHandler._mapper.UpdateProperties(menuHandler, view);
-			}
 		}
 
 		internal static void MapContextSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			if (handler is MenuFlyoutItemHandler menuHandler && handler.PlatformView is UIAction action &&
-				(menuHandler._refreshContextSource || menuHandler._contextSource != view.Source))
-			{
-				menuHandler._refreshContextSource = false;
-				menuHandler._contextSource = view.Source;
-				action.Image = view.Source.GetPlatformMenuImage(handler.MauiContext
-					?? throw new InvalidOperationException("The menu item handler must have a MauiContext."));
-				menuHandler._mapper.UpdateProperties(menuHandler, view);
-			}
+			handler.PlatformView.UpdateImageSource(view, handler.MauiContext
+				?? throw new InvalidOperationException("The menu item handler must have a MauiContext."));
 		}
 
 		internal static void Execute(UICommand uICommand)
