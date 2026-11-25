@@ -374,45 +374,29 @@ function Invoke-SuiteRun {
 
     if (-not $DryRun -and -not $SkipChecks) {
         $sha = $pr.head.sha
+        # Commit statuses, not check runs: see Publish-RunTestsStatus.
         # A later run on the same commit may select something an earlier run skipped: retire those.
-        $existing = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/commits/$sha/check-runs?per_page=100&filter=latest")
-        $existingRuns = @($existing | ForEach-Object { $_.check_runs } | Where-Object {
-            $_.app.slug -eq 'github-actions' -and $_.name.StartsWith($script:RunTestsSkippedCheckPrefix) })
         $planned = @($checks | ForEach-Object { $_.name })
-        foreach ($stale in $existingRuns | Where-Object { $_.name -notin $planned }) {
-            $body = @{ conclusion = 'neutral'; output = @{ title = "Selected by a later /review $($script:RunTestsCommand)"; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
-            Invoke-GhJson @('-X', 'PATCH', "repos/$Repository/check-runs/$($stale.id)") -InputJson $body | Out-Null
+        foreach ($stale in @(Get-RunTestsStatuses -Repository $Repository -Sha $sha) | Where-Object {
+                $_.context.StartsWith($script:RunTestsSkippedCheckPrefix) -and $_.context -notin $planned -and $_.description -notlike 'Selected by a later*' }) {
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $stale.context -State success `
+                -Description "Selected by a later /review $($script:RunTestsCommand)" -TargetUrl $runUrl
         }
 
-        $now = (Get-Date).ToUniversalTime().ToString('o')
         foreach ($check in $checks) {
-            $summary = "Not selected by ``/review $($script:RunTestsCommand)`` for this commit.`n`n$selectionSummary"
-            $body = [ordered]@{
-                name = $check.name; head_sha = $sha; status = 'completed'; conclusion = 'skipped'
-                started_at = $now; completed_at = $now; details_url = $buildUrl
-                output = [ordered]@{ title = $check.title; summary = $summary }
-            } | ConvertTo-Json -Depth 5
-            Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $check.name -State success `
+                -Description "Skipped: $($check.title) by /review $($script:RunTestsCommand)" -TargetUrl $buildUrl
         }
 
-        $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
         $title = if ($queueError) { "$($script:RunTestsKind) were not queued" } elseif ($selection.mode -eq 'none') { "No $($script:RunTestsKind) selected" } elseif ($selection.mode -eq 'full') { "Full $($script:RunTestsPipelineName) suite selected" } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
-        $body = [ordered]@{
-            name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
-            started_at = $now; completed_at = $now; details_url = $buildUrl
-            output = [ordered]@{ title = $title; summary = $selectionSummary; text = $selection.rationale }
-        } | ConvertTo-Json -Depth 5
-        Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+        Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $script:RunTestsSelectionCheckName `
+            -State $(if ($queueError) { 'failure' } else { 'success' }) -Description $title -TargetUrl $(if ($build) { $buildUrl } else { $runUrl })
         if ($build -and $dispatch) {
-            # maui-pr-uitests reports its own checks on the dispatch commit; this one follows it on the PR.
-            $body = [ordered]@{
-                name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
-                started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
-                output = [ordered]@{ title = "$($script:RunTestsPipelineName) #$($build.id) is running"; summary = $selectionSummary }
-            } | ConvertTo-Json -Depth 5
-            $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
+            # maui-pr-uitests reports its own checks on the dispatch commit; this status follows it on the PR.
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $script:RunTestsRunCheckName -State pending `
+                -Description "#$($build.id) is running" -TargetUrl $buildUrl
         }
-        Write-Host "Published $($checks.Count) skipped check runs and the selection check on $sha."
+        Write-Host "Published $($checks.Count) skipped statuses and the selection status on $sha."
     }
 
     return @{ suite = $Suite; selection = $selection; inventory = $inventory; build = $build; dispatch = $dispatch; queueError = $queueError }

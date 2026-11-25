@@ -166,6 +166,29 @@ Describe 'Dispatch request' {
         (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
 
+    It 'follows the build with a selected run status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
+        $running = New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $false; result = ''; headline = 'running: 1 passed, 0 failed so far' })
+        $running.context | Should -Be $script:RunTestsRunCheckName
+        $running.state | Should -Be 'pending'
+        $running.description | Should -Be '#7 running: 1 passed, 0 failed so far'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'failed'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'partiallySucceeded'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'canceled'; headline = 'x' })).state | Should -Be 'error'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; headline = 'x' })).state | Should -Be 'success'
+    }
+
+    It 'reports through commit statuses, not check runs' {
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match 'repos/\$Repository/check-runs'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$check\.name'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsSelectionCheckName'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsRunCheckName'
+        foreach ($workflow in 'review-run-tests-dispatch.yml', 'review-run-tests-results.yml') {
+            Get-Content "$PSScriptRoot/../workflows/$workflow" -Raw | Should -Match '(?m)^\s+statuses: write'
+        }
+    }
+
     It 'mirrors each job of the build as a commit status on the PR' {
         $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
         $results = [pscustomobject]@{ completed = $false; result = ''; headline = 'running'; jobs = @(
