@@ -59,7 +59,10 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		platformView.Picker.Click += OnClick;
 
 		base.ConnectHandler(platformView);
-		_clearButtonManager = new PickerClearButtonManager(platformView.Picker, ClearSelection);
+		_clearButtonManager = new PickerClearButtonManager(
+			platformView.Picker,
+			ClearSelection,
+			() => UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible)));
 	}
 
 	protected override void DisconnectHandler(MauiMaterialPickerTextInputLayout platformView)

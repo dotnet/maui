@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly AppCompatEditText _view;
 		readonly Action _clearSelection;
+		readonly Action _refreshClearButton;
 		readonly PickerClearButtonClickListener _clickListener;
 		Drawable? _drawable;
 		Drawable?[]? _originalDrawables;
@@ -24,10 +25,11 @@ namespace Microsoft.Maui.Platform
 		float _touchDownY;
 		readonly int _touchSlop;
 
-		internal PickerClearButtonManager(AppCompatEditText view, Action clearSelection)
+		internal PickerClearButtonManager(AppCompatEditText view, Action clearSelection, Action refreshClearButton)
 		{
 			_view = view;
 			_clearSelection = clearSelection;
+			_refreshClearButton = refreshClearButton;
 			_clickListener = new PickerClearButtonClickListener(this);
 			var context = view.Context ?? throw new InvalidOperationException("The picker clear-button manager requires a platform context.");
 			_touchSlop = Math.Max(1, ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 0);
@@ -90,8 +92,8 @@ namespace Microsoft.Maui.Platform
 
 			// Replace AlertDialog's default listener so clearing does not dismiss the dialog.
 			_dialog?.GetButton((int)DialogButtonType.Neutral)?.SetOnClickListener(_clickListener);
-			if (_picker is { } picker)
-				Update(picker);
+			if (_picker is not null)
+				_refreshClearButton();
 		}
 
 		internal void ClearSelection()
@@ -105,6 +107,12 @@ namespace Microsoft.Maui.Platform
 		void OnTouch(object? sender, AView.TouchEventArgs e)
 		{
 			e.Handled = false;
+			if (!_visible)
+			{
+				_trackingTouch = false;
+				return;
+			}
+
 			var motion = e.Event;
 			if (motion is null)
 			{
