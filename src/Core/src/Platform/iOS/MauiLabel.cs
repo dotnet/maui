@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Platform
 		UIFont _selectionTextFont;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value objects that do not reference this label.")]
 		UIColor _selectionTextColor;
+		// Stands in for a null AttributedText so the cache can match it by handle instead of rebuilding on every layout pass.
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value object that does not reference this label.")]
+		NSAttributedString _emptySelectionSource;
 		nint _selectionTextLines;
 
 		UIEdgeInsets _textInsets;
@@ -86,6 +89,7 @@ namespace Microsoft.Maui.Platform
 					_selectionTextSource = null;
 					_selectionTextFont = null;
 					_selectionTextColor = null;
+					_emptySelectionSource = null;
 				}
 
 				SetNeedsDisplay();
@@ -197,7 +201,7 @@ namespace Microsoft.Maui.Platform
 		// truncates the last visible line. The text container applies the truncation for multi-line labels instead.
 		NSAttributedString GetSelectionText()
 		{
-			var source = AttributedText ?? new NSAttributedString();
+			var source = AttributedText ?? (_emptySelectionSource ??= new NSAttributedString());
 			var font = Font;
 			var textColor = TextColor;
 

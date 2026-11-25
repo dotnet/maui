@@ -32,6 +32,13 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			// Selection that this mapping did not turn on (for example a custom handler calling SetTextIsSelectable)
+			// is left alone while the property is unset.
+			if (!isSelectable && !s_preSelectableInteractionStates.TryGetValue(textView, out _))
+			{
+				return;
+			}
+
 			if (isSelectable)
 			{
 				s_preSelectableInteractionStates.AddOrUpdate(textView, new InteractionState(
