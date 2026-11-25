@@ -53,7 +53,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			carouselViewController2.CancelPendingBoundsChangeRestoration();
+			// Only explicit requests cancel restoration; its own request must retain the layout gate.
+			if (!carouselViewController2.IsBoundsRestorationRequest(args))
+			{
+				carouselViewController2.CancelPendingBoundsChangeRestoration();
+			}
 
 			if (VirtualView?.Loop == true)
 			{

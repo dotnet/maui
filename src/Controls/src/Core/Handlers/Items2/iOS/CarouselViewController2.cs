@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isResizing = false;
 		CGSize _lastBoundsSize = CGSize.Empty;
 		int _positionBeforeBoundsChange = -1;
+		ScrollToRequestEventArgs _boundsRestorationRequest;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -167,24 +168,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var scrollPosition = IsHorizontal
-				? UICollectionViewScrollPosition.CenteredHorizontally
-				: UICollectionViewScrollPosition.CenteredVertically;
+			var request = new ScrollToRequestEventArgs(position, -1, Controls.ScrollToPosition.Center, false);
+			_boundsRestorationRequest = request;
+			try
+			{
+				carousel.SendScrollToRequested(request);
+			}
+			finally
+			{
+				_boundsRestorationRequest = null;
+			}
 
-#if MACCATALYST
-			// Don't let the native observer treat this intentional offset change as a reset.
-			var mauiCollectionView = CollectionView as Items.MauiCollectionView;
-			mauiCollectionView?.ClearPendingScrollRestore();
-#endif
-
-			CollectionView.ScrollToItem(indexPath, scrollPosition, false);
-
-#if MACCATALYST
-			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
-#endif
-
-			_gotoPosition = position;
-			SetPosition(position);
+			if (_positionBeforeBoundsChange == position)
+			{
+				_gotoPosition = position;
+				SetPosition(position);
+			}
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -676,6 +675,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CancelBoundsChangeRestoration();
 		}
 
+		internal bool IsBoundsRestorationRequest(ScrollToRequestEventArgs request)
+			=> ReferenceEquals(request, _boundsRestorationRequest);
+
 		internal void UpdateLoop()
 		{
 			if (!InitialPositionSet)
@@ -731,10 +733,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (_positionBeforeBoundsChange >= 0 && goToPosition != _positionBeforeBoundsChange)
+			if (_positionBeforeBoundsChange >= 0)
 			{
-				_positionBeforeBoundsChange = goToPosition;
-				return;
+				if (_isRotating || _isResizing)
+				{
+					_positionBeforeBoundsChange = goToPosition;
+					return;
+				}
+
+				if (goToPosition != _positionBeforeBoundsChange)
+				{
+					// A clamped edge can leave the snapshot awaiting a callback after restoration has finished.
+					CancelBoundsChangeRestoration();
+				}
 			}
 
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
@@ -880,6 +891,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
 			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
+
+			if (_positionBeforeBoundsChange >= 0 && (_isRotating || _isResizing) &&
+				carouselPosition >= 0 && carouselPosition < ItemsSource.ItemCount)
+			{
+				// Restoration can run before the debounced scroll and overwrite the requested Position.
+				_positionBeforeBoundsChange = carouselPosition;
+			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
