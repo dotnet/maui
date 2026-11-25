@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 						return size;
 					}
 
-					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.PaddingLeft + PlatformView.PaddingRight);
+					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.CompoundPaddingLeft + PlatformView.CompoundPaddingRight);
 					if (actualWidth < size.Width)
 					{
 						// When MaxLines is constrained, verify that narrowing doesn't cause the text

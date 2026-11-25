@@ -391,6 +391,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Slanted Last Glyph Is Not Clipped")]
+		[InlineData(GravityFlags.Start)]
+		[InlineData(GravityFlags.CenterHorizontal)]
+		[InlineData(GravityFlags.End)]
+		public async Task SlantedLastGlyphIsNotClipped(GravityFlags gravity)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				const string text = "Hello, World";
+				var textView = new MauiTextView(MauiContext.Context) { Text = text, Gravity = gravity };
+				textView.SetTextSize(global::Android.Util.ComplexUnitType.Dip, 32);
+				textView.Paint.TextSkewX = -0.25f;
+
+				var unspecified = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+				textView.Measure(unspecified, unspecified);
+				textView.Layout(0, 0, textView.MeasuredWidth, textView.MeasuredHeight);
+
+				using var path = new global::Android.Graphics.Path();
+				textView.Paint.GetTextPath(text, 0, text.Length, 0, 0, path);
+				using var bounds = new global::Android.Graphics.RectF();
+				path.ComputeBounds(bounds, true);
+
+				var textRight = ((TextView)textView).Layout.GetLineLeft(0) + bounds.Right;
+
+				Assert.True(textRight <= textView.MeasuredWidth, $"Text ends at {textRight} but the view is {textView.MeasuredWidth} wide");
+			});
+		}
+
 		// An ILabelHandler that reuses the LabelHandler mappings without deriving from LabelHandler
 		class LabelMappingsHandler : ViewHandler<ILabel, AppCompatTextView>, ILabelHandler
 		{
