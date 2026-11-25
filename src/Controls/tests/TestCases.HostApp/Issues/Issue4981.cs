@@ -26,13 +26,13 @@ public class Issue4981 : ContentPage
 		noPreselectButton.Clicked += async (_, _) =>
 		{
 			resultLabel.IsVisible = false;
-			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is not selected", initialValue: InitialValue, preselectInitialValue: false);
+			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is not selected", "OK", "Cancel", null, -1, null, InitialValue, PromptTextSelection.None);
 			resultLabel.IsVisible = true;
 		};
 		preselectButton.Clicked += async (_, _) =>
 		{
 			resultLabel.IsVisible = false;
-			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is selected", initialValue: InitialValue, preselectInitialValue: true);
+			resultLabel.Text = await DisplayPromptAsync("Initial selection", "Initial value is selected", "OK", "Cancel", null, -1, null, InitialValue, PromptTextSelection.All);
 			resultLabel.IsVisible = true;
 		};
 

@@ -334,6 +334,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task PromptSelectionOverloadsPreserveExistingCallsAndBackendArguments()
+		{
+			var requests = new List<PromptArguments>();
+			Func<Page, PromptArguments, Task<string>> promptFunc = (_, args) =>
+			{
+				requests.Add(args);
+				return Task.FromResult("user input");
+			};
+			var window = CreateWindow(services =>
+				RegisterKeyedService(services, AlertManager.DisplayPromptServiceKey, promptFunc));
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			await page.DisplayPromptAsync("Title", "Message", null);
+			await page.DisplayPromptAsync("Title", "Message", default);
+			await page.DisplayPromptAsync("Title", "Message", null, default, null, default, default, default);
+			await page.DisplayPromptAsync("Title", "Message", "OK", "Cancel", null, -1, null, "Report.pdf", null);
+			await page.DisplayPromptAsync("Title", "Message", "OK", "Cancel", null, -1, null, "Report.pdf", PromptTextSelection.None);
+			var range = new PromptTextSelection(0, 6);
+			await page.DisplayPromptAsync("Title", "Message", "Save", "Back", "File", 20, Keyboard.Email, "Report.pdf", range);
+			await page.DisplayPromptAsync("Title", "Message", "OK", "Cancel", null, -1, null, "Report.pdf", PromptTextSelection.All);
+
+			Assert.Equal(7, requests.Count);
+			Assert.All(requests.Take(4), args => Assert.Null(args.InitialSelection));
+			Assert.Null(requests[0].Accept);
+			Assert.Null(requests[1].Accept);
+			Assert.NotNull(requests[4].InitialSelection);
+			Assert.True(requests[4].InitialSelection.IsNone);
+			Assert.Equal((10, 0), requests[4].InitialSelection.GetRange(requests[4].InitialValue.Length));
+			var rangeRequest = requests[5];
+			Assert.Same(range, rangeRequest.InitialSelection);
+			Assert.Equal("Save", rangeRequest.Accept);
+			Assert.Equal("Back", rangeRequest.Cancel);
+			Assert.Equal("File", rangeRequest.Placeholder);
+			Assert.Equal(20, rangeRequest.MaxLength);
+			Assert.Same(Keyboard.Email, rangeRequest.Keyboard);
+			Assert.Equal("Report.pdf", rangeRequest.InitialValue);
+			Assert.True(requests[6].InitialSelection.IsAll);
+		}
+
+		[Fact]
 		public async Task ExplicitSubscriptionWinsOverDelegateFuncs()
 		{
 			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(true);

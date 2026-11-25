@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -122,6 +123,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
+				Action cleanupInitialSelection = null;
 #if MACCATALYST
 				Action onPresented = null;
 #endif
@@ -130,6 +132,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (Interlocked.CompareExchange(ref completed, 1, 0) != 0)
 						return false;
 
+					cleanupInitialSelection?.Invoke();
 					setResult();
 					return true;
 				}
@@ -139,40 +142,56 @@ namespace Microsoft.Maui.Controls.Platform
 					uiTextField.Placeholder = arguments.Placeholder;
 					uiTextField.Text = arguments.InitialValue;
 #if MACCATALYST
-					if (!string.IsNullOrEmpty(arguments.InitialValue))
 					{
-						// Catalyst selects the text while the alert opens.
+						var selection = arguments.InitialSelection ?? PromptTextSelection.FromPreset(PromptTextSelection.None);
+						var applyingSelection = false;
 						void ApplyInitialSelection()
 						{
-							var end = uiTextField.EndOfDocument;
-							var start = arguments.PreselectInitialValue ? uiTextField.BeginningOfDocument : end;
-							var range = uiTextField.SelectedTextRange;
+							if (applyingSelection)
+								return;
 
-							// Avoid re-entrant selection notifications when the range is already correct.
+							var (start, length) = selection.GetRange(uiTextField.Text?.Length ?? 0);
+							var range = uiTextField.SelectedTextRange;
+							var beginning = uiTextField.BeginningOfDocument;
+
 							if (range is null ||
-								uiTextField.GetOffsetFromPosition(start, range.Start) != 0 ||
-								uiTextField.GetOffsetFromPosition(end, range.End) != 0)
-								uiTextField.SelectedTextRange = uiTextField.GetTextRange(start, end);
+								uiTextField.GetOffsetFromPosition(beginning, range.Start) != start ||
+								uiTextField.GetOffsetFromPosition(beginning, range.End) != start + length)
+							{
+								applyingSelection = true;
+								try
+								{
+									uiTextField.SetTextRange(start, length);
+								}
+								finally
+								{
+									applyingSelection = false;
+								}
+							}
 						}
 
 						EventHandler selectionChanged = (_, _) => ApplyInitialSelection();
 						uiTextField.DidChangeSelection += selectionChanged;
+						cleanupInitialSelection = () => uiTextField.DidChangeSelection -= selectionChanged;
 						onPresented = () =>
 						{
-							uiTextField.DidChangeSelection -= selectionChanged;
+							cleanupInitialSelection();
+							if (!arguments.Result.Task.IsCompleted)
+								ApplyInitialSelection();
 						};
 					}
 #else
-					if (arguments.PreselectInitialValue && !string.IsNullOrEmpty(arguments.InitialValue))
+					if (arguments.InitialSelection is PromptTextSelection selection)
 					{
-						// Apply the initial selection only once, preserving user edits on refocus.
 						void SelectInitialValue(object sender, EventArgs e)
 						{
 							uiTextField.EditingDidBegin -= SelectInitialValue;
-							uiTextField.SelectedTextRange = uiTextField.GetTextRange(uiTextField.BeginningOfDocument, uiTextField.EndOfDocument);
+							var (start, length) = selection.GetRange(uiTextField.Text?.Length ?? 0);
+							uiTextField.SetTextRange(start, length);
 						}
 
 						uiTextField.EditingDidBegin += SelectInitialValue;
+						cleanupInitialSelection = () => uiTextField.EditingDidBegin -= SelectInitialValue;
 					}
 #endif
 					if (arguments.MaxLength > -1 && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))

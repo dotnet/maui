@@ -277,8 +277,11 @@ namespace Microsoft.Maui.Controls.Platform
 					alertDialog.GetButton((int)DialogButtonType.Negative));
 				editText.RequestFocus();
 
-				if (arguments.PreselectInitialValue && !string.IsNullOrEmpty(arguments.InitialValue))
-					editText.SelectAll();
+				if (arguments.InitialSelection is PromptTextSelection selection)
+				{
+					var (start, length) = selection.GetRange(editText.Text?.Length ?? 0);
+					editText.SetSelection(start, start + length);
+				}
 			}
 
 			static void RegisterDialog(

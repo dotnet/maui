@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Platform
 					MaxLength = arguments.MaxLength >= 0 ? arguments.MaxLength : 0,
 					InputScope = arguments.Keyboard.ToInputScope(),
 					DefaultButton = ContentDialogButton.Primary,
-					PreselectInitialValue = arguments.PreselectInitialValue
+					InitialSelection = arguments.InitialSelection
 				};
 
 				if (PlatformView.Content is FrameworkElement windowContent)
