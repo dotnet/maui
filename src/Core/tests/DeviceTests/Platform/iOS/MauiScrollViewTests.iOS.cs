@@ -464,6 +464,30 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(InflatedHeight, (double)scrollView.ContentSize.Height);
 			});
 
+		[Theory]
+		[InlineData(UINavigationItemLargeTitleDisplayMode.Never, UINavigationItemLargeTitleDisplayMode.Automatic, InflatedHeight)]
+		[InlineData(UINavigationItemLargeTitleDisplayMode.Always, UINavigationItemLargeTitleDisplayMode.Never, RealHeight)]
+		public Task LargeTitleDisplayModeIsReadFromTheNavigationControllerChild(
+			UINavigationItemLargeTitleDisplayMode parentMode, UINavigationItemLargeTitleDisplayMode childMode, int expectedHeight) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var parent = new UIViewController();
+				using var child = new UIViewController();
+				using var navigation = new UINavigationController(parent);
+				navigation.NavigationBar.PrefersLargeTitles = true;
+				parent.NavigationItem.LargeTitleDisplayMode = parentMode;
+				child.NavigationItem.LargeTitleDisplayMode = childMode;
+				parent.AddChildViewController(child);
+				parent.View.AddSubview(child.View);
+				child.DidMoveToParentViewController(parent);
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 96);
+				child.View.AddSubview(scrollView);
+
+				Arrange(scrollView);
+
+				Assert.Equal(expectedHeight, (double)scrollView.ContentSize.Height);
+			});
+
 		static void ChangeInset(InsetScrollView scrollView, int top)
 		{
 			scrollView.SystemInset = new UIEdgeInsets(top, 0, 0, 0);
