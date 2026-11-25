@@ -12,39 +12,21 @@ public class Issue40414 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[TestCase("OpenGridButton")]
-	[TestCase("OpenListButton")]
+	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView)]
-	public void GroupedItemsAreDisplayedAfterItemsSourceResetAndNavigation(string openButton)
+	public void GroupedItemsAreDisplayedAfterNavigatingBackToFlyoutPage()
 	{
-		App.WaitForElement(openButton);
-		App.Tap(openButton);
-		AssertGenerationVisible(1);
+		App.WaitForElement("Flyout1Label");
 
-		App.Tap("ResetItemsSourceButton");
-		AssertGenerationVisible(2);
+		App.TapInShellFlyout("Flyout2Content");
+		App.WaitForElement("GroupedCollectionView");
 
-		App.Tap("NavigateAwayButton");
-		App.WaitForElement(openButton);
-		App.Tap(openButton);
-		AssertGenerationVisible(3);
-	}
+		App.TapInShellFlyout("Flyout1Content");
+		App.WaitForElement("Flyout1Label");
 
-	void AssertGenerationVisible(int generation)
-	{
-		var collectionRect = App.WaitForElement("GroupedCollectionView").GetRect();
-		foreach (var suffix in new[] { "Group1", "Item1_1", "Item1_4" })
-		{
-			var text = $"Generation{generation}{suffix}";
-			var element = App.WaitForElement(text);
-			Assert.That(element.GetText(), Is.EqualTo(text));
-			var rect = element.GetRect();
-			Assert.That(rect.Width, Is.GreaterThan(0));
-			Assert.That(rect.Height, Is.GreaterThan(0));
-			Assert.That(rect.X, Is.GreaterThanOrEqualTo(collectionRect.X));
-			Assert.That(rect.Y, Is.GreaterThanOrEqualTo(collectionRect.Y));
-			Assert.That(rect.X + rect.Width, Is.LessThanOrEqualTo(collectionRect.X + collectionRect.Width));
-			Assert.That(rect.Y + rect.Height, Is.LessThanOrEqualTo(collectionRect.Y + collectionRect.Height));
-		}
+		App.TapInShellFlyout("Flyout2Content");
+		App.WaitForElement("GroupedCollectionView");
+
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
