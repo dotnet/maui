@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
@@ -175,23 +176,31 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		[Fact(DisplayName = "Shell TabBar visibility toggle")]
-		public async Task ShellTabBarVisibilityToggleWorks()
+		[Theory(DisplayName = "Shell TabBar visibility toggle")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ShellTabBarVisibilityToggleWorks(bool initiallyVisible)
 		{
-			await RunShellTabBarTests(shell => { },
+			await RunShellTabBarTests(shell =>
+			{
+				shell.CurrentItem.AutomationId = "tab_bar";
+				Shell.SetTabBarIsVisible(shell.CurrentPage, initiallyVisible);
+			},
 			(shell) =>
 			{
-				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
-				var navView = shellItemHandler.PlatformView as MauiNavigationView;
+				var navView = Assert.IsType<MauiNavigationView>(shell.CurrentItem.Handler.PlatformView);
+				foreach (var visible in new[] { initiallyVisible, !initiallyVisible, initiallyVisible, !initiallyVisible })
+				{
+					Shell.SetTabBarIsVisible(shell.CurrentPage, visible);
+					Assert.Equal(visible
+						? UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top
+						: UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal, navView.PaneDisplayMode);
+					if (visible)
+						Assert.True(navView.IsPaneVisible);
+					Assert.Equal(visible ? "tab_bar" : string.Empty, NativeAutomationProperties.GetAutomationId(navView) ?? string.Empty);
+				}
 
-				Shell.SetTabBarIsVisible(shell.CurrentPage, false);
-				Assert.True(navView.PaneDisplayMode == UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal);
-
-				Shell.SetTabBarIsVisible(shell.CurrentPage, true);
-				Assert.True(navView.IsPaneVisible);
-				Assert.True(navView.PaneDisplayMode == UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top);
-
-				return Task.FromResult(true);
+				return Task.CompletedTask;
 			});
 		}
 
@@ -241,7 +250,7 @@ namespace Microsoft.Maui.DeviceTests
 				var singleTab = shell.CurrentItem.Items[6];
 				var singleTabItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, singleTab);
 				Assert.True(singleTabItem.SelectsOnInvoked);
-				ClickNavigationViewItem(singleTabItem);
+				await ClickOverflowMenuItemThatClosesMenu(overflowButton, singleTabItem);
 				await AssertEventually(() => shell.CurrentItem.CurrentItem == singleTab, message: "Did not navigate to \"Tab 7\"");
 
 				var nestedItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, nestedTab);
@@ -259,7 +268,7 @@ namespace Microsoft.Maui.DeviceTests
 				WNavigationViewItem subTabBItem = null;
 				await AssertEventually(() => (subTabBItem = nestedItem.GetChildren<WNavigationViewItem>().FirstOrDefault(item => IsNavigationViewItemFor(item, subTabB))) is not null, message: "\"Sub B\" is not shown");
 
-				ClickNavigationViewItem(subTabBItem);
+				await ClickOverflowMenuItemThatClosesMenu(overflowButton, subTabBItem);
 				await AssertEventually(() => shell.CurrentItem.CurrentItem == nestedTab && nestedTab.CurrentItem == subTabB, message: "Did not navigate to \"Sub B\"");
 
 				// Opening and closing the overflow menu again keeps working
@@ -438,6 +447,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		static bool IsNavigationViewItemFor(WNavigationViewItem item, BaseShellItem shellItem) =>
 			(item?.DataContext as NavigationViewItemViewModel)?.Data == shellItem;
+
+		// Clicking such a tab hides the menu, which only closes its popup. WinUI ignores ShowAt for the same menu
+		// until the menu has unloaded and raised Closed, so wait for Closed before the menu is opened again.
+		static async Task ClickOverflowMenuItemThatClosesMenu(WButton overflowButton, WNavigationViewItem item)
+		{
+			var closed = false;
+			void OnClosed(object sender, object e) => closed = true;
+
+			overflowButton.Flyout.Closed += OnClosed;
+			try
+			{
+				ClickNavigationViewItem(item);
+				await AssertEventually(() => closed, message: "The overflow menu did not close");
+			}
+			finally
+			{
+				overflowButton.Flyout.Closed -= OnClosed;
+			}
+		}
 
 		// Same path as a mouse click. The automation peer doesn't report the Invoke pattern, but it implements it.
 		static void ClickNavigationViewItem(WNavigationViewItem item) =>

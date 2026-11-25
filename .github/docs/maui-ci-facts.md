@@ -107,7 +107,8 @@ The maintainer reviews and merges using Create a merge commit, then manually
 creates the real release at that exact servicing merge. No post-cut servicing PR
 is opened. CI restoration is prepared as a reviewed normalization
 PR, never a direct protected net11 write. Until its pinned child is merged with
-Create a merge commit, the coordinator reports waiting-for-normalization-approval,
+Create a merge commit (a squash/rebase merge is ignored and a replacement PR is
+opened from the same pinned head), the coordinator reports waiting-for-normalization-approval,
 preserves staging/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
 automation/normalization route. It does not merge either reviewed PR, advance canonical

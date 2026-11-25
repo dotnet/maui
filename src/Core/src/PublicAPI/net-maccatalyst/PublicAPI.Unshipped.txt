@@ -8,3 +8,4 @@ static Microsoft.Maui.Platform.LabelExtensions.UpdateIsTextSelectable(this Micro
 ~override Microsoft.Maui.Platform.MauiLabel.Text.set -> void
 ~override Microsoft.Maui.Platform.MauiLabel.AttributedText.get -> Foundation.NSAttributedString
 ~override Microsoft.Maui.Platform.MauiLabel.AttributedText.set -> void
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void

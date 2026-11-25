@@ -1,6 +1,11 @@
-# Updates `/review run-tests` comments when their maui-pr-uitests build finishes.
-# Azure Pipelines reports the result as checks on the PR itself; this keeps the
-# comment's Result badge and per-job table in sync with it.
+# Updates `/review run-tests` (and run-ui-tests / run-device-tests) comments and their "maui-pr-uitests (selected run)" check when the
+# maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
+# Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
+# check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
+#
+# The dispatch commit is pushed with GITHUB_TOKEN, and GitHub does not start workflows from
+# check_run events on such commits, so the selected run's completion is normally picked up by the
+# sweep, not by check_run. Keep the sweep frequent so the PR updates within ~10 minutes.
 
 name: Review run-tests results
 
@@ -8,7 +13,7 @@ on:
   check_run:
     types: [completed]
   schedule:
-    - cron: '17,47 * * * *'
+    - cron: '7-59/10 * * * *'
   workflow_dispatch:
     inputs:
       head_sha:
@@ -24,15 +29,17 @@ concurrency:
 
 jobs:
   update:
-    # check_run fires for every check; only the overall maui-pr-uitests check matters.
+    # check_run fires for every check; only the overall maui-pr-uitests and maui-pr-devicetests checks matter.
     if: >-
       github.repository_owner == 'dotnet' &&
       (github.event_name != 'check_run' ||
-       (github.event.check_run.name == 'maui-pr-uitests' && github.event.check_run.app.slug == 'azure-pipelines'))
+       ((github.event.check_run.name == 'maui-pr-uitests' || github.event.check_run.name == 'maui-pr-devicetests') && github.event.check_run.app.slug == 'azure-pipelines'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: read
+      checks: write
+      # Deletes expired run-tests/* dispatch branches.
+      contents: write
       issues: write
       pull-requests: write
     steps:

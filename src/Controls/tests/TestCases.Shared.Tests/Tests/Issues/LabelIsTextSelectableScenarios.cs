@@ -52,6 +52,16 @@ public class LabelIsTextSelectableScenarios : _IssuesUITest
 	{
 		var rect = App.WaitForElement(id).GetRect();
 		App.TapCoordinates(rect.X + 20, rect.CenterY());
+		ClearSelection();
+	}
+
+	// Windows starts a selection with a Copy flyout on the tapped text, which hides the page from automation until it is dismissed.
+	void ClearSelection()
+	{
+		if (Device == TestDevice.Windows)
+		{
+			App.TapCoordinates(600, 720);
+		}
 	}
 
 	[Test]

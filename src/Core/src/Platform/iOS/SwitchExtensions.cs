@@ -30,32 +30,42 @@ namespace Microsoft.Maui.Platform
 
 			if (view.IsOn)
 			{
-				if (trackColor is not null)
+				uiSwitch.UpdateOnTintColor(trackColor);
+
+				// With Liquid Glass, OnTintColor colors the track, and the track subview covers the thumb while the switch animates
+				if (!IsLiquidGlass)
 				{
-					uiSwitch.OnTintColor = trackColor;
-					uIView.BackgroundColor = trackColor;
-				}
-				else
-				{
-					uiSwitch.OnTintColor = null;
-					uIView.BackgroundColor = null;
+					UpdateBackgroundColor(uIView, trackColor);
 				}
 			}
 			else
 			{
-				if (trackColor is not null)
-				{
-					uIView.BackgroundColor = trackColor;
-				}
-				else
-				{
-					// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
-					// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
-					var fallbackColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
-					uIView.BackgroundColor = fallbackColor;
-				}
+				// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
+				// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
+				var fallbackColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
+				UpdateBackgroundColor(uIView, trackColor ?? fallbackColor);
 			}
 		}
+
+		// The colors are only set when they change: with Liquid Glass, setting them while the switch animates, as the IsOn update
+		// of a tap does, shows a solid track over the thumb (https://github.com/dotnet/maui/issues/34560)
+		internal static void UpdateOnTintColor(this UISwitch uiSwitch, UIColor? onTintColor)
+		{
+			if (!Equals(uiSwitch.OnTintColor, onTintColor))
+			{
+				uiSwitch.OnTintColor = onTintColor;
+			}
+		}
+
+		static void UpdateBackgroundColor(UIView view, UIColor? backgroundColor)
+		{
+			if (!Equals(view.BackgroundColor, backgroundColor))
+			{
+				view.BackgroundColor = backgroundColor;
+			}
+		}
+
+		static bool IsLiquidGlass => OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 
 		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{

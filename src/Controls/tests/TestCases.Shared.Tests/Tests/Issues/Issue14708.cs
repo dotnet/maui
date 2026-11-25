@@ -34,8 +34,9 @@ public class Issue14708 : _IssuesUITest
 		// page content. VerifyScreenshot() catches this because the visual output
 		// is dramatically different from the fixed (inline-keyboard) baseline.
 #if ANDROID
-		VerifyScreenshot(cropLeft: 125, cropBottom:600, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(cropLeft: 125, cropBottom: 600, retryTimeout: TimeSpan.FromSeconds(2));
 #else
+		Assert.That(App.IsKeyboardShown(), Is.True, "Tapping the SearchBar should show the keyboard in landscape.");
 		VerifyScreenshot(cropBottom:520, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}

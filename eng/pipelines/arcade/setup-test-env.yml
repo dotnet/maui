@@ -6,7 +6,7 @@ parameters:
   buildMSBuildTasks: false
   androidSdkRoot: $(ANDROID_SDK_ROOT)
   skipXcode: false
-  installXcodePackage: true
+  installXcodePackage: false
   requirePinnedXcodeVersion: false
 
 steps:

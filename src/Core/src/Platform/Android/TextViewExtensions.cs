@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		static readonly ConditionalWeakTable<TextView, ColorStateList> defaultTextColors = new();
 		static readonly ConditionalWeakTable<TextView, InteractionState> s_preSelectableInteractionStates = new();
 
-		sealed record InteractionState(ViewFocusability? FocusableMode, bool Focusable, bool FocusableInTouchMode, bool Clickable, bool LongClickable);
+		sealed record InteractionState(global::Android.Text.Method.IMovementMethod? MovementMethod, ViewFocusability? FocusableMode, bool Focusable, bool FocusableInTouchMode, bool Clickable, bool LongClickable);
 
 		public static void UpdateIsTextSelectable(this TextView textView, ILabel label)
 		{
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Platform
 			if (isSelectable)
 			{
 				s_preSelectableInteractionStates.AddOrUpdate(textView, new InteractionState(
+					textView.MovementMethod,
 					OperatingSystem.IsAndroidVersionAtLeast(26) ? textView.GetFocusable() : null,
 					textView.Focusable,
 					textView.FocusableInTouchMode,
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				textView.FocusableInTouchMode = state.FocusableInTouchMode;
+				textView.MovementMethod = state.MovementMethod;
 				textView.Clickable = state.Clickable;
 				textView.LongClickable = state.LongClickable;
 			}
@@ -223,9 +225,23 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			if (label.LineHeight >= 0)
+			// Like iOS and Windows, 0 keeps the natural line height: as a multiplier it would stack every line on the first
+			if (label.LineHeight <= 0)
+				return;
+
+			// The line spacing multiplier also scales the font padding that TextView adds to the first line,
+			// making the gap below it larger, so plain text gets the same fixed extra on every line instead.
+			// Spanned text (HTML) keeps the multiplier, which spaces lines of different sizes by their own height.
+			if (!textView.IsTextSpanned() && textView.Paint?.GetFontMetricsInt() is { } fontMetrics)
+				textView.SetLineSpacing((fontMetrics.Descent - fontMetrics.Ascent) * ((float)label.LineHeight - 1), 1);
+			else
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
+
+		// Plain text is a java.lang.String. "is ISpanned" doesn't work here: in a trimmed app,
+		// formatted text (a SpannedString) can come back as a plain ICharSequence wrapper.
+		internal static bool IsTextSpanned(this TextView textView) =>
+			textView.TextFormatted is not Java.Lang.String;
 
 		internal static void Focus(this TextView textView, FocusRequest request)
 		{
@@ -234,7 +250,7 @@ namespace Microsoft.Maui.Platform
 
 			textView.Focus(request, () =>
 			{
-				if (textView.ShowSoftInputOnFocus)
+				if (textView.ShowSoftInputOnFocus && textView.OnCheckIsTextEditor())
 					ViewExtensions.PostShowSoftInput(textView);
 			});
 		}

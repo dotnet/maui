@@ -86,6 +86,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsTextSelectable(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateIsTextSelectable(label);
 
+		// TextBlock is not a Control, so the base mapper does not reach it and a disabled label would stay selectable.
+		internal static void MapIsEnabled(ILabelHandler handler, ILabel label)
+		{
+			ViewHandler.MapIsEnabled(handler, label);
+			handler.UpdateValue(nameof(ILabel.IsTextSelectable));
+		}
+
 		public static void MapPadding(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdatePadding(label);
 

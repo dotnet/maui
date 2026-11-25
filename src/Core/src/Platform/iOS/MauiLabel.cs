@@ -17,6 +17,16 @@ namespace Microsoft.Maui.Platform
 		// Owned by this label's own view hierarchy and released when selection is turned off, so it cannot outlive the label.
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The text view is a subview of this label and does not reference it.")]
 		UITextView _selectionTextView;
+		// The cache keeps its inputs alive, so a native handle can't be reused by a different object while it is compared.
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value objects that do not reference this label.")]
+		NSAttributedString _selectionTextCache;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value objects that do not reference this label.")]
+		NSAttributedString _selectionTextSource;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value objects that do not reference this label.")]
+		UIFont _selectionTextFont;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Plain value objects that do not reference this label.")]
+		UIColor _selectionTextColor;
+		nint _selectionTextLines;
 
 		UIEdgeInsets _textInsets;
 
@@ -72,6 +82,10 @@ namespace Microsoft.Maui.Platform
 					_selectionTextView.RemoveFromSuperview();
 					_selectionTextView.Dispose();
 					_selectionTextView = null;
+					_selectionTextCache = null;
+					_selectionTextSource = null;
+					_selectionTextFont = null;
+					_selectionTextColor = null;
 				}
 
 				SetNeedsDisplay();
@@ -184,6 +198,32 @@ namespace Microsoft.Maui.Platform
 		NSAttributedString GetSelectionText()
 		{
 			var source = AttributedText ?? new NSAttributedString();
+			var font = Font;
+			var textColor = TextColor;
+
+			// This runs for every redraw and layout pass, so only rebuild when one of its inputs changed.
+			if (_selectionTextCache is not null &&
+				_selectionTextSource?.Handle == source.Handle &&
+				_selectionTextFont?.Handle == font?.Handle &&
+				_selectionTextColor?.Handle == textColor?.Handle &&
+				_selectionTextLines == Lines)
+			{
+				return _selectionTextCache;
+			}
+
+			var result = BuildSelectionText(source);
+
+			_selectionTextCache = result;
+			_selectionTextSource = source;
+			_selectionTextFont = font;
+			_selectionTextColor = textColor;
+			_selectionTextLines = Lines;
+
+			return result;
+		}
+
+		NSAttributedString BuildSelectionText(NSAttributedString source)
+		{
 
 			if (source.Length == 0)
 			{

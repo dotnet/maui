@@ -380,12 +380,20 @@ that its default-channel/feed wiring matches the existing nightly contract, and
 that a signed internal build publishes the expected artifacts. Do not rewrite
 mirror history or promote workload-release packages as part of this migration.
 The dnceng `dotnet-mirroring` configuration must list `candidate/<band>-srN` as
-an optional fast-forward pattern, as it does `main`, `release/*` and
-`inflight/current`, so the selected candidate reaches the internal `dotnet-maui`
-repository. That mirroring never force-pushes: after a public rebase or
-force-push of a mirrored branch, the branch stops mirroring (and a mirroring
-issue is filed) until a maintainer verifies that no internal-only commits would
-be dropped and performs a leased internal sync. The internal candidate's own
+an optional fast-forward pattern, as it does `main` and `release/*`, so the
+selected candidate reaches the internal `dotnet-maui` repository. The `net11`
+review lane and the `inflight/<band>-srN` staging lanes aren't mirrored, because
+official nightlies build only from the candidate. Switching `nightlyMode` to
+`versioned` would first require mirroring the inflight lanes. Fast-forward
+mirroring alone never follows a public rebase or force-push: the branch stops
+mirroring (and a mirroring issue is filed). The configuration must therefore
+also list the candidate lanes under its opt-in `followRewrites` patterns. For
+those branches, the mirror resets the internal branch to the rewritten public
+tip with a leased push, but only when the public repository activity shows that
+the internal tip was once a published tip of the same public branch, so no
+internal-only commit can be dropped. When that can't be verified, the branch
+stays blocked until a maintainer verifies that no internal-only commits would be
+dropped and performs a leased internal sync. The internal candidate's own
 05:00 UTC schedule then runs official pipeline 1095, without an additional
 competing build trigger. Advancing `currentSr` therefore selects and mirrors the
 next candidate without a manual per-SR change.
@@ -498,9 +506,14 @@ Force-pushing or rebasing `net11` breaks that ancestry for every unpublished
 lane: the publication reconciler fails until its prepared commit is an ancestor
 of `net11` again.
 The merged-PR trigger then revalidates that ancestry and resumes the same receipt.
+If the normalization PR is squash- or rebase-merged anyway, the runner warns,
+ignores that merge and opens a replacement draft PR from the same pinned head
+(its diff may be empty because the tree already landed). Merging the replacement
+with **Create a merge commit** records the ancestry and resumes the receipt.
 Existing protections and bypass actors are never changed by this workflow.
-If net11 acquires unrelated work before normalization, the runner refuses to
-overwrite it. Servicing preparation runs independently in the publication
+While normalization is pending, net11 may advance from the approved candidate
+merge, but the runner never overwrites it and refuses history that no longer
+descends from that merge. Servicing preparation runs independently in the publication
 reconciler before a real manual cut. The next-lane runner reconciles the next tracking pair and prepares
 the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
 is not used, so servicing configuration cannot overwrite feature-major settings.
@@ -710,6 +723,14 @@ forward-merge PR daily at 06:40 UTC, on pushes to `net11`, or on zero-input
 manual activation. It reads trusted branch roles from `main` and uses a
 separate `automation/forward-servicing-fixes` head so GitHub's post-merge branch
 deletion cannot delete the servicing branch.
+
+Manual forward PRs must follow the same rule: push a separate branch such as
+`forward/net11-to-main-<sha>` and never open a PR whose head is `net11`,
+`inflight/*` or `candidate/*`. The repository has `delete_branch_on_merge`
+enabled, so merging such a PR deletes the long-lived branch and closes every PR
+that targets it. The `MAUI long-lived branch deletion guard` ruleset blocks
+deletion of `net11`, `net12`, `inflight/*` and `candidate/*`; keep its patterns
+in sync with the roles in `eng/release-rollover.json`.
 
 Forwarding waits until the feature branch's actual major exceeds the servicing
 major. It also waits for post-staging fixes housekeeping: the source must have

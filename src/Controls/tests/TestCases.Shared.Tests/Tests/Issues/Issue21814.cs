@@ -28,6 +28,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.Tap("NavigateButton");
 
+			// Both pages reuse the label AutomationIds and only update them from the navigation
+			// events raised after the transition completes, so wait for that before reading them.
+			App.WaitForNoElement("NavigateButton");
+			App.WaitForElement("NavigateBackButton");
+			App.WaitForTextEqualToElement("OnNavigatedToLabel", "PreviousPage: Issue21814FirstPage, NavigationType: Push");
 			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToPage2 = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToPage2, Is.EqualTo("PreviousPage: Issue21814FirstPage, NavigationType: Push"));
@@ -37,6 +42,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.Tap("NavigateBackButton");
 
+			App.WaitForNoElement("NavigateBackButton");
+			App.WaitForElement("NavigateButton");
+			App.WaitForTextEqualToElement("OnNavigatedToLabel", "PreviousPage: Issue21814SecondPage, NavigationType: Pop");
 			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToAfterNavigate = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToAfterNavigate, Is.EqualTo("PreviousPage: Issue21814SecondPage, NavigationType: Pop"));

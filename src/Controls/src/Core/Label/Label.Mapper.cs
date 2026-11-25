@@ -58,9 +58,6 @@ namespace Microsoft.Maui.Controls
 			// platform-specifics
 #if WINDOWS
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
-
-			// TextBlock is not a Control, so IsEnabled does not reach it and a disabled label would stay selectable.
-			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IsEnabled), MapIsEnabledForSelection);
 #endif
 		}
 

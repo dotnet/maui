@@ -41,6 +41,12 @@ public class LabelIsTextSelectable : _IssuesUITest
 		var rect = App.WaitForElement("SelectableSpanLabel").GetRect();
 		App.TapCoordinates(rect.X + 30, rect.CenterY());
 
+		// Windows starts a selection with a Copy flyout on the tapped text, which hides the page from automation until it is dismissed.
+		if (Device == TestDevice.Windows)
+		{
+			App.TapCoordinates(600, 720);
+		}
+
 		ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("TapCountLabel", "Taps: 1"));
 	}
 }
