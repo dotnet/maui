@@ -2,9 +2,11 @@ parameters:
   # Xcode
   skipXcode: false
   skipSimulatorSetup: false
-  # Internal runs install this Xcode from dotnet/macios' xcode-apple-silicon package; keep it
-  # in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config.
-  installXcodePackage: true
+  # Opt-in: internal runs can install this Xcode from dotnet/macios' xcode-apple-silicon
+  # package (keep it in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config).
+  # Off by default: the agent images provide the Xcode that $(XCODE) pins, and the iOS SDK
+  # rejects any other Xcode version.
+  installXcodePackage: false
   requirePinnedXcodeVersion: false
   xcodePackageVersion: '27.2.0'
   # .NET NuGet caches

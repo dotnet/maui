@@ -1134,7 +1134,7 @@ internal class TabbedViewManager
 
         if (barItemColor is null && barSelectedItemColor is null)
         {
-            return _originalTabIconColors;
+            return IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _originalTabIconColors;
         }
 
         if (_newTabIconColors is not null)

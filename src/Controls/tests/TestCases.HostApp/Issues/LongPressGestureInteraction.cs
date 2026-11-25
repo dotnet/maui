@@ -53,14 +53,37 @@ public class LongPressGestureInteraction : ContentPage
 				_tapLabel.Text = $"Tap Count: {_tapCount}";
 			})
 		});
-		tapAndLongPressBorder.GestureRecognizers.Add(new LongPressGestureRecognizer
+		var timingLabel = new Label { AutomationId = "LongPressTimingLabel", Text = "Waiting for recognition" };
+		var eventLabel = new Label { AutomationId = "LongPressEventLabel", Text = "LongPressed: 0; Completed: 0" };
+		int pressedCount = 0, completedCount = 0;
+		var tapAndLongPressRecognizer = new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
 				_longPressCount++;
 				_longPressLabel.Text = $"Long Press Count: {_longPressCount}";
 			})
-		});
+		};
+		tapAndLongPressRecognizer.LongPressed += (_, _) =>
+		{
+			pressedCount++;
+			eventLabel.Text = $"LongPressed: {pressedCount}; Completed: {completedCount}";
+		};
+		tapAndLongPressRecognizer.LongPressing += (_, e) =>
+		{
+			if (e.Status == GestureStatus.Started)
+			{
+				// Capture the callbacks after recognition, before the two-second hold is released.
+				Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+					timingLabel.Text = $"Command: {_longPressCount}; LongPressed: {pressedCount}; Completed: {completedCount}");
+			}
+			else if (e.Status == GestureStatus.Completed)
+			{
+				completedCount++;
+				eventLabel.Text = $"LongPressed: {pressedCount}; Completed: {completedCount}";
+			}
+		};
+		tapAndLongPressBorder.GestureRecognizers.Add(tapAndLongPressRecognizer);
 
 		// Test 2: LongPress + Swipe
 		var swipeAndLongPressBorder = new Border
@@ -172,6 +195,8 @@ public class LongPressGestureInteraction : ContentPage
 				tapAndLongPressBorder,
 				_tapLabel,
 				_longPressLabel,
+				timingLabel,
+				eventLabel,
 
 				swipeAndLongPressBorder,
 				_swipeLabel,

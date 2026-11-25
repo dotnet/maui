@@ -136,17 +136,12 @@ namespace Microsoft.Maui.Graphics.Platform
 				var arcAngleIndex = 0;
 				var arcClockwiseIndex = 0;
 				var figureOpen = false;
-				var segmentIndex = -1;
-
-				var lastOperation = PathOperation.Move;
 
 				foreach (var type in path.SegmentTypes)
 				{
-					segmentIndex++;
-
 					if (type == PathOperation.Move)
 					{
-						if (lastOperation != PathOperation.Close && lastOperation != PathOperation.Move)
+						if (figureOpen)
 						{
 							builder.EndFigure(CanvasFigureLoop.Open);
 						}
@@ -234,12 +229,11 @@ namespace Microsoft.Maui.Graphics.Platform
 					else if (type == PathOperation.Close)
 					{
 						builder.EndFigure(CanvasFigureLoop.Closed);
+						figureOpen = false;
 					}
-
-					lastOperation = type;
 				}
 
-				if (segmentIndex >= 0 && lastOperation != PathOperation.Close)
+				if (figureOpen)
 				{
 					builder.EndFigure(CanvasFigureLoop.Open);
 				}

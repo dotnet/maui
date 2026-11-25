@@ -71,5 +71,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
 		void BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args);
+
+		/// <summary>
+		/// Notifies the control that the process rendering its web content has ended unexpectedly and the
+		/// ProcessTerminated event should be raised with the specified <paramref name="args"/>.
+		/// </summary>
+		/// <param name="args">The platform details of the terminated process.</param>
+		void ProcessTerminated(WebProcessTerminatedEventArgs args) { }
 	}
 }
