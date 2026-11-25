@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -10,9 +11,15 @@ namespace Microsoft.Maui.Handlers
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
 		UITapGestureRecognizer? _tapGestureRecognizer;
+		IPicker? _pickerWithClearedSelection;
+		UITextFieldViewMode _originalClearButtonMode;
+		bool _isClearButtonModeOverridden;
 
 #if MACCATALYST
 		UIAlertController? _pickerController;
+		UIButton? _dialogClearButton;
+		NSLayoutConstraint? _dialogClearButtonHeight;
+		NSLayoutConstraint? _dialogHeight;
 #endif
 
 #if !MACCATALYST
@@ -45,12 +52,14 @@ namespace Microsoft.Maui.Handlers
 
 		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
+			DisposeDialogClearButton();
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
 				paddingTitle += 25;
 
 			var pickerHeight = 240;
-            var pickerView = new UIPickerView();
+			var pickerView = new UIPickerView();
+			_pickerView = pickerView;
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
@@ -64,6 +73,15 @@ namespace Microsoft.Maui.Handlers
 			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
 			// This behavior deviates from the expected native macOS behavior.
 			_pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+			_dialogClearButton = UIButton.FromType(UIButtonType.System);
+			_dialogClearButton.SetTitle(NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Clear") ?? "Clear", UIControlState.Normal);
+			_dialogClearButton.AccessibilityIdentifier = "PickerClearButton";
+			_dialogClearButton.TranslatesAutoresizingMaskIntoConstraints = false;
+			_dialogClearButton.TouchUpInside += _proxy.OnClear;
+			_dialogClearButton.Hidden = !VirtualView.ShouldShowClearButton();
+			_dialogClearButton.Enabled = VirtualView.IsEnabled;
+			var clearButtonHeight = VirtualView is IPickerClearButton { IsClearButtonVisible: true } ? 44 : 0;
+			_dialogClearButtonHeight = _dialogClearButton.HeightAnchor.ConstraintEqualTo(clearButtonHeight);
 
 			// needs translation
 			// Handle picker dismissal directly in the Done action instead of using EditingDidEnd event
@@ -81,6 +99,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (_pickerController.View != null && pickerView != null)
 			{
+				_pickerController.View.AddSubview(_dialogClearButton);
 				_pickerController.View.AddSubview(pickerView);
 				
 				var container = _pickerController.View;
@@ -89,13 +108,16 @@ namespace Microsoft.Maui.Handlers
 				[
 					pickerView.CenterXAnchor.ConstraintEqualTo(container.CenterXAnchor),
 					pickerView.WidthAnchor.ConstraintEqualTo(container.WidthAnchor),
-					pickerView.TopAnchor.ConstraintEqualTo(container.TopAnchor, paddingTitle),
+					_dialogClearButton.TopAnchor.ConstraintEqualTo(container.TopAnchor),
+					_dialogClearButton.LeadingAnchor.ConstraintEqualTo(container.LayoutMarginsGuide.LeadingAnchor),
+					_dialogClearButtonHeight,
+					pickerView.TopAnchor.ConstraintEqualTo(_dialogClearButton.BottomAnchor, paddingTitle),
 					pickerView.HeightAnchor.ConstraintEqualTo(pickerHeight),
 				]);
 
 				var doneButtonHeight = 90;
-				var height = NSLayoutConstraint.Create(_pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
-				_pickerController.View.AddConstraint(height);
+				_dialogHeight = NSLayoutConstraint.Create(_pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight + clearButtonHeight);
+				_pickerController.View.AddConstraint(_dialogHeight);
 			}
 
 			var popoverPresentation = _pickerController.PopoverPresentationController;
@@ -147,8 +169,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			_proxy.Disconnect(platformView);
 			RemoveTouchDismissGesture();
+			if (_isClearButtonModeOverridden)
+			{
+				platformView.ClearButtonMode = _originalClearButtonMode;
+				_isClearButtonModeOverridden = false;
+			}
 
 #if MACCATALYST
+			DisposeDialogClearButton();
 			if (_pickerController != null)
 			{
 				_pickerController.DismissViewController(false, null);
@@ -173,6 +201,11 @@ namespace Microsoft.Maui.Handlers
 		static void Reload(IPickerHandler handler)
 		{
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
+#if MACCATALYST
+			if (handler is PickerHandler pickerHandler)
+				pickerHandler._pickerView?.ReloadAllComponents();
+#endif
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
@@ -216,7 +249,102 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateSelectedIndex(picker);
+			if (handler is PickerHandler pickerHandler)
+			{
+				if (pickerHandler._pickerWithClearedSelection is not null &&
+					!ReferenceEquals(pickerHandler._pickerWithClearedSelection, picker))
+				{
+					pickerHandler._pickerWithClearedSelection = null;
+				}
+
+				if (picker.SelectedIndex >= 0)
+					pickerHandler._pickerWithClearedSelection = null;
+#if MACCATALYST
+				if (pickerHandler._pickerView?.Model is PickerSource source)
+				{
+					source.SelectedIndex = picker.SelectedIndex;
+					pickerHandler._pickerView.Select(Math.Max(picker.SelectedIndex, 0), 0, false);
+				}
+#endif
+			}
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
+
+		partial void UpdateClearButton()
+		{
+			if (VirtualView is not { } picker || PlatformView is not { } platformView)
+				return;
+
+			var clearButtonFeatureEnabled = picker is IPickerClearButton { IsClearButtonVisible: true };
+			if (!clearButtonFeatureEnabled)
+			{
+				_pickerWithClearedSelection = null;
+			}
+
+			if (clearButtonFeatureEnabled)
+			{
+				if (!_isClearButtonModeOverridden)
+				{
+					_originalClearButtonMode = platformView.ClearButtonMode;
+					_isClearButtonModeOverridden = true;
+				}
+
+				var shouldShowClearButton = picker.ShouldShowClearButton();
+				platformView.ClearButtonMode = shouldShowClearButton
+					? UITextFieldViewMode.Always
+					: UITextFieldViewMode.Never;
+				if (shouldShowClearButton)
+				{
+					platformView.UpdateClearButtonColor(picker);
+				}
+			}
+			else if (_isClearButtonModeOverridden)
+			{
+				platformView.ClearButtonMode = _originalClearButtonMode;
+				_isClearButtonModeOverridden = false;
+			}
+#if MACCATALYST
+			if (_dialogClearButton is { } button)
+			{
+				button.Hidden = !picker.ShouldShowClearButton();
+				button.Enabled = picker.IsEnabled;
+				var height = picker is IPickerClearButton { IsClearButtonVisible: true } ? 44 : 0;
+				if (_dialogClearButtonHeight is { } buttonHeight)
+					buttonHeight.Constant = height;
+				if (_dialogHeight is { } dialogHeight)
+					dialogHeight.Constant = 240 + 90 + height;
+			}
+#endif
+		}
+
+		internal void ClearSelection()
+		{
+			if (VirtualView is not { IsEnabled: true } picker || !picker.ShouldShowClearButton())
+				return;
+
+			_pickerWithClearedSelection = picker;
+			if (_pickerView?.Model is PickerSource source)
+				source.SelectedIndex = -1;
+
+			picker.ClearSelection();
+		}
+
+#if MACCATALYST
+		void DisposeDialogClearButton()
+		{
+			if (_dialogClearButton is { } button)
+			{
+				button.TouchUpInside -= _proxy.OnClear;
+				button.RemoveFromSuperview();
+				button.Dispose();
+				_dialogClearButton = null;
+			}
+			_dialogClearButtonHeight?.Dispose();
+			_dialogClearButtonHeight = null;
+			_dialogHeight?.Dispose();
+			_dialogHeight = null;
+		}
+#endif
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
@@ -238,6 +366,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateTextColor(picker);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -277,7 +406,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			var pickerSource = pickerView?.Model as PickerSource;
 			var count = VirtualView?.GetCount() ?? 0;
-			if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
+			if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0 &&
+				!ReferenceEquals(_pickerWithClearedSelection, VirtualView))
 				UpdatePickerSelectedIndex(pickerView, 0);
 
 			UpdatePickerFromPickerSource(pickerSource);
@@ -306,7 +436,27 @@ namespace Microsoft.Maui.Handlers
 				}
 			});
 			_tapGestureRecognizer.CancelsTouchesInView = false;
+			_tapGestureRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveDismissTouch;
 			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
+		}
+
+		bool ShouldReceiveDismissTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			if (VirtualView is not { } picker || !picker.ShouldShowClearButton())
+				return true;
+
+			var touchedView = touch.View;
+			if (touchedView is null)
+				return true;
+
+			if (PlatformView is { } platformView && touchedView.IsDescendantOfView(platformView))
+				return false;
+
+#if MACCATALYST
+			if (_dialogClearButton is { } button && touchedView.IsDescendantOfView(button))
+				return false;
+#endif
+			return true;
 		}
 		
 		void DismissPicker()
@@ -355,6 +505,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.EditingChanged += OnEditing;
+				platformView.ShouldClear += OnShouldClear;
 			}
 
 			public void Disconnect(MauiPicker platformView)
@@ -363,7 +514,24 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
+				platformView.ShouldClear -= OnShouldClear;
 			}
+
+			bool OnShouldClear(UITextField textField)
+			{
+				if (Handler is PickerHandler handler &&
+					handler.VirtualView is IPickerClearButton { IsClearButtonVisible: true })
+				{
+					handler.ClearSelection();
+					return false;
+				}
+				return true;
+			}
+
+			public void OnClear(object? sender, EventArgs e) => Handler?.ClearSelection();
+
+			public bool ShouldReceiveDismissTouch(UIGestureRecognizer recognizer, UITouch touch) =>
+				Handler?.ShouldReceiveDismissTouch(recognizer, touch) ?? true;
 
 #if !MACCATALYST
 			public void OnDone()
@@ -398,6 +566,7 @@ namespace Microsoft.Maui.Handlers
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				Handler?.RemoveTouchDismissGesture();
+#if !MACCATALYST
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
 
@@ -417,6 +586,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					platformView.PostAccessibilityFocusNotification();
 				}
+#endif
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)

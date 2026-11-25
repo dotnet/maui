@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.IPickerClearButton
+Microsoft.Maui.IPickerClearButton.IsClearButtonVisible.get -> bool
+static Microsoft.Maui.Handlers.PickerHandler.MapIsClearButtonVisible(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
