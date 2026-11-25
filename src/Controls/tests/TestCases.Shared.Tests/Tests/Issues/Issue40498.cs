@@ -20,7 +20,7 @@ public class Issue40498 : _IssuesUITest
 		App.WaitForElement("Issue40498_DescriptionLabel");
 		App.WaitForMoreButton();
 		App.TapMoreButton();
-		App.WaitForElement("Issue40498_InfoItem");
+		App.WaitForElement("Info");
 		VerifyScreenshot();
 	}
 }
