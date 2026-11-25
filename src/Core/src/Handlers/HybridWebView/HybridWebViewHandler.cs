@@ -432,6 +432,11 @@ namespace Microsoft.Maui.Handlers
 			string.Equals(header.Name, expected.Name, StringComparison.OrdinalIgnoreCase) &&
 			string.Equals(header.Value, expected.Value, StringComparison.OrdinalIgnoreCase);
 
+		private static bool IsExpectedReferer(string? name, string? value) =>
+			string.Equals(name, "Referer", StringComparison.OrdinalIgnoreCase) &&
+			Uri.TryCreate(value, UriKind.Absolute, out var refererUri) &&
+			AppOriginUri.IsBaseOf(refererUri);
+
 		internal static bool HasExpectedHeaders(IEnumerable<KeyValuePair<HeaderPairType, HeaderPairType>>? headers)
 		{
 			if (headers is null)
@@ -459,7 +464,7 @@ namespace Microsoft.Maui.Handlers
 				// Is this from a local script
 				var urlValue = value?.TrimEnd('/');
 				hasExpectedOrigin = hasExpectedOrigin || IsExpectedHeader((name, urlValue), ("Origin", expectedOrigin));
-				hasExpectedReferer = hasExpectedReferer || IsExpectedHeader((name, urlValue), ("Referer", expectedOrigin));
+				hasExpectedReferer = hasExpectedReferer || IsExpectedReferer(name, value);
 
 				if (hasExpectedToken && (hasExpectedOrigin || hasExpectedReferer))
 					return true;
