@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => true;
 		public bool StopOnStyle => false;
-		public bool VisitNodeOnStyle => true;
 		public bool SkipChildren(INode node, INode parentNode) => false;
 		public bool IsResourceDictionary(ElementNode node) => false;
 		bool IXamlNodeVisitor.IsStyle(ElementNode node) => false;

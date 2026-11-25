@@ -27,7 +27,6 @@ class InferOnIdiomTypeArgumentsVisitor(SourceGenContext context) : IXamlNodeVisi
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => true;
 	public bool StopOnStyle => false;
-	public bool VisitNodeOnStyle => true;
 	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 	public bool IsStyle(ElementNode node) => false;

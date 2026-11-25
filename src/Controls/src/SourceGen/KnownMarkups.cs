@@ -1278,7 +1278,7 @@ internal class KnownMarkups
 	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
 		=> GetResourceNodeCore(en, context, key, requireInVariables: true);
 
-	static ElementNode? GetResourceNodeIncludingLazy(ElementNode en, SourceGenContext context, string key)
+	internal static ElementNode? GetResourceNodeIncludingLazy(ElementNode en, SourceGenContext context, string key)
 		=> GetResourceNodeCore(en, context, key, requireInVariables: false);
 
 	static ElementNode? GetResourceNodeCore(ElementNode en, SourceGenContext context, string key, bool requireInVariables)

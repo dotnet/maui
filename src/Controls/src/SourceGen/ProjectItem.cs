@@ -115,6 +115,27 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		}
 	}
 
+	/// <summary>
+	/// When true, styles with a compile-time TargetType are created so that the trimmer can remove them,
+	/// with their setters, when the target type is unused. Set <c>MauiXamlTrimmableStyles</c> to false
+	/// to create styles eagerly, as before.
+	/// </summary>
+	public bool TrimmableStyles
+	{
+		get
+		{
+			if (Options.IsTrue("build_metadata.additionalfiles.TrimmableStyles"))
+				return true;
+			if (Options.IsFalse("build_metadata.additionalfiles.TrimmableStyles"))
+				return false;
+			if (Options.IsTrue("build_property.MauiXamlTrimmableStyles"))
+				return true;
+			if (Options.IsFalse("build_property.MauiXamlTrimmableStyles"))
+				return false;
+			return true;
+		}
+	}
+
 	public string? RelativePath
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 

@@ -47,7 +47,7 @@ public partial class TestPage : ContentPage
 		Assert.False(result.Diagnostics.Any());
 
 		// Verify trimmable style constructor is used
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generated, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls, Version=", generated, StringComparison.Ordinal);
 
 		// Verify setters with platform-simplified values
 		Assert.Contains("Label.TextColorProperty", generated, StringComparison.Ordinal);
@@ -55,7 +55,7 @@ public partial class TestPage : ContentPage
 		Assert.Contains("VisualElement.IsVisibleProperty", generated, StringComparison.Ordinal);
 
 		// Verify lazy initialization pattern
-		Assert.Contains("LazyInitialization = (__style, __target) =>", generated, StringComparison.Ordinal);
+		Assert.Contains("LazyInitialization = new global::System.Func<", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

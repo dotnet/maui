@@ -15,7 +15,7 @@ using static LocationHelpers;
 // before namescopes are registered. In that pass, DataTemplate LoadTemplate emission under
 // Incremental Hot Reload is deferred to the main pass so x:Reference/bindings resolve against the
 // outer scope at compile time rather than falling back to runtime resolution. See dotnet/maui#36683.
-class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool valuePrecomputePass = false, bool stopOnStyle = true) : IXamlNodeVisitor
+class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool valuePrecomputePass = false) : IXamlNodeVisitor
 {
 	SourceGenContext Context => context;
 	IndentedTextWriter Writer => Context.Writer;
@@ -39,8 +39,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	// Skip children of lazy resources (they'll be created inside lambda), but the lazy resource node itself
 	// gets visited (to emit AddFactory). VisitChildrenOfLazyResource handles this distinction.
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
-	public bool StopOnStyle => stopOnStyle; // Skip children by default; Style initializer can override
-	public bool VisitNodeOnStyle => true; // But still visit the Style node itself to generate the initializer
+	public bool StopOnStyle => true;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
 
@@ -341,8 +340,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		//IMarkupExtension or IValueProvider => ProvideValue()
 		// For Setters, only inline-initialized instances should call TryProvideValue; otherwise
 		// the normal property assignments should remain intact.
-		if (StopOnStyle && node.IsStyle(Context))
-			SetStyleNonContentProperties(node);
 		var isInlineInitializedSetter = IsInlineInitializedSetter(node, out var isSetter);
 		if (!isSetter || isInlineInitializedSetter)
 			node.TryProvideValue(Writer, Context, getNodeValue);
@@ -467,83 +464,62 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	void GenerateStyleInitializer(ElementNode styleNode)
 	{
-		if (!Context.Variables.TryGetValue(styleNode, out var styleLocalValue))
+		if (!Context.Variables.TryGetValue(styleNode, out var styleVariable))
 			return;
-		var styleVariable = (LocalVariable)styleLocalValue;
 
 		// Get the target type that was stored in CreateValuesVisitor
 		if (!Context.Types.TryGetValue(styleNode, out var targetType))
 			return;
 
-		// Generate the initializer assignment - directly assign lambda without intermediate variable
-		Writer.WriteLine($"{styleVariable.ValueAccessor}.LazyInitialization = (__style, __target) =>");
-		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+		// Only the deferred content is emitted here; the style's other properties were set in the enclosing scope.
+		styleNode.Properties.Remove(XmlName._StyleContent);
+		var contentNodes = new List<INode>();
+		foreach (var property in styleNode.Properties)
+		{
+			if (!MarkDeferredStyleContentVisitor.IsContentProperty(property.Key))
+				continue;
+			styleNode.SkipProperties.Remove(property.Key);
+			contentNodes.Add(property.Value);
+		}
+		contentNodes.AddRange(styleNode.CollectionItems);
+
+		var styleTypeName = styleVariable.Type.ToFQDisplayString();
+		var initializerName = NamingHelpers.CreateUniqueTypeName(Context, "lazyInitialization");
+		Writer.WriteLine($"bool {initializerName}({styleTypeName} __style, global::Microsoft.Maui.Controls.BindableObject __target)");
+		using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
 		{
 			Writer.WriteLine($"if (__target is {targetType.ToFQDisplayString()} target)");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
 			{
+				// After initialization the style is null and the initializer only checks the target type.
+				Writer.WriteLine("if (__style is null)");
+				using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
+					Writer.WriteLine("return true;");
+
 				var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.ReportDiagnostic)
 				{
 					ParentContext = Context,
 				};
+				styleContext.Variables[styleNode] = new LocalVariable(styleVariable.Type, "__style");
+				styleContext.Scopes[styleNode] = (SetNamescopesAndRegisterNamesVisitor.CreateNamescope(Writer, styleContext), new Dictionary<string, ILocalValue>());
 
-				// Register __style as the Style variable in this context
-				var styleType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
-				styleContext.Variables[styleNode] = new LocalVariable(styleType!, "__style");
-
-				// Remove the marker property so normal visitors don't try to process it
-				styleNode.Properties.Remove(XmlName._StyleContent);
-
-				// Clear SkipProperties so the content properties are processed
-				var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
-				foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
-				{
-					styleNode.SkipProperties.Remove(propName);
-				}
-
-				// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
-				styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
-				styleNode.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), null);
-				styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
-				styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
+				// Run the same visitor sequence as _CreateContent over the deferred content only.
+				AcceptAll(contentNodes, new CreateValuesVisitor(styleContext), styleNode);
+				AcceptAll(contentNodes, new SetNamescopesAndRegisterNamesVisitor(styleContext), styleNode);
+				AcceptAll(contentNodes, new SetResourcesVisitor(styleContext), styleNode);
+				AcceptAll(contentNodes, new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true), styleNode);
 				Writer.WriteLine("return true;");
 			}
 			Writer.WriteLine("return false;");
 		}
-	}
+		// A local function with an explicit delegate, unlike a lambda, adds no cached-delegate field,
+		// which Hot Reload cannot add to a closure class created by an earlier metadata update.
+		Writer.WriteLine($"{styleVariable.ValueAccessor}.LazyInitialization = new global::System.Func<{styleTypeName}, global::Microsoft.Maui.Controls.BindableObject, bool>({initializerName});");
 
-	void SetStyleNonContentProperties(ElementNode styleNode)
-	{
-		if (!Context.Variables.TryGetValue(styleNode, out var styleLocalValue))
-			return;
-		var styleVariable = (LocalVariable)styleLocalValue;
-		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
-		var valueVisitor = new CreateValuesVisitor(Context, stopOnStyle: false);
-		var propertyVisitor = new SetPropertiesVisitor(Context, stopOnStyle: false);
-		foreach (var prop in styleNode.Properties.ToList())
+		static void AcceptAll(List<INode> nodes, IXamlNodeVisitor visitor, ElementNode parentNode)
 		{
-			var propName = prop.Key;
-			if (propName == XmlName._StyleContent)
-				continue;
-			if (contentPropertyNames.Contains(propName.LocalName))
-				continue;
-			if (skips.Contains(propName))
-				continue;
-			if (styleNode.SkipProperties.Contains(propName))
-				continue;
-			if (propName.Equals(XmlName.mcIgnorable))
-				continue;
-			prop.Value.Accept(valueVisitor, styleNode);
-			if (prop.Value is ElementNode elementValue)
-			{
-				foreach (var child in elementValue.Properties.Values.ToList())
-					child.Accept(propertyVisitor, elementValue);
-				foreach (var child in elementValue.CollectionItems.ToList())
-					child.Accept(propertyVisitor, elementValue);
-				elementValue.TryProvideValue(Writer, Context);
-			}
-			SetPropertyHelpers.SetPropertyValue(Writer, styleVariable, propName, prop.Value, Context);
-			styleNode.SkipProperties.Add(propName);
+			foreach (var node in nodes)
+				node.Accept(visitor, parentNode);
 		}
 	}
 

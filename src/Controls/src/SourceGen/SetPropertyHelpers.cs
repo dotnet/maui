@@ -331,35 +331,7 @@ static class SetPropertyHelpers
 	/// </summary>
 	static string? GetStyleTargetTypeKey(ElementNode node, SourceGenContext context)
 	{
-		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
-			return null;
-
-		INamedTypeSymbol? targetType = null;
-
-		// Case 1: String value - TargetType="Label"
-		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
-		{
-			targetType = typeName.GetTypeSymbol(context, node);
-		}
-
-		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
-		else if (targetTypeNode is ElementNode elementNode &&
-			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
-		{
-			// TypeExtension can have TypeName as property or positional argument
-			if (elementNode.Properties.TryGetValue(new XmlName("", "TypeName"), out var typeNameNode) &&
-				typeNameNode is ValueNode tn)
-			{
-				var typeNameStr = tn.Value as string;
-				targetType = typeNameStr?.GetTypeSymbol(context, node);
-			}
-			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
-			{
-				var typeNameStr = positionalArg.Value as string;
-				targetType = typeNameStr?.GetTypeSymbol(context, node);
-			}
-		}
-
+		var targetType = GetStyleTargetType(node, context);
 		if (targetType is null)
 			return null;
 
@@ -372,24 +344,24 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// Gets the TargetType expression for a Style node.
+	/// Gets a Style's TargetType when it is a type name or <c>{x:Type}</c>; returns null for runtime values such as <c>{x:Static}</c>.
 	/// </summary>
-	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	internal static INamedTypeSymbol? GetStyleTargetType(ElementNode node, SourceGenContext context, bool reportDiagnostics = true)
 	{
+		var reportDiagnostic = reportDiagnostics ? context.ReportDiagnostic : (Action<Diagnostic>?)null;
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;
+
+		INamedTypeSymbol? targetType = null;
 
 		// Case 1: String value - TargetType="Label"
 		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
 		{
-			var typeSymbol = typeName.GetTypeSymbol(context, node);
-			if (typeSymbol != null)
-				return $"typeof({typeSymbol.ToFQDisplayString()})";
-			return null;
+			targetType = typeName.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
 		}
 
 		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
-		if (targetTypeNode is ElementNode elementNode &&
+		else if (targetTypeNode is ElementNode elementNode &&
 			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
 		{
 			// TypeExtension can have TypeName as property or positional argument
@@ -397,21 +369,23 @@ static class SetPropertyHelpers
 				typeNameNode is ValueNode tn)
 			{
 				var typeNameStr = tn.Value as string;
-				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
-				if (typeSymbol != null)
-					return $"typeof({typeSymbol.ToFQDisplayString()})";
+				targetType = typeNameStr?.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
 			}
 			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
 			{
 				var typeNameStr = positionalArg.Value as string;
-				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
-				if (typeSymbol != null)
-					return $"typeof({typeSymbol.ToFQDisplayString()})";
+				targetType = typeNameStr?.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
 			}
 		}
 
-		return null;
+		return targetType;
 	}
+
+	/// <summary>
+	/// Gets the TargetType expression for a Style node.
+	/// </summary>
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+		=> GetStyleTargetType(node, context) is { } targetType ? $"typeof({targetType.ToFQDisplayString()})" : null;
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{

@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
 		public bool StopOnStyle => false;
-		public bool VisitNodeOnStyle => true;
 
 		public bool IsStyle(ElementNode node) => false;
 

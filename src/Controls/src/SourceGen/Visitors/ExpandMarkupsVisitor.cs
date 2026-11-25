@@ -31,7 +31,6 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => true;
 	public bool StopOnStyle => false;
-	public bool VisitNodeOnStyle => true;
 	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 	public bool IsStyle(ElementNode node) => node.IsStyle(Context);

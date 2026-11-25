@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		bool VisitNodeOnDataTemplate { get; }
 		bool StopOnResourceDictionary { get; }
 		bool StopOnStyle { get; }
-		bool VisitNodeOnStyle { get; }
 
 		void Visit(ValueNode node, INode parentNode);
 		void Visit(MarkupNode node, INode parentNode);
@@ -45,7 +44,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool StopOnResourceDictionary { get; }
 		public bool VisitNodeOnDataTemplate { get; }
 		public bool StopOnStyle { get; }
-		public bool VisitNodeOnStyle { get; } = true; // Default to true to not skip any nodes
 
 		public void Visit(ValueNode node, INode parentNode) => action(node, parentNode);
 		public void Visit(MarkupNode node, INode parentNode) => action(node, parentNode);

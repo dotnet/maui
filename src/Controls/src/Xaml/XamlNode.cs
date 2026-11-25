@@ -136,10 +136,20 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 
 		if (!SkipChildren(visitor, this, parentNode))
 		{
-			foreach (var node in Properties.Values.ToArray())
-				node.Accept(visitor, this);
-			foreach (var node in CollectionItems.ToArray())
-				node.Accept(visitor, this);
+			if (visitor.StopOnStyle && IsDeferredStyle(visitor))
+			{
+				// Deferred style content is emitted by the style's lazy initializer; other properties are visited normally.
+				foreach (var property in Properties.ToArray())
+					if (property.Key != XmlName._StyleContent && !SkipProperties.Contains(property.Key))
+						property.Value.Accept(visitor, this);
+			}
+			else
+			{
+				foreach (var node in Properties.Values.ToArray())
+					node.Accept(visitor, this);
+				foreach (var node in CollectionItems.ToArray())
+					node.Accept(visitor, this);
+			}
 		}
 
 		if (visitor.VisitingMode == TreeVisitingMode.BottomUp && !SkipVisitNode(visitor, parentNode))
@@ -155,27 +165,16 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 		return false;
 	}
 
-	bool IsStyleContent(IXamlNodeVisitor visitor, INode parentNode)
-	{
-		if (parentNode is ElementNode parentElement &&
-			parentElement.Properties.TryGetValue(XmlName._StyleContent, out INode styleContent) &&
-			styleContent == this)
-			return true;
-		// Also check if parent is a Style (detected by visitor)
-		if (parentNode is ElementNode parentEl && visitor.IsStyle(parentEl))
-			return true;
-		return false;
-	}
+	bool IsDeferredStyle(IXamlNodeVisitor visitor)
+		=> Properties.ContainsKey(XmlName._StyleContent) && visitor.IsStyle(this);
 
 	protected bool SkipChildren(IXamlNodeVisitor visitor, INode node, INode parentNode) =>
 		   (visitor.StopOnDataTemplate && IsDataTemplate(parentNode))
 		|| (visitor.StopOnResourceDictionary && visitor.IsResourceDictionary(this))
-		|| (visitor.StopOnStyle && visitor.IsStyle(this))  // Skip children when THIS node is a Style
 		|| visitor.SkipChildren(node, parentNode);
 
 	protected bool SkipVisitNode(IXamlNodeVisitor visitor, INode parentNode) =>
-		   (!visitor.VisitNodeOnDataTemplate && IsDataTemplate(parentNode))
-		|| (!visitor.VisitNodeOnStyle && IsStyleContent(visitor, parentNode));  // Skip visiting when parent is a Style
+		!visitor.VisitNodeOnDataTemplate && IsDataTemplate(parentNode);
 
 	public override INode Clone()
 	{

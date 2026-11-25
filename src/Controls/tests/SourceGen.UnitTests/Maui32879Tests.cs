@@ -51,7 +51,7 @@ public partial class TestPage : ContentPage
 		Assert.False(result.Diagnostics.Any());
 
 		// Verify trimmable style constructor is used for Image TargetType
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Image, Microsoft.Maui.Controls\")", generated, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Image, Microsoft.Maui.Controls, Version=", generated, StringComparison.Ordinal);
 
 		// Verify setter with attached property LayoutBounds and content value syntax
 		Assert.Contains("AbsoluteLayout.LayoutBoundsProperty", generated, StringComparison.Ordinal);
@@ -59,7 +59,7 @@ public partial class TestPage : ContentPage
 		Assert.Contains("BoundsTypeConverter", generated, StringComparison.Ordinal);
 
 		// Verify lazy initialization pattern
-		Assert.Contains("LazyInitialization = (__style, __target) =>", generated, StringComparison.Ordinal);
+		Assert.Contains("LazyInitialization = new global::System.Func<", generated, StringComparison.Ordinal);
 		Assert.Contains("__style.Setters", generated, StringComparison.Ordinal);
 	}
 }

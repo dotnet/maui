@@ -2,20 +2,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 /// <summary>
 /// Helper for lazy style tests. Forces initialization of a source-gen lazy style
-/// by running its LazyInitialization callback without applying the style.
+/// without applying the style.
 /// </summary>
 static class LazyStyleTestHelper
 {
 	/// <summary>
-	/// Forces a lazy style to initialize by invoking its LazyInitialization callback.
+	/// Forces a lazy style to initialize for <paramref name="target"/>.
 	/// Use this when tests need to inspect Setters before the style is naturally applied.
 	/// Unlike IStyle.Apply, this does not apply setters to the target — it only populates
 	/// the style's Setters collection.
 	/// </summary>
 	internal static void ForceInitialize(this Style style, BindableObject target)
-	{
-		var lazyInitialization = style.LazyInitialization;
-		if (lazyInitialization is not null && lazyInitialization(style, target))
-			style.LazyInitialization = null;
-	}
+		=> style.EnsureInitializedFor(target);
 }

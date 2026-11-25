@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
 		public bool StopOnStyle => false;
-		public bool VisitNodeOnStyle => true;
 
 		public bool IsResourceDictionary(ElementNode node) => typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]);
 		public bool IsStyle(ElementNode node) => false;

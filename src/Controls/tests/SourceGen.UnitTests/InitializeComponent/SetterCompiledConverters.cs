@@ -49,7 +49,7 @@ var (result, generated) = RunGenerator(xaml, code);
 Assert.False(result.Diagnostics.Any());
 
 // Verify trimmable style constructor is used (not typeof)
-Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generated, StringComparison.Ordinal);
+Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls, Version=", generated, StringComparison.Ordinal);
 
 // Verify setters are generated with compiled property references
 Assert.Contains("Label.FontSizeProperty", generated, StringComparison.Ordinal);
@@ -58,7 +58,7 @@ Assert.Contains("16D", generated, StringComparison.Ordinal);
 Assert.Contains("Colors.Red", generated, StringComparison.Ordinal);
 
 // Verify lazy initialization pattern for trimmable styles
-Assert.Contains("LazyInitialization = (__style, __target) =>", generated, StringComparison.Ordinal);
+Assert.Contains("LazyInitialization = new global::System.Func<", generated, StringComparison.Ordinal);
 Assert.Contains("__style.Setters", generated, StringComparison.Ordinal);
 
 // Explicitly verify that XamlTypeResolver is not used anywhere in the generated code

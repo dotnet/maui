@@ -4,24 +4,16 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SetResourcesVisitor : IXamlNodeVisitor
+class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 {
-	public SetResourcesVisitor(SourceGenContext context, bool stopOnStyle = true)
-	{
-		Context = context;
-		StopOnStyle = stopOnStyle;
-		VisitNodeOnStyle = !stopOnStyle;
-	}
-
-	SourceGenContext Context { get; }
+	SourceGenContext Context => context;
 	IndentedTextWriter Writer => Context.Writer;
 
 	public TreeVisitingMode VisitingMode => TreeVisitingMode.TopDown;
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool StopOnStyle { get; }
-	public bool VisitNodeOnStyle { get; }
+	public bool StopOnStyle => true;
 
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 	public bool IsStyle(ElementNode node) => node.IsStyle(Context);

@@ -1348,6 +1348,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					initializerCalled = true;
 					if (target is not Label)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
 					return true;
 				}
@@ -1370,6 +1372,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Label)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "test" });
 					s.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Red });
 					return true;
@@ -1399,6 +1403,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Label)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "works" });
 					return true;
 				}
@@ -1409,16 +1415,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void LazyStyleInitializerIsCalledOnlyOnce()
+		public void LazyStyleIsPopulatedOnlyOnce()
 		{
 			int callCount = 0;
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
 				LazyInitialization = (s, target) =>
 				{
-					callCount++;
 					if (target is not Label)
 						return false;
+					if (s is null)
+						return true;
+					callCount++;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "once" });
 					return true;
 				}
@@ -1465,6 +1473,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Label)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "from RD" });
 					return true;
 				}
@@ -1486,6 +1496,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Entry)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "with behavior" });
 					s.Behaviors.Add(behavior);
 					return true;
@@ -1507,6 +1519,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Entry)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "default" });
 					s.Triggers.Add(new Trigger(typeof(Entry))
 					{
@@ -1535,17 +1549,182 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					if (target is not Button)
 						return false;
+					if (s is null)
+						return true;
 					s.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
 					return true;
 				}
 			};
 
 			var label = new Label { Style = style };
-			Assert.NotNull(style.LazyInitialization);
-
 			var button = new Button { Style = style };
+
+			Assert.Null(label.BackgroundColor);
 			Assert.Equal(Colors.Red, button.BackgroundColor);
-			Assert.Null(style.LazyInitialization);
+		}
+
+		[Fact]
+		public void LazyStyleXamlSettersPrecedeSettersAddedInCode()
+		{
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				LazyInitialization = static (s, target) =>
+				{
+					if (target is not Entry)
+						return false;
+					if (s is null)
+						return true;
+					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
+					s.Setters.Add(new Setter { Property = Entry.FontSizeProperty, Value = 20d });
+					return true;
+				}
+			};
+			var codeSetter = new Setter { Property = InputView.TextColorProperty, Value = Colors.Blue };
+			style.Setters.Add(codeSetter);
+
+			var entry = new Entry { Style = style };
+
+			Assert.Equal(20d, entry.FontSize);
+			Assert.Equal(Colors.Blue, entry.TextColor);
+			Assert.Same(codeSetter, style.Setters[2]);
+		}
+
+		[Fact]
+		public void LazyStyleIsNotAppliedToIncompatibleTargets()
+		{
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				LazyInitialization = static (s, target) =>
+				{
+					if (target is not Entry)
+						return false;
+					if (s is null)
+						return true;
+					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
+					return true;
+				}
+			};
+
+			var editorBeforeInitialization = new Editor { Style = style };
+			var entry = new Entry { Style = style };
+			var editorAfterInitialization = new Editor { Style = style };
+
+			Assert.Equal(Colors.Red, entry.TextColor);
+			Assert.Null(editorBeforeInitialization.TextColor);
+			Assert.Null(editorAfterInitialization.TextColor);
+			Assert.Equal(2, MockApplication.MockLogger.Messages.Count);
+			Assert.All(MockApplication.MockLogger.Messages, message => Assert.Equal(
+				"Style TargetType Microsoft.Maui.Controls.Entry is not compatible with element target type Microsoft.Maui.Controls.Editor. The style is not applied.",
+				message));
+		}
+
+		[Fact]
+		public void LazyStyleTargetTypeMismatchIsTracedWhenNoLoggerIsAvailable()
+		{
+			Application.ClearCurrent();
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				LazyInitialization = static (s, target) => target is Entry
+			};
+			var listener = new CapturingTraceListener();
+			System.Diagnostics.Trace.Listeners.Add(listener);
+			try
+			{
+				_ = new Editor { Style = style };
+			}
+			finally
+			{
+				System.Diagnostics.Trace.Listeners.Remove(listener);
+			}
+
+			Assert.Contains(
+				"Style TargetType Microsoft.Maui.Controls.Entry is not compatible with element target type Microsoft.Maui.Controls.Editor. The style is not applied.",
+				listener.Messages);
+		}
+
+		sealed class CapturingTraceListener : System.Diagnostics.TraceListener
+		{
+			readonly List<string> _messages = new();
+
+			public string[] Messages
+			{
+				get
+				{
+					lock (_messages)
+						return _messages.ToArray();
+				}
+			}
+
+			public override void Write(string message) => WriteLine(message);
+
+			public override void WriteLine(string message)
+			{
+				lock (_messages)
+					_messages.Add(message);
+			}
+		}
+
+		[Fact]
+		public void LazyStyleFirstAppliedToIncompatibleTargetAttachesTriggersAndBehaviorsOnlyToMatchingTargets()
+		{
+			var behavior = new MockBehavior<Entry>();
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				LazyInitialization = (s, target) =>
+				{
+					if (target is not Entry)
+						return false;
+					if (s is null)
+						return true;
+					s.Behaviors.Add(behavior);
+					s.Triggers.Add(new Trigger(typeof(Entry))
+					{
+						Property = Entry.IsPasswordProperty,
+						Value = true,
+						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
+					});
+					return true;
+				}
+			};
+
+			var editor = new Editor { Style = style };
+			var entry = new Entry();
+
+			Assert.Null(Record.Exception(() => entry.Style = style));
+			Assert.True(behavior.attached);
+			entry.IsPassword = true;
+			Assert.Equal("password mode", entry.Text);
+			Assert.Null(Record.Exception(() => editor.Style = null));
+		}
+
+		[Fact]
+		public void LazyStyleInitializerRunsOnceWhenStyleIsAppliedDuringInitialization()
+		{
+			var callCount = 0;
+			Label nestedLabel = null;
+			var style = new Style(typeof(Label).AssemblyQualifiedName);
+			style.LazyInitialization = (s, target) =>
+			{
+				if (target is not Label)
+					return false;
+				if (s is null)
+					return true;
+				callCount++;
+				if (nestedLabel is null)
+				{
+					nestedLabel = new Label();
+					nestedLabel.Style = s;
+				}
+				s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
+				return true;
+			};
+
+			var label = new Label { Style = style };
+
+			Assert.Equal(1, callCount);
+			Assert.Single(style.Setters);
+			Assert.Equal("lazy", label.Text);
+			Assert.Equal("lazy", nestedLabel.Text);
 		}
 
 		#endregion
