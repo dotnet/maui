@@ -432,9 +432,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					var systemBars = App.GetSystemBars();
 					if (cropTop <= 0)
+					{
 						androidStatusBarHeight = GetSystemBarHeight("statusBar");
+					}
+
 					if (cropBottom <= 0)
+					{
 						androidNavigationBarHeight = GetSystemBarHeight("navigationBar");
+					}
 
 					int GetSystemBarHeight(string barName)
 					{
@@ -448,7 +453,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 						int height = Convert.ToInt32(heightObject);
 						if (height < 0)
+						{
 							throw new InvalidOperationException($"GetSystemBars() returned an invalid Android {barName} height: {height}.");
+						}
 
 						return height;
 					}
