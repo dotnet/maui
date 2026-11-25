@@ -49,6 +49,48 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(values.TintAfterReset);
 		}
 
+		[Fact(DisplayName = "Null Progress Color Restores The Theme Color")]
+		public async Task NullProgressColorRestoresThemeColor()
+		{
+			var progressBar = new ProgressBarStub()
+			{
+				Progress = 0.9,
+				ProgressColor = Colors.Red
+			};
+
+			var themeColor = Color.FromInt(MauiContext.Context.GetThemeAttrColor(global::Android.Resource.Attribute.ColorControlActivated));
+
+			await ValidateHasColor(progressBar, themeColor, () =>
+			{
+				progressBar.ProgressColor = null;
+				progressBar.Handler?.UpdateValue(nameof(IProgress.ProgressColor));
+			});
+		}
+
+		[Fact(DisplayName = "Progress Color Uses The Configured Tint Mode")]
+		public async Task ProgressColorUsesConfiguredTintMode()
+		{
+			var progressBar = new ProgressBarStub()
+			{
+				Progress = 0.5
+			};
+
+			var filter = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(progressBar);
+				var platformProgressBar = GetNativeProgressBar(handler);
+				platformProgressBar.ProgressTintMode = global::Android.Graphics.PorterDuff.Mode.Multiply;
+
+				progressBar.ProgressColor = Colors.Red;
+				handler.UpdateValue(nameof(IProgress.ProgressColor));
+
+				var layers = Assert.IsAssignableFrom<LayerDrawable>(platformProgressBar.ProgressDrawable);
+				return layers.FindDrawableByLayerId(global::Android.Resource.Id.Progress)?.ColorFilter;
+			});
+
+			Assert.Equal(new global::Android.Graphics.PorterDuffColorFilter(Colors.Red.ToPlatform(), global::Android.Graphics.PorterDuff.Mode.Multiply), filter);
+		}
+
 		AProgressBar GetNativeProgressBar(ProgressBarHandler progressBarHandler) =>
 			progressBarHandler.PlatformView;
 

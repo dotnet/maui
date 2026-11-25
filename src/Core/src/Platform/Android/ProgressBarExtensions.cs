@@ -2,6 +2,8 @@
 using Google.Android.Material.ProgressIndicator;
 using Microsoft.Maui.Graphics;
 using ADrawable = Android.Graphics.Drawables.Drawable;
+using APorterDuff = Android.Graphics.PorterDuff;
+using APorterDuffColorFilter = Android.Graphics.PorterDuffColorFilter;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Platform
@@ -41,7 +43,11 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				drawable?.SetColorFilter(color, FilterMode.SrcIn);
+				var mode = platformProgressBar.Indeterminate
+					? platformProgressBar.IndeterminateTintMode
+					: platformProgressBar.ProgressTintMode;
+
+				drawable?.SetColorFilter(new APorterDuffColorFilter(color.ToPlatform(), mode ?? APorterDuff.Mode.SrcIn!));
 			}
 		}
 
