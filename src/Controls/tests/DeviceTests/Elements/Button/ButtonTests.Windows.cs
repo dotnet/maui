@@ -21,13 +21,25 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
+		static Task WaitForImageLayout(Microsoft.UI.Xaml.Controls.Button platform, Image image) =>
+			AssertHelpers.AssertEventually(() =>
+			{
+				if (image.Source is not BitmapImage { PixelWidth: > 0, PixelHeight: > 0 } source)
+					return false;
+
+				platform.UpdateLayout();
+				var size = source.GetImageSourceSize(platform);
+				// ImageOpened applies the native height cap after Source is set.
+				return image.MaxHeight > 0 && image.MaxHeight <= size.Height + 1 &&
+					image.ActualWidth > 0 && image.ActualWidth <= size.Width + 1 &&
+					image.ActualHeight > 0 && image.ActualHeight <= size.Height + 1;
+			}, message: "The image must be decoded and laid out before checking alignment.");
+
 		static async Task<double> GetJustificationImageWidth(Controls.Button button)
 		{
 			var platform = Assert.IsType<Microsoft.Maui.Platform.MauiButton>(button.Handler?.PlatformView);
 			var image = Assert.IsType<Image>(platform.GetContent<Image>());
-			await AssertHelpers.AssertEventually(() => image.Source is BitmapImage { PixelWidth: > 0 } &&
-				image.ActualWidth > 0 && image.ActualHeight > 0);
-			platform.UpdateLayout();
+			await WaitForImageLayout(platform, image);
 			return button.ContentLayout.Position is Controls.Button.ButtonContentLayout.ImagePosition.Left or Controls.Button.ButtonContentLayout.ImagePosition.Right
 				? image.ActualWidth + button.ContentLayout.Spacing : 0;
 		}
@@ -433,7 +445,7 @@ namespace Microsoft.Maui.DeviceTests
 				var content = Assert.IsAssignableFrom<FrameworkElement>(platform.Content);
 				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
 				var image = Assert.IsType<Image>(platform.GetContent<Image>());
-				await AssertHelpers.AssertEventually(() => image.Source is not null && image.ActualWidth > 0 && image.ActualHeight > 0);
+				await WaitForImageLayout(platform, image);
 				var originalImageWidth = image.ActualWidth;
 				var originalImageHeight = image.ActualHeight;
 				var alignments = new[] { MauiTextAlignment.Start, MauiTextAlignment.Center, MauiTextAlignment.End };
@@ -472,7 +484,11 @@ namespace Microsoft.Maui.DeviceTests
 							var imageBounds = GetAlignmentBounds(image, content);
 							// TextBlock.ActualWidth reports ink width, not the space available for justification.
 							var textBounds = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(text);
-							Assert.True(imageBounds.Width > 0 && imageBounds.Height > 0 && textBounds.Width > 0 && textBounds.Height > 0);
+							Assert.True(imageBounds.Width > 0 && imageBounds.Height > 0 && textBounds.Width > 0 && textBounds.Height > 0,
+								$"position={position}, rtl={rightToLeft}, horizontal={horizontal}, vertical={vertical}; " +
+								$"image={imageBounds}, image desired={image.DesiredSize}; text slot={textBounds}, " +
+								$"text actual={text.ActualWidth}x{text.ActualHeight}, text desired={text.DesiredSize}, " +
+								$"content={bounds}, text alignment={text.HorizontalAlignment}");
 							Assert.InRange(Math.Abs(imageBounds.Width - originalImageWidth), 0, 1);
 							Assert.InRange(Math.Abs(imageBounds.Height - originalImageHeight), 0, 1);
 							if (horizontal == MauiTextAlignment.Justify)
