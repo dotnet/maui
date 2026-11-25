@@ -223,7 +223,28 @@ namespace Microsoft.Maui.Controls
             base.ViewWillLayoutSubviews();
 
             var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
-            childView?.Frame = View!.Bounds;
+            var bounds = View!.Bounds;
+
+            // iOS 26 can start this view under an opaque bar in iPhone landscape, reporting the overlap only as a safe area inset (#39210).
+            if (!EdgesForExtendedLayout.HasFlag(UIRectEdge.Top) && View.Window is not null && NavigationController is { NavigationBarHidden: false } navigationController)
+            {
+                var overlap = navigationController.NavigationBar.ConvertRectToView(navigationController.NavigationBar.Bounds, View).Bottom - bounds.Top;
+                if (overlap > 0.5)
+                {
+                    bounds = new UIEdgeInsets(overlap, 0, 0, 0).InsetRect(bounds);
+                }
+            }
+
+            childView?.Frame = bounds;
+        }
+
+        public override void ViewSafeAreaInsetsDidChange()
+        {
+            base.ViewSafeAreaInsetsDidChange();
+
+            // After rotating, iOS 26 can move the bar down without laying this view out again,
+            // reporting the new overlap only as a safe area change. Recheck it.
+            View?.SetNeedsLayout();
         }
 
         public override void ViewDidDisappear(bool animated)
@@ -973,7 +994,8 @@ namespace Microsoft.Maui.Controls
 
                 if (frame != CGRect.Empty)
                 {
-                    Frame = new RectangleF(0, 0, frame.Width, frame.Height);
+                    // The bar can be taller than UIKit's title area; only use it for the initial width.
+                    Frame = new RectangleF(0, 0, frame.Width, ToolbarHeight);
                 }
             }
             else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))

@@ -33,7 +33,7 @@ variables:
 - name: isLocHandoffBranch
   value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main')]
 - name: signingCondition
-  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main', 'refs/heads/inflight/current' ), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), contains(variables['Build.SourceBranch'], 'xx-sr')), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
+  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main', 'refs/heads/inflight/current' ), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), contains(variables['Build.SourceBranch'], 'xx-sr')), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/candidate/'), contains(variables['Build.SourceBranch'], 'xx-sr')), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
 # Hosted and Aces images receive new Xcode versions at different times.
 - name: HostedMacImage
@@ -70,7 +70,11 @@ variables:
 - name: nugetMultiFeedWarnLevel
   value: none
 
-- group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
+# `/review run-ui-tests` and `/review run-device-tests` dispatch branches (refs/heads/run-tests/*,
+# refs/heads/run-devicetests/*) build pull-request code as a branch build, so they never get this
+# group's secret; pull-request builds from forks don't get it either.
+- ${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:
+  - group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
 
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:

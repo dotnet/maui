@@ -6,6 +6,21 @@ on:
     types: [completed]
   schedule:
     - cron: '45 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release-publishing.yml
+      - eng/release-rollover.json
+      - eng/scripts/Sync-ReleasePublishing.ps1
+      - eng/scripts/MauiReleaseConfiguration.psm1
+      - eng/scripts/Get-ReleaseRolloverPlan.ps1
+  pull_request:
+    paths:
+      - .github/workflows/release-publishing.yml
+      - eng/release-rollover.json
+      - eng/scripts/Sync-ReleasePublishing.ps1
+      - eng/scripts/MauiReleaseConfiguration.psm1
+      - eng/scripts/Get-ReleaseRolloverPlan.ps1
   workflow_dispatch:
   create:
   pull_request_target:
@@ -16,13 +31,78 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-publishing
+  group: ${{ github.event_name == 'pull_request' && format('release-publishing-pr-{0}', github.event.number) || 'release-publishing' }}
   cancel-in-progress: false
 
 jobs:
+  validate-nightly:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Validate release script syntax and resolve the nightly mirror plan
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($path in @('eng/scripts/Sync-ReleasePublishing.ps1', 'eng/scripts/MauiReleaseConfiguration.psm1')) {
+            $tokens = $null
+            $errors = $null
+            $null = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $path), [ref]$tokens, [ref]$errors)
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+          ./eng/scripts/Sync-ReleasePublishing.ps1 -SyncNightlyMirror -PlanOnly -OutputDirectory '${{ runner.temp }}/nightly-mirror-plan'
+
+  mirror-nightly:
+    # Opt-in until the federated identity is onboarded to dnceng; without it every run fails with TF400813.
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      vars.RELEASE_NIGHTLY_MIRROR_ENABLED == 'true' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'push' ||
+       github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == 'dotnet/maui'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Mirror the canonical nightly candidate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+        run: ./eng/scripts/Sync-ReleasePublishing.ps1 -SyncNightlyMirror -OutputDirectory '${{ runner.temp }}/nightly-mirror'
+
+      - name: Preserve nightly mirror evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-mirror-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nightly-mirror/
+          if-no-files-found: error
+
   prepare:
     if: >-
       github.repository == 'dotnet/maui' &&
+      github.event_name != 'push' &&
+      github.event_name != 'pull_request' &&
       (github.event_name != 'create' ||
        (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))) &&
       (github.event_name != 'pull_request_target' ||

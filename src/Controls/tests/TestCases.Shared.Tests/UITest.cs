@@ -646,7 +646,10 @@ namespace Microsoft.Maui.TestCases.Tests
 						try
 						{
 							base.Reset(); // Recreate the driver session
-							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup");
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup, restoring fixture state...");
+							// The new session attaches to the app wherever the crashed test left it,
+							// so relaunch the app and redo the fixture's navigation before continuing.
+							FixtureSetup();
 							App.SetOrientationPortrait();
 							return;
 						}
