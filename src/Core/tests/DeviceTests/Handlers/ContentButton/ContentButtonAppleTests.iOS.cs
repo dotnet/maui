@@ -342,6 +342,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task LayoutImplementingButtonDoesNotUseContentAsAccessibleName()
+		{
+			var content = new LabelStub { Text = "Presentation" };
+			var button = new LayoutContentButtonStub { Content = content, Semantics = new Semantics { Hint = "Hint" } };
+			button.Add(content);
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.True(string.IsNullOrEmpty(handler.PlatformView.AccessibilityLabel));
+				Assert.Equal("Hint", handler.PlatformView.AccessibilityHint);
+			});
+		}
+
+		sealed class LayoutContentButtonStub : LayoutStub, IContentButton
+		{
+			public IView Content { get; set; }
+			object IContentView.Content => Content;
+			public IView PresentedContent => Content;
+			public Color StrokeColor { get; set; }
+			public double StrokeThickness { get; set; } = -1;
+			public int CornerRadius { get; set; } = -1;
+			void IButton.Clicked() { }
+			void IButton.Pressed() { }
+			void IButton.Released() { }
+		}
+
+		[Fact]
 		public async Task ReplacementPlatformViewIsRejected()
 		{
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
