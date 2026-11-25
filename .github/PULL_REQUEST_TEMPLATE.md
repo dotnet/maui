@@ -30,6 +30,17 @@ individual fixes directly into `net11`; agents must not retarget or merge.
 
 Fixes #
 
+### 🤖 Help from the MAUI agent
+<!-- Pick one. You can change it later by commenting /agent fix, /agent stop, or /agent off. -->
+- [x] **Review and improve automatically**: the MAUI agent and maintainers may push fixes for review findings to this branch. Your approach is kept.
+- [ ] **Review only**: I will address review findings myself.
+- [ ] **No AI review**: wait for a human maintainer.
+
+<!--
+A "Where is this PR?" comment will show which step your PR is at and who needs to act next.
+For "Review and improve automatically" on a fork, keep "Allow edits by maintainers" enabled.
+-->
+
 <!--
 Verify the target branch follows the release workflow in docs/ReleaseBranchWorkflow.md.
 Infrastructure and documentation changes should target the branch where they apply.
