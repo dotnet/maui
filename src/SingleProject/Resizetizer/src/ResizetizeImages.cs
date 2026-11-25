@@ -12,6 +12,7 @@ using Microsoft.Maui.Resizetizer.Resources;
 
 namespace Microsoft.Maui.Resizetizer
 {
+	[MSBuildMultiThreadableTask]
 	public class ResizetizeImages : MauiAsyncTask, ILogger
 	{
 		[Required]
@@ -35,9 +36,17 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ILogger Logger => this;
 
+		string intermediateOutputPath;
+		string inputsFile;
+		FileRetryPolicy retryPolicy = FileRetryPolicy.Default;
+
 		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
-			var inputImages = ResizeImageInfo.Parse(Images);
+			intermediateOutputPath = TaskEnvironment.GetAbsolutePath(IntermediateOutputPath);
+			inputsFile = string.IsNullOrEmpty(InputsFile) ? InputsFile : TaskEnvironment.GetAbsolutePath(InputsFile);
+			retryPolicy = FileRetryPolicy.FromEnvironment(TaskEnvironment);
+
+			var inputImages = ResizeImageInfo.Parse(Images, TaskEnvironment);
 			var images = RemoveDuplicates(inputImages);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
@@ -98,7 +107,8 @@ namespace Microsoft.Maui.Resizetizer
 			foreach (var img in resizedImages)
 			{
 				var attr = new Dictionary<string, string>(StringComparer.Ordinal);
-				string itemSpec = Path.GetFullPath(img.Filename);
+				string fullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(img.Filename).Value);
+				string itemSpec = fullPath;
 
 				// Fix the item spec to be relative for mac
 				if (bool.TryParse(IsMacEnabled, out bool isMac) && isMac)
@@ -110,9 +120,9 @@ namespace Microsoft.Maui.Resizetizer
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 				// Make sure the file is not readonly
-				Utils.SetWriteable(itemSpec);
+				Utils.SetWriteable(fullPath);
 				// force the date time so we never update an image if its not changed.
-				File.SetLastWriteTimeUtc(itemSpec, DateTime.UtcNow);
+				File.SetLastWriteTimeUtc(new AbsolutePath(fullPath), DateTime.UtcNow);
 			}
 
 			CopiedResources = copiedResources.ToArray();
@@ -170,7 +180,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				appIconName = appIconName.ToLowerInvariant();
 
-				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, InputsFile, this);
+				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, intermediateOutputPath, inputsFile, this) { RetryPolicy = retryPolicy };
 				var iconsGenerated = adaptiveIconGen.Generate();
 
 				foreach (var iconGenerated in iconsGenerated)
@@ -180,7 +190,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				LogDebugMessage($"iOS Icon Assets Generator");
 
-				var appleAssetGen = new AppleIconAssetsGenerator(img, appIconName, IntermediateOutputPath, appIconDpis, this);
+				var appleAssetGen = new AppleIconAssetsGenerator(img, appIconName, IntermediateOutputPath, appIconDpis, TaskEnvironment, this);
 
 				var assetsGenerated = appleAssetGen.Generate();
 
@@ -191,7 +201,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				LogDebugMessage($"Windows Icon Generator");
 
-				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, InputsFile, this);
+				var windowsIconGen = new WindowsIconGenerator(img, intermediateOutputPath, inputsFile, this);
 
 				resizedImages.Add(windowsIconGen.Generate());
 			}
@@ -207,12 +217,12 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				LogDebugMessage($"App Icon: " + dpi);
 
-				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
+				var destination = Resizer.GetRasterFileDestination(img, dpi, intermediateOutputPath)
 					.Replace("{name}", appIconName);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
 
-				if (Resizer.IsUpToDate(appIconSourceFiles, destination, InputsFile, Logger, img.ItemSpec))
+				if (Resizer.IsUpToDate(appIconSourceFiles, destination, inputsFile, Logger, img.ItemSpec))
 				{
 					resizedImages.Add(new ResizedImageInfo() { Dpi = dpi, Filename = destination });
 					continue;
@@ -228,13 +238,13 @@ namespace Microsoft.Maui.Resizetizer
 
 		void ProcessImageResize(ResizeImageInfo img, DpiPath[] dpis, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
-			var resizer = new Resizer(img, IntermediateOutputPath, this);
+			var resizer = new Resizer(img, intermediateOutputPath, this) { RetryPolicy = retryPolicy };
 
 			foreach (var dpi in dpis)
 			{
 				LogDebugMessage($"Resizing {img.Filename}");
 
-				var r = resizer.Resize(dpi, InputsFile);
+				var r = resizer.Resize(dpi, inputsFile);
 				resizedImages.Add(r);
 
 				LogDebugMessage($"Resized {img.Filename}");
@@ -243,11 +253,11 @@ namespace Microsoft.Maui.Resizetizer
 
 		void ProcessImageCopy(ResizeImageInfo img, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
-			var resizer = new Resizer(img, IntermediateOutputPath, this);
+			var resizer = new Resizer(img, intermediateOutputPath, this) { RetryPolicy = retryPolicy };
 
 			LogDebugMessage($"Copying {img.Filename}");
 
-			var r = resizer.CopyFile(originalScaleDpi, InputsFile);
+			var r = resizer.CopyFile(originalScaleDpi, inputsFile);
 			resizedImages.Add(r);
 
 			LogDebugMessage($"Copied {img.Filename}");

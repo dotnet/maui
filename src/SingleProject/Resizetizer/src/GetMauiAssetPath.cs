@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Resizetizer
 	/// C:\src\code\MyProject\Resources\foo.mp3 -> Resources\foo.mp3
 	/// C:\some\random\path\foo.mp3 -> foo.mp3
 	/// </summary>
-	public class GetMauiAssetPath : Task
+	[MSBuildMultiThreadableTask]
+	public class GetMauiAssetPath : MauiTask
 	{
 		/// <summary>
 		/// The value for $(MSBuildProjectDirectory) in the current project
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer
 						: Normalize(link);
 					if (Path.IsPathRooted(path))
 					{
-						path = Path.GetFullPath(path);
+						path = Path.GetFullPath(new AbsolutePath(path).Value);
 						var project = Normalize(item.GetMetadata("ProjectDirectory"));
 						if (!MakeRelative(project, ref path) && !MakeRelative(ProjectDirectory, ref path))
 						{
@@ -73,12 +74,12 @@ namespace Microsoft.Maui.Resizetizer
 		static string Normalize(string path) =>
 			path?.Replace('\\', Path.DirectorySeparatorChar)?.Replace('/', Path.DirectorySeparatorChar);
 
-		static bool MakeRelative(string projectDirectory, ref string path)
+		bool MakeRelative(string projectDirectory, ref string path)
 		{
 			if (string.IsNullOrEmpty(projectDirectory))
 				return false;
 
-			projectDirectory = Path.GetFullPath(projectDirectory);
+			projectDirectory = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(projectDirectory).Value);
 			if (!projectDirectory.EndsWith(Path.DirectorySeparatorChar.ToString()))
 			{
 				projectDirectory += Path.DirectorySeparatorChar;

@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Maui.Resizetizer
 {
 	internal class AppleIconAssetsGenerator
 	{
-		public AppleIconAssetsGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, DpiPath[] dpis, ILogger logger)
+		/// <param name="intermediateOutputPath">The output directory as given to the task. Returned file names
+		/// keep this form; <paramref name="environment"/> resolves it for file system access.</param>
+		public AppleIconAssetsGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, DpiPath[] dpis, TaskEnvironment environment, ILogger logger)
 		{
 			Info = info;
+			TaskEnvironment = environment;
 			Logger = logger;
 			IntermediateOutputPath = intermediateOutputPath;
 			AppIconName = appIconName;
@@ -22,6 +26,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ResizeImageInfo Info { get; private set; }
 		public string IntermediateOutputPath { get; private set; }
+		public TaskEnvironment TaskEnvironment { get; }
 		public ILogger Logger { get; private set; }
 
 		public IEnumerable<ResizedImageInfo> Generate()
@@ -31,13 +36,13 @@ namespace Microsoft.Maui.Resizetizer
 
 			Logger.Log("iOS App Icon Set Directory: " + outputAppIconSetDir);
 
-			Directory.CreateDirectory(outputAppIconSetDir);
+			Directory.CreateDirectory(TaskEnvironment.GetAbsolutePath(outputAppIconSetDir));
 
 			var assetContentsFile = Path.Combine(outputAssetsDir, "Contents.json");
 			var appIconSetContentsFile = Path.Combine(outputAppIconSetDir, "Contents.json");
 
 			var (sourceExists, sourceModified) = Utils.FileExists(Info.Filename);
-			var (destinationExists, destinationModified) = Utils.FileExists(appIconSetContentsFile);
+			var (destinationExists, destinationModified) = Utils.FileExists(TaskEnvironment.GetAbsolutePath(appIconSetContentsFile));
 
 			if (destinationModified > sourceModified)
 			{
@@ -85,7 +90,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			""";
 
-			File.WriteAllText(appIconSetContentsFile, appIconContentsJson.Replace("\t", "  "));
+			File.WriteAllText(TaskEnvironment.GetAbsolutePath(appIconSetContentsFile), appIconContentsJson.Replace("\t", "  "));
 
 			return new List<ResizedImageInfo> {
 				//new ResizedImageInfo { Dpi = new DpiPath("", 1), Filename = assetContentsFile },

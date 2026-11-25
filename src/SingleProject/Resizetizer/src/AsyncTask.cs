@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.IO;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -13,7 +12,7 @@ namespace Microsoft.Maui.Resizetizer
 	/// Base class for tasks that need long-running cancellable asynchronous tasks 
 	/// that don't block the UI thread in the IDE.
 	/// </summary>
-	public class AsyncTask : Task, ICancelableTask
+	public class AsyncTask : Task, ICancelableTask, IMultiThreadableTask
 	{
 		readonly CancellationTokenSource cts = new CancellationTokenSource();
 		readonly Queue logMessageQueue = new Queue();
@@ -41,10 +40,16 @@ namespace Microsoft.Maui.Resizetizer
 		public CancellationToken CancellationToken => cts.Token;
 
 		/// <summary>
-		/// Gets the current working directory for the task, which is captured at task 
-		/// creation time from <see cref="Directory.GetCurrentDirectory"/>.
+		/// The per-project environment provided by MSBuild. Use it to resolve relative paths and
+		/// read environment variables instead of the process-wide working directory and environment.
 		/// </summary>
-		protected string WorkingDirectory { get; private set; }
+		public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
+		/// <summary>
+		/// Gets the directory relative paths are resolved against: the project directory provided
+		/// by <see cref="TaskEnvironment"/>.
+		/// </summary>
+		protected string WorkingDirectory => TaskEnvironment.ProjectDirectory;
 
 		[Obsolete("Do not use the Log.LogXXXX from within your Async task as it will Lock the Visual Studio UI. Use the this.LogXXXX methods instead.")]
 		private new TaskLoggingHelper Log => base.Log;
@@ -55,7 +60,6 @@ namespace Microsoft.Maui.Resizetizer
 		public AsyncTask()
 		{
 			YieldDuringToolExecution = false;
-			WorkingDirectory = Directory.GetCurrentDirectory();
 			uiThreadId = Thread.CurrentThread.ManagedThreadId;
 		}
 

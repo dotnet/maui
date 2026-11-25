@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -15,8 +16,8 @@ namespace Microsoft.Maui.Resizetizer
 
 			AppIconName = info.OutputName;
 
-			var hasBackground = !string.IsNullOrWhiteSpace(info.Filename) && File.Exists(info.Filename);
-			var hasForeground = !string.IsNullOrWhiteSpace(info.ForegroundFilename) && File.Exists(info.ForegroundFilename);
+			var hasBackground = !string.IsNullOrWhiteSpace(info.Filename) && File.Exists(new AbsolutePath(info.Filename!));
+			var hasForeground = !string.IsNullOrWhiteSpace(info.ForegroundFilename) && File.Exists(new AbsolutePath(info.ForegroundFilename!));
 			if (!hasBackground && !hasForeground)
 				throw new InvalidOperationException("An app icon needs at least one image.");
 
@@ -68,10 +69,10 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			else
 			{
-				var dir = Path.GetDirectoryName(destination);
-				Directory.CreateDirectory(dir);
+				AbsolutePath file = new(destination);
+				Directory.CreateDirectory(Path.GetDirectoryName(file));
 
-				using var wrapper = File.Create(destination);
+				using var wrapper = File.Create(file);
 				tempBitmap.Encode(wrapper, SKEncodedImageFormat.Png, 100);
 			}
 		}

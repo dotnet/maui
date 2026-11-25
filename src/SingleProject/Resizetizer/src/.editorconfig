@@ -1,0 +1,8 @@
+[*.cs]
+# Every Resizetizer task opts into multithreaded MSBuild ([MSBuildMultiThreadableTask]); keep them safe.
+dotnet_diagnostic.MSBuildTask0002.severity = error
+dotnet_diagnostic.MSBuildTask0003.severity = error
+dotnet_diagnostic.MSBuildTask0004.severity = error
+dotnet_diagnostic.MSBuildTask0005.severity = error
+dotnet_diagnostic.MSBuildTask0012.severity = error
+dotnet_diagnostic.MSBuildTask0014.severity = error

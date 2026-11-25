@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Resizetizer
 	/// <summary>
 	/// Generates the splash assets file for Windows
 	/// </summary>
-	public class GenerateSplashAssets : Task, ILogger
+	[MSBuildMultiThreadableTask]
+	public class GenerateSplashAssets : MauiTask, ILogger
 	{
 		[Required]
 		public string IntermediateOutputPath { get; set; }
@@ -20,9 +21,10 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var splash = MauiSplashScreen[0];
 
-			var img = ResizeImageInfo.Parse(splash);
+			var img = ResizeImageInfo.Parse(splash, TaskEnvironment);
 
-			Directory.CreateDirectory(IntermediateOutputPath);
+			var intermediateOutputPath = TaskEnvironment.GetAbsolutePath(IntermediateOutputPath);
+			Directory.CreateDirectory(intermediateOutputPath);
 
 			var appTool = new SkiaSharpAppIconTools(img, this);
 
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen: " + dpi);
 
-				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath);
+				var destination = Resizer.GetRasterFileDestination(img, dpi, intermediateOutputPath);
 
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen Destination: " + destination);
 

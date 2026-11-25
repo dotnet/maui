@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["DarkTintColor"] = "#ffffff",
 				});
 
-				var info = ResizeImageInfo.Parse(image);
+				var info = ResizeImageInfo.Parse(image, TaskEnvironment.Fallback);
 
 				Assert.Equal(SKColors.Black, info.DarkColor);
 				Assert.Equal(SKColors.White, info.DarkTintColor);
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["TintColor"] = "#ff0000",
 				});
 
-				var info = ResizeImageInfo.Parse(image);
+				var info = ResizeImageInfo.Parse(image, TaskEnvironment.Fallback);
 				var darkInfo = info.CreateDarkVariant();
 
 				Assert.Equal(SKColors.Red, darkInfo.TintColor);
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["DarkFile"] = "images/camera_color.png",
 				});
 
-				var info = ResizeImageInfo.Parse(image);
+				var info = ResizeImageInfo.Parse(image, TaskEnvironment.Fallback);
 				var darkInfo = info.CreateDarkVariant();
 
 				Assert.Null(darkInfo.TintColor);
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["ResizeQuality"] = metadataValue
 				});
 
-				var info = ResizeImageInfo.Parse(item);
+				var info = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(expected, info.Quality);
 			}
 
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var path = Path.GetFullPath("images/camera.png");
 				var item = new TaskItem(path);
 
-				var info = ResizeImageInfo.Parse(item);
+				var info = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
@@ -179,7 +180,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["ResizeQuality"] = "InvalidValue"
 				});
 
-				var info = ResizeImageInfo.Parse(item);
+				var info = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["ResizeQuality"] = "3"
 				});
 
-				var info = ResizeImageInfo.Parse(item);
+				var info = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
@@ -209,7 +210,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					["ResizeQuality"] = metadataValue
 				});
 
-				var info = ResizeImageInfo.Parse(item);
+				var info = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(expected, info.Quality);
 			}
 		}

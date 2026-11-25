@@ -29,6 +29,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.TaskAuthoring.Analyzer" />
   </ItemGroup>
 
   <Import Project="ResizetizerPackages.projitems" />

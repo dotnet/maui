@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Resizetizer
 	/// reported as stale.
 	/// </para>
 	/// </remarks>
-	public class DetectStaleOutputFilesTask : Task
+	[MSBuildMultiThreadableTask]
+	public class DetectStaleOutputFilesTask : MauiTask
 	{
 		/// <summary>The files currently present in the output directory.</summary>
 		public ITaskItem[] Files { get; set; }
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			var canonicalizer = new PathCanonicalizer(AllowLinkResolution);
 
-			var root = canonicalizer.CanonicalizeDirectory(Root);
+			var root = canonicalizer.CanonicalizeDirectory(Resolve(Root));
 			if (string.IsNullOrEmpty(root))
 			{
 				Log.LogMessage(MessageImportance.Low, $"Skipping stale file detection because the root '{Root}' could not be resolved.");
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Resizetizer
 			var keep = new HashSet<string>(PathCanonicalizer.Comparer);
 			foreach (var known in KnownOutputs ?? Enumerable.Empty<ITaskItem>())
 			{
-				var key = canonicalizer.GetComparisonKey(known?.ItemSpec);
+				var key = canonicalizer.GetComparisonKey(Resolve(known?.ItemSpec));
 				if (key is not null)
 					keep.Add(key);
 			}
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (file is null || string.IsNullOrWhiteSpace(file.ItemSpec))
 					continue;
 
-				var key = canonicalizer.GetComparisonKey(file.ItemSpec);
+				var key = canonicalizer.GetComparisonKey(Resolve(file.ItemSpec));
 				if (key is null)
 				{
 					Log.LogMessage(MessageImportance.Low, $"Leaving '{file.ItemSpec}' alone because its real location could not be determined.");
@@ -102,6 +103,22 @@ namespace Microsoft.Maui.Resizetizer
 			StaleFiles = stale.ToArray();
 
 			return true;
+		}
+
+		string Resolve(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				return null;
+
+			try
+			{
+				return TaskEnvironment.GetAbsolutePath(path);
+			}
+			catch (Exception)
+			{
+				// An item spec can contain characters that are not valid in a path.
+				return null;
+			}
 		}
 	}
 }

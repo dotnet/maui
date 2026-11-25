@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Resizetizer
 	///  - Resources/drawable-v31/maui_splash_image.xml
 	///  - Resources/[drawable]/[splash].png
 	/// </summary>
-	public class GenerateSplashAndroidResources : Task, ILogger
+	[MSBuildMultiThreadableTask]
+	public class GenerateSplashAndroidResources : MauiTask, ILogger
 	{
 		[Required]
 		public string IntermediateOutputPath { get; set; }
@@ -26,6 +27,10 @@ namespace Microsoft.Maui.Resizetizer
 		public ITaskItem[] MauiSplashScreen { get; set; }
 
 		public string InputsFile { get; set; }
+
+		string intermediateOutputPath;
+		string inputsFile;
+		FileRetryPolicy retryPolicy = FileRetryPolicy.Default;
 
 		public override bool Execute()
 		{
@@ -40,16 +45,20 @@ namespace Microsoft.Maui.Resizetizer
 
 			try
 			{
-				var info = ResizeImageInfo.Parse(splash);
+				intermediateOutputPath = TaskEnvironment.GetAbsolutePath(IntermediateOutputPath);
+				inputsFile = string.IsNullOrEmpty(InputsFile) ? InputsFile : TaskEnvironment.GetAbsolutePath(InputsFile);
+				retryPolicy = FileRetryPolicy.FromEnvironment(TaskEnvironment);
 
-				var resizer = new Resizer(info, IntermediateOutputPath, this);
+				var info = ResizeImageInfo.Parse(splash, TaskEnvironment);
+
+				var resizer = new Resizer(info, intermediateOutputPath, this) { RetryPolicy = retryPolicy };
 				Resizer darkResizer = null;
 				if (info.HasDarkMode)
 				{
 					var darkInfo = info.CreateDarkVariant(GetDarkOutputAlias(info));
 					if (darkInfo.BaseSize is null && !string.IsNullOrWhiteSpace(info.DarkFilename))
 						darkInfo.BaseSize = resizer.BaseSize ?? resizer.GetOriginalSize();
-					darkResizer = new Resizer(darkInfo, IntermediateOutputPath, this);
+					darkResizer = new Resizer(darkInfo, intermediateOutputPath, this) { RetryPolicy = retryPolicy };
 				}
 
 				WriteImages(resizer);
@@ -92,7 +101,7 @@ namespace Microsoft.Maui.Resizetizer
 				foreach (var dpi in dark ? DpiPath.Android.ImageNight : DpiPath.Android.Image)
 				{
 					Log.LogMessage(MessageImportance.Low, $"Splash Screen Resize: " + dpi);
-					resizer.Resize(dpi, InputsFile);
+					resizer.Resize(dpi, inputsFile);
 				}
 			}
 			else
@@ -100,7 +109,7 @@ namespace Microsoft.Maui.Resizetizer
 				var dpi = dark ? DpiPath.Android.OriginalNight : DpiPath.Android.Original;
 
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen Copy: " + dpi);
-				resizer.CopyFile(dpi, InputsFile);
+				resizer.CopyFile(dpi, inputsFile);
 			}
 		}
 
@@ -116,14 +125,14 @@ namespace Microsoft.Maui.Resizetizer
 
 		void WriteColors(SKColor? color, string directory)
 		{
-			var dir = Path.Combine(IntermediateOutputPath, directory);
-			Directory.CreateDirectory(dir);
+			var dir = Path.Combine(intermediateOutputPath, directory);
+			Directory.CreateDirectory(new AbsolutePath(dir));
 
 			var colorsFile = Path.Combine(dir, "maui_colors.xml");
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen Colors: " + colorsFile);
 
-			using var writer = XmlWriter.Create(colorsFile, Settings);
+			using var writer = XmlWriter.Create(new AbsolutePath(colorsFile), Settings);
 			writer.WriteComment(Comment);
 			writer.WriteStartElement("resources");
 
@@ -140,14 +149,14 @@ namespace Microsoft.Maui.Resizetizer
 
 		void WriteDrawable(Resizer resizer, bool dark)
 		{
-			var dir = Path.Combine(IntermediateOutputPath, dark ? "drawable-night" : "drawable");
-			Directory.CreateDirectory(dir);
+			var dir = Path.Combine(intermediateOutputPath, dark ? "drawable-night" : "drawable");
+			Directory.CreateDirectory(new AbsolutePath(dir));
 
 			var drawableFile = Path.Combine(dir, "maui_splash_image.xml");
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen Drawable{(dark ? " (night)" : "")}: " + drawableFile);
 
-			using var writer = XmlWriter.Create(drawableFile, Settings);
+			using var writer = XmlWriter.Create(new AbsolutePath(drawableFile), Settings);
 			writer.WriteComment(Comment);
 			writer.WriteStartElement("layer-list");
 			writer.WriteAttributeString("xmlns", "android", ns: null, value: Namespace);
@@ -166,14 +175,14 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var size = CalculateScaledSize(resizer);
 
-			var dir = Path.Combine(IntermediateOutputPath, dark ? "drawable-night-v31" : "drawable-v31");
-			Directory.CreateDirectory(dir);
+			var dir = Path.Combine(intermediateOutputPath, dark ? "drawable-night-v31" : "drawable-v31");
+			Directory.CreateDirectory(new AbsolutePath(dir));
 
 			var drawableFile = Path.Combine(dir, "maui_splash_image.xml");
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen Drawable ({(dark ? "night " : "")}v31): " + drawableFile);
 
-			using var writer = XmlWriter.Create(drawableFile, Settings);
+			using var writer = XmlWriter.Create(new AbsolutePath(drawableFile), Settings);
 			writer.WriteComment(Comment);
 			writer.WriteStartElement("layer-list");
 			writer.WriteAttributeString("xmlns", "android", ns: null, value: Namespace);
@@ -210,26 +219,26 @@ namespace Microsoft.Maui.Resizetizer
 				"drawable-night-xxxhdpi",
 			})
 			{
-				var path = Path.Combine(IntermediateOutputPath, directory);
-				if (Directory.Exists(path))
-					Utils.DeleteDirectoryWithRetries(path);
+				var path = Path.Combine(intermediateOutputPath, directory);
+				if (Directory.Exists(new AbsolutePath(path)))
+					Utils.DeleteDirectoryWithRetries(path, retryPolicy);
 			}
 		}
 
 		void DeleteNightColors()
 		{
-			var colorsFile = Path.Combine(IntermediateOutputPath, "values-night", "maui_colors.xml");
-			if (File.Exists(colorsFile))
-				Utils.DeleteFileWithRetries(colorsFile);
+			var colorsFile = Path.Combine(intermediateOutputPath, "values-night", "maui_colors.xml");
+			if (File.Exists(new AbsolutePath(colorsFile)))
+				Utils.DeleteFileWithRetries(colorsFile, retryPolicy);
 		}
 
 		void CleanStaleNightImageResources(bool resize)
 		{
 			foreach (var directory in resize ? NightOriginalResourceDirectories : NightDensityResourceDirectories)
 			{
-				var path = Path.Combine(IntermediateOutputPath, directory);
-				if (Directory.Exists(path))
-					Utils.DeleteDirectoryWithRetries(path);
+				var path = Path.Combine(intermediateOutputPath, directory);
+				if (Directory.Exists(new AbsolutePath(path)))
+					Utils.DeleteDirectoryWithRetries(path, retryPolicy);
 			}
 		}
 

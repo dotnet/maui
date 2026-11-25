@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Resizetizer.Tests")]
@@ -55,37 +56,44 @@ namespace Microsoft.Maui.Resizetizer
 
 		public static (bool Exists, DateTime Modified) FileExists(string path)
 		{
-			var exists = File.Exists(path);
-			var modified = exists ? File.GetLastWriteTimeUtc(path) : System.DateTime.MinValue;
+			if (string.IsNullOrEmpty(path))
+				return (false, DateTime.MinValue);
+
+			AbsolutePath file = new(path);
+			var exists = File.Exists(file);
+			var modified = exists ? File.GetLastWriteTimeUtc(file) : DateTime.MinValue;
 			return (exists, modified);
 		}
 
 		public static void SetWriteable(string source, bool checkExists = true)
 		{
-			if (checkExists && !File.Exists(source))
+			AbsolutePath file = new(source);
+			if (checkExists && !File.Exists(file))
 				return;
 
-			var attributes = File.GetAttributes(source);
+			var attributes = File.GetAttributes(file);
 			if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-				File.SetAttributes(source, attributes & ~FileAttributes.ReadOnly);
+				File.SetAttributes(file, attributes & ~FileAttributes.ReadOnly);
 		}
 
 		/// <summary>
-		/// Deletes a file, retrying while another process briefly holds it open, using the
-		/// same retry policy as image writes.
+		/// Deletes a file, retrying while another process briefly holds it open.
 		/// </summary>
-		public static void DeleteFileWithRetries(string path) =>
-			RetryWhileFileIsLocked(() => File.Delete(path));
+		public static void DeleteFileWithRetries(string path, FileRetryPolicy retryPolicy)
+		{
+			AbsolutePath file = new(path);
+			RetryWhileFileIsLocked(() => File.Delete(file), retryPolicy.Attempts, retryPolicy.DelayMilliseconds);
+		}
 
 		/// <summary>
 		/// Recursively deletes a directory, retrying while another process briefly holds one
-		/// of its files open, using the same retry policy as image writes.
+		/// of its files open.
 		/// </summary>
-		public static void DeleteDirectoryWithRetries(string path) =>
-			RetryWhileFileIsLocked(() => Directory.Delete(path, recursive: true));
-
-		static void RetryWhileFileIsLocked(Action action) =>
-			RetryWhileFileIsLocked(action, SkiaSharpTools.GetFileWriteRetryAttempts(), SkiaSharpTools.GetFileWriteRetryDelay());
+		public static void DeleteDirectoryWithRetries(string path, FileRetryPolicy retryPolicy)
+		{
+			AbsolutePath directory = new(path);
+			RetryWhileFileIsLocked(() => Directory.Delete(directory, recursive: true), retryPolicy.Attempts, retryPolicy.DelayMilliseconds);
+		}
 
 		internal static void RetryWhileFileIsLocked(Action action, int attempts, int delay)
 		{

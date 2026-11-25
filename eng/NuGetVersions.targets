@@ -400,6 +400,12 @@
         Version="$(MicrosoftBuildUtilitiesCorePackageVersion)"
         PrivateAssets="All"
     />
+    <PackageReference
+        Update="Microsoft.Build.TaskAuthoring.Analyzer"
+        Version="$(MicrosoftBuildTaskAuthoringAnalyzerPackageVersion)"
+        PrivateAssets="All"
+        IncludeAssets="analyzers"
+    />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <!-- WiX 6 packages -->

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -23,10 +24,19 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ResizeImageInfo Info { get; private set; }
 
+		public FileRetryPolicy RetryPolicy { get; set; } = FileRetryPolicy.Default;
+
 		public SKSize? BaseSize => Info.BaseSize;
 
 		protected SkiaSharpTools Tools =>
-			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Info.Quality, Logger);
+			tools ??= CreateTools();
+
+		SkiaSharpTools CreateTools()
+		{
+			var created = SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Info.Quality, Logger);
+			created.RetryPolicy = RetryPolicy;
+			return created;
+		}
 
 		public string GetRasterFileDestination(DpiPath dpi, bool includeIntermediate = true, bool includeScale = true)
 			=> GetRasterFileDestination(Info, dpi, includeIntermediate ? IntermediateOutputPath : null, includeScale);
@@ -48,13 +58,14 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var destination = Path.Combine(dpi.Path, info.OutputName + (includeScale ? dpi.FileSuffix : dpi.NameSuffix) + info.OutputExtension);
 
-			if (!string.IsNullOrEmpty(intermediateOutputPath))
-			{
-				var fullIntermediateOutputPath = new DirectoryInfo(intermediateOutputPath);
-				destination = Path.Combine(fullIntermediateOutputPath.FullName, destination);
-			}
+			// Without an intermediate output path, callers only want the relative destination name.
+			if (string.IsNullOrEmpty(intermediateOutputPath))
+				return destination;
 
-			var fileInfo = new FileInfo(destination);
+			var fullIntermediateOutputPath = new DirectoryInfo(new AbsolutePath(intermediateOutputPath));
+			destination = Path.Combine(fullIntermediateOutputPath.FullName, destination);
+
+			var fileInfo = new FileInfo(new AbsolutePath(destination));
 			if (!fileInfo.Directory.Exists)
 				fileInfo.Directory.Create();
 
@@ -71,7 +82,7 @@ namespace Microsoft.Maui.Resizetizer
 			if (Info.IsVector)
 				Rasterize(dpi, destination);
 			else
-				File.Copy(Info.Filename, destination, true);
+				File.Copy(new AbsolutePath(Info.Filename), new AbsolutePath(destination), true);
 
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 		}
@@ -83,11 +94,11 @@ namespace Microsoft.Maui.Resizetizer
 
 		internal static bool IsUpToDate(IEnumerable<string> inputFiles, string outputFile, string inputsFile, ILogger logger, string inputDescription = null)
 		{
-			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
+			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(new AbsolutePath(inputsFile));
 			if (fileInputs?.Exists != true)
 				return false;
 
-			var fileOut = new FileInfo(outputFile);
+			var fileOut = new FileInfo(new AbsolutePath(outputFile));
 			if (!fileOut.Exists)
 				return false;
 
@@ -98,7 +109,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (string.IsNullOrEmpty(inputFile))
 					continue;
 
-				var fileIn = new FileInfo(inputFile);
+				var fileIn = new FileInfo(new AbsolutePath(inputFile));
 				if (!fileIn.Exists)
 					return false;
 
