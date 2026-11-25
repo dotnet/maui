@@ -167,6 +167,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdatePlaceholder(editor);
+
+			if (handler.PlatformView?.AllowAutoGrowth == true)
+				handler.PlatformView.InvalidateMeasure(editor);
+
 			handler.UpdateValue(nameof(IEditor.CharacterSpacing));
 		}
 

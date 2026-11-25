@@ -102,23 +102,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (textDecorations.HasFlag(TextDecorations.Strikethrough))
 					spannable.SetSpan(new StrikethroughSpan(), start, end, SpanTypes.InclusiveInclusive);
 				if (textDecorations.HasFlag(TextDecorations.Underline))
-				{
-					// A decoration color or thickness draws the underline in its own color / thickness (API 29+; below that the span
-					// falls back to the standard text-colored underline). Android has no public API for a strikethrough color or
-					// thickness, so strikethrough stays as it is.
-					var decorationColor = span.TextDecorationColor;
-					var decorationThickness = span.TextDecorationThickness;
-					if (decorationColor is not null || decorationThickness > 0)
-					{
-						var thicknessPixels = decorationThickness > 0 ? (float)(decorationThickness * (context ?? AAplication.Context).GetDisplayDensity()) : -1f;
-						spannable.SetSpan(new PlatformUnderlineSpan(decorationColor is not null, decorationColor?.ToPlatform().ToArgb() ?? 0, thicknessPixels),
-							start, end, SpanTypes.InclusiveInclusive);
-					}
-					else
-					{
-						spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
-					}
-				}
+					spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
 			}
 
 			return spannable;

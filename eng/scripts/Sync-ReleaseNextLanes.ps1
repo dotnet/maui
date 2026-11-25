@@ -263,10 +263,9 @@ function Sync-StagedReleasePr {
     $merged = @($closed | Where-Object {
         $_.merged_at -and $_.head.sha -ceq $commit -and ([string]$_.body).Contains($marker)
     })
-    $flattened = @()
-    if ($normalization -and $merged.Count) {
-        $verified = @(foreach ($candidate in $merged) {
-            $proof = Invoke-NextLaneApi @("repos/$repository/pulls/$($candidate.number)")
+    if ($merged.Count -eq 1) {
+        if ($normalization) {
+            $proof = Invoke-NextLaneApi @("repos/$repository/pulls/$($merged[0].number)")
             if (!$proof.merged -or !$proof.merged_at -or $proof.merged_by.type -cne 'User' -or
                 $null -eq $proof.head.repo -or $proof.head.repo.full_name -cne $repository -or
                 $proof.head.ref -cne $head -or $proof.head.sha -cne $commit -or
@@ -275,24 +274,14 @@ function Sync-StagedReleasePr {
                 throw 'CI normalization is not the verified same-repository maintainer merge.'
             }
             Fetch-NextLaneCommit @($proof.merge_commit_sha)
-            $parents = (Get-NextLaneGit @('show', '-s', '--format=%P', $proof.merge_commit_sha)).Trim().Split(' ')
-            if ($parents.Count -eq 2 -and $parents[1] -ceq $commit) {
-                $candidate
-            } else {
-                # Squash and rebase merges land the tree but not the pinned commit, so a
-                # replacement PR is needed for the receipt's normalization ancestry.
-                Write-Warning "CI normalization PR #$($candidate.number) was not merged with Create a merge commit; its pinned commit is not in $Branch."
-                $flattened += $candidate
+            $parents = (Get-NextLaneGit @('show', '-s', '--format=%P', $proof.merge_commit_sha)).Split(' ')
+            if ($parents.Count -ne 2 -or $parents[1] -cne $commit) {
+                throw 'CI normalization requires Create a merge commit; squash and rebase merges cannot resume the pinned receipt.'
             }
-        })
-        if ($verified.Count -gt 1) { throw 'Multiple CI normalization merges match the pinned commit; refusing adoption.' }
-        $merged = $verified
-    }
-    if ($merged.Count -eq 1) {
+        }
         return [pscustomobject]@{ number = $merged[0].number; url = $merged[0].html_url; status = 'merged' }
     }
-    $unreviewed = @($closed | Where-Object { $_.number -notin @($flattened | ForEach-Object { $_.number }) })
-    if ($unreviewed.Count) { throw "The $Kind PR was closed without the expected approved merge; a maintainer must review before recreation." }
+    if ($closed.Count) { throw "The $Kind PR was closed without the expected approved merge; a maintainer must review before recreation." }
     $sourceSr = if ($canonicalState) { $Plan.integratedSr } else { $Sr }
     Assert-CurrentLaneSource -Sr $sourceSr -Source $Plan.mergeSha
     Publish-NextLaneRef -Branch $head -Commit $commit
@@ -323,10 +312,6 @@ function Sync-StagedReleasePr {
             '**A maintainer must review this PR, run required CI and use Create a merge commit. Do not squash or rebase.**'
             'The reconciler does not update the protected integration ref, approve, retarget or merge this PR. Next-lane activation and forward-flow preparation wait for the normalization ancestry to be verified.'
             'The automation/release staging ref starts at this candidate source and advances through its separately reviewed servicing PR. A newer maintainer candidate merge supersedes the old generation, never a concurrent unrelated edit. After servicing is merged with Create a merge commit, the real release branch is manually cut at its exact merge. This normalization PR does not authorize signing.'
-            if ($flattened.Count) {
-                ''
-                "Replaces $(($flattened | ForEach-Object { "#$($_.number)" }) -join ', '), which landed the same tree without the pinned commit (squash or rebase merge). This PR may show no remaining file changes; merging it with Create a merge commit records the required ancestry."
-            }
         ) -join "`n"
     }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
@@ -593,9 +578,8 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
             throw 'The exact staging source or housekeeping branch could not be verified.'
         }
         Fetch-NextLaneCommit @($verifiedFixes)
-        if (!$housekeepingPending -and !(Test-MauiReleaseAncestor -RepositoryPath $RepositoryPath `
-                -Ancestor $plan.normalizedSha -Descendant $verifiedFixes)) {
-            throw "'$($roles.fixBranch)' does not contain prepared CI normalization $($plan.normalizedSha). Merge its normalization PR with Create a merge commit; squash and rebase merges cannot resume the pinned receipt."
+        if (!$housekeepingPending) {
+            $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.normalizedSha, $verifiedFixes)
         }
     }
     if (!$housekeepingPending) {
