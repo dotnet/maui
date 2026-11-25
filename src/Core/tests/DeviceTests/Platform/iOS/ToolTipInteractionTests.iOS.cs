@@ -48,6 +48,67 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, view.Reads);
 			});
 
+		[Fact]
+		public Task UpdateToolTipWithEmptyTextClearsExistingInteraction() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+				var existing = new UIToolTipInteraction("old");
+				view.AddInteraction(existing);
+
+				view.UpdateToolTip(new ToolTip { Content = "" });
+
+				Assert.True(string.IsNullOrEmpty(existing.DefaultToolTip));
+				Assert.Single(view.CountedInteractions());
+			});
+
+		[Fact]
+		public Task UpdateToolTipDoesNotReadInteractionsAfterDiscovery() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+				view.AddInteraction(new UIToolTipInteraction("old"));
+
+				view.UpdateToolTip(new ToolTip { Content = "first" });
+				var readsAfterDiscovery = view.Reads;
+
+				view.UpdateToolTip(new ToolTip { Content = "second" });
+				view.UpdateToolTip(null);
+
+				Assert.Equal(readsAfterDiscovery, view.Reads);
+			});
+
+		[Fact]
+		public Task UpdateToolTipReusesInteractionItCreated() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+
+				view.UpdateToolTip(new ToolTip { Content = "first" });
+				var readsAfterCreation = view.Reads;
+
+				view.UpdateToolTip(new ToolTip { Content = "second" });
+
+				var interaction = Assert.IsType<UIToolTipInteraction>(Assert.Single(view.CountedInteractions()));
+				Assert.Equal("second", interaction.DefaultToolTip);
+				Assert.Equal(readsAfterCreation, view.Reads);
+			});
+
+		[Fact]
+		public Task UpdateToolTipRecreatesInteractionRemovedNatively() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new CountingView();
+
+				view.UpdateToolTip(new ToolTip { Content = "first" });
+				view.RemoveInteraction(Assert.Single(view.CountedInteractions()));
+
+				view.UpdateToolTip(new ToolTip { Content = "second" });
+
+				var interaction = Assert.IsType<UIToolTipInteraction>(Assert.Single(view.CountedInteractions()));
+				Assert.Equal("second", interaction.DefaultToolTip);
+			});
+
 		class CountingView : UIView
 		{
 			public int Reads { get; private set; }

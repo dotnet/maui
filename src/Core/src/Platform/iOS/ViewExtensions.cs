@@ -680,7 +680,13 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					if (!s_toolTipInteractions.TryGetValue(platformView, out interaction) && searchInteractions)
+					if (s_toolTipInteractions.TryGetValue(platformView, out interaction) && interaction.View != platformView)
+					{
+						s_toolTipInteractions.Remove(platformView);
+						interaction = null;
+					}
+
+					if (interaction is null && searchInteractions)
 					{
 						foreach (var ia in platformView.Interactions)
 						{
@@ -705,7 +711,7 @@ namespace Microsoft.Maui.Platform
 				|| OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				string? text = tooltip?.Content?.ToString();
-				var interaction = platformView.GetToolTipInteraction(searchInteractions: !string.IsNullOrEmpty(text));
+				var interaction = platformView.GetToolTipInteraction(searchInteractions: tooltip is not null);
 
 				if (interaction is null)
 				{

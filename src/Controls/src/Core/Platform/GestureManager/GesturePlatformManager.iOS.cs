@@ -760,6 +760,18 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
+					if (_dragInteraction is not null && _dragInteraction.View != PlatformView)
+					{
+						_interactions.Remove(_dragInteraction);
+						_dragInteraction = null;
+					}
+
+					if (_dropInteraction is not null && _dropInteraction.View != PlatformView)
+					{
+						_interactions.Remove(_dropInteraction);
+						_dropInteraction = null;
+					}
+
 					uIDragInteraction = _dragInteraction;
 					uIDropInteraction = _dropInteraction;
 				}

@@ -51,6 +51,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task DragInteractionIsRecreatedAfterNativeRemoval()
+		{
+			var label = new Label();
+			label.GestureRecognizers.Add(new DragGestureRecognizer());
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				var platformView = handler.PlatformView;
+
+				platformView.RemoveInteraction(Assert.Single(platformView.Interactions.OfType<UIDragInteraction>()));
+
+				label.GestureRecognizers.Add(new TapGestureRecognizer());
+
+				Assert.Single(platformView.Interactions.OfType<UIDragInteraction>());
+			});
+		}
+
 		class CountingElement : View
 		{
 		}

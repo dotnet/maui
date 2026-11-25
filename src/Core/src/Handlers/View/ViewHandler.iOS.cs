@@ -34,7 +34,11 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is PlatformView uiView)
 			{
-				s_contextMenuInteractions.TryGetValue(uiView, out var currentInteraction);
+				if (s_contextMenuInteractions.TryGetValue(uiView, out var currentInteraction) && currentInteraction.View != uiView)
+				{
+					s_contextMenuInteractions.Remove(uiView);
+					currentInteraction = null;
+				}
 
 				if (contextFlyoutContainer.ContextFlyout != null)
 				{
