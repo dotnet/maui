@@ -61,6 +61,13 @@ parameters:
     demands:
       - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
+- name: LinuxPool
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    os: linux
 
 resources:
   repositories:
@@ -119,6 +126,15 @@ extends:
               Write-Host "##vso[task.setvariable variable=shouldBuild;isOutput=true]$shouldBuild"
             name: Resolve
             displayName: Resolve active nightly from canonical release state
+
+    - template: /eng/pipelines/arcade/stage-devskim.yml@self
+      parameters:
+        ${{ if and(eq(variables['Build.Reason'], 'Schedule'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/candidate/'))) }}:
+          dependsOn:
+          - SelectInflightNightly
+          condition: and(succeeded(), eq(dependencies.SelectInflightNightly.outputs['Select.Resolve.shouldBuild'], 'true'))
+        pool: ${{ parameters.LinuxPool }}
+        is1ESPipeline: true
 
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
