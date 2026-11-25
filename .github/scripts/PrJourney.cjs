@@ -13,6 +13,36 @@
 const MARKER = '<!-- pr-journey -->';
 const STATE_PREFIX = '<!-- pr-journey-state:';
 const FIX_LABEL = 's/agent-fix-allowed';
+
+// One "waiting on" label is kept on every open PR so maintainers can filter by who acts next.
+const WAITING_LABELS = {
+  author: { name: 's/pr-waiting-author', color: 'D93F0B', description: 'PR Journey: waiting on the PR author' },
+  maintainer: { name: 's/pr-waiting-maintainer', color: '0E8A16', description: 'PR Journey: waiting on a maintainer' },
+  ci: { name: 's/pr-waiting-ci', color: 'C5DEF5', description: 'PR Journey: waiting on CI' },
+  agent: { name: 's/pr-waiting-agent', color: '5319E7', description: 'PR Journey: waiting on the AI review' },
+  team: { name: 's/pr-waiting-team', color: '1D76DB', description: 'PR Journey: the MAUI team applies review findings (author opted in)' },
+};
+const LABEL_DEFS = {
+  ...Object.fromEntries(Object.values(WAITING_LABELS).map(l => [l.name, l])),
+  [FIX_LABEL]: { name: FIX_LABEL, color: '7B1FA2', description: 'PR author allows the MAUI agent and maintainers to push fixes for review findings' },
+};
+const WAITING_BY_KEY = {
+  'draft': 'author', 'ci-failed': 'author', 'maint-changes': 'author', 'improve-you': 'author',
+  'maint-changes-fix': 'team', 'improve-fix': 'team',
+  'ai-running': 'agent',
+  'ci-running': 'ci', 'approved-ci': 'ci',
+  'ci-not-started': 'maintainer', 'ai-pending': 'maintainer', 'ai-incomplete': 'maintainer', 'maint-review': 'maintainer', 'approved': 'maintainer',
+};
+
+/** Labels this workflow owns that should be on the PR for the given journey. */
+function desiredLabels(f, journey) {
+  const want = new Set();
+  if (f.state !== 'OPEN') return want;
+  if (f.mode === 'fix') want.add(FIX_LABEL);
+  const kind = WAITING_BY_KEY[journey.key];
+  if (kind) want.add(WAITING_LABELS[kind].name);
+  return want;
+}
 const MAX_HISTORY = 15;
 const DOCS_URL = 'https://github.com/dotnet/maui/blob/main/.github/docs/pr-journey.md';
 
@@ -390,14 +420,38 @@ async function findTracker(github, owner, repo, number) {
   return comments.find(c => c.user?.type === 'Bot' && String(c.body || '').startsWith(MARKER)) || null;
 }
 
-async function syncLabel(github, core, owner, repo, f) {
-  const has = f.labels.includes(FIX_LABEL);
+async function ensureLabel(github, owner, repo, name) {
+  const def = LABEL_DEFS[name];
   try {
-    if (f.mode === 'fix' && !has) await github.rest.issues.addLabels({ owner, repo, issue_number: f.number, labels: [FIX_LABEL] });
-    if (f.mode !== 'fix' && has) await github.rest.issues.removeLabel({ owner, repo, issue_number: f.number, name: FIX_LABEL });
+    await github.rest.issues.createLabel({ owner, repo, name, color: def.color, description: def.description });
   } catch (e) {
-    core.warning(`Could not sync ${FIX_LABEL} on #${f.number}: ${e.message}`);
+    if (e.status !== 422) throw e; // 422: already exists
   }
+}
+
+/** Adds missing and removes stale labels owned by this workflow. Other labels are never touched. */
+async function syncLabels(github, core, owner, repo, f, journey) {
+  const want = desiredLabels(f, journey);
+  const owned = new Set(Object.keys(LABEL_DEFS));
+  const have = new Set(f.labels.filter(l => owned.has(l)));
+  const add = [...want].filter(l => !have.has(l));
+  const remove = [...have].filter(l => !want.has(l));
+  for (const name of remove) {
+    try {
+      await github.rest.issues.removeLabel({ owner, repo, issue_number: f.number, name });
+    } catch (e) {
+      if (e.status !== 404) core.warning(`#${f.number}: could not remove ${name}: ${e.message}`);
+    }
+  }
+  if (add.length) {
+    try {
+      for (const name of add) await ensureLabel(github, owner, repo, name);
+      await github.rest.issues.addLabels({ owner, repo, issue_number: f.number, labels: add });
+    } catch (e) {
+      core.warning(`#${f.number}: could not add ${add.join(', ')}: ${e.message}`);
+    }
+  }
+  if (add.length || remove.length) core.info(`#${f.number}: labels +[${add.join(', ')}] -[${remove.join(', ')}]`);
 }
 
 /** Creates or updates the tracker for one PR. */
@@ -412,12 +466,12 @@ async function updatePr({ github, core, owner, repo, number, create = true, muta
 
   const ci = state === 'OPEN' ? await fetchCi(github, owner, repo, pr.commits?.nodes?.[0]?.commit?.oid) : undefined;
   const f = toFacts(pr, ci);
-  if (f.state === 'OPEN') await syncLabel(github, core, owner, repo, f);
 
   let saved = existing ? decodeState(existing.body) : {};
   if (mutateSaved) saved = mutateSaved(saved, f);
   const journey = computeJourney(f, saved);
   saved = advanceSaved(saved, journey, new Date().toISOString());
+  await syncLabels(github, core, owner, repo, f, journey);
   const body = render(f, journey, saved);
 
   if (!existing) {
@@ -506,4 +560,4 @@ async function main({ github, core, context }) {
   if (number) return updatePr({ github, core, owner, repo, number });
 }
 
-module.exports = { main, summarizeCi, parseMode, setMode, parseCommand, toFacts, computeJourney, render, advanceSaved, decodeState, encodeState, MARKER };
+module.exports = { main, summarizeCi, desiredLabels, parseMode, setMode, parseCommand, toFacts, computeJourney, render, advanceSaved, decodeState, encodeState, MARKER };

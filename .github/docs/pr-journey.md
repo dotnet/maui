@@ -28,6 +28,24 @@ The PR template has a **Help from the MAUI agent** section:
   these PRs. On forks this requires **Allow edits by maintainers**; the tracker warns when it is off.
 - **Review only** (`suggest`): the author addresses findings.
 
+## Labels
+
+The workflow adds and removes these labels. It never touches other labels.
+
+| Label | On the PR while |
+|-------|-----------------|
+| `s/pr-waiting-author` | The author has to act: draft, failing CI, AI review findings in review-only mode, or a maintainer asked for changes |
+| `s/pr-waiting-maintainer` | A maintainer has to act: start CI, start the AI review, review, or merge |
+| `s/pr-waiting-ci` | CI is running |
+| `s/pr-waiting-agent` | The AI review is running |
+| `s/pr-waiting-team` | The author opted in and the MAUI team applies review findings or requested changes |
+| `s/agent-fix-allowed` | The author chose "Review and improve automatically" |
+
+An open PR has exactly one `s/pr-waiting-*` label. All of these labels are removed when the PR is closed or
+merged. Missing labels are created automatically. The workflow deliberately does not use
+`s/pr-needs-author-input`, because that label starts the stale-and-close policy in
+`.github/policies/resourceManagement.yml`.
+
 ## Commands
 
 The command must be the first line of a PR comment:
