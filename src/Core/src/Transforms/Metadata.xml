@@ -7,6 +7,9 @@
   <attr path="//interface[@visibility='public']" name="visibility">internal</attr>
   <!-- Public types -->
   <attr path="//class[@name='PlatformAppCompatTextView']" name="visibility">public</attr>
+  <attr path="//class[@name='PlatformMaterialTextView']" name="visibility">public</attr>
+  <attr path="//class[@name='PlatformMaterialTextView']/method" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformMaterialTextView']/constructor" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformContentViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformWrapperView']" name="visibility">public</attr>
@@ -26,6 +29,8 @@
   <attr path="//class[@name='PlatformDrawable']/constructor" name="visibility">public</attr>
 
   <remove-node path="//package[@name='com.bumptech.glide']" />
+  <remove-node path="//package[@name='com.microsoft.maui']/class[@name='ItalicOverhang']" />
+  <remove-node path="//package[@name='com.microsoft.maui']/interface[@name='ItalicOverhang.Host']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide.font']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide.stream']" />

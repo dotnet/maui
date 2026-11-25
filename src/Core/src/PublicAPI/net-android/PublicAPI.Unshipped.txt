@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.Maui.PlatformMaterialTextView
+Microsoft.Maui.PlatformMaterialTextView.PlatformMaterialTextView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+override Microsoft.Maui.PlatformMaterialTextView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformMaterialTextView.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformMaterialTextView.ThresholdType.get -> System.Type!

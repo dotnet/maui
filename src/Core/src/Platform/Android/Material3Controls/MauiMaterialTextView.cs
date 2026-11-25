@@ -1,11 +1,10 @@
 using System;
 using Android.Content;
-using Google.Android.Material.TextView;
 using Java.Lang;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiMaterialTextView : MaterialTextView
+public class MauiMaterialTextView : PlatformMaterialTextView
 {
 	// Track text type to optimize layout events - FormattedText needs span recalculation, plain text doesn't
 	bool _isFormatted;
