@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
+		<EmbeddedResource Include="Resources\Images\dotnet_bot.png" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" BaseSize="222,185" />
 
 		<!-- Custom Fonts -->
