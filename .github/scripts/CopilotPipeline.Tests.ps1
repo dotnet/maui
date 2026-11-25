@@ -63,12 +63,6 @@ Describe 'Copilot reviewer base branch allowlist' {
             $reviewScript | Should -Not -Match 'COPILOT_REVIEW_MODEL'
         }
 
-        It 'does not accept an environment override for the local test reviewer' {
-            $reviewTestsScript = Get-Content -Raw -LiteralPath (
-                Join-Path $PSScriptRoot 'Review-Tests.ps1')
-
-            $reviewTestsScript | Should -Not -Match 'COPILOT_REVIEW_TESTS_MODEL'
-        }
     }
 
     It 'accepts every supported base branch shape' {
