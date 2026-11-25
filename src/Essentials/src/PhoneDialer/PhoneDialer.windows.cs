@@ -1,5 +1,4 @@
-using Windows.ApplicationModel.Calls;
-using Windows.Foundation.Metadata;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
@@ -12,10 +11,11 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 			ValidateOpen(number);
 
-			if (ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager"))
-				PhoneCallManager.ShowPhoneCallUI(number, string.Empty);
-			else
-				await Launcher.OpenAsync($"tel:{number}");
+			// PhoneCallManager can be present without opening a dialer on desktop Windows.
+			if (!await Launcher.OpenAsync($"tel:{number}"))
+			{
+				Debug.WriteLine("Unable to open the phone dialer using the registered tel: handler.");
+			}
 		}
 	}
 }
