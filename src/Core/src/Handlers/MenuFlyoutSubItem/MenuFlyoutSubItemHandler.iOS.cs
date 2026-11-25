@@ -10,6 +10,21 @@ namespace Microsoft.Maui.Handlers
 		IImageSource? _contextSource;
 		bool _contextMenu;
 		bool _refreshingContextMenu;
+		bool _refreshContextSource;
+
+		internal void RefreshContextMetadata()
+		{
+			UpdateValue(nameof(IMenuElement.Text));
+			_refreshContextSource = VirtualView.Source is not null;
+			try
+			{
+				UpdateValue(nameof(IMenuElement.Source));
+			}
+			finally
+			{
+				_refreshContextSource = false;
+			}
+		}
 
 		protected override UIMenu CreatePlatformElement()
 		{
@@ -49,9 +64,11 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapContextMetadata(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
 			if (handler is MenuFlyoutSubItemHandler menuHandler && menuHandler._contextMenu &&
-				(!string.Equals(menuHandler._contextText, view.Text, StringComparison.Ordinal) ||
+				(menuHandler._refreshContextSource ||
+				 !string.Equals(menuHandler._contextText, view.Text, StringComparison.Ordinal) ||
 				 menuHandler._contextSource != view.Source))
 			{
+				menuHandler._refreshContextSource = false;
 				// Reconnect the same handler to replace the immutable UIMenu and replay its mappings.
 				var previous = menuHandler.PlatformView;
 				menuHandler._refreshingContextMenu = true;

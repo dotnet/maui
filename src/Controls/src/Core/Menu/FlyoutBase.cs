@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Controls
 	public abstract class FlyoutBase : Element, IFlyout
 	{
 		/// <summary>Bindable property for attached property <c>ContextFlyout</c>.</summary>
-		/// <remarks>On Android and iOS, a context flyout opens with a long press.</remarks>
+		/// <remarks>Use <see cref="ShowContextFlyout"/> to request programmatic presentation on supported platforms.
+		/// Attaching a flyout does not enable long-press opening on Android or iOS.</remarks>
 		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.CreateAttached("ContextFlyout", typeof(FlyoutBase), typeof(FlyoutBase), null,
 			propertyChanged: (bo, oldV, newV) =>
 			{

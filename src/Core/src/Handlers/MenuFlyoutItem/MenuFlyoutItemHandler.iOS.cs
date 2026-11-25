@@ -11,6 +11,21 @@ namespace Microsoft.Maui.Handlers
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
 		string? _contextText;
 		IImageSource? _contextSource;
+		bool _refreshContextSource;
+
+		internal void RefreshContextMetadata()
+		{
+			UpdateValue(nameof(IMenuElement.Text));
+			_refreshContextSource = VirtualView.Source is not null;
+			try
+			{
+				UpdateValue(nameof(IMenuElement.Source));
+			}
+			finally
+			{
+				_refreshContextSource = false;
+			}
+		}
 
 		bool IsInContextFlyout()
 		{
@@ -71,8 +86,9 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapContextSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
 			if (handler is MenuFlyoutItemHandler menuHandler && handler.PlatformView is UIAction action &&
-				menuHandler._contextSource != view.Source)
+				(menuHandler._refreshContextSource || menuHandler._contextSource != view.Source))
 			{
+				menuHandler._refreshContextSource = false;
 				menuHandler._contextSource = view.Source;
 				action.Image = view.Source.GetPlatformMenuImage(handler.MauiContext
 					?? throw new InvalidOperationException("The menu item handler must have a MauiContext."));

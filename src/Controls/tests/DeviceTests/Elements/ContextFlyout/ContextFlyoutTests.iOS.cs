@@ -201,6 +201,183 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task ProgrammaticAppleMenuRejectsRemovedItems(bool clear, bool nested)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var clicks = 0;
+			var item = new MenuFlyoutItem { Text = "Action" };
+			item.Clicked += (_, _) => clicks++;
+			var submenu = new MenuFlyoutSubItem { Text = "Group" };
+			submenu.Add(item);
+			var flyout = new MenuFlyout();
+			flyout.Add(nested ? submenu : item);
+			var label = CreateContextFlyoutTarget();
+			FlyoutBase.SetContextFlyout(label, flyout);
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				var controller = GetContextFlyoutPresentingController(handler.PlatformView);
+				try
+				{
+					FlyoutBase.ShowContextFlyout(label);
+					var button = handler.PlatformView.Subviews.OfType<UIButton>().SingleOrDefault();
+					UITableViewController page = null;
+					UIAction action = null;
+					if (button is not null)
+					{
+						var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+						if (nested)
+						{
+							var branch = Assert.IsType<UIMenu>(Assert.Single(section.Children));
+							section = Assert.IsType<UIMenu>(Assert.Single(branch.Children));
+						}
+						action = Assert.IsType<UIAction>(Assert.Single(section.Children));
+					}
+					else
+					{
+						await AssertEventually(() => controller.PresentedViewController is UINavigationController);
+						var navigation = Assert.IsType<UINavigationController>(controller.PresentedViewController);
+						page = Assert.IsAssignableFrom<UITableViewController>(navigation.TopViewController);
+						if (nested)
+						{
+							using var branchPath = NSIndexPath.FromRowSection(0, 0);
+							page.RowSelected(page.TableView, branchPath);
+							page = Assert.IsAssignableFrom<UITableViewController>(navigation.TopViewController);
+						}
+					}
+
+					if (clear)
+						flyout.Clear();
+					else
+						flyout.Remove(nested ? submenu : item);
+					if (button is not null)
+						button.SendAction(action);
+					else
+					{
+						using var path = NSIndexPath.FromRowSection(0, 0);
+						page.RowSelected(page.TableView, path);
+					}
+					Assert.Equal(0, clicks);
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task ProgrammaticFallbackHonorsMapperAndDispatchesLeaf()
+		{
+			if ((!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15)) ||
+				OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			var originalMapper = MenuFlyoutItemHandler.Mapper;
+			MenuFlyoutItemHandler.Mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(originalMapper)
+			{
+				["FallbackCustomization"] = (handler, view) =>
+				{
+					if (view.Text == "Mapper disabled")
+						Assert.IsType<UIAction>(handler.PlatformView).Attributes |= UIMenuElementAttributes.Disabled;
+				}
+			};
+			try
+			{
+				SetupBuilder();
+				var clicks = 0;
+				var commands = 0;
+				var enabled = new MenuFlyoutItem { Text = "Enabled", Command = new Command(() => commands++) };
+				var disabled = new MenuFlyoutItem { Text = "Mapper disabled" };
+				enabled.Clicked += (_, _) => clicks++;
+				disabled.Clicked += (_, _) => clicks++;
+				var label = CreateContextFlyoutTarget();
+				FlyoutBase.SetContextFlyout(label, new MenuFlyout { enabled, disabled });
+				await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+				{
+					var controller = GetContextFlyoutPresentingController(handler.PlatformView);
+					try
+					{
+						FlyoutBase.ShowContextFlyout(label);
+						await AssertEventually(() => controller.PresentedViewController is UINavigationController);
+						var navigation = Assert.IsType<UINavigationController>(controller.PresentedViewController);
+						var page = Assert.IsAssignableFrom<UITableViewController>(navigation.TopViewController);
+						using var disabledPath = NSIndexPath.FromRowSection(1, 0);
+						using var disabledCell = page.GetCell(page.TableView, disabledPath);
+						Assert.False(disabledCell.UserInteractionEnabled);
+						page.RowSelected(page.TableView, disabledPath);
+						Assert.Equal(0, clicks);
+						Assert.Equal(0, commands);
+						using var enabledPath = NSIndexPath.FromRowSection(0, 0);
+						page.RowSelected(page.TableView, enabledPath);
+						await AssertEventually(() => clicks == 1 && commands == 1);
+						await AssertEventually(() => controller.PresentedViewController is null);
+					}
+					finally
+					{
+						ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					}
+				});
+			}
+			finally
+			{
+				MenuFlyoutItemHandler.Mapper = originalMapper;
+			}
+		}
+
+		[Fact]
+		public async Task ProgrammaticNativeMenuRefreshesMutatedFileSource()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				return;
+
+			SetupBuilder();
+			var source = new FileImageSource { File = "blue.png" };
+			var item = new MenuFlyoutItem { Text = "Action", IconImageSource = source };
+			var submenu = new MenuFlyoutSubItem { Text = "Group", IconImageSource = source };
+			submenu.Add(item);
+			var label = CreateContextFlyoutTarget();
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { submenu });
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				try
+				{
+					FlyoutBase.ShowContextFlyout(label);
+					var originalImage = Assert.IsType<UIAction>(item.Handler.PlatformView).Image;
+					Assert.NotNull(originalImage);
+					var originalSize = originalImage.Size;
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+					await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
+					source.File = "big_white_horizontal.png";
+					FlyoutBase.ShowContextFlyout(label);
+					var button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
+					var section = Assert.IsType<UIMenu>(Assert.Single(button.Menu.Children));
+					var branch = Assert.IsType<UIMenu>(Assert.Single(section.Children));
+					var children = Assert.IsType<UIMenu>(Assert.Single(branch.Children));
+					var action = Assert.IsType<UIAction>(Assert.Single(children.Children));
+					using var expected = UIImage.FromBundle(source.File);
+					Assert.NotNull(expected);
+					Assert.NotEqual(originalSize, expected.Size);
+					Assert.NotNull(branch.Image);
+					Assert.NotNull(action.Image);
+					Assert.Equal(expected.Size, branch.Image.Size);
+					Assert.Equal(expected.Size, action.Image.Size);
+					Assert.Same(source, item.IconImageSource);
+					Assert.Same(source, submenu.IconImageSource);
+				}
+				finally
+				{
+					ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+				}
+			});
+		}
+
 		[Fact]
 		public async Task ProgrammaticNativeMenuDoesNotRetainDetachedItems()
 		{

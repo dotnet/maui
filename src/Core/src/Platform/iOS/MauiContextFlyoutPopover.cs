@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 
@@ -86,7 +87,10 @@ namespace Microsoft.Maui.Platform
 			if (sections.Count == 0)
 				throw new InvalidOperationException("The attached context flyout must contain an action, not only separators.");
 
-			var presenter = new MauiContextFlyoutPopover(handler);
+			var presenter = new MauiContextFlyoutPopover(handler)
+			{
+				_nativeFlyout = new(flyout)
+			};
 			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
 			{
 				presenter.ShowNative(target, flyout, sections, context);
@@ -168,8 +172,6 @@ namespace Microsoft.Maui.Platform
 				{
 					var entry = entries[row];
 					var itemHandler = entry.Element.ToHandler(context);
-					itemHandler.UpdateValue(nameof(IMenuElement.Text));
-					itemHandler.UpdateValue(nameof(IMenuElement.Source));
 					var mappedElement = itemHandler.PlatformView;
 					if (entry.Children is { } submenu)
 					{
@@ -216,7 +218,8 @@ namespace Microsoft.Maui.Platform
 				handler.PlatformView != _nativeButton?.Superview || _nativeButton?.Window is null ||
 				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } view ||
 				view is not IContextFlyoutElement contextFlyout ||
-				_nativeFlyout is null || !_nativeFlyout.TryGetTarget(out var flyout) || contextFlyout.ContextFlyout != flyout)
+				_nativeFlyout is null || !_nativeFlyout.TryGetTarget(out var flyout) || contextFlyout.ContextFlyout != flyout ||
+				!ContainsEnabledItem(flyout, entry.Element))
 				return;
 
 			_nativeActionInvoked = true;
@@ -314,8 +317,30 @@ namespace Microsoft.Maui.Platform
 					sections.Add(section);
 				}
 
-				section.Add(new MenuEntry(element, element.Source.GetPlatformMenuImage(context),
-					element is IMenuFlyoutSubItem submenu ? CreateSections(submenu, context) : null));
+				var itemHandler = element.ToHandler(context);
+				if (itemHandler is MenuFlyoutItemHandler item)
+					item.RefreshContextMetadata();
+				else if (itemHandler is MenuFlyoutSubItemHandler subItem)
+					subItem.RefreshContextMetadata();
+				else
+				{
+					itemHandler.UpdateValue(nameof(IMenuElement.Text));
+					itemHandler.UpdateValue(nameof(IMenuElement.Source));
+				}
+
+				var mappedElement = itemHandler.PlatformView;
+				if (element is IMenuFlyoutSubItem submenu)
+				{
+					if (mappedElement is not UIMenu mappedMenu)
+						throw new InvalidOperationException("The submenu handler must provide a native UIMenu.");
+					section.Add(new MenuEntry(element, mappedMenu.Title, mappedMenu.Image, CreateSections(submenu, context)));
+				}
+				else
+				{
+					if (mappedElement is not UIAction action)
+						throw new InvalidOperationException("The menu item handler must provide a native UIAction.");
+					section.Add(new MenuEntry(element, action.Title, action.Image, null));
+				}
 			}
 			return sections;
 		}
@@ -330,6 +355,25 @@ namespace Microsoft.Maui.Platform
 		}
 
 		void Remove() => Close();
+
+		static bool ContainsEnabledItem(IList<IMenuElement> elements, IMenuElement item)
+		{
+			for (int i = 0; i < elements.Count; i++)
+			{
+				var element = elements[i];
+				if (!element.IsEnabled)
+					continue;
+				if (ReferenceEquals(element, item) ||
+					element is IMenuFlyoutSubItem submenu && ContainsEnabledItem(submenu, item))
+					return true;
+			}
+			return false;
+		}
+
+		bool IsCurrentItem(IView view, IMenuElement item) =>
+			_nativeFlyout is not null && _nativeFlyout.TryGetTarget(out var flyout) &&
+			view is IContextFlyoutElement contextFlyout && contextFlyout.ContextFlyout == flyout &&
+			ContainsEnabledItem(flyout, item);
 
 		void Close(Action? selected = null, bool dismiss = true)
 		{
@@ -380,8 +424,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_closing || !_handler.TryGetTarget(out var handler) ||
 				handler.PlatformView != View ||
-				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } ||
-				View?.Window is null || !entry.IsEnabled)
+				handler.VirtualView is not IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } view ||
+				View?.Window is null || !entry.IsEnabled || !IsCurrentItem(view, entry.Element))
 				return;
 
 			if (entry.Children is { } children)
@@ -396,9 +440,13 @@ namespace Microsoft.Maui.Platform
 				{
 					if (handler.PlatformView == target && handler.VirtualView == virtualView &&
 						target?.Window is not null &&
-						virtualView is IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } &&
-						entry.IsEnabled)
-						entry.Element.Clicked();
+						virtualView is IView { IsEnabled: true, InputTransparent: false, Visibility: Visibility.Visible } currentView &&
+						entry.IsEnabled && IsCurrentItem(currentView, entry.Element) &&
+						entry.Element.Handler?.PlatformView is UIAction action)
+					{
+						using var sender = new UIButton();
+						sender.SendAction(action);
+					}
 				});
 			}
 
@@ -413,10 +461,10 @@ namespace Microsoft.Maui.Platform
 			readonly bool _enabled;
 			MenuEntry? _parent;
 
-			internal MenuEntry(IMenuElement element, UIImage? image, List<List<MenuEntry>>? children)
+			internal MenuEntry(IMenuElement element, string text, UIImage? image, List<List<MenuEntry>>? children)
 			{
 				Element = element;
-				Text = element.Text ?? string.Empty;
+				Text = text;
 				Image = image;
 				Children = children;
 				_enabled = element.IsEnabled && (children is null || children.Count > 0);
@@ -430,7 +478,9 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			internal bool IsEnabled => _enabled && Element.IsEnabled && (_parent?.IsEnabled ?? true);
+			internal bool IsEnabled => _enabled && Element.IsEnabled && (_parent?.IsEnabled ?? true) &&
+				(Element.Handler?.PlatformView is not UIAction action ||
+				 (action.Attributes & (UIMenuElementAttributes.Disabled | UIMenuElementAttributes.Hidden)) == 0);
 		}
 
 		sealed class UnloadObserverView : UIView
