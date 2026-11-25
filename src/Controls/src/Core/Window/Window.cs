@@ -298,22 +298,86 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
 		public event EventHandler? PopCanceled;
 
+		/// <summary>
+		/// Occurs after the native window has been created. Maps to <c>Activity.OnPostCreate</c> on Android, <c>UIApplicationDelegate.FinishedLaunching</c> on iOS and Mac Catalyst, and <c>MauiWinUIWindow.Created</c> on Windows.
+		/// </summary>
 		public event EventHandler? Created;
+
+		/// <summary>
+		/// Occurs when the app is resumed after having been stopped; not raised when the app first launches. Maps to <c>Activity.OnRestart</c> on Android, <c>UIApplicationDelegate.WillEnterForeground</c> on iOS and Mac Catalyst, and <c>MauiWinUIWindow.Resumed</c> on Windows.
+		/// </summary>
 		public event EventHandler? Resumed;
+
+		/// <summary>
+		/// Occurs when the window has been activated and is, or will become, the focused window. Maps to <c>Activity.OnResume</c> on Android, <c>UIApplicationDelegate.OnActivated</c> on iOS and Mac Catalyst, and <c>Window.Activated</c> with <c>CodeActivated</c> or <c>PointerActivated</c> on Windows.
+		/// </summary>
 		public event EventHandler? Activated;
+
+		/// <summary>
+		/// Occurs when the window is no longer the focused window; the window might still be visible. Maps to <c>Activity.OnPause</c> on Android, <c>UIApplicationDelegate.OnResignActivation</c> on iOS and Mac Catalyst, and <c>Window.Activated</c> with the <c>Deactivated</c> state on Windows.
+		/// </summary>
 		public event EventHandler? Deactivated;
+
+		/// <summary>
+		/// Occurs when the window is no longer visible; the operating system may terminate the app from this state. Maps to <c>Activity.OnStop</c> on Android, <c>UIApplicationDelegate.DidEnterBackground</c> on iOS and Mac Catalyst, and <c>Window.VisibilityChanged</c> on Windows.
+		/// </summary>
 		public event EventHandler? Stopped;
+
+		/// <summary>
+		/// Occurs when the native window is being destroyed and deallocated. Maps to <c>Activity.OnDestroy</c> on Android, <c>UIApplicationDelegate.WillTerminate</c> on iOS and Mac Catalyst, and <c>Window.Closed</c> on Windows.
+		/// </summary>
 		public event EventHandler? Destroying;
+
+		/// <summary>
+		/// Occurs when the window is entering a background state. Raised on iOS and Mac Catalyst only.
+		/// </summary>
 		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
+
+		/// <summary>
+		/// Occurs when the display density of the window changes.
+		/// </summary>
 		public event EventHandler<DisplayDensityChangedEventArgs>? DisplayDensityChanged;
 
+		/// <summary>
+		/// Raises the <see cref="Created"/> event. Override to run code when the native window has been created.
+		/// </summary>
 		protected virtual void OnCreated() { }
+
+		/// <summary>
+		/// Raises the <see cref="Resumed"/> event. Override to run code when the app resumes after having been stopped.
+		/// </summary>
 		protected virtual void OnResumed() { }
+
+		/// <summary>
+		/// Raises the <see cref="Activated"/> event. Override to run code when the window becomes the focused window.
+		/// </summary>
 		protected virtual void OnActivated() { }
+
+		/// <summary>
+		/// Raises the <see cref="Deactivated"/> event. Override to run code when the window is no longer the focused window.
+		/// </summary>
 		protected virtual void OnDeactivated() { }
+
+		/// <summary>
+		/// Raises the <see cref="Stopped"/> event. Override to run code when the window is no longer visible.
+		/// </summary>
 		protected virtual void OnStopped() { }
+
+		/// <summary>
+		/// Raises the <see cref="Destroying"/> event. Override to run code when the native window is being destroyed.
+		/// </summary>
 		protected virtual void OnDestroying() { }
+
+		/// <summary>
+		/// Raises the <see cref="Backgrounding"/> event. Override to persist state when the window enters a background state (iOS and Mac Catalyst only).
+		/// </summary>
+		/// <param name="state">The state to persist for restoration when the window resumes.</param>
 		protected virtual void OnBackgrounding(IPersistedState state) { }
+
+		/// <summary>
+		/// Raises the <see cref="DisplayDensityChanged"/> event.
+		/// </summary>
+		/// <param name="displayDensity">The new display density.</param>
 		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)

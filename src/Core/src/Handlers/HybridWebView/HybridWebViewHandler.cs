@@ -67,6 +67,8 @@ namespace Microsoft.Maui.Handlers
 		internal const string InvokeDotNetTokenHeaderName = "X-Maui-Invoke-Token";
 		internal const string InvokeDotNetTokenHeaderValue = "HybridWebView";
 		internal const string InvokeDotNetBodyHeaderName = "X-Maui-Request-Body";
+		internal const string InvokeDotNetBodyEncodingHeaderName = "X-Maui-Request-Body-Encoding";
+		internal const string InvokeDotNetBodyUriEncoding = "uri";
 
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)

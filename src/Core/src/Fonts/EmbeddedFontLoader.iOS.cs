@@ -46,8 +46,13 @@ namespace Microsoft.Maui
 
 				var name = cgFont.PostScriptName;
 
+				if (name is not null && UIFont.FromName(name, 10) is not null)
+				{
+					return name;
+				}
+
 				using var fontUrl = NSUrl.FromFilename(fontPath);
-				var error = CTFontManager.RegisterFontsForUrl(fontUrl, CTFontManagerScope.Process);
+				var error = RegisterFont(fontUrl);
 				if (error is null)
 					return name;
 
@@ -69,6 +74,11 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		internal virtual NSError? RegisterFont(NSUrl fontUrl)
+		{
+			return CTFontManager.RegisterFontsForUrl(fontUrl, CTFontManagerScope.Process);
 		}
 
 		(string FontPath, bool Created) CacheFont(EmbeddedFont font)

@@ -166,6 +166,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData("foo")]
 	[InlineData("null")]
 	[InlineData("undefined")]
+	[InlineData("Grüße 10 € 😀 100% %20")]
 	public Task InvokeJavaScriptMethodWithParametersAndStringResult(string? expected) =>
 		RunTest(async (hybridWebView) =>
 		{
@@ -356,6 +357,20 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 			Assert.Contains("undefined", ex.InnerException?.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.Equal("TypeError", ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
+		});
+
+	[Fact]
+	public Task InvokeJavaScriptMethodThatThrowsNonAsciiError() =>
+		RunTest(async (hybridWebView) =>
+		{
+			var exception = await Assert.ThrowsAnyAsync<Exception>(() =>
+				hybridWebView.InvokeJavaScriptAsync<string>(
+					"EvaluateMeWithParamsThatThrows",
+					InvokeJsonContext.Default.String,
+					["Grüße ", "10 € 😀 %20", 3],
+					[InvokeJsonContext.Default.String, InvokeJsonContext.Default.String, InvokeJsonContext.Default.Int32]));
+
+			Assert.Equal("Generic Error: Grüße 10 € 😀 %20", exception.InnerException?.Message);
 		});
 
 	Task RunExceptionTest(string method, int errorType, Action<Exception> test) =>

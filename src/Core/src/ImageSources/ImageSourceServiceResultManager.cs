@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 #if IOS || MACCATALYST
@@ -22,6 +23,8 @@ namespace Microsoft.Maui
 	{
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
+		List<IDisposable>? _supersededResults;
+		readonly object _lock = new();
 
 		public bool IsLoading => _sourceCancellation is not null;
 		public CancellationToken Token =>
@@ -33,12 +36,35 @@ namespace Microsoft.Maui
 
 		public CancellationToken BeginLoad()
 		{
-			_sourceResult?.Dispose();
+			IDisposable? sourceResult;
+			List<IDisposable>? supersededResults;
+			CancellationTokenSource? previousCancellation;
+			CancellationToken token;
 
-			_sourceCancellation?.Cancel();
-			_sourceCancellation = new CancellationTokenSource();
+			lock (_lock)
+			{
+				sourceResult = _sourceResult;
+				_sourceResult = null;
+				supersededResults = _supersededResults;
+				_supersededResults = null;
+				previousCancellation = _sourceCancellation;
+				_sourceCancellation = new CancellationTokenSource();
+				token = _sourceCancellation.Token;
+			}
 
-			return Token;
+			sourceResult?.Dispose();
+
+			if (supersededResults is not null)
+			{
+				foreach (var supersededResult in supersededResults)
+				{
+					supersededResult.Dispose();
+				}
+			}
+
+			previousCancellation?.Cancel();
+
+			return token;
 		}
 
 		public void CompleteLoad<T>(IImageSourceServiceResult<T>? result, PlatformView uiContext)
@@ -68,11 +94,36 @@ namespace Microsoft.Maui
 			return false;
 		}
 
+		public void CompleteLoad(IDisposable? result, CancellationToken token)
+		{
+			lock (_lock)
+			{
+				if (_sourceCancellation is null || token != _sourceCancellation.Token)
+				{
+					if (result is not null)
+					{
+						(_supersededResults ??= new List<IDisposable>()).Add(result);
+					}
+
+					return;
+				}
+
+				CompleteLoad(result);
+			}
+		}
+
 		public void CompleteLoad(IDisposable? result)
 		{
-			_sourceResult = result;
-			_sourceCancellation?.Dispose();
-			_sourceCancellation = null;
+			CancellationTokenSource? sourceCancellation;
+
+			lock (_lock)
+			{
+				_sourceResult = result;
+				sourceCancellation = _sourceCancellation;
+				_sourceCancellation = null;
+			}
+
+			sourceCancellation?.Dispose();
 
 			IsResolutionDependent = false;
 			CurrentResolution = 1.0f;
@@ -80,8 +131,8 @@ namespace Microsoft.Maui
 
 		public void Reset()
 		{
-			BeginLoad();
-			CompleteLoad(null);
+			var token = BeginLoad();
+			CompleteLoad(null, token);
 		}
 	}
 }

@@ -1,9 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
@@ -163,6 +166,60 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
+
+		[Fact]
+		public Task FailedImageLoadClearsExistingButtonIcon() =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				var button = new ButtonStub();
+				var handler = CreateHandler(button);
+
+				button.ImageSource = new FileImageSourceStub("red.png");
+				await ButtonHandler.MapImageSourceAsync(handler, button).WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.NotNull(handler.PlatformView.Icon);
+
+				button.ImageSource = new FileImageSourceStub("fail.png");
+				await ButtonHandler.MapImageSourceAsync(handler, button).WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.Null(handler.PlatformView.Icon);
+			});
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task CancelledImageLoadDoesNotUpdateDisconnectedButton(bool failWhenCancelled) =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				var button = new ButtonStub();
+				var handler = CreateHandler(button);
+				var platformButton = handler.PlatformView;
+				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = Assert.IsType<CountedImageSourceServiceStub>(
+					provider.GetRequiredImageSourceService<CountedImageSourceStub>());
+
+				button.ImageSource = new CountedImageSourceStub(Colors.Blue, wait: true)
+				{
+					FailWhenCancelled = failWhenCancelled
+				};
+				var load = ButtonHandler.MapImageSourceAsync(handler, button);
+				try
+				{
+					Assert.False(load.IsCompleted);
+					((IElementHandler)handler).DisconnectHandler();
+				}
+				finally
+				{
+					service.DoWork.Set();
+				}
+
+				await load.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Null(platformButton.Icon);
+
+				if (!failWhenCancelled)
+				{
+					Assert.True(Assert.IsType<ImageSourceServiceResult>(service.LastDrawableResult).IsDisposed);
+				}
+			});
 
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;

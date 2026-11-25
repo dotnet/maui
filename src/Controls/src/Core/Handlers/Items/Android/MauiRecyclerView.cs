@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
+		readonly DataChangeObserver _itemSpacingObserver;
 		readonly Func<MotionEvent, bool> _dispatchTouchEventToRecyclerView;
 		ParentScrollGestureDispatcher _parentScrollGestureDispatcher;
 
@@ -64,6 +65,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(_ => UpdateEmptyViewVisibility());
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
+			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
+			_itemSpacingObserver = new DataChangeObserver(_ => InvalidateItemSpacing(), GetSpacingLastRowSize);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -166,6 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Stop watching for empty items or scroll adjustments
 				_emptyCollectionObserver.Stop(ItemsViewAdapter);
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
+				_itemSpacingObserver.Stop(ItemsViewAdapter);
 
 				// Unhook whichever adapter is active
 				SetAdapter(null);
@@ -342,8 +347,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
 			_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
+			_itemSpacingObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
+			_itemSpacingObserver.Start(ItemsViewAdapter);
 			_accessibilityMetadata?.ObserveAdapter(ItemsViewAdapter);
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
@@ -664,6 +671,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new SpacingItemDecoration(Context, itemsLayout);
 		}
 
+		// Only the spacing along the scrolling direction depends on an item's position; the cross-axis spacing is the same for every item
+		bool HasPositionDependentSpacing() =>
+			_itemDecoration is SpacingItemDecoration spacing
+			&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0;
+
+		// The number of positions in the last row whose edge spacing can change, or 0 when no spacing depends on the position
+		int GetSpacingLastRowSize() => HasPositionDependentSpacing() ? (ItemsLayout is GridItemsLayout grid ? grid.Span : 1) : 0;
+
+		void InvalidateItemSpacing()
+		{
+			// SpacingItemDecoration drops the spacing on the outer edges based on each item's position, but RecyclerView only
+			// recomputes the offsets of items it rebinds or shifts (not the previous last item on an append, for example)
+			if (!IsComputingLayout)
+			{
+				InvalidateItemDecorations();
+			}
+		}
+
 		protected virtual void ReconcileFlowDirectionAndLayout()
 		{
 			if (!(GetLayoutManager() is LinearLayoutManager linearLayoutManager))
@@ -747,6 +772,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnLayout(changed, l, t, r, b);
 			ClipBounds = new ARect(0, 0, Width, Height);
+
+			// The count this layout pass used (ItemCount walks every group of a grouped source, so read it once here rather than
+			// for every notification); the spacing observer applies the insertions and removals until the next layout pass
+			_itemSpacingObserver.ItemCount = HasPositionDependentSpacing() ? ItemsViewAdapter?.ItemCount ?? 0 : -1;
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
@@ -1176,11 +1205,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
 				&& itemsInserted && ItemsView is not CarouselView)
 			{
-				if (GetLayoutManager().ItemCount > 0)
-				{
 					ScrollTo(new ScrollToRequestEventArgs(0, -1,
 						Microsoft.Maui.Controls.ScrollToPosition.Start, false));
-				}
 			}
 		}
 

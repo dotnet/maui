@@ -1,2 +1,4 @@
 #nullable enable
 ~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.ReloadRequiredTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.ReloadRequiredTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!

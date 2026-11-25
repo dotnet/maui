@@ -23,6 +23,179 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact]
+		public async Task RemainingItemsThresholdLoadsPagesWhileScrolling()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Image, ImageHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			int pageCount = 0;
+			bool commandRunning = false;
+			bool reentered = false;
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 450,
+				WidthRequest = 300,
+				ItemsSource = items,
+				RemainingItemsThreshold = 5,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var grid = new Grid
+					{
+						Padding = 10,
+						RowDefinitions = new RowDefinitionCollection { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+						ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }
+					};
+					var image = new Image { Source = "white.png", Aspect = Aspect.AspectFill, HeightRequest = 60, WidthRequest = 60 };
+					Grid.SetRowSpan(image, 2);
+					var name = new Label { FontAttributes = FontAttributes.Bold };
+					name.SetBinding(Label.TextProperty, ".");
+					var location = new Label { Text = "Location", FontAttributes = FontAttributes.Italic, VerticalOptions = LayoutOptions.End };
+					grid.Add(image);
+					grid.Add(name, 1, 0);
+					grid.Add(location, 1, 1);
+					return grid;
+				})
+			};
+
+			collectionView.RemainingItemsThresholdReachedCommand = new Command(() =>
+			{
+				if (commandRunning)
+				{
+					reentered = true;
+					return;
+				}
+
+				if (pageCount >= 4)
+					return;
+
+				commandRunning = true;
+				try
+				{
+					for (int i = 0; i < 10; i++)
+						items.Add($"Item {items.Count}");
+
+					pageCount++;
+				}
+				finally
+				{
+					commandRunning = false;
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				for (int step = 0; step < 500; step++)
+				{
+					bool finished = await InvokeOnMainThreadAsync(() =>
+					{
+						var nativeView = handler.Controller.CollectionView;
+						var maxOffset = Math.Max(0, nativeView.ContentSize.Height - nativeView.Bounds.Height);
+						var nextOffset = Math.Min((double)nativeView.ContentOffset.Y + 10, maxOffset);
+						nativeView.SetContentOffset(new CGPoint(nativeView.ContentOffset.X, nextOffset), false);
+						return items.Count >= 50;
+					});
+
+					if (finished)
+						break;
+
+					await Task.Delay(20);
+				}
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					Assert.False(reentered, "The threshold command was invoked again before its previous invocation completed.");
+					Assert.Equal(4, pageCount);
+					Assert.Equal(50, items.Count);
+					Assert.Equal(50, (int)handler.Controller.CollectionView.NumberOfItemsInSection(0));
+				});
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ScrolledSourceChangeUsesCurrentSourceForThreshold(bool replaceSource)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				RemainingItemsThreshold = 5,
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 40 })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var controller = handler.Controller;
+				var nativeView = controller.CollectionView;
+				var originalSource = controller.ItemsSource;
+				var nativeDelegate = nativeView.Delegate;
+				var scrolledCount = 0;
+				var thresholdCount = 0;
+
+				collectionView.Scrolled += (_, _) =>
+				{
+					scrolledCount++;
+					if (replaceSource)
+						collectionView.ItemsSource = new ObservableCollection<string>(items);
+					else
+						items.Add("Added item");
+				};
+				collectionView.RemainingItemsThresholdReached += (_, _) => thresholdCount++;
+
+				// Isolate the callback under test from UIKit scrolls caused by the source update.
+				nativeView.Delegate = null;
+				try
+				{
+					using var delegator = new ThresholdTestDelegator(nativeView.CollectionViewLayout, controller);
+					delegator.Scrolled(nativeView);
+
+					Assert.Equal(1, scrolledCount);
+					if (replaceSource)
+					{
+						Assert.NotSame(originalSource, controller.ItemsSource);
+						Assert.Equal(0, thresholdCount);
+					}
+					else
+					{
+						Assert.Same(originalSource, controller.ItemsSource);
+						Assert.Equal(11, controller.ItemsSource.ItemCount);
+						Assert.Equal(1, thresholdCount);
+					}
+				}
+				finally
+				{
+					nativeView.Delegate = nativeDelegate;
+				}
+			});
+		}
+
+		class ThresholdTestDelegator : ItemsViewDelegator2<ReorderableItemsView, ItemsViewController2<ReorderableItemsView>>
+		{
+			public ThresholdTestDelegator(UICollectionViewLayout layout, ItemsViewController2<ReorderableItemsView> controller)
+				: base(layout, controller)
+			{
+			}
+
+			protected override (bool VisibleItems, int First, int Center, int Last) GetVisibleItemsIndex()
+				=> (true, 0, 4, 9);
+		}
+
 		[Theory]
 		[InlineData(false, true, 0, 0)]
 		[InlineData(true, true, 0, 0)]

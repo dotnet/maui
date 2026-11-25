@@ -137,6 +137,36 @@
             });
         }
 
+        const PercentRequestMessage = JSON.stringify({
+            MethodName: 'TestMethod',
+            ParamValues: [JSON.stringify('a%20b')]
+        });
+
+        function SendPercentRequest(headers) {
+            fetch(`${window.location.origin}/__hwvInvokeDotNet`, {
+                method: 'POST',
+                headers: Object.assign({ 'X-Maui-Invoke-Token': 'HybridWebView' }, headers),
+                body: PercentRequestMessage
+            }).then(response => {
+                testResult = response.status.toString();
+                SetStatusDone();
+            }).catch(error => {
+                testResult = `error: ${error.message}`;
+                SetStatusDone();
+            });
+        }
+
+        function TestUnmarkedBodyHeaderIsNotDecoded() {
+            SendPercentRequest({ 'X-Maui-Request-Body': PercentRequestMessage });
+        }
+
+        function TestMarkedBodyHeaderIsDecoded() {
+            SendPercentRequest({
+                'X-Maui-Request-Body': encodeURIComponent(PercentRequestMessage),
+                'X-Maui-Request-Body-Encoding': 'uri'
+            });
+        }
+
         function TestIframeRequestIsBlocked() {
             // Create an iframe and load JSFiddle embed
             const iframe = document.createElement('iframe');

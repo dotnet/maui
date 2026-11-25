@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.Webkit;
+using AndroidX.AppCompat.App;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
@@ -96,6 +98,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateReload(this AWebView platformWebView, IWebView webView)
 		{
 			platformWebView.Reload();
+		}
+
+		// The first WebView in a process loads the WebView provider, which resets the activity's resources to the
+		// system uiMode and drops a night mode that AppCompat applied in place (#35270). Let AppCompat apply it again.
+		internal static void ReapplyAppCompatNightMode(this AWebView platformWebView)
+		{
+			if (platformWebView.Context?.GetActivity() is AppCompatActivity activity && activity.Resources?.Configuration is Configuration configuration)
+				activity.Delegate.OnConfigurationChanged(configuration);
 		}
 
 		internal static void UpdateCanGoBackForward(this AWebView platformWebView, IWebView webView)
