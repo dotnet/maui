@@ -47,6 +47,8 @@ if ($HeadSha) {
     # The periodic sweep only finishes builds still marked running.
     $comments = @($comments | Where-Object { $_.body -match '<!-- review-run-tests-state: running -->' })
 }
+# Oldest first: for one commit, the newest comment's build decides the job checks.
+$comments = @($comments | Sort-Object { [long]$_.id })
 Write-Host "Found $(@($comments).Count) run-tests comment(s) to refresh."
 
 function Update-RunTestsSection {
@@ -148,19 +150,26 @@ foreach ($comment in $comments) {
         $result.suite = $section.suite
         $refreshed += $result
     }
-    if ($updated -ceq $comment.body) { continue }
-    # The Result badge and overview table of a /review run-tests comment summarize its sections.
-    if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
-    foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
-    if ($DryRun) { $updated; continue }
-    $payload = @{ body = $updated } | ConvertTo-Json
-    $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
-    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
-    foreach ($result in $refreshed | Where-Object { $_.checkId }) {
+    if ($updated -cne $comment.body) {
+        # The Result badge and overview table of a /review run-tests comment summarize its sections.
+        if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
+        foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
+        if ($DryRun) { $updated }
+        else {
+            $payload = @{ body = $updated } | ConvertTo-Json
+            $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
+        }
+    }
+    if ($DryRun) { continue }
+    # Checks are synced even when the comment text is unchanged: a refresh may be the first to publish them.
+    foreach ($result in $refreshed) {
         Set-RunTestsSuite $result.suite
-        $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
-        $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        if ($result.checkId) {
+            $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
+            $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        }
         if ($result.headSha) { Sync-RunTestsJobChecks -HeadSha $result.headSha -Build $result.build -Results $result.results }
     }
 }
