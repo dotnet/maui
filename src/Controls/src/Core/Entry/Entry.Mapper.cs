@@ -1,5 +1,7 @@
 ﻿#nullable disable
-using System;
+#if ANDROID
+using System.Runtime.CompilerServices;
+#endif
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
@@ -11,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptionsOrReturnType);
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(ReturnType), MapReturnType);
+			RemapReturnTypeForAndroid(EntryHandler.Mapper);
 #elif WINDOWS
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #elif IOS
@@ -26,7 +28,7 @@ namespace Microsoft.Maui.Controls
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptionsOrReturnType);
-				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(ReturnType), MapReturnType);
+				RemapReturnTypeForAndroid(EntryHandler2.Mapper);
 				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
 				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
 				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
@@ -46,6 +48,25 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if ANDROID
+		static readonly ConditionalWeakTable<IPropertyMapper<IElement, IElementHandler>, object> s_returnTypeRemappedMappers = new();
+
+		internal static void RemapReturnTypeForAndroid(IPropertyMapper<IElement, IElementHandler> mapper)
+		{
+			// Controls setup can run for multiple app builders. Wrap each mapper only once.
+			lock (s_returnTypeRemappedMappers)
+			{
+				if (s_returnTypeRemappedMappers.TryGetValue(mapper, out _))
+					return;
+
+				mapper.ModifyMapping<Entry, IElementHandler>(nameof(ReturnType), static (handler, entry, previousMapping) =>
+				{
+					if (!HasImeOptionsOverride(entry))
+						previousMapping?.Invoke(handler, entry);
+				});
+				s_returnTypeRemappedMappers.Add(mapper, new object());
+			}
+		}
+
 		static bool HasImeOptionsOverride(Entry entry) =>
 			PlatformConfiguration.AndroidSpecific.Entry.GetImeOptions(entry) != PlatformConfiguration.AndroidSpecific.ImeFlags.Default;
 
@@ -71,18 +92,6 @@ namespace Microsoft.Maui.Controls
 			if (!PropertyMapperPassScope.IsRedundantBulkPassRedirect(
 				handler, PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, nameof(ReturnType)))
 				handler.UpdateValue(nameof(ReturnType));
-		}
-
-		static void MapReturnType(IEntryHandler handler, Entry entry)
-		{
-			if (!HasImeOptionsOverride(entry))
-				EntryHandler.MapReturnType(handler, entry);
-		}
-
-		static void MapReturnType(EntryHandler2 handler, Entry entry)
-		{
-			if (!HasImeOptionsOverride(entry))
-				EntryHandler2.MapReturnType(handler, entry);
 		}
 #endif
 	}

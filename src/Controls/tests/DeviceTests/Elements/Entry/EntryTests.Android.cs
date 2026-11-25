@@ -96,6 +96,37 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public Task ReturnTypePreservesPreviouslyRegisteredMapping()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				const string key = nameof(IEntry.ReturnType);
+				var mapper = new PropertyMapper<IEntry, IEntryHandler>();
+				var callbackCount = 0;
+				mapper.AppendToMapping(key, (_, _) => callbackCount++);
+
+				Entry.RemapReturnTypeForAndroid(mapper);
+				var mapping = mapper.GetProperty(key);
+				Assert.NotNull(mapping);
+				Entry.RemapReturnTypeForAndroid(mapper);
+				Assert.Same(mapping, mapper.GetProperty(key));
+
+				var entry = new Entry();
+				var handler = new EntryHandler(mapper);
+				mapping(handler, entry);
+				Assert.Equal(1, callbackCount);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+				mapping(handler, entry);
+				Assert.Equal(1, callbackCount);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+				mapping(handler, entry);
+				Assert.Equal(2, callbackCount);
+			});
+		}
+
+		[Fact]
 		public Task ImeOptionsTakesPrecedenceWhenEntryAttachesToWindow()
 		{
 			SetupBuilder();
