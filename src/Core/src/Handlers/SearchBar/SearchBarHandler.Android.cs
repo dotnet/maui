@@ -329,14 +329,9 @@ namespace Microsoft.Maui.Handlers
 					((IViewHandler)handler).VirtualView is not ISearchBar virtualView)
 					return;
 
-				var virtualView = Handler.VirtualView;
-
-				if (virtualView != null)
-				{
-					virtualView.IsFocused = hasFocus;
-					v?.HideSoftInputIfReadOnly(virtualView, hasFocus);
-					handler.UpdateValue(nameof(ISearchBarCancelButtonVisibility.ShowCancelButton));
-				}
+				virtualView.IsFocused = hasFocus;
+				v?.HideSoftInputIfReadOnly(virtualView, hasFocus);
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 			}
 		}
 	}

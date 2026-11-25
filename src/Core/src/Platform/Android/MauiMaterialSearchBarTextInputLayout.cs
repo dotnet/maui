@@ -12,8 +12,7 @@ public class MauiMaterialSearchBarTextInputLayout : TextInputLayout
         // Set the search icon as the start/leading icon
         SetStartIconDrawable(Resource.Drawable.abc_ic_search_api_material);
 
-        // Set the clear/cancel button as the end icon with custom behavior
-        // Custom mode allows showing icon regardless of focus state (matching Material2)
+        // Custom mode lets the handler control clear-button visibility.
         EndIconMode = EndIconCustom;
         SetEndIconDrawable(Resource.Drawable.abc_ic_clear_material);
 
@@ -23,7 +22,6 @@ public class MauiMaterialSearchBarTextInputLayout : TextInputLayout
 
     public void UpdateCloseButtonVisibility(bool hasText)
     {
-        // Show/hide the end icon based on whether text exists (regardless of focus)
         EndIconVisible = hasText;
     }
 
