@@ -107,6 +107,25 @@ When tests fail, CI produces comparison screenshots showing differences:
 
 ![Failed Test Screenshot](../assets/FailedTestScreenshot.png)
 
+#### Android System-Bar Cropping
+
+`VerifyScreenshot()` calculates `cropFromTop` and `cropFromBottom` using the
+physical pixel heights of `statusBar` and `navigationBar` reported by
+`App.GetSystemBars()`. Positive `cropTop` and `cropBottom` arguments override
+the corresponding automatic crop independently:
+
+```csharp
+VerifyScreenshot(cropTop: 80, cropBottom: 140);
+```
+
+Zero or negative arguments retain automatic cropping. Missing or negative
+reported heights fail explicitly instead of falling back to fixed values.
+Cropping on other platforms is unchanged.
+
+Existing Android baselines must be recropped or regenerated wherever the
+reported heights differ from the previous fixed crops, so screenshot dimensions
+continue to match.
+
 ## Advanced Test Patterns
 
 ### Gallery Page Architecture

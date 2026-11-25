@@ -426,12 +426,40 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				int androidStatusBarHeight = 0;
+				int androidNavigationBarHeight = 0;
+				if (_testDevice == TestDevice.Android && (cropTop <= 0 || cropBottom <= 0))
+				{
+					var systemBars = App.GetSystemBars();
+					if (cropTop <= 0)
+						androidStatusBarHeight = GetSystemBarHeight("statusBar");
+					if (cropBottom <= 0)
+						androidNavigationBarHeight = GetSystemBarHeight("navigationBar");
+
+					int GetSystemBarHeight(string barName)
+					{
+						if (!systemBars.TryGetValue(barName, out var barObject) ||
+							barObject is not IDictionary<string, object> bar ||
+							!bar.TryGetValue("height", out var heightObject) ||
+							heightObject is null)
+						{
+							throw new InvalidOperationException($"Unable to read Android {barName}.height from GetSystemBars(). Screenshot cropping requires this value.");
+						}
+
+						int height = Convert.ToInt32(heightObject);
+						if (height < 0)
+							throw new InvalidOperationException($"GetSystemBars() returned an invalid Android {barName} height: {height}.");
+
+						return height;
+					}
+				}
+
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
+					TestDevice.Android => androidStatusBarHeight,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -450,7 +478,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
+					TestDevice.Android => androidNavigationBarHeight,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
