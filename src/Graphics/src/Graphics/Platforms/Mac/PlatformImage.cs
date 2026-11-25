@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			_image = image;
 		}
 
+#nullable enable
+		public IImageMetadata? Metadata => null;
+#nullable restore
+
 		public float Width => (float)_image.Size.Width;
 
 		public float Height => (float)_image.Size.Height;
@@ -37,12 +41,26 @@ namespace Microsoft.Maui.Graphics.Platform
 			data.AsStream().CopyTo(stream);
 		}
 
-		/// <inheritdoc cref="Save" />
+		/// <inheritdoc cref="Save(System.IO.Stream, ImageFormat, float)" />
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			var data = CreateRepresentation(format, quality);
 			await data.AsStream().CopyToAsync(stream);
 		}
+
+		// macOS (AppKit) does not currently capture or re-embed image metadata, so these delegate to
+		// the plain pixel save. Metadata preservation is a mobile (iOS/Android)/Windows concern.
+		/// <inheritdoc/>
+#nullable enable
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> Save(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
+
+		/// <inheritdoc/>
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> SaveAsync(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
+#nullable restore
+
+		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 
 		private NSData CreateRepresentation(ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
@@ -184,6 +202,13 @@ namespace Microsoft.Maui.Graphics.Platform
 			NSApplication.CheckForIllegalCrossThreadCalls = previous;
 			return new PlatformImage(image);
 		}
+
+		// macOS decodes with orientation handled by NSImage and does not capture metadata; the options
+		// are accepted for API parity but only the decode is performed. The loading service forwards here.
+#nullable enable
+		public static IImage FromStream(Stream stream, ImageLoadOptions? options)
+			=> FromStream(stream, ImageFormat.Png);
+#nullable restore
 
 	}
 }
