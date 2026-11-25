@@ -85,7 +85,50 @@ function Update-RunTestsSection {
     }
     $results = ConvertTo-RunTestsResults -Build $build -Timeline $timeline -FailedTests $failedTests
     $checkId = if ($Body -match '<!-- review-run-tests-check: (\d{1,20}) -->') { $Matches[1] } else { $null }
-    return @{ body = (Update-RunTestsComment -Body $Body -Build $build -Results $results); build = $build; results = $results; checkId = $checkId }
+    $headSha = if ($Body -match '<!-- review-run-tests-head: ([0-9a-f]{40}) -->') { $Matches[1] } else { $null }
+    return @{ body = (Update-RunTestsComment -Body $Body -Build $build -Results $results); build = $build; results = $results; checkId = $checkId; headSha = $headSha }
+}
+
+function Sync-RunTestsJobChecks {
+    <#
+    .SYNOPSIS
+    Creates or updates one check per build job on the PR head (see New-RunTestsJobChecks), and
+    retires this suite's job checks left by an earlier build on the same commit.
+    #>
+    param([Parameter(Mandatory)][string]$HeadSha, [Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
+    $raw = & gh api --paginate --slurp "repos/$Repository/commits/$HeadSha/check-runs?per_page=100&filter=latest&app_id=15368"
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list check runs on $HeadSha."; return }
+    $existing = @{}
+    foreach ($run in @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_.check_runs })) {
+        if ([string]$run.external_id -like 'job:*' -and $run.name.StartsWith("$($script:RunTestsCheckPrefix) (")) { $existing[$run.name] = $run }
+    }
+    $now = (Get-Date).ToUniversalTime().ToString('o')
+    $planned = @(New-RunTestsJobChecks -Build $Build -Results $Results)
+    foreach ($check in $planned) {
+        $run = $existing[$check.name]
+        # Finished jobs that the check already shows need no call.
+        if ($run -and $run.external_id -eq $check.external_id -and $run.status -eq $check.status -and
+            [string]$run.conclusion -eq [string]$check.PSObject.Properties['conclusion']?.Value) { continue }
+        $body = [ordered]@{}
+        foreach ($p in $check.PSObject.Properties) { $body[$p.Name] = $p.Value }
+        if ($check.status -eq 'completed') { $body.completed_at = $now }
+        if ($run) {
+            $body.Remove('name')
+            $body | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($run.id)" --input - | Out-Null
+        } else {
+            $body.head_sha = $HeadSha
+            $body.started_at = $now
+            $body | ConvertTo-Json -Depth 5 | & gh api -X POST "repos/$Repository/check-runs" --input - | Out-Null
+        }
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not publish check '$($check.name)'." }
+    }
+    $names = @($planned | ForEach-Object { $_.name })
+    foreach ($stale in $existing.Values | Where-Object { $_.name -notin $names -and $_.external_id -ne "job:$($Build.id)" -and $_.conclusion -ne 'neutral' }) {
+        $body = @{ status = 'completed'; conclusion = 'neutral'; completed_at = $now
+            output = @{ title = 'Not part of the latest selected run'; summary = "Superseded by [$($script:RunTestsPipelineName) #$($Build.id)]($($Build._links.web.href))." } }
+        $body | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($stale.id)" --input - | Out-Null
+    }
+    Write-Host "Published $($planned.Count) job check(s) for $($script:RunTestsPipelineName) #$($Build.id) on $HeadSha."
 }
 
 foreach ($comment in $comments) {
@@ -118,6 +161,7 @@ foreach ($comment in $comments) {
         $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
         $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        if ($result.headSha) { Sync-RunTestsJobChecks -HeadSha $result.headSha -Build $result.build -Results $result.results }
     }
 }
 
