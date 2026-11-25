@@ -266,6 +266,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(FlowDirection.LeftToRight, 1)]
 		[InlineData(FlowDirection.RightToLeft, -1)]
+		[InlineData(FlowDirection.MatchParent, -1)]
 		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage(FlowDirection flowDirection, int expectedOffsetSign)
 		{
 			SetupBuilder();
@@ -279,10 +280,15 @@ namespace Microsoft.Maui.DeviceTests
 				Routing.RegisterRoute(nextStepRoute, typeof(Issue21749FlowEndPage));
 				try
 				{
+					if (flowDirection == FlowDirection.MatchParent)
+						shell.Window.FlowDirection = FlowDirection.RightToLeft;
+
 					await shell.GoToAsync(flowRoute, animate: true);
 					var flow = Assert.IsType<Issue21749ModalFlow>(Assert.Single(shell.Navigation.ModalStack));
 					var startPage = flow.CurrentPage;
-					flow.FlowDirection = flowDirection;
+					if (flowDirection != FlowDirection.MatchParent)
+						flow.FlowDirection = flowDirection;
+					Assert.Equal(flowDirection, flow.FlowDirection);
 					var manager = Assert.IsType<NavigationViewHandler>(flow.Handler).StackNavigationManager;
 					manager.SetNavigationViewFragmentType(typeof(SlideProbeFragment));
 

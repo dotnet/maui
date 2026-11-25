@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var parentView = GetModalParentView();
 
-			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
+			var dialogFragment = new ModalFragment(WindowMauiContext, _window, modal)
 			{
 				Cancelable = false,
 				IsAnimated = animated
@@ -222,6 +222,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal class ModalFragment : DialogFragment
 		{
+			readonly Window _window;
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
@@ -234,8 +235,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public bool IsAnimated { get; internal set; }
 
-			public ModalFragment(IMauiContext mauiContext, Page modal)
+			public ModalFragment(IMauiContext mauiContext, Window window, Page modal)
 			{
+				_window = window;
 				_modal = modal;
 				_modal.Loaded += OnModalLoaded;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
@@ -419,6 +421,37 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				return rootView;
 			}
+
+			public override void OnViewCreated(AView view, Bundle? savedInstanceState)
+			{
+				base.OnViewCreated(view, savedInstanceState);
+				UpdateLayoutDirection(view);
+				_window.PropertyChanged += OnWindowPropertyChanged;
+			}
+
+			public override void OnDestroyView()
+			{
+				_window.PropertyChanged -= OnWindowPropertyChanged;
+				base.OnDestroyView();
+			}
+
+			void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Window.FlowDirection) && View is { } view)
+					UpdateLayoutDirection(view);
+			}
+
+			void UpdateLayoutDirection(AView view)
+			{
+				// The dialog has a separate native root, so its content cannot inherit from the activity's view tree.
+				view.LayoutDirection = ((IWindow)_window).FlowDirection switch
+				{
+					FlowDirection.LeftToRight => LayoutDirection.Ltr,
+					FlowDirection.RightToLeft => LayoutDirection.Rtl,
+					_ => LayoutDirection.Inherit,
+				};
+			}
+
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
 				if (sender is not AAnimation animation)
