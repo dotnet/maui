@@ -105,9 +105,13 @@ namespace Microsoft.Maui.Platform
 			{
 				_appliedScopedComboBoxStyle = null;
 				if (_applicationComboBoxStyle is not null)
+				{
 					Style = _applicationComboBoxStyle;
+				}
 				else
+				{
 					ClearValue(StyleProperty);
+				}
 			}
 		}
 

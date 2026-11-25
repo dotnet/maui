@@ -180,7 +180,9 @@ namespace Microsoft.Maui.Platform
 		{
 			_view.Touch -= OnTouch;
 			if (_dialog?.GetButton((int)DialogButtonType.Neutral) is { } button)
+			{
 				button.SetOnClickListener(null);
+			}
 			_dialog = null;
 			if (_visible)
 			{

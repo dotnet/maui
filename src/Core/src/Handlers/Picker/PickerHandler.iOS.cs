@@ -277,7 +277,9 @@ namespace Microsoft.Maui.Handlers
 
 			var clearButtonFeatureEnabled = picker is IPickerClearButton { IsClearButtonVisible: true };
 			if (!clearButtonFeatureEnabled)
+			{
 				_pickerWithClearedSelection = null;
+			}
 
 			if (clearButtonFeatureEnabled)
 			{
@@ -292,7 +294,9 @@ namespace Microsoft.Maui.Handlers
 					? UITextFieldViewMode.Always
 					: UITextFieldViewMode.Never;
 				if (shouldShowClearButton)
+				{
 					platformView.UpdateClearButtonColor(picker);
+				}
 			}
 			else if (_isClearButtonModeOverridden)
 			{
