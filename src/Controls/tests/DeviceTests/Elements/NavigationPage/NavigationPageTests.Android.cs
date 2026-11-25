@@ -179,6 +179,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Clearing BarBackgroundColor removes the previous color from the toolbar")]
+		public async Task ClearingBarBackgroundColorRemovesPreviousColor()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled && RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = Colors.Orange
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+
+				using (var bitmap = await platformToolbar.ToBitmap(MauiContext))
+					await bitmap.AssertContainsColor(Colors.Orange);
+
+				navPage.BarBackgroundColor = null;
+
+				using (var bitmap = await platformToolbar.ToBitmap(MauiContext))
+					await bitmap.AssertDoesNotContainColor(Colors.Orange);
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
 		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
 		{

@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					nativeToolbar.BackgroundTintMode = null;
 					nativeToolbar.BackgroundTintList = null;
+					nativeToolbar.Background?.Mutate()?.SetTintList(null);
 					nativeToolbar.UpdateBackground(barBackground);
 				}
 			}
