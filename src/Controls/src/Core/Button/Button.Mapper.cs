@@ -30,6 +30,44 @@ namespace Microsoft.Maui.Controls
 
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(TextTransform), MapText);
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Button.LineBreakMode), MapLineBreakMode);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(HorizontalTextAlignment), MapHorizontalTextAlignment);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(VerticalTextAlignment), MapVerticalTextAlignment);
+		}
+
+		/// <summary>Maps explicitly set text alignment to the Android, iOS, and Windows button implementations.</summary>
+		/// <param name="handler">The handler associated with the button.</param>
+		/// <param name="button">The button whose alignment is being updated.</param>
+		public static void MapTextAlignment(IButtonHandler handler, Button button)
+		{
+			MapHorizontalTextAlignment(handler, button);
+			MapVerticalTextAlignment(handler, button);
+		}
+
+		static void MapHorizontalTextAlignment(IButtonHandler handler, Button button)
+		{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+			if (handler is ButtonHandler buttonHandler)
+			{
+#if WINDOWS
+				handler.UpdateValue(nameof(ContentLayout));
+#endif
+				buttonHandler.UpdateHorizontalTextAlignment(
+					!string.IsNullOrEmpty(button.Text) && button.IsSetExplicitly(HorizontalTextAlignmentProperty)
+						? button.HorizontalTextAlignment : null);
+			}
+#endif
+		}
+
+		static void MapVerticalTextAlignment(IButtonHandler handler, Button button)
+		{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+			if (handler is ButtonHandler buttonHandler)
+			{
+				buttonHandler.UpdateVerticalTextAlignment(
+					!string.IsNullOrEmpty(button.Text) && button.IsSetExplicitly(VerticalTextAlignmentProperty)
+						? button.VerticalTextAlignment : null);
+			}
+#endif
 		}
 
 		/// <summary>
