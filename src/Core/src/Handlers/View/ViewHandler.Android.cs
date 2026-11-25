@@ -284,6 +284,11 @@ namespace Microsoft.Maui.Handlers
 				listener?.ResetAppliedSafeAreas(msv);
 				msv.MarkSafeAreaEdgeConfigurationChanged();
 			}
+			else if (handler.PlatformView is MauiContentButton mcb)
+			{
+				listener?.ResetAppliedSafeAreas(mcb);
+				mcb.MarkSafeAreaEdgeConfigurationChanged();
+			}
 
 			view.InvalidateMeasure();
 		}

@@ -95,7 +95,7 @@ static class MauiRippleDrawableExtensions
 			recreateRipple = true;
 		}
 
-		var (width, color, radius) = stroke.GetStrokeProperties(platformView.Context!, false);
+		var (width, radius) = stroke.GetStrokeMetrics(platformView.Context!, false);
 
 		// The previous background may have had transparency or a gradient which cannot
 		// be un-set, so we need an entirely new drawable.
@@ -187,7 +187,14 @@ static class MauiRippleDrawableExtensions
 	{
 		var strokeColor = button.StrokeColor ?? DefaultStrokeColor;
 		var strokeColorList = ColorStateListExtensions.CreateButton(strokeColor.ToPlatform());
+		var (strokeWidthPixels, cornerRadiusPixels) = button.GetStrokeMetrics(context, defaultButtonLogic);
 
+		return (strokeWidthPixels, strokeColorList, cornerRadiusPixels);
+	}
+
+	// Avoids allocating a ColorStateList when only the stroke geometry is needed.
+	static (int Thickness, int Radius) GetStrokeMetrics(this IButtonStroke button, Context context, bool defaultButtonLogic)
+	{
 		var strokeWidth = button.StrokeThickness >= 0 && button.StrokeColor is not null
 			? button.StrokeThickness
 			: button.StrokeColor is not null
@@ -217,7 +224,7 @@ static class MauiRippleDrawableExtensions
 			cornerRadiusPixels -= strokeWidthPixels / 2;
 		}
 
-		return (strokeWidthPixels, strokeColorList, cornerRadiusPixels);
+		return (strokeWidthPixels, cornerRadiusPixels);
 	}
 
 	internal static bool TryGetMauiBackground(
