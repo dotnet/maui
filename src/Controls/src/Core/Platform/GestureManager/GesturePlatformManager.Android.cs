@@ -10,7 +10,6 @@ using AndroidX.Core.View;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using AView = Android.Views.View;
 
@@ -27,7 +26,6 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _inputTransparent;
 		bool _isEnabled;
 		bool? _focusableDefaultValue;
-		WeakReference<global::Android.Widget.TextView>? _wrappedTextView;
 		bool? _contextClickableDefaultValue;
 		GestureItemTouchListener? _recyclerViewTouchListener;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
@@ -225,7 +223,7 @@ namespace Microsoft.Maui.Controls.Platform
 			ClearRecyclerViewTouchListener(platformView);
 			platformView.Touch -= OnPlatformViewTouched;
 			platformView.KeyPress -= OnKeyPress;
-			ClearWrappedTextViewTouchListener();
+
 
 			if (shouldAddTouchEvent)
 			{
@@ -243,14 +241,6 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					platformView.Touch += OnPlatformViewTouched;
-
-					// A selectable text view is clickable, so it consumes touches before the wrapper that
-					// hosts the gestures (shadow, clip) gets to see them.
-					if (View is Label && platformView is WrapperView wrapper && wrapper.ChildCount > 0 && wrapper.GetChildAt(0) is global::Android.Widget.TextView textView)
-					{
-						_wrappedTextView = new WeakReference<global::Android.Widget.TextView>(textView);
-						textView.Touch += OnWrappedTextViewTouched;
-					}
 				}
 
 				// If we have a TapGestureRecognizer or LongPressGestureRecognizer, we need to handle key presses
@@ -347,30 +337,6 @@ namespace Microsoft.Maui.Controls.Platform
 			e.Handled = false;
 		}
 
-		void ClearWrappedTextViewTouchListener()
-		{
-			if (_wrappedTextView?.TryGetTarget(out var textView) == true)
-			{
-				textView.Touch -= OnWrappedTextViewTouched;
-			}
-
-			_wrappedTextView = null;
-		}
-
-		void OnWrappedTextViewTouched(object? sender, AView.TouchEventArgs e)
-		{
-			// Only selectable text needs this, otherwise the wrapper receives the touch itself.
-			if (_disposed || sender is not global::Android.Widget.TextView { IsTextSelectable: true } || e.Event is null)
-			{
-				e.Handled = false;
-				return;
-			}
-
-			// Process the gestures but still let the text view see the touch so it can start a selection.
-			OnTouchEvent(e.Event);
-			e.Handled = false;
-		}
-
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
 		{
 			if (_disposed)
@@ -383,12 +349,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
-			{
-				var handled = OnTouchEvent(e.Event);
-
-				// Let selectable text also see the touch so long-press selection still works next to gestures.
-				e.Handled = handled && sender is not global::Android.Widget.TextView { IsTextSelectable: true };
-			}
+				e.Handled = OnTouchEvent(e.Event);
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
@@ -403,7 +364,6 @@ namespace Microsoft.Maui.Controls.Platform
 				ClearRecyclerViewTouchListener(platformView);
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;
-				ClearWrappedTextViewTouchListener();
 			}
 
 			_handler = null;
