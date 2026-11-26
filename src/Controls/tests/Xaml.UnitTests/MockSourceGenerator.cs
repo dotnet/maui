@@ -57,13 +57,13 @@ public static class MockSourceGenerator
 			return searchDirectory;
 
 		if (maxSearchDepth <= 0)
-			return null; // Return null instead of throwing when running outside repo (e.g., Helix)
+			return null;
 
 		return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
 	}
 
 	/// <summary>
-	/// Gets the path to the SourceGen DLL, checking both local repo and Helix payload locations.
+	/// Gets the source generator from the test output or repository build artifacts.
 	/// </summary>
 	static string GetSourceGenDllPath()
 	{
@@ -72,28 +72,23 @@ public static class MockSourceGenerator
 #else
 		var config = "Release";
 #endif
-		// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
-		var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
-		if (!string.IsNullOrEmpty(helixPayload))
-		{
-			var helixPath = Path.Combine(helixPayload, "sourcegen", "Microsoft.Maui.Controls.SourceGen.dll");
-			if (File.Exists(helixPath))
-				return helixPath;
-		}
+		var outputPath = Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Controls.SourceGen.dll");
+		if (File.Exists(outputPath))
+			return outputPath;
 
 		// Fall back to local repo path
-		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
+		var top = GetTopDirRecursive(AppContext.BaseDirectory) ?? GetTopDirRecursive(Directory.GetCurrentDirectory());
 		if (top == null)
 			throw new InvalidOperationException(
 				"SourceGen tests require the Microsoft.Maui.Controls.SourceGen.dll. " +
-				"Ensure the DLL is built locally (artifacts/bin/Controls.SourceGen/) or included in HELIX_CORRELATION_PAYLOAD/sourcegen/.");
+				"Build Microsoft.Maui.BuildTasks.slnf before running the tests.");
 
 		var path = Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
 		if (!File.Exists(path))
 			throw new InvalidOperationException(
 				$"SourceGen DLL not found at {path}. " +
-				"Ensure the DLL is built locally (dotnet build Microsoft.Maui.BuildTasks.slnf) or included in HELIX_CORRELATION_PAYLOAD/sourcegen/.");
-		
+				"Build Microsoft.Maui.BuildTasks.slnf before running the tests.");
+
 		return path;
 	}
 

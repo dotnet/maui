@@ -39,12 +39,12 @@ public class GlobalUsingTests
 						public TestPage() => InitializeComponent();
 					}
 				}
-				"""),
+				""", cancellationToken: TestContext.Current.CancellationToken),
 			CSharpSyntaxTree.ParseText(
 				"""
 				global using Demo.Controls;
 				global using @class;
-				""", path: "obj/Debug/Project.GlobalUsings.g.cs"));
+				""", path: "obj/Debug/Project.GlobalUsings.g.cs", cancellationToken: TestContext.Current.CancellationToken));
 		var xaml = """
 			<ContentPage x:Class="Test.TestPage">
 				<VerticalStackLayout>
@@ -83,7 +83,7 @@ public class GlobalUsingTests
 			namespace StaticNamespace { public static class Helper { } }
 			namespace InactiveNamespace { public class Marker { } }
 			namespace OrdinaryNamespace { public class Marker { } }
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 
 		var run = Run(CreateDriver(), compilation);
 
@@ -106,7 +106,7 @@ public class GlobalUsingTests
 			"""
 			namespace Shared.Controls;
 			public class ExternalControl : global::Microsoft.Maui.Controls.ContentView { }
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 		var mapping = explicitMapping
 			? """[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "Shared.Controls", AssemblyName = "External.Assembly")]"""
 			: "";
@@ -129,7 +129,7 @@ public class GlobalUsingTests
 						public TestPage() => InitializeComponent();
 					}
 				}
-				"""));
+				""", cancellationToken: TestContext.Current.CancellationToken));
 		var xaml = $$"""
 			<ContentPage x:Class="Test.TestPage">
 				<{{typeName}} x:Name="control" />
@@ -156,7 +156,7 @@ public class GlobalUsingTests
 	public void ExternAliasDoesNotImportSameNamedLocalNamespace()
 	{
 		var external = CreateMauiCompilation("External.Assembly").AddSyntaxTrees(CSharpSyntaxTree.ParseText(
-			"namespace Shared.Controls { public class ExternalControl { } }"));
+			"namespace Shared.Controls { public class ExternalControl { } }", cancellationToken: TestContext.Current.CancellationToken));
 		var compilation = CreateMauiCompilation()
 			.AddReferences(external.ToMetadataReference(ImmutableArray.Create("external")))
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
@@ -164,7 +164,7 @@ public class GlobalUsingTests
 				extern alias external;
 				global using external::Shared.Controls;
 				namespace Shared.Controls { public class LocalControl { } }
-				"""));
+				""", cancellationToken: TestContext.Current.CancellationToken));
 
 		var run = Run(CreateDriver(), compilation);
 
@@ -176,7 +176,7 @@ public class GlobalUsingTests
 	public void DoesNotImportUsingsGeneratedByAnotherGeneratorInTheSamePass()
 	{
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(
-			"namespace Generated.Controls { public class Example { } }"));
+			"namespace Generated.Controls { public class Example { } }", cancellationToken: TestContext.Current.CancellationToken));
 		var driver = CSharpGeneratorDriver.Create(
 			[new XamlGenerator().AsSourceGenerator(), new OtherUsingGenerator().AsSourceGenerator()]);
 
@@ -195,7 +195,7 @@ public class GlobalUsingTests
 			global using Demo.Controls;
 			namespace Demo.Controls { public class LocalControl : global::Microsoft.Maui.Controls.ContentView { } }
 			namespace Test { public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage { } }
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 		var xaml = """
 			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -219,7 +219,7 @@ public class GlobalUsingTests
 			namespace First.Controls { public class Duplicate : global::Microsoft.Maui.Controls.ContentView { } }
 			namespace Second.Controls { public class Duplicate : global::Microsoft.Maui.Controls.ContentView { } }
 			namespace Test { public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage { } }
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 		var xaml = """
 			<ContentPage x:Class="Test.TestPage">
 				<Duplicate x:Name="control" />
@@ -239,8 +239,8 @@ public class GlobalUsingTests
 			namespace First.Controls { public class Example : global::Microsoft.Maui.Controls.ContentView { } }
 			namespace Second.Controls { public class Example : global::Microsoft.Maui.Controls.ContentView { } }
 			namespace Test { public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage { } }
-			""");
-		var usings = CSharpSyntaxTree.ParseText("", path: "GlobalUsings.cs");
+			""", cancellationToken: TestContext.Current.CancellationToken);
+		var usings = CSharpSyntaxTree.ParseText("", path: "GlobalUsings.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(declarations, usings);
 		var xaml = """
 			<ContentPage x:Class="Test.TestPage">
@@ -276,7 +276,7 @@ public class GlobalUsingTests
 			"""
 			global using Pending.Controls;
 			namespace Test { public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage { } }
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 		var xaml = """
 			<ContentPage x:Class="Test.TestPage">
 				<Example x:Name="example" />
@@ -286,7 +286,7 @@ public class GlobalUsingTests
 		Assert.Empty(GetMappings(run.Output, "Pending.Controls"));
 
 		var declarations = CSharpSyntaxTree.ParseText(
-			"namespace Pending.Controls { public class Example : global::Microsoft.Maui.Controls.ContentView { } }");
+			"namespace Pending.Controls { public class Example : global::Microsoft.Maui.Controls.ContentView { } }", cancellationToken: TestContext.Current.CancellationToken);
 		compilation = compilation.AddSyntaxTrees(declarations);
 		run = Run(run.Driver, compilation);
 		AssertNoErrors(run);
@@ -303,8 +303,8 @@ public class GlobalUsingTests
 	public void ReorderingAndDuplicatingUsingsKeepsGeneratedMappingsStable()
 	{
 		var declarations = CSharpSyntaxTree.ParseText(
-			"namespace First { public class Example { } } namespace Second { public class Example { } }");
-		var usings = CSharpSyntaxTree.ParseText("global using Second; global using First;", path: "GlobalUsings.cs");
+			"namespace First { public class Example { } } namespace Second { public class Example { } }", cancellationToken: TestContext.Current.CancellationToken);
+		var usings = CSharpSyntaxTree.ParseText("global using Second; global using First;", path: "GlobalUsings.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(declarations, usings);
 		var initial = Run(CreateDriver(), compilation);
 

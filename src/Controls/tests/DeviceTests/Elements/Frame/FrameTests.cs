@@ -74,6 +74,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(Math.Abs(((300 - labelFrame.Height) / 2) - labelFrame.Y) < 1);
 		}
 
+		[Fact]
+		public async Task FixtureDisposalDisconnectsInitializedViewTree()
+		{
+			SetupBuilder();
+
+			var content = new Label { Text = "Fixture-owned content" };
+			var frame = new Frame { Content = content };
+			await CreateHandlerAsync(frame);
+			Assert.NotNull(content.Handler);
+
+			await DisposeAsync();
+
+			Assert.Null(frame.Handler);
+			Assert.Null(content.Handler);
+		}
+
 		[Fact(DisplayName = "Frame With Entry Measures")]
 		public async Task FrameWithEntryMeasuresCorrectly()
 		{
@@ -133,10 +149,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await CreateHandlerAndAddToWindow<FrameRenderer>(frame, async handler =>
 			{
-				var platformView = frame.ToPlatform(MauiContext);
-				platformView.AssertContainsColor(expectedColor, MauiContext);
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(expectedColor, ((IElementHandler)handler).MauiContext);
 			});
 		}
 
@@ -164,10 +180,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await CreateHandlerAndAddToWindow<FrameRenderer>(frame, async handler =>
 			{
-				var platformView = frame.ToPlatform(MauiContext);
-				platformView.AssertContainsColor(expectedColor, MauiContext);
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(expectedColor, ((IElementHandler)handler).MauiContext);
 			});
 		}
 
@@ -480,7 +496,9 @@ namespace Microsoft.Maui.DeviceTests
 				layout.ToHandler(MauiContext);
 				frame.ToHandler(MauiContext);
 
-				await new ContentLayoutPanel(layout, widthConstraint, heightConstraint).AttachAndRun(async () =>
+				try
+				{
+					await new ContentLayoutPanel(layout, widthConstraint, heightConstraint).AttachAndRun(async () =>
 						{
 							await OnFrameSetToNotEmpty(layout);
 							await OnFrameSetToNotEmpty(frame);
@@ -497,6 +515,11 @@ namespace Microsoft.Maui.DeviceTests
 
 							await additionalTests.Invoke();
 						}, MauiContext);
+				}
+				finally
+				{
+					layout.DisconnectHandlers();
+				}
 			}
 			);
 

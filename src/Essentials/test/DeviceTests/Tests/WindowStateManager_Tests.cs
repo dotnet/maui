@@ -15,19 +15,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __IOS__
 		[Fact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Machine)]
-		public void GetCurrentUIWindow()
+		public Task GetCurrentUIWindow() => Utils.OnMainThread(() =>
 		{
 			var window = WindowStateManager.Default.GetCurrentUIWindow();
 			Assert.NotNull(window);
-		}
+		});
 
 		[Fact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Machine)]
-		public void GetCurrentUIViewController()
+		public Task GetCurrentUIViewController() => Utils.OnMainThread(() =>
 		{
 			var viewController = WindowStateManager.Default.GetCurrentUIViewController();
 			Assert.NotNull(viewController);
-		}
+		});
 #endif
 	}
 }

@@ -128,11 +128,11 @@ public class QueryPropertyGeneratorTests
 
 			var compilation = SourceGeneratorDriver.CreateMauiCompilation($"QueryPropertyTests{Guid.NewGuid():N}")
 				.AddReferences(MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.DynamicAttribute).Assembly.Location))
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview)));
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview), cancellationToken: TestContext.Current.CancellationToken));
 			GeneratorDriver driver = CSharpGeneratorDriver.Create(
 				[new QueryPropertyGenerator().AsSourceGenerator()],
 				parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
-			driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+			driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _, cancellationToken: TestContext.Current.CancellationToken);
 
 			var generated = driver.GetRunResult().GeneratedTrees.Select(tree => tree.ToString()).ToArray();
 			Assert.Equal(4, generated.Length);
@@ -143,7 +143,7 @@ public class QueryPropertyGeneratorTests
 			Assert.Empty(updatedCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
 				namespace App;
 				public partial class ObservableModel { public string? Name { get; set; } }
-				""", new CSharpParseOptions(LanguageVersion.Preview))).GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
+				""", new CSharpParseOptions(LanguageVersion.Preview), cancellationToken: TestContext.Current.CancellationToken)).GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -503,7 +503,7 @@ public class QueryPropertyGeneratorTests
 			}
 			""");
 		using var stream = new MemoryStream();
-		var emitResult = baseCompilation.Emit(stream);
+		var emitResult = baseCompilation.Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
 		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
 
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation($"QueryPropertyTests{Guid.NewGuid():N}")
@@ -519,19 +519,19 @@ public class QueryPropertyGeneratorTests
 					public bool CustomCalled { get; private set; }
 					public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) => CustomCalled = true;
 				}
-				""", new CSharpParseOptions(LanguageVersion.Preview)));
+				""", new CSharpParseOptions(LanguageVersion.Preview), cancellationToken: TestContext.Current.CancellationToken));
 		GeneratorDriver driver = CSharpGeneratorDriver.Create(
 			[new QueryPropertyGenerator().AsSourceGenerator()],
 			parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
-		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _, cancellationToken: TestContext.Current.CancellationToken);
 
 		var generated = Assert.Single(driver.GetRunResult().GeneratedTrees).ToString();
 		Assert.Contains("this.ApplyQueryProperties(query, previousQuery);", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("TryGetValue(\"other\"", generated, StringComparison.Ordinal);
-		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(updatedCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 
 		using var derivedStream = new MemoryStream();
-		emitResult = updatedCompilation.Emit(derivedStream);
+		emitResult = updatedCompilation.Emit(derivedStream, cancellationToken: TestContext.Current.CancellationToken);
 		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
 		stream.Position = 0;
 		_ = AssemblyLoadContext.Default.LoadFromStream(stream);

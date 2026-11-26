@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using Windows.UI.Core;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -138,6 +139,19 @@ namespace Microsoft.Maui.Handlers
 					ReferenceEquals(handler._tabStopPlatformView, platformView) &&
 					platformView.IsLoaded == restoreWhenLoaded)
 				{
+					if (!restoreWhenLoaded)
+					{
+						// Loading can span dispatcher turns. Only the detached-tree fallback
+						// may restore before Loaded has superseded this callback.
+						var root = platformView.XamlRoot?.Content;
+						for (DependencyObject? ancestor = platformView; ancestor is not null;
+							ancestor = VisualTreeHelper.GetParent(ancestor))
+						{
+							if (ReferenceEquals(ancestor, root))
+								return;
+						}
+					}
+
 					handler.RestoreIsTabStop(platformView);
 				}
 			}

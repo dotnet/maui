@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
@@ -12,6 +13,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class ModalNavigationPlatformTests : BaseTestFixture
 	{
+		sealed class ExceptionRecordingSynchronizationContext : SynchronizationContext
+		{
+			readonly TaskCompletionSource<Exception> _exception = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task<Exception> Exception => _exception.Task;
+
+			public override void Post(SendOrPostCallback callback, object state) =>
+				ThreadPool.QueueUserWorkItem(_ =>
+				{
+					try
+					{
+						callback(state);
+					}
+					catch (Exception exception)
+					{
+						_exception.TrySetResult(exception);
+					}
+				});
+		}
+
 		static Window CreateWindow(Action<IServiceProvider> configureServices = null, IElementHandler windowHandler = null)
 		{
 			var services = Substitute.For<IServiceProvider>();
@@ -509,7 +530,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var failure = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 			first.PushTaskBehavior = (_, _) => failure.Task;
 			first.IsReadyValue = true;
-			first.Host.RequestSync();
+			var exceptionContext = new ExceptionRecordingSynchronizationContext();
+			var originalContext = SynchronizationContext.Current;
+			try
+			{
+				SynchronizationContext.SetSynchronizationContext(exceptionContext);
+				first.Host.RequestSync();
+			}
+			finally
+			{
+				SynchronizationContext.SetSynchronizationContext(originalContext);
+			}
 
 			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
 			Assert.Empty(first.Pushed);
@@ -523,7 +554,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			second.Host.RequestSync();
 			failure.SetException(new InvalidOperationException("push boom"));
 
-			await secondPushed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await secondPushed.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+#if DEBUG
+			// FireAndForget rethrows in Debug; observe that expected async-void error explicitly.
+			var exception = await exceptionContext.Exception.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+			Assert.Equal("push boom", Assert.IsType<InvalidOperationException>(exception).Message);
+#endif
 			Assert.Same(modal, Assert.Single(second.Pushed).Page);
 			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
 		}

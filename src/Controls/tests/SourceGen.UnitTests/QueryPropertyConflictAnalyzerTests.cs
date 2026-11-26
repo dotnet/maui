@@ -40,7 +40,7 @@ public class QueryPropertyConflictAnalyzerTests
 		Assert.Equal("MAUI1201", diagnostic.Id);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
 		Assert.Equal("'Model' implements IQueryAttributable and uses [QueryProperty] attributes. The source generator skips this type; handle the properties manually or remove the interface implementation.", diagnostic.GetMessage());
-		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
+		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText(cancellationToken: TestContext.Current.CancellationToken).ToString(diagnostic.Location.SourceSpan));
 	}
 
 	[Theory]
@@ -292,7 +292,7 @@ public class QueryPropertyConflictAnalyzerTests
 
 		Assert.Single(result.GeneratedTrees);
 		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
-		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
+		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText(cancellationToken: TestContext.Current.CancellationToken).ToString(diagnostic.Location.SourceSpan));
 	}
 
 	[Fact]
@@ -314,7 +314,7 @@ public class QueryPropertyConflictAnalyzerTests
 
 		Assert.Empty(result.GeneratedTrees);
 		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
-		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
+		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText(cancellationToken: TestContext.Current.CancellationToken).ToString(diagnostic.Location.SourceSpan));
 	}
 
 	[Fact]
@@ -369,7 +369,7 @@ public class QueryPropertyConflictAnalyzerTests
 					public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 					public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 				}
-				""", path: "Model.g.cs"));
+				""", path: "Model.g.cs", cancellationToken: TestContext.Current.CancellationToken));
 
 		Assert.Empty(await GetDiagnostics(compilation));
 	}

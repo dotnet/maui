@@ -66,10 +66,12 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 	{
 		const int MaxWaitTimes = 100;
 		const int WaitTimeInMS = 250;
+		// Cold simulator WebKit/GPU startup can exceed the normal JavaScript-operation budget.
+		const int PageLoadWaitTimes = 240;
 
-		private static async Task Retry(Func<Task<bool>> tryAction, Func<int, Task<Exception>> createExceptionWithTimeoutMS)
+		private static async Task Retry(Func<Task<bool>> tryAction, Func<int, Task<Exception>> createExceptionWithTimeoutMS, int maxWaitTimes = MaxWaitTimes)
 		{
-			for (var i = 0; i < MaxWaitTimes; i++)
+			for (var i = 0; i < maxWaitTimes; i++)
 			{
 				if (await tryAction())
 				{
@@ -80,7 +82,7 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 				await Task.Delay(WaitTimeInMS);
 			}
 
-			throw await createExceptionWithTimeoutMS(MaxWaitTimes * WaitTimeInMS);
+			throw await createExceptionWithTimeoutMS(maxWaitTimes * WaitTimeInMS);
 		}
 
 		public static async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
@@ -89,7 +91,8 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 			{
 				var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
 				return loaded == "true";
-			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready.")));
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready.")),
+				maxWaitTimes: PageLoadWaitTimes);
 		}
 
 		public static async Task WaitForHtmlStatusSet(HybridWebView hybridWebView)

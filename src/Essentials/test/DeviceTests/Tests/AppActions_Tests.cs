@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task GetSetItems()
+		public Task GetSetItems() => Utils.OnMainThread(async () =>
 		{
 			if (!AppActions.IsSupported)
 				return;
@@ -40,6 +40,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			var get = await AppActions.GetAsync().ConfigureAwait(false);
 
 			Assert.Contains(get, a => a.Id == "TEST1");
-		}
+		});
 	}
 }
