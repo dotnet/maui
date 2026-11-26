@@ -246,7 +246,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 //   - ShellNavigatingEventArgs cancellation
                 // This matches the old renderer behavior where the lifecycle chain
                 // (Activity → Window → Shell) naturally invoked the full pipeline.
-                if (!_handler.OnBackButtonPressed())
+                if (_fragment.RequireActivity() is MauiAppCompatActivity { IsDispatchingModalBackPress: true } ||
+                    !_handler.OnBackButtonPressed())
                 {
                     // Shell didn't handle it (at root, no stack to pop, not cancelled).
                     // Forward to system by temporarily disabling this callback so the

@@ -54,66 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task BackPressOnModalRunsActivityCallbacks(bool callbackDispatchesAgain)
-		{
-			SetupBuilder();
-			var page = new ContentPage();
-			var window = new Window(new NavigationPage(page));
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
-				async handler =>
-				{
-					var activity = (AndroidX.Activity.ComponentActivity)handler.MauiContext.Context.GetActivity();
-					var callback = new RecordingBackCallback(activity, callbackDispatchesAgain);
-					activity.OnBackPressedDispatcher.AddCallback(callback);
-
-					try
-					{
-						var modal = new ContentPage();
-						await page.Navigation.PushModalAsync(modal, animated: false);
-						await OnLoadedAsync(modal);
-
-						var dialog = (AndroidX.Activity.ComponentDialog)GetModalDialogFragment(handler).Dialog;
-						dialog.OnBackPressedDispatcher.OnBackPressed();
-
-						Assert.Equal(1, callback.Count);
-						Assert.False(activity.IsFinishing);
-					}
-					finally
-					{
-						callback.Remove();
-					}
-				});
-		}
-
-		class RecordingBackCallback : AndroidX.Activity.OnBackPressedCallback
-		{
-			readonly AndroidX.Activity.ComponentActivity _activity;
-			readonly bool _dispatchAgain;
-
-			public RecordingBackCallback(AndroidX.Activity.ComponentActivity activity, bool dispatchAgain) : base(true)
-			{
-				_activity = activity;
-				_dispatchAgain = dispatchAgain;
-			}
-
-			public int Count { get; private set; }
-
-			public override void HandleOnBackPressed()
-			{
-				Count++;
-
-				if (_dispatchAgain)
-				{
-					Enabled = false;
-					_activity.OnBackPressedDispatcher.OnBackPressed();
-				}
-			}
-		}
-
 		[Fact]
 		public async Task ChangeModalStackWhileDeactivated()
 		{

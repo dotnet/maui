@@ -61,8 +61,13 @@ namespace Microsoft.Maui.LifecycleEvents
 				.OnBackPressed(HandleWindowBackButtonPressed);
 		}
 
-		internal static bool HandleWindowBackButtonPressed(global::Android.App.Activity activity) =>
-			activity.GetWindow()?.BackButtonClicked() ?? false;
+		internal static bool HandleWindowBackButtonPressed(global::Android.App.Activity activity)
+		{
+			if (activity is MauiAppCompatActivity { IsModalBackPressConsumed: true })
+				return false;
+
+			return activity.GetWindow()?.BackButtonClicked() ?? false;
+		}
 
 		static void OnConfigureWindow(IAndroidLifecycleBuilder android)
 		{
