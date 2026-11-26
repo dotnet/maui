@@ -50,6 +50,21 @@ The loop has no round limit. It stops when:
 - the PR is closed,
 - the maintainer who started the loop loses write access.
 
+### Labels show where the PR is
+
+While the loop runs, the PR has `s/autopilot-running` plus exactly one phase label. The phase label updates as
+the loop moves:
+
+| Label | Meaning |
+|---|---|
+| `s/autopilot-reviewing` | The MAUI expert review is running |
+| `s/autopilot-fixing` | A fix round (GPT-6.2 Sol vs MAI Code 2) is running |
+| `s/autopilot-testing` | `/review run-tests` is selecting or running the relevant tests |
+| `s/autopilot-ready` | Done: the expert review is clean and the tests passed. Ready for maintainer review |
+
+Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/autopilot` replaces
+`s/autopilot-ready`. Missing labels are created automatically.
+
 ### Fix rounds use two models
 
 The main agent (GPT-6.2 Sol) writes down the items to fix. Each model then fixes them independently in its own

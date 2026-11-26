@@ -55,8 +55,29 @@ on:
           const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number: number });
           const hasLabel = pr.labels.some(l => l.name === LABEL);
           const comment = body => github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- pr-autopilot-status -->` });
-          const stopLoop = async reason => {
+          // Phase labels: exactly one of these sits next to s/autopilot-running while the loop runs.
+          const PHASES = {
+            reviewing: ['FBCA04', 'PR Autopilot: MAUI expert review in progress'],
+            fixing: ['D93F0B', 'PR Autopilot: fixing review findings or failing tests (GPT-6.2 Sol vs MAI Code 2)'],
+            testing: ['1D76DB', 'PR Autopilot: relevant UI/device tests are being selected or run'],
+            ready: ['0E8A16', 'PR Autopilot finished: expert review clean and tests passed; ready for maintainer review'],
+          };
+          const current = new Set(pr.labels.map(l => l.name));
+          const setPhase = async phase => {
+            for (const name of [...current].filter(n => n.startsWith('s/autopilot-') && n !== LABEL && n !== `s/autopilot-${phase}`)) {
+              await github.rest.issues.removeLabel({ ...repo, issue_number: number, name }).catch(() => {});
+              current.delete(name);
+            }
+            if (!phase || current.has(`s/autopilot-${phase}`)) return;
+            const [color, description] = PHASES[phase];
+            await github.rest.issues.createLabel({ ...repo, name: `s/autopilot-${phase}`, color, description }).catch(() => {});
+            await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [`s/autopilot-${phase}`] });
+            current.add(`s/autopilot-${phase}`);
+          };
+          const stopLoop = async (reason, phase = '') => {
             if (hasLabel) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});
+            current.delete(LABEL);
+            await setPhase(phase);
             if (reason) await comment(reason);
           };
           const canWrite = async login => {
@@ -109,6 +130,7 @@ on:
             return;
           }
           if (!hasLabel) {
+            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'PR Autopilot loop is running; /autopilot stop ends it' }).catch(() => {});
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             await comment(`🤖 **PR Autopilot started** by @${requester}. I'll reply in each review thread as I fix findings, then run the relevant tests. <sub>· \`/autopilot stop\` to stop</sub>`);
           }
@@ -191,7 +213,8 @@ on:
           }
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
-          if (stage === 'done' || stage === 'stop') { await stopLoop(note); stage = 'none'; }
+          if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'ready' : ''); stage = 'none'; }
+          else await setPhase({ review: 'reviewing', fix: 'fixing', tests: 'testing', wait: 'testing' }[stage]);
 
           const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
           core.setOutput('stage', stage);
@@ -308,7 +331,11 @@ jobs:
           script: |
             const LABEL = 's/autopilot-running';
             const number = Number(process.env.PR_NUMBER);
-            const stop = () => github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: LABEL }).catch(() => {});
+            const stop = async (n = number) => {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: n });
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: n, name: l.name }).catch(() => {});
+            };
             let target = number;
             if (process.env.IS_FORK === 'true') {
               // The fix went to a follow-up PR; the loop moves there.

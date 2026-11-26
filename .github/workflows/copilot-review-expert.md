@@ -213,7 +213,8 @@ jobs:
             if (!Number.isSafeInteger(number) || number < 1) return;
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) return;
-            await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-running' });
+            for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
               body: `⏹️ PR Autopilot stopped: the [MAUI expert review](${url}) failed. A maintainer can comment \`/autopilot\` to retry.\n\n<!-- pr-autopilot-status -->` });
