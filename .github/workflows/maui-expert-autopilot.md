@@ -225,14 +225,26 @@ on:
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
-              '### maui-expert-autopilot',
+              '**maui-expert-autopilot** is running on this PR.',
               '',
-              '| Label | What happens | Models |',
-              '|---|---|---|',
-              '| `s/autopilot-reviewing` | The MAUI expert reviewer reviews the PR | GPT-6.1 Sol |',
-              '| `s/autopilot-fixing` | Each model fixes the findings or failing tests, and the better fix is kept | GPT-6.2 Sol, MAI Code 2 |',
-              '| `s/autopilot-testing` | The relevant UI and device tests are selected and run | GPT-6.2 Sol, MAI Code 2 |',
-              '| `s/autopilot-waiting-for-maintainer-review` | The review is clean and the tests passed | |',
+              '<details><summary>Models</summary>',
+              '',
+              '- Review: GPT-6.1 Sol (MAUI expert reviewer)',
+              '- Fix: GPT-6.2 Sol and MAI Code 2, the better fix is kept',
+              '- Test selection: GPT-6.2 Sol and MAI Code 2',
+              '',
+              '</details>',
+              '',
+              '<details><summary>Labels</summary>',
+              '',
+              '| Label | Meaning |',
+              '|---|---|',
+              '| `s/autopilot-reviewing` | The MAUI expert reviewer is reviewing the PR |',
+              '| `s/autopilot-fixing` | Fixing review findings or failing tests |',
+              '| `s/autopilot-testing` | Running the relevant UI and device tests |',
+              '| `s/autopilot-waiting-for-maintainer-review` | Review clean and tests passed |',
+              '',
+              '</details>',
             ].join('\n'));
           }
           if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }

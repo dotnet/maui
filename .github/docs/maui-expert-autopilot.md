@@ -97,7 +97,7 @@ How the fixes are published:
 
 The top level of the PR stays quiet. It gets two comments:
 
-- a **start** comment: one table of the phase labels, what happens in each, and which models do it,
+- a **start** comment: one line, plus collapsed **Models** and **Labels** sections,
 - a **finish** comment: "✅ maui-expert-autopilot: ready for maintainer review", with a table showing the clean
   expert review commit, the test result, and the number of review threads resolved. Threads that need a decision
   are listed by their titles.
