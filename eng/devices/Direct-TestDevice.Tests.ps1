@@ -224,6 +224,17 @@ Describe 'Direct native CI contracts' {
             Should -Be "com.apple.CoreSimulator.SimDeviceType.$Expected"
     }
 
+    It 'only selects iPhone profiles that a device-specific runtime lists as supported' {
+        $types = @(
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-16'; minRuntimeVersionString='18.0.0'; maxRuntimeVersionString='65535.255.255' },
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-Duo'; minRuntimeVersionString='27.1.0'; maxRuntimeVersionString='65535.255.255' }
+        )
+        Get-CompatibleIosDeviceType -RuntimeVersion '27.1' -DeviceTypes $types -SupportedDeviceTypes @('com.apple.CoreSimulator.SimDeviceType.iPhone-Duo') |
+            Should -Be 'com.apple.CoreSimulator.SimDeviceType.iPhone-Duo'
+        { Get-CompatibleIosDeviceType -RuntimeVersion '27.1' -DeviceTypes $types -SupportedDeviceTypes @('com.apple.CoreSimulator.SimDeviceType.iPad-Pro') } |
+            Should -Throw '*No installed iPhone device type supports*'
+    }
+
     It 'fails explicitly when no installed iPhone profile supports the requested runtime' {
         { Get-CompatibleIosDeviceType -RuntimeVersion '12.0' -DeviceTypes @() } |
             Should -Throw '*No installed iPhone device type supports*'
