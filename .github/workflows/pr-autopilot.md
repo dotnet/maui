@@ -76,7 +76,7 @@ on:
             current.add(`s/autopilot-${phase}`);
           };
           const stopLoop = async (reason, phase = '') => {
-            if (hasLabel) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});
+            if (current.has(LABEL)) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});
             current.delete(LABEL);
             await setPhase(phase);
             if (reason) await comment(reason);
@@ -129,11 +129,6 @@ on:
           if (!optedIn) {
             await stopLoop(`PR Autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/autopilot\` again.`);
             return;
-          }
-          if (!hasLabel) {
-            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'PR Autopilot loop is running; /autopilot stop ends it' }).catch(() => {});
-            await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
-            await comment(`🤖 **PR Autopilot started** by @${requester}. I'll reply in each review thread as I fix findings, then run the relevant tests. <sub>· \`/autopilot stop\` to stop</sub>`);
           }
 
           // Where is the current head in the loop?
@@ -214,6 +209,12 @@ on:
           }
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
+          if (!current.has(LABEL) && stage !== 'done' && stage !== 'stop') {
+            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'PR Autopilot loop is running; /autopilot stop ends it' }).catch(() => {});
+            await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
+            current.add(LABEL);
+            await comment(`🤖 **PR Autopilot started** by @${requester}. I'll reply in each review thread as I fix findings, then run the relevant tests. <sub>· \`/autopilot stop\` to stop</sub>`);
+          }
           if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }
           else await setPhase({ review: 'reviewing', fix: 'fixing', tests: 'testing', wait: 'testing' }[stage]);
 
