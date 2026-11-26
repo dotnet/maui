@@ -118,7 +118,10 @@ visibility and bounds relative to the captured screenshot:
   `cropFromRight`, respectively, without adding a bottom crop.
 
 Gesture navigation that remains at the bottom in landscape is still cropped.
-Hidden navigation bars do not contribute a crop.
+On the fixed API 36 notch emulator, Appium reports the gesture bar as hidden
+with zero bounds even though the gesture indicator appears in screenshots. In
+that case, the previous 52-pixel bottom crop is retained. Hidden navigation
+bars on other Android test environments do not contribute a crop.
 
 Positive `cropTop`, `cropBottom`, `cropLeft`, and `cropRight` arguments
 override the corresponding automatic crop independently:

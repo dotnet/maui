@@ -449,6 +449,7 @@ namespace Microsoft.Maui.TestCases.Tests
 							throw new InvalidOperationException("Unable to read Android navigationBar visibility from GetSystemBars().");
 						}
 
+						androidNavigationBarHeight = GetAndroidGestureNavigationCrop(environmentName, visible);
 						if (visible)
 						{
 							androidImageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
@@ -581,6 +582,12 @@ namespace Microsoft.Maui.TestCases.Tests
 					}
 				}
 			}
+		}
+
+		internal static int GetAndroidGestureNavigationCrop(string environmentName, bool navigationBarVisible)
+		{
+			// Appium reports gesture navigation as hidden with zero bounds on the API 36 test emulator.
+			return !navigationBarVisible && environmentName == "android-notch-36" ? 52 : 0;
 		}
 
 		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
