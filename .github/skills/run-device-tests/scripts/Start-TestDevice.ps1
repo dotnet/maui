@@ -17,13 +17,15 @@ $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
 function Get-CompatibleIosDeviceType {
-    param([version]$RuntimeVersion, [object[]]$DeviceTypes)
+    param([version]$RuntimeVersion, [object[]]$DeviceTypes, [string[]]$SupportedDeviceTypes)
 
     $RuntimeVersion = [version]::new($RuntimeVersion.Major, $RuntimeVersion.Minor, [Math]::Max(0, $RuntimeVersion.Build))
+    # Device-specific runtime builds (e.g. iOS 27.1 24A94232) only accept the device types they list.
     $compatible = @($DeviceTypes | Where-Object {
         $_.productFamily -eq 'iPhone' -and
         [version]$_.minRuntimeVersionString -le $RuntimeVersion -and
-        [version]$_.maxRuntimeVersionString -ge $RuntimeVersion
+        [version]$_.maxRuntimeVersionString -ge $RuntimeVersion -and
+        (!$SupportedDeviceTypes -or $SupportedDeviceTypes -contains $_.identifier)
     } | Sort-Object { [version]$_.minRuntimeVersionString } -Descending)
     $preferred = $compatible | Where-Object identifier -EQ 'com.apple.CoreSimulator.SimDeviceType.iPhone-16' |
         Select-Object -First 1
@@ -171,7 +173,8 @@ elseif ($Platform -eq 'ios') {
     } | Sort-Object { [version]$_.version } -Descending | Select-Object -First 1
     if (!$runtime) { throw "Required iOS simulator runtime '$ApiVersion' is not installed." }
     $deviceTypes = (& xcrun simctl list devicetypes --json | ConvertFrom-Json).devicetypes
-    $deviceType = Get-CompatibleIosDeviceType -RuntimeVersion $runtime.version -DeviceTypes $deviceTypes
+    $supportedDeviceTypes = @($runtime.supportedDeviceTypes | ForEach-Object { $_.identifier } | Where-Object { $_ })
+    $deviceType = Get-CompatibleIosDeviceType -RuntimeVersion $runtime.version -DeviceTypes $deviceTypes -SupportedDeviceTypes $supportedDeviceTypes
     $state.SimulatorName = "maui-$([guid]::NewGuid().ToString('N'))"
     $state.Device = (& xcrun simctl create $state.SimulatorName $deviceType $runtime.identifier).Trim()
     $simulatorId = [guid]::Empty
