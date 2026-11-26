@@ -72,6 +72,12 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			if (typeof(T).IsEnum)
+			{
+				Set(key, Convert.ToInt64(value, CultureInfo.InvariantCulture), sharedName);
+				return;
+			}
+
 			Preferences.CheckIsSupportedType<T>();
 
 			lock (locker)
@@ -102,6 +108,9 @@ namespace Microsoft.Maui.Storage
 
 		public T Get<T>(string key, T defaultValue, string sharedName)
 		{
+			if (typeof(T).IsEnum)
+				return (T)Enum.ToObject(typeof(T), Get(key, Convert.ToInt64(defaultValue, CultureInfo.InvariantCulture), sharedName));
+
 			lock (locker)
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
@@ -188,6 +197,12 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName = null)
 		{
+			if (typeof(T).IsEnum)
+			{
+				Set(key, Convert.ToInt64(value, CultureInfo.InvariantCulture), sharedName);
+				return;
+			}
+
 			Preferences.CheckIsSupportedType<T>();
 
 			var prefs = _preferences.GetOrAdd(CleanSharedName(sharedName), _ => new ShareNameDictionary());
@@ -206,6 +221,9 @@ namespace Microsoft.Maui.Storage
 
 		public T Get<T>(string key, T defaultValue, string sharedName = null)
 		{
+			if (typeof(T).IsEnum)
+				return (T)Enum.ToObject(typeof(T), Get(key, Convert.ToInt64(defaultValue, CultureInfo.InvariantCulture), sharedName));
+
 			if (_preferences.TryGetValue(CleanSharedName(sharedName), out var inner))
 			{
 				if (inner.TryGetValue(key, out var value) && value is not null)

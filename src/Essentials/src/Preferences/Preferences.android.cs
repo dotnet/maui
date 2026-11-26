@@ -47,6 +47,12 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			if (typeof(T).IsEnum)
+			{
+				Set(key, Convert.ToInt64(value, CultureInfo.InvariantCulture), sharedName);
+				return;
+			}
+
 			Preferences.CheckIsSupportedType<T>();
 
 			lock (locker)
@@ -96,6 +102,9 @@ namespace Microsoft.Maui.Storage
 
 		public T Get<T>(string key, T defaultValue, string sharedName)
 		{
+			if (typeof(T).IsEnum)
+				return (T)Enum.ToObject(typeof(T), Get(key, Convert.ToInt64(defaultValue, CultureInfo.InvariantCulture), sharedName));
+
 			lock (locker)
 			{
 				object value = null;
