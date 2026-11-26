@@ -55,7 +55,13 @@ on:
           if (!Number.isSafeInteger(number) || number < 1) return core.info('No pull request number.');
           const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number: number });
           const hasLabel = pr.labels.some(l => l.name === LABEL);
-          const comment = body => github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- maui-expert-autopilot-status -->` });
+          // Only the latest status comment stays visible: earlier ones are hidden as resolved.
+          const comment = async body => {
+            const all = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 });
+            for (const c of all.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
+              await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(e => core.warning(`Could not hide ${c.id}: ${e.message}`));
+            return github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- maui-expert-autopilot-status -->` });
+          };
           // Phase labels: exactly one of these sits next to s/autopilot-running while the loop runs.
           const PHASES = {
             reviewing: ['FBCA04', 'maui-expert-autopilot: MAUI expert review in progress'],
@@ -111,7 +117,7 @@ on:
             await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
               { id: context.payload.comment.node_id }).catch(e => core.warning(`Could not hide the command: ${e.message}`));
             if (command[1]) {
-              if (pr.state === 'open') await stopLoop(`maui-expert-autopilot stopped by @${requester}.`);
+              if (pr.state === 'open') await stopLoop(`## maui-expert-autopilot — Stopped\n\nStopped by @${requester}.`);
               return;
             }
           } else if (kicked) {
@@ -123,7 +129,7 @@ on:
           }
           if (pr.state !== 'open') return core.info(`#${number} is not open.`);
           if (!(await canWrite(requester))) {
-            await stopLoop(hasLabel ? '❌ maui-expert-autopilot stopped: the maintainer who started it no longer has write access.' : '');
+            await stopLoop(hasLabel ? '## maui-expert-autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.' : '');
             return;
           }
           let optedIn = OPT_IN.test(pr.body || '');
@@ -158,7 +164,7 @@ on:
               if (states.includes('running')) stage = 'wait';
               else if (results.includes('FAILED')) { stage = 'fix'; source = 'tests'; }
               else if (states.includes('error') || results.includes('NOT QUEUED') || results.includes('CANCELED')) {
-                stage = 'stop'; note = `❌ maui-expert-autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/review autopilot\` again.`;
+                stage = 'stop'; note = `## maui-expert-autopilot — Stopped\n\n❌ The [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/review autopilot\` again.`;
               } else {
                 stage = 'done';
                 // Thread outcomes, from maui-expert-autopilot's replies (later comments by the bot).
@@ -196,7 +202,7 @@ on:
                 const threadsCell = resolved + undecided.length === 0 ? 'None'
                   : `${resolved} resolved` + (undecided.length ? `, ${undecided.length} need${undecided.length === 1 ? 's' : ''} a decision` : '');
                 note = [
-                  '### ✅ maui-expert-autopilot: ready for maintainer review',
+                  '## maui-expert-autopilot — Ready for maintainer review',
                   '',
                   '| | |',
                   '|---|---|',
@@ -225,7 +231,7 @@ on:
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
-              '**maui-expert-autopilot** is running on this PR.',
+              '## maui-expert-autopilot — Started',
               '',
               '<details><summary>Models</summary>',
               '',
@@ -235,7 +241,7 @@ on:
               '',
               '</details>',
               '',
-              '<details><summary>Labels</summary>',
+              '<details><summary>Info</summary>',
               '',
               '| Label | Meaning |',
               '|---|---|',
