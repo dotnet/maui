@@ -237,6 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
 				_modal = modal;
+				_modal.Loaded += OnModalLoaded;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
 				_modal.HandlerChanged += OnPageHandlerChanged;
 				_mauiWindowContext = mauiContext;
@@ -455,12 +456,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnResume();
 
-				// Signal that the modal is fully presented and ready
-				FirePresentationCompleted();
+				// OnResume can precede attachment; an immediate pop requires a loaded platform view.
+				if (_modal.IsLoaded)
+					FirePresentationCompleted();
+			}
+
+			void OnModalLoaded(object? sender, EventArgs e)
+			{
+				if (IsResumed)
+					FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
+				_modal.Loaded -= OnModalLoaded;
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
 
@@ -497,6 +506,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				_pendingNavigation = false;
+				_modal?.Loaded -= OnModalLoaded;
 				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 

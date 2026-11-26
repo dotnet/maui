@@ -33,6 +33,51 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		[Theory]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task FocusedPagerDoesNotHighlightPage(bool bottomTabs, bool darkBackground)
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				return;
+			}
+
+			SetupBuilder();
+
+			var backgroundColor = darkBackground ? Colors.Black : Colors.White;
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[]
+			{
+				new ContentPage { Title = "Page 1", BackgroundColor = backgroundColor },
+				new ContentPage { Title = "Page 2", BackgroundColor = backgroundColor }
+			});
+			tabbedPage.Background = new SolidColorBrush(backgroundColor);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				var viewPager = Assert.IsType<ViewPager2>(handler.PlatformView);
+				var recyclerView = Assert.IsType<RecyclerView>(viewPager.GetChildAt(0));
+				await AssertEventually(() => recyclerView.Width > 0 && recyclerView.Height > 0 && recyclerView.ChildCount > 0);
+
+				using (var beforeFocus = await recyclerView.ToBitmap(MauiContext))
+					beforeFocus.AssertColorAtCenter(backgroundColor.ToPlatform());
+
+				// Leave touch mode and focus the same container that receives default keyboard focus.
+				Assert.True(recyclerView.RequestFocusFromTouch());
+				Assert.True(recyclerView.IsFocused);
+				recyclerView.JumpDrawablesToCurrentState();
+
+				using (var afterFocus = await recyclerView.ToBitmap(MauiContext))
+					afterFocus.AssertColorAtCenter(backgroundColor.ToPlatform());
+
+				Assert.False(recyclerView.DefaultFocusHighlightEnabled);
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task BadgePropertiesUpdateNativeTab(bool bottomTabs)
@@ -694,6 +739,72 @@ namespace Microsoft.Maui.DeviceTests
 				}
 #pragma warning restore CA1422
 			});
+		}
+
+		[Fact]
+		[Description("A late-loading selected bottom-tab icon should use the bar's current tint, not the tint captured at startup (Issue 40405)")]
+		public async Task LateLoadingSelectedBottomTabIconUsesCurrentBarTint()
+		{
+			SetupBuilder();
+
+			// The icon stream is held back so the icon-load callback runs only after
+			// the native bar tint has changed, as with Shell applying its configured tint.
+			var iconGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var iconBytes = CreateSolidPng(global::Android.Graphics.Color.White);
+
+			var delayedIcon = new StreamImageSource
+			{
+				Stream = async _ =>
+				{
+					await iconGate.Task;
+					return new System.IO.MemoryStream(iconBytes);
+				}
+			};
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true, pages: new[]
+			{
+		new ContentPage { Title = "Page 1", IconImageSource = delayedIcon },
+		new ContentPage { Title = "Page 2" }
+		});
+
+			// Deliberately set neither SelectedTabColor nor UnselectedTabColor.
+			// Without them, the fix must fall back to the bar's *current* tint.
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNav = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNav);
+
+				// Native bar tint changes while the selected tab's icon is still loading.
+				var orange = Colors.Orange.ToPlatform();
+				bottomNav.ItemIconTintList = new global::Android.Content.Res.ColorStateList(
+				new[]
+			{
+		new[] { global::Android.Resource.Attribute.StateChecked },
+		Array.Empty<int>()
+			},
+				new[] { orange.ToArgb(), global::Android.Graphics.Color.Gray.ToArgb() });
+
+				// Let the icon finish loading. Its callback re-applies the item tint.
+				iconGate.SetResult(true);
+
+				var menuItem = bottomNav.Menu.GetItem(0);
+				await AssertEventually(() => menuItem.Icon is not null, message: "Tab icon never loaded.");
+
+				// The selected icon must render with the bar's current (orange) tint,
+				// not the tint captured when the tabs were first set up.
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", Colors.Orange, true);
+			});
+
+			static byte[] CreateSolidPng(global::Android.Graphics.Color color)
+			{
+				using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(
+					48, 48, global::Android.Graphics.Bitmap.Config.Argb8888);
+				bitmap.EraseColor(color);
+				using var stream = new System.IO.MemoryStream();
+				bitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+				return stream.ToArray();
+			}
 		}
 
 		[Fact]

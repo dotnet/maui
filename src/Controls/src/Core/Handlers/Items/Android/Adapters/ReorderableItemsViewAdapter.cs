@@ -25,6 +25,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
+			// Headers and footers can't be dragged (see SimpleItemTouchHelperCallback.GetMovementFlags), but ItemTouchHelper
+			// can still pick them as the target. Moving an item onto a footer would insert it past the end of its list,
+			// so refuse it; the item stays where it is. Group headers remain valid targets for dropping into an empty group.
+			if (itemsSource.IsHeader(toPosition) || itemsSource.IsFooter(toPosition)
+				|| (itemsView.IsGrouped && itemsSource.IsGroupFooter(toPosition)))
+			{
+				return false;
+			}
+
 			if (itemsView.IsGrouped)
 			{
 				var (fromGroupIndex, fromIndex) = itemsSource.GetGroupAndIndex(fromPosition);

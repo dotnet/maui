@@ -128,8 +128,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var viewHolder = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
 					if (viewHolder is not null)
 					{
-						// ViewHolder exists, request layout immediately to avoid frame delay
-						viewHolder.ItemView.RequestLayout();
+						// Defer the request if Android is already laying out the view.
+						PlatformInterop.RequestLayoutIfNeeded(viewHolder.ItemView);
 					}
 					else
 					{
@@ -141,7 +141,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 								return;
 							}
 							var vh = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
-							vh?.ItemView.RequestLayout();
+							if (vh is not null)
+								PlatformInterop.RequestLayoutIfNeeded(vh.ItemView);
 						});
 					}
 				}

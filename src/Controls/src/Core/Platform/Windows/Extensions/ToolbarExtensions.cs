@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
+		static readonly Microsoft.Maui.Platform.ImageSourceRequestManager TitleIconRequests = new();
+
 		public static void UpdateIsVisible(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			platformToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
@@ -19,12 +21,23 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			_ = toolbar?.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
-			toolbar.TitleIcon.LoadImage(toolbar.Handler.MauiContext, (result) =>
+			var handler = toolbar.Handler;
+			var request = TitleIconRequests.Begin(platformToolbar);
+			toolbar.TitleIcon.LoadImage(handler.MauiContext, (result) =>
 			{
+				if (!TitleIconRequests.IsCurrent(platformToolbar, request) ||
+					toolbar.Handler != handler ||
+					handler.VirtualView != toolbar ||
+					!ReferenceEquals(handler.PlatformView, platformToolbar))
+				{
+					result?.Dispose();
+					return;
+				}
+
 				if (result != null)
 				{
 					platformToolbar.TitleIconImageSource = result.Value;
-					toolbar.Handler.UpdateValue(nameof(Toolbar.IconColor));
+					handler.UpdateValue(nameof(Toolbar.IconColor));
 				}
 				else
 					platformToolbar.TitleIconImageSource = null;

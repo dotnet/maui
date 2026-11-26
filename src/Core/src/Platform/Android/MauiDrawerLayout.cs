@@ -204,12 +204,26 @@ namespace Microsoft.Maui.Platform
                 return;
             }
 
-            _flyoutView?.RemoveFromParent();
+            if (_flyoutView is not null)
+            {
+                _flyoutView.Touch -= OnFlyoutViewTouch;
+                _flyoutView.RemoveFromParent();
+            }
+
             _flyoutView = flyoutView;
+
+            if (_flyoutView is not null)
+            {
+                // The flyout has to consume the touches its content doesn't handle,
+                // otherwise they fall through to the content view behind it
+                _flyoutView.Touch += OnFlyoutViewTouch;
+            }
 
             UpdateLayout();
             EnsureListening();
         }
+
+        static void OnFlyoutViewTouch(object? sender, TouchEventArgs e) => e.Handled = true;
 
         /// <summary>
         /// Opens the flyout drawer.

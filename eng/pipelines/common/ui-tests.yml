@@ -1,21 +1,67 @@
 parameters:
-  androidPool: { }
-  androidLinuxPool: { }
-  iosPool: { }
-  iosXcodeVersion: ''
-  windowsPool: { }
-  windowsBuildPool: { }
-  macosPool: { }
-  iosVersions: [ 'latest' ]
-  androidApiLevels: [ 30 ]
-  androidApiLevelsExtended: [ 36 ] # Separate API level for tests requiring Pixel 3 XL
-  provisionatorChannel: 'latest'
-  defaultiOSVersion: '26.0'
-  timeoutInMinutes: 180
-  skipProvisioning: true
-  BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
-  RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  categoryGroupsToTest:
+  - name: selectedRun
+    type: boolean
+    default: false
+  - name: selectedPlatforms
+    type: object
+    default: [android, ios, catalyst, windows]
+  # Individual identifiers, not comma-separated category groups. Umbrellas expand to CI shards.
+  # '<platform>:<Category>' (android, ios, catalyst, windows) limits a category to one platform,
+  # for categories whose tests are compiled out on some of the selected platforms.
+  - name: selectedCategories
+    type: object
+    default: []
+  - name: androidPool
+    type: object
+    default: {}
+  - name: androidLinuxPool
+    type: object
+    default: {}
+  - name: iosPool
+    type: object
+    default: {}
+  - name: iosXcodeVersion
+    type: string
+    default: ''
+  - name: windowsPool
+    type: object
+    default: {}
+  - name: windowsBuildPool
+    type: object
+    default: {}
+  - name: macosPool
+    type: object
+    default: {}
+  - name: iosVersions
+    type: object
+    default: ['latest']
+  - name: androidApiLevels
+    type: object
+    default: [30]
+  - name: androidApiLevelsExtended
+    type: object
+    default: [36] # Separate API level for tests requiring Pixel 3 XL
+  - name: provisionatorChannel
+    type: string
+    default: latest
+  - name: defaultiOSVersion
+    type: string
+    default: '26.0'
+  - name: timeoutInMinutes
+    type: number
+    default: 180
+  - name: skipProvisioning
+    type: boolean
+    default: true
+  - name: BuildNativeAOT
+    type: boolean
+    default: false
+  - name: RunNativeAOT
+    type: boolean
+    default: false
+  - name: categoryGroupsToTest
+    type: object
+    default:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
     # Note: Material3 is intentionally excluded from this list and has its own dedicated build and test stages below with a separate test filter
@@ -54,7 +100,9 @@ parameters:
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
-  projects:
+  - name: projects
+    type: object
+    default:
     - name: name
       desc: Human Description
       android: /optional/path/to/android.csproj
@@ -64,6 +112,7 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
+- ${{ if and(or(containsValue(parameters.selectedPlatforms, 'android'), containsValue(parameters.selectedPlatforms, 'ios'), containsValue(parameters.selectedPlatforms, 'catalyst')), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:'), contains(join(',', parameters.selectedCategories), 'ios:'), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
     dependsOn: []
@@ -77,9 +126,14 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"
+                platforms: ${{ parameters.selectedPlatforms }}
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # Material3 Build Stage - Separate CoreCLR build with UseMaterial3=true (Android-only)
+  # Material3 feature tests use their own category, not the corresponding control category.
+  # A selection runs this lane only when it names Material3 explicitly.
+  # selectedCategories is either all plain names (same categories on every selected platform) or
+  # all platform-qualified (android:Button, ios:Label); every guard below handles both forms.
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), containsValue(parameters.selectedCategories, 'android:Material3'))) }}:
   - stage: build_ui_tests_material3
     displayName: Build UITests Material3 Sample App
     dependsOn: []
@@ -100,7 +154,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
-  - ${{ if eq(parameters.BuildNativeAOT, true) }}:
+- ${{ if and(eq(parameters.BuildNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -117,6 +171,7 @@ stages:
                   platform: ios
                   skipProvisioning: ${{ parameters.skipProvisioning }}
 
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), '')), contains(join(',', parameters.selectedCategories), 'windows:'))) }}:
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
     dependsOn: []
@@ -134,6 +189,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Windows CV1 Build Stage - Separate build with UseWindowsCollectionView2Handler=false
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), contains(join(',', parameters.selectedCategories), 'CollectionView')), contains(join(',', parameters.selectedCategories), 'windows:CollectionView'))) }}:
   - stage: build_ui_tests_windows_cv1
     displayName: Build UITests Windows CV1 Sample App
     dependsOn: []
@@ -152,6 +208,7 @@ stages:
                 runtimeVariant: "CoreCLR"
                 useWindowsCV1: true
                 skipProvisioning: ${{ parameters.skipProvisioning }}
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'SafeAreaEdges', ''), '')), contains(replace(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:SafeAreaEdges', ''), 'android:'))) }}:
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
     dependsOn: build_ui_tests_coreclr
@@ -165,9 +222,15 @@ stages:
                   matrix:
                     # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if eq(length(parameters.selectedCategories), 0) }}:
+                        ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
+                          ${{ categoryGroup }}:
+                            CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ else }}:
+                        ${{ each category in split(categoryGroup, ',') }}:
+                          ${{ if and(ne(category, 'SafeAreaEdges'), or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('android:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
+                            ${{ category }}:
+                              CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -178,6 +241,7 @@ stages:
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       platform: android
                       version: ${{ api }}
                       path: ${{ project.android }}
@@ -199,6 +263,7 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'Shell2'), containsValue(parameters.selectedCategories, 'android:Shell1'), containsValue(parameters.selectedCategories, 'android:Shell2'))) }}:
   - stage: android_ui_tests_shell_renderer
     displayName: Android UITests Shell Renderer
     dependsOn: build_ui_tests_coreclr
@@ -210,10 +275,12 @@ stages:
               - job: shell_renderer_android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
-                    Shell1:
-                      CATEGORYGROUP: Shell1
-                    Shell2:
-                      CATEGORYGROUP: Shell2
+                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'android:Shell1')) }}:
+                      Shell1:
+                        CATEGORYGROUP: Shell1
+                    ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell2'), containsValue(parameters.selectedCategories, 'android:Shell2')) }}:
+                      Shell2:
+                        CATEGORYGROUP: Shell2
                 timeoutInMinutes: 240
                 workspace:
                   clean: all
@@ -236,6 +303,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "ShellRenderer"
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
@@ -245,6 +313,7 @@ stages:
                       platform: 'Android Shell Renderer'
                       artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Material3'), containsValue(parameters.selectedCategories, 'android:Material3'))) }}:
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
     dependsOn: build_ui_tests_material3
@@ -276,6 +345,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant: "CoreCLR"
                       useMaterial3: true
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       testFilter: "Material3"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -286,6 +356,7 @@ stages:
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 # SafeAreaEdges tests on Android API 36 with Pixel 3 XL
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'SafeAreaEdges'), containsValue(parameters.selectedCategories, 'android:SafeAreaEdges'))) }}:
   - stage: android_ui_tests_safeareaedges
     displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
     dependsOn: build_ui_tests_coreclr
@@ -314,6 +385,7 @@ stages:
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     runtimeVariant: "CoreCLR"
                     testFilter: 'SafeAreaEdges'
+                    requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                     skipProvisioning: ${{ parameters.skipProvisioning }}
 
                 # Collect and publish Android SafeAreaEdges snapshot diffs
@@ -322,6 +394,7 @@ stages:
                     platform: 'Android SafeAreaEdges'
                     artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
   - stage: ios_ui_tests_coreclr
     displayName: iOS UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
@@ -334,8 +407,14 @@ stages:
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if eq(length(parameters.selectedCategories), 0) }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ else }}:
+                        ${{ each category in split(categoryGroup, ',') }}:
+                          ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('ios:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                            ${{ category }}:
+                              CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -352,6 +431,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       ${{ if eq(version, 'latest') }}:
                         version: 18.5
                       ${{ if ne(version, 'latest') }}:
@@ -372,9 +452,10 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      # System.JobName is only the matrix leg (category group), which every iOS version job shares.
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-${{ project.name }}-${{ version }}-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
+- ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
@@ -387,8 +468,14 @@ stages:
                   strategy:
                     matrix:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
+                        ${{ if eq(length(parameters.selectedCategories), 0) }}:
+                          ${{ categoryGroup }}:
+                            CATEGORYGROUP: ${{ categoryGroup }}
+                        ${{ else }}:
+                          ${{ each category in split(categoryGroup, ',') }}:
+                            ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('ios:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                              ${{ category }}:
+                                CATEGORYGROUP: ${{ category }}
                   timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
@@ -403,6 +490,7 @@ stages:
                     - template: ui-tests-steps.yml
                       parameters:
                         platform: ios
+                        requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                         ${{ if eq(version, 'latest') }}:
                           version: ${{ parameters.defaultiOSVersion }}
                         ${{ if ne(version, 'latest') }}:
@@ -419,6 +507,7 @@ stages:
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), '')), contains(join(',', parameters.selectedCategories), 'windows:'))) }}:
   - stage: winui_ui_tests
     displayName: WinUI UITests
     dependsOn: build_ui_tests_windows
@@ -431,9 +520,15 @@ stages:
                     # WebView is excluded on Windows: Appium driver cannot attach to WebView2
                     # (appium/appium#22217 / dotnet/maui#35334). Remove this filter once fixed.
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ if ne(categoryGroup, 'WebView') }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if eq(length(parameters.selectedCategories), 0) }}:
+                        ${{ if ne(categoryGroup, 'WebView') }}:
+                          ${{ categoryGroup }}:
+                            CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ else }}:
+                        ${{ each category in split(categoryGroup, ',') }}:
+                          ${{ if and(ne(category, 'WebView'), or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('windows:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
+                            ${{ category }}:
+                              CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -445,6 +540,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: windows
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       version: "10.0.19041.0"
                       device: windows10
                       path: ${{ project.winui }}
@@ -460,7 +556,8 @@ stages:
                       platform: 'Windows'
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Windows CV1 UI Tests - Testing CollectionView with UseWindowsCollectionView2Handler=false
+  # Windows CV1 UI Tests - Run the same CollectionView shards with UseWindowsCollectionView2Handler=false
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), contains(join(',', parameters.selectedCategories), 'CollectionView')), contains(join(',', parameters.selectedCategories), 'windows:CollectionView'))) }}:
   - stage: winui_ui_tests_cv1
     displayName: WinUI UITests CV1
     dependsOn: build_ui_tests_windows_cv1
@@ -468,6 +565,13 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: CV1_winui_ui_tests_${{ project.name }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ if startsWith(categoryGroup, 'CollectionView') }}:
+                        ${{ if or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'CollectionView'), containsValue(parameters.selectedCategories, categoryGroup), containsValue(parameters.selectedCategories, format('windows:{0}', categoryGroup))) }}:
+                          ${{ categoryGroup }}:
+                            CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
                 workspace:
                   clean: all
@@ -486,7 +590,8 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant: "CoreCLR"
                       useWindowsCV1: true
-                      testFilter: "CollectionView"
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
+                      testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "UseWindowsCV1:true"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -495,6 +600,7 @@ stages:
                     parameters:
                       platform: 'Windows CV1'
                       artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'catalyst'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
@@ -505,8 +611,14 @@ stages:
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if eq(length(parameters.selectedCategories), 0) }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ else }}:
+                        ${{ each category in split(categoryGroup, ',') }}:
+                          ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('catalyst:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                            ${{ category }}:
+                              CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -519,6 +631,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
+                      requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                       version: "15.3"
                       device: mac
                       path: ${{ project.mac }}

@@ -13,8 +13,8 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 {
-	protected record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, string Lineinfo = "enable", bool EnableIncrementalHotReload = false)
-		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn, LineInfo: Lineinfo, EnableIncrementalHotReload: EnableIncrementalHotReload);
+	protected record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, string Lineinfo = "enable", bool EnableIncrementalHotReload = false, string? LineInfoMetadata = null, string? Configuration = null, bool EnablePreviewFeatures = false, string Inflator = "SourceGen")
+		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn, LineInfo: Lineinfo, EnableIncrementalHotReload: EnableIncrementalHotReload, LineInfoMetadata: LineInfoMetadata, Configuration: Configuration, EnablePreviewFeatures: EnablePreviewFeatures, Inflator: Inflator);
 
 	protected (GeneratorDriverRunResult result, string? text) RunGenerator(string xaml, string code, string noWarn = "", string targetFramework = "", string? path = null, string lineinfo = "enable", bool assertNoCompilationErrors = true, bool enableIncrementalHotReload = false)
 	{

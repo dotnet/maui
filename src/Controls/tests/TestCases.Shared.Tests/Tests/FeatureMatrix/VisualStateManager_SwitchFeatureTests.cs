@@ -22,7 +22,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.WaitForElement("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -32,7 +32,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: On"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -42,7 +42,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -52,7 +52,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchReset");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -98,7 +98,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -110,7 +110,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]

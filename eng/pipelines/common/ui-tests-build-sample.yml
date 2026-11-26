@@ -1,5 +1,6 @@
 parameters:
   platform: '' # [ android, ios, windows, catalyst ]
+  platforms: [] # Optional shared-build platforms; Windows has its own build/artifact.
   path: '' # path to csproj
   device: '' # the native device or simulator selector
   cakeArgs: '' # additional cake args
@@ -26,7 +27,7 @@ steps:
 - template: provision.yml
   parameters:
     skipAndroidSdks: false
-    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), and(gt(length(parameters.platforms), 0), not(containsValue(parameters.platforms, 'ios')), not(containsValue(parameters.platforms, 'catalyst')))) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
@@ -66,7 +67,20 @@ steps:
   
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    $platformArguments = "--${{ parameters.platform }}"
+    # Selected runs build only the selected mobile platforms. The flags below are
+    # template-evaluated booleans, so no parameter text reaches this script.
+    if ($env:UITEST_SHARED_PLATFORMS -eq 'True') {
+        $platformArguments = @(
+            if ($env:UITEST_BUILD_ANDROID -eq 'True') { '--android' }
+            if ($env:UITEST_BUILD_IOS -eq 'True') { '--ios' }
+            if ($env:UITEST_BUILD_CATALYST -eq 'True') { '--catalyst' }
+        ) -join ' '
+        if (-not $platformArguments) {
+            throw "A shared sample build requires at least one non-Windows platform."
+        }
+    }
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} $platformArguments --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
     # Add Material3 build argument if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
@@ -84,6 +98,11 @@ steps:
     
     Invoke-Expression $buildCommand
   displayName: 'Build the samples'
+  env:
+    UITEST_SHARED_PLATFORMS: ${{ and(gt(length(parameters.platforms), 0), lt(length(parameters.platforms), 4)) }}
+    UITEST_BUILD_ANDROID: ${{ containsValue(parameters.platforms, 'android') }}
+    UITEST_BUILD_IOS: ${{ containsValue(parameters.platforms, 'ios') }}
+    UITEST_BUILD_CATALYST: ${{ containsValue(parameters.platforms, 'catalyst') }}
 
 - bash: |
     if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi

@@ -44,7 +44,8 @@ public partial class BlazorWebViewTests
 		TestLoggerProvider? testLoggerProvider = null,
 		Type? componentType = null,
 		string? indexHtml = null,
-		Func<PlatformWebView, Task>? waitForReady = null)
+		Func<PlatformWebView, Task>? waitForReady = null,
+		Action<BlazorWebView>? configureBlazorWebView = null)
 	{
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 		{
@@ -68,6 +69,7 @@ public partial class BlazorWebViewTests
 			},
 		};
 		bwv.RootComponents.Add(new RootComponent { ComponentType = componentType ?? typeof(NoOpComponent), Selector = "#app", });
+		configureBlazorWebView?.Invoke(bwv);
 
 		await InvokeOnMainThreadAsync(async () =>
 		{

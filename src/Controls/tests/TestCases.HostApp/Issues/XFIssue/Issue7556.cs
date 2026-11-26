@@ -6,13 +6,47 @@ public class Issue7556 : TestFlyoutPage
 {
 	protected override void Init()
 	{
+		var closeFlyout = new Command(() => IsPresented = false,
+			() => Window is not null && !((IFlyoutPageController)this).ShouldShowSplitMode);
+
+		SizeChanged += (_, _) => closeFlyout.ChangeCanExecute();
+		PropertyChanged += (_, args) =>
+		{
+			if (args.PropertyName == nameof(FlyoutLayoutBehavior))
+				closeFlyout.ChangeCanExecute();
+		};
+
 		Flyout = new ContentPage()
 		{
 			Content = new StackLayout()
 			{
 				Children =
 				{
-					new Label() { Margin = 20, Text = "Flyout Visible", TextColor = Colors.White }
+					new Label() { Margin = 20, Text = "Flyout Visible", AutomationId = "FlyoutVisible", TextColor = Colors.White },
+					// The phone flyout covers the detail page, so these actions must be reachable here.
+					new Button()
+					{
+						Text = "Push Modal Page When on Split FlyoutLayoutBehavior",
+						AutomationId = "PushModalPage",
+						Command = new Command(() =>
+						{
+							Detail.Navigation.PushModalAsync(new ContentPage()
+							{
+								Content = new Button()
+								{
+									Text = "After popping this Page FlyoutLayoutBehavior should still be split",
+									AutomationId = "PopModalPage",
+									Command = new Command(() => Detail.Navigation.PopModalAsync())
+								}
+							});
+						})
+					},
+					new Button()
+					{
+						Text = "Close Flyout",
+						AutomationId = "CloseFlyout",
+						Command = closeFlyout
+					}
 				}
 			},
 			Title = "Flyout",
@@ -41,23 +75,12 @@ public class Issue7556 : TestFlyoutPage
 					Command = new Command(OnChangeMasterBehavior),
 					AutomationId = "ChangeMasterBehavior"
 				},
-				new Button()
+				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout", AutomationId = "DetailSentinel" },
+				new Label()
 				{
-					Text = "Push Modal Page When on Split FlyoutLayoutBehavior",
-					AutomationId = "PushModalPage",
-					Command = new Command(() =>
-					{
-						Navigation.PushModalAsync(new ContentPage(){
-							Content = new Button()
-							{
-								Text = "After popping this Page FlyoutLayoutBehavior should still be split",
-								AutomationId = "PopModalPage",
-								Command = new Command(() => Navigation.PopModalAsync())
-							}
-						});
-					})
-				},
-				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout" }
+					Text = DeviceInfo.Idiom.ToString(),
+					AutomationId = "DeviceIdiom"
+				}
 			};
 
 

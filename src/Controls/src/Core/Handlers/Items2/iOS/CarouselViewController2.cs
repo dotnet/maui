@@ -20,6 +20,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
 		int _gotoPosition = -1;
+		// Bounds of an in-flight animated ScrollTo. UIKit reports every page the animation passes
+		// over, so positions strictly between these bounds are transient and must not become Position.
+		int _scrollToOrigin = -1;
+		int _scrollToTarget = -1;
 		// Native cell callbacks still require loop-index mapping after detachment.
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
@@ -136,6 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = true;
 			// Pending scroll target belongs to the old source; clear it.
 			_gotoPosition = -1;
+			ClearScrollToRange();
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
@@ -241,6 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
+			ClearScrollToRange();
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -368,6 +374,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_gotoPosition = -1;
+			ClearScrollToRange();
 
 			// We need to update the position while modifying the collection.
 			targetPosition = GetTargetPosition();
@@ -505,6 +512,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// _gotoPosition stuck (no-op scroll, or dropped while another scroll was
 			// in-flight), so clear it to avoid blocking future programmatic scrolls.
 			_gotoPosition = -1;
+			ClearScrollToRange();
 		}
 
 		void UpdateScrollBarVisibility()
@@ -543,6 +551,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				_gotoPosition = goToPosition;
+				ClearScrollToRange();
 
 				// This scroll (Position/CurrentItem changes, loop toggles) bypasses ScrollToRequested,
 				// so it must clear/arm the MacCatalyst pending restore itself; otherwise it is not
@@ -601,10 +610,83 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
+			if (_scrollToTarget != -1 && position != _scrollToOrigin)
+			{
+				if (position != _scrollToTarget && IsStrictlyBetween(position, _scrollToOrigin, _scrollToTarget) && !IsUserScrolling())
+				{
+					return;
+				}
+
+				ClearScrollToRange();
+			}
+
 			_lastSyncedPosition = position;
 			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			SetCurrentItem(position);
 			UpdateVisualStates();
+		}
+
+		internal void PrepareScrollTo(ScrollToRequestEventArgs args)
+		{
+			ClearScrollToRange();
+
+			if (!args.IsAnimated || !InitialPositionSet || ItemsView is not CarouselView carousel || carousel.Loop)
+			{
+				return;
+			}
+
+			if (ItemsSource is null || ItemsSource.ItemCount == 0)
+			{
+				return;
+			}
+
+			var target = args.Mode == ScrollToMode.Position ? args.Index : GetIndexForItem(args.Item).Row;
+			var origin = carousel.Position;
+
+			if (target < 0 || target >= ItemsSource.ItemCount || origin < 0 || Math.Abs(target - origin) < 2)
+			{
+				return;
+			}
+
+			_scrollToOrigin = origin;
+			_scrollToTarget = target;
+		}
+
+		void ClearScrollToRange()
+		{
+			_scrollToOrigin = -1;
+			_scrollToTarget = -1;
+		}
+
+		static bool IsStrictlyBetween(int value, int bound1, int bound2) =>
+			value > Math.Min(bound1, bound2) && value < Math.Max(bound1, bound2);
+
+		// Horizontal carousels scroll an orthogonal section scroller rather than the collection view,
+		// and its drag callbacks don't reach this controller, so inspect the scroller hosting the cells.
+		private protected virtual bool IsUserScrolling()
+		{
+			if (CollectionView is not UICollectionView collectionView)
+			{
+				return false;
+			}
+
+			if (IsInteracting(collectionView))
+			{
+				return true;
+			}
+
+			foreach (var cell in collectionView.VisibleCells)
+			{
+				if (cell.Superview is UIScrollView scroller && scroller != collectionView)
+				{
+					return IsInteracting(scroller);
+				}
+			}
+
+			return false;
+
+			static bool IsInteracting(UIScrollView scrollView) =>
+				scrollView.Tracking || scrollView.Dragging || scrollView.Decelerating;
 		}
 
 		void SetCurrentItem(int carouselPosition)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -137,6 +138,36 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var differentPixels = AssertPixelsDiffer(fastestPixels, autoPixels,
 				$"Apple {appearance} splash output should honor ResizeQuality metadata during 1792-to-64 downscaling.");
 			Output.WriteLine($"Apple {appearance} Fastest vs Auto: {differentPixels} of {autoPixels.Length} pixels differ.");
+		}
+
+		[WindowsFact]
+		public void RegeneratingWaitsForTemporarilyLockedPreviousImage()
+		{
+			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["BaseSize"] = "64",
+				["DarkFile"] = "images/camera.png",
+			});
+
+			var success = GetNewTask(splash).Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			// Windows refuses to delete a file while another handle without delete sharing is
+			// open, as antivirus or indexing services briefly do after a file is written.
+			var previousImage = Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset", "MauiSplashImage.png");
+			var lockingHandle = new FileStream(previousImage, FileMode.Open, FileAccess.Read, FileShare.Read);
+			using var releaseLock = new Timer(_ => lockingHandle.Dispose(), null, 1500, Timeout.Infinite);
+			try
+			{
+				success = GetNewTask(splash).Execute();
+			}
+			finally
+			{
+				lockingHandle.Dispose();
+			}
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png", 64, 64);
 		}
 
 		[Fact]

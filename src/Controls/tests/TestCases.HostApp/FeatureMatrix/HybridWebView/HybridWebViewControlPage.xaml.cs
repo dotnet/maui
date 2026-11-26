@@ -89,7 +89,7 @@ public partial class HybridWebViewControlPage : ContentPage
 		_viewModel.ResetToDefaults();
 		try
 		{
-			await ReloadAndWaitForDocumentTitleAsync();
+			await ReloadAndWaitForDocumentTitleAsync(resetScrollPosition: true);
 		}
 		catch (Exception ex)
 		{
@@ -102,18 +102,32 @@ public partial class HybridWebViewControlPage : ContentPage
 		_viewModel.Status = "WebView initialized";
 	}
 
-	async Task ReloadAndWaitForDocumentTitleAsync()
+	async Task ReloadAndWaitForDocumentTitleAsync(bool resetScrollPosition = false)
 	{
 		_viewModel.Status = "Loading...";
 		var expectedTitle = GetTitle(_viewModel.HybridRoot, _viewModel.DefaultFile);
 		// The marker disappears with the old document, so an unchanged title cannot signal readiness early.
-		await MyHybridWebView.EvaluateJavaScriptAsync("window.hybridWebViewReloadPending = true;");
+		// Reset must not restore the scroll offset of another DefaultFile sharing this URL.
+		await MyHybridWebView.EvaluateJavaScriptAsync(resetScrollPosition
+			? "history.scrollRestoration = 'manual'; window.hybridWebViewReloadPending = true;"
+			: "window.hybridWebViewReloadPending = true;");
 		_ = ReloadAsync();
+
+		var titleScript = resetScrollPosition
+			? """
+				(() => {
+					if (document.readyState === 'loading' || window.hybridWebViewReloadPending) return '';
+					history.scrollRestoration = 'manual';
+					window.scrollTo(0, 0);
+					return window.scrollX === 0 && window.scrollY === 0 ? document.title : '';
+				})()
+				"""
+			: "document.readyState !== 'loading' && !window.hybridWebViewReloadPending ? document.title : ''";
 
 		for (var attempt = 0; attempt < 50; attempt++)
 		{
-			var title = await MyHybridWebView.EvaluateJavaScriptAsync(
-				"document.readyState === 'complete' && !window.hybridWebViewReloadPending ? document.title : ''");
+			// The DOM is ready at 'interactive'; remote gallery images must not block title readiness.
+			var title = await MyHybridWebView.EvaluateJavaScriptAsync(titleScript);
 			if (title == expectedTitle)
 			{
 				_viewModel.Status = $"Loaded: {title}";

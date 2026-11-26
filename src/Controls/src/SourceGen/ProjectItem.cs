@@ -11,20 +11,21 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
+	public bool EnablePreviewFeatures => Options.IsTrue("build_property.EnablePreviewFeatures");
+
 	public bool EnableLineInfo
 	{
 		get
 		{
-			if (Options.IsEnabled("build_metadata.additionalfiles.LineInfo"))
+			if (Options.IsEnabled("build_metadata.additionalfiles.LineInfo") || Options.IsTrue("build_metadata.additionalfiles.LineInfo"))
 				return true;
-			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo"))
+			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo") || Options.IsFalse("build_metadata.additionalfiles.LineInfo"))
 				return false;
-			if (Options.IsEnabled("build_property.MauiXamlLineInfo"))
+			if (Options.IsEnabled("build_property.MauiXamlLineInfo") || Options.IsTrue("build_property.MauiXamlLineInfo"))
 				return true;
-			if (Options.IsDisabled("build_property.MauiXamlLineInfo"))
+			if (Options.IsDisabled("build_property.MauiXamlLineInfo") || Options.IsFalse("build_property.MauiXamlLineInfo"))
 				return false;
-			//return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
-			return false; //default to False due to roslyn issues with large pdbs https://github.com/dotnet/roslyn/issues/80952
+			return true;
 		}
 	}
 

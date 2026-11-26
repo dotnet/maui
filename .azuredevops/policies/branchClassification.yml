@@ -14,4 +14,5 @@ configuration:
       - net10.0
       - net9.0
       - inflight/current
+      - candidate/*
       classification: production

@@ -93,8 +93,14 @@ approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
 The **Release tracking PRs** workflow prepares the next candidate/inflight
 branches and draft PR pair after a verified same-repository candidate merge into
 net11. Its merged-PR trigger uses default-branch workflow code and explicitly
-checks out trusted main, never PR code. A create-once release-lane receipt pins
-inputs/outputs for retries. The deployed workflow stages the exact candidate merge,
+checks out trusted main, never PR code. A reproducible release-lane receipt pins
+inputs/outputs for same-source retries. A newer maintainer candidate merge
+supersedes stale cycle bookkeeping through an exact SHA lease, retaining its
+predecessor receipt and replacing only exact verified older generated outputs.
+Normalization, servicing and state PR heads use source-<full-candidate-merge-sha>
+suffixes, so historical PRs cannot block a newer source. Concurrent unrelated
+edits remain protected, and actual API/Git failures remain explicit.
+The deployed workflow stages the exact candidate merge,
 proposes next-cycle CI on net11 and creates the next pair. Independently, publication
 opens a servicing/stable PR targeting automation/release, before any real release.
 The maintainer reviews and merges using Create a merge commit, then manually
@@ -135,12 +141,23 @@ versioned `inflight/<band>-srN` sources without changing the existing
 Scheduled inflight runs select their eligible lane from
 `eng/release-rollover.json` at a pinned public `main` commit before packing.
 `nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
-`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+`releaseBand` and `currentSr + 1`; `candidate` (the checked-in mode) selects
+`candidate/<releaseBand>-sr<currentSr>` and follows `currentSr` automatically.
+Unselected retained lanes skip packing. Feed destination is set by the Maestro
+default-channel mapping for the built branch, not by this repository; a stale
+`inflight/current → .NET 10.0.1xx SDK` mapping publishes 11.x packages to the
+dotnet10 feeds.
 
 This is a staged migration, not evidence that the new lanes are already building.
 Deploy the selection and branding changes to the internal mirrored source
 branches and verify signed artifacts/feed wiring before switching the canonical
 mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
+The independent nightly-mirror job in **Prepare signed release publication**
+reconciles the state-selected candidate hourly and after canonical state changes
+on trusted `main`. It reuses the existing Azure federation identity and keeps an
+internal ownership ref so later rebases cannot discard unrelated internal work.
+The mirrored candidate retains the existing 05:00 UTC official-build schedule;
+the mirror workflow does not queue a competing nightly.
 
 ### Engineering dependency updates
 
@@ -150,6 +167,21 @@ and XHarness. Update the toolset as a coordinated dependency change: keep
 including its source commit, and take the matching `eng/common` update and feed
 changes when required. An individual NuGet version bump does not update the
 tracked toolset or shared build infrastructure.
+
+Stable Mono ToolChain and Emscripten workload manifests are published to
+NuGet.org. `src/DotNet/Dependencies/Workloads.csproj` adds that source only when
+restoring final runtime manifests; prerelease manifests retain the configured
+build feeds. Official Pack macOS stages the exact restored runtime-manifest
+`.nupkg` files in `MacNativeArtifacts`. Pack Windows sets
+`RuntimeManifestPackageSource` to that transferred local source instead of
+contacting NuGet.org through CFSClean. Public/local builds keep the NuGet.org
+default. Keep the pinned versions unchanged when repairing a missing-source
+`NU1102` failure rather than substituting the nearest older RTM package or
+assuming SDK-bundled manifests with the same version contain identical packs.
+The .NET 11.0.101 SDK also requests .NET 10.0.16 workload packs, which are not
+yet on NuGet.org. `NuGet.config` includes the public .NET 10 build feed for
+those packs until they are released; the manifest restore source alone does
+not supply packages to `dotnet workload install`.
 
 Dependabot excludes these packages to avoid partial toolset upgrades. It also
 excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot

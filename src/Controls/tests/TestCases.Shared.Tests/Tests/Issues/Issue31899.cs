@@ -28,6 +28,12 @@ public class Issue31899 : _IssuesUITest
 	public void AddHeaderFooterAtRuntime()
 	{
 		App.WaitForElement("HeaderLabel");
+		if (App.FindElement("ToggleHeaderButton").GetText() == "Remove Header")
+			App.Click("ToggleHeaderButton");
+		if (App.FindElement("ToggleFooterButton").GetText() == "Remove Footer")
+			App.Click("ToggleFooterButton");
+		App.WaitForNoElement("CollectionViewHeader");
+		App.WaitForNoElement("CollectionViewFooter");
 		App.Click("ToggleHeaderButton");
 		App.Click("ToggleFooterButton");
 		VerifyScreenshot();

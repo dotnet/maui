@@ -58,6 +58,7 @@ namespace Microsoft.Maui.UnitTests
 	class DispatcherTimerStub : IDispatcherTimer
 	{
 		readonly DispatcherStub _dispatcher;
+		readonly object _tickLock = new();
 
 		Timer? _timer;
 
@@ -76,18 +77,29 @@ namespace Microsoft.Maui.UnitTests
 
 		public void Start()
 		{
-			_timer = new Timer(OnTimeout, null, Interval, IsRepeating ? Interval : Timeout.InfiniteTimeSpan);
+			lock (_tickLock)
+				_timer = new Timer(OnTimeout, null, Interval, IsRepeating ? Interval : Timeout.InfiniteTimeSpan);
 
 			void OnTimeout(object? state)
 			{
-				_dispatcher.Dispatch(() => Tick?.Invoke(this, EventArgs.Empty));
+				_dispatcher.Dispatch(() =>
+				{
+					lock (_tickLock)
+					{
+						if (_timer is not null)
+							Tick?.Invoke(this, EventArgs.Empty);
+					}
+				});
 			}
 		}
 
 		public void Stop()
 		{
-			_timer?.Dispose();
-			_timer = null;
+			lock (_tickLock)
+			{
+				_timer?.Dispose();
+				_timer = null;
+			}
 		}
 	}
 

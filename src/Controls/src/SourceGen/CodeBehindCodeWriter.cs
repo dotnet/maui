@@ -8,6 +8,7 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
@@ -37,11 +38,14 @@ static class CodeBehindCodeWriter
 			return "";
 		}
 
+		var codeBlocks = GetCodeBlocks(xamlItem, compilation, reportDiagnostic, ct);
 		var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
 		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, ct, reportDiagnostic, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
 		{
 			return "";
 		}
+
+		var eventHandlerAccessor = GetEventHandlerAccessor(projItem, compilation);
 
 		// Preserve prior fields for EnC, but do not assign fields without a compatible live element.
 		var fieldState = ReconcileNamedFieldsForHotReload(projItem!, compilation, ref namedFields);
@@ -51,6 +55,21 @@ static class CodeBehindCodeWriter
 		var warningDisable = GetWarningDisable(xamlItem.Root.OwnerDocument);
 		if (warningDisable != "")
 			sb.AppendLine($"#pragma warning disable {warningDisable}");
+
+		// Inline code follows the project's nullable context, not the generated-code default.
+		var hasUsings = codeBlocks.Any(block => block.Usings.Length > 0);
+		if (hasUsings)
+			sb.AppendLine("#nullable restore");
+		foreach (var directive in codeBlocks.SelectMany(block => block.Usings).OrderByDescending(directive => directive.IsGlobal))
+		{
+			if (projItem!.EnableLineInfo)
+				sb.AppendLine($"#line {directive.LineNumber} {SymbolDisplay.FormatLiteral(projItem.AdditionalText.Path, true)}");
+			sb.AppendLine(directive.Text);
+			if (projItem!.EnableLineInfo)
+				sb.AppendLine("#line default");
+		}
+		if (hasUsings)
+			sb.AppendLine("#nullable disable");
 
 		var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem!.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
@@ -98,6 +117,26 @@ static class CodeBehindCodeWriter
 
 		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType!.ToFQDisplayString()}");
 		sb.AppendLine("\t{");
+
+		if (eventHandlerAccessor is not null)
+		{
+			const string tableType = "global::System.Runtime.CompilerServices.ConditionalWeakTable<object, global::System.Collections.Generic.Dictionary<string, global::System.Delegate>>";
+			sb.AppendLine($"\t\tprivate {tableType} {eventHandlerAccessor}_table = null!;");
+			sb.AppendLine($"\t\tprivate {tableType} {eventHandlerAccessor}() => {eventHandlerAccessor}_table ??= new();");
+		}
+
+		if (codeBlocks.Count > 0)
+			sb.AppendLine("#nullable restore");
+		foreach (var block in codeBlocks)
+		{
+			if (projItem.EnableLineInfo)
+				sb.AppendLine($"#line {block.LineNumber} {SymbolDisplay.FormatLiteral(projItem.AdditionalText.Path, true)}");
+			sb.AppendLine(block.Members);
+			if (projItem.EnableLineInfo)
+				sb.AppendLine("#line default");
+		}
+		if (codeBlocks.Count > 0)
+			sb.AppendLine("#nullable disable");
 
 		//optional default ctor
 		if (generateDefaultCtor)
@@ -294,6 +333,121 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("}");
 
 		return sb.ToString();
+	}
+
+	readonly record struct CodeUsing(string Text, int LineNumber, bool IsGlobal);
+	readonly record struct CodeBlock(string Members, int LineNumber, CodeUsing[] Usings);
+
+	internal static string? GetEventHandlerAccessor(ProjectItem? projectItem, Compilation compilation)
+	{
+		if (projectItem is null || !projectItem.EnableIncrementalHotReload)
+			return null;
+
+		var itemName = projectItem.ManifestResourceName ?? projectItem.RelativePath;
+		if (itemName is null)
+			return null;
+
+		return $"__GetXamlEventHandlers_{Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}")}";
+	}
+
+	static List<CodeBlock> GetCodeBlocks(XamlProjectItemForCB item, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken cancellationToken)
+	{
+		var blocks = new List<CodeBlock>();
+		var source = item.SourceText!;
+		var xaml = source.ToString();
+		if (xaml.IndexOf("Code", StringComparison.Ordinal) < 0)
+			return blocks;
+
+		var projectItem = item.ProjectItem!;
+		var namespaces = item.Nsmgr!;
+		using var reader = XmlReader.Create(new StringReader(xaml),
+			new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+			new XmlParserContext(namespaces.NameTable, namespaces, null, XmlSpace.None));
+		var hasClass = false;
+		while (reader.Read())
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			if (reader.NodeType != XmlNodeType.Element)
+				continue;
+			if (reader.Depth == 0)
+				hasClass = reader.GetAttribute("Class", XamlParser.X2006Uri) != null || reader.GetAttribute("Class", XamlParser.X2009Uri) != null;
+			if (reader.LocalName != "Code" || (reader.NamespaceURI != XamlParser.X2006Uri && reader.NamespaceURI != XamlParser.X2009Uri))
+				continue;
+
+			var lineInfo = (IXmlLineInfo)reader;
+			var line = lineInfo.LineNumber;
+			var column = lineInfo.LinePosition;
+			var sourceLine = source.Lines[line - 1];
+			var start = Math.Min(sourceLine.Start + column - 1, sourceLine.End);
+			var span = new TextSpan(start, Math.Min(reader.Name.Length, source.Length - start));
+			var location = Location.Create(projectItem.AdditionalText.Path, span, source.Lines.GetLinePositionSpan(span));
+			var validPlacement = reader.Depth == 1 && hasClass;
+			if (reader.Depth != 1)
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XCodeNotChildOfRoot, location));
+			else if (!hasClass)
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
+			else
+			{
+				if (projectItem.Inflator != XamlInflator.SourceGen)
+					reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XCodeRequiresSourceGen, location));
+				if (!projectItem.EnablePreviewFeatures)
+					reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XCodeRequiresPreview, location));
+			}
+
+			var content = new StringBuilder();
+			var contentLine = line;
+			var nextLine = line;
+			var hasContent = false;
+			var hasElement = false;
+			using (var subtree = reader.ReadSubtree())
+			{
+				while (subtree.Read())
+				{
+					if (subtree.Depth == 0)
+						continue;
+					if (subtree.NodeType == XmlNodeType.Element)
+						hasElement = true;
+					if (subtree.NodeType is not (XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.Whitespace or XmlNodeType.SignificantWhitespace))
+						continue;
+					if (!hasContent)
+					{
+						contentLine = ((IXmlLineInfo)subtree).LineNumber;
+						nextLine = contentLine;
+						hasContent = true;
+					}
+					while (nextLine < ((IXmlLineInfo)subtree).LineNumber)
+					{
+						content.Append('\n');
+						nextLine++;
+					}
+					content.Append(subtree.Value);
+					foreach (var character in subtree.Value)
+						if (character == '\n')
+							nextLine++;
+				}
+			}
+			if (hasElement)
+			{
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, "x:Code must contain only text or CDATA."));
+				continue;
+			}
+			if (!validPlacement)
+				continue;
+
+			var code = content.ToString();
+			var parseOptions = (compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions ?? CSharpParseOptions.Default)
+				.WithKind(SourceCodeKind.Script);
+			var syntax = CSharpSyntaxTree.ParseText(code, parseOptions, cancellationToken: cancellationToken).GetCompilationUnitRoot(cancellationToken);
+			var members = code.ToCharArray();
+			foreach (var directive in syntax.Usings)
+				for (var i = directive.SpanStart; i < directive.Span.End; i++)
+					if (members[i] != '\r' && members[i] != '\n')
+						members[i] = ' ';
+			blocks.Add(new CodeBlock(new string(members), contentLine, syntax.Usings
+				.Select(u => new CodeUsing(u.ToString(), contentLine + u.GetLocation().GetLineSpan().StartLinePosition.Line, u.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)))
+				.ToArray()));
+		}
+		return blocks;
 	}
 
 	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out INamedTypeSymbol? baseType, out IEnumerable<(string, string, string, XmlType, string)>? namedFields)

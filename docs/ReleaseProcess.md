@@ -20,7 +20,7 @@ Completed rollover also prepares a draft canonical-state PR advancing
 `currentSr`; it waits for verified staging, normalization and next lanes, not a real cut, and
 never merges itself. `nightlyMode` is retained. Switching from legacy to
 versioned nightly builds requires separate owner-reviewed deployment evidence;
-in versioned mode, every cycle advance must verify its next selected nightly
+in versioned or candidate mode, every cycle advance must verify its next selected nightly
 lane before the state PR is merged.
 
 Tags are a manual release-captain action, separate from configured servicing

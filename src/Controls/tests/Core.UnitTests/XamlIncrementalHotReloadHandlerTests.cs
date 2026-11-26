@@ -52,6 +52,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			void UpdateComponent() => UpdateComponentCalls++;
 		}
 
+		// A generated page with the companion signal type nested in it.
+		sealed class SignaledHotReloadablePage
+		{
+			public int UpdateComponentCalls;
+
+			void UpdateComponent() => UpdateComponentCalls++;
+
+			static class __XamlHotReloadSignal
+			{
+				internal static string Fingerprint() => "patch";
+			}
+		}
+
+		static readonly Type SignalType = typeof(SignaledHotReloadablePage).GetNestedType("__XamlHotReloadSignal", System.Reflection.BindingFlags.NonPublic)!;
+
 		sealed class ThrowingHotReloadablePage
 		{
 			public int Attempts;
@@ -218,6 +233,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(versionBefore, applied.FromVersion);
 			Assert.Equal(versionBefore + 1, applied.ToVersion);
 			Assert.Contains(typeof(HotReloadablePage), applied.UpdatedTypes);
+		}
+
+		[Fact]
+		public void SignaledType_IsPatched_OnlyWhenItsSignalIsUpdated()
+		{
+			using var _ = IncrementalHotReloadEnabled();
+			var page = RegisterLiveInstance<SignaledHotReloadablePage>();
+			using var recorder = new DiagnosticsRecorder();
+
+			// C#-only delta: the root is listed, its companion isn't. The pending patch must not be re-applied.
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { typeof(SignaledHotReloadablePage) });
+
+			Assert.Equal(0, page.UpdateComponentCalls);
+			Assert.Empty(Assert.Single(recorder.Requested).HandledTypes);
+
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { typeof(SignaledHotReloadablePage), SignalType });
+
+			Assert.Equal(1, page.UpdateComponentCalls);
+			Assert.Equal(new[] { typeof(SignaledHotReloadablePage) }, recorder.Requested[1].HandledTypes.ToArray());
+		}
+
+		[Fact]
+		public void SignalTypeAlone_IsMappedToItsRoot()
+		{
+			using var _ = IncrementalHotReloadEnabled();
+			var page = RegisterLiveInstance<SignaledHotReloadablePage>();
+			using var recorder = new DiagnosticsRecorder();
+
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { SignalType });
+
+			Assert.Equal(1, page.UpdateComponentCalls);
+			Assert.Equal(new[] { typeof(SignaledHotReloadablePage) }, Assert.Single(recorder.Requested).HandledTypes.ToArray());
 		}
 
 		[Fact]

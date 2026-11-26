@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Platform
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
+				UpdateShadowVisibility(_child);
 			}
 		}
 
@@ -197,7 +198,13 @@ namespace Microsoft.Maui.Platform
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			// OnChildSizeChanged does not fire for Visibility changes to child
-			if (sender is FrameworkElement child && _shadowCanvasCachedChildren?.Count > 0)
+			if (sender is FrameworkElement child)
+				UpdateShadowVisibility(child);
+		}
+
+		void UpdateShadowVisibility(FrameworkElement child)
+		{
+			if (_shadowCanvasCachedChildren?.Count > 0)
 			{
 				var shadowHost = _shadowCanvasCachedChildren[0];
 				shadowHost.Visibility = child.Visibility;
@@ -220,6 +227,8 @@ namespace Microsoft.Maui.Platform
 			{
 				_shadowCanvasCachedChildren.RemoveAt(0);
 			}
+
+			CachedChildren.Remove(_shadowCanvas);
 
 			_shadowVisual?.Dispose();
 			_shadowVisual = null;
@@ -263,9 +272,13 @@ namespace Microsoft.Maui.Platform
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
+			// The host only carries the shadow's composition visual. It deliberately has no Fill:
+			// a filled (even transparent) shape adds XAML content bounds, so a transformed child
+			// (for example a scaled view inside a clipped Border) would enlarge RenderTargetBitmap
+			// captures and hit testing beyond the composition clip, unlike the same view without a shadow.
 			_shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{
-				Fill = new SolidColorBrush(UI.Colors.Transparent),
+				Visibility = Child.Visibility,
 				Width = width,
 				Height = height
 			};
@@ -287,6 +300,14 @@ namespace Microsoft.Maui.Platform
 			_shadowVisual.Shadow = _dropShadow;
 
 			ElementCompositionPreview.SetElementChildVisual(_shadowHost, _shadowVisual);
+		}
+
+		internal void InvalidateShadow()
+		{
+			if (HasShadow)
+			{
+				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
 		}
 
 		async Task UpdateShadowAsync()

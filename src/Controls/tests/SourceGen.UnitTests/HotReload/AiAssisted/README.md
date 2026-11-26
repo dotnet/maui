@@ -38,6 +38,8 @@ DOTNET_MODIFIABLE_ASSEMBLIES=debug dotnet test src/Controls/tests/SourceGen.Unit
 |---|---|---|
 | #36256 complex root property | GREEN generator guard | `StructuralHotReloadTests.RootComplexElementProperty_IsNotSilentlyDropped` |
 | #36256 live root replacement | GREEN live | `StructuralHotReloadTests.RootComplexElementProperty_AppliesToExistingPage` |
+| #36256 nested new content containers | GREEN generator guard | `StructuralHotReloadTests.NewContentContainersWithNewContent_CompileWithoutIViewCast` |
+| #36256 live nested content containers | GREEN live | `StructuralHotReloadTests.NewContentContainersWithNewContent_AppliesToExistingPage` |
 | Inline resources | DOC-SKIP-GUARD | `StructuralHotReloadTests.ComplexPropertyWithNestedResources_IsExplicitlySkipped` |
 | Ancestor `StaticResource` | DOC-SKIP-GUARD | `StructuralHotReloadTests.ComplexPropertyWithAncestorStaticResource_IsExplicitlySkipped` |
 | Nested and element-form `StaticResource` | DOC-SKIP-GUARD, two theory rows | `StructuralHotReloadTests.ComplexPropertyWithNestedStaticResourceShape_IsExplicitlySkipped` |

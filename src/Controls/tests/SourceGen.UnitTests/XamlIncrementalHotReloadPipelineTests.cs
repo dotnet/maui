@@ -11,11 +11,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
@@ -1447,7 +1449,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void ResourceAdded_UCEmitsResourceDictionaryAdd()
 	{
-		// Adding a resource should emit this.Resources["key"] = value
+		// Additions must not overwrite existing resources or force their construction.
 		XamlHotReloadState.Reset();
 		const string xamlV1 = """
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -1483,7 +1485,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(uc);
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
-		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		Assert.Contains("if (!this.Resources.ContainsKey(\"SecondaryColor\"))", uc, StringComparison.Ordinal);
+		Assert.Contains("AddFactory(\"SecondaryColor\"", uc, StringComparison.Ordinal);
+		Assert.DoesNotContain("this.Resources[\"AccentColor\"] =", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2491,8 +2495,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
-		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
-		Assert.Contains("Clicked += OnClicked2", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked -= __typedHandler", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked += __newHandler", uc, StringComparison.Ordinal);
+		Assert.Contains("OnClicked2", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2521,7 +2526,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
-		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked -= __typedHandler", uc, StringComparison.Ordinal);
 		Assert.DoesNotContain("Clicked +=", uc, StringComparison.Ordinal);
 	}
 
@@ -2633,6 +2638,388 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// Accent (still a Color) should be updated
 		Assert.Contains("Resources[\"Accent\"]", uc, StringComparison.Ordinal);
 	}
+
+	// https://github.com/dotnet/maui/issues/36937
+	// Roslyn can evaluate the same driver snapshot more than once (driver forks, speculative or
+	// design-time runs, cancelled runs). Every evaluation of identical inputs must produce the same
+	// pending patch: an earlier evaluation must not "consume" it and leave the later one empty.
+
+	[Fact]
+	public void ForkedRunsOfSameEditedDriver_EmitIdenticalPatch()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+
+		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var second = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.NotNull(first);
+		Assert.NotEqual(baselineUc, first);
+		Assert.Contains("\"World\"", first, StringComparison.Ordinal);
+		Assert.Equal(first, second);
+	}
+
+	[Fact]
+	public void DiscardedThrowawayRun_DoesNotConsumePendingPatch()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+
+		// A throwaway compilation over the same sources (e.g. a design-time request) runs first and is discarded.
+		_ = edited.RunGenerators(compilation.Clone());
+		var real = edited.RunGenerators(compilation).GetRunResult();
+
+		var uc = FindUCSource(real, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("\"World\"", uc, StringComparison.Ordinal);
+		Assert.Empty(real.Diagnostics);
+	}
+
+	[Fact]
+	public void ForkedRunsOfImplicitStyleEdit_EmitIdenticalPatch()
+	{
+		// Shape of the repro reported on the issue: an implicit Style in an x:Class ResourceDictionary.
+		XamlHotReloadState.Reset();
+		const string red = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			                    x:Class="TestApp.Styles">
+			    <Style TargetType="Label">
+			        <Setter Property="TextColor" Value="Red" />
+			    </Style>
+			</ResourceDictionary>
+			""";
+		var blue = red.Replace("Value=\"Red\"", "Value=\"Blue\"", StringComparison.Ordinal);
+		const string codeBehind = """
+			namespace TestApp;
+			public partial class Styles : Microsoft.Maui.Controls.ResourceDictionary
+			{
+				public Styles() => InitializeComponent();
+			}
+			""";
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var vRed = MakeFileAt("Styles.xaml", red);
+		var vBlue = MakeFileAt("Styles.xaml", blue);
+
+		var baseline = CreateDriver(vRed).RunGenerators(compilation);
+		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
+		var edited = baseline.ReplaceAdditionalText(vRed.Text, vBlue.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([vBlue]));
+
+		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var second = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.NotNull(first);
+		Assert.NotEqual(baselineUc, first);
+		Assert.Contains("Blue", first, StringComparison.Ordinal);
+		Assert.Equal(first, second);
+	}
+
+	[Fact]
+	public void InterleavedRunWithDifferentCSharp_DoesNotConsumePatchOfOriginalSnapshot()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var otherCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs"));
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+
+		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		_ = edited.RunGenerators(otherCompilation);
+		var again = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.Contains("\"World\"", first, StringComparison.Ordinal);
+		Assert.Equal(first, again);
+	}
+
+	[Fact]
+	public void ThrowawayRunWithDifferentCSharpFirst_DoesNotConsumePendingPatch()
+	{
+		// A throwaway compilation with different user C# (e.g. a speculative or design-time snapshot)
+		// evaluates the edited XAML before the real compilation does.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var throwawayCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs"));
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+
+		var throwaway = FindUCSource(edited.RunGenerators(throwawayCompilation).GetRunResult(), "uc.xsg");
+		var real = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.Contains("\"World\"", real, StringComparison.Ordinal);
+		Assert.Equal(throwaway, real);
+	}
+
+	static string LabelPage(string label) => $$"""
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label {{label}} />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	[Fact]
+	public void ThrowawayRunWithDifferentXaml_PatchesFromEveryRetainedGeneration()
+	{
+		// https://github.com/dotnet/maui/issues/36937: the throwaway run advances the cache to Text="World"
+		// FontSize="30", which never reaches the app. The real patch can't be diffed from that generation
+		// alone: instances still at Text="Hello" must get a branch that sets Text.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var applied = MakeFile(LabelPage("Text=\"Hello\""));
+		var throwaway = MakeFile(LabelPage("Text=\"World\" FontSize=\"30\""));
+		var real = MakeFile(LabelPage("Text=\"World\""));
+
+		var baseline = CreateDriver(applied).RunGenerators(compilation);
+		_ = baseline.ReplaceAdditionalText(applied.Text, throwaway.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([throwaway])).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(applied.Text, real.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([real]));
+		var uc = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Equal(1, UpdateComponentText.BaselineCaseCount(uc!));
+		var fromThrowaway = UpdateComponentText.DefaultPatch(uc!);
+		Assert.Contains("FontSize", fromThrowaway, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"World\"", fromThrowaway, StringComparison.Ordinal);
+		Assert.Contains("\"World\"", uc!.Replace(fromThrowaway, string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+
+		// Re-evaluating the same snapshot, or a C#-only edit, emits the same multi-baseline patch.
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg"));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg"));
+	}
+
+	[Fact]
+	public void RetainedGenerations_AreBounded()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var files = Enumerable.Range(0, XamlHotReloadState.MaxBaselines + 3)
+			.Select(i => MakeFile(LabelPage($"Text=\"Text{i}\"")))
+			.ToArray();
+
+		GeneratorDriver driver = CreateDriver(files[0]).RunGenerators(compilation);
+		string? uc = null;
+		for (var i = 1; i < files.Length; i++)
+		{
+			driver = driver.ReplaceAdditionalText(files[i - 1].Text, files[i].Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([files[i]])).RunGenerators(compilation);
+			uc = FindUCSource(driver.GetRunResult(), "uc.xsg");
+			Assert.Equal(Math.Min(i, XamlHotReloadState.MaxBaselines) - 1, UpdateComponentText.BaselineCaseCount(uc!));
+		}
+	}
+
+	[Fact]
+	public void CSharpOnlyEditAfterXamlEdit_KeepsPatchAndSignalUnchanged()
+	{
+		// The pending patch is re-emitted unchanged, so the delta of a C#-only edit doesn't touch
+		// UpdateComponent() or its companion signal type, and the runtime doesn't re-apply the patch.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		var patch = FindUCSource(edited.GetRunResult(), "uc.xsg");
+		Assert.Contains("\"World\"", patch, StringComparison.Ordinal);
+
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
+		var afterCSharpEdit = FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg");
+
+		Assert.Equal(patch, afterCSharpEdit);
+		Assert.NotEqual(GetSignalFingerprint(baselineUc), GetSignalFingerprint(patch));
+	}
+
+	[Fact]
+	public void SignalFingerprint_ChangesWithThePatchOnly()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+		var v1Again = MakeFile(PageXamlV1);
+
+		var driver = CreateDriver(v1).RunGenerators(compilation);
+		var first = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+		driver = driver.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		var forward = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+		driver = driver.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation);
+		var reverted = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		Assert.Equal(string.Empty, first);
+		Assert.NotEqual(string.Empty, forward);
+		Assert.NotEqual(string.Empty, reverted);
+		Assert.NotEqual(forward, reverted);
+	}
+
+	static string GetSignalFingerprint(string? updateComponentSource)
+	{
+		Assert.NotNull(updateComponentSource);
+		var match = System.Text.RegularExpressions.Regex.Match(
+			updateComponentSource!,
+			"static class __XamlHotReloadSignal\\s*\\{\\s*internal static string Fingerprint\\(\\) => \"([0-9a-f]*)\";");
+		Assert.True(match.Success, "The companion signal type is missing.");
+		return match.Groups[1].Value;
+	}
+
+	[Fact]
+	public void RevertAfterForkedRuns_EmitsPatchBackToOriginalValue()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+		var v1Again = MakeFile(PageXamlV1);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+		_ = edited.RunGenerators(compilation);
+		var editedRun = edited.RunGenerators(compilation);
+
+		var reverted = editedRun.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation);
+		var uc = FindUCSource(reverted.GetRunResult(), "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("\"Hello\"", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void EditingAnotherXamlFile_KeepsPendingPatchOfFirstFile()
+	{
+		XamlHotReloadState.Reset();
+		const string otherV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.OtherPage">
+			    <Label Text="Other" />
+			</ContentPage>
+			""";
+		var otherV2 = otherV1.Replace("Text=\"Other\"", "x:Name=\"other\" Text=\"Other2\"", StringComparison.Ordinal);
+		var compilation = CreateCompilation();
+		var main1 = MakeFile(PageXamlV1);
+		var main2 = MakeFile(PageXamlV2_PropertyChange);
+		var other1 = MakeFileAt("OtherPage.xaml", otherV1);
+		var other2 = MakeFileAt("OtherPage.xaml", otherV2);
+
+		var driver = CreateDriver(main1, other1).RunGenerators(compilation);
+		driver = driver.ReplaceAdditionalText(main1.Text, main2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other1])).RunGenerators(compilation);
+		var mainPatch = FindUCSource(driver.GetRunResult(), "MainPage.xaml.uc.xsg");
+		Assert.Contains("\"World\"", mainPatch, StringComparison.Ordinal);
+
+		// Editing OtherPage (including a new x:Name, which changes the generated code-behind of the
+		// compilation) re-runs MainPage's generation with unchanged MainPage XAML and unchanged user C#.
+		driver = driver.ReplaceAdditionalText(other1.Text, other2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other2])).RunGenerators(compilation);
+
+		Assert.Equal(mainPatch, FindUCSource(driver.GetRunResult(), "MainPage.xaml.uc.xsg"));
+		Assert.Contains("\"Other2\"", FindUCSource(driver.GetRunResult(), "OtherPage.xaml.uc.xsg"), StringComparison.Ordinal);
+	}
+
+	const string TemplateMainPageXaml = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <ScrollView>
+		        <VerticalStackLayout Padding="30,0" Spacing="25">
+		            <Image Source="dotnet_bot.png" HeightRequest="185" Aspect="AspectFit"
+		                   SemanticProperties.Description="dot net bot in a hovercraft number nine" />
+		            <Label Text="Hello, Maui!" Style="{StaticResource Headline}" SemanticProperties.HeadingLevel="Level1" />
+		            <Label Text="Welcome to &#10;.NET Multi-platform App UI" Style="{StaticResource SubHeadline}"
+		                   SemanticProperties.HeadingLevel="Level2"
+		                   SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
+		            <Button x:Name="CounterBtn" Text="Click me" SemanticProperties.Hint="Counts the number of times you click"
+		                    Clicked="OnCounterClicked" HorizontalOptions="Fill" />
+		        </VerticalStackLayout>
+		    </ScrollView>
+		</ContentPage>
+		""";
+
+	const string TemplateStylesXaml = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+		    <Style TargetType="Label" x:Key="Headline">
+		        <Setter Property="FontSize" Value="32" />
+		        <Setter Property="HorizontalOptions" Value="Center" />
+		    </Style>
+		    <Style TargetType="Label" x:Key="SubHeadline">
+		        <Setter Property="FontSize" Value="24" />
+		        <Setter Property="HorizontalOptions" Value="Center" />
+		    </Style>
+		</ResourceDictionary>
+		""";
+
+	// https://github.com/dotnet/maui/issues/40413: editing the default template's MainPage text was
+	// silently dropped when the IDE evaluated the edited snapshot more than once or ran a throwaway
+	// compilation first (#36937), because the later evaluation emitted an empty UpdateComponent.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DefaultTemplateMainPageTextEdit_SurvivesRepeatedAndThrowawayEvaluations(bool throwawayFirst)
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
+			using System;
+			using Microsoft.Maui.Controls;
+			namespace TestApp;
+			public partial class MainPage : ContentPage
+			{
+				public MainPage() => InitializeComponent();
+				void OnCounterClicked(object? sender, EventArgs e) => CounterBtn.Text = "Clicked";
+			}
+			"""));
+		var v1 = MakeFile(TemplateMainPageXaml);
+		var v2 = MakeFile(TemplateMainPageXaml.Replace("Hello, Maui!", "Hello, World!", StringComparison.Ordinal));
+		var styles = MakeFileAt("Resources/Styles/Styles.xaml", TemplateStylesXaml);
+
+		var edited = CreateDriver(v1, styles).RunGenerators(compilation)
+			.ReplaceAdditionalText(v1.Text, v2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2, styles]));
+		var first = FindUCSource(edited.RunGenerators(throwawayFirst ? compilation.Clone() : compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
+		var applied = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
+
+		Assert.Contains("\"Hello, World!\"", first, StringComparison.Ordinal);
+		Assert.Equal(first, applied);
+	}
+
+	static SourceGeneratorDriver.AdditionalFile MakeFileAt(string relativePath, string xaml) =>
+		new(
+			SourceGeneratorDriver.ToAdditionalText(relativePath, xaml),
+			Kind: "Xaml",
+			RelativePath: relativePath,
+			TargetPath: "TestApp/" + relativePath,
+			ManifestResourceName: null,
+			TargetFramework: "net11.0",
+			NoWarn: null,
+			EnableIncrementalHotReload: true);
+
+	static GeneratorDriver CreateDriver(params SourceGeneratorDriver.AdditionalFile[] files) =>
+		CSharpGeneratorDriver.Create(
+				[new XamlGenerator().AsSourceGenerator()],
+				driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true))
+			.AddAdditionalTexts(files.Select(f => f.Text).ToImmutableArray())
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider(files));
 
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)

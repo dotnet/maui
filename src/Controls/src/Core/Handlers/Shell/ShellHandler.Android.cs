@@ -235,10 +235,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 _shellItemHandler = adapter.GetHandler();
             }
 
-            // Use RunOrWaitForResume for state-saved safety (same as FlyoutViewHandler),
-            // but CommitNow() instead of Commit() because Shell's navigation flow requires
-            // the fragment to be immediately in the hierarchy — page Appearing events
-            // and NavigationRequested handlers fire synchronously after this returns.
+            // Preserve synchronous initialization unless we must wait for resume.
+            // OnFragmentResumed runs while FragmentManager is executing transactions,
+            // so the deferred path must enqueue the transaction instead.
+            bool waitForResume = fragmentManager.IsStateSaved;
             _pendingFragment = fragmentManager.RunOrWaitForResume(context, (fm) =>
             {
                 var transaction = fm.BeginTransaction();
@@ -250,8 +250,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 transaction
                     .Replace(Resource.Id.navigationlayout_content, fragment)
-                    .SetReorderingAllowed(true)
-                    .CommitNow();
+                    .SetReorderingAllowed(true);
+
+                if (waitForResume)
+                {
+                    transaction.Commit();
+                }
+                else
+                {
+                    transaction.CommitNow();
+                }
             });
         }
 

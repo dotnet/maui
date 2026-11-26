@@ -1,4 +1,37 @@
 <Project>
+  <!-- Match the net10 workload manifests until the SDK's 10.0.15 packs are public. -->
+  <Target Name="_UsePublishedNet10RuntimePacks"
+      BeforeTargets="ProcessFrameworkReferences"
+      Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' == 'v10.0'">
+    <PropertyGroup>
+      <_PublishedNet10RuntimeVersion>10.0.12</_PublishedNet10RuntimeVersion>
+    </PropertyGroup>
+    <ItemGroup>
+      <KnownFrameworkReference Condition="'%(KnownFrameworkReference.TargetFramework)' == 'net10.0' and ('%(KnownFrameworkReference.TargetingPackName)' == 'Microsoft.NETCore.App.Ref' or '%(KnownFrameworkReference.TargetingPackName)' == 'Microsoft.AspNetCore.App.Ref' or '%(KnownFrameworkReference.TargetingPackName)' == 'Microsoft.WindowsDesktop.App.Ref')">
+        <TargetingPackVersion>$(_PublishedNet10RuntimeVersion)</TargetingPackVersion>
+        <LatestRuntimeFrameworkVersion>$(_PublishedNet10RuntimeVersion)</LatestRuntimeFrameworkVersion>
+      </KnownFrameworkReference>
+      <KnownRuntimePack Condition="'%(KnownRuntimePack.TargetFramework)' == 'net10.0' and '%(KnownRuntimePack.Identity)' == 'Microsoft.NETCore.App'">
+        <LatestRuntimeFrameworkVersion>$(_PublishedNet10RuntimeVersion)</LatestRuntimeFrameworkVersion>
+      </KnownRuntimePack>
+      <KnownAppHostPack Condition="'%(KnownAppHostPack.TargetFramework)' == 'net10.0' and '%(KnownAppHostPack.Identity)' == 'Microsoft.NETCore.App'">
+        <AppHostPackVersion>$(_PublishedNet10RuntimeVersion)</AppHostPackVersion>
+      </KnownAppHostPack>
+      <KnownCrossgen2Pack Condition="'%(KnownCrossgen2Pack.TargetFramework)' == 'net10.0' and '%(KnownCrossgen2Pack.Identity)' == 'Microsoft.NETCore.App.Crossgen2'">
+        <Crossgen2PackVersion>$(_PublishedNet10RuntimeVersion)</Crossgen2PackVersion>
+      </KnownCrossgen2Pack>
+      <KnownILCompilerPack Condition="'%(KnownILCompilerPack.TargetFramework)' == 'net10.0' and '%(KnownILCompilerPack.Identity)' == 'Microsoft.DotNet.ILCompiler'">
+        <ILCompilerPackVersion>$(_PublishedNet10RuntimeVersion)</ILCompilerPackVersion>
+      </KnownILCompilerPack>
+      <KnownILLinkPack Condition="'%(KnownILLinkPack.TargetFramework)' == 'net10.0' and '%(KnownILLinkPack.Identity)' == 'Microsoft.NET.ILLink.Tasks'">
+        <ILLinkPackVersion>$(_PublishedNet10RuntimeVersion)</ILLinkPackVersion>
+      </KnownILLinkPack>
+      <KnownAspNetCorePack Condition="'%(KnownAspNetCorePack.TargetFramework)' == 'net10.0' and '%(KnownAspNetCorePack.Identity)' == 'Microsoft.AspNetCore.App.Internal.Assets'">
+        <AspNetCorePackVersion>$(_PublishedNet10RuntimeVersion)</AspNetCorePackVersion>
+      </KnownAspNetCorePack>
+    </ItemGroup>
+  </Target>
+
   <Target Name="SkipRemoteBuildVerifyXcodeVersion" AfterTargets="EvaluateRemoteBuild">
     <PropertyGroup>
       <IsRemoteBuild>False</IsRemoteBuild>

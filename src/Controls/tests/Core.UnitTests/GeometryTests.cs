@@ -139,6 +139,100 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(100, lineGeometry.EndPoint.Y);
 		}
 
+		[Theory]
+		[InlineData(15, 15, 19, 19)]
+		[InlineData(0, 0, 100, 100)]
+		[InlineData(-10.5, -20.25, 30.75, 40.5)]
+		[InlineData(19, 19, 15, 15)]
+		[InlineData(15, 15, 15, 15)]
+		public void LineGeometryStartsAtStartPoint(double startX, double startY, double endX, double endY)
+		{
+			var geometry = new LineGeometry(new Point(startX, startY), new Point(endX, endY));
+			var path = ((IShape)geometry).PathForBounds(new Rect(0, 0, 100, 100));
+
+			Assert.Equal(new[] { PathOperation.Move, PathOperation.Line }, path.SegmentTypes);
+			Assert.Equal(new[] { new PointF((float)startX, (float)startY), new PointF((float)endX, (float)endY) }, path.Points);
+			Assert.Equal(1, path.SubPathCount);
+			Assert.False(path.Closed);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void LineGeometryAppendPreservesExistingFigure(bool closed)
+		{
+			var path = new PathF();
+			path.MoveTo(1, 2);
+			path.LineTo(3, 4);
+			if (closed)
+				path.Close();
+
+			var expectedOperations = new List<PathOperation>(path.SegmentTypes)
+			{
+				PathOperation.Move,
+				PathOperation.Line
+			};
+			var geometry = new LineGeometry(new Point(15, 16), new Point(19, 20));
+
+			geometry.AppendPath(path);
+
+			Assert.Equal(expectedOperations, path.SegmentTypes);
+			Assert.Equal(new[] { new PointF(1, 2), new PointF(3, 4), new PointF(15, 16), new PointF(19, 20) }, path.Points);
+			Assert.Equal(2, path.SubPathCount);
+			Assert.Equal(closed, path.IsSubPathClosed(0));
+			Assert.False(path.IsSubPathClosed(1));
+		}
+
+		[Theory]
+		[InlineData(FillRule.Nonzero, false)]
+		[InlineData(FillRule.Nonzero, true)]
+		[InlineData(FillRule.EvenOdd, false)]
+		[InlineData(FillRule.EvenOdd, true)]
+		public void GeometryGroupPreservesEllipseAndLine(FillRule fillRule, bool lineFirst)
+		{
+			var ellipse = new EllipseGeometry(new Point(10, 10), 7, 7);
+			var line = new LineGeometry(new Point(15, 15), new Point(19, 19));
+			var group = new GeometryGroup { FillRule = fillRule };
+			if (lineFirst)
+				group.Children.Add(line);
+			group.Children.Add(ellipse);
+			if (!lineFirst)
+				group.Children.Add(line);
+
+			var expectedPath = new PathF();
+			if (lineFirst)
+				expectedPath.MoveTo(15, 15).LineTo(19, 19);
+			ellipse.AppendPath(expectedPath);
+			if (!lineFirst)
+				expectedPath.MoveTo(15, 15).LineTo(19, 19);
+
+			var path = new Path(group).GetPath();
+
+			Assert.Equal(expectedPath.SegmentTypes, path.SegmentTypes);
+			Assert.Equal(expectedPath.Points, path.Points);
+			Assert.Equal(2, path.SubPathCount);
+			Assert.True(path.IsSubPathClosed(lineFirst ? 1 : 0));
+			Assert.False(path.IsSubPathClosed(lineFirst ? 0 : 1));
+		}
+
+		[Fact]
+		public void NestedGeometryGroupKeepsLinesInSeparateFigures()
+		{
+			var nestedGroup = new GeometryGroup();
+			nestedGroup.Children.Add(new LineGeometry(new Point(1, 2), new Point(3, 4)));
+			var group = new GeometryGroup();
+			group.Children.Add(nestedGroup);
+			group.Children.Add(new LineGeometry(new Point(15, 16), new Point(19, 20)));
+
+			var path = new Path(group).GetPath();
+
+			Assert.Equal(new[] { PathOperation.Move, PathOperation.Line, PathOperation.Move, PathOperation.Line }, path.SegmentTypes);
+			Assert.Equal(new[] { new PointF(1, 2), new PointF(3, 4), new PointF(15, 16), new PointF(19, 20) }, path.Points);
+			Assert.Equal(2, path.SubPathCount);
+			Assert.False(path.IsSubPathClosed(0));
+			Assert.False(path.IsSubPathClosed(1));
+		}
+
 		[Fact]
 		public void TestEllipseGeometryConstruction()
 		{

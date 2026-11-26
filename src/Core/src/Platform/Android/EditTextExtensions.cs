@@ -33,6 +33,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
+			// Setting the same text again would move the cursor to the end and drop the selection
+			if ((editText.Text ?? string.Empty) == (editor.Text ?? string.Empty))
+				return;
+
 			editText.Text = editor.Text;
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
@@ -105,6 +109,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
+			// Read-only text has no InputType (see SetInputType), and setting one would make it editable again
+			if (textInput.IsReadOnly)
+				return;
+
 			var keyboard = textInput.Keyboard;
 
 			// TextFlagAutoCorrect will correct "Whats" -> "What's"
@@ -118,6 +126,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
+			// Read-only text has no InputType (see SetInputType), and setting one would make it editable again
+			if (textInput.IsReadOnly)
+				return;
+
 			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
 			if (!textInput.IsSpellCheckEnabled)
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
@@ -170,14 +182,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
 		{
-			bool isEditable = !entry.IsReadOnly;
-
 			editText.SetInputType(entry);
-
-			editText.FocusableInTouchMode = isEditable;
-			editText.Focusable = isEditable;
-
-			editText.SetCursorVisible(isEditable);
+			editText.SetCursorVisible(!entry.IsReadOnly);
 		}
 
 		public static void UpdateKeyboard(this EditText editText, IEntry entry)
@@ -192,11 +198,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this EditText editText, IEditor editor)
 		{
-			bool isReadOnly = !editor.IsReadOnly;
+			editText.SetInputType(editor);
+			editText.SetCursorVisible(!editor.IsReadOnly);
+		}
 
-			editText.FocusableInTouchMode = isReadOnly;
-			editText.Focusable = isReadOnly;
-			editText.SetCursorVisible(isReadOnly);
+		// A read-only input can get focus but can't be typed into, so it hides a keyboard that another input left open
+		internal static void HideSoftInputIfReadOnly(this View view, ITextInput textInput, bool hasFocus)
+		{
+			if (hasFocus && textInput.IsReadOnly)
+				view.HideSoftInput();
 		}
 
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry)
@@ -210,6 +220,7 @@ namespace Microsoft.Maui.Platform
 			bool hasText = entry.Text?.Length > 0;
 
 			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing
+				&& !entry.IsReadOnly
 				&& hasText
 				&& isFocused;
 
@@ -360,6 +371,7 @@ namespace Microsoft.Maui.Platform
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			var previousCursorPosition = editText.SelectionStart;
+			var previousSelectionEnd = editText.SelectionEnd;
 			var keyboard = textInput.Keyboard;
 
 			editText.InputType = keyboard.ToInputType();
@@ -403,6 +415,11 @@ namespace Microsoft.Maui.Platform
 				editText.SetRawInputType(inputType);
 			}
 
+			// Read-only text stays focusable. Without a key listener it isn't a text editor
+			// (InputType becomes TYPE_NULL), so it can't be typed into and doesn't show the keyboard.
+			if (textInput.IsReadOnly)
+				editText.KeyListener = null;
+
 			if (textInput is IElement element)
 			{
 				var services = element.Handler?.MauiContext?.Services;
@@ -415,8 +432,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
-			// Let's restore the cursor position to its previous location.
-			editText.SetSelection(previousCursorPosition);
+			// Let's restore the cursor position and selection to their previous location.
+			editText.SetSelection(previousCursorPosition, previousSelectionEnd);
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)

@@ -200,6 +200,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		&& skips.Contains(propertyName) || parentNode is ElementNode epn && epn.SkipProperties.Contains(propertyName))
 			return;
 
+		if (Context.Variables.TryGetValue(node, out var deferredVar)
+			&& node.IsDeferredMergedDictionary(originalParentNode, deferredVar.Type, Context, out var mergeTargetNode)
+			&& Context.Variables.TryGetValue(mergeTargetNode!, out var mergeTargetVar))
+		{
+			Writer.WriteLine($"{deferredVar.ValueAccessor} = global::Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<{deferredVar.Type.ToFQDisplayString()}>({mergeTargetVar.ValueAccessor});");
+			node.RegisterSourceInfo(Context, Writer);
+		}
+
 		// Handle lazy RD resources - they weren't created in CreateValuesVisitor
 		if (node.IsLazyResource(originalParentNode, Context))
 		{

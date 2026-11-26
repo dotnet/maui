@@ -9,6 +9,8 @@ trigger:
     - inflight/*
     - candidate/*
     - darc-*
+    # `/review run-ui-tests` dispatch commits (see eng/pipelines/common/run-tests-request.yml).
+    - run-tests/*
   tags:
     include:
     - '*'
@@ -56,8 +58,342 @@ variables:
   - template: /eng/pipelines/common/variables.yml@self
   - name: IosUITestImageOverride
     value: ACES_VM_SharedPool_Tahoe
+  # A `/review run-ui-tests` dispatch branch carries the AI selection for one PR (RunTests* variables).
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:
+    - template: /eng/pipelines/common/run-tests-request.yml@self
 
 parameters:
+
+  - name: selectedRun
+    type: boolean
+    default: false
+
+  # /review run-ui-tests selection: on which platforms each UI test category runs. Every value comes
+  # from a fixed list, because Azure DevOps lets an identity with only 'Queue builds' set such
+  # parameters, while free-text or object parameters need 'Edit queue build configuration'.
+  # Platforms are joined with '+'; uitestPlatform* say which platforms build and run at all.
+  # One uitest_<Category> per category in eng/pipelines/common/ui-tests.yml (RunTests.Tests.ps1
+  # checks they stay in sync).
+  - name: uitestPlatformAndroid
+    type: boolean
+    default: false
+  - name: uitestPlatformIos
+    type: boolean
+    default: false
+  - name: uitestPlatformCatalyst
+    type: boolean
+    default: false
+  - name: uitestPlatformWindows
+    type: boolean
+    default: false
+  - name: uitest_Accessibility
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ActionSheet
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ActivityIndicator
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Animation
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_AppLinks
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Border
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_BoxView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Brush
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Button
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CarouselView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView1
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView2
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView3
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView4
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView5
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView6
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CollectionView7
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Cells
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CheckBox
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ContextActions
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_CustomRenderers
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_DatePicker
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Dispatcher
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_DisplayAlert
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_DisplayPrompt
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_DragAndDrop
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Entry
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Editor
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Effects
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Essentials
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_FlyoutPage
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Focus
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Fonts
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Frame
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Gestures
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_GraphicsView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Image
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ImageButton
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_IndicatorView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_InputTransparent
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_IsEnabled
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_IsVisible
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Label
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Layout
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Lifecycle
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ManualReview
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Maps
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Navigation
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Page
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Performance
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Picker
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ProgressBar
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_RadioButton
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_RefreshView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_SafeAreaEdges
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Shadow
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ScrollView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_SearchBar
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Shape
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Slider
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_SoftInput
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Stepper
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Switch
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_SwipeView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Shell1
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Shell2
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_TabbedPage
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_TableView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_TimePicker
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_TitleView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ToolbarItem
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Triggers
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_ViewBaseTests
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_VisualStateManager
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Window
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_WebView
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
+  - name: uitest_Material3
+    type: string
+    default: none
+    values: [none, android, ios, catalyst, windows, android+ios, android+catalyst, android+windows, ios+catalyst, ios+windows, catalyst+windows, android+ios+catalyst, android+ios+windows, android+catalyst+windows, ios+catalyst+windows, android+ios+catalyst+windows]
 
   - name: BuildEverything
     type: boolean
@@ -169,6 +505,45 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
+      # A selection (/review run-ui-tests) only narrows pull-request builds. Branch, scheduled and
+      # manual builds of main, release/*, candidate/* and the other CI branches always run the
+      # full suite, whatever parameters they were queued with.
+      ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+        selectedRun: ${{ parameters.selectedRun }}
+        ${{ if eq(parameters.selectedRun, true) }}:
+          # Platforms with at least one selected category, and every selection as <platform>:<Category>.
+          selectedPlatforms:
+            - ${{ if eq(parameters.uitestPlatformAndroid, true) }}:
+              - android
+            - ${{ if eq(parameters.uitestPlatformIos, true) }}:
+              - ios
+            - ${{ if eq(parameters.uitestPlatformCatalyst, true) }}:
+              - catalyst
+            - ${{ if eq(parameters.uitestPlatformWindows, true) }}:
+              - windows
+          selectedCategories:
+            # Never empty: an empty list means every category. 'none:none' matches no stage or job.
+            - none:none
+            - ${{ each selection in parameters }}:
+              - ${{ if and(startsWith(selection.key, 'uitest_'), ne(selection.value, 'none')) }}:
+                - ${{ each platform in split(selection.value, '+') }}:
+                  - ${{ format('{0}:{1}', platform, replace(selection.key, 'uitest_', '')) }}
+      # A `/review run-ui-tests` dispatch branch: the selection comes from run-tests-request.yml, written by
+      # .github/scripts/Invoke-RunTests.ps1 with the same values the parameters above would carry.
+      # Only RunTestsMode 'full' keeps the defaults (every category on every platform); any other value
+      # narrows to the listed platforms and categories, so an unfilled request runs nothing.
+      ${{ if and(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/'), ne(variables['RunTestsMode'], 'full')) }}:
+        selectedRun: true
+        selectedPlatforms:
+          - ${{ each platform in split(variables['RunTestsPlatforms'], ',') }}:
+            - ${{ if ne(platform, '') }}:
+              - ${{ platform }}
+        selectedCategories:
+          # Never empty: an empty list means every category. 'none:none' matches no stage or job.
+          - none:none
+          - ${{ each category in split(variables['RunTestsCategories'], ',') }}:
+            - ${{ if ne(category, '') }}:
+              - ${{ category }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
@@ -188,7 +563,8 @@ stages:
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+      # `/review run-ui-tests` dispatch branches build a PR, so they get the pull-request lanes.
+      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')))) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.5', 'latest' ]
       ${{ else }}:

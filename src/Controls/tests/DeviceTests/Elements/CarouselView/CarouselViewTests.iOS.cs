@@ -204,6 +204,148 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// https://github.com/dotnet/maui/issues/29544: while an animated ScrollTo passes over items,
+		// UIKit can land a frame exactly on an intermediate page, which reports that page through
+		// SetPosition. Only the requested target must be reported.
+		[Fact(DisplayName = "Animated ScrollTo Does Not Report Positions It Passes Over")]
+		public async Task AnimatedScrollToDoesNotReportPositionsItPassesOver()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var carouselView = new CarouselView
+			{
+				Loop = false,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemsSource = new List<string> { "Item 0", "Item 1", "Item 2", "Item 3", "Item 4" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			var positionChanges = new List<(int Previous, int Current)>();
+			carouselView.PositionChanged += (_, e) => positionChanges.Add((e.PreviousPosition, e.CurrentPosition));
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carouselView, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				await AssertEventually(() => controller.InitialPositionSet &&
+					controller.CollectionView.VisibleCells.Length > 0,
+					message: "The carousel did not finish its initial layout.");
+
+				await AssertOnlyTargetIsReported(origin: 0, target: 3, passedOver: new[] { 1, 2 });
+				await AssertOnlyTargetIsReported(origin: 3, target: 1, passedOver: new[] { 2 });
+
+				async Task AssertOnlyTargetIsReported(int origin, int target, int[] passedOver)
+				{
+					Assert.Equal(origin, carouselView.Position);
+					positionChanges.Clear();
+
+					carouselView.ScrollTo(target);
+					foreach (var position in passedOver)
+					{
+						controller.SetPosition(position);
+					}
+
+					await Wait(() => carouselView.Position == target, timeout: 3000);
+					await Task.Delay(300);
+
+					Assert.Equal(new[] { (origin, target) }, positionChanges);
+					Assert.Equal(target, carouselView.Position);
+				}
+			});
+		}
+
+		// UIScrollView's Tracking/Dragging/Decelerating are read-only, so the controller's user-scroll
+		// detection is overridden to emulate a drag interrupting an animated ScrollTo.
+		[Fact(DisplayName = "Animated ScrollTo Reports Pages The User Scrolls To")]
+		public async Task AnimatedScrollToReportsPagesTheUserScrollsTo()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, UserScrollingCarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new List<string> { "Item 0", "Item 1", "Item 2", "Item 3", "Item 4" };
+			var carouselView = new CarouselView
+			{
+				Loop = false,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			var positionChanges = new List<(int Previous, int Current)>();
+			carouselView.PositionChanged += (_, e) => positionChanges.Add((e.PreviousPosition, e.CurrentPosition));
+
+			await CreateHandlerAndAddToWindow<UserScrollingCarouselViewHandler2>(carouselView, async handler =>
+			{
+				var controller = Assert.IsType<UserScrollingCarouselViewController2>(handler.Controller);
+				await AssertEventually(() => controller.InitialPositionSet &&
+					controller.CollectionView.VisibleCells.Length > 0,
+					message: "The carousel did not finish its initial layout.");
+
+				Assert.Equal(0, carouselView.Position);
+				positionChanges.Clear();
+
+				carouselView.ScrollTo(3);
+
+				controller.UserIsScrolling = true;
+				controller.SetPosition(1);
+
+				Assert.Equal(new[] { (0, 1) }, positionChanges);
+				Assert.Equal(1, carouselView.Position);
+				Assert.Equal(items[1], carouselView.CurrentItem);
+
+				controller.UserIsScrolling = false;
+				controller.SetPosition(2);
+
+				Assert.Equal(new[] { (0, 1), (1, 2) }, positionChanges);
+				Assert.Equal(2, carouselView.Position);
+				Assert.Equal(items[2], carouselView.CurrentItem);
+
+				await Task.Delay(500);
+			});
+		}
+
+		public class UserScrollingCarouselViewHandler2 : CarouselViewHandler2
+		{
+			protected override CarouselViewController2 CreateController(CarouselView newElement, UIKit.UICollectionViewLayout layout) =>
+				new UserScrollingCarouselViewController2(newElement, layout);
+		}
+
+		class UserScrollingCarouselViewController2 : CarouselViewController2
+		{
+			public UserScrollingCarouselViewController2(CarouselView itemsView, UIKit.UICollectionViewLayout layout)
+				: base(itemsView, layout)
+			{
+			}
+
+			public bool UserIsScrolling { get; set; }
+
+			private protected override bool IsUserScrolling() => UserIsScrolling || base.IsUserScrolling();
+		}
+
 		[Fact(DisplayName = "CarouselView Does Not Leak With Default ItemsLayout")]
 		public async Task CarouselViewDoesNotLeakWithDefaultItemsLayout()
 		{

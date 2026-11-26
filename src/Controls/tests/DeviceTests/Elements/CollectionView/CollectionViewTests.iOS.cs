@@ -23,6 +23,483 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact]
+		public async Task RemainingItemsThresholdLoadsPagesWhileScrolling()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Image, ImageHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			int pageCount = 0;
+			bool commandRunning = false;
+			bool reentered = false;
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 450,
+				WidthRequest = 300,
+				ItemsSource = items,
+				RemainingItemsThreshold = 5,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var grid = new Grid
+					{
+						Padding = 10,
+						RowDefinitions = new RowDefinitionCollection { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+						ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }
+					};
+					var image = new Image { Source = "white.png", Aspect = Aspect.AspectFill, HeightRequest = 60, WidthRequest = 60 };
+					Grid.SetRowSpan(image, 2);
+					var name = new Label { FontAttributes = FontAttributes.Bold };
+					name.SetBinding(Label.TextProperty, ".");
+					var location = new Label { Text = "Location", FontAttributes = FontAttributes.Italic, VerticalOptions = LayoutOptions.End };
+					grid.Add(image);
+					grid.Add(name, 1, 0);
+					grid.Add(location, 1, 1);
+					return grid;
+				})
+			};
+
+			collectionView.RemainingItemsThresholdReachedCommand = new Command(() =>
+			{
+				if (commandRunning)
+				{
+					reentered = true;
+					return;
+				}
+
+				if (pageCount >= 4)
+					return;
+
+				commandRunning = true;
+				try
+				{
+					for (int i = 0; i < 10; i++)
+						items.Add($"Item {items.Count}");
+
+					pageCount++;
+				}
+				finally
+				{
+					commandRunning = false;
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				for (int step = 0; step < 500; step++)
+				{
+					bool finished = await InvokeOnMainThreadAsync(() =>
+					{
+						var nativeView = handler.Controller.CollectionView;
+						var maxOffset = Math.Max(0, nativeView.ContentSize.Height - nativeView.Bounds.Height);
+						var nextOffset = Math.Min((double)nativeView.ContentOffset.Y + 10, maxOffset);
+						nativeView.SetContentOffset(new CGPoint(nativeView.ContentOffset.X, nextOffset), false);
+						return items.Count >= 50;
+					});
+
+					if (finished)
+						break;
+
+					await Task.Delay(20);
+				}
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					Assert.False(reentered, "The threshold command was invoked again before its previous invocation completed.");
+					Assert.Equal(4, pageCount);
+					Assert.Equal(50, items.Count);
+					Assert.Equal(50, (int)handler.Controller.CollectionView.NumberOfItemsInSection(0));
+				});
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ScrolledSourceChangeUsesCurrentSourceForThreshold(bool replaceSource)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"Item {i}"));
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				RemainingItemsThreshold = 5,
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 40 })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var controller = handler.Controller;
+				var nativeView = controller.CollectionView;
+				var originalSource = controller.ItemsSource;
+				var nativeDelegate = nativeView.Delegate;
+				var scrolledCount = 0;
+				var thresholdCount = 0;
+
+				collectionView.Scrolled += (_, _) =>
+				{
+					scrolledCount++;
+					if (replaceSource)
+						collectionView.ItemsSource = new ObservableCollection<string>(items);
+					else
+						items.Add("Added item");
+				};
+				collectionView.RemainingItemsThresholdReached += (_, _) => thresholdCount++;
+
+				// Isolate the callback under test from UIKit scrolls caused by the source update.
+				nativeView.Delegate = null;
+				try
+				{
+					using var delegator = new ThresholdTestDelegator(nativeView.CollectionViewLayout, controller);
+					delegator.Scrolled(nativeView);
+
+					Assert.Equal(1, scrolledCount);
+					if (replaceSource)
+					{
+						Assert.NotSame(originalSource, controller.ItemsSource);
+						Assert.Equal(0, thresholdCount);
+					}
+					else
+					{
+						Assert.Same(originalSource, controller.ItemsSource);
+						Assert.Equal(11, controller.ItemsSource.ItemCount);
+						Assert.Equal(1, thresholdCount);
+					}
+				}
+				finally
+				{
+					nativeView.Delegate = nativeDelegate;
+				}
+			});
+		}
+
+		class ThresholdTestDelegator : ItemsViewDelegator2<ReorderableItemsView, ItemsViewController2<ReorderableItemsView>>
+		{
+			public ThresholdTestDelegator(UICollectionViewLayout layout, ItemsViewController2<ReorderableItemsView> controller)
+				: base(layout, controller)
+			{
+			}
+
+			protected override (bool VisibleItems, int First, int Center, int Last) GetVisibleItemsIndex()
+				=> (true, 0, 4, 9);
+		}
+
+		[Theory]
+		[InlineData(false, true, 0, 0)]
+		[InlineData(true, true, 0, 0)]
+		[InlineData(false, false, 0, 0)]
+		[InlineData(false, true, 1, 6)]
+		[InlineData(false, true, 4, 0)]
+		[InlineData(true, true, 4, 6)]
+		[InlineData(false, false, 4, 6)]
+		public async Task HorizontalCollectionViewPreMountHeightMeasuresContent(
+			bool isGrouped, bool hasTemplate, int span, double verticalSpacing)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var items = new ObservableCollection<string> { "Item" };
+				ItemsLayout itemsLayout = span == 0
+					? new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+					: new GridItemsLayout(span, ItemsLayoutOrientation.Horizontal) { VerticalItemSpacing = verticalSpacing };
+				var collectionView = new CollectionView
+				{
+					ItemsLayout = itemsLayout,
+					IsGrouped = isGrouped,
+					ItemsSource = isGrouped
+						? new ObservableCollection<ObservableCollection<string>> { new(), items }
+						: items,
+					ItemTemplate = hasTemplate ? new DataTemplate(() =>
+					{
+						var label = new Label { FontSize = 20 };
+						label.SetBinding(Label.TextProperty, ".");
+						return label;
+					}) : null
+				};
+				var expectedLabel = new Label { Text = "Item", FontSize = 20 };
+				expectedLabel.ToPlatform(MauiContext);
+				using var defaultLabel = new UILabel { Text = "Item", Font = UIFont.PreferredBody };
+				var expectedHeight = hasTemplate
+					? ((IView)expectedLabel).Measure(double.PositiveInfinity, double.PositiveInfinity).Height
+					: defaultLabel.IntrinsicContentSize.Height;
+				Assert.True(expectedHeight > 0);
+				if (span > 0)
+				{
+					expectedHeight = expectedHeight * span + verticalSpacing * (span - 1);
+				}
+
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(350, double.PositiveInfinity);
+						Assert.Equal(expectedHeight, desiredSize.Height, 1);
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+					expectedLabel.DisconnectHandlers();
+				}
+			});
+		}
+
+		[Fact]
+		public async Task HorizontalGridInAutoRowDisplaysItems()
+		{
+			SetupBuilder();
+
+			const int span = 4;
+			const double itemHeight = 32;
+			const double verticalSpacing = 5;
+			var items = new[] { "Item 1", "Item 2", "Item 3", "Item 4" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemsLayout = new GridItemsLayout(span, ItemsLayoutOrientation.Horizontal)
+				{
+					VerticalItemSpacing = verticalSpacing
+				},
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = itemHeight, WidthRequest = 80 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+			var layout = new Grid
+			{
+				RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
+			};
+			layout.Add(collectionView);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				var handler = Assert.IsType<CollectionViewHandler2>(collectionView.Handler);
+				var platformView = handler.Controller.CollectionView;
+				var expectedHeight = itemHeight * span + verticalSpacing * (span - 1);
+
+				await AssertEventually(() => platformView.VisibleCells.Length == items.Length &&
+					Math.Abs(collectionView.Height - expectedHeight) <= 1,
+					message: "The four-row CollectionView should display its items in the Auto row.");
+
+				double previousBottom = 0;
+				for (int i = 0; i < items.Length; i++)
+				{
+					using var indexPath = NSIndexPath.Create(0, i);
+					var cell = Assert.IsAssignableFrom<TemplatedCell2>(platformView.CellForItem(indexPath));
+					var label = Assert.IsType<Label>(cell.PlatformHandler.VirtualView);
+					Assert.Equal(items[i], label.Text);
+					Assert.True((double)cell.Frame.Height >= itemHeight - 1);
+					if (i > 0)
+					{
+						Assert.True((double)cell.Frame.Top >= previousBottom + verticalSpacing - 1);
+					}
+					previousBottom = (double)cell.Frame.Bottom;
+					Assert.True(previousBottom <= (double)platformView.Bounds.Height + 1);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task HorizontalGridWithEmptyGroupsDoesNotMeasureItemSpacing()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = new ObservableCollection<ObservableCollection<string>> { new() },
+					ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Horizontal) { VerticalItemSpacing = 6 }
+				};
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					Assert.Equal(0, handler.GetDesiredSize(350, double.PositiveInfinity).Height, 1);
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(0, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(1, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, true, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, false, 400, 400, -1, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 300, 300, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 300, -1, 300)]
+		public async Task HorizontalCollectionViewPreMountHeightRespectsConstraints(
+			int itemCount, bool isGrouped, double heightConstraint, double expectedHeight, double heightRequest, double maximumHeight)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var items = new ObservableCollection<string>();
+				for (int i = 0; i < itemCount; i++)
+				{
+					items.Add($"Project {i}");
+				}
+
+				var collectionView = new CollectionView
+				{
+					MinimumHeightRequest = 250,
+					HeightRequest = heightRequest,
+					MaximumHeightRequest = maximumHeight,
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+					IsGrouped = isGrouped,
+					ItemsSource = isGrouped
+						? new ObservableCollection<ObservableCollection<string>> { items }
+						: items,
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Project", WidthRequest = 200 })
+				};
+
+				// The test helper measures and arranges the view; this test needs an unmeasured handler.
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					Assert.Equal(0, platformView.CollectionViewLayout.CollectionViewContentSize.Width);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(350, heightConstraint);
+						Assert.Equal(expectedHeight, desiredSize.Height, 1);
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(double.PositiveInfinity, 250)]
+		[InlineData(320, 320)]
+		public async Task VerticalCollectionViewPreMountWidthRespectsConstraints(double widthConstraint, double expectedWidth)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					MinimumWidthRequest = 250,
+					HeightRequest = 300,
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+					ItemsSource = new[] { "Row 1", "Row 2", "Row 3", "Row 4", "Row 5", "Row 6", "Row 7", "Row 8" },
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Row", HeightRequest = 40 })
+				};
+
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(widthConstraint, 300);
+						if (double.IsPositiveInfinity(widthConstraint))
+						{
+							Assert.Equal(expectedWidth, desiredSize.Width, 1);
+						}
+						else
+						{
+							Assert.InRange(desiredSize.Width, collectionView.MinimumWidthRequest, expectedWidth);
+						}
+						Assert.Equal(300, desiredSize.Height, 1);
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(350, 400, -1, double.PositiveInfinity)]
+		[InlineData(350, double.PositiveInfinity, -1, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, 400, 250, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, 400, -1, 250)]
+		[InlineData(350, 400, -1, 250)]
+		[InlineData(double.PositiveInfinity, 400, 300, 250)]
+		public async Task VerticalCollectionViewPreMountHeightMeasuresContent(
+			double widthConstraint, double heightConstraint, double widthRequest, double maximumWidth)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					WidthRequest = widthRequest,
+					MaximumWidthRequest = maximumWidth,
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+					ItemsSource = new[] { "Task 1", "Task 2", "Task 3" },
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Task", HeightRequest = 50 })
+				};
+
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					var desiredSize = handler.GetDesiredSize(widthConstraint, heightConstraint);
+					Assert.Equal(150, desiredSize.Height, 1);
+					Assert.Equal(originalFrame, platformView.Frame);
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
 		public Task GroupedCollectionViewEmptyViewTracksGroups()
 		{
@@ -87,8 +564,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task ItemsSourceGroupedClearDoestCrash()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ItemsSourceGroupedClearDoestCrash(bool clearItems)
 		{
 			SetupBuilder();
 
@@ -102,16 +581,44 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectionView = new CollectionView
 			{
+				WidthRequest = 300,
+				HeightRequest = 300,
 				IsGrouped = true,
 				ItemsSource = groupData,
+				ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
+			var initialFrame = collectionView.Frame;
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
-				await Task.Delay(1000);
+				await WaitForUIUpdate(initialFrame, collectionView);
+
+				var nativeCollectionView = handler.Controller.CollectionView;
+				nativeCollectionView.SetNeedsLayout();
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)nativeCollectionView.NumberOfSections());
+				for (int section = 0; section < groupData.Count; section++)
+				{
+					Assert.Equal(data.Count, (int)nativeCollectionView.NumberOfItemsInSection(section));
+				}
+
+				if (clearItems)
+				{
+					foreach (var group in groupData)
+					{
+						group.Clear();
+					}
+				}
+
 				groupData.Clear();
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(0, (int)nativeCollectionView.NumberOfSections());
+
 				groupData.Add(new("Header 1", new string[] { "oi" }));
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfSections());
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfItemsInSection(0));
 			});
 		}
 

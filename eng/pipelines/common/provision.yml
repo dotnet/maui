@@ -2,6 +2,13 @@ parameters:
   # Xcode
   skipXcode: false
   skipSimulatorSetup: false
+  # Opt-in: internal runs can install this Xcode from dotnet/macios' xcode-apple-silicon
+  # package (keep it in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config).
+  # Off by default: the agent images provide the Xcode that $(XCODE) pins, and the iOS SDK
+  # rejects any other Xcode version.
+  installXcodePackage: false
+  requirePinnedXcodeVersion: false
+  xcodePackageVersion: '27.2.0'
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -105,7 +112,38 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
+  # The agent images lag behind the Xcode that the .NET Apple workloads require, so internal
+  # runs install the Xcode that dotnet/macios pins, from the same feed macios provisions from.
+  # The feed lives in the dnceng 'internal' project; the public project has no access to it.
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.installXcodePackage, true)) }}:
+    - task: UniversalPackages@0
+      displayName: 'Download Xcode Universal Package'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 60
+      retryCountOnTaskFailure: 3
+      inputs:
+        command: download
+        downloadDirectory: $(Agent.TempDirectory)/xcode-universal-package
+        feedsToUse: internal
+        vstsFeed: internal/macios-tools-internal
+        vstsFeedPackage: xcode-apple-silicon
+        vstsPackageVersion: ${{ parameters.xcodePackageVersion }}
+
+    - script: bash "$CHECKOUT_DIRECTORY/eng/scripts/install-xcode-package.sh" "$XCODE_PACKAGE_DIRECTORY" "$EXPECTED_XCODE_PACKAGE_VERSION"
+      displayName: 'Install Xcode Universal Package'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 60
+      env:
+        CHECKOUT_DIRECTORY: ${{ parameters.checkoutDirectory }}
+        XCODE_PACKAGE_DIRECTORY: $(Agent.TempDirectory)/xcode-universal-package
+        EXPECTED_XCODE_PACKAGE_VERSION: ${{ parameters.xcodePackageVersion }}
+
+    - script: rm -rf -- "$(Agent.TempDirectory)/xcode-universal-package"
+      displayName: 'Clean Xcode package download'
+      condition: and(always(), eq(variables['Agent.OS'], 'Darwin'))
+
   - script: |
+      set -euo pipefail
       echo Remove old Xamarin Settings
       rm -f ~/Library/Preferences/Xamarin/Settings.plist
       rm -f ~/Library/Preferences/maui/Settings.plist
@@ -113,88 +151,111 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      XCODE_LIST=($(ls -1 /Applications | grep '^Xcode_' | sed 's/^Xcode_//;s/.app$//'))
-      for v in "${XCODE_LIST[@]}"; do echo "  $v"; done
+      XCODE_LIST=""
+      for APP_PATH in /Applications/Xcode_*.app; do
+        [[ -e "$APP_PATH" || -L "$APP_PATH" ]] || continue
+        APP_VERSION=${APP_PATH##*/Xcode_}
+        APP_VERSION=${APP_VERSION%.app}
+        XCODE_LIST+="${XCODE_LIST:+$'\n'}$APP_VERSION"
+      done
+      if [[ -n "$XCODE_LIST" ]]; then
+        printf '%s\n' "$XCODE_LIST"
+      else
+        echo "  (none)"
+      fi
       echo
       echo currently selected xcode:
-      xcrun xcode-select --print-path
+      xcode-select --print-path || echo "No developer directory is selected."
       echo
-      echo selecting latest xcode...
-      # XCODE variable is in major.minor format (e.g., 26.1)
-      XCODE_MAJOR_MINOR=$(XCODE)
-      echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
-
-      # Parse major and minor versions
-      MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
-      MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
-      PREV_MINOR=$((MINOR - 1))
-
-      # First, check for a non-symlinked Xcode_major.minor.app (e.g., Xcode_26.2.app)
-      GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
-      if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
-        echo "Found non-symlinked Xcode at ${GENERIC_PATH}"
-        XCODE_VERSION="${MAJOR}.${MINOR}"
-        XCODE_PATH="$GENERIC_PATH"
+      if [[ "$XCODE_PACKAGE_REQUIRED" == [Tt][Rr][Uu][Ee] ]]; then
+        XCODE_PATH="/Applications/Xcode_${EXPECTED_XCODE_PACKAGE_VERSION}.app"
+        if [[ ! -d "$XCODE_PATH" || -L "$XCODE_PATH" || -z "${XCODE_PACKAGE_BUILD:-}" ]]; then
+          echo "##vso[task.logissue type=error]The verified Xcode package is not installed at $XCODE_PATH."
+          exit 1
+        fi
+        echo "Selecting installed Xcode package at $XCODE_PATH."
       else
-        # Try to find a matching Xcode_{major}.{minor}.*.app (e.g., Xcode_26.2.0.app)
-        MATCHED_PATHS=(/Applications/Xcode_${MAJOR}.${MINOR}.*.app)
-        if [[ -d "${MATCHED_PATHS[0]}" ]]; then
-          # If multiple, pick the highest version
-          HIGHEST_PATH=$(ls -1d /Applications/Xcode_${MAJOR}.${MINOR}.*.app 2>/dev/null | sort -V | tail -n 1)
-          if [[ -n "$HIGHEST_PATH" && -d "$HIGHEST_PATH" ]]; then
-            echo "Found Xcode with patch version at $HIGHEST_PATH"
-            XCODE_VERSION=$(basename "$HIGHEST_PATH" | sed 's/^Xcode_//;s/.app$//')
-            XCODE_PATH="$HIGHEST_PATH"
+        echo selecting latest xcode...
+        # XCODE variable is in major.minor format (e.g., 26.1)
+        XCODE_MAJOR_MINOR=$(XCODE)
+        echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
+
+        # Parse major and minor versions
+        MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+        MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+
+        # First, check for a non-symlinked Xcode_major.minor.app (e.g., Xcode_26.2.app)
+        GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
+        if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
+          echo "Found non-symlinked Xcode at ${GENERIC_PATH}"
+          XCODE_VERSION="${MAJOR}.${MINOR}"
+        else
+          # Try to find a matching Xcode_{major}.{minor}.*.app (e.g., Xcode_26.2.0.app)
+          MATCHED_PATHS=(/Applications/Xcode_"${MAJOR}"."${MINOR}".*.app)
+          if [[ -d "${MATCHED_PATHS[0]}" ]]; then
+            # If multiple, pick the highest version
+            HIGHEST_PATH=$(printf '%s\n' "${MATCHED_PATHS[@]}" | sort -V | tail -n 1)
+            if [[ -n "$HIGHEST_PATH" && -d "$HIGHEST_PATH" ]]; then
+              echo "Found Xcode with patch version at $HIGHEST_PATH"
+              XCODE_VERSION=$(basename "$HIGHEST_PATH" | sed 's/^Xcode_//;s/.app$//')
+            else
+              XCODE_VERSION=$(XCODE)
+            fi
           else
             XCODE_VERSION=$(XCODE)
           fi
-        else
-          XCODE_VERSION=$(XCODE)
         fi
-      fi
 
-      # Check if the specified Xcode version exists, if not try fallbacks
-      # Fallback order: exact version -> major.minor -> major
-      XCODE_PATH=""
-      ORIGINAL_VERSION="$XCODE_VERSION"
+        # Check if the specified Xcode version exists, if not try fallbacks
+        # Fallback order: exact version -> major.minor -> major
+        XCODE_PATH=""
+        ORIGINAL_VERSION="$XCODE_VERSION"
 
-      # Build list of versions to try
-      VERSIONS_TO_TRY=("$XCODE_VERSION")
+        # Build list of versions to try
+        VERSIONS_TO_TRY=("$XCODE_VERSION")
 
-      # Add major.minor fallback (e.g., 26.0.1 -> 26.0)
-      if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
-        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
-      fi
-
-      # Add major fallback (e.g., 26.0.1 or 26.0 -> 26)
-      if [[ "$XCODE_VERSION" =~ ^([0-9]+)\. ]]; then
-        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
-      fi
-
-      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
-
-      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
-        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
-        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
-        if [[ -d "$CANDIDATE_PATH" ]]; then
-          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
-          XCODE_VERSION="$VERSION"
-          XCODE_PATH="$CANDIDATE_PATH"
-          break
-        else
-          echo "Xcode version ${VERSION} not found"
+        # Add major.minor fallback (e.g., 26.0.1 -> 26.0)
+        if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+          VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
         fi
-      done
 
-      if [[ -z "$XCODE_PATH" ]]; then
-        echo "##vso[task.logissue type=error]Required Xcode ${ORIGINAL_VERSION} is not installed on this agent. Update the macOS agent image before building with the pinned Apple SDK."
-        echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        echo "Installed Xcode versions: ${XCODE_LIST[*]}"
-        exit 1
+        # Add major fallback (e.g., 26.0.1 or 26.0 -> 26)
+        if [[ "$XCODE_VERSION" =~ ^([0-9]+)\. ]]; then
+          VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
+        fi
+
+        echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
+
+        for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+          CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
+          echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
+          if [[ -d "$CANDIDATE_PATH" ]]; then
+            echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
+            XCODE_PATH="$CANDIDATE_PATH"
+            break
+          else
+            echo "Xcode version ${VERSION} not found"
+          fi
+        done
+
+        if [[ -z "$XCODE_PATH" ]]; then
+          echo "##vso[task.logissue type=error]Required Xcode ${ORIGINAL_VERSION} is not installed on this agent. Update the macOS agent image before building with the pinned Apple SDK."
+          echo "Tried: ${VERSIONS_TO_TRY[*]}"
+          echo "Installed Xcode versions: ${XCODE_LIST:-none}"
+          exit 1
+        fi
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
-      xcrun xcode-select --print-path
+      selected_developer_path="$(xcode-select --print-path)"
+      echo "Selected developer directory: $selected_developer_path"
+      if [[ "$XCODE_PACKAGE_REQUIRED" == [Tt][Rr][Uu][Ee] ]]; then
+        selected_build="$(xcodebuild -version | awk '$1 == "Build" && $2 == "version" { print $3 }')"
+        if [[ "$selected_developer_path" != "$XCODE_PATH/Contents/Developer" || "$selected_build" != "$XCODE_PACKAGE_BUILD" ]]; then
+          echo "##vso[task.logissue type=error]Selected Xcode does not match the installed package path and build ($XCODE_PATH, $XCODE_PACKAGE_BUILD)."
+          exit 1
+        fi
+      fi
       xcodebuild -version
       sudo xcodebuild -license accept
 
@@ -203,6 +264,24 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
     retryCountOnTaskFailure: 4
     timeoutInMinutes: 30
+    env:
+      XCODE_PACKAGE_REQUIRED: ${{ and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.installXcodePackage, true)) }}
+      EXPECTED_XCODE_PACKAGE_VERSION: ${{ parameters.xcodePackageVersion }}
+
+  - ${{ if eq(parameters.requirePinnedXcodeVersion, true) }}:
+    - script: |
+        set -euo pipefail
+        selected_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
+        if [[ -z "$EXPECTED_XCODE_VERSION" || -z "$selected_version" ]] ||
+           [[ "$selected_version" != "$EXPECTED_XCODE_VERSION" && "$selected_version" != "$EXPECTED_XCODE_VERSION".* ]]; then
+          echo "##vso[task.logissue type=error]Expected Xcode $EXPECTED_XCODE_VERSION, but selected ${selected_version:-unknown}."
+          exit 1
+        fi
+        echo "Selected Xcode $selected_version matches the requested version $EXPECTED_XCODE_VERSION."
+      displayName: Verify pinned Xcode version
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      env:
+        EXPECTED_XCODE_VERSION: $(XCODE)
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
@@ -265,6 +344,39 @@ steps:
           printf '%s\n' "${counts%%$'\t'*}"
         }
 
+        # `-buildVersion MAJOR.MINOR` can resolve to a device-specific build (e.g. iOS 27.2
+        # 24B91014/24B91016s) that registers as iOS-MAJOR-MINOR-<device> (iOS-27-2-iPhone19-4).
+        # XHarness and the smoke test need the plain identifier, so only it counts as installed.
+        REQUIRED_RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-${MAJOR}-${MINOR}"
+        # XHarness creates iOS simulators as iPhone 11 Pro; prefer it when the runtime supports it.
+        PREFERRED_SMOKE_DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
+        required_runtime_create_usable() {
+          local runtimes_json device_type udid
+          if ! runtimes_json=$(xcrun simctl list runtimes -j 2>/dev/null); then
+            echo "Unable to list simulator runtimes."
+            return 1
+          fi
+          SMOKE_RT=$(printf '%s\n' "$runtimes_json" | jq -r --arg id "$REQUIRED_RUNTIME_ID" --arg req "${MAJOR}.${MINOR}" '[.runtimes[]? | select(.identifier == $id and .isAvailable == true and ((.version // "" | split(".")[0:2] | join(".")) == $req))] | first | .identifier // empty')
+          if [[ -z "$SMOKE_RT" ]]; then
+            echo "Required runtime $REQUIRED_RUNTIME_ID is not available."
+            return 1
+          fi
+          device_type=$(printf '%s\n' "$runtimes_json" | jq -r --arg id "$SMOKE_RT" --arg pref "$PREFERRED_SMOKE_DEVICE_TYPE" '
+            [.runtimes[]? | select(.identifier == $id)][0]
+            | [.supportedDeviceTypes[]? | select(.productFamily == "iPhone") | .identifier]
+            | if index($pref) != null then $pref else (.[0] // empty) end')
+          if [[ -z "$device_type" ]]; then
+            echo "Required runtime $REQUIRED_RUNTIME_ID has no supported iPhone device type."
+            return 1
+          fi
+          if ! udid=$(xcrun simctl create "copilot-runtime-smoketest" "$device_type" "$REQUIRED_RUNTIME_ID" 2>&1); then
+            echo "Required runtime $REQUIRED_RUNTIME_ID is NOT create-usable with $device_type: '$udid'"
+            return 1
+          fi
+          xcrun simctl delete "$udid" 2>/dev/null || true
+          echo "Required runtime $REQUIRED_RUNTIME_ID is create-usable (smoke device type $device_type)."
+        }
+
         DOWNLOAD_LOG=$(mktemp) || exit 1
         sudo xcodebuild "${DOWNLOAD_ARGS[@]}" 2>&1 | tee "$DOWNLOAD_LOG"
         RC=${PIPESTATUS[0]}
@@ -273,9 +385,27 @@ steps:
           echo "##vso[task.logissue type=error]iOS ${MAJOR}.${MINOR} (${RUNTIME_ARCHITECTURE}) is unavailable for download. Check the selected Xcode and runtime architecture; simulator recovery cannot fix an unavailable download."
           exit 1
         fi
+        # xcodebuild exits 70 when the requested runtime is already installed. That is not a
+        # wedged CoreSimulatorService, so don't delete runtimes the image already provides.
+        ALREADY_DOWNLOADED=0
+        if grep -Fq "is already downloaded." "$DOWNLOAD_LOG"; then
+          ALREADY_DOWNLOADED=1
+        fi
         rm -f "$DOWNLOAD_LOG"
+        RUNTIME_READY=0
         if [[ "$RC" != "0" ]]; then
-          echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
+          if [[ "$ALREADY_DOWNLOADED" == "1" ]] && required_runtime_create_usable; then
+            RUNTIME_READY=1
+          fi
+        elif required_runtime_create_usable; then
+          RUNTIME_READY=1
+        fi
+        if [[ "$RUNTIME_READY" != "1" ]]; then
+          if [[ "$RC" == "0" || "$ALREADY_DOWNLOADED" == "1" ]]; then
+            echo "Download exited $RC but $REQUIRED_RUNTIME_ID is not create-usable, deleting all simulator runtimes and trying again..."
+          else
+            echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
+          fi
           # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is
           # WEDGED. Deleting + re-downloading against a wedged daemon leaves the runtimes
           # "Ready" on disk but NOT create-usable — `simctl create` then fails "Invalid
@@ -390,20 +520,11 @@ steps:
           # The initial download and the retry above already consumed two attempts.
           runtimeInstallAttempt=2
           while : ; do
-            SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r --arg req "${MAJOR}.${MINOR}" '[.runtimes[] | select(.platform=="iOS" and .isAvailable and ((.version | split(".")[0:2] | join(".")) == $req))] | sort_by(.version) | last | .identifier')
-            SMOKE_DT=$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.productFamily=="iPhone")] | .[0].identifier')
-            if [[ -n "$SMOKE_RT" && "$SMOKE_RT" != "null" && -n "$SMOKE_DT" && "$SMOKE_DT" != "null" ]]; then
-              SMOKE_UDID=$(xcrun simctl create "copilot-runtime-smoketest" "$SMOKE_DT" "$SMOKE_RT" 2>&1)
-              SMOKE_RC=$?
-              if [[ "$SMOKE_RC" == "0" ]]; then
-                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID) after $runtimeInstallAttempt install attempt(s); cleaning up."
-                xcrun simctl delete "$SMOKE_UDID" 2>/dev/null || true
-                break
-              fi
-              echo "Runtime NOT create-usable (attempt $runtimeInstallAttempt/$maxRuntimeAttempts): '$SMOKE_UDID' — CoreSimulatorService still wedged."
-            else
-              echo "Could not resolve an iOS runtime/devicetype to smoke-test (attempt $runtimeInstallAttempt/$maxRuntimeAttempts; rt='$SMOKE_RT' dt='$SMOKE_DT')."
+            if required_runtime_create_usable; then
+              echo "Simulator runtime is create-usable after $runtimeInstallAttempt install attempt(s)."
+              break
             fi
+            echo "Required runtime not usable after attempt $runtimeInstallAttempt/$maxRuntimeAttempts."
             # Stop only when attempts are exhausted OR too little wall-clock remains to safely
             # start another multi-GB download inside the step timeout — never a premature give-up.
             if [[ "$runtimeInstallAttempt" -ge "$maxRuntimeAttempts" ]]; then
@@ -475,14 +596,15 @@ steps:
         echo "Found $RUNTIME_COUNT simulator runtime(s) ($READY_COUNT Ready/create-usable)"
 
         # Other installed runtimes must not mask a missing runtime matching the selected Xcode.
-        REQUIRED_RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-${MAJOR}-${MINOR}"
+        # Device-specific builds (iOS-MAJOR-MINOR-<device>) share the version but not the identifier.
         IOS_MATCH_COUNT=$(xcrun simctl runtime list -j | jq --arg id "$REQUIRED_RUNTIME_ID" --arg req "${MAJOR}.${MINOR}" '
           [ .[]?
             | select(type == "object")
             | select(
                 ((.runtimeIdentifier // "") == $id)
                 or
-                (((.platformIdentifier // "") | contains("iphonesimulator"))
+                (((.runtimeIdentifier // "") == "")
+                  and ((.platformIdentifier // "") | contains("iphonesimulator"))
                   and (((.version // "") | split(".")[0:2] | join(".")) == $req))
               )
             | select(.state == "Ready")

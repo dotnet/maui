@@ -16,21 +16,29 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 
 #if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
-		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepItemsInView()
 		{
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
-			App.WaitForElement("Vegetables.jpg, 10");
+			Assert.That(App.WaitForElement("Vegetables.jpg, 10").IsDisplayed(), Is.True);
 
-			for (int n = 0; n < 25; n++)
+			App.WaitForElement("AddItemAbove");
+			App.Tap("AddItemAbove");
+			Assert.That(App.WaitForElement("cover1.jpg, 0").IsDisplayed(), Is.True);
+
+			// AddItemAbove inserts before the midpoint, so item 9 is now at index 10.
+			App.Click("ScrollToMiddle");
+			Assert.That(App.WaitForElement("photo.jpg, 9").IsDisplayed(), Is.True);
+
+			for (int n = 0; n < 24; n++)
 			{
-				App.Click("AddItemAbove");
+				App.WaitForElement("AddItemAbove");
+				App.Tap("AddItemAbove");
 			}
 
-			App.WaitForElement("Vegetables.jpg, 10");
+			Assert.That(App.WaitForElement("cover1.jpg, 0").IsDisplayed(), Is.True);
 		}
 #endif
 

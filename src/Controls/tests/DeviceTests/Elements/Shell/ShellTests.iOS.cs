@@ -35,6 +35,132 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task NavigatingToModalOnAnotherTabWithRegularPageSelectsDestinationTab(bool retainPrefix)
+		{
+			SetupBuilder();
+			var route = nameof(NavigatingToModalOnAnotherTabWithRegularPageSelectsDestinationTab);
+			var regularRoute = $"{route}Regular";
+			var keepRoute = $"{route}Keep";
+			Routing.RegisterRoute(route, typeof(ModalShellPage));
+			Routing.RegisterRoute(regularRoute, typeof(ContentPage));
+			Routing.RegisterRoute(keepRoute, typeof(ContentPage));
+
+			try
+			{
+				var homeRoot = new ContentPage { Title = "Home" };
+				var tab2Root = new ContentPage { Title = "Tab 2" };
+				var tab3Root = new ContentPage { Title = "Tab 3" };
+				var shell = await CreateShellAsync(shell =>
+				{
+					shell.Items.Add(new TabBar
+					{
+						Route = "Issue11430TabBar",
+						Items =
+						{
+							new ShellContent { Route = "Issue11430Home", Content = homeRoot },
+							new ShellContent { Route = "Issue11430Tab2", Content = tab2Root },
+							new ShellContent { Route = "Issue11430Tab3", Content = tab3Root }
+						}
+					});
+				});
+
+				await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async handler =>
+				{
+					await OnLoadedAsync(homeRoot);
+					await shell.GoToAsync("//Issue11430TabBar/Issue11430Tab3").WaitAsync(TimeSpan.FromSeconds(5));
+					await OnLoadedAsync(tab3Root);
+					var targetSection = shell.CurrentItem.CurrentItem;
+					var itemRenderer = Assert.IsType<ShellItemRenderer>(((IShellContext)handler).CurrentShellItemRenderer);
+					var targetRenderer = Assert.IsType<ShellSectionRenderer>(itemRenderer.CurrentRenderer);
+
+					if (retainPrefix)
+					{
+						await shell.GoToAsync(keepRoute).WaitAsync(TimeSpan.FromSeconds(5));
+						await OnLoadedAsync(shell.CurrentPage).WaitAsync(TimeSpan.FromSeconds(5));
+						Assert.Equal(2, targetSection.Navigation.NavigationStack.Count);
+						Assert.Same(((IPlatformViewHandler)shell.CurrentPage.Handler).ViewController,
+							targetRenderer.TopViewController);
+					}
+
+					// Capture the existing prefix, including KeepPage's controller, before adding the obsolete page.
+					var expectedStack = targetSection.Navigation.NavigationStack.ToArray();
+					var expectedControllers = targetRenderer.ViewControllers.ToArray();
+					var expectedPage = shell.CurrentPage;
+					Assert.Equal(retainPrefix ? 2 : 1, expectedStack.Length);
+					Assert.Equal(expectedStack.Length, expectedControllers.Length);
+
+					await shell.GoToAsync(regularRoute).WaitAsync(TimeSpan.FromSeconds(5));
+					var obsoletePage = shell.CurrentPage;
+					var obsoleteController = ((IPlatformViewHandler)obsoletePage.Handler).ViewController;
+					await shell.GoToAsync("//Issue11430TabBar/Issue11430Tab2").WaitAsync(TimeSpan.FromSeconds(5));
+					await OnLoadedAsync(tab2Root);
+					Assert.Equal(expectedStack.Length + 1, targetSection.Navigation.NavigationStack.Count);
+					Assert.NotSame(targetRenderer, itemRenderer.SelectedViewController);
+
+					void AssertDestinationStack()
+					{
+						var stack = targetSection.Navigation.NavigationStack;
+						var controllers = targetRenderer.ViewControllers;
+						Assert.Equal(expectedStack.Length, stack.Count);
+						Assert.Equal(expectedControllers.Length, controllers.Length);
+						for (int i = 0; i < expectedStack.Length; i++)
+						{
+							Assert.Same(expectedStack[i], stack[i]);
+							Assert.Same(expectedControllers[i], controllers[i]);
+						}
+						Assert.DoesNotContain(obsoletePage, stack);
+						Assert.DoesNotContain(obsoleteController, controllers);
+						Assert.Same(expectedControllers[expectedControllers.Length - 1], targetRenderer.TopViewController);
+					}
+
+					int modalPushes = 0;
+					int modalPops = 0;
+					EventHandler<ModalPushedEventArgs> modalPushed = (_, _) => modalPushes++;
+					EventHandler<ModalPoppedEventArgs> modalPopped = (_, _) => modalPops++;
+					shell.Window.ModalPushed += modalPushed;
+					shell.Window.ModalPopped += modalPopped;
+					try
+					{
+						var destinationRoute = retainPrefix ? $"{keepRoute}/{route}" : route;
+						await shell.GoToAsync($"//Issue11430TabBar/Issue11430Tab3/{destinationRoute}").WaitAsync(TimeSpan.FromSeconds(5));
+					}
+					finally
+					{
+						shell.Window.ModalPushed -= modalPushed;
+						shell.Window.ModalPopped -= modalPopped;
+					}
+
+					Assert.Equal(1, modalPushes);
+					Assert.Equal(0, modalPops);
+					var modalPage = Assert.IsType<ModalShellPage>(shell.CurrentPage);
+					await OnLoadedAsync(modalPage).WaitAsync(TimeSpan.FromSeconds(5));
+					Assert.Same(targetSection, shell.CurrentItem.CurrentItem);
+					Assert.Same(targetRenderer, itemRenderer.SelectedViewController);
+					Assert.Same(modalPage, Assert.Single(shell.Navigation.ModalStack));
+					Assert.NotNull(GetModalWrapper(modalPage).PresentingViewController);
+					await AssertEventually(() => targetRenderer.ViewControllers.Length == expectedControllers.Length);
+					AssertDestinationStack();
+
+					await shell.GoToAsync("..", false).WaitAsync(TimeSpan.FromSeconds(5));
+
+					Assert.Same(expectedPage, shell.CurrentPage);
+					Assert.Same(targetRenderer, itemRenderer.SelectedViewController);
+					await AssertEventually(() => targetRenderer.ViewControllers.Length == expectedControllers.Length);
+					AssertDestinationStack();
+					Assert.Empty(shell.Navigation.ModalStack);
+				});
+			}
+			finally
+			{
+				Routing.UnRegisterRoute(route);
+				Routing.UnRegisterRoute(regularRoute);
+				Routing.UnRegisterRoute(keepRoute);
+			}
+		}
+
 #if !MACCATALYST
 		[Fact(DisplayName = "Page Adjust When Top Tabs Are Present")]
 		public async Task PageAdjustsWhenTopTabsArePresent()

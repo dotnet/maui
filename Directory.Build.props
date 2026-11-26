@@ -6,6 +6,16 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
+  <!--
+    The build-task restore (eng/Build.props) evaluates fewer target frameworks than the full restore
+    that follows it in the same MSBuild process. If both wrote the same nuget.g.props/targets, the
+    full restore's evaluations would cache the reduced XML, and later build evaluations could reuse
+    it and miss package imports for platform target frameworks (for example APT2260 in Aapt2Link).
+  -->
+  <PropertyGroup Condition="'$(BuildTaskOnlyBuild)' == 'true' and '$(MSBuildProjectExtensionsPath)' == '' and '$(BaseIntermediateOutputPath)' != ''">
+    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)buildtasks\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Detailed trimmer warnings, if present -->

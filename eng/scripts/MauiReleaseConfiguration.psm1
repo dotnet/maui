@@ -3,9 +3,9 @@ $ErrorActionPreference = 'Stop'
 
 function Get-MauiInflightLabelCondition {
     param ([string] $SandboxPrefix)
-    $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
+    $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
     if ($SandboxPrefix) {
-        $condition += " or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/$([Regex]::Escape($SandboxPrefix))/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
+        $condition += " or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '^refs/heads/$([Regex]::Escape($SandboxPrefix))/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*`$'))"
     }
     return $condition
 }
@@ -15,7 +15,7 @@ function Get-MauiBranchLabelCondition {
         [Parameter(Mandatory)][ValidateSet('ci.inflight', 'servicing')][string] $Label,
         [string] $SandboxPrefix
     )
-    $branch = if ($Label -ceq 'servicing') { 'release' } else { 'inflight' }
+    $branch = if ($Label -ceq 'servicing') { 'release' } else { '(inflight|candidate)' }
     $condition = "`$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '\Arefs/heads/$branch/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))"
     if ($Label -ceq 'ci.inflight') {
         $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $condition"
@@ -86,7 +86,7 @@ function Get-MauiReleaseVersion {
             $labelIndex + 2 -ge [Array]::IndexOf($properties, $document.SelectSingleNode('/Project/PropertyGroup/IsServicingBuild'))) {
             throw 'Central branch labels must be consecutive properties before IsServicingBuild.'
         }
-        if ($labels[1].GetAttribute('Condition') -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
+        if ($labels[1].GetAttribute('Condition') -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/(?:inflight|\(inflight\|candidate\))/') {
             $labelSandboxPrefix = $Matches.sandbox
         }
     }
@@ -100,16 +100,18 @@ function Get-MauiReleaseVersion {
         if ($label.HasAttribute('Condition')) {
             $condition = $label.GetAttribute('Condition')
             if ($branchDerivedLabels) {
-                if ($condition -cne (Get-MauiBranchLabelCondition -Label $label.InnerText -SandboxPrefix $labelSandboxPrefix)) {
+                $expectedCondition = Get-MauiBranchLabelCondition -Label $label.InnerText -SandboxPrefix $labelSandboxPrefix
+                if ($condition -cnotin @($expectedCondition, $expectedCondition.Replace('/(inflight|candidate)/', '/inflight/'))) {
                     throw 'Unknown central branch-label condition requires review; it will not be replaced automatically.'
                 }
                 continue
             }
-            $sandbox = if ($condition -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
+            $sandbox = if ($condition -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/(?:inflight|\(inflight\|candidate\))/') {
                 $Matches.sandbox
             } else { $null }
-            if ($condition -cne "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'" -and
-                $condition -cne (Get-MauiInflightLabelCondition -SandboxPrefix $sandbox)) {
+            $expectedCondition = Get-MauiInflightLabelCondition -SandboxPrefix $sandbox
+            if ($condition -cnotin @("'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'",
+                    $expectedCondition, $expectedCondition.Replace('/(inflight|candidate)/', '/inflight/'))) {
                 throw 'Unknown CI-label condition requires review; it will not be replaced automatically.'
             }
         }
@@ -559,6 +561,10 @@ function New-MauiReleaseLaneReceipt {
     if ('servicingSha' -in $Record.plan.PSObject.Properties.Name) {
         $arguments += @('-p', $Record.plan.servicingSha)
     }
+    if ($Record.Contains('supersedes')) {
+        if ($Record.supersedes -cnotmatch '^[0-9a-f]{40}$') { throw 'Superseded receipt must be a full commit SHA.' }
+        $arguments += @('-p', $Record.supersedes)
+    }
     (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments $arguments `
         -Environment $environment -InputText "Prepare next release lanes after $($Record.releaseBand) SR$($Record.sr)`n").Trim()
 }
@@ -660,6 +666,14 @@ function New-MauiReviewedServicingCommit {
         -Changes @{ 'eng/Versions.props' = $content } -Message "Configure release $ReleaseBand SR$Sr for servicing"
 }
 
+function Get-MauiReleaseGenerationHead {
+    param(
+        [Parameter(Mandatory)][string] $Head,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Source
+    )
+    "$Head/source-$Source"
+}
+
 function Assert-MauiReviewedServicingMerge {
     [CmdletBinding()]
     param (
@@ -680,7 +694,10 @@ function Assert-MauiReviewedServicingMerge {
         $PullRequest.merged_by.type -cne 'User' -or
         $null -eq $PullRequest.head.repo -or $null -eq $PullRequest.base.repo -or
         $PullRequest.head.repo.full_name -cne 'dotnet/maui' -or $PullRequest.base.repo.full_name -cne 'dotnet/maui' -or
-        $PullRequest.head.ref -cne "${prefix}automation/servicing/$ReleaseBand-sr$Sr" -or
+        $PullRequest.head.ref -cnotin @(
+            "${prefix}automation/servicing/$ReleaseBand-sr$Sr",
+            (Get-MauiReleaseGenerationHead -Head "${prefix}automation/servicing/$ReleaseBand-sr$Sr" -Source $LanePlan.mergeSha)
+        ) -or
         $PullRequest.head.sha -cne $head.sha -or
         $PullRequest.base.ref -cne "${prefix}automation/release/$ReleaseBand-sr$Sr" -or
         $PullRequest.merge_commit_sha -cne $Commit -or !([string]$PullRequest.body).Contains($marker)) {
@@ -703,4 +720,5 @@ Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionCont
     Get-MauiReleasedVersionContent, Get-MauiVerifiedPublishedVersion,
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
     New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
-    Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge
+    Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge,
+    Get-MauiReleaseGenerationHead

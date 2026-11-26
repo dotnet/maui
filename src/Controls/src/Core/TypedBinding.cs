@@ -393,6 +393,10 @@ namespace Microsoft.Maui.Controls.Internals
 						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
 					}
 				}
+				// The converter returned Binding.DoNothing: don't update the target
+				if (ReferenceEquals(value, MultiBinding.DoNothing))
+					return;
+
 				// Skip TryConvert when types match and no converter
 				if (!_skipConvert && !BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
@@ -407,6 +411,11 @@ namespace Microsoft.Maui.Controls.Internals
 			if (needsSetter && _setter != null && isTSource)
 			{
 				var value = GetTargetValue(target.GetValue(property), typeof(TProperty));
+
+				// The converter returned Binding.DoNothing: don't update the source
+				if (ReferenceEquals(value, MultiBinding.DoNothing))
+					return;
+
 				if (!BindingExpressionHelper.TryConvert(ref value, property, typeof(TProperty), false))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));

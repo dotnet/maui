@@ -74,18 +74,21 @@
     <FontImageSource x:Key="IconAdd"
                 Glyph="{x:Static f:FluentUI.add_32_regular}"
                 FontFamily="{x:Static f:FluentUI.FontFamily}"
+                FontAutoScalingEnabled="True"
                 Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconDelete"
                 Glyph="{x:Static f:FluentUI.delete_32_regular}"
                 FontFamily="{x:Static f:FluentUI.FontFamily}"
+                FontAutoScalingEnabled="True"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource IconSize}" />
 
         <FontImageSource x:Key="IconClean"
                 Glyph="{x:Static f:FluentUI.broom_32_regular}"
                 FontFamily="{x:Static f:FluentUI.FontFamily}"
+                FontAutoScalingEnabled="True"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource size240}" />
 
@@ -260,8 +263,8 @@
         <Setter Property="Padding" Value="{OnIdiom 15, Desktop=20}"/>
     </Style>
 
-    <sf:LabelStyle x:Key="lightThemeLabelStyle" TextColor="{StaticResource DarkOnLightBackground}" FontSize="{OnIdiom 18, Desktop=24}"/> 
-    <sf:LabelStyle x:Key="darkThemeLabelStyle" TextColor="{StaticResource LightOnDarkBackground}" FontSize="{OnIdiom 18, Desktop=24}"/>
+    <sf:LabelStyle x:Key="lightThemeLabelStyle" TextColor="{StaticResource DarkOnLightBackground}" FontAutoScalingEnabled="True" FontSize="{OnIdiom 18, Desktop=24}"/> 
+    <sf:LabelStyle x:Key="darkThemeLabelStyle" TextColor="{StaticResource LightOnDarkBackground}" FontAutoScalingEnabled="True" FontSize="{OnIdiom 18, Desktop=24}"/>
     <Style TargetType="sf:SfTextInputLayout"> 
         <Setter Property="ContainerType" Value="Outlined"/> 
         <Setter Property="ContainerBackground" Value="Transparent"/> 

@@ -277,6 +277,12 @@ return String.Empty;
 if (seg.Suffix.Length > 0 && !decoded.EndsWith(seg.Suffix, StringComparison.Ordinal))
 return String.Empty;
 
+// The prefix and suffix must not overlap ("aaa" vs "aa{x}aa") and the
+// parameter needs at least one character, like a pure "{x}" segment
+// whose URI segment is never empty. Otherwise it is a non-match.
+if (decoded.Length <= seg.Prefix.Length + seg.Suffix.Length)
+return String.Empty;
+
 var paramValue = decoded.Substring(seg.Prefix.Length,
 decoded.Length - seg.Prefix.Length - seg.Suffix.Length);
 
