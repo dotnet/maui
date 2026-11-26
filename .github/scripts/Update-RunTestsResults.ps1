@@ -103,7 +103,7 @@ function Sync-RunTestsJobStatuses {
     # Job statuses of this suite: "<pipeline> (<job>)" linking to an Azure DevOps build.
     $existing = @{}
     foreach ($status in $statuses) {
-        if (-not $status.context.StartsWith("$($script:RunTestsCheckPrefix) (") -or [string]$status.target_url -notmatch 'buildId=\d+') { continue }
+        if (-not ([string]$status.context).StartsWith("$($script:RunTestsCheckPrefix) (") -or [string]$status.target_url -notmatch 'buildId=\d+') { continue }
         # The selection, selected run and skipped statuses are not job statuses.
         if ($status.context -in $script:RunTestsSelectionCheckName, $script:RunTestsRunCheckName -or $status.context.StartsWith($script:RunTestsSkippedCheckPrefix)) { continue }
         $existing[$status.context] = $status
