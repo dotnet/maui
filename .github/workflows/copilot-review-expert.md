@@ -17,7 +17,7 @@ on:
   issue_comment:
     types: [created]
   roles: [admin, maintain, write]
-  # PR Autopilot dispatches the next review round with GITHUB_TOKEN.
+  # maui-expert-autopilot dispatches the next review round with GITHUB_TOKEN.
   bots: ["github-actions[bot]"]
   reaction: none
   status-comment: false
@@ -32,7 +32,7 @@ on:
         required: false
         type: number
       requested_by:
-        description: Maintainer who started a PR Autopilot loop (set by PR Autopilot)
+        description: Maintainer who started a maui-expert-autopilot loop (set by maui-expert-autopilot)
         required: false
         type: string
   steps:
@@ -61,7 +61,7 @@ on:
           } else if (context.eventName === 'workflow_dispatch') {
             number = Number(context.payload.inputs.pr_number);
             actor = context.actor;
-            // PR Autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+            // maui-expert-autopilot dispatches as github-actions[bot] (only workflows in this repository can)
             // on behalf of the maintainer who started the loop; that maintainer's access is checked below.
             if (actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
               actor = String(context.payload.inputs.requested_by || '');
@@ -194,7 +194,7 @@ jobs:
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
   autopilot_failed:
-    # PR Autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
+    # maui-expert-autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
     needs: [pre_activation, activation, agent, safe_outputs, complete_request]
     if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.agent.result == 'failure' || needs.safe_outputs.result == 'failure' || needs.complete_request.result == 'failure')
     runs-on: ubuntu-slim
@@ -204,7 +204,7 @@ jobs:
       pull-requests: write
     timeout-minutes: 3
     steps:
-      - name: Retry or stop PR Autopilot
+      - name: Retry or stop maui-expert-autopilot
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -217,9 +217,9 @@ jobs:
             // One automatic retry: a single flaky run should not end an autonomous loop.
             if (!labels.some(l => l.name === 's/autopilot-retrying')) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
-                description: 'PR Autopilot: retrying a step that failed once' }).catch(() => {});
+                description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
               await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
-              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
                 ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
               return core.info(`#${number}: retrying once.`);
             }
@@ -227,9 +227,9 @@ jobs:
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `⏹️ PR Autopilot stopped: the [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- pr-autopilot-status -->` });
+              body: `❌ maui-expert-autopilot stopped: the [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   autopilot_next:
-    # PR Autopilot loop: while it runs on this PR, let it decide the next step.
+    # maui-expert-autopilot loop: while it runs on this PR, let it decide the next step.
     needs: [pre_activation, activation, complete_request]
     if: needs.complete_request.result == 'success' && !cancelled()
     runs-on: ubuntu-slim
@@ -239,7 +239,7 @@ jobs:
       pull-requests: write
     timeout-minutes: 3
     steps:
-      - name: Continue PR Autopilot
+      - name: Continue maui-expert-autopilot
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
@@ -247,12 +247,12 @@ jobs:
           script: |
             const number = Number(process.env.PR_NUMBER);
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
-            if (!labels.some(l => l.name === 's/autopilot-running')) return core.info(`#${number}: PR Autopilot is not running.`);
+            if (!labels.some(l => l.name === 's/autopilot-running')) return core.info(`#${number}: maui-expert-autopilot is not running.`);
             if (labels.some(l => l.name === 's/autopilot-retrying'))
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
-            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
-            core.info(`#${number}: PR Autopilot continues.`);
+            core.info(`#${number}: maui-expert-autopilot continues.`);
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]

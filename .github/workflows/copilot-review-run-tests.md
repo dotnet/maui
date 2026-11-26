@@ -23,7 +23,7 @@ on:
   reaction: none
   status-comment: false
   roles: [admin, maintain, write]
-  # PR Autopilot dispatches this with GITHUB_TOKEN on behalf of the maintainer who started it.
+  # maui-expert-autopilot dispatches this with GITHUB_TOKEN on behalf of the maintainer who started it.
   bots: ["github-actions[bot]"]
   permissions:
     contents: read
@@ -50,7 +50,7 @@ on:
           }
           core.setOutput('suite', suite);
           const { owner, repo } = context.repo;
-          // PR Autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+          // maui-expert-autopilot dispatches as github-actions[bot] (only workflows in this repository can)
           // on behalf of the maintainer who started it; check that maintainer's access instead.
           let actor = context.actor;
           if (context.eventName === 'workflow_dispatch' && actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
@@ -114,7 +114,7 @@ on:
         default: all
         required: false
       requested_by:
-        description: Maintainer who started PR Autopilot (set by PR Autopilot)
+        description: Maintainer who started maui-expert-autopilot (set by maui-expert-autopilot)
         type: string
         required: false
 
@@ -136,7 +136,7 @@ jobs:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
   autopilot_failed:
-    # PR Autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
+    # maui-expert-autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
     needs: [pre_activation, activation]
     if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.pre_activation.outputs.context_ready != 'true')
     runs-on: ubuntu-slim
@@ -146,7 +146,7 @@ jobs:
       pull-requests: write
     timeout-minutes: 3
     steps:
-      - name: Retry or stop PR Autopilot
+      - name: Retry or stop maui-expert-autopilot
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -159,9 +159,9 @@ jobs:
             // One automatic retry: a single flaky run should not end an autonomous loop.
             if (!labels.some(l => l.name === 's/autopilot-retrying')) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
-                description: 'PR Autopilot: retrying a step that failed once' }).catch(() => {});
+                description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
               await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
-              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
                 ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
               return core.info(`#${number}: retrying once.`);
             }
@@ -169,7 +169,7 @@ jobs:
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `⏹️ PR Autopilot stopped: the [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- pr-autopilot-status -->` });
+              body: `❌ maui-expert-autopilot stopped: the [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.

@@ -26,7 +26,7 @@ on:
         type: string
         required: true
       requested_by:
-        description: Maintainer who started PR Autopilot (forwarded from copilot-review-run-tests)
+        description: Maintainer who started maui-expert-autopilot (forwarded from copilot-review-run-tests)
         type: string
         required: false
   # The dispatching token is the run-tests workflow's own; the source run is verified below.

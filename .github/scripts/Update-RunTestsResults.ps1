@@ -131,7 +131,7 @@ function Sync-RunTestsJobChecks {
     Write-Host "Published $($planned.Count) job check(s) for $($script:RunTestsPipelineName) #$($Build.id) on $HeadSha."
 }
 
-# PRs whose run-tests comment finished in this pass; PR Autopilot continues on them.
+# PRs whose run-tests comment finished in this pass; maui-expert-autopilot continues on them.
 $finishedPullRequests = [System.Collections.Generic.List[int]]::new()
 foreach ($comment in $comments) {
     # A /review run-tests comment has a section per suite, each following its own build.

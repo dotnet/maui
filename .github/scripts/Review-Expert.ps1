@@ -200,7 +200,7 @@ function Get-ExpertRequest {
     } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
         if ([string]$event.inputs.pr_number -cne [string]$PRNumber) { throw 'Dispatch target does not match the request.' }
         $login = $env:GITHUB_ACTOR
-        # PR Autopilot rounds are dispatched by github-actions[bot] (only workflows in this
+        # maui-expert-autopilot rounds are dispatched by github-actions[bot] (only workflows in this
         # repository can) on behalf of the maintainer who started the loop.
         if ($login -ceq 'github-actions[bot]' -and $event.sender.type -ceq 'Bot') {
             $login = [string]$event.inputs.requested_by

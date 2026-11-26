@@ -29,7 +29,7 @@ on:
         required: true
         type: string
       requested_by:
-        description: Maintainer who started PR Autopilot (forwarded by the run-tests workflows)
+        description: Maintainer who started maui-expert-autopilot (forwarded by the run-tests workflows)
         required: false
         type: string
 
@@ -47,7 +47,7 @@ jobs:
     # Up to two dispatches (UI and device tests), each waiting up to 10 minutes for its build.
     timeout-minutes: 40
     permissions:
-      # Reads the source runs; continues PR Autopilot.
+      # Reads the source runs; continues maui-expert-autopilot.
       actions: write
       checks: write
       # Creates the run-tests/* dispatch branch (Git Data API; no checkout is pushed).
@@ -99,12 +99,13 @@ jobs:
               [DateTimeOffset]::Parse($second.created_at) -lt [DateTimeOffset]::Parse($run.created_at)) {
             throw "Run $env:SECOND_RUN_ID is not the MAI Code 2 selection for run $env:SOURCE_RUN_ID."
           }
-          # PR Autopilot starts the run as github-actions[bot] on behalf of a maintainer; Invoke-RunTests
+          # maui-expert-autopilot starts the run as github-actions[bot] on behalf of a maintainer; Invoke-RunTests
           # re-checks that maintainer's write access before anything is queued.
           $requester = $run.triggering_actor.login
           if ($requester -ceq 'github-actions[bot]') {
-            if ($env:REQUESTED_BY -cnotmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}$') { throw 'A PR Autopilot run-tests request needs the requesting maintainer.' }
+            if ($env:REQUESTED_BY -cnotmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}$') { throw 'A maui-expert-autopilot run-tests request needs the requesting maintainer.' }
             $requester = $env:REQUESTED_BY
+            "autopilot=true" >> $env:GITHUB_OUTPUT
           }
           "requester=$requester" >> $env:GITHUB_OUTPUT
           "run_url=$($run.html_url)" >> $env:GITHUB_OUTPUT
@@ -157,6 +158,7 @@ jobs:
           SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
           # Forks of the repository have no maui-pr-uitests to dispatch to: publish the selection only.
           SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+          FROM_AUTOPILOT: ${{ steps.source.outputs.autopilot }}
         shell: pwsh
         run: |
           $arguments = @{
@@ -170,9 +172,10 @@ jobs:
           $proposals = @($env:PROPOSAL_PATHS -split ';' | Where-Object { $_ })
           if ($proposals.Count) { $arguments.ProposalPath = $proposals }
           if ($env:SKIP_QUEUE -eq 'true') { $arguments.SkipQueue = $true }
+          if ($env:FROM_AUTOPILOT -eq 'true') { $arguments.OmitRequester = $true }
           ./.github/scripts/Invoke-RunTests.ps1 @arguments
 
-      - name: Continue PR Autopilot
+      - name: Continue maui-expert-autopilot
         # The run-tests comment now exists (running, or already final when nothing was queued).
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -185,7 +188,7 @@ jobs:
             if (!labels.some(l => l.name === 's/autopilot-running')) return;
             if (labels.some(l => l.name === 's/autopilot-retrying'))
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
-            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
 
       - name: Keep the selection evidence

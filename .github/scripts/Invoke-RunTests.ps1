@@ -52,7 +52,9 @@ param(
     # Queue and comment but do not create check runs (the Checks API needs a GitHub App token).
     [switch]$SkipChecks,
     # Do not dispatch maui-pr-uitests (e.g. a fork of the repository); still publish checks and comment.
-    [switch]$SkipQueue
+    [switch]$SkipQueue,
+    # maui-expert-autopilot started this run: leave out the requester line.
+    [switch]$OmitRequester
 )
 
 $ErrorActionPreference = 'Stop'
@@ -431,11 +433,11 @@ if ($combined) {
     $modelNames = @($proposals.Keys | ForEach-Object { $script:RunTestsModels[$_] })
     $notes = @($context.PSObject.Properties['notes']?.Value | Where-Object { $_ -is [string] })
     $comment = New-RunTestsCombinedComment -Runs $runs -PullRequest $pr -WorkflowRunUrl $runUrl -ModelNames $modelNames `
-        -Requester $Actor -Notes $notes -SelectionOnly:$SkipQueue
+        -Requester $Actor -OmitRequester:$OmitRequester -Notes $notes -SelectionOnly:$SkipQueue
 } else {
     $run = $runs[$suites[0]]
     $comment = New-RunTestsComment -Selection $run.selection -Inventory $run.inventory -PullRequest $pr -WorkflowRunUrl $runUrl `
-        -Build $run.build -QueueError $run.queueError -Requester $Actor -Dispatch $run.dispatch -SelectionOnly:$SkipQueue
+        -Build $run.build -QueueError $run.queueError -Requester $Actor -OmitRequester:$OmitRequester -Dispatch $run.dispatch -SelectionOnly:$SkipQueue
 }
 $commentPath = Join-Path $OutputDirectory 'comment.md'
 $comment | Set-Content -LiteralPath $commentPath -Encoding utf8

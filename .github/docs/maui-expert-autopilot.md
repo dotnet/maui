@@ -1,4 +1,4 @@
-# PR Autopilot
+# maui-expert-autopilot
 
 Contributors can let the MAUI agent finish their pull request instead of going through more rounds of review
 themselves. The PR template has one checkbox:
@@ -21,7 +21,7 @@ flowchart TD
     F -- "nothing fixable" --> S["Stopped"]
 ```
 
-[`pr-autopilot`](../workflows/pr-autopilot.md) is the single state machine. Each time it's started, it looks at the PR
+[`maui-expert-autopilot`](../workflows/maui-expert-autopilot.md) is the single state machine. Each time it's started, it looks at the PR
 head and does the next step:
 
 | State of the PR head | Next step |
@@ -34,12 +34,12 @@ head and does the next step:
 | Tests passed (or nothing to run) | Done: comment, remove the label |
 | Test run could not complete | Stop: comment, remove the label |
 
-Each step starts `pr-autopilot` again when it finishes, while the PR has `s/autopilot-running`:
+Each step starts `maui-expert-autopilot` again when it finishes, while the PR has `s/autopilot-running`:
 
 - the expert reviewer's `autopilot_next` job,
 - `review-run-tests-dispatch` after it queues the tests,
 - `review-run-tests-results` when the run finishes,
-- `pr-autopilot`'s own `next_round` after a fix is pushed.
+- `maui-expert-autopilot`'s own `next_round` after a fix is pushed.
 
 The loop has no round limit. It stops when:
 
@@ -92,27 +92,33 @@ How the fixes are published:
 
 ### The conversation happens in the review threads
 
-The top level of the PR stays quiet. It gets a **start** comment ("PR Autopilot started by @maintainer") and a
-**finish** comment, for example: "ready for maintainer review · expert review clean · tests passed · 3 threads
-resolved · 1 left open for maintainers". Commits, expert reviews, and test runs show up as normal timeline events.
+The top level of the PR stays quiet. It gets two comments:
+
+- a **start** comment: who started the loop, and a three-row table of the steps (review, fix, test),
+- a **finish** comment: "✅ maui-expert-autopilot: ready for maintainer review", with a table showing the clean
+  expert review commit, the test result, and the number of review threads resolved. Threads that need a decision
+  are listed by their titles.
+
+Commits, expert reviews, and test runs show up as normal timeline events. When maui-expert-autopilot runs the tests,
+the run-tests comment leaves out its requester line.
 
 In each review thread it handled, a fix round replies with one of:
 
 - `✅ Fixed in <sha> <commit title>`: what changed, the test that proves it (fails before, passes after), and which
-  model's fix was kept over the other model's, with the reason.
-- `➖ Not changed`: why. For example, the finding was wrong, an optional nit matching the file's style, would change
-  the author's approach, or couldn't be reproduced.
+  model's fix was kept over the other model's, with the reason. The thread is then **resolved**, whoever started it.
+- `❌ Not changed`: why. For example, the finding was wrong, an optional nit matching the file's style, would change
+  the author's approach, or couldn't be reproduced. The thread stays open for a maintainer to decide.
 
-It then resolves the threads it fixed that the expert reviewer or the AI review started. Maintainers' threads stay
-open with "I left this thread open so you can confirm and resolve it." Failing tests have no thread, so a fix round
-for tests posts one short top-level comment. So does a round that published nothing, to explain why.
+If GitHub fails to resolve a thread, `next_round` and the finish step retry. Failing tests have no thread, so a fix
+round for tests posts one short top-level comment. So does a round that published nothing, to explain why. The only
+emojis in these comments are ✅ and ❌.
 
 There are no footers, firewall notices, or "Commit pushed" comments. Commits are pushed unsigned with plain `git push`,
 so the SHA in each reply matches the commit on the PR.
 
 ## Security
 
-- Every step acts on behalf of the maintainer who commented `/autopilot` (`requested_by`). PR Autopilot, the expert
+- Every step acts on behalf of the maintainer who commented `/autopilot` (`requested_by`). maui-expert-autopilot, the expert
   reviewer (`Review-Expert.ps1`), and run-tests (`Invoke-RunTests.ps1`) each re-check that maintainer's write
   access. Only workflows in this repository can start a step as `github-actions[bot]`.
 - The agent job has read-only GitHub permissions. Pushes, PRs, and comments go through gh-aw safe outputs, which

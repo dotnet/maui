@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      # Continues PR Autopilot when a run finishes.
+      # Continues maui-expert-autopilot when a run finishes.
       actions: write
       checks: write
       # Deletes expired run-tests/* dispatch branches.
@@ -60,8 +60,8 @@ jobs:
           if ($env:HEAD_SHA) { $arguments.HeadSha = $env:HEAD_SHA }
           ./.github/scripts/Update-RunTestsResults.ps1 @arguments
 
-      - name: Continue PR Autopilot
-        # A finished run-tests comment is PR Autopilot's cue: fix failing tests, or finish.
+      - name: Continue maui-expert-autopilot
+        # A finished run-tests comment is maui-expert-autopilot's cue: fix failing tests, or finish.
         if: steps.update.outputs.finished_prs != ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -73,7 +73,7 @@ jobs:
               if (!Number.isSafeInteger(number) || number < 1) continue;
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
               if (!labels.some(l => l.name === 's/autopilot-running')) continue;
-              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
                 ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
-              core.info(`#${number}: PR Autopilot continues.`);
+              core.info(`#${number}: maui-expert-autopilot continues.`);
             }
