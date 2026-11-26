@@ -5,14 +5,17 @@ themselves. The PR template has one checkbox:
 
 > - [ ] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**
 
-When it's ticked, **one `/autopilot` comment from a maintainer** drives the PR until the MAUI expert reviewer has
+When it's ticked, **one `/review autopilot` comment from a maintainer** drives the PR until the MAUI expert reviewer has
 no findings and the relevant tests pass. Maintainers still decide whether the PR is merged.
+
+The command comment is hidden as resolved once it's processed, like the other `/review` commands. `/review autopilot`
+is excluded from the full `/review` trigger and from missed-command recovery.
 
 ## The loop
 
 ```mermaid
 flowchart TD
-    A["/autopilot<br/>(maintainer)"] --> R["MAUI expert review<br/>copilot-review-expert"]
+    A["/review autopilot<br/>(maintainer)"] --> R["MAUI expert review<br/>copilot-review-expert"]
     R -- "findings" --> F["Fix round<br/>GPT-6.2 Sol vs MAI Code 2"]
     F -- "pushed" --> R
     R -- "no findings" --> T["/review run-tests<br/>GPT-6.2 Sol + MAI Code 2 select tests"]
@@ -45,7 +48,7 @@ The loop has no round limit. It stops when:
 
 - the tests pass,
 - a fix round finds nothing it can fix,
-- a maintainer comments `/autopilot stop` or removes `s/autopilot-running`,
+- a maintainer comments `/review autopilot stop` or removes `s/autopilot-running`,
 - the author unticks the checkbox,
 - the PR is closed,
 - the maintainer who started the loop loses write access.
@@ -63,7 +66,7 @@ the loop moves:
 | `s/autopilot-waiting-for-maintainer-review` | Done: the expert review is clean and the tests passed. Waiting for a maintainer |
 | `s/autopilot-retrying` | An expert review or test selection failed once and is being retried. A second failure in a row stops the loop |
 
-Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/autopilot` replaces
+Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/review autopilot` replaces
 `s/autopilot-waiting-for-maintainer-review`. Missing labels are created automatically.
 
 ### Fix rounds use two models
@@ -118,7 +121,7 @@ so the SHA in each reply matches the commit on the PR.
 
 ## Security
 
-- Every step acts on behalf of the maintainer who commented `/autopilot` (`requested_by`). maui-expert-autopilot, the expert
+- Every step acts on behalf of the maintainer who commented `/review autopilot` (`requested_by`). maui-expert-autopilot, the expert
   reviewer (`Review-Expert.ps1`), and run-tests (`Invoke-RunTests.ps1`) each re-check that maintainer's write
   access. Only workflows in this repository can start a step as `github-actions[bot]`.
 - The agent job has read-only GitHub permissions. Pushes, PRs, and comments go through gh-aw safe outputs, which

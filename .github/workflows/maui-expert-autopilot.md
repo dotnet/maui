@@ -1,11 +1,11 @@
 ---
 name: "maui-expert-autopilot"
 description: |
-  One `/autopilot` command from a maintainer drives an opted-in pull request toward a mergeable
+  One `/review autopilot` command from a maintainer drives an opted-in pull request toward a mergeable
   state: MAUI expert review -> fix -> expert review ... until the expert reviewer has no findings,
   then `/review run-tests` -> fix -> expert review -> run-tests ... until the relevant tests pass.
   Every fix round has GPT-6.2 Sol and MAI Code 2 each propose a fix and keeps the better one.
-  The loop runs while the PR carries `s/autopilot-running`; `/autopilot stop` (or removing the
+  The loop runs while the PR carries `s/autopilot-running`; `/review autopilot stop` (or removing the
   label) ends it. Maintainers still decide whether anything is merged. See .github/docs/maui-expert-autopilot.md.
 
 imports:
@@ -18,9 +18,9 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  # `/autopilot` starts the loop, `/autopilot stop` ends it.
+  # `/review autopilot` starts the loop, `/review autopilot stop` ends it.
   slash_command:
-    name: autopilot
+    name: review
     events: [pull_request_comment]
   # Each step of the loop (expert review, run-tests, this workflow) dispatches the next one.
   workflow_dispatch:
@@ -46,7 +46,7 @@ on:
         script: |
           const LABEL = 's/autopilot-running';
           const OPT_IN = /^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m;
-          const COMMAND = /^\s*\/autopilot(?:\s+(stop))?\s*$/i;
+          const COMMAND = /^\s*\/review\s+autopilot(?:\s+(stop))?\s*$/i;
           const USER = /^[A-Za-z0-9][A-Za-z0-9-]*$/;
           const repo = context.repo;
           core.setOutput('stage', 'none');
@@ -97,7 +97,7 @@ on:
           };
           const ownerOf = async n => {
             const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: n, per_page: 100 });
-            const start = comments.filter(c => c.user?.type === 'User' && /^\s*\/autopilot\s*$/i.test(c.body || '')).pop();
+            const start = comments.filter(c => c.user?.type === 'User' && /^\s*\/review\s+autopilot\s*$/i.test(c.body || '')).pop();
             return start?.user.login || '';
           };
 
@@ -107,6 +107,9 @@ on:
             const command = COMMAND.exec(context.payload.comment?.body || '');
             if (!command) return;
             requester = context.payload.comment.user.login;
+            // Hide the command as resolved, like the other /review commands.
+            await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
+              { id: context.payload.comment.node_id }).catch(e => core.warning(`Could not hide the command: ${e.message}`));
             if (command[1]) {
               if (pr.state === 'open') await stopLoop(`maui-expert-autopilot stopped by @${requester}.`);
               return;
@@ -129,7 +132,7 @@ on:
             optedIn = OPT_IN.test(origin.body || '');
           }
           if (!optedIn) {
-            await stopLoop(`maui-expert-autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/autopilot\` again.`);
+            await stopLoop(`maui-expert-autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/review autopilot\` again.`);
             return;
           }
 
@@ -155,7 +158,7 @@ on:
               if (states.includes('running')) stage = 'wait';
               else if (results.includes('FAILED')) { stage = 'fix'; source = 'tests'; }
               else if (states.includes('error') || results.includes('NOT QUEUED') || results.includes('CANCELED')) {
-                stage = 'stop'; note = `❌ maui-expert-autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/autopilot\` again.`;
+                stage = 'stop'; note = `❌ maui-expert-autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/review autopilot\` again.`;
               } else {
                 stage = 'done';
                 // Thread outcomes, from maui-expert-autopilot's replies (later comments by the bot).
@@ -209,7 +212,7 @@ on:
           let round = 0;
           if (stage === 'fix') {
             const starts = (await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 }))
-              .filter(c => c.user?.type === 'User' && /^\s*\/autopilot\s*$/i.test(c.body || ''));
+              .filter(c => c.user?.type === 'User' && /^\s*\/review\s+autopilot\s*$/i.test(c.body || ''));
             const since = starts.length ? starts[starts.length - 1].created_at : '';
             round = reviews.filter(r => r.user?.login === 'github-actions[bot]' && (r.submitted_at || '') > since &&
               Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(r.body || '')?.[1]) > 0).length;
@@ -218,7 +221,7 @@ on:
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
           if (!current.has(LABEL) && stage !== 'done' && stage !== 'stop') {
-            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'maui-expert-autopilot loop is running; /autopilot stop ends it' }).catch(() => {});
+            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'maui-expert-autopilot loop is running; /review autopilot stop ends it' }).catch(() => {});
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
@@ -234,7 +237,7 @@ on:
               '| Fix | GPT-6.2 Sol and MAI Code 2 each fix the findings. The better fix is kept, and every review thread gets a reply |',
               '| Test | The relevant UI and device tests run |',
               '',
-              'This repeats until the review is clean and the tests pass. The `s/autopilot-*` labels show the current step. Comment `/autopilot stop` to stop.',
+              'This repeats until the review is clean and the tests pass. The `s/autopilot-*` labels show the current step. Comment `/review autopilot stop` to stop.',
             ].join('\n'));
           }
           if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }

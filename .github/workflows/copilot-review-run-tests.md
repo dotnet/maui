@@ -169,7 +169,7 @@ jobs:
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `❌ maui-expert-autopilot stopped: the [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
+              body: `❌ maui-expert-autopilot stopped: the [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.

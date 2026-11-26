@@ -227,7 +227,7 @@ jobs:
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `❌ maui-expert-autopilot stopped: the [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
+              body: `❌ maui-expert-autopilot stopped: the [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   autopilot_next:
     # maui-expert-autopilot loop: while it runs on this PR, let it decide the next step.
     needs: [pre_activation, activation, complete_request]
