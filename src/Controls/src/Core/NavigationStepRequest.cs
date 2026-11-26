@@ -17,9 +17,6 @@ namespace Microsoft.Maui.Controls
 		public bool IsModal { get; }
 		public bool IsAnimated { get; }
 		public Page Page { get; }
-
-		// A per-navigation page transition held while the request waits for the platform to be ready.
-		public Animations.PageTransition? Transition { get; set; }
 	}
 
 	class NavigatingStepRequestList : IList<NavigationStepRequest>

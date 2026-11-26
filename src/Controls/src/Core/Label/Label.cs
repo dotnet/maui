@@ -104,9 +104,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="LineHeight"/>.</summary>
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
-		/// <summary>Bindable property for <see cref="IsTextSelectable"/>.</summary>
-		public static readonly BindableProperty IsTextSelectableProperty = BindableProperty.Create(nameof(IsTextSelectable), typeof(bool), typeof(Label), false);
-
 		/// <summary>Bindable property for <see cref="MaxLines"/>.</summary>
 		public static readonly BindableProperty MaxLinesProperty = BindableProperty.Create(nameof(MaxLines), typeof(int), typeof(Label), -1,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
@@ -262,16 +259,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(LineHeightProperty); }
 			set { SetValue(LineHeightProperty, value); }
-		}
-
-		/// <summary>Gets or sets a value that indicates whether the user can select the text of the <see cref="Microsoft.Maui.Controls.Label"/>, for example to copy it. The default value is <see langword="false"/>. This is a bindable property.</summary>
-		/// <remarks>
-		/// On Android, the native text view does not apply <see cref="Microsoft.Maui.LineBreakMode"/> truncation (an ellipsis) to selectable text.
-		/// </remarks>
-		public bool IsTextSelectable
-		{
-			get => (bool)GetValue(IsTextSelectableProperty);
-			set => SetValue(IsTextSelectableProperty, value);
 		}
 
 		/// <summary>Gets or sets the maximum number of lines allowed in the <see cref="Microsoft.Maui.Controls.Label"/>.</summary>

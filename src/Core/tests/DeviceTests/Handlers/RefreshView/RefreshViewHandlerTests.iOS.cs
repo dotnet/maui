@@ -101,6 +101,43 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task RefreshStartedBeforeBeingInAWindowIsShown()
+		{
+			bool refreshing = false;
+			bool refreshingAfterEnd = true;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var refreshView = new MauiRefreshView
+				{
+					Frame = new CGRect(0, 0, 300, 300)
+				};
+				using var scrollView = new UIScrollView(new CGRect(0, 0, 300, 300))
+				{
+					ContentSize = new CGSize(300, 1200)
+				};
+
+				refreshView.AddSubview(scrollView);
+				refreshView.UpdateIsRefreshEnabled(true);
+				refreshView.IsRefreshing = true;
+
+				await refreshView.AttachAndRun(async () =>
+				{
+					refreshView.SetNeedsLayout();
+					await Task.Delay(500);
+					refreshing = refreshView.RefreshControl.Refreshing && scrollView.ContentOffset.Y < 0;
+
+					refreshView.IsRefreshing = false;
+					await Task.Delay(500);
+					refreshingAfterEnd = refreshView.RefreshControl.Refreshing;
+				});
+			});
+
+			Assert.True(refreshing, "The refresh control must be refreshing and visible once the view is in a window.");
+			Assert.False(refreshingAfterEnd);
+		}
+
+		[Fact]
 		public async Task DisablingRefreshPreservesNewAlwaysBounceVerticalValue()
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
