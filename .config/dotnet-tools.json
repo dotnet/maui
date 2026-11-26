@@ -10,7 +10,7 @@
       "rollForward": false
     },
     "powershell": {
-      "version": "7.6.9",
+      "version": "7.7.0",
       "commands": [
         "pwsh"
       ],
