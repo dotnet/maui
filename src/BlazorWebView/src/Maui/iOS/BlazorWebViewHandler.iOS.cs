@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
+		// Replaced by device tests, so the 30 seconds after a reload can pass without waiting for them.
+		internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+
 		/// <inheritdoc />
 		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
@@ -91,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			var webview = new WKWebView(RectangleF.Empty, config)
+			var webview = new BlazorWKWebView(RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
 				AutosizesSubviews = true

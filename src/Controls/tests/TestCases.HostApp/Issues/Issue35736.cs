@@ -1,3 +1,7 @@
+#if IOS
+using Microsoft.Maui.Platform;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 35736, "SearchHandler QueryIcon, ClearIcon, ClearPlaceholderIcon need to update visually at runtime", PlatformAffected.iOS | PlatformAffected.Android | PlatformAffected.UWP)]
@@ -43,6 +47,27 @@ public class Issue35736 : Shell
 			};
 
 			Shell.SetSearchHandler(this, _searchHandler);
+
+#if IOS
+			UIKit.UIColor defaultQueryTintColor = null;
+			void UpdateQueryTintColor()
+			{
+				if ((Handler?.PlatformView as UIKit.UIView)?.Window?.FindDescendantView<UIKit.UISearchBar>() is { } searchBar)
+				{
+					var queryEditor = searchBar.SearchTextField;
+					defaultQueryTintColor ??= queryEditor.TintColor;
+					// Suppress the caret only for the typed-query shot; empty-query shots retain their native presentation.
+					queryEditor.TintColor = string.IsNullOrEmpty(_searchHandler.Query) ? defaultQueryTintColor : UIKit.UIColor.Clear;
+				}
+			}
+
+			_searchHandler.Focused += (_, _) => UpdateQueryTintColor();
+			_searchHandler.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == SearchHandler.QueryProperty.PropertyName)
+					UpdateQueryTintColor();
+			};
+#endif
 
 			_queryIconLabel = new Label { AutomationId = "Issue35736QueryIconLabel", Text = "QueryIcon: bank.png" };
 			_clearIconLabel = new Label { AutomationId = "Issue35736ClearIconLabel", Text = "ClearIcon: bank.png" };

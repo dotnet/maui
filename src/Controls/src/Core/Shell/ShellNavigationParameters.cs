@@ -19,5 +19,9 @@ namespace Microsoft.Maui.Controls
 		public Page PagePushing { get; set; }
 		public ShellRouteParameters Parameters { get; set; }
 		public bool? CanCancel { get; set; }
+
+		// A per-navigation page transition (PageTransitions.GoToAsync). It applies only while this navigation runs,
+		// so a navigation suspended in Navigating doesn't lend it to another.
+		public Animations.PageTransition PageTransition { get; set; }
 	}
 }

@@ -25,6 +25,40 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(-1)]
+		[InlineData(24)]
+		[InlineData(56)]
+		public async Task TitleViewStaysWithinClippedNavigationBar(double heightRequest)
+		{
+			SetupBuilder();
+			var titleView = new Grid { HeightRequest = heightRequest };
+			titleView.Add(new Label { Text = "Title", FontSize = 18 });
+			var page = new ContentPage();
+			NavigationPage.SetTitleView(page, titleView);
+			var navigationPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), async _ =>
+			{
+				await OnNavigatedToAsync(page);
+				var controller = Assert.IsAssignableFrom<UINavigationController>(
+					(navigationPage.Handler as IPlatformViewHandler)?.ViewController);
+				var bar = controller.NavigationBar;
+				bar.ClipsToBounds = true;
+
+				await AssertEventually(() =>
+				{
+					bar.LayoutIfNeeded();
+					var container = controller.TopViewController.NavigationItem.TitleView;
+					if (container?.Superview is null || container.Bounds.Height <= 0)
+						return false;
+
+					var titleBounds = container.ConvertRectToView(container.Bounds, bar);
+					return titleBounds.Top >= -0.5 && titleBounds.Bottom <= bar.Bounds.Height + 0.5;
+				}, message: "TitleView must have a positive height and stay within the clipped navigation bar.");
+			});
+		}
+
 		// Runs against both variants: SetupBuilder() dispatches to whichever
 		// RegisterNavigationPageHandlers override is active (NavigationRenderer on the base
 		// class, NavigationViewHandler on NavigationPageNavigationHandlerTests). ViewController
@@ -96,6 +130,65 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(page.HasNavigatedTo);
 			});
 		}
+
+#if IOS
+		// https://github.com/dotnet/maui/issues/39210
+		// iOS 26 lays out the opaque bar at y=24 in iPhone landscape but starts the page at y=54.
+		[Fact]
+		public async Task Handler_PageStartsBelowOpaqueNavigationBarInLandscape()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterCommonHandlers(handlers);
+				});
+			});
+
+			var page = new ContentPage { Title = "Second Page", SafeAreaEdges = SafeAreaEdges.None, Content = new Label { Text = "Header" } };
+			var navPage = new NavigationPage(new ContentPage { Title = "Root Page" }) { BarBackgroundColor = Colors.Blue };
+			await navPage.PushAsync(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(page);
+
+				var navController = (UINavigationController)((IPlatformViewHandler)navPage.Handler).ViewController;
+				var pageView = ((IPlatformViewHandler)page.Handler).PlatformView;
+				var window = pageView.Window;
+				Assert.False(navController.NavigationBar.Translucent);
+
+				bool IsLandscape() => window.Bounds.Width > window.Bounds.Height && pageView.Bounds.Width == window.Bounds.Width;
+
+				try
+				{
+					RequestOrientation(window, UIInterfaceOrientationMask.Landscape);
+					await AssertEventually(IsLandscape, timeout: 5000, message: "The window did not rotate to landscape");
+
+					var bar = navController.NavigationBar;
+					var barFrame = bar.ConvertRectToView(bar.Bounds, window);
+					var pageFrame = pageView.ConvertRectToView(pageView.Bounds, window);
+					Assert.True(pageFrame.Top >= barFrame.Bottom - 0.5,
+						$"The page starts at y={pageFrame.Top}, under the opaque navigation bar that ends at y={barFrame.Bottom}");
+				}
+				finally
+				{
+					RequestOrientation(window, UIInterfaceOrientationMask.Portrait);
+					await AssertEventually(() => window.Bounds.Height > window.Bounds.Width, timeout: 5000, message: "The window did not rotate back to portrait");
+				}
+			});
+
+			static void RequestOrientation(UIWindow window, UIInterfaceOrientationMask orientation)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					window.WindowScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(orientation), _ => { });
+				}
+			}
+		}
+#endif
 
 		[Theory]
 		[InlineData(true, false)]
@@ -315,6 +408,59 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task StatusBarQueriesDuringInitialPushDoNotThrow(bool inFlyoutPage)
+		{
+			// iOS 27 asks for the status bar child controller while the first page is still being
+			// created (#39895, #39669). The root page's HandlerChanged fires in that window.
+			SetupNavigationRenderer();
+			var root = new ContentPage();
+			var navPage = new NavigationPage(root);
+			Page container = inFlyoutPage
+				? new FlyoutPage { Flyout = new ContentPage { Title = "Flyout" }, Detail = navPage }
+				: navPage;
+			var reached = new List<UIViewController>();
+			Exception error = null;
+
+			root.HandlerChanged += OnRootHandlerChanged;
+			void OnRootHandlerChanged(object sender, EventArgs e)
+			{
+				root.HandlerChanged -= OnRootHandlerChanged;
+				try
+				{
+					var start = ((IPlatformViewHandler)container.Handler).ViewController;
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForStatusBarHidden()));
+#if !MACCATALYST
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForStatusBarStyle()));
+#endif
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForHomeIndicatorAutoHidden));
+				}
+				catch (Exception ex)
+				{
+					error = ex;
+				}
+			}
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(container), _ =>
+			{
+				Assert.True(error is null, error?.ToString());
+				var renderer = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				Assert.NotEmpty(reached);
+				Assert.All(reached, vc => Assert.Same(renderer, vc));
+				Assert.Same(((IPlatformViewHandler)root.Handler).ViewController, renderer.ChildViewControllerForStatusBarHidden());
+			});
+
+			// Follows the child chain the way UIKit does and returns the controller that answers for itself.
+			static UIViewController Walk(UIViewController vc, Func<UIViewController, UIViewController> child)
+			{
+				for (var next = child(vc); next is not null; next = child(vc))
+					vc = next;
+				return vc;
+			}
+		}
+
 		void SetupNavigationRenderer()
 		{
 			// Renderer-disposal tests must retain their native implementation in inherited handler fixtures.
@@ -324,6 +470,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 					RegisterCommonHandlers(handlers);
 				});

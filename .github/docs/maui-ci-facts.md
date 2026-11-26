@@ -4,11 +4,8 @@ deduplication, baseline comparison, and merge-readiness criteria.
 
 Consumed by (keep these as references, do NOT re-copy the tables):
 - .github/skills/azdo-build-investigator/SKILL.md
-- .github/skills/review-test-failures/SKILL.md
-- .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 (the deterministic gatherer)
 - .github/workflows/ci-status-main.md
 - .github/workflows/ci-status-net11.md
-- .github/workflows/copilot-review-tests.md (via the review-test-failures skill)
 
 When a fact changes (e.g. a pipeline definition ID), change it HERE only.
 -->
@@ -16,18 +13,14 @@ When a fact changes (e.g. a pipeline definition ID), change it HERE only.
 # .NET MAUI CI Facts
 
 Authoritative operational reference for dotnet/maui CI investigation. The
-`review-test-failures` skill owns the current `/review tests` attribution rubric
-and compact, pipeline-grouped comment. It compares all three pipelines with their latest five
-completed runs on the PR's exact target branch (`pr.baseRefName`), then relates
-failures to the PR diff. Previous PR-branch runs are not the baseline or required
-coverage. Target sampling is independent of current PR build availability and is
-not cut off at the PR build's queue time; missing or unreadable samples remain explicit.
-If no usable current-PR results or build-failure diagnostics exist in any pipeline,
-evaluation and target sampling are skipped, with a short `/azp run` request instead.
+standalone `/review tests` workflow, local runner, and failure-attribution skill
+are retired. Use `azdo-build-investigator` for interactive investigations.
+Test verification integrated into the full `/review` remains unchanged.
 
-The deterministic merge-readiness fields documented below remain in the gatherer
-for compatibility. They are not the current `/review tests` report policy: a
-green base job alone is not causal proof, and missing evidence is reported explicitly.
+Compare failures with completed runs on the PR's exact target branch, not
+previous PR-branch runs. A green base job alone is not causal proof, and missing
+or unreadable evidence must remain explicit. Historical collector fields below
+describe earlier reports, not a currently available failure-analysis command.
 
 ## Pipelines
 
@@ -107,7 +100,8 @@ The maintainer reviews and merges using Create a merge commit, then manually
 creates the real release at that exact servicing merge. No post-cut servicing PR
 is opened. CI restoration is prepared as a reviewed normalization
 PR, never a direct protected net11 write. Until its pinned child is merged with
-Create a merge commit, the coordinator reports waiting-for-normalization-approval,
+Create a merge commit (a squash/rebase merge is ignored and a replacement PR is
+opened from the same pinned head), the coordinator reports waiting-for-normalization-approval,
 preserves staging/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
 automation/normalization route. It does not merge either reviewed PR, advance canonical
@@ -188,6 +182,11 @@ excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screen
 comparison behavior and removed Intel macOS support. A major upgrade requires
 explicit validation of the screenshot baselines and supported runner
 architectures; patch and minor updates remain enabled.
+
+Dependabot reads `.github/dependabot.yml` from `main`. The default NuGet entry
+targets `main` and retains security update settings; the `net11` entry targets
+servicing version updates. Keep their groups and ignore rules aligned. The
+`OtherNuGet` group excludes the existing curated groups to avoid overlapping PRs.
 
 ### Pipeline definitions
 
@@ -355,8 +354,8 @@ do not assume green = clean.
 > `Sent Helix Job ... /jobs/{id}/workitems` line — a green leg's hidden work-item failure
 > would otherwise never be discovered.
 
-**Deterministic enforcement in `/review tests`.** Because XHarness exit-0 makes a green
-device-test check untrustworthy, the gatherer **force-inspects every device-test build**
+**Historical deterministic enforcement.** Because XHarness exit-0 makes a green
+device-test check untrustworthy, the retired gatherer **force-inspected every device-test build**
 (green or not) and only treats a green `maui-pr-devicetests` check as clean when it can
 **positively confirm `Failed == 0`** — either every discovered Helix job's `/workitems`
 set was read clean, or the authenticated test-API (when a token is present).
@@ -423,22 +422,15 @@ category list overflowed the read cap, or the file **declared** more failures th
 extract); or the work item exited non-zero with **zero** named failures. A device-test work item is
 **never** a false green.
 
-> 🔒 **Never-false-green coupling — keep these in sync (load-bearing).** The Phase-2
-> incompleteness cap narrows `isIncomplete` to markers that *prove* a run didn't finish, and that
-> narrowing is **coupled to the Windows runner's exact echo strings**:
+> 🔒 **Incomplete Windows runs.** Inspect markers that *prove* a run didn't finish,
+> rather than treating every non-zero exit as incomplete:
 > - `[FAIL] Timeout waiting for <category> test results after N seconds` — `eng/devices/run-windows-devicetests.cmd:503` (an unfinished category)
 > - `All test processes may have crashed` — `run-windows-devicetests.cmd:430` (a total wipeout)
 > - `Test execution completed with exit code: N` — `run-windows-devicetests.cmd:481` is **deliberately EXCLUDED** from the cap: the cmd echoes it **unconditionally** on every non-zero run (it only ever `exit /b 0|1`), so treating it as incompleteness over-caps *every* failed Windows work item and never lets a cleanly-named failure flow to base/known-issue attribution.
 >
-> The first two strings are the *independent* incompleteness markers in `Get-ConsoleFailureReason`'s
-> `$incompleteRegex`. **If anyone rewords them in the cmd, mirror the change in
-> `$incompleteRegex` (`Gather-TestFailureContext.ps1`)** — otherwise the cap silently weakens **with
-> no test failing** (the coupling is enforced only by comments + this note, not by a shared
-> constant). Also: any **new** call site that reads a `console.*.log` via `Invoke-HelixFileText` to
-> judge completeness **must** pass `-Truncated ([ref]$flag)` and OR that flag into the incomplete
-> cap — a console read without it reopens the head-only-`[FAIL]` truncation window (a >4 MB XHarness
-> console keeps only the HEAD, where per-test `[FAIL]` lines live, and drops the TAIL where the
-> timeout/crash marker prints).
+> The first two strings are independent incompleteness markers. A truncated console
+> read cannot establish completeness: its retained head may include per-test `[FAIL]`
+> lines while dropping the tail where the timeout/crash marker prints.
 
 ### Container artifact binlogs
 
@@ -520,14 +512,13 @@ Messages like `Baseline snapshot not yet created`, missing snapshot paths, or sn
 environment-version mismatches are strong **unrelated** evidence — unless the PR adds or
 modifies that visual test or the affected snapshot/platform.
 
-The gatherer can collect failed UI result IDs from the public
-`vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
-result-detail and attachment APIs. The simplified workflow/local runner skips
-visual enrichment and no longer publishes image panels. Earlier reports used the
+Failed UI result IDs can be collected from the public
+`vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, followed by the public
+result-detail and attachment APIs. Earlier reports used the
 asset-only `review-tests-assets-v2` branch (and previously `review-tests-assets`);
-those branches and their commit-pinned image URLs remain intact. The legacy
-publisher/merger scripts are retained for compatibility, not called by the current
-`/review tests` workflow. Missing images do not establish a failure's cause.
+those branches and their commit-pinned image URLs remain intact. The full `/review`
+still publishes through its existing asset branch. The standalone failure-analysis
+publisher/merger scripts have been removed. Missing images do not establish a failure's cause.
 
 ## Platform mismatch
 
@@ -585,9 +576,8 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 
 ## Merge-readiness criteria
 
-Retained for the interactive investigator and legacy deterministic gate consumers.
-The current `/review tests` skill reports attribution and evidence coverage instead
-of these merge-readiness verdicts. Assess **only CI/test health** — code review and
+Retained for the interactive investigator and interpretation of historical reports.
+Assess **only CI/test health** — code review and
 approval are separate, human-only decisions.
 
 | Overall verdict | Use when |
@@ -642,7 +632,7 @@ on appearance alone:
    build. A leg red on **some** sampled base builds and green on others is `flaky-on-base`
    (never a regression); a leg green on base but on too few samples is
    `succeeded-on-base-unconfirmed` (indeterminate, not a confident regression). The automated
-   lane **computes this in `Gather-TestFailureContext.ps1`** (per-failure `legBaselineResult` /
+   lane **computed this in the retired gatherer** (per-failure `legBaselineResult` /
    `legRegressedVsBase` / `legAlsoFailsOnBase`, the `baseSampleCount` / `baseGreenCount` /
    `baseFailedCount` evidence, and a `deterministicAttribution` prior); the interactive
    investigator does the same comparison by hand from the timelines. **Note the asymmetry:** a

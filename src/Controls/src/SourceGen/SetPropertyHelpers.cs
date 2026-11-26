@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -24,6 +25,8 @@ static class SetPropertyHelpers
 		var localName = propertyName.LocalName;
 		bool attached = false;
 		var bpFieldSymbol = !string.IsNullOrEmpty(propertyName.LocalName) ? parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out attached, context, (IXmlLineInfo)valueNode) : null;
+		//an attached bindable property resolves a qualified name even when it is not accessible from here
+		var hasBindableProperty = bpFieldSymbol != null;
 		if (bpFieldSymbol != null && !context.Compilation.IsSymbolAccessibleWithin(bpFieldSymbol, context.RootType))
 		{
 			//not a diagnostic, as it might have a visible symbol matching for CanSet()
@@ -64,12 +67,38 @@ static class SetPropertyHelpers
 			return;
 		}
 
+		//If the member is qualified with an extension container type, set the extension property
+		var extensionPropertyReported = false;
+		if (!asCollectionItem && CanSetExtensionProperty(parentVar, propertyName, valueNode, context, out var extensionAccessors, out extensionPropertyReported))
+		{
+			SetExtensionProperty(writer, parentVar, extensionAccessors!, valueNode, context, getNodeValue);
+			return;
+		}
+
+		//a diagnostic was already emitted for the extension property, don't also report an unresolved member
+		if (extensionPropertyReported)
+			return;
+
+		if (!hasBindableProperty && ReportUnresolvedExtensionMember(parentVar, propertyName, valueNode, context))
+			return;
+
 		//POCO, set the property
 		if (!asCollectionItem && CanSet(parentVar, localName, valueNode, context))
 		{
 			Set(writer, parentVar, localName, valueNode, context, getNodeValue);
 			return;
 		}
+
+		//An unqualified name may name an extension property brought in scope by the default xmlns
+		var scopedReported = false;
+		if (!asCollectionItem && !attached && !hasBindableProperty && CanSetScopedExtensionProperty(parentVar, propertyName, valueNode, context, out var scopedAccessors, out scopedReported))
+		{
+			SetExtensionProperty(writer, parentVar, scopedAccessors!, valueNode, context, getNodeValue);
+			return;
+		}
+
+		if (scopedReported)
+			return;
 
 		if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, getNodeValue))
 		{
@@ -155,8 +184,12 @@ static class SetPropertyHelpers
 	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
 	/// Creates the resource on demand using a lambda, or a stable local function when replacing an entry.
 	/// </summary>
-	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, string? replacementFactoryName = null)
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false, string? replacementFactoryName = null, bool updateLiveStyle = false, bool emitReplacement = true, string? liveStyleFactoryName = null)
 	{
+		// Nested resources need the same metadata-update-safe factory form as the outer addition.
+		for (SourceGenContext? enclosingContext = context; enclosingContext != null; enclosingContext = enclosingContext.ParentContext)
+			useLocalFactory |= enclosingContext.UseLocalResourceFactories;
+
 		// Get the type of the resource
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
 			return;
@@ -177,17 +210,18 @@ static class SetPropertyHelpers
 			key = keyStr;
 
 			// Check for duplicate keys
-			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
+			if (emitReplacement && !context.KeysInRD.TryGetValue(parentVar, out _))
 			{
-				context.KeysInRD[parentVar] = keysInUse = [];
+				context.KeysInRD[parentVar] = [];
 			}
-			if (keysInUse.Contains(key))
+			if (emitReplacement && context.KeysInRD[parentVar].Contains(key))
 			{
 				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
 				return;
 			}
-			keysInUse.Add(key);
+			if (emitReplacement)
+				context.KeysInRD[parentVar].Add(key);
 		}
 
 		// Get the x:Shared attribute (default is true)
@@ -218,16 +252,15 @@ static class SetPropertyHelpers
 			resourceKeyExpression = $"\"{CSharpExpressionHelpers.EscapeForString(key!)}\"";
 		}
 
-		if (replacementFactoryName is not null)
-		{
-			// A stable local function avoids anonymous-lambda identity churn across EnC deltas.
-			var returnType = isImplicitStyle ? "global::Microsoft.Maui.Controls.Style" : "object";
-			writer.WriteLine($"{returnType} {replacementFactoryName}()");
-		}
+		var returnType = isImplicitStyle ? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style")! : context.Compilation.ObjectType;
+		var delegateType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(returnType);
+		var factoryName = replacementFactoryName ?? (useLocalFactory ? NamingHelpers.CreateUniqueVariableName(context, delegateType) : null);
+		if (factoryName is not null)
+			writer.WriteLine($"{returnType.ToFQDisplayString()} {factoryName}()");
 		else
 			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, () =>");
 
-		using (PrePost.NewBlock(writer, begin: "{", end: replacementFactoryName is not null
+		using (PrePost.NewBlock(writer, begin: "{", end: factoryName is not null
 			? "}" : $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
 		{
 			// Create a temporary context for generating the lambda body
@@ -270,19 +303,33 @@ static class SetPropertyHelpers
 				writer.WriteLine($"return null!;");
 			}
 		}
-
-		if (replacementFactoryName is not null)
+		if (factoryName is not null && emitReplacement)
 		{
 			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
-			writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, {replacementFactoryName}, shared: {shared.ToString().ToLowerInvariant()});");
+			// Hot reload: update a live shared style in place so consumers holding it directly refresh;
+			// otherwise replace the factory so future lookups get the new value.
+			if (replacementFactoryName is not null && updateLiveStyle)
+			{
+				writer.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.HasMaterializedStyle({parentVar.ValueAccessor}, {keyExpression}) || !global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryUpdateStyle({parentVar.ValueAccessor}, {keyExpression}, (global::Microsoft.Maui.Controls.Style){liveStyleFactoryName ?? replacementFactoryName}()))");
+				writer.WriteLine("{");
+				writer.Indent++;
+			}
+			if (replacementFactoryName is not null)
+				writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
+			// Explicit delegates avoid introducing cached-lambda fields during metadata updates.
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
+			if (replacementFactoryName is not null && updateLiveStyle)
+			{
+				writer.Indent--;
+				writer.WriteLine("}");
+			}
 		}
 	}
 
 	/// <summary>
 	/// Gets the TargetType expression for a Style node.
 	/// </summary>
-	static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
 	{
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;
@@ -323,7 +370,7 @@ static class SetPropertyHelpers
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{
-		if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
+		if (GetInstanceProperty(parentVar.Type, localName, context) is not IPropertySymbol property)
 			return false;
 		if (property.SetMethod is not IMethodSymbol propertySetter || !propertySetter.IsPublic() || propertySetter.IsStatic)
 			return false;
@@ -457,7 +504,21 @@ static class SetPropertyHelpers
 		}
 		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 		{
-			writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
+			var eventHandlerAccessor = CodeBehindCodeWriter.GetEventHandlerAccessor(context.ProjectItem, context.Compilation);
+			if (eventHandlerAccessor is null)
+			{
+				writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
+			}
+			else
+			{
+				var delegateType = eventType.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToFQDisplayString();
+				using (PrePost.NewBlock(writer))
+				{
+					writer.WriteLine($"var __xamlHandler = new {delegateType}({handler});");
+					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += __xamlHandler;");
+					writer.WriteLine($"{eventHandlerAccessor}().GetOrCreateValue({parentVar.ValueAccessor})[{Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(localName, true)}] = __xamlHandler;");
+				}
+			}
 		}
 	}
 
@@ -669,7 +730,7 @@ static class SetPropertyHelpers
 
 	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
-		var property = parentVar.Type.GetAllProperties(localName, context).First();
+		var property = GetInstanceProperty(parentVar.Type, localName, context)!;
 
 		if (node is ValueNode valueNode)
 		{
@@ -687,6 +748,10 @@ static class SetPropertyHelpers
 				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){intermediateCast}{localVar.ValueAccessor};");
 			}
 	}
+
+	static IPropertySymbol? GetInstanceProperty(ITypeSymbol targetType, string name, SourceGenContext context)
+		=> targetType.GetAllProperties(name, context)
+			.FirstOrDefault(property => targetType.TypeKind == TypeKind.Interface || property.ContainingType.TypeKind != TypeKind.Interface);
 
 	static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, ITypeSymbol parentType, string localName, SourceGenContext context, out string? explicitPropertyName)
 	{
@@ -836,8 +901,9 @@ static class SetPropertyHelpers
 		if (valueNode is not ValueNode vn || vn.Value is not Expression expression)
 			return false;
 
-		// Need a BindableProperty to set a binding
-		if (bpFieldSymbol == null)
+		// Need a BindableProperty (or heuristic attribute) to set a binding
+		string? explicitPropertyName = null;
+		if (bpFieldSymbol == null && (string.IsNullOrEmpty(localName) || !parentVar.Type.HasBindablePropertyHeuristic(localName, context, out explicitPropertyName)))
 			return false;
 
 		// Get the parent ElementNode to find x:DataType
@@ -895,8 +961,8 @@ static class SetPropertyHelpers
 				var id = idReference.Identifier;
 				var idResolution = MemberResolver.Resolve(id, context.RootType, dataTypeSymbol, context.Compilation);
 				if (idResolution.Location == MemberLocation.Neither &&
-					!MemberResolver.HasMember(context.RootType, id, includeMethods: true) &&
-					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true) &&
+					!MemberResolver.HasMember(context.RootType, id, includeMethods: true, context.Compilation) &&
+					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true, context.Compilation) &&
 					!MemberResolver.ResolvesToType(context.Compilation, idReference.TypeReferenceCandidate, MemberResolver.GetContainingNamespace(context.RootType)))
 				{
 					var idLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
@@ -918,7 +984,7 @@ static class SetPropertyHelpers
 		// This covers complex expressions like (Price * TaxRate) where MemberResolver returns Neither
 		if (analysis.HasBindingProperties)
 		{
-			SetExpressionBinding(writer, parentVar, bpFieldSymbol, expression.Code, dataTypeSymbol, context, vn);
+			SetExpressionBinding(writer, parentVar, bpFieldSymbol, localName, explicitPropertyName, expression.Code, dataTypeSymbol, context, vn);
 			return true;
 		}
 
@@ -933,7 +999,7 @@ static class SetPropertyHelpers
 			case MemberLocation.DataType:
 			case MemberLocation.ForcedDataType:
 				// Binding expression - generate TypedBinding
-				SetExpressionBinding(writer, parentVar, bpFieldSymbol, resolution.Expression, dataTypeSymbol, context, vn);
+				SetExpressionBinding(writer, parentVar, bpFieldSymbol, localName, explicitPropertyName, resolution.Expression, dataTypeSymbol, context, vn);
 				return true;
 
 			case MemberLocation.Neither:
@@ -959,7 +1025,7 @@ static class SetPropertyHelpers
 		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType, compilation);
 		var handlers = analysis.Handlers;
 
-		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null);
+		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null, compilation);
 		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
 
 		bool hasCaptures = analysis.Captures.Count > 0;
@@ -985,8 +1051,8 @@ static class SetPropertyHelpers
 
 		// UC intentionally skips the ExpressionNotSettable diagnostic (Descriptors.ExpressionNotSettable)
 		// that IC emits for TwoWay-default BPs with non-settable expressions. During hot reload,
-		// the developer is iterating rapidly and a warning would be noise — the IC already warned at build time.
-		var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context: null);
+		// the developer is iterating rapidly and a warning would be noise - the IC already warned at build time.
+		var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context: null, compilation);
 		if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.DirectAssignment)
 			writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
 		else if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.StructCopyWriteback)
@@ -1023,9 +1089,11 @@ static class SetPropertyHelpers
 	/// <summary>
 	/// Generates a TypedBinding for a C# expression that references x:DataType members.
 	/// </summary>
-	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
+	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
 	{
-		var bpName = bpFieldSymbol.ToFQDisplayString();
+		var bpName = bpFieldSymbol != null
+			? bpFieldSymbol.ToFQDisplayString()
+			: $"{parentVar.Type.ToFQDisplayString()}.{explicitPropertyName ?? $"{localName}Property"}";
 
 		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
 
@@ -1086,7 +1154,7 @@ static class SetPropertyHelpers
 			{
 				writer.WriteLine($"null,");
 				// Emit diagnostics when binding a complex expression to a TwoWay property
-				if (IsTwoWayByDefault(bpFieldSymbol))
+				if (bpFieldSymbol != null && IsTwoWayByDefault(bpFieldSymbol))
 				{
 					var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression);
 					context.ReportDiagnostic(Diagnostic.Create(
@@ -1133,49 +1201,98 @@ static class SetPropertyHelpers
 	/// For example, "Price" on SimpleViewModel resolves to decimal, "User.DisplayName" resolves to string.
 	/// For complex expressions (operators, method calls, interpolation), returns null to fall back to object.
 	/// </summary>
-	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context)
+	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation = null)
 	{
-		if (string.IsNullOrWhiteSpace(expression))
+		if (!TryGetMemberChainParts(expression, dataType, context, compilation, out var parts))
 			return null;
 
-		var expr = expression.Trim();
-
-		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
-		if (expr.StartsWith(".", StringComparison.Ordinal) &&
-			!expr.StartsWith("..", StringComparison.Ordinal))
-			expr = expr.Substring(1);
-
-		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
-		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
-			&& !dataType.GetAllMembers("BindingContext", context).Any())
-			expr = expr.Substring("BindingContext.".Length);
-
-		if (string.IsNullOrEmpty(expr))
-			return null;
-
-		// Walk the dot-separated property chain (also handle ?. null-conditional access)
-		var parts = expr.Replace("?.", ".").Split('.');
 		var currentType = dataType;
 
 		foreach (var part in parts)
 		{
 			var memberName = part.Trim().TrimEnd('!');
-
-			// If it contains parens, operators, or special chars, it's not a simple property chain
-			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+			if (!TryResolveChainMember(currentType, memberName, context, compilation, out var memberType, out _, out _))
 				return null;
 
-			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
-			if (member is IPropertySymbol prop)
-				currentType = prop.Type;
-			else if (member is IFieldSymbol field)
-				currentType = field.Type;
-			else
-				return null;
+			currentType = memberType;
 		}
 
 		return currentType;
+	}
+
+	static bool TryGetMemberChainParts(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation, out string[] parts)
+	{
+		parts = Array.Empty<string>();
+		if (string.IsNullOrWhiteSpace(expression))
+			return false;
+
+		var expr = expression.Trim();
+
+		// Strip leading dot prefix (e.g., ".Name" -> "Name"), but avoid the ".." range operator
+		if (expr.StartsWith(".", StringComparison.Ordinal) &&
+			!expr.StartsWith("..", StringComparison.Ordinal))
+			expr = expr.Substring(1);
+
+		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
+		// not a user-defined or source-generated member with the same name
+		var effectiveCompilation = compilation ?? context?.Compilation;
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
+			&& !dataType.GetAllMembers("BindingContext", context).Any()
+			&& !MemberResolver.HasMember(dataType, "BindingContext", includeMethods: false, effectiveCompilation))
+			expr = expr.Substring("BindingContext.".Length);
+
+		if (string.IsNullOrEmpty(expr))
+			return false;
+
+		parts = expr.Replace("?.", ".").Split('.');
+		return true;
+	}
+
+	static bool TryResolveChainMember(
+		ITypeSymbol currentType,
+		string memberName,
+		SourceGenContext? context,
+		Compilation? compilation,
+		out ITypeSymbol memberType,
+		out bool isWritable,
+		out bool isField)
+	{
+		memberType = null!;
+		isWritable = false;
+		isField = false;
+
+		// If it contains parens, operators, or special chars, it's not a simple property chain
+		if (string.IsNullOrEmpty(memberName) || memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('['))
+			return false;
+
+		var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
+		if (member is IPropertySymbol prop)
+		{
+			memberType = prop.Type;
+			isWritable = prop.SetMethod is not null
+				&& prop.SetMethod.DeclaredAccessibility == Accessibility.Public
+				&& !prop.SetMethod.IsInitOnly;
+			return true;
+		}
+
+		if (member is IFieldSymbol field)
+		{
+			memberType = field.Type;
+			isField = true;
+			isWritable = !field.IsReadOnly;
+			return true;
+		}
+
+		if (member == null
+			&& currentType.TryGetProperty(memberName, context, compilation, out _, out var inferredType, out var isAssumedWritable)
+			&& inferredType != null)
+		{
+			memberType = inferredType;
+			isWritable = isAssumedWritable;
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1241,88 +1358,52 @@ static class SetPropertyHelpers
 	/// and if so, what kind of setter is needed.
 	/// Handles value type (struct) intermediates that require copy-modify-writeback.
 	/// </summary>
-	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext? context)
+	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation = null)
 	{
 		var notWritable = new ExpressionWriteInfo { Kind = ExpressionWriteKind.NotWritable };
 
-		if (string.IsNullOrWhiteSpace(expression))
-			return notWritable;
-
-		var expr = expression.Trim();
-
-		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
-		if (expr.StartsWith(".", StringComparison.Ordinal) &&
-			!expr.StartsWith("..", StringComparison.Ordinal))
-			expr = expr.Substring(1);
-
-		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
-		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
-			&& !dataType.GetAllMembers("BindingContext", context).Any())
-			expr = expr.Substring("BindingContext.".Length);
-
-		if (string.IsNullOrEmpty(expr))
+		if (!TryGetMemberChainParts(expression, dataType, context, compilation, out var parts))
 			return notWritable;
 
 		// Walk the dot-separated property chain (also handle ?. null-conditional access)
-		var parts = expr.Replace("?.", ".").Split('.');
 		var currentType = dataType;
-		IPropertySymbol? lastProperty = null;
 		var chain = new (string Name, bool IsStructIntermediate)[parts.Length];
 		bool hasStructIntermediate = false;
 		bool hasUnsettableStructIntermediate = false;
+		bool terminalWritable = false;
 
 		for (int i = 0; i < parts.Length; i++)
 		{
 			var memberName = parts[i].Trim().TrimEnd('!');
-
-			// If it contains parens, operators, or special chars, it's not a simple property chain
-			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+			if (!TryResolveChainMember(currentType, memberName, context, compilation, out var memberType, out var isWritable, out var isField))
 				return notWritable;
 
-			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
-			if (member is IPropertySymbol prop)
-			{
-				lastProperty = prop;
-				currentType = prop.Type;
+			currentType = memberType;
 
-				bool isStructIntermediate = i < parts.Length - 1 && currentType.IsValueType;
-				chain[i] = (memberName, isStructIntermediate);
-
-				if (isStructIntermediate)
-				{
-					hasStructIntermediate = true;
-					// Check if this intermediate property has a setter (needed for writeback)
-					bool intermediateSettable = prop.SetMethod is not null
-						&& prop.SetMethod.DeclaredAccessibility == Accessibility.Public
-						&& !prop.SetMethod.IsInitOnly;
-					if (!intermediateSettable)
-						hasUnsettableStructIntermediate = true;
-				}
-			}
-			else if (member is IFieldSymbol field)
+			if (isField)
 			{
-				if (field.IsReadOnly)
+				if (!isWritable)
 					return notWritable;
-				lastProperty = null;
 				chain[i] = (memberName, false); // Fields don't need writeback
-				currentType = field.Type;
+				terminalWritable = true;
 			}
 			else
 			{
-				return notWritable;
+				bool isStructIntermediate = i < parts.Length - 1 && currentType.IsValueType;
+				chain[i] = (memberName, isStructIntermediate);
+
+				if (isStructIntermediate && !isWritable)
+					hasUnsettableStructIntermediate = true;
+
+				if (isStructIntermediate)
+					hasStructIntermediate = true;
+
+				terminalWritable = isWritable;
 			}
 		}
 
-		// Check if the terminal property has a public, non-init setter
-		if (lastProperty is not null)
-		{
-			bool terminalWritable = lastProperty.SetMethod is not null
-				&& lastProperty.SetMethod.DeclaredAccessibility == Accessibility.Public
-				&& !lastProperty.SetMethod.IsInitOnly;
-			if (!terminalWritable)
-				return notWritable;
-		}
+		if (!terminalWritable)
+			return notWritable;
 
 		if (hasUnsettableStructIntermediate)
 			return new ExpressionWriteInfo { Kind = ExpressionWriteKind.StructIntermediateNotSettable };
@@ -1376,4 +1457,438 @@ static class SetPropertyHelpers
 		writer.WriteLine("},");
 	}
 
+	sealed class ExtensionPropertyAccessors
+	{
+		public IMethodSymbol Setter { get; set; } = null!;
+		public IPropertySymbol Property { get; set; } = null!;
+		public ITypeSymbol PropertyType => Property.Type;
+		public ITypeSymbol ReceiverType { get; set; } = null!;
+	}
+
+	//<Label local:LabelExtensions.MyTag="..."/> -> owner is local:LabelExtensions, member is MyTag
+	static bool TryGetQualifiedOwner(XmlName propertyName, SourceGenContext context, out INamedTypeSymbol? owner, out string memberName)
+	{
+		owner = null;
+		memberName = propertyName.LocalName;
+		var dotIdx = memberName.IndexOf('.');
+		if (dotIdx <= 0)
+			return false;
+
+		var typename = memberName.Substring(0, dotIdx);
+		memberName = memberName.Substring(dotIdx + 1);
+		return new XmlType(propertyName.NamespaceURI, typename, null).TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out owner) && owner != null;
+	}
+
+	/// <summary>
+	/// Resolves the <c>set_Name</c> implementation method of a C# extension property declared by
+	/// <paramref name="container"/> and applicable to <paramref name="targetType"/>.
+	/// See <see cref="ExtensionPropertyConventions"/>.
+	/// </summary>
+	static ExtensionPropertyAccessors? ResolveExtensionProperty(INamedTypeSymbol container, ITypeSymbol targetType, string propertyName, SourceGenContext context, IXmlLineInfo lineInfo, out bool reported, bool report = true)
+	{
+		reported = false;
+
+		if (!DeclaresExtensionProperty(container, propertyName))
+			return null;
+
+		var candidates = new List<ExtensionPropertyAccessors>();
+		CollectExtensionSetters(container, targetType, propertyName, context, candidates);
+
+		var accessors = MostSpecific(candidates, context);
+		if (accessors == null)
+			reported = report && (candidates.Count > 1
+				? ReportExtensionPropertyAmbiguous(propertyName, $"container \"{container.ToFQDisplayString()}\"", targetType, context, lineInfo)
+				: ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo));
+
+		return accessors;
+	}
+
+	/// <summary>
+	/// Adds, for every writable instance extension property named <paramref name="propertyName"/> that
+	/// <paramref name="container"/> declares for a receiver applicable to <paramref name="targetType"/>, the
+	/// implementation method the compiler emitted for its setter. Only the setter matching the declaration's
+	/// receiver and value type qualifies, so an ordinary static method that merely shares the
+	/// <c>set_Name</c> name is never mistaken for an accessor.
+	/// </summary>
+	static void CollectExtensionSetters(INamedTypeSymbol container, ITypeSymbol targetType, string propertyName, SourceGenContext context, List<ExtensionPropertyAccessors> candidates)
+	{
+		if (!container.IsStatic || container.IsGenericType)
+			return;
+		if (context.RootType != null && !context.Compilation.IsSymbolAccessibleWithin(container, context.RootType))
+			return;
+
+		var setterName = ExtensionPropertyConventions.SetterName(propertyName);
+		foreach (var (property, receiver) in GetExtensionPropertyDeclarations(container, propertyName))
+		{
+			if (property.IsStatic || property.SetMethod == null || receiver == null)
+				continue;
+			if (!IsReceiverApplicable(receiver, targetType, context))
+				continue;
+
+			foreach (var method in container.GetMembers(setterName).OfType<IMethodSymbol>())
+			{
+				if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public || method.IsGenericMethod)
+					continue;
+				if (!method.ReturnsVoid || method.Parameters.Length != 2 || method.Parameters[0].RefKind != RefKind.None)
+					continue;
+				if (!SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, receiver)
+					|| !SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, property.Type))
+					continue;
+				if (candidates.Any(c => SymbolEqualityComparer.Default.Equals(c.Setter, method)))
+					break;
+
+				candidates.Add(new ExtensionPropertyAccessors { Setter = method, Property = property, ReceiverType = receiver });
+				break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
+	/// block, and that type declares the extension properties. See <see cref="ExtensionPropertyConventions"/>.
+	/// </summary>
+	/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
+	static bool DeclaresExtensionProperty(INamedTypeSymbol container, string? propertyName)
+		=> GetExtensionPropertyDeclarations(container, propertyName).Any();
+
+	/// <summary>
+	/// The extension properties <paramref name="container"/> declares, with the receiver type of their
+	/// extension block, or <c>null</c> when the receiver cannot be determined.
+	/// </summary>
+	static IEnumerable<(IPropertySymbol property, ITypeSymbol? receiver)> GetExtensionPropertyDeclarations(INamedTypeSymbol container, string? propertyName)
+	{
+		foreach (var nested in container.GetTypeMembers())
+		{
+			if (nested.CanBeReferencedByName && ExtensionPropertyConventions.IsSpeakable(nested.MetadataName))
+				continue;
+
+			var blockReceiver = GetExtensionBlockReceiver(nested);
+			foreach (var property in (propertyName == null ? nested.GetMembers() : nested.GetMembers(propertyName)).OfType<IPropertySymbol>())
+				yield return (property, blockReceiver ?? GetMarkerReceiver(property));
+
+			foreach (var declaration in GetExtensionPropertyDeclarations(nested, propertyName))
+				yield return declaration;
+		}
+	}
+
+	//INamedTypeSymbol.ExtensionParameter is newer than the Microsoft.CodeAnalysis version this generator is built
+	//against, but it is there when running in a compiler that understands extension blocks
+	static readonly System.Reflection.PropertyInfo? s_extensionParameter = typeof(INamedTypeSymbol).GetProperty("ExtensionParameter");
+
+	static ITypeSymbol? GetExtensionBlockReceiver(INamedTypeSymbol extensionBlock)
+		=> (s_extensionParameter?.GetValue(extensionBlock) as IParameterSymbol)?.Type;
+
+	//Older compilers see the metadata shape instead: the property carries [ExtensionMarker("<M>$...")] naming a
+	//sibling marker type, whose `<Extension>$` method takes the receiver as its only parameter
+	static ITypeSymbol? GetMarkerReceiver(IPropertySymbol property)
+	{
+		var markerName = property.GetAttributes()
+			.FirstOrDefault(a => a.AttributeClass?.Name == "ExtensionMarkerAttribute" && a.ConstructorArguments.Length == 1)
+			?.ConstructorArguments[0].Value as string;
+		if (markerName == null)
+			return null;
+
+		var marker = property.ContainingType.GetTypeMembers().FirstOrDefault(t => t.MetadataName == markerName);
+		var markerMethod = marker?.GetMembers("<Extension>$").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1);
+		return markerMethod?.Parameters[0].Type;
+	}
+
+	static bool ReportExtensionPropertyResolution(string propertyName, INamedTypeSymbol container, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo lineInfo)
+	{
+		var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName);
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyResolution, location, propertyName, container.ToFQDisplayString(), targetType.ToFQDisplayString()));
+		return true; //always reported: callers use the return value to flag the member as handled
+	}
+
+	static bool ReportExtensionPropertyAmbiguous(string propertyName, string scope, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo lineInfo)
+	{
+		var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName);
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyAmbiguous, location, propertyName, scope, targetType.ToFQDisplayString()));
+		return true;
+	}
+
+	static bool IsReceiverApplicable(ITypeSymbol receiverType, ITypeSymbol targetType, SourceGenContext context)
+	{
+		var conversion = context.Compilation.ClassifyConversion(targetType, receiverType);
+		return conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference || conversion.IsBoxing);
+	}
+
+	/// <summary>
+	/// The one candidate whose receiver is at least as specific as every other one wins, as it would in C#.
+	/// Comparing every candidate with every other, rather than folding them pairwise, is what makes the
+	/// outcome independent of the order candidates are enumerated in.
+	/// </summary>
+	static ExtensionPropertyAccessors? MostSpecific(List<ExtensionPropertyAccessors> candidates, SourceGenContext context)
+	{
+		if (candidates.Count == 0)
+			return null;
+		if (candidates.Count == 1)
+			return candidates[0];
+
+		ExtensionPropertyAccessors? best = null;
+		foreach (var candidate in candidates)
+		{
+			var isBest = true;
+			foreach (var other in candidates)
+			{
+				if (ReferenceEquals(other, candidate))
+					continue;
+				if (!IsReceiverApplicable(other.ReceiverType, candidate.ReceiverType, context))
+				{
+					isBest = false;
+					break;
+				}
+			}
+			if (!isBest)
+				continue;
+			//two candidates for the same receiver, or none dominating the others, is not something to guess
+			if (best != null)
+				return null;
+			best = candidate;
+		}
+
+		return best;
+	}
+
+	/// <summary>
+	/// The extension containers a xmlns brings in scope. Each [XmlnsDefinition] only brings in the namespace
+	/// of the assembly it names, so a referenced assembly reusing that namespace name contributes nothing.
+	/// Enumerating a clr namespace is expensive enough to remember.
+	/// </summary>
+	static INamedTypeSymbol[] GetExtensionContainersInScope(string xmlNamespace, SourceGenContext context)
+	{
+		context.extensionContainersInScope ??= [];
+		if (context.extensionContainersInScope.TryGetValue(xmlNamespace, out var cached))
+			return cached;
+
+		var mappings = context.XmlnsCache.XmlnsDefinitions
+			.Where(d => d.XmlNamespace == xmlNamespace && d.Target != null
+				&& !d.Target.StartsWith("http://", StringComparison.Ordinal)
+				&& !d.Target.StartsWith("https://", StringComparison.Ordinal))
+			.Select(d => (clrNamespace: d.Target, assemblyName: d.AssemblyName))
+			.ToList();
+		if (mappings.Count == 0)
+		{
+			var declaration = xmlNamespace.TrimStart();
+			var isUsing = declaration.StartsWith("using:", StringComparison.Ordinal);
+			if (isUsing || declaration.StartsWith("clr-namespace:", StringComparison.Ordinal))
+			{
+				XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
+				if (ns != null)
+					mappings.Add((ns, string.IsNullOrEmpty(asm) && !isUsing ? context.Compilation.Assembly.Identity.Name : asm));
+			}
+		}
+
+		var containers = new List<INamedTypeSymbol>();
+		foreach (var (clrNamespace, assemblyName) in mappings.Distinct())
+		{
+			foreach (var assembly in GetAssemblies(assemblyName, context))
+			{
+				var namespaceSymbol = ResolveNamespace(assembly.GlobalNamespace, clrNamespace);
+				if (namespaceSymbol == null)
+					continue;
+
+				foreach (var type in namespaceSymbol.GetTypeMembers())
+				{
+					if (type.IsStatic && !type.IsGenericType && !containers.Contains(type, SymbolEqualityComparer.Default) && DeclaresExtensionProperty(type, propertyName: null))
+						containers.Add(type);
+				}
+			}
+		}
+
+		return context.extensionContainersInScope[xmlNamespace] = [.. containers];
+	}
+
+	static IEnumerable<IAssemblySymbol> GetAssemblies(string? assemblyName, SourceGenContext context)
+	{
+		var simpleName = string.IsNullOrEmpty(assemblyName) ? null : new System.Reflection.AssemblyName(assemblyName).Name;
+		if (simpleName == null || context.Compilation.Assembly.Identity.Name == simpleName)
+			yield return context.Compilation.Assembly;
+		foreach (var reference in context.Compilation.References)
+		{
+			if (context.Compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly
+				&& (simpleName == null || assembly.Identity.Name == simpleName))
+				yield return assembly;
+		}
+	}
+
+	static INamespaceSymbol? ResolveNamespace(INamespaceSymbol root, string clrNamespace)
+	{
+		var current = root;
+		foreach (var part in clrNamespace.Split('.'))
+		{
+			current = current.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == part);
+			if (current == null)
+				return null;
+		}
+
+		return current;
+	}
+
+	/// <summary>
+	/// An extension property never hides an instance member: C# binds a name the target declares to that
+	/// member, even when it cannot be assigned, and only falls back to extension members otherwise.
+	/// </summary>
+	static bool HasAccessibleInstanceMember(ITypeSymbol targetType, string name, SourceGenContext context)
+	{
+		bool IsAccessible(ISymbol symbol) => context.RootType == null || context.Compilation.IsSymbolAccessibleWithin(symbol, context.RootType);
+
+		//interface declarations are not members of a class: an explicitly implemented property hides nothing
+		var isInterface = targetType.TypeKind == TypeKind.Interface;
+		return targetType.GetAllMembers(name, context).Any(m =>
+			m is IPropertySymbol or IFieldSymbol
+			&& !m.IsStatic
+			&& (isInterface || m.ContainingType.TypeKind != TypeKind.Interface)
+			&& IsAccessible(m));
+	}
+
+	/// <summary>
+	/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
+	/// scope, the way C# resolves an extension member against the namespaces a file imports. Every applicable
+	/// setter of every container in scope competes, so that an ambiguity inside one container is not hidden by
+	/// a less specific candidate from another.
+	/// </summary>
+	static ExtensionPropertyAccessors? ResolveScopedExtensionProperty(ITypeSymbol targetType, XmlName propertyName, INode node, SourceGenContext context, out string? xmlNamespace, out bool ambiguous)
+	{
+		xmlNamespace = null;
+		ambiguous = false;
+
+		//unprefixed attributes carry no namespace, the scope is the default xmlns declared for the element
+		if (propertyName.NamespaceURI != string.Empty || node.NamespaceResolver == null)
+			return null;
+		if (HasAccessibleInstanceMember(targetType, propertyName.LocalName, context))
+			return null;
+
+		xmlNamespace = (node.Parent as ElementNode)?.DefaultXmlNamespace ?? node.NamespaceResolver.LookupNamespace(string.Empty);
+		if (string.IsNullOrEmpty(xmlNamespace))
+			return null;
+
+		var candidates = new List<ExtensionPropertyAccessors>();
+		foreach (var container in GetExtensionContainersInScope(xmlNamespace!, context))
+			CollectExtensionSetters(container, targetType, propertyName.LocalName, context, candidates);
+
+		var accessors = MostSpecific(candidates, context);
+		ambiguous = accessors == null && candidates.Count > 1;
+		return accessors;
+	}
+
+	static bool CanSetScopedExtensionProperty(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context, out ExtensionPropertyAccessors? accessors, out bool reported)
+	{
+		reported = false;
+		accessors = ResolveScopedExtensionProperty(parentVar.Type, propertyName, node, context, out var xmlNamespace, out var ambiguous);
+
+		//C# picks the most specific receiver, and refuses to guess between unrelated ones
+		if (ambiguous)
+		{
+			reported = ReportExtensionPropertyAmbiguous(propertyName.LocalName, $"xmlns \"{xmlNamespace}\"", parentVar.Type, context, (IXmlLineInfo)node);
+			return false;
+		}
+
+		return accessors != null && CanAssignExtensionProperty(accessors, node, context);
+	}
+
+	/// <summary>
+	/// The extension property an attribute assigns, if any, without reporting anything. Lets markup
+	/// extensions that are evaluated before the assignment learn the type they have to provide.
+	/// </summary>
+	internal static IPropertySymbol? FindExtensionProperty(ITypeSymbol targetType, XmlName propertyName, INode node, SourceGenContext context)
+	{
+		if (TryGetQualifiedOwner(propertyName, context, out var container, out var memberName))
+			return ResolveExtensionProperty(container!, targetType, memberName, context, (IXmlLineInfo)node, out _, report: false)?.Property;
+
+		return ResolveScopedExtensionProperty(targetType, propertyName, node, context, out _, out _)?.Property;
+	}
+
+	//`reported` tells the caller a diagnostic was already emitted, so it must not also report an unresolved member
+	static bool CanSetExtensionProperty(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context, out ExtensionPropertyAccessors? accessors, out bool reported)
+	{
+		accessors = null;
+		reported = false;
+		if (!TryGetQualifiedOwner(propertyName, context, out var container, out var memberName))
+			return false;
+
+		accessors = ResolveExtensionProperty(container!, parentVar.Type, memberName, context, (IXmlLineInfo)node, out reported);
+		return accessors != null && CanAssignExtensionProperty(accessors, node, context);
+	}
+
+	//mirrors CanSet: the same conversions must be accepted for an extension property
+	static bool CanAssignExtensionProperty(ExtensionPropertyAccessors accessors, INode node, SourceGenContext context)
+	{
+		var propertyType = accessors.PropertyType;
+
+		if (node is ValueNode vn)
+			return vn.CanConvertTo(accessors.Property, context);
+
+		if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var localVar))
+			return false;
+
+		return localVar.Type.InheritsFrom(propertyType, context)
+			|| (propertyType.IsInterface() && localVar.Type.Implements(propertyType))
+			|| propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
+			|| context.Compilation.HasImplicitConversion(localVar.Type, propertyType)
+			|| HasDoubleImplicitConversion(localVar.Type, propertyType, context, out _)
+			|| HasExplicitConversion(localVar.Type, propertyType, context)
+			//a value typed as object is cast at runtime, exactly like an ordinary property assignment
+			|| localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default);
+	}
+
+	/// <summary>
+	/// An extension container is only ever named for its extension properties, so when none applies the name
+	/// must not fall back to a member of the target itself. Any other explicitly named owner keeps resolving
+	/// the way it always did.
+	/// </summary>
+	static bool ReportUnresolvedExtensionMember(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context)
+	{
+		if (!TryGetQualifiedOwner(propertyName, context, out var owner, out var memberName))
+			return false;
+		if (!owner!.IsStatic || owner.IsGenericType || !DeclaresExtensionProperty(owner, propertyName: null))
+			return false;
+
+		return ReportExtensionPropertyResolution(memberName, owner, parentVar.Type, context, (IXmlLineInfo)node);
+	}
+
+	//emits LabelExtensions.set_MyTag(label, "value"), the implementation method the C# compiler emits for the extension property
+	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, ExtensionPropertyAccessors accessors, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
+	{
+		var setter = accessors.Setter;
+		var setterAccessor = $"{setter.ContainingType.ToFQDisplayString()}.{setter.Name}";
+		var receiverCast = SymbolEqualityComparer.Default.Equals(parentVar.Type, accessors.ReceiverType) ? string.Empty : $"({accessors.ReceiverType.ToFQDisplayString()})";
+		var propertyType = accessors.PropertyType.TypeKind == TypeKind.Dynamic ? "global::System.Object" : accessors.PropertyType.ToFQDisplayString();
+
+		if (node is ValueNode valueNode)
+		{
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+			{
+				var valueString = valueNode.ConvertTo(accessors.Property, writer, context, parentVar);
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, ({propertyType})({valueString}));");
+			}
+		}
+		else if (node is ElementNode elementNode)
+		{
+			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
+			{
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				var valueExpression = localVar.ValueAccessor;
+				if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
+					&& elementNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var markupType)
+					&& SymbolEqualityComparer.Default.Equals(markupType, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")))
+				{
+					var converter = accessors.Property.GetAttributes().Concat(accessors.PropertyType.GetAttributes())
+						.FirstOrDefault(attribute => attribute.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")
+						?.ConstructorArguments[0].Value as ITypeSymbol;
+					if (converter is not null)
+					{
+						var stringName = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetSpecialType(SpecialType.System_String));
+						var convertedName = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.ObjectType);
+						var converted = elementNode.ConvertWithConverter(stringName, converter, accessors.PropertyType, writer, context);
+						writer.WriteLine($"var {convertedName} = {valueExpression} is string {stringName} ? (object?){converted} : {valueExpression};");
+						valueExpression = convertedName;
+					}
+				}
+				//mirrors Set: an intermediate cast is needed when the conversion goes through an operator
+				var intermediateCast = HasDoubleImplicitConversion(localVar.Type, accessors.PropertyType, context, out var conv) ? $"({conv!.ReturnType.ToFQDisplayString()})" : string.Empty;
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, ({propertyType})({intermediateCast}{valueExpression}));");
+			}
+		}
+	}
 }

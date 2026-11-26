@@ -2,9 +2,11 @@ parameters:
   # Xcode
   skipXcode: false
   skipSimulatorSetup: false
-  # Internal runs install this Xcode from dotnet/macios' xcode-apple-silicon package; keep it
-  # in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config.
-  installXcodePackage: true
+  # Opt-in: internal runs can install this Xcode from dotnet/macios' xcode-apple-silicon
+  # package (keep it in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config).
+  # Off by default: the agent images provide the Xcode that $(XCODE) pins, and the iOS SDK
+  # rejects any other Xcode version.
+  installXcodePackage: false
   requirePinnedXcodeVersion: false
   xcodePackageVersion: '27.2.0'
   # .NET NuGet caches
@@ -295,8 +297,18 @@ steps:
 
     - script: |
         echo installing simulator runtimes...
-        # XCODE variable is in major.minor format (e.g., 26.1)
+        # XCODE variable is in major.minor format (e.g., 26.1). Select Xcode Version can fall
+        # back to an older Xcode when the pinned one is missing; that Xcode has no device types
+        # for the pinned runtime, so match the selected Xcode's simulator SDK instead.
         XCODE_MAJOR_MINOR="$(XCODE)"
+        SELECTED_SDK_VERSION=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null)
+        if [[ "$SELECTED_SDK_VERSION" =~ ^([0-9]+)\.([0-9]+) ]]; then
+          SELECTED_MAJOR_MINOR="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          if [[ "$SELECTED_MAJOR_MINOR" != "$XCODE_MAJOR_MINOR" ]]; then
+            echo "Selected Xcode provides the iOS $SELECTED_MAJOR_MINOR simulator SDK instead of the pinned $XCODE_MAJOR_MINOR; provisioning iOS $SELECTED_MAJOR_MINOR runtimes."
+            XCODE_MAJOR_MINOR="$SELECTED_MAJOR_MINOR"
+          fi
+        fi
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
@@ -750,7 +762,15 @@ steps:
     displayName: 'Isolate legacy JDK provisioning from Chrome apt feed'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+  # Agents don't preinstall JDK 21, so this downloads it; the download host has
+  # intermittent 504 windows that outlast the task-level retry backoff.
+  - pwsh: |
+      foreach ($delay in 0, 30, 60, 120) {
+        Start-Sleep -Seconds $delay
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+        if ($LASTEXITCODE -eq 0) { exit 0 }
+      }
+      exit 1
     displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
     retryCountOnTaskFailure: 4

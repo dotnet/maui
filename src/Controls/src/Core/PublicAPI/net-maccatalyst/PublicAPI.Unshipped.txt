@@ -22,3 +22,383 @@ Microsoft.Maui.Controls.ImageLoadingState.Loading = 1 -> Microsoft.Maui.Controls
 ~static readonly Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoadingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Image.LoadingStateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Image.PlaceholderSourceProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.Start = 1 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.None = 0 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.get -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.set -> void
+Microsoft.Maui.Controls.StructuredItemsView.IsAnchored.get -> bool
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> void
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToStart(bool animate = true) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DecelerationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapAnchorMode(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 handler, Microsoft.Maui.Controls.StructuredItemsView itemsView) -> void
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ContentButton
+Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Controls.ContentButton.BorderColor.set -> void
+Microsoft.Maui.Controls.ContentButton.BorderWidth.get -> double
+Microsoft.Maui.Controls.ContentButton.BorderWidth.set -> void
+Microsoft.Maui.Controls.ContentButton.Clicked -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.ContentButton.Command.set -> void
+Microsoft.Maui.Controls.ContentButton.CommandParameter.get -> object?
+Microsoft.Maui.Controls.ContentButton.CommandParameter.set -> void
+Microsoft.Maui.Controls.ContentButton.ContentButton() -> void
+Microsoft.Maui.Controls.ContentButton.CornerRadius.get -> int
+Microsoft.Maui.Controls.ContentButton.CornerRadius.set -> void
+Microsoft.Maui.Controls.ContentButton.IsPressed.get -> bool
+Microsoft.Maui.Controls.ContentButton.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ContentButton!>!
+Microsoft.Maui.Controls.ContentButton.Pressed -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Released -> System.EventHandler?
+override Microsoft.Maui.Controls.ContentButton.ChangeVisualState() -> void
+override Microsoft.Maui.Controls.ContentButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ContentButton.OnPropertyChanged(string? propertyName = null) -> void
+static readonly Microsoft.Maui.Controls.ContentButton.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
+static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+~Microsoft.Maui.Controls.Span.TextDecorationColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Span.TextDecorationColor.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationColorProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Span.TextDecorationThickness.get -> double
+Microsoft.Maui.Controls.Span.TextDecorationThickness.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationThicknessProperty -> Microsoft.Maui.Controls.BindableProperty
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+Microsoft.Maui.Controls.Animations.FadeTransition
+Microsoft.Maui.Controls.Animations.FadeTransition.FadeTransition() -> void
+Microsoft.Maui.Controls.Animations.INavigationTransitionProvider
+Microsoft.Maui.Controls.Animations.INavigationTransitionProvider.GetTransition(Microsoft.Maui.Controls.Animations.NavigationTransitionRequest! request) -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition?
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Pop = 1 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PopModal = 3 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.Push = 0 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.PushModal = 2 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionKind.TabSwitch = 4 -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.FlowDirection.get -> Microsoft.Maui.FlowDirection
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.From.get -> Microsoft.Maui.Controls.Page?
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.IsBack.get -> bool
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.IsInteractive.get -> bool
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.Kind.get -> Microsoft.Maui.Controls.Animations.NavigationTransitionKind
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.To.get -> Microsoft.Maui.Controls.Page?
+Microsoft.Maui.Controls.Animations.NavigationTransitionRequest.Transition.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+Microsoft.Maui.Controls.Animations.PageTransition
+Microsoft.Maui.Controls.Animations.PageTransition.Background.get -> Microsoft.Maui.Controls.Brush?
+Microsoft.Maui.Controls.Animations.PageTransition.Background.set -> void
+Microsoft.Maui.Controls.Animations.PageTransition.Duration.get -> System.TimeSpan
+Microsoft.Maui.Controls.Animations.PageTransition.Duration.set -> void
+Microsoft.Maui.Controls.Animations.PageTransition.Easing.get -> Microsoft.Maui.Easing?
+Microsoft.Maui.Controls.Animations.PageTransition.Easing.set -> void
+Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter
+Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.PageTransitionTypeConverter() -> void
+Microsoft.Maui.Controls.Animations.PageTransitions
+Microsoft.Maui.Controls.Animations.PlatformNavigationTransition
+Microsoft.Maui.Controls.Animations.PlatformNavigationTransition.PlatformNavigationTransition(UIKit.IUIViewControllerAnimatedTransitioning! animator, UIKit.IUIViewControllerInteractiveTransitioning? interaction = null) -> void
+Microsoft.Maui.Controls.Animations.ScaleTransition
+Microsoft.Maui.Controls.Animations.ScaleTransition.FromScale.get -> double
+Microsoft.Maui.Controls.Animations.ScaleTransition.FromScale.set -> void
+Microsoft.Maui.Controls.Animations.ScaleTransition.ScaleTransition() -> void
+Microsoft.Maui.Controls.Animations.SharedTransition
+Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Bottom = 3 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.End = 1 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Start = 0 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideEdge.Top = 2 -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideTransition
+Microsoft.Maui.Controls.Animations.SlideTransition.From.get -> Microsoft.Maui.Controls.Animations.SlideEdge
+Microsoft.Maui.Controls.Animations.SlideTransition.From.set -> void
+Microsoft.Maui.Controls.Animations.SlideTransition.SlideTransition() -> void
+override Microsoft.Maui.Controls.Animations.FadeTransition.ToString() -> string!
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.Animations.PageTransitionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.Animations.ScaleTransition.ToString() -> string!
+override Microsoft.Maui.Controls.Animations.SlideTransition.ToString() -> string!
+static Microsoft.Maui.Controls.Animations.PageTransition.None.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+static Microsoft.Maui.Controls.Animations.PageTransition.Platform.get -> Microsoft.Maui.Controls.Animations.PageTransition!
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetModalTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetTabTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GetTransition(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.Animations.PageTransition?
+static Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(this Microsoft.Maui.Controls.Shell! shell, Microsoft.Maui.Controls.ShellNavigationState! state, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.GoToAsync(this Microsoft.Maui.Controls.Shell! shell, Microsoft.Maui.Controls.ShellNavigationState! state, Microsoft.Maui.Controls.Animations.PageTransition! transition, System.Collections.Generic.IDictionary<string!, object!>? parameters) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PopAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PopModalAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page?>!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PushAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.PushModalAsync(this Microsoft.Maui.Controls.INavigation! navigation, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.ReplacePageAsync(this Microsoft.Maui.Controls.Window! window, Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Animations.PageTransition! transition) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetModalTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetTabTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PageTransitions.SetTransition(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.Animations.PageTransition? value) -> void
+static Microsoft.Maui.Controls.Animations.PlatformNavigationTransition.Platform.get -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition!
+static Microsoft.Maui.Controls.Animations.PlatformNavigationTransition.Suppress.get -> Microsoft.Maui.Controls.Animations.PlatformNavigationTransition!
+static Microsoft.Maui.Controls.Animations.SharedTransition.GetGroup(Microsoft.Maui.Controls.BindableObject! bindable) -> string?
+static Microsoft.Maui.Controls.Animations.SharedTransition.GetName(Microsoft.Maui.Controls.BindableObject! bindable) -> string?
+static Microsoft.Maui.Controls.Animations.SharedTransition.SetGroup(Microsoft.Maui.Controls.BindableObject! bindable, string? value) -> void
+static Microsoft.Maui.Controls.Animations.SharedTransition.SetName(Microsoft.Maui.Controls.BindableObject! bindable, string? value) -> void
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.ModalTransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TabTransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.PageTransitions.TransitionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.SharedTransition.GroupProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.Alternate = 2 -> Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.AlternateReverse = 3 -> Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.Normal = 0 -> Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationDirection.Reverse = 1 -> Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationFillMode.Backward = 2 -> Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationFillMode.Both = 3 -> Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationFillMode.Forward = 1 -> Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationFillMode.None = 0 -> Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult.Completed = 0 -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult.Ignored = 3 -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult.ReducedMotionSkipped = 4 -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult.Replaced = 2 -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationResult.Stopped = 1 -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.AnimationServiceCollectionExtensions
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.BeginStoryboard() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.FillCompletion.get -> Microsoft.Maui.Controls.Animations.FillCompletion
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.FillCompletion.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.HandoffBehavior.get -> Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.HandoffBehavior.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.SpeedRatio.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.SpeedRatio.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.BeginStoryboard.Storyboard.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.Cue() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.Equals(Microsoft.Maui.Controls.Animations.Cue other) -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.Fraction.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.HasTimeSpan.get -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.IsUnspecified.get -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Cue.TimeSpan.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.CueTypeConverter
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.CueTypeConverter.CueTypeConverter() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.FillCompletion
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.FillCompletion.Commit = 0 -> Microsoft.Maui.Controls.Animations.FillCompletion
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.FillCompletion.Hold = 1 -> Microsoft.Maui.Controls.Animations.FillCompletion
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IMotionPolicy
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IMotionPolicy.Changed -> System.EventHandler?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IMotionPolicy.DurationScale.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IMotionPolicy.IsReducedMotionRequested.get -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IStoryboardClock
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IStoryboardClock.Elapsed.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IStoryboardClock.Tick -> System.EventHandler?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IValueInterpolator<T>
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.IValueInterpolator<T>.Interpolate(T from, T to, double progress) -> T
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.Cue.get -> Microsoft.Maui.Controls.Animations.Cue
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.Cue.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.Easing.get -> Microsoft.Maui.Easing?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.Easing.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.KeyFrame() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.KeyFrame.Setters.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Setter!>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ManualStoryboardClock
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ManualStoryboardClock.Advance(System.TimeSpan delta) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ManualStoryboardClock.Elapsed.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ManualStoryboardClock.ManualStoryboardClock() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ManualStoryboardClock.Tick -> System.EventHandler?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.MotionPolicy
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PauseStoryboard
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PauseStoryboard.PauseStoryboard() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PauseStoryboard.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PauseStoryboard.Storyboard.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.BeginTimeOverride.get -> System.TimeSpan?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.BeginTimeOverride.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.FillCompletion.get -> Microsoft.Maui.Controls.Animations.FillCompletion
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.FillCompletion.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.HandoffBehavior.get -> Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.HandoffBehavior.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.PlaybackOptions() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.SpeedRatio.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackOptions.SpeedRatio.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState.Created = 0 -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState.Finished = 3 -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState.Paused = 2 -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState.Running = 1 -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackState.Stopped = 4 -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackStateChangedEventArgs
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackStateChangedEventArgs.NewState.get -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackStateChangedEventArgs.OldState.get -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.PlaybackStateChangedEventArgs.PlaybackStateChangedEventArgs(Microsoft.Maui.Controls.Animations.PlaybackState oldState, Microsoft.Maui.Controls.Animations.PlaybackState newState) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ReducedMotionBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ReducedMotionBehavior.Play = 2 -> Microsoft.Maui.Controls.Animations.ReducedMotionBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ReducedMotionBehavior.Shorten = 1 -> Microsoft.Maui.Controls.Animations.ReducedMotionBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ReducedMotionBehavior.SkipToEnd = 0 -> Microsoft.Maui.Controls.Animations.ReducedMotionBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.Count.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.Duration.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.Equals(Microsoft.Maui.Controls.Animations.RepeatBehavior other) -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.HasCount.get -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.HasDuration.get -> bool
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.RepeatBehavior() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.RepeatBehavior(System.TimeSpan duration) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehavior.RepeatBehavior(double count) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter.RepeatBehaviorTypeConverter() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ResumeStoryboard
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ResumeStoryboard.ResumeStoryboard() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ResumeStoryboard.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.ResumeStoryboard.Storyboard.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.SkipStoryboardToFill
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.SkipStoryboardToFill.SkipStoryboardToFill() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.SkipStoryboardToFill.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.SkipStoryboardToFill.Storyboard.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopBehavior.ApplyFill = 1 -> Microsoft.Maui.Controls.Animations.StopBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopBehavior.CommitCurrent = 2 -> Microsoft.Maui.Controls.Animations.StopBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopBehavior.Release = 0 -> Microsoft.Maui.Controls.Animations.StopBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard.Behavior.get -> Microsoft.Maui.Controls.Animations.StopBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard.Behavior.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard.StopStoryboard() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StopStoryboard.Storyboard.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Begin(Microsoft.Maui.Controls.VisualElement! target, Microsoft.Maui.Controls.Animations.PlaybackOptions? options = null) -> Microsoft.Maui.Controls.Animations.StoryboardPlayer!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.BeginTime.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.BeginTime.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Children.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Animations.Storyboard!>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.CreatePlayer(Microsoft.Maui.Controls.VisualElement! target, Microsoft.Maui.Controls.Animations.IStoryboardClock? clock = null, Microsoft.Maui.Controls.Animations.PlaybackOptions? options = null) -> Microsoft.Maui.Controls.Animations.StoryboardPlayer!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Direction.get -> Microsoft.Maui.Controls.Animations.AnimationDirection
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Direction.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Duration.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Duration.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Easing.get -> Microsoft.Maui.Easing?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Easing.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.FillMode.get -> Microsoft.Maui.Controls.Animations.AnimationFillMode
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.FillMode.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.IterationDelay.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.IterationDelay.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.KeyFrames.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Animations.KeyFrame!>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.PlayAsync(Microsoft.Maui.Controls.VisualElement! target, Microsoft.Maui.Controls.Animations.PlaybackOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Animations.AnimationResult>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.ReducedMotion.get -> Microsoft.Maui.Controls.Animations.ReducedMotionBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.ReducedMotion.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehavior.get -> Microsoft.Maui.Controls.Animations.RepeatBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehavior.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatio.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatio.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.Storyboard() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetName.get -> string?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.Storyboard.TargetName.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.AddChild(System.TimeSpan beginTime, System.Action<Microsoft.Maui.Controls.Animations.StoryboardBuilder!>! child) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.AddTrack<T>(Microsoft.Maui.Controls.BindableProperty! property, System.Action<Microsoft.Maui.Controls.Animations.TrackBuilder<T>!>! track, string? targetName = null) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.Build() -> Microsoft.Maui.Controls.Animations.Storyboard!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.Sequence(params System.Action<Microsoft.Maui.Controls.Animations.StoryboardBuilder!>![]! children) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.Stagger(System.TimeSpan delay, System.Collections.Generic.IEnumerable<string!>! targetNames, System.Action<Microsoft.Maui.Controls.Animations.StoryboardBuilder!>! child) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithBeginTime(System.TimeSpan beginTime) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithDirection(Microsoft.Maui.Controls.Animations.AnimationDirection direction) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithDuration(System.TimeSpan duration) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithEasing(Microsoft.Maui.Easing! easing) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithFillMode(Microsoft.Maui.Controls.Animations.AnimationFillMode fillMode) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithIterationDelay(System.TimeSpan delay) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithReducedMotion(Microsoft.Maui.Controls.Animations.ReducedMotionBehavior behavior) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithRepeat(Microsoft.Maui.Controls.Animations.RepeatBehavior repeat) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithSpeedRatio(double speedRatio) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardBuilder.WithTargetName(string! targetName) -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardCompletedEventArgs
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardCompletedEventArgs.ReplacedTracks.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.BindableProperty!>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardCompletedEventArgs.Result.get -> Microsoft.Maui.Controls.Animations.AnimationResult
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardCompletedEventArgs.StoryboardCompletedEventArgs(Microsoft.Maui.Controls.Animations.AnimationResult result, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.BindableProperty!>! replacedTracks) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardElementExtensions
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior.Ignore = 1 -> Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior.SnapshotAndReplace = 0 -> Microsoft.Maui.Controls.Animations.StoryboardHandoffBehavior
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Completed -> System.EventHandler<Microsoft.Maui.Controls.Animations.StoryboardCompletedEventArgs!>?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Completion.get -> System.Threading.Tasks.Task<Microsoft.Maui.Controls.Animations.AnimationResult>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.CurrentIteration.get -> long
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.CurrentTime.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Dispose() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.ElapsedTime.get -> System.TimeSpan
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Pause() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.PlaybackRate.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.PlaybackRate.set -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Progress.get -> double
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Resume() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Seek(double progress, Microsoft.Maui.Controls.Animations.TimeSeekOrigin origin = Microsoft.Maui.Controls.Animations.TimeSeekOrigin.BeginTime) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.SeekAlignedToLastTick(System.TimeSpan time, Microsoft.Maui.Controls.Animations.TimeSeekOrigin origin = Microsoft.Maui.Controls.Animations.TimeSeekOrigin.BeginTime) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.SeekTo(System.TimeSpan time, Microsoft.Maui.Controls.Animations.TimeSeekOrigin origin = Microsoft.Maui.Controls.Animations.TimeSeekOrigin.BeginTime) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.SkipToFill() -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.State.get -> Microsoft.Maui.Controls.Animations.PlaybackState
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.StateChanged -> System.EventHandler<Microsoft.Maui.Controls.Animations.PlaybackStateChangedEventArgs!>?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Stop(Microsoft.Maui.Controls.Animations.StopBehavior behavior = Microsoft.Maui.Controls.Animations.StopBehavior.Release) -> void
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Storyboard.get -> Microsoft.Maui.Controls.Animations.Storyboard!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.StoryboardPlayer.Target.get -> Microsoft.Maui.Controls.VisualElement?
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TimeSeekOrigin
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TimeSeekOrigin.BeginTime = 0 -> Microsoft.Maui.Controls.Animations.TimeSeekOrigin
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TimeSeekOrigin.Duration = 1 -> Microsoft.Maui.Controls.Animations.TimeSeekOrigin
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TrackBuilder<T>
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TrackBuilder<T>.At(System.TimeSpan time, T value, Microsoft.Maui.Easing? easing = null) -> Microsoft.Maui.Controls.Animations.TrackBuilder<T>!
+[MAUIANIM0001]Microsoft.Maui.Controls.Animations.TrackBuilder<T>.At(double cue, T value, Microsoft.Maui.Easing? easing = null) -> Microsoft.Maui.Controls.Animations.TrackBuilder<T>!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.Cue.Equals(object? obj) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.Cue.GetHashCode() -> int
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.Cue.ToString() -> string!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.CueTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.CueTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.CueTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.CueTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehavior.Equals(object? obj) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehavior.GetHashCode() -> int
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehavior.ToString() -> string!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+[MAUIANIM0001]override Microsoft.Maui.Controls.Animations.RepeatBehaviorTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object!
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.AnimationServiceCollectionExtensions.AddAnimationInterpolator<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Maui.Controls.Animations.IValueInterpolator<T>! interpolator) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.FromFraction(double value) -> Microsoft.Maui.Controls.Animations.Cue
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.FromTimeSpan(System.TimeSpan value) -> Microsoft.Maui.Controls.Animations.Cue
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.TryParse(string? s, System.IFormatProvider? provider, out Microsoft.Maui.Controls.Animations.Cue result) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.Unspecified.get -> Microsoft.Maui.Controls.Animations.Cue
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.operator !=(Microsoft.Maui.Controls.Animations.Cue left, Microsoft.Maui.Controls.Animations.Cue right) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Cue.operator ==(Microsoft.Maui.Controls.Animations.Cue left, Microsoft.Maui.Controls.Animations.Cue right) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.MotionPolicy.Default.get -> Microsoft.Maui.Controls.Animations.IMotionPolicy!
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.MotionPolicy.Instant.get -> Microsoft.Maui.Controls.Animations.IMotionPolicy!
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.RepeatBehavior.Forever.get -> Microsoft.Maui.Controls.Animations.RepeatBehavior
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.RepeatBehavior.TryParse(string? s, out Microsoft.Maui.Controls.Animations.RepeatBehavior result) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.RepeatBehavior.operator !=(Microsoft.Maui.Controls.Animations.RepeatBehavior left, Microsoft.Maui.Controls.Animations.RepeatBehavior right) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.RepeatBehavior.operator ==(Microsoft.Maui.Controls.Animations.RepeatBehavior left, Microsoft.Maui.Controls.Animations.RepeatBehavior right) -> bool
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Storyboard.Create() -> Microsoft.Maui.Controls.Animations.StoryboardBuilder!
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Storyboard.GetPlayOnLoaded(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Controls.Animations.Storyboard?
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.Storyboard.SetPlayOnLoaded(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Controls.Animations.Storyboard? value) -> void
+[MAUIANIM0001]static Microsoft.Maui.Controls.Animations.StoryboardElementExtensions.StopStoryboards(this Microsoft.Maui.Controls.VisualElement! element, Microsoft.Maui.Controls.Animations.StopBehavior behavior = Microsoft.Maui.Controls.Animations.StopBehavior.Release) -> void
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.KeyFrame.CueProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.KeyFrame.EasingProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.BeginTimeProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.DirectionProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.DurationProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.EasingProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.FillModeProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.IterationDelayProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.PlayOnLoadedProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.ReducedMotionProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
+[MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryProperties(System.Collections.Generic.IDictionary<string!, object!>! query, System.Collections.Generic.IDictionary<string!, object!>! previousQuery) -> void
+Microsoft.Maui.Controls.QueryPropertyConversion
+static Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(System.Collections.Generic.IDictionary<string!, object!>! query, string! queryId, object? value) -> string?
+static Microsoft.Maui.Controls.QueryPropertyConversion.GetFormatProvider(System.Collections.Generic.IDictionary<string!, object!>! query, string! queryId) -> System.IFormatProvider!
+static Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(object! target, System.Type! implementationType) -> void
+Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
+Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
+~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -74,6 +74,52 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, editor.CursorPosition);
 		}
 
+		// A read-only EditText has no InputType flags (TYPE_NULL): only a password keyboard makes an Editor ignore TextTransform.
+		[Theory]
+		[InlineData(true, "EfGh")]
+		[InlineData(false, "EFGH")]
+		public async Task ReadOnlyEditorIgnoresTextTransformOnlyWithPasswordKeyboard(bool isPasswordKeyboard, string expectedText)
+		{
+			var editor = new Editor
+			{
+				Text = "AbCd",
+				Keyboard = isPasswordKeyboard ? Keyboard.Password : Keyboard.Default,
+				IsReadOnly = true,
+				TextTransform = TextTransform.Uppercase
+			};
+
+			var platformText = await GetValueAsync<string, EditorHandler>(editor, handler =>
+			{
+				editor.Text = "EfGh";
+				return GetPlatformControl(handler).Text;
+			});
+
+			Assert.Equal(expectedText, platformText);
+			Assert.Equal(expectedText, editor.Text);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task UpdatingIsReadOnlyKeepsSelection(bool isReadOnly)
+		{
+			var editor = new Editor { Text = "abcdef" };
+
+			var selection = await GetValueAsync<(int, int), EditorHandler>(editor, handler =>
+			{
+				var editText = GetPlatformControl(handler);
+				editText.SetSelection(1, 4);
+
+				editor.IsReadOnly = isReadOnly;
+				handler.UpdateValue(nameof(IEditor.IsReadOnly));
+
+				return (editText.SelectionStart, editText.SelectionEnd);
+			});
+
+			Assert.Equal((1, 4), selection);
+			Assert.Equal(3, editor.SelectionLength);
+		}
+
 		[Fact]
 		[Description("The ScaleX property of a Editor should match with native ScaleX")]
 		public async Task ScaleXConsistent()

@@ -119,6 +119,153 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void GlobalRouteMatchingIsIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/home/savings/search"));
+
+			Assert.Equal(3, request.Request.GlobalRoutes.Count);
+			Assert.Equal("home", request.Request.GlobalRoutes[0]);
+			Assert.Equal("home/savings", request.Request.GlobalRoutes[1]);
+			Assert.Equal("home/savings/search", request.Request.GlobalRoutes[2]);
+		}
+
+		[Fact]
+		public void TemplateRouteWithTemplatePrefixMatchesWhenRegisteredFirst()
+		{
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("item-{id}/details", typeof(TestPage2));
+			Routing.RegisterRoute("item-{id}", typeof(TestPage1));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/item-42/details"));
+
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("item-{id}/details", request.Request.GlobalRoutes[0]);
+			Assert.Equal("42", request.Request.PathParameters["id"]);
+		}
+
+		[Fact]
+		public void LongerTemplateRouteWinsWhenRegisteredFirst()
+		{
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("product/{id}/details", typeof(TestPage2));
+			Routing.RegisterRoute("product/{category}", typeof(TestPage1));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/product/42/details"));
+
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("product/{id}/details", request.Request.GlobalRoutes[0]);
+			Assert.Equal("42", request.Request.PathParameters["id"]);
+			Assert.False(request.Request.PathParameters.ContainsKey("category"));
+		}
+
+		[Fact]
+		public void HierarchicalTemplateRoutesDecomposeWhenParentRegisteredFirst()
+		{
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+			Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/product/5/details"));
+
+			Assert.Equal(2, request.Request.GlobalRoutes.Count);
+			Assert.Equal("product/{id:int}", request.Request.GlobalRoutes[0]);
+			Assert.Equal("product/{id:int}/details", request.Request.GlobalRoutes[1]);
+			Assert.Equal("5", request.Request.PathParameters["id"]);
+		}
+
+		[Theory]
+		[InlineData(true, "aaa", "aa")]
+		[InlineData(false, "aaa", "aa")]
+		[InlineData(true, "aaaa", "aaa")]
+		[InlineData(false, "aaaa", "aaa")]
+		public void OverlappingMixedTemplateIsANonMatchNotAnException(bool overlappingFirst, string segment, string expectedId)
+		{
+			if (overlappingFirst)
+			{
+				Routing.RegisterRoute("aa{other}aa", typeof(TestPage2));
+				Routing.RegisterRoute("a{id}", typeof(TestPage1));
+			}
+			else
+			{
+				Routing.RegisterRoute("a{id}", typeof(TestPage1));
+				Routing.RegisterRoute("aa{other}aa", typeof(TestPage2));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri($"//root/{segment}"));
+
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("a{id}", request.Request.GlobalRoutes[0]);
+			Assert.Equal(expectedId, request.Request.PathParameters["id"]);
+			Assert.False(request.Request.PathParameters.ContainsKey("other"));
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ContentRouteBeatsGlobalRouteKeyIndependentOfRegistrationOrder(bool homeFirst)
+		{
+			if (homeFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("other", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("other", typeof(TestPage2));
+				Routing.RegisterRoute("home", typeof(TestPage1));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellSectionRoute: "section", shellContentRoute: "home"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//section/home/other"));
+
+			Assert.Equal("home", request.Request.Content.Route);
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("other", request.Request.GlobalRoutes[0]);
+		}
+
+		[Fact]
+		public void SectionLevelBuilderStillCompletesThroughContentNode()
+		{
+			Routing.RegisterRoute("other", typeof(TestPage2));
+
+			var shell = new TestShell(CreateShellItem(shellSectionRoute: "section", shellContentRoute: "home"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//section/home/other"));
+
+			Assert.Equal("home", request.Request.Content.Route);
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("other", request.Request.GlobalRoutes[0]);
+		}
+
 		[Fact]
 		public async Task ShellSectionWithGlobalRouteRelative()
 		{

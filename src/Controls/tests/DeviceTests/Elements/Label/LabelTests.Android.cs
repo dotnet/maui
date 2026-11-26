@@ -202,6 +202,69 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "LineHeight Is Not Applied To Formatted Text That Replaced Plain Text")]
+		public async Task LineHeightIsNotAppliedToFormattedTextThatReplacedPlainText()
+		{
+			var label = new Label()
+			{
+				Text = "First\nSecond\nThird",
+				LineHeight = 1
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+
+			var (isPlainText, extra, multiplier) = await InvokeOnMainThreadAsync(() =>
+			{
+				var formattedText = new FormattedString();
+				formattedText.Spans.Add(new Span { Text = "First\nSecond\nThird", LineHeight = 2 });
+				label.FormattedText = formattedText;
+
+				// Label.LineHeight doesn't apply to formatted text, so the spans keep their own line height
+				label.LineHeight = 3;
+				handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+				var textView = GetPlatformLabel(handler);
+				return (textView.TextFormatted is Java.Lang.String, textView.LineSpacingExtra, textView.LineSpacingMultiplier);
+			});
+
+			Assert.False(isPlainText);
+			Assert.Equal(0, extra);
+			Assert.Equal(1, multiplier);
+		}
+
+		[Fact(DisplayName = "LineHeight Is Applied To Plain Text That Replaced Formatted Text")]
+		public async Task LineHeightIsAppliedToPlainTextThatReplacedFormattedText()
+		{
+			var label = new Label()
+			{
+				Text = "First\nSecond\nThird",
+				LineHeight = 1
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+
+			var (fontHeight, extra, multiplier) = await InvokeOnMainThreadAsync(() =>
+			{
+				var formattedText = new FormattedString();
+				formattedText.Spans.Add(new Span { Text = "First\nSecond\nThird" });
+				label.FormattedText = formattedText;
+				label.LineHeight = 3;
+				handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+				// Back to plain text, which LineHeight applies to again
+				label.FormattedText = null;
+				label.Text = "First\nSecond\nThird";
+				handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+				var textView = GetPlatformLabel(handler);
+				var fontMetrics = textView.Paint.GetFontMetricsInt();
+				return (fontMetrics.Descent - fontMetrics.Ascent, textView.LineSpacingExtra, textView.LineSpacingMultiplier);
+			});
+
+			Assert.Equal(fontHeight * 2, extra);
+			Assert.Equal(1, multiplier);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 

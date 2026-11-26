@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
+
+		// Text input controls and selectable text mark Tapped/DoubleTapped as handled, so listen for handled events too.
+		bool ReceivesHandledTapEvents => _control is TextBox || (_control is TextBlock && Element is Label { IsTextSelectable: true });
 		LongPressGestureHandler? _longPressGestureHandler;
 
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
@@ -360,7 +363,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
-					if (_control is TextBox)
+					if (_tappedEventHandler is not null)
 					{
 						_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
 						_tappedEventHandler = null;
@@ -377,7 +380,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-					if (_control is TextBox)
+					if (_doubleTappedEventHandler is not null)
 					{
 						_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
 						_doubleTappedEventHandler = null;
@@ -878,6 +881,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			if (Element is SelectableItemsView &&
+				IsTapOnCollectionViewItem(_control, e.OriginalSource, out var tappedCollectionView) &&
+				!ReferenceEquals(tappedCollectionView, _control))
+			{
+				e.SetHandled(true);
+				return;
+			}
+
 			if (!view.IsEnabled)
 			{
 				return;
@@ -1127,7 +1138,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
-				if (_control is TextBox)
+				if (ReceivesHandledTapEvents)
 				{
 					_tappedEventHandler = new TappedEventHandler(OnTap);
 					_container.AddHandler(FrameworkElement.TappedEvent, _tappedEventHandler, true);
@@ -1158,7 +1169,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-				if (_control is TextBox)
+				if (ReceivesHandledTapEvents)
 				{
 					_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
 					_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
@@ -1242,12 +1253,63 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
 		{
-			tappedRoutedEventArgs.Handled = true;
+			if (Element is not SelectableItemsView ||
+				IsTapOnCollectionViewItem(sender as FrameworkElement, tappedRoutedEventArgs.OriginalSource, out _))
+			{
+				tappedRoutedEventArgs.Handled = true;
+			}
 		}
 
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
-			doubleTappedRoutedEventArgs.Handled = true;
+			if (Element is not SelectableItemsView ||
+				IsTapOnCollectionViewItem(sender as FrameworkElement, doubleTappedRoutedEventArgs.OriginalSource, out _))
+			{
+				doubleTappedRoutedEventArgs.Handled = true;
+			}
+		}
+
+		static bool IsTapOnCollectionViewItem(FrameworkElement? control, object? originalSource, out FrameworkElement? tappedCollectionView)
+		{
+			tappedCollectionView = null;
+			if (control is null || originalSource is not DependencyObject source)
+			{
+				return false;
+			}
+
+			bool isInsideItem = false;
+			for (var current = source; current is not null; current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+			{
+				if (ReferenceEquals(current, control))
+				{
+					if (isInsideItem)
+					{
+						tappedCollectionView = control;
+					}
+
+					return isInsideItem;
+				}
+
+				if (current is ItemContainer or ListViewItem)
+				{
+					isInsideItem = true;
+				}
+				else if (current is Microsoft.UI.Xaml.Controls.ItemsView or ListViewBase)
+				{
+					if (isInsideItem)
+					{
+						tappedCollectionView = current as FrameworkElement;
+						return tappedCollectionView is not null;
+					}
+
+					if (ReferenceEquals(current, control))
+					{
+						return false;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		void HandleDragAndDropGesturePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1261,6 +1323,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
+			if (e.PropertyName == SelectableItemsView.SelectionModeProperty.PropertyName)
+			{
+				UpdatingGestureRecognizers();
+				return;
+			}
+
+			if (e.PropertyName == Label.IsTextSelectableProperty.PropertyName && _control is TextBlock)
+			{
+				// Selectable text marks Tapped/DoubleTapped as handled, so the subscriptions have to be rebuilt.
+				UpdatingGestureRecognizers();
+				return;
+			}
+
 			if ((e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
 				 e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })

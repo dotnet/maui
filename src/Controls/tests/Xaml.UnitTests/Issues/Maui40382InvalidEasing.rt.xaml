@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40382InvalidEasing">
+	<ContentPage.Resources>
+		<anim:Storyboard x:Key="Typo" Duration="0:0:0.4">
+			<anim:KeyFrame Cue="100%" Easing="Sprung(0.7)">
+				<Setter Property="VisualElement.Opacity" Value="1" />
+			</anim:KeyFrame>
+		</anim:Storyboard>
+	</ContentPage.Resources>
+</ContentPage>

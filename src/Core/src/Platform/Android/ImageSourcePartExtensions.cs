@@ -106,8 +106,9 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception) when (cancellationToken.IsCancellationRequested || imageSource != image.Source)
 			{
-				// The load was cancelled or a newer source is loading; this failure is no longer relevant
-				// and must not clear the newer image.
+				// The load was cancelled (for example, the handler was disconnected) or a newer source is loading,
+				// but the image source service reported it as a failure. Treat it as a cancellation so that it
+				// does not clear the newer image.
 				events?.LoadingCompleted(false);
 			}
 			catch (Exception ex)

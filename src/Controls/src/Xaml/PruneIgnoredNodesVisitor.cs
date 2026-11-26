@@ -16,6 +16,25 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool SkipChildren(INode node, INode parentNode) => false;
 		public bool IsResourceDictionary(ElementNode node) => false;
 
+		public static void RemoveCodeDirectives(RootNode root)
+		{
+			root.Accept(new XamlNodeVisitor((node, _) =>
+			{
+				if (node is ElementNode element)
+				{
+					foreach (var property in element.Properties.Where(p => IsCodeDirective(p.Value)).ToList())
+						element.Properties.Remove(property.Key);
+					element.CollectionItems.RemoveAll(IsCodeDirective);
+				}
+				else if (node is ListNode list)
+					list.CollectionItems.RemoveAll(IsCodeDirective);
+			}), null);
+		}
+
+		static bool IsCodeDirective(INode node)
+			=> node is ElementNode element && element.XmlType.Name == "Code"
+				&& (element.NamespaceURI == XamlParser.X2006Uri || element.NamespaceURI == XamlParser.X2009Uri);
+
 		public void Visit(ElementNode node, INode parentNode)
 		{
 			foreach (var propertyKvp in node.Properties)

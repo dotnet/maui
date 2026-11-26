@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -419,12 +420,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					case UIGestureRecognizerState.Began:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
+						lpRecognizer.SendLongPressed(view, getPosition);
 						break;
 					case UIGestureRecognizerState.Changed:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
 						break;
 					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, getPosition);
 						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 						break;
 					case UIGestureRecognizerState.Cancelled:
@@ -678,6 +679,21 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		// The tap recognizer lives on the label or, when the label has a wrapper (shadow, clip), on that wrapper.
+		static bool IsSelectableLabelText(UIView? tapView, UIView? otherView)
+		{
+			for (var view = otherView; view is not null; view = view.Superview)
+			{
+				if (view is MauiLabel label && label.IsSelectionView(otherView))
+				{
+					// Only the label itself or the wrapper that hosts its gestures, never an unrelated ancestor.
+					return tapView == label || (tapView is WrapperView && label.Superview == tapView);
+				}
+			}
+
+			return false;
+		}
+
 		static bool ShouldRecognizeTapsTogether(UIGestureRecognizer gesture, UIGestureRecognizer other)
 		{
 			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
@@ -688,6 +704,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (tap == null)
 			{
 				return false;
+			}
+
+			// The text view of a selectable label has its own recognizers that would otherwise win over the label's taps.
+			if (IsSelectableLabelText(tap.View, other.View))
+			{
+				return true;
 			}
 
 			var otherTap = other as UITapGestureRecognizer;
@@ -1115,6 +1137,13 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
+				if (recognizer is UITapGestureRecognizer &&
+					IsTouchOnSelectableCollectionViewItem(touch, platformView, out var touchedCollectionView) &&
+					(virtualView is not SelectableItemsView || !ReferenceEquals(touchedCollectionView, platformView)))
+				{
+					return false;
+				}
+
 				if (touch.View == platformView)
 				{
 					return true;
@@ -1128,6 +1157,32 @@ namespace Microsoft.Maui.Controls.Platform
 					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 				{
 					return true;
+				}
+
+				return false;
+			}
+
+			// Checks whether the touch occurred on an actual item within a selectable CollectionView.
+			static bool IsTouchOnSelectableCollectionViewItem(UITouch touch, UIView platformView, out MauiCollectionView? touchedCollectionView)
+			{
+				touchedCollectionView = null;
+				for (var view = touch.View; view is not null; view = view.Superview)
+				{
+					if (view is MauiCollectionView { AllowsSelection: true } collectionView &&
+						(ReferenceEquals(collectionView, platformView) || collectionView.IsDescendantOfView(platformView)))
+					{
+						var location = touch.LocationInView(collectionView);
+						if (collectionView.IndexPathForItemAtPoint(location) is not null)
+						{
+							touchedCollectionView = collectionView;
+							return true;
+						}
+					}
+
+					if (ReferenceEquals(view, platformView))
+					{
+						break;
+					}
 				}
 
 				return false;

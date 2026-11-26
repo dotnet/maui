@@ -112,7 +112,8 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
-- ${{ if and(or(containsValue(parameters.selectedPlatforms, 'android'), containsValue(parameters.selectedPlatforms, 'ios'), containsValue(parameters.selectedPlatforms, 'catalyst')), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:'), contains(join(',', parameters.selectedCategories), 'ios:'), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
+# iOS and Mac Catalyst share one sample build; Android builds in its own stage.
+- ${{ if and(or(containsValue(parameters.selectedPlatforms, 'ios'), containsValue(parameters.selectedPlatforms, 'catalyst')), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'), contains(join(',', parameters.selectedCategories), 'catalyst:'))) }}:
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
     dependsOn: []
@@ -126,7 +127,29 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"
-                platforms: ${{ parameters.selectedPlatforms }}
+                platforms:
+                  - ${{ if containsValue(parameters.selectedPlatforms, 'ios') }}:
+                    - ios
+                  - ${{ if containsValue(parameters.selectedPlatforms, 'catalyst') }}:
+                    - catalyst
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
+- ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:'))) }}:
+  - stage: build_ui_tests_android_coreclr
+    displayName: Build UITests Android CoreCLR Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_android
+        displayName: Build Sample App (Android)
+        pool: ${{ parameters.androidPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: android
+                runtimeVariant: "CoreCLR"
+                coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Material3 feature tests use their own category, not the corresponding control category.
@@ -211,7 +234,7 @@ stages:
 - ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'SafeAreaEdges', ''), '')), contains(replace(replace(join(',', parameters.selectedCategories), 'android:Material3', ''), 'android:SafeAreaEdges', ''), 'android:'))) }}:
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -256,6 +279,7 @@ stages:
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
+                      coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                   
                   # Collect and publish Android snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -266,7 +290,7 @@ stages:
 - ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'Shell'), containsValue(parameters.selectedCategories, 'Shell1'), containsValue(parameters.selectedCategories, 'Shell2'), containsValue(parameters.selectedCategories, 'android:Shell1'), containsValue(parameters.selectedCategories, 'android:Shell2'))) }}:
   - stage: android_ui_tests_shell_renderer
     displayName: Android UITests Shell Renderer
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -307,6 +331,7 @@ stages:
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
+                      coreclrArtifactName: 'ui-tests-samples-android-coreclr'
 
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
@@ -359,7 +384,7 @@ stages:
 - ${{ if and(containsValue(parameters.selectedPlatforms, 'android'), or(eq(length(parameters.selectedCategories), 0), containsValue(parameters.selectedCategories, 'SafeAreaEdges'), containsValue(parameters.selectedCategories, 'android:SafeAreaEdges'))) }}:
   - stage: android_ui_tests_safeareaedges
     displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -384,6 +409,7 @@ stages:
                     deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     runtimeVariant: "CoreCLR"
+                    coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                     testFilter: 'SafeAreaEdges'
                     requireExecutedTests: ${{ eq(parameters.selectedRun, true) }}
                     skipProvisioning: ${{ parameters.skipProvisioning }}
@@ -447,12 +473,14 @@ stages:
                       testFilter: $(CATEGORYGROUP)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      requirePinnedXcodeVersion: ${{ ne(parameters.iosXcodeVersion, '') }}
                   
                   # Collect and publish iOS snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      # System.JobName is only the matrix leg (category group), which every iOS version job shares.
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-${{ project.name }}-${{ version }}-$(System.JobName)-$(System.JobAttempt)'
 
 - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: ios_ui_tests_nativeaot
@@ -505,6 +533,7 @@ stages:
                         testFilter: $(CATEGORYGROUP)
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
+                        requirePinnedXcodeVersion: ${{ ne(parameters.iosXcodeVersion, '') }}
 
 - ${{ if and(containsValue(parameters.selectedPlatforms, 'windows'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(replace(replace(join('', parameters.selectedCategories), 'Material3', ''), 'WebView', ''), '')), contains(join(',', parameters.selectedCategories), 'windows:'))) }}:
   - stage: winui_ui_tests

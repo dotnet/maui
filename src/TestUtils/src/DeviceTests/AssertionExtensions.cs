@@ -41,6 +41,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 			await drained.Task;
 #endif
+#if ANDROID
+			// On CoreCLR the GC bridge and the Java-side release of collected peers run asynchronously
+			// after the collection (dotnet/android#12861), so neither WaitForPendingFinalizers nor waiting
+			// for the bridge generation to advance is enough: views released by the bridge only become
+			// collectable a little later. Give that release time before the caller collects again.
+			// Mono processes the bridge synchronously during the GC.
+			if (Type.GetType("Mono.Runtime") is null)
+			{
+				await Task.Delay(100);
+			}
+#endif
 		}
 
 

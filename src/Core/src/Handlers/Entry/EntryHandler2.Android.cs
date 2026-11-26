@@ -200,6 +200,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		handler.UpdateValue(nameof(IEntry.Text));
 
 		handler.PlatformView.EditText?.UpdateIsReadOnly(entry);
+		handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 	}
 
 	public static void MapKeyboard(EntryHandler2 handler, IEntry entry)
@@ -236,6 +237,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		}
 
 		bool shouldShowClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
+			!entry.IsReadOnly &&
 			!string.IsNullOrEmpty(entry.Text) &&
 			handler.PlatformView.HasFocus;
 
@@ -286,6 +288,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 
 		VirtualView.IsFocused = e.HasFocus;
 		MapClearButtonVisibility(this, VirtualView);
+		PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 	}
 
 	void OnEditorAction(object? sender, EditorActionEventArgs e)

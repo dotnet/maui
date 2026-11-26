@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -640,6 +641,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Red, ((IShellAppearanceElement)result).EffectiveTabBarBackgroundColor);
 		}
 
+		[Fact]
+		// https://github.com/dotnet/maui/issues/40240
+		public async Task ThemeChangeWhileAModalPageIsOpenKeepsTheToolbarAppearance()
+		{
+			var app = new Application();
+			try
+			{
+				var shell = new TestShell(CreateShellItem());
+				shell.SetAppThemeColor(Shell.BackgroundColorProperty, Colors.Red, Colors.Blue);
+				app.LoadPage(shell);
+				// Shell subscribes to RequestedThemeChanged only once it has a handler
+				shell.Handler = new HandlerStub();
+				// Android's ShellSectionHandler observes the section
+				var observer = new TestAppearanceObserver();
+				((IShellController)shell).AddAppearanceObserver(observer, shell.CurrentItem.CurrentItem);
+
+				await shell.Navigation.PushModalAsync(new ContentPage());
+				app.UserAppTheme = AppTheme.Dark;
+
+				Assert.Equal(Colors.Blue, (shell.Toolbar.BarBackground as SolidColorBrush)?.Color);
+				Assert.Equal(Colors.Blue, observer.LastAppearance?.BackgroundColor);
+			}
+			finally
+			{
+				Application.Current = null;
+			}
+		}
+
 		sealed class UnsupportedGradientBrush : GradientBrush
 		{
 		}
@@ -648,6 +677,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public override bool Equals(object obj) => obj is EqualAppearanceObserver;
 			public override int GetHashCode() => 0;
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/18409
+		public async Task AppearanceIsResolvedWhileAModalPageIsOpen()
+		{
+			var shell = new TestShell(CreateShellItem());
+			_ = new TestWindow(shell);
+			Shell.SetBackgroundColor(shell, Colors.Red);
+
+			await shell.Navigation.PushModalAsync(new ContentPage());
+
+			var observer = new TestAppearanceObserver();
+			((IShellController)shell).AddAppearanceObserver(observer, shell.CurrentItem.CurrentItem);
+
+			Assert.NotNull(observer.LastAppearance);
+			Assert.Equal(Colors.Red, observer.LastAppearance.BackgroundColor);
 		}
 
 		class TestAppearanceObserver : IAppearanceObserver

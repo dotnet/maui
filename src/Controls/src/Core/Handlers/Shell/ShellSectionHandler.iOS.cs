@@ -412,6 +412,35 @@ namespace Microsoft.Maui.Controls.Handlers
             // Layout is handled by ShellSectionRootViewController.ViewDidLayoutSubviews → LayoutRootSubviews().
         }
 
+        IView? INavigationManagerDelegate.NavigationView => VirtualView as IView;
+
+        IView? INavigationManagerDelegate.GetViewForViewController(UIViewController viewController)
+        {
+            // The section's root view controller shows its current content page.
+            var element = ElementForViewController(viewController);
+            if (element is ShellSection section)
+            {
+                return (section.CurrentItem as IShellContentController)?.Page;
+            }
+
+            if (element is IView view)
+            {
+                return view;
+            }
+
+            // Shell takes a popped page off its stack before the native pop runs, so the outgoing controller is only
+            // found among the trackers, which are kept until the pop completes.
+            foreach (var tracker in _trackers)
+            {
+                if (tracker.Value.ViewController == viewController)
+                {
+                    return tracker.Key as IView;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Root Content Loading (from ShellSectionRootRenderer)
@@ -886,9 +915,20 @@ namespace Microsoft.Maui.Controls.Handlers
             var navigationController = ActiveNavigationController();
             if (!ReferenceEquals(navigationController, _navigationController))
             {
-                _ = navigationController.PopViewController(animated);
+                // Under the More tab: with a page transition running, the task completes (and the page is disposed,
+                // below) only when the transition has finished, as with the compatibility renderer.
+                var stack = navigationController.ViewControllers ?? Array.Empty<UIViewController>();
+                var popSource = new TaskCompletionSource<bool>();
+                NavigateInMore(
+                    navigationController,
+                    UINavigationControllerOperation.Pop,
+                    stack.Length > 0 ? stack[stack.Length - 1] : null,
+                    stack.Length > 1 ? stack[stack.Length - 2] : null,
+                    animated,
+                    () => navigationController.PopViewController(animated),
+                    () => popSource.TrySetResult(true));
                 CompletePopImmediately();
-                popTask = Task.FromResult(true);
+                popTask = popSource.Task;
             }
             else
             {
@@ -909,8 +949,19 @@ namespace Microsoft.Maui.Controls.Handlers
             var navigationController = ActiveNavigationController();
             if (_rootViewController is not null && !ReferenceEquals(navigationController, _navigationController))
             {
-                navigationController.PopToViewController(_rootViewController, animated);
-                task = Task.FromResult(true);
+                // Under the More tab, like a single pop: the task completes (and the pages are disposed, below) only when
+                // a running page transition has finished.
+                var root = _rootViewController;
+                var popSource = new TaskCompletionSource<bool>();
+                NavigateInMore(
+                    navigationController,
+                    UINavigationControllerOperation.Pop,
+                    navigationController.TopViewController,
+                    root,
+                    animated,
+                    () => navigationController.PopToViewController(root, animated),
+                    () => popSource.TrySetResult(true));
+                task = popSource.Task;
             }
             else if (_rootViewController is not null)
             {
@@ -990,12 +1041,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_isInMoreTab && _navigationController.ParentViewController is UITabBarController tabBarController)
             {
-                tabBarController.MoreNavigationController.PushViewController(pageViewController, animated);
-                if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
-                {
-                    pageViewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
-                }
-                completionSource?.TrySetResult(true);
+                var moreNavigationController = tabBarController.MoreNavigationController;
+                NavigateInMore(
+                    moreNavigationController,
+                    UINavigationControllerOperation.Push,
+                    moreNavigationController.TopViewController,
+                    pageViewController,
+                    animated,
+                    () =>
+                    {
+                        moreNavigationController.PushViewController(pageViewController, animated);
+                        if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+                        {
+                            pageViewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(moreNavigationController.TopViewController));
+                        }
+                    },
+                    () => completionSource?.TrySetResult(true));
             }
             else
             {
@@ -1202,6 +1263,7 @@ namespace Microsoft.Maui.Controls.Handlers
             else if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
             {
                 OnShellSectionCurrentItemChanged();
+                UpdateTabBarItemAutomationId();
             }
         }
 
@@ -1305,11 +1367,26 @@ namespace Microsoft.Maui.Controls.Handlers
                     image = TabbedViewExtensions.AutoResizeTabBarImage(_navigationController.TraitCollection, icon.Value);
                 }
                 _navigationController.TabBarItem = new UITabBarItem(section.Title, image, null);
-                _navigationController.TabBarItem.AccessibilityIdentifier = section.AutomationId ?? section.Title;
+                UpdateTabBarItemAutomationId(section);
 
                 // Reapply badge state after recreating UITabBarItem.
                 ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, section);
             });
+        }
+
+        void UpdateTabBarItemAutomationId()
+        {
+            if (((IElementHandler)this).VirtualView is ShellSection section)
+            {
+                UpdateTabBarItemAutomationId(section);
+            }
+        }
+
+        void UpdateTabBarItemAutomationId(ShellSection section)
+        {
+            _navigationController.TabBarItem.AccessibilityIdentifier = section.AutomationId ??
+                section.CurrentItem?.AutomationId ??
+                section.Title;
         }
 
         void UpdateFlowDirection()
@@ -1798,6 +1875,47 @@ namespace Microsoft.Maui.Controls.Handlers
         void CompletePopImmediately()
             => _navManager?.CompletePopImmediately();
 
+        static void ResetMorePageTransition(UINavigationController moreNavigationController)
+        {
+            // Cleared before each More push/pop; UIKit sets it again while asking for the animator, if it does.
+            if (moreNavigationController.Delegate is ShellItemHandler.MoreNavigationDelegate moreDelegate)
+                moreDelegate.ResetPageTransition();
+        }
+
+        /// <summary>
+        /// Every push and pop the section runs on the More controller goes through here, as the section's own goes through
+        /// its NavigationControllerManager: an unanimated one (for which UIKit asks for no animator) is reported to the
+        /// transition hooks so its transition is recorded or consumed, and <paramref name="complete"/> runs once a page
+        /// transition has finished (straight away otherwise).
+        /// </summary>
+        void NavigateInMore(UINavigationController moreNavigationController, UINavigationControllerOperation operation, UIViewController? from, UIViewController? to, bool animated, Action navigate, Action complete)
+        {
+            ResetMorePageTransition(moreNavigationController);
+            if (!animated && from is not null && to is not null)
+            {
+                var manager = (INavigationManagerDelegate)this;
+                Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
+                    VirtualView as IView, operation, manager.GetViewForViewController(from), manager.GetViewForViewController(to));
+            }
+
+            navigate();
+            CompleteMoreNavigationAfterTransition(moreNavigationController, complete);
+        }
+
+        // With a page transition running under the More tab, completes when it has finished (or been cancelled);
+        // otherwise (UIKit's own animation, or none) straight away, as it always has.
+        static void CompleteMoreNavigationAfterTransition(UINavigationController moreNavigationController, Action complete)
+        {
+            if (moreNavigationController.Delegate is ShellItemHandler.MoreNavigationDelegate { RunsPageTransition: true }
+                && moreNavigationController.GetTransitionCoordinator() is { } coordinator
+                && coordinator.AnimateAlongsideTransition(null!, _ => complete()))
+            {
+                return;
+            }
+
+            complete();
+        }
+
         void DisposeNavigationResources()
         {
             _interactivePopTcs?.TrySetResult(false);
@@ -1842,6 +1960,8 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 _handler = handler;
             }
+
+            internal ShellSectionHandler Handler => _handler;
 
             public bool IsInMoreTab
             {

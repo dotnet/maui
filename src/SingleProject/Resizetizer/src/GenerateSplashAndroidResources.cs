@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var path = Path.Combine(IntermediateOutputPath, directory);
 				if (Directory.Exists(path))
-					Directory.Delete(path, recursive: true);
+					Utils.DeleteDirectoryWithRetries(path);
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var colorsFile = Path.Combine(IntermediateOutputPath, "values-night", "maui_colors.xml");
 			if (File.Exists(colorsFile))
-				File.Delete(colorsFile);
+				Utils.DeleteFileWithRetries(colorsFile);
 		}
 
 		void CleanStaleNightImageResources(bool resize)
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var path = Path.Combine(IntermediateOutputPath, directory);
 				if (Directory.Exists(path))
-					Directory.Delete(path, recursive: true);
+					Utils.DeleteDirectoryWithRetries(path);
 			}
 		}
 

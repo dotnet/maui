@@ -121,6 +121,24 @@ namespace Microsoft.Maui.Platform
 
 		protected virtual NavigationTransitionInfo? GetNavigationTransition(NavigationRequest args)
 		{
+			// Page transitions and navigation-transition providers. An override of this method that doesn't
+			// call the base keeps precedence over both.
+			var previous = NavigationStack;
+			var next = args.NavigationStack;
+			if (NavigationTransitionHooks.Current is { } hooks
+				&& previous.Count > 0
+				&& next.Count > 0
+				&& hooks.TryGetNavigationTransition(
+					NavigationView as IView,
+					previous[previous.Count - 1],
+					next[next.Count - 1],
+					next.Count < previous.Count,
+					args.Animated,
+					out var transition))
+			{
+				return transition ?? s_suppressTransition;
+			}
+
 			if (!args.Animated)
 			{
 				return s_suppressTransition;

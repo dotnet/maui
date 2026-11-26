@@ -102,6 +102,7 @@ public class FlyoutPageNavigation : FlyoutPage
 		{
 			BackgroundColor = Color.FromArgb("363636"),
 			Title = "Menu",
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container),
 			Content = menuList
 		};
 

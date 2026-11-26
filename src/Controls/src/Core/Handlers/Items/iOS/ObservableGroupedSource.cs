@@ -166,8 +166,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Force UICollectionView to get the internal accounting straight
 			var collectionView = controller.CollectionView;
-			// For Remove, the source has already changed while UICollectionView still has its old sections.
-			if (args.Action != NotifyCollectionChangedAction.Remove)
+			// For Remove and Reset, the source has already changed while UICollectionView still has its old sections.
+			if (args.Action != NotifyCollectionChangedAction.Remove && args.Action != NotifyCollectionChangedAction.Reset)
 			{
 				UpdateSection(collectionView);
 			}
@@ -444,7 +444,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			update();
+			var observer = _collectionViewController.TryGetTarget(out var controller) ? controller as IItemsUpdateObserver : null;
+			observer?.ItemsUpdating();
+			try
+			{
+				update();
+			}
+			finally
+			{
+				observer?.ItemsUpdated();
+			}
 		}
 
 		int GroupsCount()

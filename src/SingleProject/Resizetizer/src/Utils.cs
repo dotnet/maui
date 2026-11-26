@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using SkiaSharp;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Resizetizer.Tests")]
@@ -66,6 +68,45 @@ namespace Microsoft.Maui.Resizetizer
 			var attributes = File.GetAttributes(source);
 			if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
 				File.SetAttributes(source, attributes & ~FileAttributes.ReadOnly);
+		}
+
+		/// <summary>
+		/// Deletes a file, retrying while another process briefly holds it open, using the
+		/// same retry policy as image writes.
+		/// </summary>
+		public static void DeleteFileWithRetries(string path) =>
+			RetryWhileFileIsLocked(() => File.Delete(path));
+
+		/// <summary>
+		/// Recursively deletes a directory, retrying while another process briefly holds one
+		/// of its files open, using the same retry policy as image writes.
+		/// </summary>
+		public static void DeleteDirectoryWithRetries(string path) =>
+			RetryWhileFileIsLocked(() => Directory.Delete(path, recursive: true));
+
+		static void RetryWhileFileIsLocked(Action action) =>
+			RetryWhileFileIsLocked(action, SkiaSharpTools.GetFileWriteRetryAttempts(), SkiaSharpTools.GetFileWriteRetryDelay());
+
+		internal static void RetryWhileFileIsLocked(Action action, int attempts, int delay)
+		{
+			for (var attempt = 0; ; attempt++)
+			{
+				try
+				{
+					action();
+					return;
+				}
+				catch (Exception ex) when ((ex is IOException || ex is UnauthorizedAccessException) && attempt < attempts && IsFileLocked(ex))
+				{
+					Thread.Sleep(delay);
+				}
+			}
+		}
+
+		static bool IsFileLocked(Exception ex)
+		{
+			var code = Marshal.GetHRForException(ex);
+			return code == SkiaSharpTools.ERROR_ACCESS_DENIED || code == SkiaSharpTools.ERROR_SHARING_VIOLATION;
 		}
 	}
 }

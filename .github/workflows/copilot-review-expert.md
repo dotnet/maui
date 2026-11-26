@@ -49,7 +49,7 @@ on:
             const comment = context.payload.comment;
             if (context.payload.action !== 'created' || !context.payload.issue?.pull_request ||
                 comment?.user?.type !== 'User' || comment.user.login !== context.actor ||
-                !/^\s*\/review\s+expert-review(?:er)?(?:-with-gate)?\s*$/i.test(comment.body ?? '')) return;
+                !/^\s*\/review\s+expert-review(?:er)?\s*$/i.test(comment.body ?? '')) return;
             number = context.payload.issue.number;
             actor = comment.user.login;
           } else if (context.eventName === 'workflow_dispatch') {

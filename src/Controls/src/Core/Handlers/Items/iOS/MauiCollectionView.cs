@@ -45,6 +45,10 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// Any Y-offset drop larger than this is treated as a silent reset rather than normal movement.
 	static readonly nfloat SilentResetThreshold = 10f;
 
+	// Told of every contentOffset change the KVO observer sees (see ContentOffsetListener). Held weakly, as the controller
+	// that listens holds this view.
+	WeakReference<IContentOffsetListener>? _contentOffsetListener;
+
 	// KVO observer token for contentOffset — active while the view is attached to a window.
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared when the view is detached from its window or the view is disposed.")]
 	IDisposable? _contentOffsetObserver;
@@ -61,6 +65,17 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_isTrackingScrollRestore = true;
 	}
 
+	/// <summary>
+	/// Gets or sets what is told of every change of the content offset the KVO observer sees while the view is in a window,
+	/// including a silent one that no delegate, layout or view controller callback reports. Called on every scroll tick, so
+	/// it's a single listener, called directly, rather than an event.
+	/// </summary>
+	internal IContentOffsetListener? ContentOffsetListener
+	{
+		get => _contentOffsetListener is { } listener && listener.TryGetTarget(out var target) ? target : null;
+		set => _contentOffsetListener = value is null ? null : new WeakReference<IContentOffsetListener>(value);
+	}
+
 	internal void ClearPendingScrollRestore()
 	{
 		_isTrackingScrollRestore = false;
@@ -70,6 +85,8 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 	void OnContentOffsetChanged()
 	{
+		ContentOffsetListener?.ContentOffsetChanged();
+
 		if (!_isTrackingScrollRestore)
 		{
 			return;
@@ -193,6 +210,12 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 #endif
 
 	internal bool NeedsCellLayout { get; set; }
+
+	/// <summary>
+	/// Gets or sets whether the view follows an edge of its content (<see cref="ScrollAnchorMode"/>), in which case
+	/// <see cref="ItemsUpdatingScrollMode"/> doesn't scroll it.
+	/// </summary>
+	internal bool IsFollowingEdge { get; set; }
 
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{

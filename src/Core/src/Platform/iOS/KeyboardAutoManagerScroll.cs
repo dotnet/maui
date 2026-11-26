@@ -311,6 +311,8 @@ public static class KeyboardAutoManagerScroll
 		// since SafeAreaEdges.SoftInput will handle the adjustments
 		if (View is not null && MauiView.IsSoftInputHandledByParent(View))
 		{
+			// Nothing to handle here, so stop blocking ScrollRectToVisible on MauiScrollView/MauiCollectionView
+			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 

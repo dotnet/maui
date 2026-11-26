@@ -20,7 +20,7 @@
             <Label x:Name="Label7" LineBreakMode="WordWrap" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </StackLayout>
 
-        <CollectionView Grid.Row="1" AutomationId="CollectionView5623" ItemSizingStrategy="{Binding ItemSizingStrategy}"  ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand}">
+        <CollectionView Grid.Row="1" AutomationId="CollectionView5623" ItemsUpdatingScrollMode="KeepScrollOffset" ItemSizingStrategy="{Binding ItemSizingStrategy}"  ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid HeightRequest="{Binding Height}" BackgroundColor="{Binding BackgroundColor}">

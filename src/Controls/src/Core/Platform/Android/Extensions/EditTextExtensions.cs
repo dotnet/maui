@@ -19,25 +19,36 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
-		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView)
+		internal static (string oldText, string newText) GetTexts(EditText editText, string text, ITextElement textElement)
 		{
 			var oldText = editText.Text ?? string.Empty;
 
 			var inputType = editText.InputType;
 
+			// A read-only EditText has no InputType flags (TYPE_NULL), so check what sets the password ones too:
+			// IsPassword on an Entry, the keyboard on other inputs
 			bool isPasswordEnabled =
-				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
-				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
+				(textElement is Entry entry ? entry.IsPassword : textElement is InputView inputView && inputView.Keyboard == Keyboard.Password) ||
+				(inputType.HasFlag(InputTypes.ClassText) &&
+					inputType.HasFlag(InputTypes.TextVariationPassword)) ||
+				(inputType.HasFlag(InputTypes.ClassNumber) &&
+					inputType.HasFlag(InputTypes.NumberVariationPassword));
 
-			var newText = TextTransformUtilities.GetTransformedText(inputView?.Text,
-					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
+			var newText = textElement.UpdateFormsText(text,
+				isPasswordEnabled ? TextTransform.None : textElement.TextTransform);
 
 			return (oldText, newText);
 		}
 
-		public static void UpdateText(this EditText editText, InputView inputView)
+		public static void UpdateText(this EditText editText, InputView inputView) =>
+			UpdateText(editText, inputView.Text, inputView);
+
+		internal static void UpdateText(this EditText editText, SearchHandler searchHandler) =>
+			UpdateText(editText, searchHandler.Query, searchHandler);
+
+		static void UpdateText(EditText editText, string text, ITextElement textElement)
 		{
-			(var oldText, var newText) = GetTexts(editText, inputView);
+			(var oldText, var newText) = GetTexts(editText, text, textElement);
 
 			if (oldText != newText)
 			{
@@ -51,9 +62,15 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView)
+		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView) =>
+			UpdateTextFromPlatform(editText, inputView.Text, inputView);
+
+		internal static void UpdateTextFromPlatform(this EditText editText, SearchHandler searchHandler) =>
+			UpdateTextFromPlatform(editText, searchHandler.Query, searchHandler);
+
+		static void UpdateTextFromPlatform(EditText editText, string text, ITextElement textElement)
 		{
-			(var oldText, var newText) = GetTexts(editText, inputView);
+			(var oldText, var newText) = GetTexts(editText, text, textElement);
 
 			if (oldText != newText)
 			{

@@ -63,6 +63,7 @@ import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -396,9 +397,10 @@ public class PlatformInterop {
     }
 
     /**
-     * Loads an image from bytes that must not be cached.
+     * Loads image bytes that MAUI downloaded (and caches itself), decoding them for the view's size like a URI load.
+     * Glide does not cache them on disk.
      */
-    public static void loadImageFromBytes(ImageView imageView, byte[] data, ImageLoaderCallback callback) {
+    public static void loadImageFromDownloadedBytes(ImageView imageView, byte[] data, ImageLoaderCallback callback) {
         if (isContextDestroyed(imageView.getContext())) {
             callback.onComplete(false, null, null);
             return;
@@ -415,6 +417,14 @@ public class PlatformInterop {
             .load(inputStream)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         loadInto(builder, imageView, false, callback, inputStream);
+    }
+
+    public static void loadImageFromBytes(ImageView imageView, byte[] bytes, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(bytes)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+        loadInto(builder, imageView, false, callback, bytes);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -698,7 +708,7 @@ public class PlatformInterop {
                     new int[] {  android.R.attr.state_enabled,  android.R.attr.state_checked },
                     new int[] {  android.R.attr.state_enabled, -android.R.attr.state_checked },
                     new int[] { -android.R.attr.state_enabled,  android.R.attr.state_checked },
-                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_pressed },
+                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_checked },
                 };
             }
             return checkBoxState;
@@ -792,4 +802,5 @@ public class PlatformInterop {
         }
         return null;
     }
+
 }

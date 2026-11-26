@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
+			TransformationDiagnostics.OnRebuilt(view);
+
 			var anchorX = (float)view.AnchorX;
 			var anchorY = (float)view.AnchorY;
 			var translationX = (float)view.TranslationX;

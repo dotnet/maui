@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly Dictionary<UITableViewCell, UIColor?> _defaultMoreTextLabelTextColors = new();
         ShellSection? _currentSection;
         Page? _displayedPage;
+        readonly ShellItemRenderer.TabSwitchBackgroundState _tabSwitchBackground = new();
 
         internal IShellSectionRenderer? CurrentRenderer { get; private set; }
 
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
             new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
             {
                 [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+                [nameof(Element.AutomationId)] = MapAutomationId,
                 [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
                 [PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName] = MapPrefersHomeIndicatorAutoHidden,
                 [PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName] = MapPrefersStatusBarHidden,
@@ -153,6 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers
             CurrentRenderer = null;
             _currentSection = null;
             _displayedPage = null;
+            _moreNavigationDelegate?.Detach();
             _moreNavigationDelegate = null;
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
@@ -199,6 +202,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
+            _tabSwitchBackground.Reset();
         }
 
         #endregion
@@ -297,6 +301,8 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _appearanceTracker?.UpdateLayout(_tabBarController);
             UpdateNavBarHidden();
+            UpdateTabBarAutomationIds();
+            UpdateMoreCellsEnabled();
         }
 
         void ITabBarManagerDelegate.OnTraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -359,6 +365,7 @@ namespace Microsoft.Maui.Controls.Handlers
             UpdateTabBarHidden();
 
             GoTo(VirtualView.CurrentItem);
+            UpdateTabBarAutomationIds();
             UpdateMoreCellsEnabled();
         }
 
@@ -408,7 +415,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Keeps <see cref="ShellItem.CurrentItem"/> in sync for MoreNavigationController selections.
         /// </summary>
-        sealed class MoreNavigationDelegate : UINavigationControllerDelegate
+        internal sealed class MoreNavigationDelegate : UINavigationControllerDelegate
         {
             readonly WeakReference<ShellItemHandler> _handlerRef;
 
@@ -417,8 +424,78 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handlerRef = new WeakReference<ShellItemHandler>(handler);
             }
 
+            Microsoft.Maui.Platform.NavigationTransitionDriver? _transitionDriver;
+
+            /// <summary>Whether the More controller's current push or pop runs a page transition (set while UIKit asks for
+            /// the animator, so it is known as soon as PushViewController/PopViewController returns).</summary>
+            internal bool RunsPageTransition { get; private set; }
+
+            internal void ResetPageTransition() => RunsPageTransition = false;
+
+            /// <summary>Stops following the More controller's swipe-back. Call when the delegate is dropped.</summary>
+            internal void Detach() => _transitionDriver?.Detach();
+
+            // The More controller pushes the overflow section's pages itself, so page transitions are resolved here.
+            [Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+            {
+                if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is not ShellItem)
+                {
+                    return null!;
+                }
+
+                if (_transitionDriver is null)
+                {
+                    _transitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(navigationController);
+                    _transitionDriver.AttachInteractivePop();
+                }
+
+                var section = handler.CurrentRenderer?.ShellSection;
+                var animator = _transitionDriver.GetAnimationController(
+                    section as IView,
+                    operation,
+                    PageForViewController(section, handler.CurrentRenderer, fromViewController),
+                    PageForViewController(section, handler.CurrentRenderer, toViewController));
+                RunsPageTransition = animator is not null;
+                return animator!;
+            }
+
+            [Export("navigationController:interactionControllerForAnimationController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerInteractiveTransitioning GetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+                => _transitionDriver?.GetInteractionController()!;
+
+            static Page? PageForViewController(ShellSection? section, IShellSectionRenderer? renderer, UIViewController viewController)
+            {
+                if (section is null)
+                {
+                    return null;
+                }
+
+                // The section's own mapping knows its root view controller (which shows the current content page, and is
+                // what the More controller has on its stack) and the trackers of pages already taken off the stack.
+                var sectionHandler = renderer as ShellSectionHandler ?? (renderer as ShellSectionHandler.ShellSectionHandlerAdapter)?.Handler;
+                if (sectionHandler is not null)
+                {
+                    return ((Microsoft.Maui.Platform.INavigationManagerDelegate)sectionHandler).GetViewForViewController(viewController) as Page;
+                }
+
+                foreach (var page in section.Stack)
+                {
+                    if (page?.Handler is IPlatformViewHandler { ViewController: var vc } && vc == viewController)
+                    {
+                        return page;
+                    }
+                }
+
+                return null;
+            }
+
             public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
             {
+                _transitionDriver?.TransitionEnded();
+
                 if (!_handlerRef.TryGetTarget(out var handler))
                 {
                     return;
@@ -485,6 +562,12 @@ namespace Microsoft.Maui.Controls.Handlers
             if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
             {
                 UpdateTabBarHidden();
+            }
+            else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+                e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+                e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+            {
+                ShellItemRenderer.UpdateTabSwitchBackground(PlatformView, _displayedPage, _tabSwitchBackground);
             }
         }
 
@@ -625,6 +708,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateLargeTitles();
                 UpdateNavBarHidden();
             }
+
+            ShellItemRenderer.UpdateTabSwitchBackground(PlatformView, _displayedPage, _tabSwitchBackground);
         }
 
         #endregion
@@ -901,6 +986,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
 
                 var cell = moreNavigationCells[i - 4];
+                cell.AccessibilityIdentifier = GetAutomationId(renderer.ShellSection);
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
                 if (!renderer.ShellSection.IsEnabled)
@@ -943,6 +1029,19 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        void UpdateTabBarAutomationIds()
+        {
+            if (VirtualView is not TabBar shellItem || !ShellItemController.ShowTabs)
+            {
+                return;
+            }
+
+            _tabBarController.TabBar.AccessibilityIdentifier = shellItem.AutomationId;
+        }
+
+        static string? GetAutomationId(ShellSection shellSection) =>
+            shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId;
+
         #endregion
 
         #region Trait Collection
@@ -982,6 +1081,14 @@ namespace Microsoft.Maui.Controls.Handlers
         #endregion
 
         #region Static Map Methods
+
+        internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+        {
+            if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs)
+            {
+                handler.UpdateTabBarAutomationIds();
+            }
+        }
 
         public static void MapCurrentItem(ShellItemHandler handler, ShellItem shellItem)
         {

@@ -97,6 +97,19 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 			allowDiagnostics: false);
 	}
 
+	/// <summary>
+	/// Generates <paramref name="xamlVersions"/> like <see cref="Generate(string[])"/>, but before generating
+	/// version <c>i</c>, first evaluates <paramref name="throwawayXamlBefore"/>[i] (when not null) on a fork of
+	/// the driver and discards it, like a design-time or speculative run that never reaches the app.
+	/// </summary>
+	public XamlHotReloadGeneration GenerateWithThrowawayRuns(string?[] throwawayXamlBefore, params string[] xamlVersions)
+	{
+		ArgumentNullException.ThrowIfNull(throwawayXamlBefore);
+		if (throwawayXamlBefore.Length != xamlVersions.Length)
+			throw new ArgumentException("Each XAML version must have a corresponding (possibly null) throwaway XAML.", nameof(throwawayXamlBefore));
+		return Generate(CreateMainPageSnapshots(xamlVersions), pageSources: null, allowDiagnostics: false, throwawayXamlBefore);
+	}
+
 	public XamlHotReloadGeneration GenerateDocuments(
 		params IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions)
 		=> Generate(documentVersions, pageSources: null, allowDiagnostics: false);
@@ -108,7 +121,8 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 	XamlHotReloadGeneration Generate(
 		IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions,
 		IReadOnlyList<string>? pageSources,
-		bool allowDiagnostics)
+		bool allowDiagnostics,
+		IReadOnlyList<string?>? throwawayXamlBefore = null)
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		ArgumentNullException.ThrowIfNull(documentVersions);
@@ -142,6 +156,16 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				var pageTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath == "Page.cs");
 				compilation = compilation.ReplaceSyntaxTree(pageTree, ParseSource(pageSource, "Page.cs"));
 				currentPageSource = pageSource;
+			}
+			if (throwawayXamlBefore?[index] is { } throwawayXaml)
+			{
+				var throwawayFiles = RetainUnchangedAdditionalTexts(
+					previousFiles,
+					CreateAdditionalFiles(CreateMainPageSnapshots([throwawayXaml])[0]));
+				_ = UpdateAdditionalTexts(driver, previousFiles, throwawayFiles)
+					.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(
+						[.. throwawayFiles.Values.Select(static file => file.File)]))
+					.RunGenerators(compilation);
 			}
 			var files = RetainUnchangedAdditionalTexts(
 				previousFiles,
@@ -335,7 +359,10 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				options.ManifestResourceName,
 				options.TargetFramework,
 				options.NoWarn,
-				EnableIncrementalHotReload: true);
+				EnableIncrementalHotReload: true,
+				EnableDiagnostics: options.EnableDiagnostics,
+				EnablePreviewFeatures: options.EnablePreviewFeatures,
+				LazyRD: options.LazyRD);
 			files.Add(document.Key, new XamlHotReloadAdditionalFile(options, file));
 		}
 
@@ -500,7 +527,10 @@ internal sealed record XamlHotReloadDocument(
 	string? TargetPath = null,
 	string? ManifestResourceName = null,
 	string? TargetFramework = "net11.0",
-	string? NoWarn = null);
+	string? NoWarn = null,
+	bool EnableDiagnostics = true,
+	bool EnablePreviewFeatures = false,
+	bool? LazyRD = null);
 
 internal sealed record XamlHotReloadSourceVersion(
 	string Xaml,
@@ -775,6 +805,19 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousUpdateComponent, nextUpdateComponent));
 			}
 
+			// Like Roslyn, only list the companion signal type when its content changed.
+			var previousSignal = GetSignalFingerprint(previousType);
+			var nextSignal = GetSignalFingerprint(nextType);
+			if (previousSignal is not null && nextSignal is not null
+				&& !string.Equals(
+					previousSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+					nextSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+					StringComparison.Ordinal))
+			{
+				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousSignal, nextSignal));
+				affectedTypes.Add($"{nextRoot.TypeName}+{nextSignal.ContainingType.Name}");
+			}
+
 			foreach (var nextField in nextType.GetMembers().OfType<IFieldSymbol>())
 			{
 				if (previousType.GetMembers(nextField.Name).OfType<IFieldSymbol>().Any())
@@ -799,12 +842,18 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 				var previousMethod = previousPageType!
 					.GetMembers(methodName)
 					.OfType<IMethodSymbol>()
-					.Single();
+					.SingleOrDefault();
 				var nextMethod = nextPageType!
 					.GetMembers(methodName)
 					.OfType<IMethodSymbol>()
 					.Single();
-				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousMethod, nextMethod));
+				if (previousMethod is null)
+				{
+					edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, nextMethod));
+					insertedSymbols.Add(nextMethod);
+				}
+				else
+					edits.Add(new SemanticEdit(SemanticEditKind.Update, previousMethod, nextMethod));
 			}
 		}
 
@@ -813,6 +862,13 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			insertedSymbols.ToImmutable(),
 			affectedTypes.ToImmutable());
 	}
+
+	static IMethodSymbol? GetSignalFingerprint(INamedTypeSymbol rootType) =>
+		rootType.GetTypeMembers(UpdateComponentCodeWriter.SignalTypeName)
+			.SingleOrDefault()
+			?.GetMembers("Fingerprint")
+			.OfType<IMethodSymbol>()
+			.SingleOrDefault();
 
 	static IMethodSymbol GetPartialImplementation(INamedTypeSymbol type, string methodName)
 	{

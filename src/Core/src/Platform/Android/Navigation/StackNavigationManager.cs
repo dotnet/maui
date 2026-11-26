@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		Queue<NavigationRequest> _navigationQueue = new Queue<NavigationRequest>();
 
 		bool _processingQueue;
+		bool _applyingNavigationRequest;
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -33,6 +34,13 @@ namespace Microsoft.Maui.Platform
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
+
+		// The navigation's resolved transition (see NavigationTransitionHooks), until the navigation finishes.
+		object? _preparedTransition;
+
+		// The incoming page's transition animation: the navigation isn't finished until it has run.
+		Animation? _enteringAnimation;
+		int _navigationGeneration;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
@@ -91,6 +99,21 @@ namespace Microsoft.Maui.Platform
 				_navigationQueue.Enqueue(args);
 				return;
 			}
+
+			_applyingNavigationRequest = true;
+
+			try
+			{
+				ApplyNavigationRequestCore(args);
+			}
+			finally
+			{
+				_applyingNavigationRequest = false;
+			}
+		}
+
+		void ApplyNavigationRequestCore(NavigationRequest args)
+		{
 
 			if (args.NavigationStack.Count == 0)
 			{
@@ -155,6 +178,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			IsAnimated = animated;
+
+			// Resolve the transition once for the whole navigation; both fragments' animations come from it.
+			_preparedTransition = IsPopping is null || NavigationTransitionHooks.Current is not { } hooks
+				? null
+				: hooks.PrepareNavigation(
+					NavigationView as IView,
+					previousNavigationStack[previousNavigationStackCount - 1],
+					newPageStack[newPageStack.Count - 1],
+					IsPopping.Value,
+					animated);
 
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
@@ -267,6 +300,21 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The animation to use, or null to skip animation.</returns>
 		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
 		{
+			// Page transitions and navigation-transition providers. An override of this method that doesn't
+			// call the base keeps precedence over both.
+			if (_preparedTransition is { } prepared
+				&& NavigationTransitionHooks.Current is { } hooks
+				&& hooks.TryCreateAnimation(prepared, context, enter, out var transition))
+			{
+				// The navigation completes when the outgoing fragment goes, which can be before a longer entrance ends.
+				if (enter)
+				{
+					_enteringAnimation = transition;
+				}
+
+				return transition;
+			}
+
 			int id;
 			if (isPopping)
 			{
@@ -288,6 +336,9 @@ namespace Microsoft.Maui.Platform
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
+			_preparedTransition = null;
+			_enteringAnimation = null;
+			_navigationGeneration++;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
 
@@ -543,8 +594,40 @@ namespace Microsoft.Maui.Platform
 
 			if (IsNavigating)
 			{
+				// A transition's entrance can outlast the outgoing page: finish when it has run, not before.
+				var remaining = RemainingEntranceMilliseconds();
+				if (remaining > 0 && _navHost?.View is { } host)
+				{
+					var generation = _navigationGeneration;
+					host.PostDelayed(() =>
+					{
+						if (generation == _navigationGeneration && IsNavigating)
+						{
+							NavigationFinished(NavigationView);
+						}
+					}, remaining);
+					return;
+				}
+
 				NavigationFinished(NavigationView);
 			}
+		}
+
+		long RemainingEntranceMilliseconds()
+		{
+			if (_enteringAnimation is not { } entrance)
+			{
+				return 0;
+			}
+
+			var length = entrance.ComputeDurationHint();
+			var started = entrance.StartTime;
+			var remaining = started <= 0
+				? length
+				: started + length - AnimationUtils.CurrentAnimationTimeMillis();
+
+			// Within a frame of the end is the end.
+			return remaining > 16 ? remaining : 0;
 		}
 
 		protected virtual void OnNavigationViewFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)
@@ -557,6 +640,36 @@ namespace Microsoft.Maui.Platform
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
 		{
+		}
+
+		internal void HandleDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
+		{
+			ReconcileExternallyPoppedStack();
+			OnDestinationChanged(navController, navDestination, bundle);
+		}
+
+		// A platform back stack smaller than the one MAUI requested means something popped
+		// natively without a navigation request — e.g. a system back press consumed by an
+		// AndroidX callback while the push transition was still running. Without this the
+		// pending navigation never finishes: the Task returned by PushAsync never completes
+		// and the cross-platform stack keeps a page that is no longer on screen.
+		void ReconcileExternallyPoppedStack()
+		{
+			if (_applyingNavigationRequest || IsInitialNavigation || NavigationStack.Count == 0 || _navHost is null)
+				return;
+
+			int platformCount = 0;
+			NavController.IterateBackStack(_ => platformCount++);
+
+			if (platformCount == 0 || platformCount >= NavigationStack.Count)
+				return;
+
+			var newStack = new List<IView>();
+			for (int i = 0; i < platformCount; i++)
+				newStack.Add(NavigationStack[i]);
+
+			UpdateNavigationStack(newStack);
+			NavigationFinished(NavigationView);
 		}
 
 		FragmentManager? ChildFragmentManager
@@ -633,7 +746,7 @@ namespace Microsoft.Maui.Platform
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
 				NavController p0, NavDestination p1, Bundle? p2)
 			{
-				_stackNavigationManager?.OnDestinationChanged(p0, p1, p2);
+				_stackNavigationManager?.HandleDestinationChanged(p0, p1, p2);
 			}
 
 			#endregion

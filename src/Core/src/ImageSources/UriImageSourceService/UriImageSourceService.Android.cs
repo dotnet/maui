@@ -152,7 +152,7 @@ namespace Microsoft.Maui
 				if (image.FilePath is not null)
 					PlatformInterop.LoadImageFromCachedFile(imageView, image.FilePath, image.Version, callback);
 				else
-					PlatformInterop.LoadImageFromBytes(imageView, image.Data!, callback);
+					PlatformInterop.LoadImageFromDownloadedBytes(imageView, image.Data!, callback);
 
 				var result = await WaitForGlideAsync(callback.Result, cancellationToken);
 

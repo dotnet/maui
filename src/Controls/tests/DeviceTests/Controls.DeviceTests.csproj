@@ -7,7 +7,7 @@
     <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
-    <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <NoWarn>$(NoWarn),CA1416,MAUIANIM0001</NoWarn>
     <IsTestProject>true</IsTestProject>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
@@ -23,10 +23,12 @@
     <ApplicationTitle>Controls Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.controls.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
+    <UseXHarnessSceneManifest>true</UseXHarnessSceneManifest>
     <MauiAndroidSystemBarsUseMauiChrome Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MauiAndroidSystemBarsUseMauiChrome)' == ''">true</MauiAndroidSystemBarsUseMauiChrome>
   </PropertyGroup>
 
   <ItemGroup>
+    <MauiFont Include="..\..\..\Core\tests\DeviceTests\Resources\Fonts\dokdo_regular.ttf" Link="Resources\Fonts\dokdo_regular.ttf" Condition="$(TargetFramework.Contains('-windows'))" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />

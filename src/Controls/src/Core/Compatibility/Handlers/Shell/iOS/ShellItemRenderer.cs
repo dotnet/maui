@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellTabBarAppearanceTracker _appearanceTracker;
 		ShellSection _currentSection;
 		Page _displayedPage;
+		readonly TabSwitchBackgroundState _tabSwitchBackground = new TabSwitchBackgroundState();
 		bool _disposed;
 		bool _disconnected;
 		ShellItem _shellItem;
@@ -77,6 +78,58 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IDisposable _moreContentOffsetObserver;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared in Disconnect.")]
 		IDisposable _nativeSubscriptionWatcher;
+
+		internal sealed class TabSwitchBackgroundState
+		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The captured default background color is cleared when restored and when the owner is disposed or disconnected.")]
+			internal UIColor DefaultBackgroundColor;
+			internal bool Overridden;
+
+			internal void Reset()
+			{
+				DefaultBackgroundColor = null;
+				Overridden = false;
+			}
+		}
+
+		// On iOS/Mac Catalyst 18+, UITabBarController cross-fades tab switches over its own
+		// view, which keeps UIKit's default background (white in light mode). Dark pages
+		// composited over it flash grey (#39800), so mirror the displayed page's solid
+		// background onto the backing view and restore the default when it goes away.
+		internal static void UpdateTabSwitchBackground(UIView view, Page page, TabSwitchBackgroundState state)
+		{
+			if (view is null || (!OperatingSystem.IsIOSVersionAtLeast(18) && !OperatingSystem.IsMacCatalystVersionAtLeast(18)))
+				return;
+
+			Color color = null;
+			if (page is not null && page.Opacity >= 1)
+			{
+				var brush = page.Background;
+				if (Brush.IsNullOrEmpty(brush))
+					color = page.BackgroundColor;
+				else if (brush is SolidColorBrush solid)
+					color = solid.Color;
+
+				if (color is not null && color.Alpha < 1)
+					color = null;
+			}
+
+			if (color is not null)
+			{
+				if (!state.Overridden)
+				{
+					state.DefaultBackgroundColor = view.BackgroundColor;
+					state.Overridden = true;
+				}
+
+				view.BackgroundColor = color.ToPlatform();
+			}
+			else if (state.Overridden)
+			{
+				view.BackgroundColor = state.DefaultBackgroundColor;
+				state.Reset();
+			}
+		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current section renderer is tracked while selected and cleared in Dispose or when removed.")]
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
@@ -109,10 +162,71 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (ReferenceEquals(value, MoreNavigationController))
 				{
 					MoreNavigationController.WeakDelegate = this;
+					EnsureMoreTransitionDriver();
 				}
 
 				UpdateMoreCellsEnabled();
 			}
+		}
+
+		Microsoft.Maui.Platform.NavigationTransitionDriver _moreTransitionDriver;
+
+		// The overflow ("More") tab's navigation controller pushes the section's pages itself, with this renderer as
+		// its delegate, so page transitions are resolved here for it.
+		[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+		[Foundation.Preserve(Conditional = true)]
+		internal IUIViewControllerAnimatedTransitioning MoreGetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+		{
+			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
+				return null;
+
+			EnsureMoreTransitionDriver();
+			var section = (CurrentRenderer as ShellSectionRenderer)?.ShellSection;
+			var animator = _moreTransitionDriver.GetAnimationController(
+				section as IView,
+				operation,
+				MorePageForViewController(fromViewController),
+				MorePageForViewController(toViewController));
+
+			MoreNavigationRunsPageTransition = animator is not null;
+			return animator;
+		}
+
+		/// <summary>
+		/// Whether the More controller's navigation that just started runs a page transition (rather than UIKit's own
+		/// animation). Only then does its navigation task wait for the transition to finish.
+		/// </summary>
+		internal bool MoreNavigationRunsPageTransition { get; set; }
+
+		// The More controller's swipe-back follows the finger with a custom transition too.
+		[Export("navigationController:interactionControllerForAnimationController:")]
+		[Foundation.Preserve(Conditional = true)]
+		internal IUIViewControllerInteractiveTransitioning MoreGetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
+		{
+			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
+				return null;
+
+			return _moreTransitionDriver?.GetInteractionController();
+		}
+
+		void EnsureMoreTransitionDriver()
+		{
+			if (_moreTransitionDriver is not null)
+				return;
+
+			_moreTransitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(MoreNavigationController);
+			_moreTransitionDriver.AttachInteractivePop();
+		}
+
+		Page MorePageForViewController(UIViewController viewController)
+		{
+			foreach (var renderer in _sectionRenderers.Values)
+			{
+				if (renderer is ShellSectionRenderer section && section.PageForViewController(viewController) is { } page)
+					return page;
+			}
+
+			return null;
 		}
 
 		[Export("navigationController:didShowViewController:animated:")]
@@ -121,6 +235,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_disposed || _disconnected)
 				return;
+
+			if (ReferenceEquals(navigationController, MoreNavigationController))
+				_moreTransitionDriver?.TransitionEnded();
 
 			var renderer = RendererForViewController(this.SelectedViewController);
 			if (renderer != null)
@@ -164,6 +281,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLoad();
 			RegisterTabBar();
+			UpdateTabSwitchBackground(View, _displayedPage, _tabSwitchBackground);
+
+			// PageTransitions.TabTransition. An animator a subclass already installed takes precedence and is left exactly
+			// as it is (so removing it later with -= still restores the native switch); a null animator keeps UIKit's
+			// unanimated switch.
+			if (GetAnimationControllerForTransition is null)
+			{
+				GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
+					Animations.TabPageTransitions.GetAnimator(
+						tabController,
+						fromViewController,
+						toViewController,
+						vc => RendererForViewController(vc)?.ShellSection)!;
+			}
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
@@ -282,6 +413,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ReferenceEquals(MoreNavigationController.WeakDelegate, this))
 				MoreNavigationController.WeakDelegate = null;
 
+			_moreTransitionDriver?.Detach();
+			_moreTransitionDriver = null;
+
 			if (_sectionRenderers != null)
 			{
 				foreach (var kvp in _sectionRenderers.ToList())
@@ -350,6 +484,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_shellItem = null;
 				_currentSection = null;
 				_displayedPage = null;
+				_tabSwitchBackground.Reset();
 			}
 
 			base.Dispose(disposing);
@@ -441,6 +576,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			shellItem.PropertyChanged += OnElementPropertyChanged;
+			TabBar.AccessibilityIdentifier = shellItem.AutomationId;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
@@ -654,6 +790,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell,
 					NativeElementRoles.ShellTabOverflow,
 					NativeElementDiscriminators.OverflowRow);
+				cell.AccessibilityIdentifier = renderer.ShellSection.AutomationId
+					?? renderer.ShellSection.CurrentItem?.AutomationId;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)
@@ -805,6 +943,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateLargeTitles();
 				UpdateNavBarHidden();
 			}
+
+			if (IsViewLoaded)
+				UpdateTabSwitchBackground(View, _displayedPage, _tabSwitchBackground);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
@@ -812,6 +953,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				UpdateTabBarHidden();
+			else if (IsViewLoaded &&
+				(e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+				e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+				e.PropertyName == VisualElement.OpacityProperty.PropertyName))
+				UpdateTabSwitchBackground(View, _displayedPage, _tabSwitchBackground);
 		}
 
 

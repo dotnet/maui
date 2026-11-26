@@ -23,7 +23,16 @@ steps:
             $env:DOTNET_ROOT = $DOTNET_ROOT
             $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_ROOT
             $env:MSBuildEnableWorkloadResolver = "true"
-            $env:PATH = "${DOTNET_ROOT}:$env:PATH"
+            # pwsh prepends $PSHOME to PATH. Persisting it makes later pwsh: steps
+            # resolve the raw framework-dependent binary there (e.g. Homebrew's
+            # libexec/pwsh) instead of the agent's entry point, and it fails when
+            # DOTNET_ROOT lacks its runtime. Keep $PSHOME, but last.
+            $pathEntries = $env:PATH -split ':' | Where-Object { $_ }
+            $otherEntries = @($pathEntries | Where-Object { $_.TrimEnd('/') -ne $PSHOME.TrimEnd('/') })
+            if ($otherEntries.Count -ne @($pathEntries).Count) {
+                $otherEntries += $PSHOME
+            }
+            $env:PATH = "${DOTNET_ROOT}:" + ($otherEntries -join ':')
             $dotnetPath = "${DOTNET_ROOT}/dotnet"
             $env:DOTNET_PATH = $dotnetPath
             $env:DOTNET_HOST_PATH = $dotnetPath

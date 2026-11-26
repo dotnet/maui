@@ -24,8 +24,10 @@ namespace Microsoft.Maui.LifecycleEvents
 					})
 					.WillTerminate(app =>
 					{
-						// By this point if we were a multi window app, the GetWindow would be null anyway
-						app.GetWindow()?.Destroying();
+						// SceneDidDisconnect may have destroyed the window already (which disconnects its handler),
+						// and Application keeps a destroyed MainPage window in Windows
+						if (app.GetWindow() is { Handler: not null } window)
+							window.Destroying();
 						KeyboardAutoManagerScroll.Disconnect();
 					})
 					.WillEnterForeground(app =>

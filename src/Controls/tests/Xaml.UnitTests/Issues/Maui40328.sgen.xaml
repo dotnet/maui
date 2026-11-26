@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40328">
+	<x:Code><![CDATA[
+		using System;
+
+		public int ClickCount { get; private set; }
+
+		void OnClicked(object sender, EventArgs e)
+		{
+			ClickCount++;
+			status.Text = $"Clicked {ClickCount}";
+		}
+	]]></x:Code>
+	<VerticalStackLayout>
+		<Button x:Name="button" Text="Click" Clicked="OnClicked" />
+		<Label x:Name="status" Text="Ready" />
+	</VerticalStackLayout>
+</ContentPage>

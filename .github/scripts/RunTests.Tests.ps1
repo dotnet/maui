@@ -165,6 +165,61 @@ Describe 'Dispatch request' {
         $failed.output.summary | Should -Match 'Android Label'
         (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
+
+    It 'follows the build with a selected run status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
+        $running = New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $false; result = ''; headline = 'running: 1 passed, 0 failed so far' })
+        $running.context | Should -Be $script:RunTestsRunCheckName
+        $running.state | Should -Be 'pending'
+        $running.description | Should -Be '#7 running: 1 passed, 0 failed so far'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'failed'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'partiallySucceeded'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'canceled'; headline = 'x' })).state | Should -Be 'error'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; headline = 'x' })).state | Should -Be 'success'
+    }
+
+    It 'reads the latest statuses of a commit as a flat list' {
+        # @(Get-RunTestsStatuses ...) nested the list and the dispatch failed on $_.context (#40439).
+        function gh { $global:LASTEXITCODE = 0; '[{"statuses":[{"context":"maui-pr-uitests (skipped) Label","description":"x"},{"context":"other","description":"y"}]}]' }
+        try {
+            $statuses = Get-RunTestsStatuses -Repository 'dotnet/maui' -Sha ('a' * 40)
+            $statuses.Count | Should -Be 2
+            @($statuses | Where-Object { ([string]$_.context).StartsWith('maui-pr-uitests (skipped)') }).Count | Should -Be 1
+        } finally { Remove-Item function:gh }
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match '@\(Get-RunTestsStatuses'
+        $invoke | Should -Match '\$existingStatuses = Get-RunTestsStatuses'
+    }
+
+    It 'reports through commit statuses, not check runs' {
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match 'repos/\$Repository/check-runs'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$check\.name'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsSelectionCheckName'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsRunCheckName'
+        foreach ($workflow in 'review-run-tests-dispatch.yml', 'review-run-tests-results.yml') {
+            Get-Content "$PSScriptRoot/../workflows/$workflow" -Raw | Should -Match '(?m)^\s+statuses: write'
+        }
+    }
+
+    It 'mirrors each job of the build as a commit status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
+        $results = [pscustomobject]@{ completed = $false; result = ''; headline = 'running'; jobs = @(
+                [pscustomobject]@{ name = 'Android UITests Shell1'; result = 'succeeded'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=a' },
+                [pscustomobject]@{ name = 'Android UITests Shell2'; result = 'failed'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=b' },
+                [pscustomobject]@{ name = 'iOS UITests Label'; result = 'inProgress'; url = $null },
+                [pscustomobject]@{ name = 'Windows UITests Label'; result = 'canceled'; url = $null }) }
+        $statuses = New-RunTestsJobStatuses -Build $build -Results $results
+        $statuses.Count | Should -Be 4
+        $statuses[0].context | Should -Be "$($script:RunTestsCheckPrefix) (Android UITests Shell1)"
+        $statuses[0].state | Should -Be 'success'
+        $statuses[0].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7&j=a'
+        $statuses[1].state | Should -Be 'failure'
+        $statuses[2].state | Should -Be 'pending'
+        $statuses[2].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7'
+        $statuses[3].state | Should -Be 'error'
+        @($statuses | Where-Object { $_.description.Length -gt 140 }).Count | Should -Be 0
+    }
 }
 
 Describe 'Get-RunTestsMergeState' {
@@ -213,8 +268,9 @@ Describe 'Pipeline support checks' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
         $contextScript | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
         $contextScript | Should -Match 'ready=false'
-        # Only when the default branch cannot run it either: servicing branches use its pipeline.
-        $contextScript | Should -Match 'Test-RunTestsDispatchAt \$pr\.base\.repo\.default_branch'
+        # Only the target branch's pipeline counts: another branch's would build the PR as that branch.
+        $contextScript | Should -Match 'if \(Test-RunTestsDispatchAt \$pr\.base\.ref\) \{'
+        $contextScript | Should -Not -Match 'default_branch'
         Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
     }
 
@@ -225,15 +281,34 @@ Describe 'Pipeline support checks' {
         $workflow | Should -Not -Match 'AZDO_TRIGGER|id-token'
         $workflow | Should -Match 'contents: write'
         # The PR code is built with the target branch's pipeline and workflows, never its own.
-        $invoke | Should -Match "path = '\.github'; mode = '040000'; type = 'tree'"
-        $invoke | Should -Match "path = 'eng/pipelines'; mode = '040000'; type = 'tree'"
-        $invoke | Should -Match 'parents = @\(\$sourceSha\)'
+        $invoke | Should -Match 'foreach \(\$path in \$script:RunTestsTrustedPaths\)'
+        Set-RunTestsSuite ui
+        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines')
+        Set-RunTestsSuite device
+        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
+        Set-RunTestsSuite ui
+        $invoke | Should -Match 'parents = @\(\$parentSha\)'
+        # A PR GitHub reports as conflicting is told so plainly.
+        $invoke | Should -Match ([regex]::Escape('-not $verified.merge -and $pr.mergeable -eq $false'))
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
     }
 
-    It "falls back to the default branch's pipeline when the target branch cannot run a dispatch" {
+    It "builds with the target branch's pipeline only, never the default branch's" {
+        # A net11 PR built with main's pipeline ran as net12 (#40621).
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
-        $invoke | Should -Match '@\(\$PullRequest\.base\.ref, \$PullRequest\.base\.repo\.default_branch\)'
+        $invoke | Should -Match ([regex]::Escape('git/ref/heads/$($PullRequest.base.ref)'))
+        # The default branch is used only for the workflows and parent, after the pipeline check.
+        $before = $invoke.Substring(0, $invoke.IndexOf('$defaultBranch = '))
+        $before | Should -Not -Match 'default_branch'
+    }
+
+    It "gives a release-branch dispatch the default branch's workflows and parent" {
+        # GITHUB_TOKEN may not create a branch whose workflows differ from the default branch's (403 on net11).
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match ([regex]::Escape('$defaultBranch = [string]$PullRequest.base.repo.default_branch'))
+        $invoke | Should -Match ([regex]::Escape('if ($defaultBranch -and $defaultBranch -cne $PullRequest.base.ref) {'))
+        $invoke | Should -Match ([regex]::Escape('$parentSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$defaultBranch")).object.sha'))
+        $invoke | Should -Match ([regex]::Escape("Get-RunTestsTreeEntry -TreeSha `$default.tree.sha -Path '.github/workflows'"))
     }
 }
 
@@ -479,10 +554,10 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
 
 Describe 'Two-model selection' {
     BeforeAll {
-        function Resolve-Pair($gpt, $opus) {
+        function Resolve-Pair($gpt, $mai) {
             $resolved = [ordered]@{}
             if ($gpt) { $resolved['gpt-6.2-sol'] = Resolve-RunTestsSelection $gpt $inventory }
-            if ($opus) { $resolved['claude-opus-5.5'] = Resolve-RunTestsSelection $opus $inventory }
+            if ($mai) { $resolved['mai-code-2'] = Resolve-RunTestsSelection $mai $inventory }
             Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
         }
     }
@@ -534,28 +609,42 @@ Describe 'Two-model selection' {
     It 'shows what each model chose and who selected the tests' {
         $s = Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('android', 'ios') @('Label'))
         $body = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
-        $body | Should -Match 'AI-selected UI tests \(GPT-6.2 Sol \+ Claude Opus 5.5\)'
-        $body | Should -Match '\| Platform \| GPT-6.2 Sol \| Claude Opus 5.5 \|'
+        $body | Should -Match 'AI-selected UI tests \(GPT-6.2 Sol \+ MAI Code 2\)'
+        $body | Should -Match '\| Platform \| GPT-6.2 Sol \| MAI Code 2 \|'
         $body | Should -Match '\| Android \| `Button` \| `Label` \|'
         $body | Should -Match '\| iOS \| &#x2014; \| `Label` \|'
         $body | Should -Match '\*\*GPT-6.2 Sol\*\*'
         $body | Should -Not -Match 'Full UI test suite'
     }
 
-    It 'wires GPT-6.2 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
+    It 'wires GPT-6.2 Sol, then MAI Code 2, then the dispatcher, with the same instructions' {
         $workflows = Join-Path $PSScriptRoot '../workflows'
         $gpt = Get-Content (Join-Path $workflows 'copilot-review-run-tests.md') -Raw
-        $opus = Get-Content (Join-Path $workflows 'copilot-review-run-tests-opus.md') -Raw
+        $mai = Get-Content (Join-Path $workflows 'copilot-review-run-tests-mai.md') -Raw
         $gpt | Should -Match '(?m)^model: gpt-6.2-sol$'
-        $opus | Should -Match '(?m)^model: claude-opus-5.5$'
-        foreach ($workflow in $gpt, $opus) { $workflow | Should -Match '- shared/run-tests-selection.md' }
-        $gpt | Should -Match 'gh workflow run copilot-review-run-tests-opus.lock.yml'
+        $mai | Should -Match '(?m)^model: mai-code-2$'
+        foreach ($workflow in $gpt, $mai) { $workflow | Should -Match '- shared/run-tests-selection.md' }
+        $gpt | Should -Match 'gh workflow run copilot-review-run-tests-mai.lock.yml'
         $gpt | Should -Not -Match 'gh workflow run review-run-tests-dispatch.yml'
-        $opus | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
+        $mai | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
         $gpt | Should -Match "proposal\['model'\] = 'gpt-6.2-sol'"
-        $opus | Should -Match "proposal\['model'\] = 'claude-opus-5.5'"
-        $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
-        foreach ($workflow in $gpt, $opus) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
+        $mai | Should -Match "proposal\['model'\] = 'mai-code-2'"
+        # Exactly `/review run-tests` (both), `/review run-ui-tests` or `/review run-device-tests`.
+        $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-(?:(ui|device)-)?tests\s*$/i'))
+        $gpt | Should -Match ([regex]::Escape("let suite = 'all';"))
+        $gpt | Should -Match ([regex]::Escape('if (command[1]) suite = command[1].toLowerCase();'))
+        $gpt | Should -Match 'options: \[all, ui, device\]'
+        # The command comment is hidden as resolved once acknowledged, like the other /review commands.
+        $gpt | Should -Match ([regex]::Escape('minimizeComment(input: { subjectId: $id, classifier: RESOLVED })'))
+        $gpt | Should -Match ([regex]::Escape('{ id: context.payload.comment.node_id }'))
+        foreach ($workflow in $gpt, $mai) {
+            foreach ($key in 'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
+                $workflow | Should -Match "(?m)^        $($key):"
+                $workflow | Should -Match "'$key'"
+            }
+        }
+        $gpt | Should -Match ([regex]::Escape('-Suite "$SUITE"'))
+        foreach ($workflow in $gpt, $mai) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
     }
 }
 
@@ -590,7 +679,7 @@ Describe 'Pipeline templates' {
         $ci | Should -Match '(?m)^    - run-tests/\*\s*$'
         $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:") + '\s+- template: /eng/pipelines/common/run-tests-request\.yml@self')
         $variables = Get-Content (Join-Path $pipelines 'variables.yml') -Raw
-        $variables | Should -Match ([regex]::Escape("- `${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:") + '\s+- group: MAUI')
+        $variables | Should -Match ([regex]::Escape("- `${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:") + '\s+- group: MAUI')
         # No other pipeline builds run-tests/* branches.
         foreach ($other in 'ci.yml', 'ci-device-tests.yml', 'ci-official.yml') {
             $path = Join-Path $pipelines "../$other"
@@ -678,3 +767,242 @@ Describe 'Rebalance skill' {
     }
 }
 
+
+Describe '/review run-device-tests' {
+    BeforeAll {
+        Set-RunTestsSuite device
+        $root = Join-Path $PSScriptRoot '../..'
+        $script:deviceInventory = Get-RunTestsDeviceInventory ([ordered]@{
+                Controls = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Controls/tests/DeviceTests/TestCategory.cs'))
+                Core = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Core/tests/DeviceTests/TestCategory.cs'))
+            })
+        $script:sha = 'a' * 40
+        function New-DeviceSelection($Platforms, $Categories, [switch]$Full) {
+            $proposal = @{ platforms = (ConvertTo-Json @($Platforms) -Compress); categories = (ConvertTo-Json @($Categories) -Compress); full_run = [bool]$Full; summary = 's'; rationale = 'r' }
+            return Resolve-RunTestsSelection -Proposal $proposal -Inventory $deviceInventory
+        }
+    }
+    AfterAll { Set-RunTestsSuite ui }
+
+    It 'switches names, markers and branches with the suite' {
+        $script:RunTestsPipelineName | Should -Be 'maui-pr-devicetests'
+        $script:RunTestsRunCheckName | Should -Be 'maui-pr-devicetests (selected run)'
+        $script:RunTestsDispatchBranchPrefix | Should -Be 'run-devicetests/'
+        $script:RunTestsDefinitionId | Should -Be 314
+        Get-RunTestsCommentSuite "<!-- review-run-devicetests -->`nx" | Should -Be 'device'
+        Get-RunTestsCommentSuite "<!-- review-run-tests -->`nx" | Should -Be 'ui'
+        Get-RunTestsCommentSuite '<!-- AI Gate -->' | Should -BeNullOrEmpty
+    }
+
+    It 'reads both forms of device test categories' {
+        Get-RunTestsDeviceCategories 'public const string Button = "Button"; public const string Lifecycle = nameof(Lifecycle); const string Bad = "a b";' |
+            Should -Be @('Button', 'Lifecycle')
+        $deviceInventory.categories | Should -Contain 'Controls.Button'
+        $deviceInventory.categories | Should -Contain 'Graphics'
+        $deviceInventory.umbrellas['Core'] | Should -Contain 'Core.Button'
+    }
+
+    It 'filters Controls and Core by category and drops unselected projects' {
+        $selection = New-DeviceSelection @('android', 'windows') @('Controls.Label', 'Controls.Button', 'Graphics')
+        $selection.mode | Should -Be 'selected'
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $selection -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsPlatforms\s+value: 'android,windows'"
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Controls\+Graphics'"
+        $yaml | Should -Match "RunDeviceTestsControlsRun\s+value: 'Button\+Label'"
+        $yaml | Should -Match "RunDeviceTestsControlsSkip\s+value: 'Accessibility\+"
+        $yaml | Should -Not -Match "RunDeviceTestsControlsSkip\s+value: '[^']*\bLabel\b"
+        $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: ''"
+        $checks = @((New-RunTestsCheckPlan -Selection $selection -Inventory $deviceInventory).name)
+        $checks | Should -Contain 'maui-pr-devicetests (skipped) iOS DeviceTests'
+        $checks | Should -Contain 'maui-pr-devicetests (skipped) Core.DeviceTests'
+        $checks | Should -Not -Contain 'maui-pr-devicetests (skipped) Controls.DeviceTests'
+    }
+
+    It 'runs a whole project for its umbrella and everything for a full run' {
+        $core = New-DeviceSelection @('ios') @('Core')
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $core -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Core'"
+        $yaml | Should -Match "RunDeviceTestsCoreSkip\s+value: ''"
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: ''"
+        $label = New-DeviceSelection @('windows') @('Core.Label', 'Core.Button')
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $label -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunDeviceTestsCoreRun\s+value: 'Button\+Label'"
+        $full = New-DeviceSelection @() @() -Full
+        $yaml = New-RunTestsDeviceRequestYaml -Selection $full -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha
+        $yaml | Should -Match "RunTestsMode\s+value: 'full'"
+        $yaml | Should -Match "RunDeviceTestsProjects\s+value: 'Controls\+Core\+Graphics\+Essentials\+MauiBlazorWebView'"
+        { New-RunTestsDeviceRequestYaml -Selection (New-DeviceSelection @() @()) -Inventory $deviceInventory -PrNumber 7 -HeadSha $sha } | Should -Throw
+    }
+
+    It 'renders the comment for device tests' {
+        $selection = New-DeviceSelection @('android') @('Controls.Label')
+        $pr = [pscustomobject]@{ head = [pscustomobject]@{ sha = $sha }; base = [pscustomobject]@{ repo = [pscustomobject]@{ full_name = 'dotnet/maui' } } }
+        $body = New-RunTestsComment -Selection $selection -Inventory $deviceInventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
+        $body | Should -Match '^<!-- review-run-devicetests -->'
+        $body | Should -Match '## Selected Device Tests'
+        $body | Should -Match 'AI-selected device tests'
+        $body | Should -Not -Match 'maui-pr-uitests|UI tests'
+    }
+
+    It 'names the platform of a failed device test from its test run' {
+        $failed = ConvertTo-RunTestsFailedTests -BuildUrl 'https://x/_build/results?buildId=1' @(
+            [pscustomobject]@{ id = 5; testRun = [pscustomobject]@{ id = '9'; name = 'DeviceTestsAndroid_CoreCLR_ubuntu.2204_Release_CoreCLR' }; automatedTestName = 'Gesture Does Not Leak'; testCaseTitle = 'Gesture Does Not Leak'; automatedTestStorage = 'com.microsoft.maui.controls.devicetests-Signed' },
+            [pscustomobject]@{ id = 6; testRun = [pscustomobject]@{ id = '10'; name = 'DeviceTestsIOS_Mono_osx_Release_Mono' }; automatedTestName = 'Gesture Does Not Leak'; testCaseTitle = 'Gesture Does Not Leak'; automatedTestStorage = 'x' }
+        )
+        $failed[0].platforms | Should -Be @('Android', 'iOS (Mono)')
+    }
+
+    It 'gates the device test pipeline on the dispatch request' {
+        $pipelines = Join-Path $PSScriptRoot '../../eng/pipelines'
+        $ci = Get-Content (Join-Path $pipelines 'ci-device-tests.yml') -Raw
+        Test-RunTestsPipelineSupportsDispatch $ci | Should -BeTrue
+        $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/') }}:") + '\s+- template: /eng/pipelines/common/run-devicetests-request\.yml@self')
+        $stage = Get-Content (Join-Path $pipelines 'arcade/stage-device-tests.yml') -Raw
+        foreach ($name in 'devicetests_build_mono', 'devicetests_android_mono', 'devicetests_ios_mono') {
+            $stage | Should -Match ("- \$\{\{ if not\(parameters\.selectedRun\) \}\}:\s+(#[^\n]*\s+)?- stage: $name")
+        }
+        @([regex]::Matches($stage, 'HelixProjectArguments: [^\n]*\$\{\{ parameters\.extraHelixArguments \}\}')).Count | Should -Be 12
+        $request = Get-Content (Join-Path $pipelines 'common/run-devicetests-request.yml') -Raw
+        $request | Should -Match "RunTestsMode\s+value: 'none'"
+        $helix = Get-Content (Join-Path $PSScriptRoot '../../eng/helix_xharness.proj') -Raw
+        $helix | Should -Match ([regex]::Escape('<Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="''$(RunDeviceTestsProjects)'' != ''''">'))
+        # Windows runs only the listed categories of both projects; the script loops categories when given a filter.
+        foreach ($project in 'Controls', 'Core') {
+            $helix | Should -Match ([regex]::Escape("StartsWith('$project.DeviceTests-'))"">") + '\s+' + [regex]::Escape("<Command>%(Command) ""`$(RunDeviceTests${project}Run)""</Command>"))
+            $ci | Should -Match ([regex]::Escape("/p:RunDeviceTests${project}Run=`${{ variables['RunDeviceTests${project}Run'] }}"))
+        }
+        $windows = Get-Content (Join-Path $PSScriptRoot '../../eng/devices/run-windows-devicetests.cmd') -Raw
+        $windows | Should -Match 'if defined CATEGORY_FILTER set USE_CATEGORY_RUNS=1'
+        ([regex]::Matches($windows, 'if %USE_CATEGORY_RUNS%==1 \(')).Count | Should -Be 2
+        $windows | Should -Not -Match 'if %IS_CONTROLS_TEST%==1'
+        Test-RunTestsPipelineSupportsDispatch (Get-Content (Join-Path $pipelines 'ci-uitests.yml') -Raw) | Should -BeFalse
+    }
+}
+
+Describe '/review run-tests (both suites)' {
+    BeforeAll {
+        $root = Join-Path $PSScriptRoot '../..'
+        $script:bothDeviceInventory = Get-RunTestsDeviceInventory ([ordered]@{
+                Controls = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Controls/tests/DeviceTests/TestCategory.cs'))
+                Core = Get-RunTestsDeviceCategories (Get-Content -Raw (Join-Path $root 'src/Core/tests/DeviceTests/TestCategory.cs'))
+            })
+        $script:bothPr = [pscustomobject]@{ head = [pscustomobject]@{ sha = ('c' * 40) }; base = [pscustomobject]@{ repo = [pscustomobject]@{ full_name = 'dotnet/maui' } } }
+        function New-BothComment {
+            $ui = Resolve-RunTestsSelection -Proposal (New-Proposal @('android') @('Label')) -Inventory $inventory
+            $device = Resolve-RunTestsSelection -Proposal (New-Proposal @('ios') @('Core.Label')) -Inventory $bothDeviceInventory
+            $runs = [ordered]@{
+                ui = @{ selection = $ui; inventory = $inventory; build = [pscustomobject]@{ id = 11; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=11' } } } }
+                device = @{ selection = $device; inventory = $bothDeviceInventory; build = [pscustomobject]@{ id = 22; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=22' } } } }
+            }
+            return New-RunTestsCombinedComment -Runs $runs -PullRequest $bothPr -WorkflowRunUrl 'https://run' -ModelNames @('GPT-6.2 Sol', 'MAI Code 2') -Requester 'octocat' -Notes @('a note')
+        }
+    }
+    AfterAll { Set-RunTestsSuite ui }
+
+    It 'names /review run-tests and supersedes every run-tests comment' {
+        Set-RunTestsSuite device -Combined
+        $script:RunTestsCommand | Should -Be 'run-tests'
+        $script:RunTestsPipelineName | Should -Be 'maui-pr-devicetests'
+        $comments = @('<!-- review-run-tests -->', '<!-- review-run-devicetests -->', '<!-- review-run-tests-all -->', '<!-- review-run-devicetests-unsupported -->', '<!-- AI Gate -->') |
+            ForEach-Object -Begin { $i = 0 } -Process { $i++; [pscustomobject]@{ id = $i; node_id = "n$i"; user = [pscustomobject]@{ type = 'Bot' }; body = "$_`nx" } }
+        @(Select-RunTestsOutdatedComments $comments -KeepId 99 | ForEach-Object node_id) | Should -Be @('n1', 'n2', 'n3', 'n4')
+        # A single-suite request supersedes only its own suite's comments.
+        Set-RunTestsSuite device
+        $script:RunTestsCommand | Should -Be 'run-device-tests'
+        @(Select-RunTestsOutdatedComments $comments -KeepId 99 | ForEach-Object node_id) | Should -Be @('n2', 'n4')
+    }
+
+    It 'splits a combined proposal into its UI and device halves' {
+        $proposal = (New-Proposal @('android') @('Label')) + @{ device_platforms = '["ios"]'; device_categories = '["Core.Label"]'; device_full_run = $false; device_rationale = '- device' }
+        $ui = Get-RunTestsSuiteProposal -Proposal $proposal -Suite ui -Combined
+        $ui.platforms | Should -Be '["android"]'
+        $ui.Contains('device_platforms') | Should -BeFalse
+        $device = Get-RunTestsSuiteProposal -Proposal $proposal -Suite device -Combined
+        $device.platforms | Should -Be '["ios"]'
+        $device.categories | Should -Be '["Core.Label"]'
+        $device.rationale | Should -Be '- device'
+        $device.summary | Should -Be 'summary'
+        # A model that left the device half out selected no device tests.
+        $none = Get-RunTestsSuiteProposal -Proposal (New-Proposal @('android') @('Label')) -Suite device -Combined
+        (Resolve-RunTestsSelection -Proposal $none -Inventory $bothDeviceInventory).mode | Should -Be 'none'
+        # Outside /review run-tests the device suite reads the plain fields.
+        (Get-RunTestsSuiteProposal -Proposal $proposal -Suite device).platforms | Should -Be '["android"]'
+    }
+
+    It 'renders one comment in the standard /review layout' {
+        $body = New-BothComment
+        Get-RunTestsCommentSuite $body | Should -Be 'all'
+        $body | Should -Match '^<!-- review-run-tests-all -->'
+        # One title, one requester line, one badge row, one top-level expandable section.
+        ([regex]::Matches($body, '(?m)^## ')).Count | Should -Be 1
+        $body | Should -Match '## Selected Tests\n\n> @octocat &#x2014; AI-selected UI tests and device tests \(GPT-6.2 Sol \+ MAI Code 2\)'
+        ([regex]::Matches($body, '<img alt="Result ')).Count | Should -Be 1
+        $body | Should -Match '<img alt="Result RUNNING"'
+        $body | Should -Match '<img alt="Platforms Android, iOS"'
+        $body | Should -Match '<img alt="Tests 1 UI, 1 device"'
+        ([regex]::Matches($body, '&#x1F9EA; Test selection</strong> &#x2014; click to expand')).Count | Should -Be 1
+        $body | Should -Match '> \[!NOTE\]\n> a note'
+        # The overview table lists both builds.
+        $body | Should -Match '\| UI tests \| &#x23F3; running \| 1 of 77 categories \| \[maui-pr-uitests #11\]\(https://x/_build/results\?buildId=11\) \|'
+        $body | Should -Match '\| Device tests \| &#x23F3; running \| 1 of \d+ units \| \[maui-pr-devicetests #22\]'
+        $body | Should -Match '<summary><strong>&#x1F9EA; UI tests</strong> &#x2014; <code>Label</code> on Android</summary>'
+        $body | Should -Match 'Generated by \[/review run-tests\]'
+        $body | Should -Not -Match '<!-- review-run-tests -->|<!-- review-run-devicetests -->|^###'
+        $sections = @(Get-RunTestsCommentSections $body)
+        $sections.suite | Should -Be @('ui', 'device')
+        $sections[0].body | Should -Match '<!-- review-run-tests-build: 11 -->'
+        $sections[1].body | Should -Match '<!-- review-run-tests-build: 22 -->'
+        $sections[1].body | Should -Not -Match 'buildId=11'
+    }
+
+    It 'updates one suite section, then the Result badge and overview table' {
+        $body = New-BothComment
+        $device = @(Get-RunTestsCommentSections $body)[1]
+        Set-RunTestsSuite device
+        $build = [pscustomobject]@{ id = 22; status = 'completed'; result = 'failed'; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://x/_build/results?buildId=22' } } }
+        $results = ConvertTo-RunTestsResults -Build $build -Timeline $null
+        $updated = Set-RunTestsCommentSection -Body $body -Suite device -Section (Update-RunTestsComment -Body $device.body -Build $build -Results $results)
+        $updated = Update-RunTestsCombinedOverview $updated
+        $after = @(Get-RunTestsCommentSections $updated)
+        $after[1].body | Should -Match '<!-- review-run-tests-state: done -->'
+        $after[1].body | Should -Match '<!-- run-tests-result: FAILED -->'
+        $after[0].body | Should -BeExactly @(Get-RunTestsCommentSections $body)[0].body
+        $updated | Should -Match '<img alt="Result FAILED"'
+        $updated | Should -Match '\| Device tests \| &#x274C; failed \|'
+        $updated | Should -Match '\| UI tests \| &#x23F3; running \|'
+        ([regex]::Matches($updated, '<img alt="Result ')).Count | Should -Be 1
+        # A single-suite comment is one section: its whole body.
+        $single = "<!-- review-run-devicetests -->`nbody"
+        @(Get-RunTestsCommentSections $single).suite | Should -Be 'device'
+        Set-RunTestsCommentSection -Body $single -Suite device -Section 'new' | Should -Be 'new'
+    }
+
+    It 'shows the most important result in the badge' {
+        $body = New-BothComment
+        $done = $body -replace '<!-- run-tests-result: RUNNING -->', '<!-- run-tests-result: PASSED -->'
+        Update-RunTestsCombinedOverview $done | Should -Match '<img alt="Result PASSED"'
+        $mixed = ([regex]'<!-- run-tests-result: RUNNING -->').Replace($done, '<!-- run-tests-result: NOTHING TO RUN -->', 1)
+        Update-RunTestsCombinedOverview $mixed | Should -Match '<img alt="Result PASSED"'
+        $queued = ([regex]'<!-- run-tests-result: PASSED -->').Replace($done, '<!-- run-tests-result: NOT QUEUED -->', 1)
+        Update-RunTestsCombinedOverview $queued | Should -Match '<img alt="Result NOT QUEUED"'
+    }
+
+    It 'leaves comments without an overview table alone' {
+        $legacy = "<!-- review-run-tests-all -->`n<!-- run-tests-section: ui -->`n<!-- review-run-tests-state: done -->`n  <img alt=`"Result PASSED`" src=`"x`">`n<!-- /run-tests-section: ui -->"
+        Update-RunTestsCombinedOverview $legacy | Should -BeExactly $legacy
+    }
+
+    It 'sends MAI Code 2 over the Responses API' {
+        $mai = Get-Content (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests-mai.md') -Raw
+        $mai | Should -Match '(?m)^    COPILOT_PROVIDER_WIRE_API: responses$'
+    }
+
+    It 'documents the combined selection for the models' {
+        $selection = Get-Content (Join-Path $PSScriptRoot '../workflows/shared/run-tests-selection.md') -Raw
+        $selection | Should -Match '`"all"` \(`/review run-tests`\)'
+        $selection | Should -Match 'device_platforms'
+        $dispatch = Get-Content (Join-Path $PSScriptRoot '../workflows/review-run-tests-dispatch.yml') -Raw
+        $dispatch | Should -Match 'timeout-minutes: 40'
+    }
+}

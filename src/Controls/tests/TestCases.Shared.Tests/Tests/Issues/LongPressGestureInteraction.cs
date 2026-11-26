@@ -49,6 +49,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			longPressLabel = App.FindElement("LongPressLabel").GetText();
 			Assert.That(longPressLabel, Is.EqualTo("Long Press Count: 1"), "LongPress should fire after holding");
+
+#if IOS || MACCATALYST
+			// Only Apple platforms report Started and defer Completed until release.
+			Assert.That(App.FindElement("LongPressTimingLabel").GetText(),
+				Is.EqualTo("Command: 1; LongPressed: 1; Completed: 0"),
+				"Command and LongPressed must fire while the recognized press is still held.");
+			Assert.That(App.FindElement("LongPressEventLabel").GetText(),
+				Is.EqualTo("LongPressed: 1; Completed: 1"),
+				"Releasing the press must complete it without firing LongPressed again.");
+#endif
 		}
 
 		[Test]

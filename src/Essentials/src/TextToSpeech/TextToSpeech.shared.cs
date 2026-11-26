@@ -211,19 +211,19 @@ namespace Microsoft.Maui.Media
 			if (options?.Volume.HasValue ?? false)
 			{
 				if (options.Volume.Value < VolumeMin || options.Volume.Value > VolumeMax)
-					throw new ArgumentOutOfRangeException($"Volume must be >= {VolumeMin} and <= {VolumeMax}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Volume must be >= {VolumeMin} and <= {VolumeMax}");
 			}
 
 			if (options?.Pitch.HasValue ?? false)
 			{
 				if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
-					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Pitch must be >= {PitchMin} and <= {PitchMax}");
 			}
 
 			if (options?.Rate.HasValue ?? false)
 			{
 				if (options.Rate.Value < RateMin || options.Rate.Value > RateMax)
-					throw new ArgumentOutOfRangeException($"Rate must be >= {RateMin} and <= {RateMin}");
+					throw new ArgumentOutOfRangeException(nameof(options), $"Rate must be >= {RateMin} and <= {RateMax}");
 			}
 
 			if (semaphore == null)

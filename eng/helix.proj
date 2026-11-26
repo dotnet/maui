@@ -10,6 +10,8 @@
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnTestFailure>true</FailOnTestFailure>
     <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion> 
+    <!-- The Helix SDK defaults this to its own Arcade NetCurrent, which can lag behind the repo's TFM. -->
+    <XUnitPublishTargetFramework>$(_MauiDotNetTfm)</XUnitPublishTargetFramework>
     <!-- Staging directory for MSBuild test payloads -->
     <MauiHelixPayloadDir>$(RepoRoot)artifacts/helix-payload/</MauiHelixPayloadDir>
   </PropertyGroup>
@@ -24,15 +26,15 @@
     process is launched with DOTNET_MODIFIABLE_ASSEMBLIES=debug (VS sets it automatically when
     debugging; Helix does not). Without it those tests are skipped (see MetadataUpdateFactAttribute).
 
-    This single Helix send targets both a Windows (cmd) and an osx (bash) queue, so a per-shell
-    condition on $(IsPosixShell) can only ever be right for one of them. Emit both forms
-    unconditionally instead — each is a harmless no-op in the other shell (an unrecognized command
-    on the non-native shell), and the correct one exports the variable for that queue's work item.
+    The SDK evaluates each queue separately and resolves IsPosixShell in its targets import.
+    Append the native shell command at target execution time, preserving the SDK's precommands.
   -->
-  <ItemGroup>
-    <HelixPreCommand Include="export DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
-    <HelixPreCommand Include="set DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
-  </ItemGroup>
+  <Target Name="EnableHotReloadMetadataUpdates" BeforeTargets="CoreTest" Condition="'$(HelixTargetQueue)' != ''">
+    <PropertyGroup>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export DOTNET_MODIFIABLE_ASSEMBLIES=debug</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set DOTNET_MODIFIABLE_ASSEMBLIES=debug</HelixPreCommands>
+    </PropertyGroup>
+  </Target>
 
   <!-- Local build outside of Azure Pipeline -->
   <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">

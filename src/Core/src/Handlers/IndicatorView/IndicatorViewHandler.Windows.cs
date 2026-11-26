@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,8 +11,6 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 
 			platformView?.SetIndicatorView(VirtualView);
-
-			UpdateIndicator();
 		}
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
@@ -27,24 +22,19 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.UpdateIndicatorsColor();
 		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
 
-		void UpdateIndicator()
+		internal static void MapIndicatorsLayoutOverride(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			if (VirtualView is ITemplatedIndicatorView iTemplatedIndicatorView)
+			var layout = (indicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride;
+			if (layout != null)
 			{
-				var indicatorsLayoutOverride = iTemplatedIndicatorView.IndicatorsLayoutOverride;
-				FrameworkElement handler;
-				if (MauiContext != null && indicatorsLayoutOverride != null)
-				{
-					ClearIndicators();
-					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
-					if (handler != null)
-						PlatformView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
-				}
+				var mauiContext = handler.MauiContext
+					?? throw new InvalidOperationException("MauiContext is required to display an indicator template.");
+				handler.PlatformView.ItemsSource = new[] { layout.ToPlatform(mauiContext) };
 			}
-
-			void ClearIndicators()
+			else
 			{
-				PlatformView.Items.Clear();
+				handler.PlatformView.CreateIndicators();
+				handler.PlatformView.UpdateIndicatorsColor();
 			}
 		}
 	}
