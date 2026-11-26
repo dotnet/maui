@@ -188,20 +188,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var parentView = GetModalParentView();
 
-			// Page transitions: the modal's own presentation, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
-			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PushModal, presenter, modal, animated);
-			AAnimation? enterAnimation = null;
-			if (resolved.IsSuppressed)
-			{
-				animated = false;
-			}
-			else if (!resolved.IsPlatformDefault && animated)
-			{
-				enterAnimation = resolved.Platform.CreateAnimation(true);
-				animated = enterAnimation is not null;
-			}
-
 			var dialogFragment = new ModalFragment(WindowMauiContext, _window, modal)
 			{
 				Cancelable = false,
@@ -249,9 +235,6 @@ namespace Microsoft.Maui.Controls.Platform
 			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
-
-			// A page transition's entrance, in place of the default slide-up.
-			internal AAnimation? EnterAnimation { get; set; }
 
 			public ModalFragment(IMauiContext mauiContext, Window window, Page modal)
 			{
