@@ -50,22 +50,26 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await AssertEventually(() => rows.Count(IsRealized) == items.Length);
 					var oldRows = rows.Where(IsRealized).ToArray();
-					var oldPlatformRows = oldRows.Select(row => (FrameworkElement)row.Handler.PlatformView).ToArray();
+					var oldContents = oldRows.Select(row =>
+					{
+						var wrapper = Assert.IsType<WrapperView>(Assert.IsAssignableFrom<IViewHandler>(row.Handler).ContainerView);
+						var container = wrapper.GetParentOfType<ItemContentControl>();
+						Assert.NotNull(container);
+						Assert.Same(wrapper, container.Content);
+						return (wrapper, container);
+					}).ToArray();
 
 					var sorted = i % 2 == 0 ? items.Reverse().ToArray() : items;
 					collectionView.ItemsSource = new ObservableCollection<string>(sorted);
+					foreach (var (wrapper, container) in oldContents)
+						Assert.NotSame(wrapper, container.Content);
+
 					await AssertEventually(() => rows.Except(oldRows).Count(IsRealized) == items.Length);
 
 					foreach (var row in oldRows)
 					{
 						Assert.Null(row.Handler);
 						Assert.DoesNotContain(row, collectionView.LogicalChildrenInternal);
-					}
-
-					// The old native item must be detached from its WinUI item container.
-					foreach (var platformRow in oldPlatformRows)
-					{
-						Assert.Null(UI.Xaml.Media.VisualTreeHelper.GetParent(platformRow));
 					}
 				}
 			});
