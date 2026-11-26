@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickPhotosAsync which also allows multiple selections.")]
 		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A list of <see cref="FileResult"/> objects containing details of the picked photos. When the operation was cancelled by the user, this will return an empty list.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>
 		/// <para>On Android, not all picker user interfaces enforce the <see cref="MediaPickerOptions.SelectionLimit"/>.</para>
 		/// <para>On Windows, <see cref="MediaPickerOptions.SelectionLimit"/> is not supported.</para>
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null);
 
@@ -50,6 +53,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
@@ -59,6 +63,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A list of <see cref="FileResult"/> objects containing details of the picked videos. When the operation was cancelled by the user, this will return an empty list.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>
 		/// <para>On Android, not all picker user interfaces enforce the <see cref="MediaPickerOptions.SelectionLimit"/>.</para>
 		/// <para>On Windows, <see cref="MediaPickerOptions.SelectionLimit"/> is not supported.</para>
@@ -71,6 +76,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
@@ -91,6 +97,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickPhotosAsync which also allows multiple selections.")]
 		public static Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null) =>
@@ -105,6 +112,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		public static Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null) =>
 			Default.CapturePhotoAsync(options);
@@ -114,6 +122,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		public static Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null) =>
@@ -128,6 +137,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		/// <exception cref="InvalidOperationException">Android: Thrown when another MediaPicker operation is already in progress, for example when the method is called again before the previous task completes, or when an operation started before the app process was recreated is still pending recovery.</exception>
 		/// <remarks>On Android, the operating system may destroy the app process while the system camera is foregrounded. Apps that need to recover MediaPicker results after process recreation should persist their own workflow state before starting capture and use the Android MediaPicker recovery APIs after startup or resume.</remarks>
 		public static Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null) =>
 			Default.CaptureVideoAsync(options);

@@ -1,3 +1,4 @@
+using System.IO;
 using SkiaSharp;
 using Xunit;
 
@@ -57,6 +58,41 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var parsed = Utils.ParseSizeString(hex);
 
 				Assert.Null(parsed);
+			}
+		}
+
+		public class RetryWhileFileIsLocked
+		{
+			[Fact]
+			public void PropagatesOtherIOErrorsWithoutRetrying()
+			{
+				var calls = 0;
+				var error = new DirectoryNotFoundException();
+
+				var thrown = Assert.Throws<DirectoryNotFoundException>(() =>
+					Utils.RetryWhileFileIsLocked(() =>
+					{
+						calls++;
+						throw error;
+					}, attempts: 3, delay: 0));
+
+				Assert.Same(error, thrown);
+				Assert.Equal(1, calls);
+			}
+
+			[Fact]
+			public void PropagatesLockThatOutlastsAllRetries()
+			{
+				var calls = 0;
+
+				Assert.Throws<IOException>(() =>
+					Utils.RetryWhileFileIsLocked(() =>
+					{
+						calls++;
+						throw new IOException("locked", SkiaSharpTools.ERROR_SHARING_VIOLATION);
+					}, attempts: 3, delay: 0));
+
+				Assert.Equal(4, calls);
 			}
 		}
 	}

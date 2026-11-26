@@ -47,7 +47,7 @@ For the configured `11.0.1xx` / SR1 train:
 | Selected current content | `candidate/11.0.1xx-sr1` |
 | Future content | `inflight/11.0.1xx-sr2` |
 | Release after candidate integration | `release/11.0.1xx-sr1`, cut from approved `net11` |
-| Active nightly | resolver's `nightlyBranch`: `inflight/current` in legacy mode, versioned inflight in versioned mode |
+| Active nightly | resolver's `nightlyBranch`: `inflight/current` in legacy mode, versioned inflight in versioned mode, current candidate in candidate mode |
 
 Fix PRs initially target `net11` for review. After approval, a maintainer manually
 retargets each PR to the active versioned inflight branch and merges it directly
@@ -69,8 +69,8 @@ real release cut at that exact merge and matching internal mirror. No post-cut
 servicing PR is opened. Receipts do not change canonical
 `currentSr`/`nightlyMode`. When the approved
 release-state update advances to SR2, readiness selects
-`candidate/11.0.1xx-sr2` and versioned nightly `inflight/11.0.1xx-sr3`
-automatically. It never writes state.
+`candidate/11.0.1xx-sr2`, and the nightly source becomes that candidate
+(candidate mode) or `inflight/11.0.1xx-sr3` (versioned mode) automatically. It never writes state.
 Resolved roles are configuration evidence only: branch existence does not prove
 deployed branch protections, correct required-check wiring, or a signed build.
 Report those deployment/validation gaps independently; never enable mutations
@@ -742,7 +742,7 @@ read from the resolver's active `nightlyBranch`. It never falls back to fresh
 `ci.main` or a retained older inflight band. Missing active-ref metadata renders
 UNKNOWN; missing matching feed assets render no-match. Historical per-major
 fallback behavior remains unchanged.
-In versioned mode the selected nightly ref must also carry its SR patch decade:
+In versioned and candidate modes the selected nightly ref must also carry its SR patch decade:
 `inflight/...-sr2` with `PatchVersion=10` is explicitly UNKNOWN, not a coherent
 SR2 package lane. The report surfaces a `Configured nightly lane metadata`
 UNKNOWN check; it does not bump the branch or borrow another lane's feed.
