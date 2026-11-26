@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public bool Appearing;
 			public bool ParentSet;
 			public Task AppearingTask => _appearingTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			TaskCompletionSource<bool> _appearingTaskCompletionSource = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> _appearingTaskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 
 			protected override void OnAppearing()
