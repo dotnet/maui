@@ -66,7 +66,7 @@ the loop moves:
 | `s/autopilot-fixing` | A fix round (GPT-6.2 Sol vs MAI Code 2) is running |
 | `s/autopilot-testing` | `/review run-tests` is selecting or running the relevant tests |
 | `s/autopilot-waiting-for-maintainer-review` | Done: the expert review is clean and the tests passed. Waiting for a maintainer |
-| `s/autopilot-retrying` | An expert review or test selection failed once and is being retried. A second failure in a row stops the loop |
+| `s/autopilot-retrying` | An expert review, fix round or test selection failed once and is being retried. A second failure in a row stops the loop |
 
 Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/review autopilot` replaces
 `s/autopilot-waiting-for-maintainer-review`. Missing labels are created automatically.

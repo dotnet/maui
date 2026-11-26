@@ -329,7 +329,7 @@ jobs:
   next_round:
     # After a fix is published, continue the loop with an expert review of the new head. Runs even
     # when a reply or resolution failed: whether the head moved decides if the loop continues.
-    needs: [pre_activation, activation, safe_outputs]
+    needs: [pre_activation, activation, agent, safe_outputs]
     if: always() && !cancelled() && needs.safe_outputs.result != 'skipped'
     runs-on: ubuntu-slim
     permissions:
@@ -374,6 +374,8 @@ jobs:
           PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
           HEAD_SHA: ${{ needs.pre_activation.outputs.autopilot_head_sha }}
           IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
+          RUN_ID: ${{ github.run_id }}
+          AGENT_RESULT: ${{ needs.agent.result }}
         with:
           script: |
             const LABEL = 's/autopilot-running';
@@ -383,6 +385,37 @@ jobs:
               for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
                 await github.rest.issues.removeLabel({ ...context.repo, issue_number: n, name: l.name }).catch(() => {});
             };
+            // The round fixed nothing: replace the agent's explanation with a final Stopped comment and hide
+            // the earlier status comments, so the PR ends with one visible result.
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const finishNoop = async failed => {
+              const all = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
+              const bot = all.filter(c => c.user?.login === 'github-actions[bot]');
+              const note = bot.filter(c => (c.body || '').includes(`id: ${process.env.RUN_ID},`)).pop();
+              const reason = (note?.body || '').replace(/<!--[\s\S]*?-->/g, '').replace(/^\*\*MAUI Autopilot\*\*[^\n]*\n+/, '').trim();
+              for (const c of bot.filter(c => (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
+                await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
+              const summary = failed
+                ? `❌ The [fix round](${runUrl}) failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.`
+                : '❌ The last fix round found nothing more it could fix. A maintainer can decide how to continue.';
+              await github.rest.issues.createComment({ ...context.repo, issue_number: number,
+                body: `## MAUI Autopilot — Stopped\n\n${summary}${reason ? `\n\n<details><summary>Why</summary>\n\n${reason}\n\n</details>` : ''}\n\n<!-- maui-expert-autopilot-status -->` });
+              if (note) await github.rest.issues.deleteComment({ ...context.repo, comment_id: note.id }).catch(() => {});
+            };
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            const retrying = labels.some(l => l.name === 's/autopilot-retrying');
+            const failed = process.env.AGENT_RESULT === 'failure';
+            // One automatic retry: a single flaky fix run should not end an autonomous loop.
+            if (failed && !retrying && labels.some(l => l.name === LABEL)) {
+              await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
+                description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              return core.info(`#${number}: the fix round failed; retrying once.`);
+            }
+            if (retrying && !failed)
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
             let target = number;
             if (process.env.IS_FORK === 'true') {
               // The fix went to a follow-up PR; the loop moves there.
@@ -396,6 +429,7 @@ jobs:
               const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
               if (pr.state !== 'open' || pr.head.sha === process.env.HEAD_SHA) {
                 await stop();
+                if (pr.state === 'open') await finishNoop(failed);
                 return core.info('Nothing was pushed; the loop is done (see the maui-expert-autopilot comment).');
               }
             }
