@@ -150,7 +150,8 @@ on:
                 let resolved = 0, notChanged = 0;
                 const waiting = [];
                 for (const t of repository.pullRequest.reviewThreads.nodes) {
-                  const replies = t.comments.nodes.slice(1).filter(c => c.author?.login === 'github-actions[bot]' && (c.body || '').includes('PR Autopilot'));
+                  // GraphQL reports the bot as 'github-actions' (REST: 'github-actions[bot]').
+                  const replies = t.comments.nodes.slice(1).filter(c => ['github-actions', 'github-actions[bot]'].includes(c.author?.login) && (c.body || '').includes('PR Autopilot'));
                   const last = replies.pop();
                   if (!last) continue;
                   if (t.isResolved) resolved++;
@@ -248,9 +249,10 @@ jobs:
     steps:
       - run: echo "Autopilot publishes only to the PR it is driving."
   next_round:
-    # After a fix is published, continue the loop with an expert review of the new head.
+    # After a fix is published, continue the loop with an expert review of the new head. Runs even
+    # when a reply or resolution failed: whether the head moved decides if the loop continues.
     needs: [pre_activation, activation, safe_outputs]
-    if: needs.safe_outputs.result == 'success' && !cancelled()
+    if: always() && !cancelled() && needs.safe_outputs.result != 'skipped'
     runs-on: ubuntu-slim
     permissions:
       actions: write
@@ -258,6 +260,35 @@ jobs:
       pull-requests: write
     timeout-minutes: 3
     steps:
+      - name: Resolve the bot findings PR Autopilot fixed
+        # The agent resolves threads through safe outputs; GitHub's API sometimes fails transiently, so
+        # make sure every expert/AI-review thread answered with "✅ Fixed" ends up resolved.
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
+        with:
+          script: |
+            const BOTS = new Set(['github-actions', 'github-actions[bot]', 'MauiBot', 'maui-bot', 'maui-bot[bot]']);
+            const { repository } = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes {
+                id isResolved comments(first: 30) { nodes { body author { login } } } } } } } }`,
+              { ...context.repo, number: Number(process.env.PR_NUMBER) });
+            for (const t of repository.pullRequest.reviewThreads.nodes) {
+              const [first, ...rest] = t.comments.nodes;
+              if (t.isResolved || !BOTS.has(first?.author?.login)) continue;
+              const reply = rest.filter(c => c.author?.login === 'github-actions' || c.author?.login === 'github-actions[bot]').pop();
+              if (!reply || !reply.body.includes('PR Autopilot') || !reply.body.includes('✅ Fixed')) continue;
+              for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                  await github.graphql('mutation($id: ID!) { resolveReviewThread(input: { threadId: $id }) { thread { isResolved } } }', { id: t.id });
+                  core.info(`Resolved ${t.id}.`);
+                  break;
+                } catch (e) {
+                  core.warning(`Could not resolve ${t.id} (attempt ${attempt}): ${e.message}`);
+                  await new Promise(r => setTimeout(r, attempt * 3000));
+                }
+              }
+            }
       - name: Continue the loop
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
