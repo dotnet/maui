@@ -368,7 +368,6 @@ static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty
 Microsoft.Maui.Controls.QueryPropertyConversion
 static Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(System.Collections.Generic.IDictionary<string!, object!>! query, string! queryId, object? value) -> string?
 static Microsoft.Maui.Controls.QueryPropertyConversion.GetFormatProvider(System.Collections.Generic.IDictionary<string!, object!>! query, string! queryId) -> System.IFormatProvider!
-static Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(object! target, System.Type! implementationType) -> void
 Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
 Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
 ~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty

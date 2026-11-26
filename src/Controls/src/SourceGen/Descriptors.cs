@@ -409,9 +409,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public static DiagnosticDescriptor QueryPropertyRequiresReflection = new DiagnosticDescriptor(
 			id: "MAUI1200",
 			title: "QueryProperty attributes cannot be source generated",
-			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). Applying them will fail at runtime. Make the type partial or replace the attributes with an IQueryAttributable implementation.",
+			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). Make the type partial or replace the attributes with an IQueryAttributable implementation.",
 			category: "QueryProperty",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
