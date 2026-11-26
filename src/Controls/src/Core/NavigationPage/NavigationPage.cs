@@ -836,13 +836,7 @@ namespace Microsoft.Maui.Controls
 				},
 				deferNavigatedTo ? null : () =>
 				{
-					// This initial navigation is for visiblePage. A navigation started meanwhile (a push made right after
-					// the handler connected) has already made another page current and sends that page's NavigatedTo
-					// itself, once its own navigation completes; reading CurrentPage here would raise it early instead.
-					if (ReferenceEquals(CurrentPage, visiblePage))
-					{
-						SendNavigated(null, navigationType);
-					}
+					SendNavigated(null, navigationType);
 				})
 				.FireAndForget(Handler);
 			}
