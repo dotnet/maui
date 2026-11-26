@@ -371,6 +371,41 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task UnfinishedLoadDoesNotShowItsImageAfterTheHandlerIsDisconnected()
+		{
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+				var platformView = handler.PlatformView;
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// While Glide is paused (for example the app is in the background) the red load does not finish.
+					var requestManager = Bumptech.Glide.Glide.With(platformView);
+					requestManager.OnStop();
+					try
+					{
+						image.Source = red;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						((IElementHandler)handler).DisconnectHandler();
+
+						requestManager.OnStart();
+						await Task.Delay(500);
+						await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+					}
+				});
+			});
+		}
+
+		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();
