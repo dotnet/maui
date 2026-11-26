@@ -1,7 +1,8 @@
 package com.microsoft.maui;
 
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.text.Layout;
@@ -24,7 +25,8 @@ final class ItalicOverhang {
 
     private final TextView view;
     private final Host host;
-    private final Rect bounds = new Rect();
+    private final Path path = new Path();
+    private final RectF bounds = new RectF();
     private int reserved;
     private boolean drawing;
 
@@ -95,29 +97,42 @@ final class ItalicOverhang {
         }
 
         int contentWidth = view.getMeasuredWidth() - view.getCompoundPaddingLeft() - (view.getCompoundPaddingRight() - getPadding());
-        CharSequence text = layout.getText();
         float excess = 0;
         for (int line = 0; line < layout.getLineCount(); line++) {
-            int start = layout.getLineStart(line);
-            int end = layout.getLineVisibleEnd(line);
-            if (end <= start || layout.getParagraphDirection(line) != Layout.DIR_LEFT_TO_RIGHT) {
+            if (layout.getLineVisibleEnd(line) <= layout.getLineStart(line)
+                    || layout.getParagraphDirection(line) != Layout.DIR_LEFT_TO_RIGHT) {
                 continue;
             }
 
-            int ellipsisCount = layout.getEllipsisCount(line);
-            boolean endsWithEllipsis = ellipsisCount > 0 && start + layout.getEllipsisStart(line) + ellipsisCount >= end;
-            String lastGlyph = endsWithEllipsis
-                ? "…"
-                : text.subSequence(Character.offsetByCodePoints(text, end, -1), end).toString();
-            paint.getTextBounds(lastGlyph, 0, lastGlyph.length(), bounds);
-
-            float overhang = bounds.right - paint.measureText(lastGlyph);
-            if (overhang > 0) {
-                excess = Math.max(excess, getLineRight(layout, line, contentWidth) + overhang - contentWidth);
+            float lineRight = getLineRight(layout, line, contentWidth);
+            if (lineRight + paint.getTextSize() / 2 <= contentWidth) {
+                continue;
             }
+
+            String text = getDisplayedText(layout, line);
+            path.reset();
+            paint.getTextPath(text, 0, text.length(), 0, 0, path);
+            path.computeBounds(bounds, true);
+
+            float lineLeft = layout.getWidth() <= contentWidth ? layout.getLineLeft(line) : lineRight - layout.getLineWidth(line);
+            excess = Math.max(excess, lineLeft + bounds.right - contentWidth);
         }
 
-        return excess > 0 ? (int) Math.ceil(excess) + 1 : 0;
+        return (int) Math.ceil(excess);
+    }
+
+    private static String getDisplayedText(Layout layout, int line) {
+        CharSequence text = layout.getText();
+        int start = layout.getLineStart(line);
+        int end = layout.getLineVisibleEnd(line);
+        int ellipsisCount = layout.getEllipsisCount(line);
+        if (ellipsisCount == 0) {
+            return text.subSequence(start, end).toString();
+        }
+
+        int ellipsisStart = start + layout.getEllipsisStart(line);
+        int ellipsisEnd = Math.min(ellipsisStart + ellipsisCount, end);
+        return text.subSequence(start, ellipsisStart) + "\u2026" + text.subSequence(ellipsisEnd, end);
     }
 
     private static float getLineRight(Layout layout, int line, int contentWidth) {
