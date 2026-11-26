@@ -296,6 +296,14 @@ namespace Microsoft.Maui.Controls
 			ScrollToRequested?.Invoke(this, e);
 		}
 
+		internal void SendScrollToRequested(ScrollToRequestEventArgs args)
+		{
+			if (DismissScroll())
+				return;
+
+			OnScrollToRequested(args);
+		}
+
 		protected virtual void OnRemainingItemsThresholdReached()
 		{
 
