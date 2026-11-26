@@ -93,28 +93,33 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var resources = UI.Xaml.Application.Current.Resources;
-				var hadHeaderTemplate = resources.Keys.Contains("ComboBoxHeader");
-				var previousHeaderTemplate = hadHeaderTemplate ? resources["ComboBoxHeader"] : null;
+				var appResources = UI.Xaml.Application.Current.Resources;
 				var customHeaderTemplate = (UI.Xaml.DataTemplate)UI.Xaml.Markup.XamlReader.Load("""
 					<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 						<TextBlock Text="Custom header" />
 					</DataTemplate>
 					""");
+				var appPickerResources = new UI.Xaml.ResourceDictionary
+				{
+					["ComboBoxHeader"] = customHeaderTemplate
+				};
 
 				try
 				{
-					resources["ComboBoxHeader"] = customHeaderTemplate;
+					appResources.MergedDictionaries.Add(appPickerResources);
 					var handler = CreateHandler<PickerHandler>(picker);
 
+					Assert.Same(customHeaderTemplate, handler.PlatformView.HeaderTemplate);
+
+					picker.TitleColor = Colors.Red;
+					Assert.Same(customHeaderTemplate, handler.PlatformView.HeaderTemplate);
+
+					picker.TitleColor = null;
 					Assert.Same(customHeaderTemplate, handler.PlatformView.HeaderTemplate);
 				}
 				finally
 				{
-					if (hadHeaderTemplate)
-						resources["ComboBoxHeader"] = previousHeaderTemplate;
-					else
-						resources.Remove("ComboBoxHeader");
+					appResources.MergedDictionaries.Remove(appPickerResources);
 				}
 			});
 		}
