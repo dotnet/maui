@@ -22,7 +22,6 @@ public sealed class MakeQueryPropertyTypePartialCodeFixProvider : CodeFixProvide
 	// Keep in sync with Descriptors.QueryPropertyRequiresReflection and QueryPropertyGenerator.MissingPartialProperty.
 	internal const string DiagnosticId = "MAUI1200";
 	internal const string MissingPartialProperty = "MissingPartial";
-	internal const string EquivalenceKey = nameof(MakeQueryPropertyTypePartialCodeFixProvider);
 
 	public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DiagnosticId);
 
@@ -32,15 +31,11 @@ public sealed class MakeQueryPropertyTypePartialCodeFixProvider : CodeFixProvide
 
 	public override Task RegisterCodeFixesAsync(CodeFixContext context)
 	{
-		foreach (var diagnostic in context.Diagnostics.Where(IsFixable))
-		{
+		var diagnostic = context.Diagnostics.FirstOrDefault(IsFixable);
+		if (diagnostic is not null)
 			context.RegisterCodeFix(
-				CodeAction.Create(
-					"Make type partial",
-					cancellationToken => MakePartialAsync(context.Document, [diagnostic], cancellationToken),
-					EquivalenceKey),
+				CodeAction.Create("Make type partial", cancellationToken => MakePartialAsync(context.Document, [diagnostic], cancellationToken), nameof(MakeQueryPropertyTypePartialCodeFixProvider)),
 				diagnostic);
-		}
 
 		return Task.CompletedTask;
 	}
@@ -57,12 +52,11 @@ public sealed class MakeQueryPropertyTypePartialCodeFixProvider : CodeFixProvide
 		var declarations = new HashSet<TypeDeclarationSyntax>();
 		foreach (var diagnostic in diagnostics.Where(IsFixable))
 		{
-			var type = root.FindToken(diagnostic.Location.SourceSpan.Start).Parent?.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-			for (; type is not null; type = type.Parent?.FirstAncestorOrSelf<TypeDeclarationSyntax>())
-			{
+			for (var type = root.FindToken(diagnostic.Location.SourceSpan.Start).Parent?.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+				type is not null;
+				type = type.Parent?.FirstAncestorOrSelf<TypeDeclarationSyntax>())
 				if (!type.Modifiers.Any(SyntaxKind.PartialKeyword))
 					declarations.Add(type);
-			}
 		}
 
 		if (declarations.Count == 0)
