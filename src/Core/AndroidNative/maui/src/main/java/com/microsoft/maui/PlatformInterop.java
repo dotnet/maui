@@ -486,6 +486,12 @@ public class PlatformInterop {
     }
 
     @NonNull
+    public static ColorStateList getSwitchTrackColorStateList(int enabledChecked, int enabledUnchecked, int disabledChecked, int disabledUnchecked)
+    {
+        return new ColorStateList(ColorStates.getSwitchTrackState(), new int[] { disabledChecked, disabledUnchecked, enabledChecked, enabledUnchecked });
+    }
+
+    @NonNull
     public static ColorStateList getButtonColorStateList(int enabled, int disabled, int off, int pressed)
     {
         return new ColorStateList(ColorStates.getButtonState(), new int[] { enabled, disabled, off, pressed });
@@ -601,7 +607,7 @@ public class PlatformInterop {
         static final int[] EMPTY = new int[] { };
         static final int[][] DEFAULT = new int[][] { EMPTY };
 
-        private static int[][] editTextState, checkBoxState, switchState, buttonState;
+        private static int[][] editTextState, checkBoxState, switchState, switchTrackState, buttonState;
 
         static int[][] getEditTextState()
         {
@@ -637,6 +643,19 @@ public class PlatformInterop {
                 };
             }
             return switchState;
+        }
+
+        static int[][] getSwitchTrackState()
+        {
+            if (switchTrackState == null) {
+                switchTrackState = new int[][] {
+                    new int[] { -android.R.attr.state_enabled, android.R.attr.state_checked },
+                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_checked },
+                    new int[] { android.R.attr.state_checked },
+                    EMPTY,
+                };
+            }
+            return switchTrackState;
         }
 
         static int[][] getButtonState()
@@ -715,5 +734,4 @@ public class PlatformInterop {
         }
         return null;
     }
-
 }

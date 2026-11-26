@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Platform
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
 		static readonly int[] s_enabledChecked = [AAttribute.StateEnabled, AAttribute.StateChecked];
 		static readonly int[] s_enabledUnchecked = [AAttribute.StateEnabled];
+		static readonly int[] s_disabledChecked = [AAttribute.StateChecked];
+		static readonly int[] s_disabledUnchecked = [];
 
 		// Tracks SwitchCompat instances that have had a custom ThumbColor applied, so the
 		// platform default thumb tint is only rebuilt when a previously-set custom color is
@@ -73,20 +75,23 @@ namespace Microsoft.Maui.Platform
 			var fallback = new AColor(defaultTrackTintList.DefaultColor);
 			var defaultOff = defaultTrackTintList.GetColorForState(s_enabledUnchecked, fallback);
 			var currentOff = currentTint.GetColorForState(s_enabledUnchecked, new AColor(defaultOff));
+			var defaultDisabledOff = defaultTrackTintList.GetColorForState(s_disabledUnchecked, fallback);
 			if (customTint is not { } color)
 			{
+				var currentDisabledOff = currentTint.GetColorForState(s_disabledUnchecked, new AColor(defaultDisabledOff));
 				// Keep the checked endpoint while MaterialSwitch animates to the default off tint.
-				if (isOn || currentOff != defaultOff)
+				if (isOn || currentOff != defaultOff || currentDisabledOff != defaultDisabledOff)
 					materialSwitch.TrackTintList = defaultTrackTintList;
 				return;
 			}
 
 			var currentOn = currentTint.GetColorForState(s_enabledChecked, fallback);
-			var disabled = currentTint.GetColorForState([], fallback);
-			materialSwitch.TrackTintList = ColorStateListExtensions.CreateSwitch(
-				disabled,
+			var defaultDisabledOn = defaultTrackTintList.GetColorForState(s_disabledChecked, fallback);
+			materialSwitch.TrackTintList = ColorStateListExtensions.CreateSwitchTrack(
 				isOn ? color : currentOn,
-				isOn ? currentOff : color);
+				isOn ? currentOff : color,
+				defaultDisabledOn,
+				defaultDisabledOff);
 		}
 
 		public static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)

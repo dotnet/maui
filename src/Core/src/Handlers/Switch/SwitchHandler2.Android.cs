@@ -14,6 +14,12 @@ public class SwitchHandler2 : SwitchHandler
 	public static new CommandMapper<ISwitch, SwitchHandler2> CommandMapper =
 	new(SwitchHandler.CommandMapper);
 
+	static SwitchHandler2()
+	{
+		Mapper.PrependToMapping<ISwitch, SwitchHandler2>(nameof(ISwitch.IsOn),
+			(handler, view) => handler.UpdateValue(nameof(ISwitch.TrackColor)));
+	}
+
 	public SwitchHandler2() : base(Mapper, CommandMapper)
 	{
 	}
