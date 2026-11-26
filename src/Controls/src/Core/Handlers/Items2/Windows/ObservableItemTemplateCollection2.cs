@@ -94,17 +94,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	void TemplateCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
 	{
-		if (_innerCollectionChange)
-			return;
-
-		if (_synchronizedSource is not null)
-			_synchronizedSource.UpdateSource(() => ApplyTemplateCollectionChanged(args));
-		else
-			ApplyTemplateCollectionChanged(args);
-	}
-
-	void ApplyTemplateCollectionChanged(NotifyCollectionChangedEventArgs args)
-	{
 		if (!_innerCollectionChange)
 		{
 			// When the template collection changes not as result of an inner collection change.
@@ -295,14 +284,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// </para>
 	/// </summary>
 	internal void MoveItemAndSyncSource(int oldIndex, int newIndex)
-	{
-		if (_synchronizedSource is not null)
-			_synchronizedSource.UpdateSource(() => MoveItemAndSyncSourceCore(oldIndex, newIndex));
-		else
-			MoveItemAndSyncSourceCore(oldIndex, newIndex);
-	}
-
-	void MoveItemAndSyncSourceCore(int oldIndex, int newIndex)
 	{
 		// Prevent re-entrant calls (e.g. if a CollectionChanged subscriber on the source
 		// somehow triggers another reorder while we are mid-mutation).

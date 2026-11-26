@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
@@ -30,7 +29,6 @@ namespace Microsoft.Maui.Controls
 		readonly bool _coalesceChanges;
 		readonly Action _refresh;
 		int _refreshPending;
-		int _refreshInProgress;
 		int _disposed;
 
 		/// <param name="list">The list parameter.</param>
@@ -87,54 +85,12 @@ namespace Microsoft.Maui.Controls
 				_proxy?.Unsubscribe();
 		}
 
-		void AccessSource(Action access, bool writeAccess = false)
+		void AccessSource(Action access)
 		{
 			if (BindingBase.TryGetSynchronizedCollection(_internalCollection, out var synchronization))
-				synchronization.Callback(_internalCollection, synchronization.Context, access, writeAccess);
+				synchronization.Callback(_internalCollection, synchronization.Context, access, false);
 			else
 				access();
-		}
-
-		/// <summary>
-		/// Applies index-based UI edits only while the displayed snapshot still matches the source.
-		/// Stale edits are rejected and the displayed collection is refreshed instead.
-		/// </summary>
-		internal void UpdateSource(Action update)
-		{
-			bool applied = false;
-			AccessSource(() =>
-			{
-				if (Volatile.Read(ref _disposed) != 0 ||
-					Volatile.Read(ref _refreshPending) != 0 ||
-					Volatile.Read(ref _refreshInProgress) != 0 || !MatchesSource())
-					return;
-
-				update();
-				applied = true;
-			}, true);
-
-			if (!applied && Volatile.Read(ref _disposed) == 0)
-			{
-				MauiLogger<MarshalingObservableCollection>.Log(LogLevel.Warning,
-					"Collection reorder rejected because the displayed items are out of date.");
-				QueueRefresh();
-			}
-		}
-
-		bool MatchesSource()
-		{
-			int index = 0;
-			foreach (var item in _internalCollection)
-			{
-				if (index >= Count)
-					return false;
-
-				var displayedItem = this[index++];
-				if (!ReferenceEquals(item, displayedItem) &&
-					!(item is ValueType && item.Equals(displayedItem)))
-					return false;
-			}
-			return index == Count;
 		}
 
 		class ResetNotifyCollectionChangedEventArgs : NotifyCollectionChangedEventArgs
@@ -158,18 +114,8 @@ namespace Microsoft.Maui.Controls
 				if (Volatile.Read(ref _disposed) != 0 || Volatile.Read(ref _refreshPending) != 0)
 					return;
 
-				if (_dispatcher.IsDispatchRequired ||
-					Volatile.Read(ref _refreshInProgress) != 0 ||
-					args.Action == NotifyCollectionChangedAction.Reset ||
-					(args.Action == NotifyCollectionChangedAction.Add && args.NewStartingIndex < 0) ||
-					(args.Action == NotifyCollectionChangedAction.Remove && args.OldStartingIndex < 0) ||
-					(args.Action == NotifyCollectionChangedAction.Move && args.OldItems.Count > 1) ||
-					(args.Action == NotifyCollectionChangedAction.Replace &&
-						(args.NewStartingIndex < 0 || args.NewItems.Count != args.OldItems.Count)))
-					// Source reads must run after the writer's synchronous notification has returned.
-					QueueRefresh();
-				else
-					HandleCollectionChange(args);
+				// Snapshot reads run after the writer's notification has returned and its lock is released.
+				QueueRefresh();
 				return;
 			}
 
@@ -203,39 +149,31 @@ namespace Microsoft.Maui.Controls
 			if (Volatile.Read(ref _disposed) != 0)
 				return;
 
-			Interlocked.Exchange(ref _refreshInProgress, 1);
-			try
+			// Changes during capture or Reset delivery schedule another refresh, never a nested update.
+			Interlocked.Exchange(ref _refreshPending, 0);
+			List<object> items = null;
+			AccessSource(() =>
 			{
-				// Changes during capture or Reset delivery schedule another refresh, never a nested update.
-				Interlocked.Exchange(ref _refreshPending, 0);
-				List<object> items = null;
-				AccessSource(() =>
+				if (_internalCollection is IList list)
 				{
-					if (_internalCollection is IList list)
-					{
-						int count = list.Count;
-						items = new List<object>(count);
-						for (int index = 0; index < count; index++)
-							items.Add(list[index]);
-					}
-					else
-					{
-						items = new List<object>(Count);
-						foreach (var item in _internalCollection)
-							items.Add(item);
-					}
-				});
-
-				if (Volatile.Read(ref _disposed) == 0)
-				{
-					Clear();
-					AddRange(items);
-					OnCollectionChanged(new ResetNotifyCollectionChangedEventArgs(items));
+					int count = list.Count;
+					items = new List<object>(count);
+					for (int index = 0; index < count; index++)
+						items.Add(list[index]);
 				}
-			}
-			finally
+				else
+				{
+					items = new List<object>(Count);
+					foreach (var item in _internalCollection)
+						items.Add(item);
+				}
+			});
+
+			if (Volatile.Read(ref _disposed) == 0)
 			{
-				Interlocked.Exchange(ref _refreshInProgress, 0);
+				Clear();
+				AddRange(items);
+				OnCollectionChanged(new ResetNotifyCollectionChangedEventArgs(items));
 			}
 		}
 

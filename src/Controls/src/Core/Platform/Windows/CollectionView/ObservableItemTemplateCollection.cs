@@ -90,17 +90,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void TemplateCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (_innerCollectionChange)
-				return;
-
-			if (_synchronizedSource != null)
-				_synchronizedSource.UpdateSource(() => ApplyTemplateCollectionChanged(args));
-			else
-				ApplyTemplateCollectionChanged(args);
-		}
-
-		void ApplyTemplateCollectionChanged(NotifyCollectionChangedEventArgs args)
-		{
 			if (!_innerCollectionChange)
 			{
 				// When the template collection changes not as result of an inner collection change.
