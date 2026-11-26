@@ -146,10 +146,19 @@ on:
                 // Thread outcomes, from PR Autopilot's replies (later comments by github-actions[bot]).
                 const { repository } = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
                   repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes {
-                    isResolved comments(first: 30) { nodes { url body author { login } } } } } } } }`, { ...repo, number });
+                    id isResolved comments(first: 30) { nodes { url body author { login } } } } } } } }`, { ...repo, number });
                 let resolved = 0, notChanged = 0;
                 const waiting = [];
+                const BOTS = new Set(['github-actions', 'github-actions[bot]', 'MauiBot', 'maui-bot', 'maui-bot[bot]']);
                 for (const t of repository.pullRequest.reviewThreads.nodes) {
+                  // Finish any resolution of a fixed bot finding that failed earlier.
+                  const fixed = t.comments.nodes.slice(1).some(c => ['github-actions', 'github-actions[bot]'].includes(c.author?.login) && (c.body || '').includes('✅ Fixed'));
+                  if (!t.isResolved && fixed && BOTS.has(t.comments.nodes[0]?.author?.login)) {
+                    try {
+                      await github.graphql('mutation($id: ID!) { resolveReviewThread(input: { threadId: $id }) { thread { isResolved } } }', { id: t.id });
+                      t.isResolved = true;
+                    } catch (e) { core.warning(`Could not resolve ${t.id}: ${e.message}`); }
+                  }
                   // GraphQL reports the bot as 'github-actions' (REST: 'github-actions[bot]').
                   const replies = t.comments.nodes.slice(1).filter(c => ['github-actions', 'github-actions[bot]'].includes(c.author?.login) && (c.body || '').includes('PR Autopilot'));
                   const last = replies.pop();
