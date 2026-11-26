@@ -13,20 +13,20 @@ public partial class Gh10803 : ContentPage
 	[Collection("Issue")]
 	public class Tests : IDisposable
 	{
-		bool enableDiagnosticsInitialState;
+		bool enableMauiDiagnosticsInitialState;
 		int failures = 0;
 
 		public Tests()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			VisualDiagnostics.VisualTreeChanged += VTChanged;
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 		}
 
 		public void Dispose()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 			DispatcherProvider.SetCurrent(null);
 			VisualDiagnostics.VisualTreeChanged -= VTChanged;
 			failures = 0;

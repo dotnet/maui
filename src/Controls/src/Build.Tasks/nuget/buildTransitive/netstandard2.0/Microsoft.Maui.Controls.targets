@@ -24,8 +24,6 @@
     <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
 
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
-    <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">$(EnableDiagnostics)</EnableMauiXamlDiagnostics>
-    <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">true</EnableMauiXamlDiagnostics>
     
     <MauiXamlNoWarn Condition=" '$(MauiXamlNoWarn)' != '' ">$(MauiXamlNoWarn.Replace(';', ','))</MauiXamlNoWarn>
     

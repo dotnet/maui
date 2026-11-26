@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Controls.Diagnostics
 				throw new ArgumentNullException(nameof(callback));
 
 			var watcher = new NativeElementSubscriptionWatcher<T>(target, callback);
-			NativeElementDiagnostics.SubscriptionAdded += watcher.OnSubscriptionAdded;
+			if (RuntimeFeature.EnableMauiDiagnostics)
+				NativeElementDiagnostics.SubscriptionAdded += watcher.OnSubscriptionAdded;
 			return watcher;
 		}
 

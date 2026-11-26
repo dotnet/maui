@@ -8,18 +8,26 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class VisualTreeHelperTests : BaseTestFixture, IDisposable
+	public class VisualTreeHelperTests : BaseTestFixture
 	{
 		readonly List<(Element? Parent, VisualTreeChangeEventArgs Args)> _treeEvents = new();
+		readonly bool _enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
 
 		public VisualTreeHelperTests()
 		{
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 			VisualDiagnostics.VisualTreeChanged += OnVisualTreeChanged;
 		}
 
-		public void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			VisualDiagnostics.VisualTreeChanged -= OnVisualTreeChanged;
+			if (disposing)
+			{
+				VisualDiagnostics.VisualTreeChanged -= OnVisualTreeChanged;
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", _enableMauiDiagnosticsInitialState);
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public Action<Element?, VisualTreeChangeEventArgs>? VisualTreeChanged { get; set; }
