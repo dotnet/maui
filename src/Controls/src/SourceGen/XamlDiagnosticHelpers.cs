@@ -20,7 +20,9 @@ static class XamlDiagnosticHelpers
 			var code = id.Trim();
 			if (code.Equals(diagnosticId, StringComparison.OrdinalIgnoreCase) ||
 				(diagnosticId.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
-				 code == diagnosticId.Substring("MAUIX".Length)))
+				 code == diagnosticId.Substring("MAUIX".Length)) ||
+				(diagnosticId.Equals(Descriptors.ObsoleteFontSize.Id, StringComparison.OrdinalIgnoreCase) &&
+				 (code.Equals("XC0618", StringComparison.OrdinalIgnoreCase) || code == "0618" || code == "618")))
 				return true;
 		}
 		return false;

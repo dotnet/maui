@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Xml;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil.Cil;
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Controls.XamlC
 {
 	class FontSizeTypeConverter : ICompiledTypeConverter
 	{
+		internal const string ObsoleteNamedSizeMessage = "Named font sizes are obsolete; use a numeric FontSize value instead.";
+
 		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
 			var module = context.Body.Method.Module;
@@ -25,6 +28,17 @@ namespace Microsoft.Maui.Controls.XamlC
 #pragma warning disable CS0612 // Type or member is obsolete
 				if (Enum.TryParse(value, out NamedSize namedSize))
 				{
+					var xmlLineInfo = (IXmlLineInfo)node;
+					context.LoggingHelper?.LogWarningOrError(
+						BuildExceptionCode.ObsoleteProperty,
+						context.XamlFilePath,
+						xmlLineInfo.LineNumber,
+						xmlLineInfo.LinePosition,
+						0,
+						0,
+						$"NamedSize.{namedSize}",
+						ObsoleteNamedSizeMessage);
+
 					//Device.GetNamedSize(namedSize, targetObject.GetType())
 					yield return Instruction.Create(OpCodes.Ldc_I4, (int)namedSize);
 					if (node.Parent is ElementNode parent && context.Variables.TryGetValue(parent, out VariableDefinition parentvalue))

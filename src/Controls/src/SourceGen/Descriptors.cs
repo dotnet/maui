@@ -406,6 +406,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor ObsoleteFontSize = new DiagnosticDescriptor(
+			id: "MAUIX2025",
+			title: new LocalizableResourceString(nameof(MauiGResources.ObsoleteFontSizeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ObsoleteFontSizeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor QueryPropertyConflictsWithIQueryAttributable = new DiagnosticDescriptor(
 			id: "MAUI1201",
 			title: "Use a single query parameter handling mechanism",

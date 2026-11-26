@@ -7,6 +7,7 @@ using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
+using static Microsoft.Maui.Controls.SourceGen.LocationHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
@@ -29,10 +30,17 @@ class FontSizeConverter : ISGTypeConverter
 				f => string.Equals(f.Name, value, StringComparison.OrdinalIgnoreCase));
 			if (detectedEnumValue is not null)
 			{
+				if (xmlLineInfo.LineNumber > 0)
+				{
+					var location = LocationCreate(context.ProjectItem?.RelativePath ?? string.Empty, xmlLineInfo, value);
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.ObsoleteFontSize, location, $"NamedSize.{detectedEnumValue.Name}"));
+				}
+
 				var type = parentVar?.Type ?? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Label")!;
 				var deviceType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Device")!;
 				var namedSizeType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.NamedSize")!;
-				return $"{deviceType.ToFQDisplayString()}.GetNamedSize(({namedSizeType.ToFQDisplayString()}){detectedEnumValue.ConstantValue}, typeof({type.ToFQDisplayString()}))";
+				var getNamedSizeExpr = $"{deviceType.ToFQDisplayString()}.GetNamedSize(({namedSizeType.ToFQDisplayString()}){detectedEnumValue.ConstantValue}, typeof({type.ToFQDisplayString()}))";
+				return $"\n#pragma warning disable CS0612 // Type or member is obsolete\n{getNamedSizeExpr}\n#pragma warning restore CS0612 // Type or member is obsolete\n";
 			}
 		}
 

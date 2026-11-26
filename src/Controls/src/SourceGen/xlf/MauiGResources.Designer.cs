@@ -282,5 +282,7 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string DuplicatePropertyAssignmentMessage => ResourceManager.GetString("DuplicatePropertyAssignmentMessage", resourceCulture);
 		internal static string StyleTargetTypeMismatchTitle => ResourceManager.GetString("StyleTargetTypeMismatchTitle", resourceCulture);
 		internal static string StyleTargetTypeMismatchMessage => ResourceManager.GetString("StyleTargetTypeMismatchMessage", resourceCulture);
+		internal static string ObsoleteFontSizeTitle => ResourceManager.GetString("ObsoleteFontSizeTitle", resourceCulture);
+		internal static string ObsoleteFontSizeMessage => ResourceManager.GetString("ObsoleteFontSizeMessage", resourceCulture);
 	}
 }
