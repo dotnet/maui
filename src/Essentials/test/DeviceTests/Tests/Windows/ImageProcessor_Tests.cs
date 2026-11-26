@@ -74,30 +74,30 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				using var output = File.OpenRead(outputPath);
 				using var result = new InMemoryRandomAccessStream();
+				// Disposing the AsStreamForWrite adapter closes result, so decode inside this block.
 				using (var destination = result.AsStreamForWrite())
 				{
 					await output.CopyToAsync(destination);
 					await destination.FlushAsync();
+					result.Seek(0);
+					var decoder = await BitmapDecoder.CreateAsync(result);
+					Assert.Equal(extension == ".png"
+						? BitmapDecoder.PngDecoderId : BitmapDecoder.JpegDecoderId,
+						decoder.DecoderInformation.CodecId);
+					// Preserved metadata must not ask viewers to rotate the upright pixels again.
+					Assert.Equal(decoder.PixelWidth, decoder.OrientedPixelWidth);
+					Assert.Equal(decoder.PixelHeight, decoder.OrientedPixelHeight);
+
+					// Inspect stored pixels, not auto-oriented display pixels. The processor
+					// must bake in one rotation, including leaving orientation 1 unchanged.
+					await AssertPixelsAsync(decoder, expectedWidth, expectedHeight,
+						topLeft, topRight, bottomLeft, bottomRight);
+					var orientedData = await decoder.GetPixelDataAsync(
+						BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, new BitmapTransform(),
+						ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
+					var orientedPixels = orientedData.DetachPixelData();
+					AssertColor(orientedPixels, expectedWidth, expectedWidth / 4, expectedHeight / 4, topLeft);
 				}
-
-				result.Seek(0);
-				var decoder = await BitmapDecoder.CreateAsync(result);
-				Assert.Equal(extension == ".png"
-					? BitmapDecoder.PngDecoderId : BitmapDecoder.JpegDecoderId,
-					decoder.DecoderInformation.CodecId);
-				// Preserved metadata must not ask viewers to rotate the upright pixels again.
-				Assert.Equal(decoder.PixelWidth, decoder.OrientedPixelWidth);
-				Assert.Equal(decoder.PixelHeight, decoder.OrientedPixelHeight);
-
-				// Inspect stored pixels, not auto-oriented display pixels. The processor
-				// must bake in one rotation, including leaving orientation 1 unchanged.
-				await AssertPixelsAsync(decoder, expectedWidth, expectedHeight,
-					topLeft, topRight, bottomLeft, bottomRight);
-				var orientedData = await decoder.GetPixelDataAsync(
-					BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, new BitmapTransform(),
-					ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
-				var orientedPixels = orientedData.DetachPixelData();
-				AssertColor(orientedPixels, expectedWidth, expectedWidth / 4, expectedHeight / 4, topLeft);
 			}
 			finally
 			{
