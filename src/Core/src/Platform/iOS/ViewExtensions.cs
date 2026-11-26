@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -664,7 +665,9 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		static readonly ConditionalWeakTable<UIView, UIToolTipInteraction> s_toolTipInteractions = new();
+
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView, bool searchInteractions = false)
 		{
 			UIToolTipInteraction? interaction = default;
 
@@ -677,15 +680,20 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					// Cache Interactions; each access marshals the whole native array (see #34396).
-					var interactions = platformView.Interactions;
-					if (interactions is not null)
+					if (s_toolTipInteractions.TryGetValue(platformView, out interaction) && interaction.View != platformView)
 					{
-						foreach (var ia in interactions)
+						s_toolTipInteractions.Remove(platformView);
+						interaction = null;
+					}
+
+					if (interaction is null && searchInteractions)
+					{
+						foreach (var ia in platformView.Interactions)
 						{
 							if (ia is UIToolTipInteraction toolTipInteraction)
 							{
 								interaction = toolTipInteraction;
+								s_toolTipInteractions.AddOrUpdate(platformView, toolTipInteraction);
 								break;
 							}
 						}
@@ -703,7 +711,7 @@ namespace Microsoft.Maui.Platform
 				|| OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				string? text = tooltip?.Content?.ToString();
-				var interaction = platformView.GetToolTipInteraction();
+				var interaction = platformView.GetToolTipInteraction(searchInteractions: true);
 
 				if (interaction is null)
 				{
@@ -711,6 +719,11 @@ namespace Microsoft.Maui.Platform
 					{
 						interaction = new UIToolTipInteraction(text);
 						platformView.AddInteraction(interaction);
+
+						if (platformView is not UIControl)
+						{
+							s_toolTipInteractions.AddOrUpdate(platformView, interaction);
+						}
 					}
 				}
 				else
