@@ -5,8 +5,7 @@ description: |
   state: MAUI expert review -> fix -> expert review ... until the expert reviewer has no findings,
   then `/review run-tests` -> fix -> expert review -> run-tests ... until the relevant tests pass.
   Every fix round has GPT-6.2 Sol and MAI Code 2 each propose a fix and keeps the better one.
-  The loop runs while the PR carries `s/autopilot-running`; `/review autopilot stop` (or removing the
-  label) ends it. Maintainers still decide whether anything is merged. See .github/docs/maui-expert-autopilot.md.
+  The loop runs while the PR carries `s/autopilot-running`; removing the label ends it. Maintainers still decide whether anything is merged. See .github/docs/maui-expert-autopilot.md.
 
 imports:
   - shared/gpt-6.2-sol.md
@@ -18,7 +17,7 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  # `/review autopilot` starts the loop, `/review autopilot stop` ends it.
+  # `/review autopilot` starts the loop.
   slash_command:
     name: review
     events: [pull_request_comment]
@@ -46,7 +45,7 @@ on:
         script: |
           const LABEL = 's/autopilot-running';
           const OPT_IN = /^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m;
-          const COMMAND = /^\s*\/review\s+autopilot(?:\s+(stop))?\s*$/i;
+          const COMMAND = /^\s*\/review\s+autopilot\s*$/i;
           const USER = /^[A-Za-z0-9][A-Za-z0-9-]*$/;
           const repo = context.repo;
           core.setOutput('stage', 'none');
@@ -117,12 +116,13 @@ on:
             // Hide the command as resolved, like the other /review commands.
             await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
               { id: context.payload.comment.node_id }).catch(e => core.warning(`Could not hide the command: ${e.message}`));
-            if (command[1]) {
-              if (pr.state === 'open') await stopLoop(`## MAUI Autopilot — Stopped\n\nStopped by @${requester}.`);
-              return;
+            // A run can start late; a newer command wins over this one.
+            const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, since: context.payload.comment.created_at, per_page: 100 });
+            if (comments.some(c => c.id > context.payload.comment.id && c.user?.type === 'User' && COMMAND.test(c.body || ''))) {
+              return core.info('A newer /review autopilot command supersedes this one.');
             }
           } else if (kicked) {
-            if (!hasLabel) return core.info(`#${number}: the loop is not running.`);
+            if (!hasLabel) { await stopLoop(''); return core.info(`#${number}: the loop is not running.`); }
             requester = await ownerOf(number);
             if (!requester && originOf(pr)) requester = await ownerOf(originOf(pr));
           } else {
@@ -233,7 +233,7 @@ on:
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
           if (!current.has(LABEL) && stage !== 'done' && stage !== 'stop') {
-            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'MAUI Autopilot loop is running; /review autopilot stop ends it' }).catch(() => {});
+            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'MAUI Autopilot loop is running; remove this label to stop it' }).catch(() => {});
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
@@ -403,8 +403,8 @@ jobs:
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(target) } });
             core.info(`#${target}: next round requested.`);
 
-# Commands (/review autopilot, /review autopilot stop) run at once in their own group, so a stop is never queued
-# behind a fix round or dropped as a superseded pending run. Loop steps are serialized per PR.
+# Each /review autopilot command runs in its own group, so it is never queued behind a fix round or dropped as
+# a superseded pending run. Loop steps are serialized per PR.
 concurrency:
   group: "maui-expert-autopilot-${{ github.event.issue.number || inputs.pr_number }}-${{ github.event.comment.id || 'loop' }}"
   cancel-in-progress: false

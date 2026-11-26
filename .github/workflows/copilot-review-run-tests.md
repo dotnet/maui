@@ -155,7 +155,11 @@ jobs:
             const number = Number(process.env.PR_NUMBER);
             if (!Number.isSafeInteger(number) || number < 1) return;
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
-            if (!labels.some(l => l.name === 's/autopilot-running')) return;
+            if (!labels.some(l => l.name === 's/autopilot-running')) {
+              // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              return;
+            }
             // One automatic retry: a single flaky run should not end an autonomous loop.
             if (!labels.some(l => l.name === 's/autopilot-retrying')) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',

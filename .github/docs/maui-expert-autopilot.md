@@ -50,7 +50,7 @@ The loop has no round limit. It stops when:
 
 - the tests pass,
 - a fix round finds nothing it can fix,
-- a maintainer comments `/review autopilot stop` or removes `s/autopilot-running`,
+- a maintainer removes the `s/autopilot-running` label,
 - the author unticks the checkbox,
 - the PR is closed,
 - the maintainer who started the loop loses write access.
