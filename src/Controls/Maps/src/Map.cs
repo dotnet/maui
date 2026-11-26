@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Maps
 		/// </summary>
 		/// <remarks>
 		/// No pin count is drawn over the image. Each platform scales it to a marker-sized icon
-		/// (Android fits within 64 pixels, iOS within 32 points), matching <see cref="Pin.ImageSource"/>.
+		/// (Android fits within 100 pixels, iOS within 32 points), matching <see cref="Pin.ImageSource"/>.
 		/// Changing this value rebuilds existing cluster markers immediately.
 		/// </remarks>
 		public ImageSource? ClusterImageSource

@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+		const int IconSize = 100;
 		const int MaxIconCacheSize = 64;
 
 		// Two caches, not one: a ClusterImageVersion bump must not drop the pin icons, and pin
@@ -862,7 +863,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			try
 			{
-				int size = 100; // pixels
+				int size = IconSize;
 				var bitmap = ABitmap.CreateBitmap(size, size, ABitmap.Config.Argb8888!);
 				if (bitmap == null)
 					return null;
@@ -1122,18 +1123,18 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is ABitmap source)
 			{
-				var sized = ScaleBitmap(source, 64, 64);  // 64x64 pixels
+				var sized = ScaleBitmap(source, IconSize, IconSize);
 				if (!ReferenceEquals(sized, source))
 					return sized;
 
 				// Bitmap.createScaledBitmap hands an immutable source straight back when the image
-				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
+				// already fits, so the descriptor
 				// would be built over pixels the image result owns, and releasing that result lets
 				// them go. Copy instead, and never fall back to the source: a failed copy has to
 				// mean the default marker, not a descriptor over foreign pixels.
 				//
-				// Always Argb8888 rather than preserving source.GetConfig(): at 64x64 a narrower
-				// config saves a few KB, which is not worth comparing Bitmap.Config values for.
+				// Always Argb8888 rather than preserving source.GetConfig(): a narrower config saves
+				// only a few KB, which is not worth comparing Bitmap.Config values for.
 				// Those compare as JNI peers of a Java enum, and peer identity is not something the
 				// binding guarantees - a comparison that silently went false for a hardware bitmap
 				// would copy it as hardware, and BitmapDescriptorFactory cannot read those pixels
@@ -1146,8 +1147,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			if (width <= 0 || height <= 0)
 			{
-				width = 64;
-				height = 64;
+				width = IconSize;
+				height = IconSize;
 			}
 
 			var bitmap = ABitmap.CreateBitmap(width, height, ABitmap.Config.Argb8888!);
@@ -1159,7 +1160,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			drawable.Draw(canvas);
 			canvas.Dispose();
 
-			var scaled = ScaleBitmap(bitmap, 64, 64);
+			var scaled = ScaleBitmap(bitmap, IconSize, IconSize);
 			if (scaled != bitmap)
 				bitmap.Dispose();
 			return scaled;
