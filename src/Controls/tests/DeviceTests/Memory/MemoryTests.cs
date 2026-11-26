@@ -839,9 +839,11 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		// Post the orientation notification to exercise the observer-removal path that was broken.
-		Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
-			UIKit.UIDevice.OrientationDidChangeNotification,
-			UIKit.UIDevice.CurrentDevice);
+		// UIKit delivers it on the main thread, and its observers read UIKit state synchronously.
+		await InvokeOnMainThreadAsync(() =>
+			Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
+				UIKit.UIDevice.OrientationDidChangeNotification,
+				UIKit.UIDevice.CurrentDevice));
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
 
