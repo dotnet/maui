@@ -49,7 +49,8 @@ persisted executable path that differs from that SDK's adb.
 PID cleanup additionally checks the actual emulator command line for the owned
 AVD argument before waiting for or terminating a still-running process.
 The owned iOS simulator uses an installed iPhone profile compatible with the
-selected runtime. Cleanup revalidates its individual UUID and recorded unique
+selected runtime (and listed by it, for device-specific runtime builds),
+preferring the iPhone 11 Pro profile XHarness used while the runtime supports it. Cleanup revalidates its individual UUID and recorded unique
 name; aggregate selectors and foreign simulator state cannot reach deletion.
 
 `TestFilter` accepts `Category=X` or `SkipCategories=X,Y,Z`.
