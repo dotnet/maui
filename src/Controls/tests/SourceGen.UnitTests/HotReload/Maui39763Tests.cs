@@ -67,12 +67,12 @@ public class Maui39763Tests
 
 		//the generated sources compile once Routes exists in the final compilation
 		var finalCompilation = ((CSharpCompilation)SourceGeneratorDriver.CreateMauiCompilation(harness.AssemblyName))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(PageSource))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(RoutesSource))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(PageSource, cancellationToken: TestContext.Current.CancellationToken))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(RoutesSource, cancellationToken: TestContext.Current.CancellationToken))
 			.AddSyntaxTrees(generation[1].GeneratorResult.Results
 				.SelectMany(r => r.GeneratedSources)
 				.Select(gs => CSharpSyntaxTree.ParseText(gs.SourceText.ToString()))
 				.ToArray());
-		Assert.DoesNotContain(finalCompilation.GetDiagnostics(), d => d.Severity == DiagnosticSeverity.Error);
+		Assert.DoesNotContain(finalCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken), d => d.Severity == DiagnosticSeverity.Error);
 	}
 }

@@ -28,9 +28,8 @@ Describe 'Direct native CI contracts' {
             Should -Be 5
     }
 
-    It 'retains both mobile runtimes and CoreCLR-only Catalyst' {
+    It 'runs CoreCLR by default and keeps the runtime switch for every mobile platform' {
         $stage | Should -Match '(?s)name: coreclr\s+useCoreClr: true'
-        $stage | Should -Match '(?s)name: mono\s+useCoreClr: false'
         $stage | Should -Match '(?s)platform: catalyst.*?useCoreClr: true'
         @([regex]::Matches($steps, [regex]::Escape('UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}'))).Count |
             Should -Be 3
@@ -676,7 +675,7 @@ public static class SnapshotRootRegression
         $stage | Should -Match 'requireWindows11: false'
         $stage | Should -Match ([regex]::Escape('requireWindows11: ${{ parameters.requireWindows11 }}'))
         $stage | Should -Not -Match 'displayName: Windows 11'
-        $stage | Should -Match ([regex]::Escape('if eq(parameters.runWindowsTests, true)'))
+        $stage | Should -Match ([regex]::Escape('eq(parameters.runWindowsTests, true)'))
         $start | Should -Match ([regex]::Escape('if (![Environment]::UserInteractive)'))
         $start | Should -Match ([regex]::Escape('if ($RequireWindows11)'))
         $start | Should -Match ([regex]::Escape('$os.ProductType -ne 1'))

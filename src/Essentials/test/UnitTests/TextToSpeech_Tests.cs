@@ -24,7 +24,7 @@ namespace Tests
 			var options = new SpeechOptions { Volume = volume, Pitch = pitch, Rate = rate };
 
 			var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
-				new TextToSpeechImplementation().SpeakAsync("text", options));
+				new TextToSpeechImplementation().SpeakAsync("text", options, TestContext.Current.CancellationToken));
 
 			Assert.Equal("options", ex.ParamName);
 			Assert.Contains(volume.HasValue ? "and <= 1" : "and <= 2", ex.Message, StringComparison.Ordinal);
