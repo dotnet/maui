@@ -707,16 +707,55 @@ namespace Microsoft.Maui.Layouts
 				MinimizeStarColumns();
 
 				if (_rowStarCount > 0 && !double.IsInfinity(_gridHeightConstraint)
-					&& (Dimension.IsExplicitSet(_explicitGridHeight) || _grid.VerticalLayoutAlignment == LayoutAlignment.Fill))
+					&& (Dimension.IsExplicitSet(_explicitGridHeight) || _grid.VerticalLayoutAlignment == LayoutAlignment.Fill)
+					&& HasEmptyStarAndOccupiedStar(_rows, isColumn: false))
 				{
 					NormalizeStarMinimums(_rows);
 				}
 
 				if (_columnStarCount > 0 && !double.IsInfinity(_gridWidthConstraint)
-					&& (Dimension.IsExplicitSet(_explicitGridWidth) || _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill))
+					&& (Dimension.IsExplicitSet(_explicitGridWidth) || _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill)
+					&& HasEmptyStarAndOccupiedStar(_columns, isColumn: true))
 				{
 					NormalizeStarMinimums(_columns);
 				}
+			}
+
+			bool HasEmptyStarAndOccupiedStar(Definition[] definitions, bool isColumn)
+			{
+				bool hasEmptyStar = false;
+				bool hasOccupiedStar = false;
+
+				for (int definitionIndex = 0; definitionIndex < definitions.Length; definitionIndex++)
+				{
+					if (!definitions[definitionIndex].IsStar)
+					{
+						continue;
+					}
+
+					bool isOccupied = false;
+					for (int cellIndex = 0; cellIndex < _cells.Length; cellIndex++)
+					{
+						var cell = _cells[cellIndex];
+						int cellStart = isColumn ? cell.Column : cell.Row;
+						int cellSpan = isColumn ? cell.ColumnSpan : cell.RowSpan;
+						if (definitionIndex >= cellStart && definitionIndex < cellStart + cellSpan)
+						{
+							isOccupied = true;
+							break;
+						}
+					}
+
+					hasOccupiedStar |= isOccupied;
+					hasEmptyStar |= !isOccupied;
+
+					if (hasEmptyStar && hasOccupiedStar)
+					{
+						return true;
+					}
+				}
+
+				return false;
 			}
 
 			static void NormalizeStarMinimums(Definition[] definitions)

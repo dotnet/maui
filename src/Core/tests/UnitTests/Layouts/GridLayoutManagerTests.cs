@@ -3290,6 +3290,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(120, GetArrangedRect(first).Width, 6);
 			Assert.Equal(120, GetArrangedRect(last).Width, 6);
 		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Fill, 310)]
+		[InlineData(LayoutAlignment.Start, 270)]
+		public void StarMinimumsIncludeEmptyRowsOnlyWhenFilling(LayoutAlignment alignment, double expectedHeight)
+		{
+			var grid = CreateGridLayout(rows: ".6*,.2*,.6*", rowSpacing: 5);
+			grid.VerticalLayoutAlignment.Returns(alignment);
+			grid.Padding.Returns(new Thickness(10));
+
+			var first = CreateTestView(new Size(20, 120));
+			var last = CreateTestView(new Size(20, 120));
+			SubstituteChildren(grid, first, last);
+			SetLocation(grid, first);
+			SetLocation(grid, last, row: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(double.PositiveInfinity, 450);
+			Assert.Equal(expectedHeight, measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			Assert.Equal(120, GetArrangedRect(first).Height, 6);
+			Assert.Equal(120, GetArrangedRect(last).Height, 6);
+		}
 [Fact]
 public void SpannedCellMeasurementIncludesColumnSpacingIssue26633()
 {
