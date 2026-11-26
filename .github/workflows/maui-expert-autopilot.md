@@ -225,19 +225,14 @@ on:
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
-              `### maui-expert-autopilot started`,
+              '### maui-expert-autopilot',
               '',
-              requester === pr.user.login
-                ? `Started by @${requester}, who opted in to letting the agent finish this PR.`
-                : `Started by @${requester}. @${pr.user.login} opted in to letting the agent finish this PR.`,
-              '',
-              '| Step | What happens |',
-              '|---|---|',
-              '| Review | The MAUI expert reviewer reviews the PR |',
-              '| Fix | GPT-6.2 Sol and MAI Code 2 each fix the findings. The better fix is kept, and every review thread gets a reply |',
-              '| Test | The relevant UI and device tests run |',
-              '',
-              'This repeats until the review is clean and the tests pass. The `s/autopilot-*` labels show the current step. Comment `/review autopilot stop` to stop.',
+              '| Label | What happens | Models |',
+              '|---|---|---|',
+              '| `s/autopilot-reviewing` | The MAUI expert reviewer reviews the PR | GPT-6.1 Sol |',
+              '| `s/autopilot-fixing` | Each model fixes the findings or failing tests, and the better fix is kept | GPT-6.2 Sol, MAI Code 2 |',
+              '| `s/autopilot-testing` | The relevant UI and device tests are selected and run | GPT-6.2 Sol, MAI Code 2 |',
+              '| `s/autopilot-waiting-for-maintainer-review` | The review is clean and the tests passed | |',
             ].join('\n'));
           }
           if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }
