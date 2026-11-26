@@ -327,6 +327,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
+#if ANDROID || IOS || MACCATALYST
+		[Fact]
+		public async Task PopToRootAsyncCompletesForInactiveTabsWhileModalIsOpen()
+		{
+			SetupBuilder();
+
+			var first = new NavigationPage(new ContentPage());
+			var second = new NavigationPage(new ContentPage());
+			var third = new NavigationPage(new ContentPage());
+			var tabs = new TabbedPage { Children = { first, second, third } };
+			var modal = new ContentPage();
+			var timeout = TimeSpan.FromSeconds(10);
+
+			await second.PushAsync(new ContentPage(), false);
+			await third.PushAsync(new ContentPage(), false);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabs), async _ =>
+			{
+				var showModal = first.Navigation.PushModalAsync(modal, false);
+				Assert.Same(showModal, await Task.WhenAny(showModal, Task.Delay(timeout)));
+				await showModal;
+
+				try
+				{
+					Assert.Equal(2, second.Navigation.NavigationStack.Count);
+					Assert.Equal(2, third.Navigation.NavigationStack.Count);
+					var popSecond = second.PopToRootAsync();
+					Assert.True(popSecond == await Task.WhenAny(popSecond, Task.Delay(timeout)), "PopToRootAsync did not complete for the second tab.");
+					await popSecond;
+
+					var popThird = third.PopToRootAsync();
+					Assert.True(popThird == await Task.WhenAny(popThird, Task.Delay(timeout)), "PopToRootAsync did not complete for the third tab.");
+					await popThird;
+
+					Assert.Same(first, tabs.CurrentPage);
+					Assert.Same(modal, Assert.Single(first.Navigation.ModalStack));
+					Assert.Same(second.RootPage, Assert.Single(second.Navigation.NavigationStack));
+					Assert.Same(third.RootPage, Assert.Single(third.Navigation.NavigationStack));
+				}
+				finally
+				{
+					await first.Navigation.PopModalAsync(false).WaitAsync(timeout);
+				}
+			});
+		}
+#endif
+
 #if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Insert Page Before RootPage ShowsBackButton")]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
