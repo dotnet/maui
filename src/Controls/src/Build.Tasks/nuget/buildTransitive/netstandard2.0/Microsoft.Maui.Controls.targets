@@ -6,9 +6,6 @@
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
-		<EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == ''">$(EnableDiagnostics)</EnableMauiDiagnostics>
-		<EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == '' and '$(Optimize)' != 'true'">true</EnableMauiDiagnostics>
-		<EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == ''">false</EnableMauiDiagnostics>
     <!-- default MauiXaml inflators  -->
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
@@ -369,10 +366,6 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics"
-                                      Condition="'$(EnableMauiDiagnostics)' != ''"
-                                      Value="$(EnableMauiDiagnostics)"
                                       Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
                                       Condition="'$(UseMaterial3)' != ''"
