@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
+			// A load into the view that has not finished (or has not started yet) must not show its image anymore.
+			PlatformInterop.StopUnfinishedImageViewLoad(platformView);
 			SourceLoader.Reset();
 		}
 
