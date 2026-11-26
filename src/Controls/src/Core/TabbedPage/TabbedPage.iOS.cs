@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
@@ -982,20 +983,42 @@ namespace Microsoft.Maui.Controls
 		internal bool IsSelecting(Page page) =>
 			_selectingPage.TryGetTarget(out var selectingPage) && selectingPage == page;
 
-		public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
+		public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 		{
 			if (!_tabbedPage.TryGetTarget(out var tabbedPage) ||
 				tabbedPage.Handler is not IPlatformViewHandler handler ||
 				handler.ViewController is not UITabBarController tabBarController ||
-				tabBarController.MoreNavigationController != navigationController ||
-				(tabBarController.SelectedViewController != navigationController &&
-					tabBarController.SelectedViewController != viewController &&
-					tabBarController.SelectedViewController?.NavigationController != navigationController))
+				tabBarController.MoreNavigationController != navigationController)
+			{
 				return;
+			}
+
+			var wrappedPage = (viewController as NavigationHandlerParentingViewController)?.Child ??
+				NavigationRenderer.GetPageForViewController(viewController);
+			var navigationPage = wrappedPage?.RealParent as NavigationPage;
+			if (navigationPage?.RealParent != tabbedPage)
+			{
+				navigationPage = null;
+			}
+
+			var selectedController = tabBarController.SelectedViewController;
+			if (selectedController != navigationController &&
+				selectedController != viewController &&
+				selectedController?.NavigationController != navigationController &&
+				!(selectedController is not null &&
+					navigationPage?.Handler is IPlatformViewHandler navigationHandler &&
+					navigationHandler.ViewController == selectedController) &&
+				!(navigationPage is not null &&
+					selectedController is UINavigationController selectedNavigation &&
+					selectedNavigation.TopViewController == viewController))
+			{
+				return;
+			}
 
 			foreach (var page in tabbedPage.Children)
 			{
-				if (page.Handler is IPlatformViewHandler pageHandler && pageHandler.ViewController == viewController)
+				if (page == navigationPage ||
+					(page.Handler is IPlatformViewHandler pageHandler && pageHandler.ViewController == viewController))
 				{
 					// UIKit owns the pending transition; do not select the controller again from the property mapper.
 					_selectingPage.SetTarget(page);

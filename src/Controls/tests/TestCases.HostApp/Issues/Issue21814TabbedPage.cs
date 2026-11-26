@@ -18,6 +18,32 @@ namespace Maui.Controls.Sample.Issues
 			var morePage = new Issue21814MoreTab();
 			Children.Add(morePage);
 			CurrentPageChanged += (_, _) => morePage.UpdateSelection(CurrentPage == morePage);
+
+			var navigationStatus = new Label { AutomationId = "MoreNavigationTabStatus", Text = "0" };
+			var detailTabStatus = new Label { AutomationId = "MoreDetailTabStatus", Text = "0" };
+			var selectionStatus = new Label { AutomationId = "MoreNavigationTabSelection", Text = "Not selected" };
+			var detailSelectionStatus = new Label { AutomationId = "MoreDetailTabSelection", Text = "Not selected" };
+			var detailStatus = new Label { AutomationId = "MoreDetailStatus", Text = "Not navigated" };
+			var push = new Button { AutomationId = "PushMoreDetail", Text = "Push detail" };
+			var navigationRoot = new ContentPage
+			{
+				Title = "Navigation root",
+				Content = new VerticalStackLayout { Padding = 20, Children = { navigationStatus, selectionStatus, push } }
+			};
+			var detail = new ContentPage
+			{
+				Title = "Navigation detail",
+				Content = new VerticalStackLayout { Padding = 20, Children = { detailStatus, detailTabStatus, detailSelectionStatus } }
+			};
+			var navigationTab = new NavigationPage(navigationRoot) { Title = "Tab 7" };
+			var navigatedToCount = 0;
+			navigationTab.NavigatedTo += (_, _) =>
+				navigationStatus.Text = detailTabStatus.Text = (++navigatedToCount).ToString();
+			CurrentPageChanged += (_, _) =>
+				selectionStatus.Text = detailSelectionStatus.Text = CurrentPage == navigationTab ? "Selected" : "Not selected";
+			detail.NavigatedTo += (_, _) => detailStatus.Text = "Navigated";
+			push.Clicked += async (_, _) => await navigationTab.PushAsync(detail);
+			Children.Add(navigationTab);
 		}
 	}
 

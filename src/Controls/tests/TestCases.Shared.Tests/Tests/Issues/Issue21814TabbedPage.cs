@@ -45,6 +45,42 @@ public class Issue21814TabbedPage : _IssuesUITest
 		Assert.That(App.WaitForTextEqualToElement("MoreTabSelectionStatus", "Selected"), Is.True,
 			"The More child should become TabbedPage.CurrentPage.");
 	}
+
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void ReselectingNavigationPageFromMorePreservesPushedPage()
+	{
+		App.TapTab("Tab 1");
+		App.WaitForElement(Tab1Content);
+		SelectMoreNavigationTab();
+
+		Assert.That(App.WaitForTextEqualToElement("MoreNavigationTabStatus", "1"), Is.True,
+			"The NavigationPage tab should receive NavigatedTo on the first selection.");
+		Assert.That(App.WaitForTextEqualToElement("MoreNavigationTabSelection", "Selected"), Is.True,
+			"The NavigationPage should become TabbedPage.CurrentPage.");
+
+		App.WaitForElement("PushMoreDetail");
+		App.Tap("PushMoreDetail");
+		Assert.That(App.WaitForTextEqualToElement("MoreDetailStatus", "Navigated"), Is.True,
+			"The push should display the detail page and raise its NavigatedTo event.");
+
+		App.TapTab("Tab 1");
+		App.WaitForElement(Tab1Content);
+		SelectMoreNavigationTab();
+
+		Assert.That(App.WaitForTextEqualToElement("MoreDetailTabStatus", "2"), Is.True,
+			"The detail page should still be visible and its NavigationPage should receive a new NavigatedTo event.");
+		Assert.That(App.WaitForTextEqualToElement("MoreDetailTabSelection", "Selected"), Is.True,
+			"The NavigationPage, not its detail page, should be TabbedPage.CurrentPage.");
+	}
+
+	void SelectMoreNavigationTab()
+	{
+		App.WaitForElement("More");
+		App.Tap("More");
+		App.WaitForElement("Tab 7");
+		App.Tap("Tab 7");
+	}
 #endif
 
 	[Test, Order(1)]

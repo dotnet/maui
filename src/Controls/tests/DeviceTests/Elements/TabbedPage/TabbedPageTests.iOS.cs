@@ -20,6 +20,43 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests
 	{
+		[Fact]
+		public async Task ReattachingTabbedPageInstallsNewMoreNavigationDelegate()
+		{
+			SetupBuilder();
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var tabbedPage = CreateBasicTabbedPage();
+				var firstHandler = Assert.IsAssignableFrom<IPlatformViewHandler>(tabbedPage.ToHandler(MauiContext));
+				var firstController = Assert.IsAssignableFrom<UITabBarController>(firstHandler.ViewController);
+				var firstMore = firstController.MoreNavigationController;
+				var firstDelegate = Assert.IsType<MoreNavigationDelegate>(firstMore.Delegate);
+
+				Detach(firstHandler);
+				Assert.NotSame(firstDelegate, firstMore.Delegate);
+				Assert.Equal(IntPtr.Zero, (IntPtr)firstDelegate.Handle);
+
+				var secondHandler = Assert.IsAssignableFrom<IPlatformViewHandler>(tabbedPage.ToHandler(MauiContext));
+				try
+				{
+					var secondController = Assert.IsAssignableFrom<UITabBarController>(secondHandler.ViewController);
+					var secondDelegate = Assert.IsType<MoreNavigationDelegate>(secondController.MoreNavigationController.Delegate);
+					Assert.NotSame(firstDelegate, secondDelegate);
+				}
+				finally
+				{
+					Detach(secondHandler);
+				}
+
+				void Detach(IPlatformViewHandler handler)
+				{
+					tabbedPage.Handler = null;
+					if (handler is TabbedRenderer renderer)
+						renderer.Dispose();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "TabbedPage BarBackground gradient persists after iOS 15 appearance update")]
 		public async Task BarBackgroundGradientPersistsAfteriOS15AppearanceUpdate()
 		{
