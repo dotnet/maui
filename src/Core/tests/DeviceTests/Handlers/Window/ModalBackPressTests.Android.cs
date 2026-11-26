@@ -41,6 +41,59 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(CallbackMode.None, 0, 1)]
+		[InlineData(CallbackMode.Disabled, 0, 1)]
+		[InlineData(CallbackMode.Consumes, 1, 0)]
+		[InlineData(CallbackMode.DispatchesAgain, 1, 1)]
+		public async Task CancelledModalPoppingKeepsTheModalAndTheActivity(CallbackMode mode, int expectedCallbackCount, int expectedPoppingCount)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = new MauiAppCompatActivity();
+				activity.AddBackPressedCallback(null);
+				var callback = new RecordingBackCallback(activity, mode);
+				if (mode != CallbackMode.None)
+					activity.OnBackPressedDispatcher.AddCallback(callback);
+
+				var modalCount = 1;
+				var subscriberCount = 0;
+				var poppingCount = 0;
+				var cancelPopping = true;
+
+				void HandleModalBack()
+				{
+					subscriberCount++;
+
+					if (activity.IsModalBackPressConsumed)
+						return;
+
+					poppingCount++;
+
+					if (!cancelPopping)
+						modalCount--;
+				}
+
+				activity.DispatchModalBackPress(HandleModalBack);
+
+				Assert.Equal(expectedCallbackCount, callback.Count);
+				Assert.Equal(1, subscriberCount);
+				Assert.Equal(expectedPoppingCount, poppingCount);
+				Assert.Equal(1, modalCount);
+				Assert.False(activity.IsFinishing);
+
+				callback.Enabled = false;
+				cancelPopping = false;
+				activity.DispatchModalBackPress(HandleModalBack);
+
+				Assert.Equal(expectedCallbackCount, callback.Count);
+				Assert.Equal(2, subscriberCount);
+				Assert.Equal(expectedPoppingCount + 1, poppingCount);
+				Assert.Equal(0, modalCount);
+				Assert.False(activity.IsFinishing);
+			});
+		}
+
 		public enum CallbackMode
 		{
 			None,
