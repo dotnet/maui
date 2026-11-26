@@ -36,3 +36,6 @@ static Microsoft.Maui.Easing.CubicBezier(double x1, double y1, double x2, double
 static Microsoft.Maui.Easing.Spring(double bounce = 0.2) -> Microsoft.Maui.Easing!
 static Microsoft.Maui.Easing.Steps(int count, bool jumpAtStart = false) -> Microsoft.Maui.Easing!
 static readonly Microsoft.Maui.Easing.Hold -> Microsoft.Maui.Easing!
+Microsoft.Maui.ILabel.IsTextSelectable.get -> bool
+static Microsoft.Maui.Handlers.LabelHandler.MapIsTextSelectable(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
+static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsTextSelectable(this Android.Widget.TextView! textView, Microsoft.Maui.ILabel! label) -> void
