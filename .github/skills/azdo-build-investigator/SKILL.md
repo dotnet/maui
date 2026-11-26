@@ -17,8 +17,10 @@ answering "why is CI red?" and "is this PR ready to merge?". Use it together wit
 > using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if
 > available). This skill provides MAUI-specific corrections and context on top of that.
 
-The standalone `/review tests` command is retired. Use this skill for CI failure
-investigations; test verification integrated into the full `/review` is unchanged.
+For the **automated** path (a maintainer comments `/review tests` on a PR), the
+`review-test-failures` skill relates failures to the PR diff and the latest five
+completed runs per pipeline on the PR's target branch, then posts one compact attribution
+comment. It does not issue merge approval. Both use the operational facts below.
 
 ## MAUI CI facts (canonical)
 

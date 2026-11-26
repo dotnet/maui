@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />
-    <Compile Include="..\..\..\Core\src\Animations\EasingSyntax.cs" Link="EasingSyntax.cs" />
     <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="IXmlLineInfoProvider.cs" />
     <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
