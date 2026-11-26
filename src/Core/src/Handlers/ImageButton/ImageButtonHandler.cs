@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS || __IOS__ || MACCATALYST
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IImageButton, IImageButtonHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
