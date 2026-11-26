@@ -24,7 +24,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIStepper CreatePlatformView()
 		{
-			return new UIStepper(System.Drawing.RectangleF.Empty);
+			var platformStepper = new UIStepper(System.Drawing.RectangleF.Empty);
+
+			// UIStepper throws when it moves to a window in the Mac idiom; UIStepper has no PreferredBehavioralStyle.
+			platformStepper.UsePadIdiomInMacIdiom();
+
+			return platformStepper;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
