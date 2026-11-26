@@ -5,7 +5,7 @@
   "sourceBranch": "net11",
   "targetBranch": "main",
   "headBranch": "automation/forward-servicing-fixes",
-  "sourceSha": "a2c466cd0ba9ee5d25b9b5a6a323b91b364ba8fa",
-  "previousHeadSha": "",
+  "sourceSha": "d7503c3531677e06666ecf526a39b067f895e441",
+  "previousHeadSha": "a2c466cd0ba9ee5d25b9b5a6a323b91b364ba8fa",
   "stateSha256": "1e881ab046c400cddb513330e5940b5fa7315ee82b4ff4b9611d76e30138e1dc"
 }
