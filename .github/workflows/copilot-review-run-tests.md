@@ -135,6 +135,30 @@ jobs:
   pre-activation:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
+  autopilot_failed:
+    # PR Autopilot started this run; if it fails, stop the loop visibly instead of stalling.
+    needs: [pre_activation, activation]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.pre_activation.outputs.context_ready != 'true')
+    runs-on: ubuntu-slim
+    permissions:
+      issues: write
+      pull-requests: write
+    timeout-minutes: 3
+    steps:
+      - name: Stop PR Autopilot
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            if (!Number.isSafeInteger(number) || number < 1) return;
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) return;
+            await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-running' });
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({ ...context.repo, issue_number: number,
+              body: `⏹️ PR Autopilot stopped: the [test selection](${url}) failed. A maintainer can comment \`/autopilot\` to retry.\n\n<!-- pr-autopilot-status -->` });
   # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.
