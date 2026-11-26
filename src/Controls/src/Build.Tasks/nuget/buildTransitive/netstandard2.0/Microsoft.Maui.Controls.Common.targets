@@ -36,6 +36,7 @@
     <CompilerVisibleProperty Include="MauiXamlLazyRD" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LazyRD" />
     <CompilerVisibleProperty Include="EnableMauiIncrementalHotReload" />
+    <CompilerVisibleProperty Include="MauiEnableHotReload" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EnableIncrementalHotReload" />
 	</ItemGroup>
 </Project>

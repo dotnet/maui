@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, bool EnableDiagnostics = true, string Inflator = "SourceGen", string? LineInfoMetadata = null, string? Configuration = null, bool EnablePreviewFeatures = false, bool? LazyRD = null);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, bool EnableDiagnostics = true, string Inflator = "SourceGen", string? LineInfoMetadata = null, string? Configuration = null, bool EnablePreviewFeatures = false, bool? LazyRD = null, bool? EnableHotReload = null);
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true, IncrementalGeneratorOutputKind disabledOutputs = IncrementalGeneratorOutputKind.None)
 		where T : IIncrementalGenerator, new()
 		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors, disabledOutputs);
@@ -219,6 +219,7 @@ public static class SourceGeneratorDriver
 #endif
 					"build_property.EnableMauiXamlDiagnostics" => _additionalFile.EnableDiagnostics ? "true" : "false",
 					"build_property.EnableMauiIncrementalHotReload" => _additionalFile.EnableIncrementalHotReload ? "true" : "false",
+					"build_property.MauiEnableHotReload" => _additionalFile.EnableHotReload?.ToString().ToLowerInvariant(),
 					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ? _additionalFile.LineInfo : null,
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
 					"build_property.MauiXamlLazyRD" => _additionalFile.LazyRD?.ToString().ToLowerInvariant(),

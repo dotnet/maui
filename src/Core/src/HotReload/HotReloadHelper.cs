@@ -18,11 +18,21 @@ namespace Microsoft.Maui.HotReload
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			HandlerService = handlerService;
 		}
-		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
+		public static void AddActiveView(IHotReloadableView view)
+		{
+			if (RuntimeFeature.IsHotReloadEnabled)
+				ActiveViews.Add(view);
+		}
 		public static void Reset()
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			replacedViews.Clear();
 			activatedHandlerTypes = new();
 
@@ -36,9 +46,9 @@ namespace Microsoft.Maui.HotReload
 
 		internal static bool IsSupported
 #if !NETSTANDARD
-			=> System.Reflection.Metadata.MetadataUpdater.IsSupported;
+			=> RuntimeFeature.IsHotReloadEnabled && System.Reflection.Metadata.MetadataUpdater.IsSupported;
 #else
-			=> true;
+			=> RuntimeFeature.IsHotReloadEnabled;
 #endif
 
 		public static void Register(IHotReloadableView view, params object[] parameters)
@@ -133,6 +143,9 @@ namespace Microsoft.Maui.HotReload
 			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
 		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			activatedHandlerTypes.GetValue(descriptor, static _ => new()).Type = handlerType;
 
 			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
@@ -201,6 +214,9 @@ namespace Microsoft.Maui.HotReload
 #endif
 		internal static void RegisterHandlerReplacement(string oldHandlerType, Type newHandlerType)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
 
 			List<KeyValuePair<Type, Type>> views;
@@ -259,6 +275,9 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			List<IHotReloadableView>? roots = null;
 			while (roots == null)
 			{
@@ -284,6 +303,9 @@ namespace Microsoft.Maui.HotReload
 #endif
 		public static void UpdateApplication(Type[] types)
 		{
+			if (!IsSupported)
+				return;
+
 			IsEnabled = true;
 			foreach (var t in types)
 				RegisterReplacedView(t.FullName ?? "", t);

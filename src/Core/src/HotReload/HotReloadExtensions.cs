@@ -12,6 +12,9 @@ namespace Microsoft.Maui.HotReload
 	{
 		public static void CheckHandlers(this IView? view)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			if (view?.Handler == null)
 				return;
 			//So we can be smart and keep all old handlers
@@ -38,6 +41,9 @@ namespace Microsoft.Maui.HotReload
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 		public static List<MethodInfo> GetOnHotReloadMethods(this Type type)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return new List<MethodInfo>();
+
 			return getOnHotReloadMethods(type).Distinct(new ReflectionMethodComparer()).ToList();
 
 			static IEnumerable<MethodInfo> getOnHotReloadMethods(Type type, bool isSubclass = false)

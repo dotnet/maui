@@ -30,6 +30,7 @@ namespace Microsoft.Maui
 		const bool IsWindowsCollectionView2HandlerEnabledByDefault = true;
 		const bool IsiOSShellHandlerEnabledByDefault = false;
 		const bool IsIncrementalHotReloadEnabledByDefault = false;
+		const bool IsHotReloadEnabledByDefault = true;
 		const bool UseMauiAndroidSystemBarBackgroundsByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
@@ -155,6 +156,14 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsiOSShellHandlerEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsiOSShellHandlerEnabledByDefault;
+
+#if NET11_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsHotReloadEnabled)}")]
+#endif
+		internal static bool IsHotReloadEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHotReloadEnabled)}", out bool isEnabled)
+				? isEnabled
+				: IsHotReloadEnabledByDefault;
 
 #if NET11_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}")]

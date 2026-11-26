@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 
 			_view = view;
 
-			if (_view is IHotReloadableView ihr)
+			if (RuntimeFeature.IsHotReloadEnabled && _view is IHotReloadableView ihr)
 			{
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);

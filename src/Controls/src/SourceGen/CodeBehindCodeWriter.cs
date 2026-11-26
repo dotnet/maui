@@ -194,13 +194,13 @@ static class CodeBehindCodeWriter
 			{
 				InitComp("InitializeComponent", partialsignature: true);
 				//generate InitCompRuntime for HotReload fallback
-				if (projItem.EnableDiagnostics)
+				if (projItem.EnableDiagnostics && projItem.EnableHotReload)
 					InitComp("InitializeComponentRuntime");
 			}
 		}
 		else
 		{
-			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime || projItem.EnableDiagnostics)
+			if ((xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime || (projItem.EnableDiagnostics && projItem.EnableHotReload))
 				InitComp("InitializeComponentRuntime");
 			if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponentXamlC", empty: true);
