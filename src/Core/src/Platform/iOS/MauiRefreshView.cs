@@ -45,11 +45,10 @@ namespace Microsoft.Maui.Platform
 				{
 					if (_isRefreshing)
 					{
-						// Store the current scroll position when refresh starts
-						StoreCurrentScrollPosition();
-						_restoreScrollPosition = true;
-						TryOffsetRefresh(this, IsRefreshing);
-						_refreshControl.BeginRefreshing();
+						// UIKit drops a refresh that begins before the view is in a window,
+						// so in that case it starts on the first layout pass inside one
+						if (Window is not null)
+							StartRefreshing(restoreScrollPosition: true);
 					}
 					else
 					{
@@ -65,6 +64,36 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 			}
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+
+			if (Window is not null && IsRefreshing)
+				SetNeedsLayout();
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (IsRefreshing && Window is not null && _refreshControl.Superview is not null && !_refreshControl.Refreshing)
+			{
+				// The scroll position and insets aren't final yet, so UIKit settles the scroll view itself when it ends
+				StartRefreshing(restoreScrollPosition: false);
+			}
+		}
+
+		void StartRefreshing(bool restoreScrollPosition)
+		{
+			// Store the current scroll position when refresh starts
+			if (restoreScrollPosition)
+				StoreCurrentScrollPosition();
+			_restoreScrollPosition = restoreScrollPosition;
+			// Offsetting before beginning doubles the offset when this runs on the first layout
+			_refreshControl.BeginRefreshing();
+			TryOffsetRefresh(this, true);
 		}
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
