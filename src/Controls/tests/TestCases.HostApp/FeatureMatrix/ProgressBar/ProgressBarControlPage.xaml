@@ -176,7 +176,7 @@
                      VerticalTextAlignment="Center"/>
               <Label Grid.Row="8"
                      Grid.Column="1"
-                     Text="{Binding Progress, StringFormat='{0:F2}'}"
+                     Text="{Binding Progress, Source={x:Reference progressBarControl}, x:DataType=ProgressBar, StringFormat='{0:F2}'}"
                      FontSize="16"
                      VerticalTextAlignment="Center"
                      AutomationId="ProgressValueLabel"/>
