@@ -122,6 +122,22 @@ static partial class ITypeSymbolExtensions
 		out ITypeSymbol? propertyType,
 		out bool isAssumedWritable)
 	{
+		return symbol.TryGetProperty(propertyName, context, context?.Compilation, out property, out propertyType, out isAssumedWritable);
+	}
+
+	/// <summary>
+	/// Tries to get a property by name, and if not found, checks if it could be inferred from a RelayCommand method
+	/// or an ObservableProperty attribute using an explicit compilation when <paramref name="context"/> is null.
+	/// </summary>
+	public static bool TryGetProperty(
+		this ITypeSymbol symbol,
+		string propertyName,
+		SourceGenContext? context,
+		Compilation? compilation,
+		out IPropertySymbol? property,
+		out ITypeSymbol? propertyType,
+		out bool isAssumedWritable)
+	{
 		isAssumedWritable = false;
 		property = symbol.GetAllProperties(propertyName, context)
 			.FirstOrDefault(p => p.GetMethod != null && !p.GetMethod.IsStatic);
@@ -132,16 +148,18 @@ static partial class ITypeSymbolExtensions
 			return true;
 		}
 
+		var effectiveCompilation = compilation ?? context?.Compilation;
+
 		// If property not found, check if it could be a RelayCommand-generated property
 		// Call the BindingSourceGen extension method directly
-		if (symbol.TryGetRelayCommandPropertyType(propertyName, context?.Compilation, out propertyType))
+		if (symbol.TryGetRelayCommandPropertyType(propertyName, effectiveCompilation, out propertyType))
 		{
 			return true;
 		}
 
 		// If property not found, check if it could be an ObservableProperty-generated property
 		// Call the BindingSourceGen extension method directly
-		if (symbol.TryGetObservablePropertyType(propertyName, context?.Compilation, out propertyType))
+		if (symbol.TryGetObservablePropertyType(propertyName, effectiveCompilation, out propertyType))
 		{
 			isAssumedWritable = true;
 			return true;

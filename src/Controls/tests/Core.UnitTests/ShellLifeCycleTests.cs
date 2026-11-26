@@ -541,6 +541,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.TestCount(1);
 		}
 
+		[Fact]
+		public async Task NavigatingFromNavigatedHandlerDoesNotRedirectNavigatedFrom()
+		{
+			var rootPage = new PageLifeCycleTests.LCPage();
+			var poppedPage = new PageLifeCycleTests.LCPage();
+			var detailPage = new PageLifeCycleTests.LCPage();
+			var shell = new TestShell(CreateShellItem(rootPage));
+			shell.RegisterPage(nameof(poppedPage), poppedPage);
+			shell.RegisterPage(nameof(detailPage), detailPage);
+
+			await shell.GoToAsync(nameof(poppedPage));
+
+			var rootNavigatedFrom = new List<NavigationType>();
+			rootPage.NavigatedFrom += (_, args) => rootNavigatedFrom.Add(args.NavigationType);
+
+			Task detailNavigation = null;
+			shell.Navigated += (_, args) =>
+			{
+				if (args.Source == ShellNavigationSource.PopToRoot && detailNavigation is null)
+					detailNavigation = shell.GoToAsync(nameof(detailPage));
+			};
+
+			await shell.GoToAsync("..");
+			await detailNavigation;
+
+			Assert.Equal(NavigationType.PopToRoot, poppedPage.NavigatedFromArgs?.NavigationType);
+			Assert.Equal(new[] { NavigationType.Push }, rootNavigatedFrom);
+			Assert.Same(detailPage, rootPage.NavigatedFromArgs.DestinationPage);
+			Assert.Same(rootPage, detailPage.NavigatedToArgs?.PreviousPage);
+			Assert.Equal(NavigationType.Push, detailPage.NavigatedToArgs.NavigationType);
+		}
+
 		public class LifeCyclePage : ContentPage
 		{
 			public bool Appearing;

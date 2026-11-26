@@ -213,6 +213,8 @@ Describe 'Pipeline support checks' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
         $contextScript | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
         $contextScript | Should -Match 'ready=false'
+        # Only when the default branch cannot run it either: servicing branches use its pipeline.
+        $contextScript | Should -Match 'Test-RunTestsDispatchAt \$pr\.base\.repo\.default_branch'
         Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
     }
 
@@ -227,6 +229,11 @@ Describe 'Pipeline support checks' {
         $invoke | Should -Match "path = 'eng/pipelines'; mode = '040000'; type = 'tree'"
         $invoke | Should -Match 'parents = @\(\$sourceSha\)'
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
+    }
+
+    It "falls back to the default branch's pipeline when the target branch cannot run a dispatch" {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match '@\(\$PullRequest\.base\.ref, \$PullRequest\.base\.repo\.default_branch\)'
     }
 }
 
@@ -320,26 +327,63 @@ Describe 'Run-tests comment' {
         $updated | Should -Not -Match 'Failed tests'
     }
 
-    It 'lists failed tests with the platforms they failed on' {
+    It 'lists failed tests with a link to each platform result and the error' {
         $done = [pscustomobject]@{ id = 99; status = 'completed'; result = 'failed'; _links = $build._links }
-        $failed = ConvertTo-RunTestsFailedTests @(
-            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll' },
-            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll' },
-            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.winui.tests.dll' },
-            [pscustomobject]@{ automatedTestName = 'Microsoft.Maui.TestCases.Tests.ButtonFeatureTests'; testCaseTitle = 'Button_<Script>'; automatedTestStorage = 'controls.testcases.mac.tests.dll' }
+        $web = [string]$build._links.web.href
+        $failed = ConvertTo-RunTestsFailedTests -BuildUrl $web @(
+            [pscustomobject]@{ id = 1; testRun = [pscustomobject]@{ id = '500' }; automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981(Android).PromptInitialValueIsNotSelected'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll'; errorMessage = "System.TimeoutException : Timed out | waiting`nstack" },
+            [pscustomobject]@{ id = 2; testRun = [pscustomobject]@{ id = '500' }; automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981(Android).PromptInitialValueIsNotSelected'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.android.tests.dll' },
+            [pscustomobject]@{ id = 3; runId = 501; automatedTestName = 'Microsoft.Maui.TestCases.Tests.Issues.Issue4981'; testCaseTitle = 'PromptInitialValueIsNotSelected'; automatedTestStorage = 'controls.testcases.winui.tests.dll' },
+            [pscustomobject]@{ id = 4; runId = 502; automatedTestName = 'Microsoft.Maui.TestCases.Tests.ButtonFeatureTests'; testCaseTitle = 'Button_<Script>'; automatedTestStorage = 'controls.testcases.mac.tests.dll' }
         )
         $failed.Count | Should -Be 2
-        ($failed | Where-Object name -eq 'Issue4981.PromptInitialValueIsNotSelected').platforms | Should -Be @('Android', 'Windows')
-        $results = ConvertTo-RunTestsResults -Build $done -Timeline $null -FailedTests $failed
+        $prompt = $failed | Where-Object name -eq 'Issue4981.PromptInitialValueIsNotSelected'
+        $prompt.platforms | Should -Be @('Android', 'Windows')
+        # The re-run's result replaces the first attempt's link; the first error is kept.
+        $prompt.links['Android'] | Should -Be "$web&view=ms.vss-test-web.build-test-results-tab&runId=500&resultId=2&paneView=debug"
+        $prompt.links['Windows'] | Should -Match 'runId=501&resultId=3'
+        $prompt.error | Should -Be 'System.TimeoutException : Timed out | waiting'
+        $timeline = [pscustomobject]@{ records = @(
+            [pscustomobject]@{ id = 'aaa'; type = 'Job'; name = 'Android Button'; result = 'succeeded'; state = 'completed' },
+            [pscustomobject]@{ id = 'bbb'; type = 'Job'; name = 'Windows Label'; result = 'failed'; state = 'completed' }
+        ) }
+        $results = ConvertTo-RunTestsResults -Build $done -Timeline $timeline -FailedTests $failed
         $updated = Update-RunTestsComment -Body $body -Build $done -Results $results
-        $updated | Should -Match '\*\*Failed tests\*\* \(2\)'
-        $updated | Should -Match '\| `Issue4981.PromptInitialValueIsNotSelected` \| Android, Windows \|'
+        $updated | Should -Match '\*\*&#x274C; Failed tests \(2\)\*\*'
+        $updated | Should -Match 'failed &#x2014; 2 tests failed on Android, MacCatalyst, Windows\. See \*\*Failed tests\*\* below\.'
+        $updated | Should -Match ([regex]::Escape("| ``Issue4981.PromptInitialValueIsNotSelected`` | [Android]($web&view=ms.vss-test-web.build-test-results-tab&runId=500&resultId=2&paneView=debug), [Windows]("))
+        $updated | Should -Match ([regex]::Escape('| System.TimeoutException : Timed out \| waiting |'))
+        $updated | Should -Match ([regex]::Escape("[All test results]($web&view=ms.vss-test-web.build-test-results-tab)"))
+        # Failed jobs come first and link to their logs.
+        $updated | Should -Match ([regex]::Escape("| Job | Result |`n| --- | --- |`n| [Windows Label]($web&view=logs&j=bbb) | &#x274C; failed |"))
         $updated | Should -Match 'MacCatalyst'
         $updated | Should -Not -Match '<Script>'
         $updated | Should -Not -Match 'earlier attempts'
+        $check = New-RunTestsRunCheckUpdate -Build $done -Results $results
+        $check.output.summary | Should -Match ([regex]::Escape('- `Issue4981.PromptInitialValueIsNotSelected` on [Android]('))
+        $check.output.summary | Should -Match ([regex]::Escape("- [Windows Label]($web&view=logs&j=bbb)"))
         $rerunTimeline = [pscustomobject]@{ records = @([pscustomobject]@{ type = 'Job'; name = 'Windows Label'; result = 'failed'; state = 'completed'; attempt = 2 }) }
         $rerun = Update-RunTestsComment -Body $body -Build $done -Results (ConvertTo-RunTestsResults -Build $done -Timeline $rerunTimeline -FailedTests $failed)
         $rerun | Should -Match 'earlier attempts that later passed'
+    }
+
+    It 'picks the earlier bot run-tests comments to minimize as outdated' {
+        $bot = [pscustomobject]@{ type = 'Bot' }
+        $comments = @(
+            [pscustomobject]@{ id = 1; node_id = 'n1'; user = $bot; body = "<!-- review-run-tests -->`nold" },
+            [pscustomobject]@{ id = 2; node_id = 'n2'; user = $bot; body = "<!-- review-run-tests-unsupported -->`nold" },
+            [pscustomobject]@{ id = 3; node_id = 'n3'; user = [pscustomobject]@{ type = 'User' }; body = "<!-- review-run-tests -->`nspoof" },
+            [pscustomobject]@{ id = 4; node_id = 'n4'; user = $bot; body = '<!-- AI Gate -->' },
+            [pscustomobject]@{ id = 5; node_id = 'n5'; user = $bot; body = "<!-- review-run-tests -->`nnew" }
+        )
+        @(Select-RunTestsOutdatedComments $comments -KeepId 5 | ForEach-Object node_id) | Should -Be @('n1', 'n2')
+        @(Select-RunTestsOutdatedComments $null -KeepId 5).Count | Should -Be 0
+    }
+
+    It 'minimizes outdated comments after posting a new one' {
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match 'Hide-RunTestsOutdatedComments -Repository \$Repository -PrNumber \$PrNumber -KeepId \$posted\.id'
+        (Get-Content -Raw (Join-Path $PSScriptRoot 'RunTests.Common.ps1')) | Should -Match 'classifier: OUTDATED'
     }
 
     It 're-renders a finished comment when a retried build finishes again' {
@@ -437,7 +481,7 @@ Describe 'Two-model selection' {
     BeforeAll {
         function Resolve-Pair($gpt, $opus) {
             $resolved = [ordered]@{}
-            if ($gpt) { $resolved['gpt-6.1-sol'] = Resolve-RunTestsSelection $gpt $inventory }
+            if ($gpt) { $resolved['gpt-6.2-sol'] = Resolve-RunTestsSelection $gpt $inventory }
             if ($opus) { $resolved['claude-opus-5.5'] = Resolve-RunTestsSelection $opus $inventory }
             Merge-RunTestsSelections -Selections $resolved -Inventory $inventory
         }
@@ -490,25 +534,25 @@ Describe 'Two-model selection' {
     It 'shows what each model chose and who selected the tests' {
         $s = Resolve-Pair (New-Proposal @('android') @('Button')) (New-Proposal @('android', 'ios') @('Label'))
         $body = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
-        $body | Should -Match 'AI-selected UI tests \(GPT-6.1 Sol \+ Claude Opus 5.5\)'
-        $body | Should -Match '\| Platform \| GPT-6.1 Sol \| Claude Opus 5.5 \|'
+        $body | Should -Match 'AI-selected UI tests \(GPT-6.2 Sol \+ Claude Opus 5.5\)'
+        $body | Should -Match '\| Platform \| GPT-6.2 Sol \| Claude Opus 5.5 \|'
         $body | Should -Match '\| Android \| `Button` \| `Label` \|'
         $body | Should -Match '\| iOS \| &#x2014; \| `Label` \|'
-        $body | Should -Match '\*\*GPT-6.1 Sol\*\*'
+        $body | Should -Match '\*\*GPT-6.2 Sol\*\*'
         $body | Should -Not -Match 'Full UI test suite'
     }
 
-    It 'wires GPT-6.1 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
+    It 'wires GPT-6.2 Sol, then Claude Opus 5.5, then the dispatcher, with the same instructions' {
         $workflows = Join-Path $PSScriptRoot '../workflows'
         $gpt = Get-Content (Join-Path $workflows 'copilot-review-run-tests.md') -Raw
         $opus = Get-Content (Join-Path $workflows 'copilot-review-run-tests-opus.md') -Raw
-        $gpt | Should -Match '(?m)^model: gpt-6.1-sol$'
+        $gpt | Should -Match '(?m)^model: gpt-6.2-sol$'
         $opus | Should -Match '(?m)^model: claude-opus-5.5$'
         foreach ($workflow in $gpt, $opus) { $workflow | Should -Match '- shared/run-tests-selection.md' }
         $gpt | Should -Match 'gh workflow run copilot-review-run-tests-opus.lock.yml'
         $gpt | Should -Not -Match 'gh workflow run review-run-tests-dispatch.yml'
         $opus | Should -Match 'second_run_id="\$GITHUB_RUN_ID"'
-        $gpt | Should -Match "proposal\['model'\] = 'gpt-6.1-sol'"
+        $gpt | Should -Match "proposal\['model'\] = 'gpt-6.2-sol'"
         $opus | Should -Match "proposal\['model'\] = 'claude-opus-5.5'"
         $gpt | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
         foreach ($workflow in $gpt, $opus) { $workflow | Should -Not -Match 'run-tests-full|full_run !=' }
@@ -546,7 +590,7 @@ Describe 'Pipeline templates' {
         $ci | Should -Match '(?m)^    - run-tests/\*\s*$'
         $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:") + '\s+- template: /eng/pipelines/common/run-tests-request\.yml@self')
         $variables = Get-Content (Join-Path $pipelines 'variables.yml') -Raw
-        $variables | Should -Match ([regex]::Escape("- `${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:") + '\s+- group: MAUI')
+        $variables | Should -Match ([regex]::Escape("- `${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:") + '\s+- group: MAUI')
         # No other pipeline builds run-tests/* branches.
         foreach ($other in 'ci.yml', 'ci-device-tests.yml', 'ci-official.yml') {
             $path = Join-Path $pipelines "../$other"

@@ -1,19 +1,81 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Net;
 using Android.OS;
 using Android.Webkit;
 using Microsoft.Maui;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Storage;
+using AView = Android.Views.View;
 using File = Java.IO.File;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	class BlazorWebChromeClient : WebChromeClient
 	{
+		readonly global::System.WeakReference<Activity?> _activityReference;
+		readonly WebViewFullScreenPresenter _fullScreenPresenter = new();
+		bool _isDisconnected;
+
+		public BlazorWebChromeClient(Activity? activity)
+		{
+			_activityReference = new global::System.WeakReference<Activity?>(activity);
+		}
+
+		// Overriding OnShowCustomView is what makes the WebView report document.fullscreenEnabled
+		// as true; without it, requestFullscreen() rejects and the <video> fullscreen button is disabled.
+		public override void OnShowCustomView(AView? view, ICustomViewCallback? callback)
+		{
+			if (view is null || callback is null)
+			{
+				base.OnShowCustomView(view, callback);
+				return;
+			}
+
+			if (_isDisconnected)
+			{
+				// Nothing would ever hide a view shown now (see Disconnect), so tell the page it stays out of fullscreen.
+				callback.OnCustomViewHidden();
+				return;
+			}
+
+			if (_fullScreenPresenter.IsShowing)
+			{
+				OnHideCustomView();
+				return;
+			}
+
+			_activityReference.TryGetTarget(out var activity);
+			_fullScreenPresenter.Show(activity, view, callback);
+		}
+
+		public override void OnHideCustomView()
+		{
+			_activityReference.TryGetTarget(out var activity);
+			_fullScreenPresenter.Hide(activity);
+		}
+
+		/// <summary>
+		/// Leaves fullscreen and refuses to enter it again; called when the handler disconnects. The WebView keeps this
+		/// client until its components are disposed, so the page can still ask for fullscreen, and the handler then
+		/// detaches the client before destroying the WebView, so Chromium's own OnHideCustomView never arrives. A view
+		/// shown in that time would leave the fullscreen view, the landscape orientation and the hidden system bars on
+		/// the activity.
+		/// </summary>
+		internal void Disconnect()
+		{
+			_isDisconnected = true;
+
+			if (_fullScreenPresenter.IsShowing)
+			{
+				OnHideCustomView();
+			}
+		}
+
 		public override bool OnCreateWindow(global::Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
 		{
 			if (view?.Context is not null)

@@ -1,5 +1,5 @@
 ---
-description: "/review run-tests, second model: Claude Opus 5.5 picks UI tests from the same context as GPT-6.1 Sol; the union of both selections runs in maui-pr-uitests."
+description: "/review run-tests, second model: Claude Opus 5.5 picks UI tests from the same context as GPT-6.2 Sol; the union of both selections runs in maui-pr-uitests."
 
 imports:
   - shared/threat-detection.md
@@ -14,7 +14,7 @@ environment: copilot-pat-pool
 checkout: false
 
 on:
-  # Dispatched only by copilot-review-run-tests (GPT-6.1 Sol) once its selection is handed over.
+  # Dispatched only by copilot-review-run-tests (GPT-6.2 Sol) once its selection is handed over.
   workflow_dispatch:
     inputs:
       pr_number:
@@ -87,7 +87,7 @@ jobs:
   pre-activation:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
-  # If this model fails, hand over GPT-6.1 Sol's selection on its own. An agent can emit its
+  # If this model fails, hand over GPT-6.2 Sol's selection on its own. An agent can emit its
   # proposal and then exit non-zero; only hand over without one when nothing was dispatched.
   run-tests-fallback:
     needs: [pre_activation, activation, agent, run_selected_ui_tests]

@@ -95,6 +95,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Theory]
+		[InlineData(false, 88, 328, 88)]
+		[InlineData(true, 0, 481, 329)]
+		public Task RtlInitialOffsetAccountsForManualHorizontalSafeArea(
+			bool nativeInsetsCoverAllEdges, int expectedManualHorizontalInset, int expectedContentWidth, int expectedOffset) =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var rawInsets = new UIEdgeInsets(0, 44, 34, 44);
+				using var scrollView = CreateScrollView(new SafeAreaLayoutStub(), null, 0);
+				scrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+				scrollView.SafeAreaInsetsValue = rawInsets;
+				scrollView.SystemInset = nativeInsetsCoverAllEdges ? rawInsets : new UIEdgeInsets(0, 0, 34, 0);
+
+				// Establish layout before RTL so the offset uses the updated safe-area bounds.
+				Arrange(scrollView);
+				scrollView.SemanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
+				Arrange(scrollView);
+
+				Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, scrollView.EffectiveUserInterfaceLayoutDirection);
+				Assert.Equal(expectedManualHorizontalInset, scrollView.SafeAreaBakedIntoContent.HorizontalThickness);
+				Assert.Equal(expectedContentWidth, (double)scrollView.ContentSize.Width);
+				Assert.Equal(expectedOffset, (double)scrollView.ContentOffset.X);
+			});
+
+		[Theory]
 		[InlineData(UIModalPresentationStyle.PageSheet, 580)]
 		[InlineData(UIModalPresentationStyle.FullScreen, 601)]
 		public Task NativePresentationControlsInsetStabilization(UIModalPresentationStyle style, int expectedHeight) =>
@@ -154,8 +178,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public UIResponder Responder { get; set; }
 			public UIEdgeInsets SystemInset { get; set; }
+			public UIEdgeInsets SafeAreaInsetsValue { get; set; } = new UIEdgeInsets(36, 0, 0, 0);
 			public override UIResponder NextResponder => Responder ?? base.NextResponder;
-			public override UIEdgeInsets SafeAreaInsets => new UIEdgeInsets(36, 0, 0, 0);
+			public override UIEdgeInsets SafeAreaInsets => SafeAreaInsetsValue;
 			public override UIEdgeInsets AdjustedContentInset => SystemInset;
 		}
 

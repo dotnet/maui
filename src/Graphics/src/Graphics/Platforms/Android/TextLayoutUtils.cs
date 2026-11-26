@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
-				return StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
+				using var builder = StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth);
+				return builder
 					.SetAlignment(alignment)
 					.SetLineSpacing(0f, 1f)
 					.SetIncludePad(false)

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(nativeComboBox);
 			var platformBrush = picker.Background?.ToPlatform();
 
 			if (platformBrush == null)

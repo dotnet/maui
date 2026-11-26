@@ -3,7 +3,7 @@
     <!-- The .NET product branding version -->
     <MajorVersion>11</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>20</PatchVersion>
+    <PatchVersion>30</PatchVersion>
     <SdkBandVersion>11.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">ci.inflight</PreReleaseVersionLabel>
@@ -139,9 +139,9 @@
     <_HarfBuzzSharpVersion>14.2.1.1</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.e57e2a11dac4ccc72bea52939dede49816842005.1728</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.120</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>11.0.0-prerelease.26569.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>11.0.0-prerelease.26569.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>11.0.0-prerelease.26569.1</MicrosoftDotNetXHarnessCLIVersion>
     <SvgSkiaPackageVersion>5.2.3</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.3.0</FizzlerPackageVersion>
     <ExCSSPackageVersion>4.3.1</ExCSSPackageVersion>

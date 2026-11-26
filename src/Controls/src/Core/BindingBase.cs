@@ -170,6 +170,10 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual object GetSourceValue(object value, Type targetPropertyType)
 		{
+			// A converter returning Binding.DoNothing means "leave the target untouched" (#11740)
+			if (ReferenceEquals(value, MultiBinding.DoNothing))
+				return value;
+
 			if (value == null && TargetNullValue != null)
 				return TargetNullValue;
 

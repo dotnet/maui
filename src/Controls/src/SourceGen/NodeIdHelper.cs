@@ -59,6 +59,33 @@ internal static class NodeIdHelper
 		return result;
 	}
 
+	/// <summary>
+	/// Returns a key that identifies a generation: its XAML and the IDs of its nodes. The same XAML can be
+	/// generated with different IDs (e.g. after a revert), and a patch only applies to the IDs it was
+	/// diffed from, so both are part of the key.
+	/// </summary>
+	public static string ComputeGenerationKey(string xaml, ElementNode root, IReadOnlyDictionary<ElementNode, string> ids)
+	{
+		var builder = new System.Text.StringBuilder(xaml.Replace("\r\n", "\n"));
+		// AssignIds numbers the nodes in a fixed traversal order; list the IDs in that order.
+		var positions = AssignIds(root);
+		var ordered = new string?[positions.Count];
+		foreach (var position in positions)
+		{
+			var index = position.Value.Length == 0 ? 0 : int.Parse(position.Value, System.Globalization.CultureInfo.InvariantCulture) + 1;
+			ordered[index] = ids.TryGetValue(position.Key, out var id) ? id : null;
+		}
+		foreach (var id in ordered)
+			builder.Append('\0').Append(id ?? "?");
+
+		using var sha = System.Security.Cryptography.SHA256.Create();
+		var hash = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(builder.ToString()));
+		var key = new System.Text.StringBuilder(32);
+		for (int i = 0; i < 16; i++)
+			key.Append(hash[i].ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+		return key.ToString();
+	}
+
 	public static HashSet<string> GetTemplateNodeIds(
 		ElementNode root,
 		IReadOnlyDictionary<ElementNode, string> nodeIds)

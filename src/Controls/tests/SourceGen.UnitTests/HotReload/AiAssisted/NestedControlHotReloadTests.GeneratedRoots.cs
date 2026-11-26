@@ -14,10 +14,10 @@ public partial class NestedControlHotReloadTests
 	// Wave2 · Nested Controls · P0-07 · NC-04
 	// Provenance: MAUI Wave2 plan §3.5 NC-04 (P0-07)
 	[Fact]
-	public void NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline()
+	public void NestedGeneratedRoots_LocalResources_EmitsGuardedResourceAddition()
 	{
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(NestedGeneratedRoots_LocalResources_EmitsDocumentedResourceDecline),
+			nameof(NestedGeneratedRoots_LocalResources_EmitsGuardedResourceAddition),
 			PageClass,
 			PageStub,
 			GeneratedProbeCardStub,
@@ -26,7 +26,10 @@ public partial class NestedControlHotReloadTests
 			Documents(Nc04Page("A1", "B1"), Nc04ProbeCard("ProbeConverterOriginal")),
 			Documents(Nc04Page("A2", "B2"), Nc04ProbeCard("ProbeConverterUpdated")));
 
-		AssertProbeCardResourceDecline(GetProbeCardUpdateV2(generation));
+		var update = GetProbeCardUpdateV2(generation);
+		Assert.Contains("if (!this.Resources.ContainsKey(\"Fmt\"))", update, StringComparison.Ordinal);
+		Assert.Contains("this.Resources.AddFactory(\"Fmt\",", update, StringComparison.Ordinal);
+		Assert.DoesNotContain("this.Resources[\"Fmt\"] =", update, StringComparison.Ordinal);
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
 	}
 }

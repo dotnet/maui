@@ -377,7 +377,8 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount,
-			Action<int, AView> rowCreated = null)
+			Action<int, AView> rowCreated = null,
+			Action<global::Android.Views.View, int> setAutomationId = null)
 		{
 			maxItemCount = Math.Min(maxItemCount, MaxBottomNavigationItems);
 			var context = mauiContext.Context;
@@ -409,7 +410,7 @@ namespace Microsoft.Maui.Controls.Platform
 						innerLayout.Click -= clickCallback;
 				}
 				innerLayout.Click += clickCallback;
-
+				setAutomationId?.Invoke(innerLayout, i_local);
 				var image = new ImageView(context);
 				var lp = new LinearLayout.LayoutParams((int)context.ToPixels(32), (int)context.ToPixels(32))
 				{

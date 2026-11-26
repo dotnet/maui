@@ -143,7 +143,6 @@ namespace Microsoft.Maui.Graphics.Platform
 						endAngle += 360;
 					}
 
-					var rect = new global::Android.Graphics.RectF(offsetX + topLeft.X * scaleX, offsetY + topLeft.Y * scaleY, offsetX + bottomRight.X * scaleX, offsetY + bottomRight.Y * scaleY);
 					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 					startAngle *= -1;
@@ -152,7 +151,10 @@ namespace Microsoft.Maui.Graphics.Platform
 						sweep *= -1;
 					}
 
-					platformPath.ArcTo(rect, startAngle, sweep);
+					platformPath.ArcTo(
+						offsetX + topLeft.X * scaleX, offsetY + topLeft.Y * scaleY,
+						offsetX + bottomRight.X * scaleX, offsetY + bottomRight.Y * scaleY,
+						startAngle, sweep, false);
 				}
 				else if (vType == PathOperation.Close)
 				{
@@ -225,7 +227,6 @@ namespace Microsoft.Maui.Graphics.Platform
 					endAngle += 360;
 				}
 
-				var rect = new global::Android.Graphics.RectF(topLeft.X * ppu, topLeft.Y * ppu, bottomRight.X * ppu, bottomRight.Y * ppu);
 				var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 				startAngle *= -1;
@@ -234,7 +235,9 @@ namespace Microsoft.Maui.Graphics.Platform
 					sweep *= -1;
 				}
 
-				path.ArcTo(rect, startAngle, sweep);
+				path.ArcTo(
+					topLeft.X * ppu, topLeft.Y * ppu, bottomRight.X * ppu, bottomRight.Y * ppu,
+					startAngle, sweep, false);
 			}
 
 			return path;
@@ -303,7 +306,6 @@ namespace Microsoft.Maui.Graphics.Platform
 						endAngle += 360;
 					}
 
-					var rect = new global::Android.Graphics.RectF(topLeft.X * ppu, topLeft.Y * ppu, bottomRight.X * ppu, bottomRight.Y * ppu);
 					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 					startAngle *= -1;
@@ -312,7 +314,9 @@ namespace Microsoft.Maui.Graphics.Platform
 						sweep *= -1;
 					}
 
-					path.ArcTo(rect, startAngle, sweep);
+					path.ArcTo(
+						topLeft.X * ppu, topLeft.Y * ppu, bottomRight.X * ppu, bottomRight.Y * ppu,
+						startAngle, sweep, false);
 				}
 				else if (type == PathOperation.Close)
 				{

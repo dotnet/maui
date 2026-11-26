@@ -1,4 +1,4 @@
-# Last step of `/review run-tests`. copilot-review-run-tests.md (GPT-6.1 Sol) collects the
+# Last step of `/review run-tests`. copilot-review-run-tests.md (GPT-6.2 Sol) collects the
 # context and selects; copilot-review-run-tests-opus.md (Claude Opus 5.5) selects from the same
 # context and dispatches this workflow with both runs. Only the union of the two selections runs.
 #
@@ -21,7 +21,7 @@ on:
         required: true
         type: string
       source_run_id:
-        description: Run of copilot-review-run-tests (GPT-6.1 Sol) that collected the context
+        description: Run of copilot-review-run-tests (GPT-6.2 Sol) that collected the context
         required: true
         type: string
       second_run_id:
@@ -115,7 +115,7 @@ jobs:
         shell: pwsh
         run: |
           $paths = @()
-          foreach ($entry in @(@{ run = $env:SOURCE_RUN_ID; model = 'gpt-6.1-sol' }, @{ run = $env:SECOND_RUN_ID; model = 'claude-opus-5.5' })) {
+          foreach ($entry in @(@{ run = $env:SOURCE_RUN_ID; model = 'gpt-6.2-sol' }, @{ run = $env:SECOND_RUN_ID; model = 'claude-opus-5.5' })) {
             $name = "run-tests-proposal-$($entry.run)"
             $listed = gh api "repos/$env:REPO/actions/runs/$($entry.run)/artifacts?name=$name" --jq '.total_count'
             if ($LASTEXITCODE -ne 0) { throw "Could not list the artifacts of run $($entry.run)." }

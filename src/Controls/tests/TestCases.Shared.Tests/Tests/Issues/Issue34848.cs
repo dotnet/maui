@@ -28,7 +28,7 @@ public class Issue34848 : _IssuesUITest
 		App.Tap(DoneButtonId);
 #elif WINDOWS
 		// On Windows, we can tap a date to close the DatePicker
-		App.Tap("16");
+		App.Click(AppiumQuery.ByXPath("//*[@ClassName='CalendarViewDayItem' and @IsSelected='False' and @IsOffscreen='False']"));
 #elif ANDROID
 		// On Android, we can tap the "Cancel" button to close the DatePicker
 		App.Tap("Cancel");

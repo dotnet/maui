@@ -110,6 +110,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public void Visit(ElementNode node, INode parentNode)
 		{
 			XmlName propertyName = XmlName.Empty;
+			var originalParentNode = parentNode;
 
 			//Simplify ListNodes with single elements
 			if (parentNode is ListNode pList && pList.CollectionItems.Count == 1)
@@ -126,6 +127,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				SetDataTemplate((ElementNode)parentNode, node, Context, node);
 				return;
 			}
+
+			if (CreateObjectVisitor.IsDeferredMergedDictionary(node, originalParentNode, Context.Variables[node].VariableType, Context, Module, out var mergeTargetNode))
+				Context.IL.Append(CreateMergedDictionary(Context.Variables[node], Context.Variables[mergeTargetNode], Context, Module));
 
 			//if this node is an IMarkupExtension, invoke ProvideValue() and replace the variable
 			var vardef = Context.Variables[node];
@@ -260,6 +264,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public void Visit(ListNode node, INode parentNode)
 		{
+		}
+
+		static IEnumerable<Instruction> CreateMergedDictionary(VariableDefinition vardef, VariableDefinition mergeTargetVardef, ILContext context, ModuleDefinition module)
+		{
+			var rdTypeRef = module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"));
+			var method = module.ImportMethodReference(context.Cache, rdTypeRef, "CreateMergedDictionary", parameterTypes: [rdTypeRef], isStatic: true);
+			var genericInstanceMethod = new GenericInstanceMethod(method);
+			genericInstanceMethod.GenericArguments.Add(module.ImportReference(vardef.VariableType));
+
+			// vardef = ResourceDictionary.CreateMergedDictionary<T>(mergeTarget);
+			yield return Create(Ldloc, mergeTargetVardef);
+			yield return Create(Call, module.ImportReference(genericInstanceMethod));
+			yield return Create(Stloc, vardef);
 		}
 
 		public static bool TryGetPropertyName(INode node, INode parentNode, out XmlName name)
@@ -630,7 +647,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					// continue compilation
 				}
 
-				if (   dataTypeNode is ElementNode enode
+				if (dataTypeNode is ElementNode enode
 					&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 					&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 				{
@@ -966,7 +983,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
 						var indexTypeDef = indexType.ResolveCached(context.Cache);
-						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) 
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String)
 							&& !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)
 							&& indexTypeDef?.IsEnum != true)
 							throw new BuildException(BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);

@@ -433,7 +433,8 @@ without relaxing permissions. Preserve
 the canonical severity caps, concrete failing scenarios, and grouping.
 Prior feedback never removes a still-valid finding from the canonical array;
 only the trusted publisher suppresses duplicate inline publication.
-Keep the top 15 ordinary findings; retain the
+Keep the top 15 ordinary findings, keeping Behavioral Change Disclosure
+(dimension 32) findings first among findings of equal severity; retain the
 representative committed-credential and archive/path-escape exceptions from
 dimension 31 in addition, up to 17 total. Never reproduce credential values.
 
@@ -502,9 +503,11 @@ the write. An invalid inline anchor fails the entire transaction: it never
 falls back to finding text in the review body.
 It publishes only actionable
 inline comments and submits one COMMENT review with a compact trusted receipt:
-`Expert Review - N findings` and a link to the reviewed commit. Completed
+`Expert Review - N findings` and a link to the reviewed commit. It also counts
+Behavioral Change Disclosure findings as breaking changes and lists their
+locations as links into the reviewed commit, never their text. Completed
 zero-finding reviews also post this receipt so the requester can see the run.
-No recommendation, badge, author ping or detailed summary is published.
+No recommendation, author ping or detailed summary is published.
 Findings without a valid inline anchor and execution failures remain in Actions
 logs/artifacts, never in a top-level comment.
 

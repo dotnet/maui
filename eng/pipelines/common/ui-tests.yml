@@ -452,7 +452,8 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      # System.JobName is only the matrix leg (category group), which every iOS version job shares.
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-${{ project.name }}-${{ version }}-$(System.JobName)-$(System.JobAttempt)'
 
 - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), containsValue(parameters.selectedPlatforms, 'ios'), or(eq(length(parameters.selectedCategories), 0), and(not(contains(join(',', parameters.selectedCategories), ':')), ne(join('', parameters.selectedCategories), 'Material3')), contains(join(',', parameters.selectedCategories), 'ios:'))) }}:
     - stage: ios_ui_tests_nativeaot

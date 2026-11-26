@@ -1,8 +1,8 @@
 ---
-description: "/review run-tests: GPT-6.1 Sol and Claude Opus 5.5 each pick the UI test categories and platforms a PR affects; only the union of their selections runs in maui-pr-uitests."
+description: "/review run-tests: GPT-6.2 Sol and Claude Opus 5.5 each pick the UI test categories and platforms a PR affects; only the union of their selections runs in maui-pr-uitests."
 
 imports:
-  - shared/gpt-6.1-sol.md
+  - shared/gpt-6.2-sol.md
   - shared/threat-detection.md
   - uses: shared/pat_pool.md
     with:
@@ -90,7 +90,7 @@ permissions:
   contents: read
   pull-requests: read
 
-model: gpt-6.1-sol
+model: gpt-6.2-sol
 engine:
   id: copilot
   env:
@@ -172,7 +172,7 @@ safe-outputs:
             foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale') {
               if ($item.PSObject.Properties[$key]) { $proposal[$key] = $item.$key }
             }
-            $proposal['model'] = 'gpt-6.1-sol'
+            $proposal['model'] = 'gpt-6.2-sol'
             New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/run-tests-proposal" | Out-Null
             $proposal | ConvertTo-Json -Depth 5 | Set-Content "$env:RUNNER_TEMP/run-tests-proposal/proposal.json" -Encoding utf8
         - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

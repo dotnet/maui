@@ -2,6 +2,10 @@
 # maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
 # Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
 # check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
+#
+# The dispatch commit is pushed with GITHUB_TOKEN, and GitHub does not start workflows from
+# check_run events on such commits, so the selected run's completion is normally picked up by the
+# sweep, not by check_run. Keep the sweep frequent so the PR updates within ~10 minutes.
 
 name: Review run-tests results
 
@@ -9,7 +13,7 @@ on:
   check_run:
     types: [completed]
   schedule:
-    - cron: '17,47 * * * *'
+    - cron: '7-59/10 * * * *'
   workflow_dispatch:
     inputs:
       head_sha:

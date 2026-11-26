@@ -46,6 +46,41 @@ $script:RunTestsRunCheckName = 'maui-pr-uitests (selected run)'
 $script:RunTestsDispatchBranchPrefix = 'run-tests/'
 $script:RunTestsRequestPath = 'eng/pipelines/common/run-tests-request.yml'
 
+# Earlier bot comments of these kinds are minimized as outdated when a new run-tests comment is posted.
+$script:RunTestsOutdatedMarkers = @($script:RunTestsCommentMarker, '<!-- review-run-tests-unsupported -->')
+
+function Select-RunTestsOutdatedComments {
+    <#
+    .SYNOPSIS
+    The earlier `/review run-tests` comments on a PR that a newly posted one supersedes.
+    #>
+    param([AllowNull()]$Comments, [Parameter(Mandatory)][long]$KeepId)
+    $outdated = foreach ($comment in @($Comments | Where-Object { $_ })) {
+        if ([long]$comment.id -eq $KeepId -or $comment.user.type -ne 'Bot' -or -not $comment.node_id -or -not $comment.body) { continue }
+        $body = [string]$comment.body
+        if (@($script:RunTestsOutdatedMarkers | Where-Object { $body.StartsWith($_) }).Count) { $comment }
+    }
+    return @($outdated)
+}
+
+function Hide-RunTestsOutdatedComments {
+    <#
+    .SYNOPSIS
+    Minimizes, as outdated, the earlier `/review run-tests` comments on a PR once a new one is posted.
+    A failure only warns: the new comment is already up.
+    #>
+    param([Parameter(Mandatory)][string]$Repository, [Parameter(Mandatory)][string]$PrNumber, [Parameter(Mandatory)][long]$KeepId)
+    $raw = & gh api --paginate --slurp "repos/$Repository/issues/$PrNumber/comments?per_page=100"
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list the comments of #$PrNumber."; return }
+    $comments = @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_ })
+    $query = 'mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: OUTDATED }) { minimizedComment { isMinimized } } }'
+    foreach ($comment in Select-RunTestsOutdatedComments $comments -KeepId $KeepId) {
+        & gh api graphql -f query=$query -f id=$($comment.node_id) | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not minimize $($comment.html_url)." }
+        else { Write-Host "Minimized outdated $($comment.html_url)." }
+    }
+}
+
 function Get-RunTestsPlatformIds { return @($script:RunTestsPlatforms.Keys) }
 
 function Get-RunTestsPlatformName {
@@ -595,39 +630,56 @@ function New-RunTestsComment {
     return ($lines -join "`n")
 }
 
+function Format-RunTestsFailedTestPlatforms {
+    param([Parameter(Mandatory)]$Test)
+    return (@($Test.platforms | ForEach-Object {
+                $url = if ($Test.PSObject.Properties['links'] -and $Test.links) { $Test.links[$_] } else { $null }
+                if ($url) { "[$_]($url)" } else { $_ }
+            }) -join ', ')
+}
+
 function Format-RunTestsResultsBlock {
     param([AllowNull()]$Results)
     if (-not $Results) { return '' }
+    $buildUrl = [string]$Results.PSObject.Properties['buildUrl']?.Value
     $lines = [System.Collections.Generic.List[string]]::new()
     $open = if ($Results.completed -and $Results.result -ne 'succeeded') { ' open' } else { '' }
     $lines.Add("<details$open>")
     $lines.Add("<summary><strong>&#x1F4CA; Results</strong> &#x2014; $($Results.headline)</summary>")
     $lines.Add('<br/>')
     $lines.Add('')
-    $lines.Add('| Job | Result |')
-    $lines.Add('| --- | --- |')
-    foreach ($job in $Results.jobs) {
-        $icon = switch ($job.result) { 'succeeded' { '&#x2705;' } 'failed' { '&#x274C;' } 'canceled' { '&#x26AA;' } 'succeededWithIssues' { '&#x26A0;&#xFE0F;' } default { '&#x23F3;' } }
-        $lines.Add("| $($job.name -replace '\|', '/') | $icon $($job.result) |")
-    }
     $failedTests = @($Results.PSObject.Properties['failedTests']?.Value | Where-Object { $_ })
     if ($failedTests.Count -gt 0) {
+        $lines.Add("**&#x274C; Failed tests ($($failedTests.Count))**")
         $lines.Add('')
-        $lines.Add("**Failed tests** ($($failedTests.Count))")
-        $lines.Add('')
-        $lines.Add('| Test | Platforms |')
-        $lines.Add('| --- | --- |')
+        $lines.Add('| Test | Failed on | Error |')
+        $lines.Add('| --- | --- | --- |')
         foreach ($test in @($failedTests | Select-Object -First $script:RunTestsMaxFailedTests)) {
-            $lines.Add("| ``$(Format-RunTestsText $test.name)`` | $($test.platforms -join ', ') |")
+            $errorText = (Format-RunTestsText ([string]$test.PSObject.Properties['error']?.Value) 160) -replace '\|', '\|'
+            $lines.Add("| ``$(Format-RunTestsText $test.name)`` | $(Format-RunTestsFailedTestPlatforms $test) | $errorText |")
+        }
+        if ($failedTests.Count -gt $script:RunTestsMaxFailedTests) {
+            $lines.Add('')
+            $lines.Add("...and $($failedTests.Count - $script:RunTestsMaxFailedTests) more in the Tests tab.")
         }
         if ($Results.PSObject.Properties['rerun']?.Value) {
             $lines.Add('')
             $lines.Add('Some jobs were re-run, so this list can include failures from earlier attempts that later passed.')
         }
-        if ($failedTests.Count -gt $script:RunTestsMaxFailedTests) {
-            $lines.Add('')
-            $lines.Add("...and $($failedTests.Count - $script:RunTestsMaxFailedTests) more in the run's Tests tab.")
-        }
+        $lines.Add('')
+    }
+    if ($buildUrl) {
+        $lines.Add("&#x1F517; [All test results]($(Get-RunTestsResultUrl $buildUrl)) &#xB7; [Build logs]($buildUrl&view=logs)")
+        $lines.Add('')
+    }
+    $lines.Add('| Job | Result |')
+    $lines.Add('| --- | --- |')
+    foreach ($job in $Results.jobs) {
+        $icon = switch ($job.result) { 'succeeded' { '&#x2705;' } 'failed' { '&#x274C;' } 'canceled' { '&#x26AA;' } 'succeededWithIssues' { '&#x26A0;&#xFE0F;' } default { '&#x23F3;' } }
+        $jobName = $job.name -replace '\|', '/'
+        $jobUrl = [string]$job.PSObject.Properties['url']?.Value
+        if ($jobUrl) { $jobName = "[$jobName]($jobUrl)" }
+        $lines.Add("| $jobName | $icon $($job.result) |")
     }
     $lines.Add('')
     $lines.Add('</details>')
@@ -638,23 +690,47 @@ function Format-RunTestsResultsBlock {
 $script:RunTestsMaxFailedTests = 25
 $script:RunTestsTestAssemblyPlatforms = [ordered]@{ android = 'Android'; ios = 'iOS'; mac = 'MacCatalyst'; winui = 'Windows' }
 
+function Get-RunTestsResultUrl {
+    <#
+    .SYNOPSIS
+    Link to a build's Tests tab, or to one test result in it.
+    #>
+    param([Parameter(Mandatory)][string]$BuildUrl, [string]$RunId, [string]$ResultId)
+    $url = "$BuildUrl&view=ms.vss-test-web.build-test-results-tab"
+    if ($RunId -match '^\d+$' -and $ResultId -match '^\d+$') { $url += "&runId=$RunId&resultId=$ResultId&paneView=debug" }
+    return $url
+}
+
 function ConvertTo-RunTestsFailedTests {
     <#
     .SYNOPSIS
-    Groups Azure DevOps failed test results (testresults/resultsbybuild) by test, with the platforms they failed on.
+    Groups failed Azure DevOps test results by test: the platforms it failed on, a link to each
+    platform's result and the first error message.
+    .PARAMETER TestResults
+    Test results as returned by test/Runs/{runId}/results/{id} (testRun.id, id, errorMessage), or the
+    lighter testresults/resultsbybuild entries (runId, id).
     #>
-    param([AllowNull()]$TestResults)
+    param([AllowNull()]$TestResults, [string]$BuildUrl)
     $groups = [ordered]@{}
     foreach ($result in @($TestResults | Where-Object { $_ })) {
-        $class = ([string]$result.automatedTestName -split '\.')[-1]
         $title = [string]$result.testCaseTitle
+        $full = [string]$result.automatedTestName
+        # "Namespace.Fixture(Args).Method" or just "Namespace.Fixture"; show "Fixture.Method".
+        $fixture = if ($title -and $full.EndsWith(".$title")) { $full.Substring(0, $full.Length - $title.Length - 1) } else { $full }
+        $class = (($fixture -replace '\([^()]*\)$', '') -split '\.')[-1]
         $name = if ($class -and $title -and $class -ne $title) { "$class.$title" } elseif ($title) { $title } else { $class }
         if (-not $name) { continue }
-        $platform = if ([string]$result.automatedTestStorage -match 'testcases\.(\w+)\.tests') { $script:RunTestsTestAssemblyPlatforms[$Matches[1]] ?? $Matches[1] } else { $null }
-        if (-not $groups.Contains($name)) { $groups[$name] = [System.Collections.Generic.SortedSet[string]]::new() }
-        if ($platform) { [void]$groups[$name].Add($platform) }
+        $platform = if ([string]$result.automatedTestStorage -match 'testcases\.(\w+)\.tests') { $script:RunTestsTestAssemblyPlatforms[$Matches[1]] ?? $Matches[1] } else { 'Unknown' }
+        if (-not $groups.Contains($name)) { $groups[$name] = [ordered]@{ links = [System.Collections.Generic.SortedDictionary[string, string]]::new(); error = '' } }
+        $runId = [string]$(if ($result.PSObject.Properties['testRun']) { $result.testRun.id } else { $result.PSObject.Properties['runId']?.Value })
+        # Later results (re-runs) replace earlier ones for the same platform.
+        $groups[$name].links[$platform] = if ($BuildUrl) { Get-RunTestsResultUrl $BuildUrl $runId ([string]$result.id) } else { '' }
+        $message = [string]$result.PSObject.Properties['errorMessage']?.Value
+        if ($message -and -not $groups[$name].error) { $groups[$name].error = (($message -split '\r?\n') | Where-Object { $_.Trim() } | Select-Object -First 1) }
     }
-    return @($groups.Keys | Sort-Object | ForEach-Object { [pscustomobject]@{ name = $_; platforms = @($groups[$_]) } })
+    return @($groups.Keys | Sort-Object | ForEach-Object {
+            [pscustomobject]@{ name = $_; platforms = @($groups[$_].links.Keys); links = $groups[$_].links; error = $groups[$_].error }
+        })
 }
 
 # Heading of the section listing what runs. A neutral icon, so a failed build never shows a green tick there.
@@ -688,8 +764,15 @@ function New-RunTestsRunCheckUpdate {
     #>
     param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
     $title = "maui-pr-uitests #$($Build.id): $($Results.headline)"
-    $failed = @($Results.jobs | Where-Object { $_.result -eq 'failed' } | ForEach-Object { "- $($_.name)" })
-    $summary = @("[maui-pr-uitests #$($Build.id)]($($Build._links.web.href))", '') + $(if ($failed.Count) { @('Failed jobs:') + $failed } else { @() })
+    $webUrl = [string]$Build._links.web.href
+    $failed = @($Results.jobs | Where-Object { $_.result -eq 'failed' } | ForEach-Object {
+            $url = [string]$_.PSObject.Properties['url']?.Value
+            if ($url) { "- [$($_.name)]($url)" } else { "- $($_.name)" } })
+    $tests = @($Results.PSObject.Properties['failedTests']?.Value | Where-Object { $_ } | Select-Object -First $script:RunTestsMaxFailedTests |
+        ForEach-Object { "- ``$(Format-RunTestsText $_.name)`` on $(Format-RunTestsFailedTestPlatforms $_)" })
+    $summary = @("[maui-pr-uitests #$($Build.id)]($webUrl) &#xB7; [All test results]($(Get-RunTestsResultUrl $webUrl))", '')
+    if ($tests.Count) { $summary += @('Failed tests:') + $tests + @('') }
+    if ($failed.Count) { $summary += @('Failed jobs:') + $failed }
     $update = [ordered]@{ output = [ordered]@{ title = (Format-RunTestsText $title 200); summary = ($summary -join "`n") } }
     if ($Results.completed) {
         $update.status = 'completed'
@@ -717,7 +800,15 @@ function Get-RunTestsStatus {
         switch ($Results.result) {
             'succeeded' { return @{ state = 'done'; badge = 'PASSED'; color = '2da44e'; line = "&#x2705; $link passed." } }
             'canceled' { return @{ state = 'done'; badge = 'CANCELED'; color = '6e7681'; line = "&#x26AA; $link was canceled." } }
-            default { return @{ state = 'done'; badge = 'FAILED'; color = 'cf222e'; line = "&#x274C; $link $($Results.result). See the failing checks below or the run for details." } }
+            default {
+                $tests = @($Results.PSObject.Properties['failedTests']?.Value | Where-Object { $_ })
+                $jobs = @($Results.PSObject.Properties['jobs']?.Value | Where-Object { $_.result -eq 'failed' })
+                $what = if ($tests.Count) {
+                    $platforms = @($tests | ForEach-Object { $_.platforms } | Sort-Object -Unique) -join ', '
+                    " &#x2014; $(Format-RunTestsCount $tests.Count 'test' 'tests') failed on $platforms. See **Failed tests** below."
+                } elseif ($jobs.Count) { " &#x2014; $(Format-RunTestsCount $jobs.Count 'job' 'jobs') failed. See **Results** below." } else { '.' }
+                return @{ state = 'done'; badge = 'FAILED'; color = 'cf222e'; line = "&#x274C; $link $($Results.result)$what" }
+            }
         }
     }
     return @{ state = 'running'; badge = 'RUNNING'; color = '9a6700'; line = "&#x23F3; $link is running. The ``$($script:RunTestsRunCheckName)`` check on this PR follows it, and this comment updates when it finishes." }
@@ -730,6 +821,7 @@ function ConvertTo-RunTestsResults {
     #>
     param([Parameter(Mandatory)]$Build, [AllowNull()]$Timeline, [AllowNull()]$FailedTests)
     $jobs = @()
+    $webUrl = [string]$Build.PSObject.Properties['_links']?.Value.web.href
     if ($Timeline -and $Timeline.records) {
         $byId = @{}
         foreach ($record in $Timeline.records) { if ($record.id) { $byId[[string]$record.id] = $record } }
@@ -740,8 +832,9 @@ function ConvertTo-RunTestsResults {
                 while ($parent -and $parent.type -ne 'Stage') { $parent = $byId[[string]$parent.parentId] }
                 if ($parent) { $stage = [string]$parent.name }
                 $name = if ($stage) { "$stage $($_.name)" } else { [string]$_.name }
-                [pscustomobject]@{ name = $name; result = $(if ($_.result) { [string]$_.result } else { [string]$_.state }) }
-            } | Sort-Object name)
+                $url = if ($webUrl -and $_.id) { "$webUrl&view=logs&j=$($_.id)" } else { $null }
+                [pscustomobject]@{ name = $name; result = $(if ($_.result) { [string]$_.result } else { [string]$_.state }); url = $url }
+            } | Sort-Object @{ Expression = { $_.result -ne 'failed' } }, name)
     }
     $completed = $Build.status -eq 'completed'
     $failed = @($jobs | Where-Object { $_.result -eq 'failed' }).Count
@@ -751,6 +844,7 @@ function ConvertTo-RunTestsResults {
         completed = $completed
         result = [string]$Build.result
         jobs = $jobs
+        buildUrl = $webUrl
         failedTests = @($FailedTests | Where-Object { $_ })
         rerun = [bool]@($Timeline.records | Where-Object { $_.type -eq 'Job' -and [int]($_.attempt ?? 1) -gt 1 }).Count
         headline = $headline
@@ -907,12 +1001,12 @@ function Get-RunTestsRunnableCategories {
 
 
 # Models allowed to select tests, with the names shown in comments.
-$script:RunTestsModels = [ordered]@{ 'gpt-6.1-sol' = 'GPT-6.1 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
+$script:RunTestsModels = [ordered]@{ 'gpt-6.2-sol' = 'GPT-6.2 Sol'; 'claude-opus-5.5' = 'Claude Opus 5.5' }
 
 function Get-RunTestsSelectedByText {
     <#
     .SYNOPSIS
-    "AI-selected UI tests (GPT-6.1 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
+    "AI-selected UI tests (GPT-6.2 Sol + Claude Opus 5.5)" for the comment header; -Short for the rationale heading.
     #>
     param([Parameter(Mandatory)]$Selection, [switch]$Short)
     $names = @($Selection.PSObject.Properties['models']?.Value | Where-Object { $_ } | ForEach-Object { $_.displayName })

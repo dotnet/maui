@@ -565,7 +565,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (view is ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout } && view.Context is Context context)
 				{
-					InitializeImeAnimationState(context);
+					InitializeImeAnimationState(view, context);
 					if (_shouldApplyAnimatedImeInsets &&
 						SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
 							insets,
@@ -776,7 +776,7 @@ namespace Microsoft.Maui.Platform
 			_runningImeAnimations.Add(animation);
 		}
 
-		void InitializeImeAnimationState(Context context)
+		void InitializeImeAnimationState(AView view, Context context)
 		{
 			if (_imeAnimationStateInitialized)
 			{
@@ -785,7 +785,8 @@ namespace Microsoft.Maui.Platform
 
 			_imeAnimationStateInitialized = true;
 
-			if (context.GetActivity()?.Window?.Attributes is WindowManagerLayoutParams attributes)
+			// Read the window hosting the view (a modal's dialog window), not the activity's
+			if ((view.RootView?.LayoutParameters as WindowManagerLayoutParams ?? context.GetActivity()?.Window?.Attributes) is WindowManagerLayoutParams attributes)
 			{
 				_shouldApplyAnimatedImeInsets = ShouldApplyAnimatedImeInsets(attributes.SoftInputMode);
 			}

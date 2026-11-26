@@ -85,6 +85,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(platformButton);
 			var brush = button.Background?.ToPlatform();
 
 			if (brush is UI.Xaml.Media.SolidColorBrush newBrush &&

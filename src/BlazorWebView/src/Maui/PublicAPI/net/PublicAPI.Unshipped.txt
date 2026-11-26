@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs!>?
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void

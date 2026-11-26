@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.TestCases;
@@ -120,6 +121,59 @@ namespace Microsoft.Maui.DeviceTests
 
 							Assert.True(initialEntryBox == finalEntryBox);
 							Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+						}
+					});
+				});
+			}
+
+			[Fact]
+			public async Task SoftInputParentDoesNotBlockScrollRectToVisible()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handler =>
+					{
+						handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+						handler.AddHandler<ScrollView, ScrollViewHandler>();
+						handler.AddHandler<Entry, EntryHandler>();
+					});
+				});
+
+				var entry = new Entry();
+				var scrollView = new ScrollView
+				{
+					HeightRequest = 300,
+					Content = new VerticalStackLayout { entry, new VerticalStackLayout { HeightRequest = 2000 } }
+				};
+				var layout = new VerticalStackLayout { scrollView };
+				layout.WidthRequest = 300;
+				layout.HeightRequest = 400;
+				layout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.SoftInput);
+
+				await InvokeOnMainThreadAsync(async () =>
+				{
+					var layoutHandler = CreateHandler<LayoutHandler>(layout);
+					await layoutHandler.PlatformView.AttachAndRun(() =>
+					{
+						var textField = (UITextField)entry.Handler.PlatformView;
+						var platformScrollView = (UIScrollView)scrollView.Handler.PlatformView;
+						Assert.True(MauiView.IsSoftInputHandledByParent(textField), "The Entry should be inside a SoftInput parent");
+
+						KeyboardAutoManagerScroll.Connect();
+						try
+						{
+							Assert.True(textField.BecomeFirstResponder(), "The Entry should become first responder");
+
+							var offsetBefore = platformScrollView.ContentOffset.Y;
+							platformScrollView.ScrollRectToVisible(new CGRect(0, platformScrollView.ContentSize.Height - 10, 10, 10), false);
+
+							Assert.True(platformScrollView.ContentOffset.Y > offsetBefore, $"ScrollRectToVisible should scroll while editing (offset stayed {offsetBefore})");
+							Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+						}
+						finally
+						{
+							textField.ResignFirstResponder();
+							KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling = false;
 						}
 					});
 				});

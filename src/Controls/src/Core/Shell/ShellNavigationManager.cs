@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			ShellNavigationRequest navigationRequest)
 		{
 			// check for any pending navigations that need to complete
-			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+			while (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
 				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
 
 			bool registeredPagePushingRoute = shellNavigationParameters.PagePushing is not null && navigationRequest is null;
@@ -66,12 +66,33 @@ namespace Microsoft.Maui.Controls
 			bool enableRelativeShellRoutes = shellNavigationParameters.EnableRelativeShellRoutes;
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
 
+			bool navigationRequestComputedLocally = navigationRequest is null;
 			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+
+			int leadingPops = ShellUriHandler.CountLeadingDotDotSegments(state.FullLocation);
 
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
 			ShellNavigationSource source = CalculateNavigationSource(_shell, _shell.CurrentState, navigationRequest);
+
+			// A relative pop ("..") resolves to an absolute target based on the stack as it
+			// is right now; the awaits below can let a concurrent navigation pop that stack
+			// first, so re-resolve the request before applying it instead of replaying a
+			// stale target (e.g. two overlapping ".." requests must pop two pages, not one).
+			bool recomputeRelativePopOnResume = navigationRequestComputedLocally && isRelativePopping;
+			var relativePopOrigin = _shell?.CurrentItem?.CurrentItem;
+			void RecomputeRelativePopRequest()
+			{
+				// ".." was requested against the originating section's stack; if the user
+				// switched sections while we were waiting, resolving it against the new
+				// section would pop the wrong stack, so replay the original request instead.
+				if (_shell?.CurrentItem?.CurrentItem != relativePopOrigin)
+					return;
+
+				navigationRequest = ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+				source = CalculateNavigationSource(_shell, _shell.CurrentState, navigationRequest);
+			}
 
 			// If the deferredArgs are non null that means we are processing a delayed navigation
 			// so the user has indicated they want to go forward with navigation
@@ -85,7 +106,12 @@ namespace Microsoft.Maui.Controls
 				{
 					bool accept = !navigatingArgs.NavigationDelayedOrCancelled;
 					if (navigatingArgs.DeferredTask != null)
+					{
 						accept = await navigatingArgs.DeferredTask;
+
+						if (accept && recomputeRelativePopOnResume)
+							RecomputeRelativePopRequest();
+					}
 
 					if (!accept)
 					{
@@ -166,8 +192,19 @@ namespace Microsoft.Maui.Controls
 			bool modalStackPreBuilt = false;
 
 			// check for any pending navigations that need to complete
-			if (currentShellSection?.PendingNavigationTask != null)
+			while (currentShellSection?.PendingNavigationTask != null)
+			{
 				await (currentShellSection?.PendingNavigationTask ?? Task.CompletedTask);
+
+				if (recomputeRelativePopOnResume)
+				{
+					RecomputeRelativePopRequest();
+					shellItem = navigationRequest.Request.Item;
+					shellSection = navigationRequest.Request.Section;
+					nextActiveSection = shellSection ?? shellItem?.CurrentItem;
+					shellContent = navigationRequest.Request.Content;
+				}
+			}
 
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
 			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
@@ -215,6 +252,18 @@ namespace Microsoft.Maui.Controls
 				// navigation path. So this waits until that's finished before returning from GotoAsync
 				if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
 					await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
+				// If an absolute route was prefixed with ".." segments ("//../../Page2"), those
+				// segments are no longer part of the resolved request, so pop one page per ".."
+				// off the section that's being navigated away from
+				if (leadingPops > 0 &&
+					currentShellSection != null &&
+					currentShellSection != _shell.CurrentItem?.CurrentItem)
+				{
+					var previousStack = currentShellSection.Stack.ToList();
+					for (int i = previousStack.Count - 1; i >= 1 && leadingPops > 0; i--, leadingPops--)
+						currentShellSection.Navigation.RemovePage(previousStack[i]);
+				}
 
 				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
 				{

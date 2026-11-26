@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Maui.Controls.BindingSourceGen;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -115,12 +116,13 @@ internal static class MemberResolver
 		}
 
 		// No explicit prefix - need to resolve
+		var isGlobalQualified = trimmed.StartsWith("global::", StringComparison.Ordinal);
 		var rootIdentifier = GetRootIdentifier(trimmed);
 		if (string.IsNullOrEmpty(rootIdentifier))
 			return new MemberResolutionResult(MemberLocation.Neither, trimmed, string.Empty);
 
-		var onThis = thisType != null && HasMember(thisType, rootIdentifier);
-		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
+		var onThis = !isGlobalQualified && thisType != null && HasMember(thisType, rootIdentifier, includeMethods: false, compilation);
+		var onDataType = !isGlobalQualified && dataType != null && HasMember(dataType, rootIdentifier, includeMethods: false, compilation);
 
 		var resolvesToStaticType = false;
 		var conflictsWithStatic = false;
@@ -427,7 +429,7 @@ internal static class MemberResolver
 	/// <summary>
 	/// Checks if a type has a member with the given name.
 	/// </summary>
-	public static bool HasMember(ITypeSymbol? type, string memberName, bool includeMethods = false)
+	public static bool HasMember(ITypeSymbol? type, string memberName, bool includeMethods = false, Compilation? compilation = null)
 	{
 		if (type == null)
 			return false;
@@ -453,6 +455,13 @@ internal static class MemberResolver
 						return true;
 				}
 			}
+		}
+
+		if (compilation != null &&
+			(type.TryGetObservablePropertyType(memberName, compilation, out _) ||
+			 type.TryGetRelayCommandPropertyType(memberName, compilation, out _)))
+		{
+			return true;
 		}
 
 		return false;

@@ -260,6 +260,129 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public async Task OverlappingRelativePopsEachPopAPage()
+		{
+			Routing.RegisterRoute("overlapPopPage1", typeof(ShellTestPage));
+			Routing.RegisterRoute("overlapPopPage2", typeof(ContentPage));
+			TestShell shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync($"overlapPopPage1?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			await shell.GoToAsync("overlapPopPage2");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			// The first pop resolves ".." against the current stack and then parks on the deferral.
+			var pop1 = shell.GoToAsync("..");
+			Assert.NotNull(deferral);
+			Assert.False(pop1.IsCompleted);
+
+			// The second pop completes while the first is still deferred.
+			await shell.GoToAsync("..");
+
+			deferral.Complete();
+			await pop1;
+
+			// Two ".." navigations should pop two pages, not replay the same stale target twice.
+			Assert.Equal("//root", shell.CurrentState.Location.ToString());
+			Assert.Single(shell.Navigation.NavigationStack);
+		}
+
+		[Fact]
+		public async Task OverlappingRelativePopsPreserveQueryParameters()
+		{
+			Routing.RegisterRoute("overlapQueryPage1", typeof(ShellTestPage));
+			Routing.RegisterRoute("overlapQueryPage2", typeof(ContentPage));
+			Routing.RegisterRoute("overlapQueryPage3", typeof(ContentPage));
+			TestShell shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync($"overlapQueryPage1?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			var page1 = (ShellTestPage)shell.CurrentPage;
+			await shell.GoToAsync("overlapQueryPage2");
+			await shell.GoToAsync("overlapQueryPage3");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			var pop1 = shell.GoToAsync("..");
+			Assert.NotNull(deferral);
+
+			await shell.GoToAsync("..");
+
+			deferral.Complete();
+			await pop1;
+
+			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+			Assert.Same(page1, shell.CurrentPage);
+			Assert.Equal("1", page1.SomeQueryParameter);
+		}
+
+		[Fact]
+		public async Task OverlappingRelativePopWithQueryParametersPopsAPage()
+		{
+			Routing.RegisterRoute("overlapQueryPopPage1", typeof(ContentPage));
+			Routing.RegisterRoute("overlapQueryPopPage2", typeof(ContentPage));
+			var rootPage = new ShellTestPage();
+			TestShell shell = new TestShell(CreateShellItem(page: rootPage, shellContentRoute: "root"));
+
+			await shell.GoToAsync("overlapQueryPopPage1");
+			await shell.GoToAsync("overlapQueryPopPage2");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			// A ".." pop that carries a query string is still a relative pop.
+			var pop1 = shell.GoToAsync($"..?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			Assert.NotNull(deferral);
+			Assert.False(pop1.IsCompleted);
+
+			// The second pop completes while the first is still deferred.
+			await shell.GoToAsync("..");
+
+			deferral.Complete();
+			await pop1;
+
+			// Two ".." navigations should pop two pages, and the query parameter
+			// should reach the page revealed by the deferred pop.
+			Assert.Equal("//root", shell.CurrentState.Location.ToString());
+			Assert.Single(shell.Navigation.NavigationStack);
+			Assert.Equal("1", rootPage.SomeQueryParameter);
+		}
+
+		[Fact]
+		public async Task DeferredRelativePopAfterShellItemSwitchPopsOriginalStack()
+		{
+			Routing.RegisterRoute("tabOneDetail", typeof(ContentPage));
+			Routing.RegisterRoute("tabTwoDetail", typeof(ContentPage));
+			var itemOne = CreateShellItem(shellContentRoute: "tabOne");
+			var itemTwo = CreateShellItem(shellContentRoute: "tabTwo");
+			TestShell shell = new TestShell(itemOne);
+			shell.Items.Add(itemTwo);
+
+			await shell.GoToAsync("//tabTwo/tabTwoDetail");
+			await shell.GoToAsync("//tabOne/tabOneDetail");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			// The pop originates on the first item and parks on the deferral.
+			var pop1 = shell.GoToAsync("..");
+			Assert.NotNull(deferral);
+			Assert.False(pop1.IsCompleted);
+
+			// Switch to the second item while the pop is still deferred.
+			shell.CurrentItem = itemTwo;
+
+			deferral.Complete();
+			await pop1;
+
+			// The deferred ".." belongs to the first item's stack; completing it
+			// must not pop the second item's stack.
+			Assert.Equal(2, itemTwo.CurrentItem.Stack.Count);
+			Assert.Single(itemOne.CurrentItem.Stack);
+		}
+
 		[Theory]
 		[InlineData("PopToRoot")]
 		[InlineData("Pop")]
@@ -445,6 +568,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnPopAsync", tab.NavigationsFired[1]);
 			Assert.Equal(2, tab.NavigationsFired.Count);
+		}
+
+		[Fact]
+		public async Task AbsoluteRoutePrefixedWithDotDotSegmentsPopsPagesFromPreviousSection()
+		{
+			var shellItem = new FlyoutItem();
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page1"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page2"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page3"));
+			TestShell shell = new TestShell(shellItem);
+			shell.RegisterPage("Page4");
+			shell.RegisterPage("Page5");
+			var page3Section = shellItem.Items[2];
+
+			await shell.GoToAsync("//Page3");
+			await shell.GoToAsync("Page4");
+			await shell.GoToAsync("Page5");
+			Assert.Equal(3, page3Section.Stack.Count);
+
+			await shell.GoToAsync("//../../Page2");
+
+			Assert.Equal("//Page2", shell.CurrentState.Location.ToString());
+			Assert.Single(page3Section.Stack);
+		}
+
+		[Fact]
+		public async Task EachDotDotSegmentOnAbsoluteRoutePopsOnePageFromPreviousSection()
+		{
+			var shellItem = new FlyoutItem();
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page1"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page2"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page3"));
+			TestShell shell = new TestShell(shellItem);
+			var page4 = shell.RegisterPage("Page4");
+			shell.RegisterPage("Page5");
+			var page3Section = shellItem.Items[2];
+
+			await shell.GoToAsync("//Page3");
+			await shell.GoToAsync("Page4");
+			await shell.GoToAsync("Page5");
+			Assert.Equal(3, page3Section.Stack.Count);
+
+			await shell.GoToAsync("//../Page2");
+
+			Assert.Equal("//Page2", shell.CurrentState.Location.ToString());
+			Assert.Equal(2, page3Section.Stack.Count);
+			Assert.Equal(page4, page3Section.Stack[1]);
 		}
 
 		[Fact]
@@ -813,6 +983,67 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
 			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
 			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PoppingWithHierarchicalRoutesIsIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync("//root/home");
+			await shell.GoToAsync("savings");
+			await shell.GoToAsync("search");
+			await shell.GoToAsync("levels");
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("//root/home/savings/search", shell.CurrentState.Location.ToString());
+			Assert.Equal(4, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
+			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
+		}
+
+		[Fact]
+		public async Task PoppingWithHierarchicalTemplateRoutesPreservesIntermediatePages()
+		{
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+			Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
+
+			Routing.RegisterRoute("edit", typeof(TestPage3));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync("//root/product/5");
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("edit");
+
+			Assert.Equal(4, shell.Navigation.NavigationStack.Count);
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("//root/product/5/details", shell.CurrentState.Location.ToString());
+			Assert.Equal(3, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
 		}
 
 		[Fact]

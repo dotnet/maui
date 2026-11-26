@@ -39,7 +39,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
+			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null
+				&& !(Context.Types.TryGetValue(node, out var nodeType) && CreateValuesVisitor.IsDeferredMergedDictionary(node, parentNode, nodeType, out _)))
 				return;
 
 			//Set RD to VE

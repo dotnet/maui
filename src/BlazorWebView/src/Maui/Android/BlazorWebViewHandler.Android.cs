@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using static global::Android.Views.ViewGroup;
 using AWebView = global::Android.Webkit.WebView;
 using Path = System.IO.Path;
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webViewClient = new WebKitWebViewClient(this);
 			blazorAndroidWebView.SetWebViewClient(_webViewClient);
 
-			_webChromeClient = new BlazorWebChromeClient();
+			_webChromeClient = new BlazorWebChromeClient(Context.GetActivity() ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity);
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
 			Logger.CreatedAndroidWebkitWebView();
@@ -117,6 +118,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_backPressedCallback?.Remove();
 			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;
+
+			(_webChromeClient as BlazorWebChromeClient)?.Disconnect();
 
 			platformView.StopLoading();
 

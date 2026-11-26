@@ -806,6 +806,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(1, carouselView.Position);
 				Assert.Same(overrideItem, carouselView.CurrentItem);
+				await AssertEventually(
+					() => scrollToRequests == 1,
+					timeout: 2000,
+					message: "The deferred current-item override did not request its final centered scroll.");
 				Assert.Equal(1, scrollToRequests);
 				Assert.Equal(ScrollToMode.Position, scrollToRequest.Mode);
 				Assert.Equal(1, scrollToRequest.Index);

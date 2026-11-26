@@ -134,6 +134,11 @@ namespace Microsoft.Maui.Controls
 			Apply(Target);
 		}
 
+		internal bool ContainsStyle(Style style)
+			=> (_implicitStyle as Style)?.ContainsStyle(style, Target) == true
+				|| (ClassStyles?.Any(s => s?.ContainsStyle(style, Target) == true) ?? false)
+				|| (_style as Style)?.ContainsStyle(style, Target) == true;
+
 		void OnClassStyleChanged()
 		{
 			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
