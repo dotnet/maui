@@ -388,15 +388,12 @@ public class PlatformInterop {
      * A load that finished, and the image it shows, are left alone.
      */
     public static void stopUnfinishedImageViewLoad(ImageView imageView) {
-        if (isContextDestroyed(imageView.getContext())) {
-            MauiCustomViewTarget.onViewChanged(imageView);
-            return;
-        }
         MauiCustomViewTarget.stopUnfinishedLoad(imageView);
     }
 
     public static void clearImageView(ImageView imageView) {
         MauiCustomViewTarget.onViewChanged(imageView);
+        MauiCustomViewTarget.forgetCurrent(imageView);
         if (isContextDestroyed(imageView.getContext())) {
             return;
         }

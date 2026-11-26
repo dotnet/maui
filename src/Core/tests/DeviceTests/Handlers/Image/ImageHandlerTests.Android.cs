@@ -289,6 +289,42 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task StoppedUnfinishedLoadIsReportedAsCancelled()
+		{
+			var service = new FileImageSourceService();
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var requestManager = Bumptech.Glide.Glide.With(handler.PlatformView);
+					requestManager.OnStop();
+					try
+					{
+						var load = service.LoadDrawableAsync(red, handler.PlatformView);
+						PlatformInterop.StopUnfinishedImageViewLoad(handler.PlatformView);
+						requestManager.OnStart();
+
+						await Task.WhenAny(load, Task.Delay(5_000));
+						Assert.Equal(TaskStatus.Canceled, load.Status);
+
+						await Task.Delay(100);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+					}
+				});
+			});
+		}
+
+		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();
