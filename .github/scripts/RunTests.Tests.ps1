@@ -287,7 +287,7 @@ Describe 'Pipeline support checks' {
         Set-RunTestsSuite device
         $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
         Set-RunTestsSuite ui
-        $invoke | Should -Match 'parents = @\(\$sourceSha\)'
+        $invoke | Should -Match 'parents = @\(\$parentSha\)'
         # A PR GitHub reports as conflicting is told so plainly.
         $invoke | Should -Match ([regex]::Escape('-not $verified.merge -and $pr.mergeable -eq $false'))
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
@@ -297,7 +297,18 @@ Describe 'Pipeline support checks' {
         # A net11 PR built with main's pipeline ran as net12 (#40621).
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
         $invoke | Should -Match ([regex]::Escape('git/ref/heads/$($PullRequest.base.ref)'))
-        $invoke | Should -Not -Match 'default_branch'
+        # The default branch is used only for the workflows and parent, after the pipeline check.
+        $before = $invoke.Substring(0, $invoke.IndexOf('$defaultBranch = '))
+        $before | Should -Not -Match 'default_branch'
+    }
+
+    It "gives a release-branch dispatch the default branch's workflows and parent" {
+        # GITHUB_TOKEN may not create a branch whose workflows differ from the default branch's (403 on net11).
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match ([regex]::Escape('$defaultBranch = [string]$PullRequest.base.repo.default_branch'))
+        $invoke | Should -Match ([regex]::Escape('if ($defaultBranch -and $defaultBranch -cne $PullRequest.base.ref) {'))
+        $invoke | Should -Match ([regex]::Escape('$parentSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$defaultBranch")).object.sha'))
+        $invoke | Should -Match ([regex]::Escape("Get-RunTestsTreeEntry -TreeSha `$default.tree.sha -Path '.github/workflows'"))
     }
 }
 
