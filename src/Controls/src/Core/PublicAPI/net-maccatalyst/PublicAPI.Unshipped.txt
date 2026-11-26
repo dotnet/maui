@@ -379,4 +379,3 @@ static Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryPro
 Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
 Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
 ~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty
-~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void

@@ -39,6 +39,5 @@ MAUIX2020 | XamlInflation | Warning | ConflictingXmlnsType
 MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
 MAUIX2022 | XamlInflation | Error | ExtensionPropertyResolution
 MAUIX2023 | XamlParsing | Error | XCodeRequiresSourceGen
-MAUIX2024 | XamlInflation | Warning | StyleTargetTypeMismatch
 MAUI1200 | QueryProperty | Warning | QueryPropertyRequiresReflection
 MAUI1201 | QueryProperty | Warning | QueryPropertyConflictsWithIQueryAttributable
