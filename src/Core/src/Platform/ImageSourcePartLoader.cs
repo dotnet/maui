@@ -104,6 +104,13 @@ namespace Microsoft.Maui.Platform
 				var errorSource = fallbacks?.ErrorSource;
 
 #if ANDROID
+				// An earlier load into the view that has not finished (for example paused by Glide) must not show its image
+				// over this load's placeholder or error image. Some image sources do asynchronous work (such as reading a
+				// stream) before they start their own load into the view, which would stop it. (Kept images are not loaded
+				// into the view.)
+				if (!keepPrevious && platformView is global::Android.Widget.ImageView unfinishedLoadView)
+					PlatformInterop.StopUnfinishedImageViewLoad(unfinishedLoadView);
+
 				// Otherwise Android clears the image as soon as the new one starts loading. Glide only does that for images
 				// it set itself, not for a kept image that the loader set.
 				if (!keepPrevious && _isLoadedImageShown)

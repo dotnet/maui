@@ -24,6 +24,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @IdRes private static final int RUNNING_CALLBACKS_TAG = R.id.maui_custom_view_target_running_callbacks_tag;
     @IdRes private static final int CHANGED_TAG = R.id.maui_custom_view_target_changed_tag;
+    @IdRes private static final int CURRENT_TAG = R.id.maui_custom_view_target_current_tag;
 
     private final ImageLoaderCallback callback;
     private final String resourceLogIdentifier;
@@ -52,6 +53,28 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
      */
     public static void onViewChanged(@NonNull ImageView view) {
         view.setTag(CHANGED_TAG, new Object());
+    }
+
+    /**
+     * Stops a load into the view that has not finished yet (including one that Glide paused and would restart),
+     * and loads into it whose start was deferred, so that they cannot replace an image that is set on the view later.
+     * Like starting a new load into the view, stopping an unfinished load clears the view.
+     * A load that finished, and the image it shows, are left alone.
+     */
+    public static void stopUnfinishedLoad(@NonNull ImageView view) {
+        onViewChanged(view);
+
+        Object current = view.getTag(CURRENT_TAG);
+        if (!(current instanceof MauiCustomViewTarget) || ((MauiCustomViewTarget) current).completed) {
+            return;
+        }
+        // Glide does not allow clearing from inside one of its target callbacks (and then the load has finished).
+        Object invokingCallbacks = view.getTag(RUNNING_CALLBACKS_TAG);
+        if (invokingCallbacks instanceof Boolean && (Boolean) invokingCallbacks) {
+            return;
+        }
+        view.setTag(CURRENT_TAG, null);
+        Glide.with(view).clear((MauiCustomViewTarget) current);
     }
 
     private void start(RequestBuilder<Drawable> builder, Object changedToken, boolean deferred) {
@@ -101,6 +124,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         if (!deferred) {
             onViewChanged(this.view);
         }
+        this.view.setTag(CURRENT_TAG, this);
         builder.into(this);
     }
 

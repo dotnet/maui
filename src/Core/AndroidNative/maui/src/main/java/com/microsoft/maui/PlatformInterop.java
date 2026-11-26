@@ -383,6 +383,18 @@ public class PlatformInterop {
      * Cancels the image load that is in progress for the view (and clears its image), as starting a new load would.
      * Used before waiting for a download, so that a previous load cannot complete into the view in the meantime.
      */
+    /**
+     * Stops a load into the view that has not finished yet, like starting a new load into it would (which also clears the view).
+     * A load that finished, and the image it shows, are left alone.
+     */
+    public static void stopUnfinishedImageViewLoad(ImageView imageView) {
+        if (isContextDestroyed(imageView.getContext())) {
+            MauiCustomViewTarget.onViewChanged(imageView);
+            return;
+        }
+        MauiCustomViewTarget.stopUnfinishedLoad(imageView);
+    }
+
     public static void clearImageView(ImageView imageView) {
         MauiCustomViewTarget.onViewChanged(imageView);
         if (isContextDestroyed(imageView.getContext())) {
@@ -492,7 +504,15 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromBytes(Context context, byte[] data, ImageLoaderCallback callback) {
-        loadImageFromBytes(context, data, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(data)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+        load(builder, context, false, callback, data);
     }
 
     public static void loadImageFromBytes(Context context, byte[] data, int width, int height, ImageLoaderCallback callback) {

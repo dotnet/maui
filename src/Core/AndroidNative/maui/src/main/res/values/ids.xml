@@ -2,4 +2,5 @@
 <resources>
   <item name="maui_custom_view_target_running_callbacks_tag" type="id"/>
   <item name="maui_custom_view_target_changed_tag" type="id"/>
+  <item name="maui_custom_view_target_current_tag" type="id"/>
 </resources>

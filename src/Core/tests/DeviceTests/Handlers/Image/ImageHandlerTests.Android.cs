@@ -243,6 +243,52 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task UnfinishedLoadDoesNotShowItsImageAfterTheSourceChanged()
+		{
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var blueStream = new TaskCompletionSource<System.IO.Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var blue = new StreamImageSourceStub(_ => blueStream.Task);
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// While Glide is paused (for example the app is in the background) the red load does not finish.
+					var requestManager = Bumptech.Glide.Glide.With(handler.PlatformView);
+					requestManager.OnStop();
+					try
+					{
+						image.Source = red;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						// The stream source reads its stream before it starts its own load into the view.
+						image.Source = blue;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						// Glide resumes before the stream arrives: the red load must not show its image.
+						requestManager.OnStart();
+						await Task.Delay(500);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+
+						blueStream.SetResult(BaseImageSourceServiceTests.CreateBitmapStream(100, 100, Colors.Blue));
+						await image.WaitUntilLoaded(5_000);
+						await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+						blueStream.TrySetCanceled();
+					}
+				});
+			});
+		}
+
+		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();
