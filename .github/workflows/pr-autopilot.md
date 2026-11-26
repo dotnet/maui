@@ -138,7 +138,9 @@ on:
                 stage = 'stop'; note = `⏹️ PR Autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/autopilot\` again.`;
               } else {
                 stage = 'done';
-                note = results.includes('SELECTION ONLY')
+                note = results.length && results.every(r => r === 'NOTHING TO RUN')
+                  ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean, and the [test selection](${tests.html_url}) found no UI or device tests affected by this PR. Ready for maintainer review.`
+                  : results.includes('SELECTION ONLY')
                   ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean. Tests were [selected](${tests.html_url}) but this repository cannot run them. Ready for maintainer review.`
                   : `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean and the [relevant tests](${tests.html_url}) pass. Ready for maintainer review.`;
               }
