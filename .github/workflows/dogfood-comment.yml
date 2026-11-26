@@ -65,28 +65,60 @@ jobs:
             \`\`\``;
 
             // Check for existing dogfooding comment
-            const comments = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
+              per_page: 100,
             });
 
-            const existingComment = comments.data.find(comment => comment.body.includes(dogfoodMarker));
+            const existingComment = comments.find(comment =>
+              comment.user?.type === 'Bot' &&
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body?.trimStart().startsWith(dogfoodMarker)
+            );
 
+            let postedComment;
             if (existingComment) {
               // Update existing comment
-              await github.rest.issues.updateComment({
+              const response = await github.rest.issues.updateComment({
                 comment_id: existingComment.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: comment
               });
+              postedComment = response.data;
             } else {
               // Create new comment
-              await github.rest.issues.createComment({
+              const response = await github.rest.issues.createComment({
                 issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: comment
               });
+              postedComment = response.data;
+            }
+
+            const { node } = await github.graphql(
+              `query($id: ID!) {
+                node(id: $id) { __typename ... on IssueComment { isMinimized } }
+              }`,
+              { id: postedComment.node_id }
+            );
+            if (node?.__typename !== 'IssueComment') {
+              throw new Error(`Could not find dogfooding comment ${postedComment.id}.`);
+            }
+            if (!node.isMinimized) {
+              const { minimizeComment } = await github.graphql(
+                `mutation($id: ID!) {
+                  minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {
+                    minimizedComment { isMinimized }
+                  }
+                }`,
+                { id: postedComment.node_id }
+              );
+              if (!minimizeComment?.minimizedComment?.isMinimized) {
+                throw new Error(`Could not minimize dogfooding comment ${postedComment.id}.`);
+              }
+              core.info(`Minimized dogfooding comment ${postedComment.id} as resolved.`);
             }

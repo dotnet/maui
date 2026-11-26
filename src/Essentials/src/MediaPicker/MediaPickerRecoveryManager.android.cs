@@ -660,6 +660,7 @@ internal static class MediaPickerRecoveryManager
 	static async Task PublishRecoveredOperationAsync(PendingMediaPickerOperation operation)
 	{
 		var recoveredPaths = new List<string>();
+		var publishedPaths = new List<(string SourcePath, string PublishedPath)>();
 		var acceptedFilePaths = await MaterializeAcceptedFilePathsAsync(operation.Id, throwOnMaterializationFailure: false).ConfigureAwait(false);
 
 		foreach (var filePath in acceptedFilePaths)
@@ -681,9 +682,11 @@ internal static class MediaPickerRecoveryManager
 			if (IsFileAvailable(recoveredPath))
 			{
 				recoveredPaths.Add(recoveredPath);
+				publishedPaths.Add((filePath, recoveredPath));
 			}
 		}
 
+		var operationPublished = false;
 		lock (Locker)
 		{
 			var current = MediaPickerRecoveryStore.ReadActiveOperation();
@@ -705,6 +708,13 @@ internal static class MediaPickerRecoveryManager
 
 			MediaPickerRecoveryStore.WriteRecoveredResults(NormalizeRecoveredResults(recoveredResults));
 			_ = ClearActiveOperationUnderLock(operation);
+			operationPublished = true;
+		}
+
+		if (operationPublished)
+		{
+			foreach (var path in publishedPaths)
+				MediaPickerImplementation.TryDeleteMauiOwnedTemporarySource(path.SourcePath, path.PublishedPath);
 		}
 	}
 

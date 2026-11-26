@@ -13,6 +13,4 @@ class TrimmerConstants
 
 	internal const string SearchHandlerDisplayMemberNameNotSupportedWarning = "DisplayMemberName is not supported. Consider implementing custom ItemTemplate instead. Alternatively, enable DisplayMemberName by setting the $(MauiShellSearchResultsRendererDisplayMemberNameSupported) MSBuild property to true. Note: DisplayMemberName is not trimming-safe and it might not work as expected in NativeAOT or fully trimmed apps.";
 
-	internal const string QueryPropertyAttributeWarning = "Using QueryPropertyAttribute is not trimming friendly and might not work correctly. Implement the IQueryAttributable interface instead.";
-	internal const string QueryPropertyDocsUrl = "https://learn.microsoft.com/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method";
 }

@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class ShellModalTests : ShellTestBase
+	public partial class ShellModalTests : ShellTestBase
 	{
 		[Fact]
 		public async Task AppearingAndDisappearingFireOnMultipleModals()
@@ -541,7 +541,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
-		public class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage
+		public partial class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage
 		{
 			public string SomeQueryParameter
 			{
@@ -566,11 +566,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public class ModalTestPage : ModalTestPageBase
+		public partial class ModalTestPage : ModalTestPageBase
 		{
 		}
 
-		public class ModalTestPage2 : ModalTestPageBase
+		public partial class ModalTestPage2 : ModalTestPageBase
 		{
 		}
 

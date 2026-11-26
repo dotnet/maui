@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Platform
         bool _interactivePopGesturePending;
         bool _disposed;
         UIGestureRecognizerDelegate? _gestureDelegate;
+        readonly NavigationTransitionDriver _transitionDriver;
 
         /// <summary>
         /// The managed UINavigationController.
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Platform
         {
             _delegate = managerDelegate ?? throw new ArgumentNullException(nameof(managerDelegate));
             _navigationController = new MauiNavigationController(navBarType, this);
+            _transitionDriver = new NavigationTransitionDriver(_navigationController);
             _navigationController.Delegate = new NavDelegate(this);
         }
 
@@ -66,6 +68,8 @@ namespace Microsoft.Maui.Platform
             {
                 contentPopGesture.Delegate = _gestureDelegate;
             }
+
+            _transitionDriver.AttachInteractivePop();
         }
 
         #region Push / Pop
@@ -85,6 +89,17 @@ namespace Microsoft.Maui.Platform
             var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingViewControllers = null;
             _completionTasks[viewController] = completionSource;
+
+            if (!animated)
+            {
+                var top = _navigationController.TopViewController;
+                NavigationTransitionDriver.OnUnanimatedNavigation(
+                    _delegate.NavigationView,
+                    UINavigationControllerOperation.Push,
+                    top is null ? null : _delegate.GetViewForViewController(top),
+                    _delegate.GetViewForViewController(viewController));
+            }
+
             (_navigationController as MauiNavigationController)?.UpdateCurrentTopVC(viewController);
             _navigationController.PushViewController(viewController, animated);
             return completionSource;
@@ -98,6 +113,16 @@ namespace Microsoft.Maui.Platform
         {
             _pendingViewControllers = null;
             _popCompletionTask = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (!animated && _navigationController.ViewControllers is { Length: > 1 } stack)
+            {
+                NavigationTransitionDriver.OnUnanimatedNavigation(
+                    _delegate.NavigationView,
+                    UINavigationControllerOperation.Pop,
+                    _delegate.GetViewForViewController(stack[stack.Length - 1]),
+                    _delegate.GetViewForViewController(stack[stack.Length - 2]));
+            }
+
             _navigationController.PopViewController(animated);
             return _popCompletionTask.Task;
         }
@@ -352,6 +377,7 @@ namespace Microsoft.Maui.Platform
 
             _disposed = true;
             _interactivePopGesturePending = false;
+            _transitionDriver.Detach();
 
             // Clear native delegates to prevent late callbacks (DidShowViewController,
             // WillShowViewController) from firing after the handler disconnects.
@@ -406,6 +432,7 @@ namespace Microsoft.Maui.Platform
                 }
 
                 manager._interactivePopGesturePending = false;
+                manager._transitionDriver.TransitionEnded();
 
                 // Resolve completion tasks
                 if (manager._completionTasks.TryGetValue(viewController, out var source))
@@ -431,6 +458,43 @@ namespace Microsoft.Maui.Platform
 
                 // Notify consumer
                 manager._delegate.OnNavigationComplete(navigationController, viewController);
+            }
+
+            // The navigation's transition, from the page-transition properties and the provider chain.
+            // Returning null keeps UIKit's own animation (and its own swipe-back).
+            [Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(
+                UINavigationController navigationController,
+                UINavigationControllerOperation operation,
+                UIViewController fromViewController,
+                UIViewController toViewController)
+            {
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
+                {
+                    return null!;
+                }
+
+                var managerDelegate = manager._delegate;
+                return manager._transitionDriver.GetAnimationController(
+                    managerDelegate.NavigationView,
+                    operation,
+                    managerDelegate.GetViewForViewController(fromViewController),
+                    managerDelegate.GetViewForViewController(toViewController))!;
+            }
+
+            [Export("navigationController:interactionControllerForAnimationController:")]
+            [Preserve(Conditional = true)]
+            public new IUIViewControllerInteractiveTransitioning GetInteractionControllerForAnimationController(
+                UINavigationController navigationController,
+                IUIViewControllerAnimatedTransitioning animationController)
+            {
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
+                {
+                    return null!;
+                }
+
+                return manager._transitionDriver.GetInteractionController()!;
             }
 
             public override void WillShowViewController(
@@ -470,6 +534,11 @@ namespace Microsoft.Maui.Platform
             if (_disposed)
             {
                 return;
+            }
+
+            if (context.IsCancelled)
+            {
+                _transitionDriver.TransitionEnded();
             }
 
             if (!context.IsCancelled)

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
 #endif
 #if IOS || MACCATALYST
 			// Attributed-text formatting must run after Text creates the native attributed string.
@@ -41,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
+			[nameof(ILabel.IsTextSelectable)] = MapIsTextSelectable,
 #if ANDROID
 			[nameof(ILabel.Background)] = MapBackground,
 #endif

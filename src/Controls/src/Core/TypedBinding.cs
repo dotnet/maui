@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 #define DO_NOT_CHECK_FOR_BINDING_REUSE
 
 using System;
@@ -303,6 +303,10 @@ namespace Microsoft.Maui.Controls.Internals
 #endif
 			if (_handlers != null)
 				Unsubscribe();
+
+			// As BindingExpression.Unapply does: a relative-source binding's ParentSet/BindingContextChanged handlers on
+			// the ancestor chain would otherwise outlive the binding.
+			ClearAncestryChangeSubscriptions();
 
 			_cachedMode = BindingMode.Default;
 			_hasDefaultValue = false;

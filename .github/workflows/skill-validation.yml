@@ -1360,7 +1360,6 @@ jobs:
             const headSha7 = headSha ? headSha.substring(0, 7) : 'unknown';
             const commitUrl = headSha ? `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${headSha}` : runUrl;
             const prTitle = (prData.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const prAuthor = prData.user?.login || '';
             const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 
             function badge(label, message, color) {
@@ -2101,16 +2100,13 @@ jobs:
                 badge('Skills', String(skillCount), '8250df'),
                 badge('Agents', String(agentCount), '0969da'),
               ].join('\n');
-              const authorLine = prAuthor
-                ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
-                : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
               const content = lines.join('\n');
               body = [
                 marker,
                 '',
                 '## Skill Validation Results',
                 '',
-                authorLine,
+                `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`,
                 '> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.',
                 '',
                 '<p align="left">',
@@ -2166,6 +2162,7 @@ jobs:
               fs.appendFileSync(outputPath, `eval_passed=${evalComplete ? evalPassed : 'na'}\n`);
             }
 
+            let postedComment;
             try {
               // Upsert comment (find existing with marker, update or create).
               // Paginate to handle PRs with 100+ comments.
@@ -2179,23 +2176,29 @@ jobs:
                 }
               );
 
-              const existing = comments.find(c => c.body && c.body.includes(marker));
+              const existing = comments.find(c =>
+                c.user?.type === 'Bot' &&
+                c.user.login === 'github-actions[bot]' &&
+                c.body?.trimStart().startsWith(marker)
+              );
 
               if (existing) {
-                await github.rest.issues.updateComment({
+                const response = await github.rest.issues.updateComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   comment_id: existing.id,
                   body,
                 });
+                postedComment = response.data;
                 console.log(`Updated existing comment ${existing.id}`);
               } else {
-                await github.rest.issues.createComment({
+                const response = await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: prNumber,
                   body,
                 });
+                postedComment = response.data;
                 console.log('Created new PR comment');
               }
             } catch (err) {
@@ -2205,6 +2208,38 @@ jobs:
                 'Skill Validation results could not be posted to the PR; ' +
                 'the step summary and authoritative commit status still contain the verdict.'
               );
+            }
+
+            if (postedComment) {
+              try {
+                const { node } = await github.graphql(
+                  `query($id: ID!) {
+                    node(id: $id) { __typename ... on IssueComment { isMinimized } }
+                  }`,
+                  { id: postedComment.node_id }
+                );
+                if (node?.__typename !== 'IssueComment') {
+                  throw new Error(`Could not find Skill Validation comment ${postedComment.id}.`);
+                }
+                if (!node.isMinimized) {
+                  const { minimizeComment } = await github.graphql(
+                    `mutation($id: ID!) {
+                      minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {
+                        minimizedComment { isMinimized }
+                      }
+                    }`,
+                    { id: postedComment.node_id }
+                  );
+                  if (!minimizeComment?.minimizedComment?.isMinimized) {
+                    throw new Error(`Could not minimize Skill Validation comment ${postedComment.id}.`);
+                  }
+                  console.log(`Minimized Skill Validation comment ${postedComment.id} as resolved.`);
+                }
+              } catch (err) {
+                const detail = err && err.stack ? err.stack : String(err);
+                console.error(`Failed to minimize Skill Validation PR comment: ${detail}`);
+                core.warning('Skill Validation results were posted but could not be minimized; CI comment cleanup will retry.');
+              }
             }
 
   # ==========================================================================

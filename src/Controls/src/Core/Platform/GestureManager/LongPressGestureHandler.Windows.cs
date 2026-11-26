@@ -27,6 +27,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (container == null)
 				return;
 
+			// This runs again whenever the gestures are rebuilt, so never register a handler twice.
+			container.PointerPressed -= OnPointerPressed;
+			container.PointerReleased -= OnPointerReleased;
+			container.PointerCanceled -= OnPointerCanceled;
+			container.PointerMoved -= OnPointerMoved;
+
 			container.PointerPressed += OnPointerPressed;
 			container.PointerReleased += OnPointerReleased;
 			container.PointerCanceled += OnPointerCanceled;

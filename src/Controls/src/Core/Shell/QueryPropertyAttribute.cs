@@ -1,12 +1,10 @@
 #nullable disable
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>Maps a query parameter from a URI to a property on the target page or view model during Shell navigation.</summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	[RequiresUnreferencedCode(TrimmerConstants.QueryPropertyAttributeWarning, Url = TrimmerConstants.QueryPropertyDocsUrl)]
 	public class QueryPropertyAttribute : Attribute
 	{
 		/// <summary>Gets the name of the property that will receive the query parameter value.</summary>

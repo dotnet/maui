@@ -23,6 +23,16 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			return PlatformImage.FromStream(stream, formatHint);
 		}
+
+#if !MAUI_GRAPHICS_WIN2D
+		// Public (not an explicit interface implementation) so it can be called on the concrete type,
+		// matching the Android/iOS/macOS loading services. The plain FromStream(stream, format) overload
+		// above is already public here.
+#nullable enable
+		public IImage FromStream(Stream stream, ImageLoadOptions? options)
+			=> PlatformImage.FromStream(stream, options);
+#nullable restore
+#endif
 	}
 
 #if MAUI_GRAPHICS_WIN2D

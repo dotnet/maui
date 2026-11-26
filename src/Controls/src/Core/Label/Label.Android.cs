@@ -65,6 +65,16 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
+		static void MapIsTextSelectableFocusable(ILabelHandler handler, Label label)
+		{
+			// With a wrapper (shadow, clip) the gesture manager makes the wrapper focusable, which selection never touches.
+			if (!label.IsConnectingHandler() && !label.IsTextSelectable && handler.ContainerView is null &&
+				(label.HasAccessibleTapGesture() || label.HasAccessibleLongPressGesture()))
+			{
+				handler.PlatformView.Focusable = true;
+			}
+		}
+
 		public static void MapMaxLines(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateMaxLines(label);

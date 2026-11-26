@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -726,70 +725,17 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
+			if (content is IQueryAttributable queryPropertyAttributable)
 			{
-				var type = content.GetType();
-				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-				if (queryPropertyAttributes.Length == 0)
-				{
-					ClearQueryIfAppliedToPage(query, content);
-					return;
-				}
-
-				foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
-				{
-					if (query.TryGetValue(attrib.QueryId, out var value))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							if (prop.PropertyType == typeof(string))
-							{
-								if (value != null)
-								{
-									if (query.IsShellContentQueryParameter(attrib.QueryId))
-										value = Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture);
-									else if (!query.IsShellContentQueryStringParameter(attrib.QueryId))
-										value = global::System.Net.WebUtility.UrlDecode((string)value);
-								}
-
-								prop.SetValue(content, value);
-							}
-							else
-							{
-								// Handle nullable types
-								Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-
-								if (value == null)
-								{
-									prop.SetValue(content, null);
-								}
-								else
-								{
-									var culture = query.IsShellContentParameter(attrib.QueryId)
-										? global::System.Globalization.CultureInfo.InvariantCulture
-										: global::System.Globalization.CultureInfo.CurrentCulture;
-									var castValue = Convert.ChangeType(value, targetType, culture);
-									prop.SetValue(content, castValue);
-								}
-							}
-						}
-					}
-					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							object defaultValue = prop.PropertyType.IsValueType &&
-								Nullable.GetUnderlyingType(prop.PropertyType) is null
-									? Activator.CreateInstance(prop.PropertyType)
-									: null;
-							prop.SetValue(content, defaultValue);
-						}
-					}
-				}
+#if NETSTANDARD
+				QueryPropertyConversion.ApplyLegacyQueryProperties(queryPropertyAttributable, query, oldQuery);
+#else
+				queryPropertyAttributable.ApplyQueryProperties(query, oldQuery);
+#endif
+			}
+			else if (content.GetType().IsDefined(typeof(QueryPropertyAttribute), inherit: true))
+			{
+				QueryPropertyConversion.ThrowQueryPropertySourceGenerationFailure(content.GetType());
 			}
 
 			ClearQueryIfAppliedToPage(query, content);

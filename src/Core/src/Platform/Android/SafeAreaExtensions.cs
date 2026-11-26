@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
@@ -160,7 +161,7 @@ internal static class SafeAreaExtensions
 				// Get actual screen dimensions (including system UI)
 				// This must be done BEFORE margin adjustment so we can detect
 				// off-screen animation state from raw position values.
-				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+				var windowManager = context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>();
 				if (windowManager?.DefaultDisplay is not null)
 				{
 					var realMetrics = new global::Android.Util.DisplayMetrics();
@@ -363,7 +364,7 @@ internal static class SafeAreaExtensions
 		// Like the settled path, pad only by how far the view reaches into the inset, so a view
 		// that ends above the screen bottom (e.g. above bottom tabs) doesn't rise past the keyboard.
 		if (bottom > 0 && view.Height > 0 &&
-			context.GetSystemService(Context.WindowService) is IWindowManager { DefaultDisplay: { } display })
+			context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>()?.DefaultDisplay is { } display)
 		{
 			using var realMetrics = new global::Android.Util.DisplayMetrics();
 			display.GetRealMetrics(realMetrics);
@@ -378,7 +379,10 @@ internal static class SafeAreaExtensions
 			}
 		}
 
-		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+		if (view is MauiContentButton contentButton)
+			contentButton.SetAnimatedSafeAreaBottom((int)bottom);
+		else
+			view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
 		return bottom > 0;
 	}
 

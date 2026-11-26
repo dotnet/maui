@@ -775,7 +775,7 @@ function Format-RunTestsSkipped {
         $lines.Add("**Categories not run:** $(Format-RunTestsCategoryList $skippedCategories)")
         $lines.Add('')
     }
-    $lines.Add("Each skipped platform and $(if ($script:RunTestsSuite -eq 'device') { 'project' } else { 'category' }) is listed as a **Skipped** ``$($script:RunTestsSkippedCheckPrefix) …`` check on this commit. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite.")
+    $lines.Add("Each skipped platform and $(if ($script:RunTestsSuite -eq 'device') { 'project' } else { 'category' }) is listed as a ``$($script:RunTestsSkippedCheckPrefix) …`` status on this commit. Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite.")
     return @{
         count = $skipCount
         summary = "$(Format-RunTestsCount $skipCount 'category' 'categories'), $(Format-RunTestsCount $skippedPlatforms.Count 'platform' 'platforms')"
@@ -1260,37 +1260,80 @@ function New-RunTestsRunCheckUpdate {
     return $update
 }
 
-function New-RunTestsJobChecks {
+function Publish-RunTestsStatus {
     <#
     .SYNOPSIS
-    One check run per job of the dispatched build, for the PR head.
+    Sets a commit status. /review run-tests reports through commit statuses rather than check runs:
+    check runs created with the workflow token are filed under an unrelated workflow of the commit
+    and shown as "<that workflow> / <name>", while a status shows under exactly its context.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Repository, [Parameter(Mandatory)][string]$Sha,
+        [Parameter(Mandatory)][string]$Context, [Parameter(Mandatory)][ValidateSet('pending', 'success', 'failure', 'error')][string]$State,
+        [string]$Description, [string]$TargetUrl
+    )
+    $body = [ordered]@{ context = $Context; state = $State }
+    if ($Description) { $body.description = Format-RunTestsText $Description 140 }
+    if ($TargetUrl) { $body.target_url = $TargetUrl }
+    $body | ConvertTo-Json -Depth 3 | & gh api -X POST "repos/$Repository/statuses/$Sha" --input - | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not set status '$Context' on $Sha." }
+}
+
+function Get-RunTestsStatuses {
+    <#
+    .SYNOPSIS
+    The latest commit status per context on a commit, or $null when they cannot be read.
+    #>
+    param([Parameter(Mandatory)][string]$Repository, [Parameter(Mandatory)][string]$Sha)
+    $raw = & gh api --paginate --slurp "repos/$Repository/commits/$Sha/status?per_page=100"
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not list commit statuses on $Sha."; return $null }
+    return , @(($raw -join "`n") | ConvertFrom-Json -Depth 20 | ForEach-Object { $_.statuses } | Where-Object { $_ })
+}
+
+function New-RunTestsRunStatus {
+    <#
+    .SYNOPSIS
+    The "maui-pr-uitests (selected run)" commit status from the build's current state.
+    #>
+    param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
+    $state = if (-not $Results.completed) { 'pending' } else {
+        switch ($Results.result) { 'succeeded' { 'success' } 'canceled' { 'error' } default { 'failure' } }
+    }
+    return [pscustomobject]@{
+        context = $script:RunTestsRunCheckName; state = $state
+        description = "#$($Build.id) $($Results.headline)"; target_url = [string]$Build._links.web.href
+    }
+}
+
+function New-RunTestsJobStatuses {
+    <#
+    .SYNOPSIS
+    One commit status per job of the dispatched build, for the PR head.
 
     .DESCRIPTION
     The build runs on a run-tests/* dispatch commit, so Azure Pipelines reports its jobs there and
-    the PR's checks panel never shows them. These mirror each job ("maui-pr-uitests (Android UITests
-    ... Shell1)") with its state and a link to its log. external_id ("job:<build id>") marks them
-    as job checks, so a later build on the same commit can retire the ones it does not run.
+    the PR's checks panel never shows them. These mirror each job as "maui-pr-uitests (Android
+    UITests ... Shell1)" with its state and a link to its log. Commit statuses, not check runs:
+    check runs created with the workflow token are filed under an unrelated workflow of the commit
+    and shown as "<that workflow> / <name>"; a status shows under exactly this name.
     #>
     param([Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
     $buildUrl = [string]$Build._links.web.href
+    $run = "$($script:RunTestsPipelineName) #$($Build.id)"
     return @($Results.jobs | ForEach-Object {
-            $name = Format-RunTestsText "$($script:RunTestsCheckPrefix) ($($_.name))" 180
-            $url = if ($_.url) { [string]$_.url } else { $buildUrl }
-            $check = [ordered]@{
-                name = $name; details_url = $url; external_id = "job:$($Build.id)"
-                output = [ordered]@{
-                    title = "$($_.name): $($_.result)"
-                    summary = "[$($_.name)]($url) in [$($script:RunTestsPipelineName) #$($Build.id)]($buildUrl), the run selected by ``/review`` for this commit."
-                }
+            $state, $text = switch ($_.result) {
+                { $_ -in 'succeeded', 'succeededWithIssues' } { 'success', 'Succeeded' }
+                'failed' { 'failure', 'Failed' }
+                { $_ -in 'canceled', 'abandoned' } { 'error', 'Canceled' }
+                'pending' { 'pending', 'Queued' }
+                default { 'pending', 'Running' }
             }
-            switch ($_.result) {
-                { $_ -in 'succeeded', 'succeededWithIssues' } { $check.status = 'completed'; $check.conclusion = 'success' }
-                'failed' { $check.status = 'completed'; $check.conclusion = 'failure' }
-                { $_ -in 'canceled', 'abandoned' } { $check.status = 'completed'; $check.conclusion = 'cancelled' }
-                'pending' { $check.status = 'queued' }
-                default { $check.status = 'in_progress' }
+            [pscustomobject][ordered]@{
+                context = Format-RunTestsText "$($script:RunTestsCheckPrefix) ($($_.name))" 200
+                state = $state
+                target_url = $(if ($_.url) { [string]$_.url } else { $buildUrl })
+                description = "$text in $run (selected by /review)"
             }
-            [pscustomobject]$check
         })
 }
 
@@ -1321,7 +1364,7 @@ function Get-RunTestsStatus {
             }
         }
     }
-    return @{ state = 'running'; badge = 'RUNNING'; color = '9a6700'; line = "&#x23F3; $link is running. The ``$($script:RunTestsRunCheckName)`` check on this PR follows it, and this comment updates when it finishes." }
+    return @{ state = 'running'; badge = 'RUNNING'; color = '9a6700'; line = "&#x23F3; $link is running. The ``$($script:RunTestsRunCheckName)`` status on this PR follows it, and this comment updates when it finishes." }
 }
 
 function ConvertTo-RunTestsResults {

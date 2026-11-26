@@ -40,6 +40,8 @@ jobs:
       # Continues maui-expert-autopilot when a run finishes.
       actions: write
       checks: write
+      # One commit status per job of the selected build.
+      statuses: write
       # Deletes expired run-tests/* dispatch branches.
       contents: write
       issues: write

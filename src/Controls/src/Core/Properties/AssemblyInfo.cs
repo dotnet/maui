@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
@@ -49,10 +49,16 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
 
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/animations", "Microsoft.Maui.Controls.Animations")]
+
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls.Shapes")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
+
+// The animations namespace has its own URI and no implicit prefix: mapping new names into the default namespace could
+// collide with types apps map there (spec, Compatibility). Pages declare xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations".
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/animations", "Microsoft.Maui.Controls.Animations")]
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Microsoft.Maui.Controls.Xaml", AssemblyName = "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]

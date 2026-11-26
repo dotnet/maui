@@ -28,7 +28,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - name: Minimize CI commands, acknowledgments, and workflow failure notices
+      - name: Minimize CI commands and automated notices
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ inputs.pr_number || '' }}
@@ -42,13 +42,16 @@ jobs:
               const isBot = comment.author?.__typename === 'Bot';
               const isSuccess = isBot && comment.author.login === 'azure-pipelines' &&
                 /^(?:<!-- AzurePipelinesStatusComment -->\s*)?<samp>\s*Azure Pipelines:<br>\s*Successfully started running [1-9][0-9]* pipeline\(s\)\.<br>\s*(?:There may be pipelines that require an authorized user to comment \/azp run to run\.<br>\s*)?<\/samp>$/.test(body);
-              const isActionsFailure = isBot && comment.author.login === 'github-actions' &&
+              const isActionsBot = isBot && comment.author.login === 'github-actions';
+              const isActionsFailure = isActionsBot &&
                 body.includes(runUrlPrefix) &&
                 (/^<!-- review-[a-z0-9-]+-failure -->/.test(body) ||
                  /^Agent job \[[0-9]+\]\([^\r\n)]+\) failed\.(?:\r?\n|$)/.test(body) ||
                  /^\u274c [^\r\n]*\b(?:failed|failure|timed out|timed_out|cancelled|canceled)\b/i.test(body) ||
                  /^\u26a0\ufe0f Security scanning failed for \[/.test(body));
-              return isCommand || isSuccess || isActionsFailure;
+              const isActionsNotice = isActionsBot &&
+                (body.startsWith('<!-- dogfood-pr -->') || body.startsWith('<!-- skill-validation-results -->'));
+              return isCommand || isSuccess || isActionsFailure || isActionsNotice;
             }
 
             let prNumbers;
