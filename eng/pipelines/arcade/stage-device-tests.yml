@@ -44,8 +44,8 @@ stages:
   dependsOn: []
   jobs:
   - ${{ each project in parameters.projects }}:
-    - ${{ if or(not(parameters.selectedRun), contains(format('+{0}+', parameters.selectedProjects), format('+{0}+', project.scenario))) }}:
-      - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'android')) }}:
+    - ${{ if or(ne(parameters.selectedRun, true), contains(format('+{0}+', parameters.selectedProjects), format('+{0}+', project.scenario))) }}:
+      - ${{ if or(ne(parameters.selectedRun, true), containsValue(parameters.selectedPlatforms, 'android')) }}:
         - ${{ each runtime in parameters.runtimes }}:
           - job: android_${{ project.name }}_${{ runtime.name }}
             displayName: Android API 33 ${{ project.name }} ${{ runtime.name }}
@@ -65,10 +65,10 @@ stages:
                 testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
 
       - ${{ each apple in parameters.applePools }}:
-        - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'ios')) }}:
+        - ${{ if or(ne(parameters.selectedRun, true), containsValue(parameters.selectedPlatforms, 'ios')) }}:
           - ${{ each runtime in parameters.runtimes }}:
             # A selected run executes the project as one filtered job instead of the category shards.
-            - ${{ each shard in split(iif(and(eq(project.name, 'controls'), not(parameters.selectedRun)), 'CollectionView;Shell;HybridWebView;General', 'All'), ';') }}:
+            - ${{ each shard in split(iif(and(eq(project.name, 'controls'), ne(parameters.selectedRun, true)), 'CollectionView;Shell;HybridWebView;General', 'All'), ';') }}:
               - job: ios_${{ project.name }}_${{ runtime.name }}_${{ apple.name }}_${{ shard }}
                 displayName: iOS ${{ project.name }} ${{ runtime.name }} ${{ apple.name }} ${{ shard }}
                 pool: ${{ apple.pool }}
@@ -93,7 +93,7 @@ stages:
                     ${{ else }}:
                       testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
 
-        - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'catalyst')) }}:
+        - ${{ if or(ne(parameters.selectedRun, true), containsValue(parameters.selectedPlatforms, 'catalyst')) }}:
           - job: catalyst_${{ project.name }}_${{ apple.name }}
             displayName: Catalyst ${{ project.name }} CoreCLR ${{ apple.name }}
             pool: ${{ apple.pool }}
@@ -111,7 +111,7 @@ stages:
                 expectedArchitecture: Arm64
                 testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
 
-      - ${{ if and(eq(parameters.runWindowsTests, true), or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'windows'))) }}:
+      - ${{ if and(eq(parameters.runWindowsTests, true), or(ne(parameters.selectedRun, true), containsValue(parameters.selectedPlatforms, 'windows'))) }}:
         - ${{ each packaging in split(iif(eq(parameters.windowsPackaging, 'both'), 'packaged;unpackaged', parameters.windowsPackaging), ';') }}:
           - job: windows_${{ project.name }}_${{ packaging }}
             displayName: Windows ${{ project.name }} ${{ packaging }}
