@@ -1,12 +1,12 @@
 ﻿
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Maui.IntegrationTests
 {
 	[Trait("Category", "Samples")]
 	public class SampleTests : BaseBuildTest
 	{
-	public SampleTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+		public SampleTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
 		public static IEnumerable<object[]> SampleTestMatrix
 		{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				// Parse individual project files from `Microsoft.Maui.Samples.slnf` to generate a set of test cases
 				var sampleSln = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Microsoft.Maui.Samples.slnf");
-				var slnFile = JsonConvert.DeserializeObject<SolutionFile>(File.ReadAllText(sampleSln));
+				var slnFile = JsonSerializer.Deserialize<SolutionFile>(File.ReadAllText(sampleSln));
 				foreach (var projectFile in slnFile?.solution.projects ?? new List<string> { sampleSln })
 				{
 					foreach (var config in new[] { "Debug", "Release" })

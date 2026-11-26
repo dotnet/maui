@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async void DisconnectedCarouselViewDoesNotHookCollectionViewChanged()
+		public async Task DisconnectedCarouselViewDoesNotHookCollectionViewChanged()
 		{
 			SetupBuilder();
 

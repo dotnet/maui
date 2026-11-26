@@ -365,10 +365,11 @@ namespace Microsoft.Maui.Handlers
 			public void Disconnect(WebView2 platformView)
 			{
 				platformView.WebMessageReceived -= OnWebMessageReceived;
-				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
 
+				// CoreWebView2 is null until initialization completes and again after the control is closed.
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{
+					webView2.WebResourceRequested -= OnWebResourceRequested;
 					webView2.Stop();
 				}
 

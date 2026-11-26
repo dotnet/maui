@@ -141,6 +141,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task FixtureDisposalHandlesAnAlreadyDisposedNativePeer()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var disposedHandler = CreateHandler<TImageHandler>(new TStub());
+				var liveView = new TStub();
+				CreateHandler<TImageHandler>(liveView);
+				disposedHandler.PlatformView.Dispose();
+				Assert.Equal(IntPtr.Zero, disposedHandler.PlatformView.Handle);
+
+				await DisposeAsync();
+
+				Assert.Null(liveView.Handler);
+				GC.KeepAlive(disposedHandler);
+			});
+		}
+
+		[Fact]
 		public async Task UpdatingSourceWorks()
 		{
 			var image = new TStub

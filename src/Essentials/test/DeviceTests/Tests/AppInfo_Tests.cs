@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public void App_Theme_Is_Correct()
+		public Task App_Theme_Is_Correct() => Utils.OnMainThread(() =>
 		{
 #if __IOS__
 			if (DeviceInfo.Version.Major >= 13)
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #else
 			Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #endif
-		}
+		});
 
 		[Fact]
 		public void App_Build_Is_Correct()
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public void App_RequestedLayoutDirection_Is_Correct()
+		public Task App_RequestedLayoutDirection_Is_Correct() => Utils.OnMainThread(() =>
 		{
 			Assert.Equal(LayoutDirection.LeftToRight, AppInfo.RequestedLayoutDirection);
-		}
+		});
 
 		[Fact]
 		public void App_Versions_Are_Correct()

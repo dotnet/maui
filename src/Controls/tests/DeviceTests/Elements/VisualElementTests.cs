@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 namespace Microsoft.Maui.DeviceTests
@@ -10,6 +11,30 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.VisualElement)]
 	public partial class VisualElementTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task AlreadyLoadedReadinessCompletesSynchronously()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<Label, LabelHandler>()));
+			var label = new Label { Text = "Already loaded" };
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
+			{
+				Assert.True(label.IsLoaded);
+				Assert.True(label.IsLoadedOnPlatform());
+				Assert.True(OnLoadedAsync(label).IsCompletedSuccessfully);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public void AlreadyUnloadedReadinessCompletesSynchronously()
+		{
+			var label = new Label();
+			Assert.False(label.IsLoaded);
+			Assert.False(label.IsLoadedOnPlatform());
+			Assert.True(OnUnloadedAsync(label).IsCompletedSuccessfully);
+		}
+
 		[Fact]
 		public async Task CanCreateHandler()
 		{
@@ -104,9 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 
 				await CreateHandlerAndAddToWindow<LayoutHandler>(parentLayout, async (handler) =>
 				{
+					await AssertEventually(() => loaded == 1, message: "Initial Loaded event did not fire");
 					parentLayout.Remove(layout);
 					await OnUnloadedAsync(layout);
 					await OnUnloadedAsync(editor);
+					await AssertEventually(() => unloaded == 1, message: "Unloaded event did not fire after parent removal");
 
 					Assert.Equal(1, loaded);
 					Assert.Equal(1, unloaded);
@@ -114,6 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 					parentLayout.Add(layout);
 					await OnLoadedAsync(layout);
 					await OnLoadedAsync(editor);
+					await AssertEventually(() => loaded == 2, message: "Loaded event did not fire after parent reattachment");
 
 					Assert.Equal(2, loaded);
 					Assert.Equal(1, unloaded);
