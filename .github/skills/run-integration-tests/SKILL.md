@@ -64,7 +64,7 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
 | `-Category` | No | - | Test category to run (WindowsTemplates, Samples, Build, etc.) |
-| `-TestFilter` | No | - | Native xUnit query filter, e.g. `/*/*/AppleTemplateTests/RunOniOS_MauiDebug` |
+| `-TestFilter` | No | - | Native xUnit query filter, e.g. `/*/*/AppleTemplateTests/RunOniOS_MauiDebug_CoreCLR` |
 | `-TestClass` | No | - | Fully qualified xUnit class names; cannot combine with `-TestFilter` |
 | `-DotnetPath` | No | `.dotnet/dotnet` | Alternate outer-host SDK executable; requires `-SkipBuild -SkipInstall` |
 | `-ArtifactsDirectory` | No | Repository default | Isolated outer-host build artifacts directory |
@@ -203,16 +203,16 @@ Running all iOS tests together (`-Category "RunOniOS"`) can cause simulator stat
 ```powershell
 # Available iOS tests
 $iosTests = @(
-    "RunOniOS_MauiDebug",
-    "RunOniOS_MauiRelease",
-    "RunOniOS_MauiReleaseTrimFull",
-    "RunOniOS_BlazorDebug",
-    "RunOniOS_BlazorRelease",
+    "RunOniOS_MauiDebug_CoreCLR",
+    "RunOniOS_MauiRelease_CoreCLR",
+    "RunOniOS_MauiReleaseTrimFull_CoreCLR",
+    "RunOniOS_BlazorDebug_CoreCLR",
+    "RunOniOS_BlazorRelease_CoreCLR",
     "RunOniOS_MauiNativeAOT"
 )
 
 # Run a specific iOS test
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/AppleTemplateTests/RunOniOS_MauiDebug" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/AppleTemplateTests/RunOniOS_MauiDebug_CoreCLR" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 
 # Run all iOS tests individually (more reliable than running category)
 foreach ($test in $iosTests) {

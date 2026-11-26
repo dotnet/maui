@@ -36,7 +36,7 @@ public class Issue35119 : _IssuesUITest
 		App.WaitForElement("ShowPromptButton");
 		App.Tap("ShowPromptButton");
 		App.WaitForElement("Prompt Title");
-		App.DismissKeyboard();
+		HideKeyboardWithoutCancellingPrompt();
 		VerifyScreenshotOrSetException(ref exception, "Material3_PromptDialog", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("Cancel");
 
@@ -44,6 +44,25 @@ public class Issue35119 : _IssuesUITest
 		{
 			throw exception;
 		}
+	}
+
+	// App.DismissKeyboard() uses Appium's hideKeyboard, which sends ESC and, if the
+	// keyboard is still reported as shown about a second later, falls back to BACK.
+	// On a slow emulator the IME hide animation can outlast that window, and the
+	// BACK key then cancels the prompt. ESC is consumed by the visible IME, so send
+	// only ESC and wait for the keyboard to finish hiding.
+	void HideKeyboardWithoutCancellingPrompt()
+	{
+		const int KeyCodeEscape = 111;
+
+		// Without a visible IME, ESC would reach the dialog and cancel it.
+		if (App.WaitForKeyboardToShow())
+		{
+			App.SendKeys(KeyCodeEscape);
+			Assert.That(App.WaitForKeyboardToHide(), Is.True, "The soft keyboard was not hidden");
+		}
+
+		App.WaitForElement("Prompt Title");
 	}
 }
 #endif

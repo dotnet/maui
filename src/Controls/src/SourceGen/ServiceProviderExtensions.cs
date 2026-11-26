@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 
@@ -12,10 +13,14 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class ServiceProviderExtensions
 {
+	// Available when the generator runs on a compiler with C# 14 extension-block symbols.
+	static readonly System.Reflection.PropertyInfo? s_extensionGroupingName = typeof(INamedTypeSymbol).GetProperty("ExtensionGroupingName");
+
 	public static ILocalValue GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices)
 	{
 		IFieldSymbol? bpFieldSymbol = null;
 		IPropertySymbol? propertySymbol = null;
+		IPropertySymbol? extensionProperty = null;
 		if (node.TryGetPropertyName(node.Parent, out var propertyName))
 		{
 			var localName = propertyName.LocalName;
@@ -23,6 +28,11 @@ static class ServiceProviderExtensions
 			{
 				bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, null);
 				propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
+				if (bpFieldSymbol is null)
+				{
+					extensionProperty = SetPropertyHelpers.FindExtensionProperty(parentVar.Type, propertyName, node, context);
+					propertySymbol = extensionProperty ?? propertySymbol;
+				}
 			}
 		}
 
@@ -33,12 +43,12 @@ static class ServiceProviderExtensions
 		var rootVar = context.Variables.FirstOrDefault(kvp => kvp.Key is SGRootNode).Value;
 		writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToFQDisplayString()}({rootVar?.ValueAccessor ?? "this"});");
 
-		node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol);
+		node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol, extensionProperty);
 
 		return context.ServiceProviders[node] = new LocalVariable(serviceProviderSymbol, serviceProviderVariableName);
 	}
 
-	static void AddServices(this INode node, IndentedTextWriter writer, string serviceProviderVariableName, ImmutableArray<ITypeSymbol>? requiredServices, SourceGenContext context, IFieldSymbol? bpFieldSymbol, IPropertySymbol? propertySymbol)
+	static void AddServices(this INode node, IndentedTextWriter writer, string serviceProviderVariableName, ImmutableArray<ITypeSymbol>? requiredServices, SourceGenContext context, IFieldSymbol? bpFieldSymbol, IPropertySymbol? propertySymbol, IPropertySymbol? extensionProperty)
 	{
 		var createAllServices = requiredServices is null;
 		var parentObjects = node.ParentObjects(context).Select(v => v.ValueAccessor).ToArray();
@@ -54,7 +64,9 @@ static class ServiceProviderExtensions
 			writer.Indent++;
 			writer.WriteLine($"new object?[] {{{string.Join(", ", parentObjects)}}},");
 			var bpinfo = bpFieldSymbol?.ToFQDisplayString() ?? String.Empty;
-			var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
+			var pinfo = extensionProperty is not null
+				? GetExtensionPropertyInfo(extensionProperty)
+				: $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")";
 			writer.WriteLine($"{(bpFieldSymbol != null ? bpinfo : propertySymbol != null ? pinfo : "null")},");
 			if (context.Scopes.TryGetValue(node, out var scope))
 			{
@@ -74,6 +86,26 @@ static class ServiceProviderExtensions
 			writer.Indent--;
 			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
 			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), {simpleValueTargetProvider});");
+		}
+
+		static string GetExtensionPropertyInfo(IPropertySymbol property)
+		{
+			var nestedNames = new Stack<string>();
+			var type = property.ContainingType;
+			while (type is not null && (!type.CanBeReferencedByName || !ExtensionPropertyConventions.IsSpeakable(type.MetadataName)))
+			{
+				// Newer Roslyn projects the marker as the containing type; the runtime property is on its grouping type.
+				nestedNames.Push(s_extensionGroupingName?.GetValue(type) as string ?? type.MetadataName);
+				type = type.ContainingType;
+			}
+
+			if (type is null || nestedNames.Count == 0)
+				throw new InvalidOperationException("The extension property has no accessible declaring container.");
+
+			var expression = $"typeof({type.ToFQDisplayString()})";
+			while (nestedNames.Count > 0)
+				expression += $".GetNestedType({SymbolDisplay.FormatLiteral(nestedNames.Pop(), true)}, global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.NonPublic)!";
+			return $"{expression}.GetProperty({SymbolDisplay.FormatLiteral(property.Name, true)}, global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Static)!";
 		}
 
 		if (createAllServices

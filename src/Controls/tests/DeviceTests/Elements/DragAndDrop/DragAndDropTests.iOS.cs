@@ -5,6 +5,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
@@ -296,7 +297,66 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		Task WithSession(bool allowsMove, Action<Label, Func<UIDropProposal>> test)
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task DragPositionIsAvailableAfterGarbageCollectionDuringHandler(bool dragLeave)
+		{
+			var location = new CGPoint(12, 34);
+			return WithSession(true, () => new DragSession(location), (label, update, exit) =>
+			{
+				Point? position = null;
+				void CapturePosition(DragEventArgs args)
+				{
+					// UIKit hands out a transient managed wrapper for the local drag session; collect it if nothing keeps it alive.
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					GC.Collect();
+					position = args.GetPosition(label);
+				}
+
+				var recognizer = new DropGestureRecognizer();
+				if (dragLeave)
+					recognizer.DragLeave += (_, args) => CapturePosition(args);
+				else
+					recognizer.DragOver += (_, args) => CapturePosition(args);
+				label.GestureRecognizers.Add(recognizer);
+
+				if (dragLeave)
+					exit();
+				else
+					update().Dispose();
+
+				Assert.Equal(new Point(location.X, location.Y), position);
+			});
+		}
+
+		[Fact]
+		public Task DragOverPositionIsNullWithoutLocalDragSession()
+		{
+			return WithSession(true, (label, update) =>
+			{
+				var raised = false;
+				Point? position = Point.Zero;
+				var recognizer = new DropGestureRecognizer();
+				recognizer.DragOver += (_, args) =>
+				{
+					raised = true;
+					position = args.GetPosition(label);
+				};
+				label.GestureRecognizers.Add(recognizer);
+
+				using var proposal = update();
+
+				Assert.True(raised);
+				Assert.Null(position);
+			});
+		}
+
+		Task WithSession(bool allowsMove, Action<Label, Func<UIDropProposal>> test) =>
+			WithSession(allowsMove, null, (label, update, _) => test(label, update));
+
+		Task WithSession(bool allowsMove, Func<IUIDragSession> localDragSession, Action<Label, Func<UIDropProposal>, Action> test)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
@@ -304,10 +364,10 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LabelHandler>(label);
 				using var dropDelegate = new DragAndDropDelegate(handler);
 				using var interaction = new UIDropInteraction(dropDelegate);
-				using var session = new DropSession(allowsMove);
+				using var session = new DropSession(allowsMove, localDragSession);
 				try
 				{
-					test(label, () => dropDelegate.SessionDidUpdate(interaction, session));
+					test(label, () => dropDelegate.SessionDidUpdate(interaction, session), () => dropDelegate.SessionDidExit(interaction, session));
 				}
 				finally
 				{
@@ -319,15 +379,18 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class DropSession : NSObject, IUIDropSession
 		{
-			public DropSession(bool allowsMove)
+			readonly Func<IUIDragSession> _localDragSession;
+
+			public DropSession(bool allowsMove, Func<IUIDragSession> localDragSession = null)
 			{
 				AllowsMoveOperation = allowsMove;
+				_localDragSession = localDragSession;
 			}
 
 			public bool AllowsMoveOperation { get; }
 			public UIDragItem[] Items => Array.Empty<UIDragItem>();
 			public bool RestrictedToDraggingApplication => false;
-			public IUIDragSession LocalDragSession => null;
+			public IUIDragSession LocalDragSession => _localDragSession?.Invoke();
 			public UIDropSessionProgressIndicatorStyle ProgressIndicatorStyle { get; set; }
 			public NSProgress Progress => throw new NotSupportedException();
 			public CGPoint LocationInView(UIView view) => CGPoint.Empty;
@@ -335,6 +398,24 @@ namespace Microsoft.Maui.DeviceTests
 			public bool CanLoadObjects(Class itemProviderReadingClass) => false;
 			public NSProgress LoadObjects(Class itemProviderReadingClass, Action<INSItemProviderReading[]> completion) =>
 				throw new NotSupportedException();
+		}
+
+		sealed class DragSession : NSObject, IUIDragSession
+		{
+			readonly CGPoint _location;
+
+			public DragSession(CGPoint location)
+			{
+				_location = location;
+			}
+
+			public bool AllowsMoveOperation => true;
+			public UIDragItem[] Items => Array.Empty<UIDragItem>();
+			public bool RestrictedToDraggingApplication => false;
+			public NSObject LocalContext { get; set; }
+			public CGPoint LocationInView(UIView view) => _location;
+			public bool HasConformingItems(string[] typeIdentifiers) => false;
+			public bool CanLoadObjects(Class itemProviderReadingClass) => false;
 		}
 	}
 }

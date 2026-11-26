@@ -19,6 +19,20 @@ namespace Microsoft.Maui.Platform
 			uiMenuElement.UpdateIsEnabled(menuFlyoutItem.IsEnabled);
 		}
 
+		internal static void UpdateImageSource(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem, IMauiContext? mauiContext)
+		{
+			if (mauiContext == null)
+				return;
+
+			var image = menuFlyoutItem.Source.GetPlatformMenuImage(mauiContext);
+
+			if (uiMenuElement is UIAction action)
+				action.Image = image;
+
+			if (uiMenuElement is UICommand command)
+				command.Image = image;
+		}
+
 		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, bool isEnabled)
 		{
 			uiMenuElement.UpdateMenuElementAttributes(isEnabled);

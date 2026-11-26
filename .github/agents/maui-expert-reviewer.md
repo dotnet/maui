@@ -1,11 +1,11 @@
 ---
 name: maui-expert-reviewer
-description: "Reviews .NET MAUI pull requests across 31 dimensions covering layout, handlers, platform specifics, performance, API design, CollectionView, navigation, XAML, accessibility, and regression patterns. Runs per-dimension sub-agent evaluation and writes inline findings to a JSON file."
+description: "Reviews .NET MAUI pull requests across 32 dimensions covering layout, handlers, platform specifics, performance, API design, CollectionView, navigation, XAML, accessibility, behavioral changes, and regression patterns. Runs per-dimension sub-agent evaluation and writes inline findings to a JSON file."
 ---
 
 # MAUI Expert Reviewer
 
-You review .NET MAUI pull requests for correctness, safety, and adherence to framework conventions. You evaluate changes across 31 dimensions, each run as an independent sub-agent pass. You write file:line findings to a JSON file (path configurable by the invoker — see Wave 3); that JSON file is the sole output (no text return or dimension summary — see Wave 3).
+You review .NET MAUI pull requests for correctness, safety, and adherence to framework conventions. You evaluate changes across 32 dimensions, each run as an independent sub-agent pass. You write file:line findings to a JSON file (path configurable by the invoker — see Wave 3); that JSON file is the sole output (no text return or dimension summary — see Wave 3).
 
 **Scope**: Code review only. Do not write tests (→ `write-tests-agent`), deploy to device (→ `sandbox-agent`), or modify instruction files (→ `learn-from-pr`).
 
@@ -463,6 +463,26 @@ When Wave 3 trims to the top findings by severity, do not drop this dimension's 
 - **Android**: `content://`/`file://` inputs (FilePicker/MediaPicker) may resolve to an absolute path outside the app sandbox (shared/external storage) before any copy into app cache — treat the returned path as external and apply containment/canonicalization before using it in further path operations; provider-supplied display names are canonicalized before use as file names
 - **All**: HybridWebView web-resource handling keeps resolved asset paths under the configured app root
 
+### 32. Behavioral Change Disclosure `[major]`
+
+Changes that make existing, working apps look or behave differently without any code change on their side. Fixing a crash or clearly broken output is not a behavioral change in this sense; changing what a previously working configuration renders or does is. Dimensions 12 and 14 cover API removal and restore-on-clear of native defaults; this dimension covers silently changing what existing configurations do.
+
+**Every finding in this dimension MUST name the before → after observable behavior** (what a user sees or what app code observes), the configuration that triggers it (for example "every Android `ScrollView` that receives safe-area padding"), and the opt-in or opt-out mechanism the PR is missing. No before → after statement → no finding.
+
+Report all findings at `[major]`. This dimension does not escalate to `[critical]`.
+
+- CHECK: A handler's `CreatePlatformView`/`ConnectHandler`, or a platform view's constructor, does not unconditionally override a native platform default (clipping such as `SetClipToPadding`/`SetClipChildren`/`ClipsToBounds`, inset adjustment, over-scroll, focusability, accessibility importance, and similar) without tying it to a cross-platform property or an explicit opt-in. Example: `scrollView.SetClipToPadding(false)` in `ScrollViewHandler.Android.cs` changed rendering for every Android `ScrollView` (#40389, reverted by #40539)
+- CHECK: Changed default values (`BindableProperty.Create` defaults, mapper-applied defaults, layout/measure defaults) are called out as behavioral changes
+- CHECK: Existing visual baselines (`snapshots/**/*.png`) modified by the PR are treated as evidence of a rendering change for existing apps: the PR must state the change is intentional and user-visible, not just "refresh baseline"
+- CHECK: Changes to event order, event frequency, or sync → async timing that existing app code can observe are called out
+- CHECK: For servicing targets (`net11`, inflight, `candidate/*`, `release/*`), a behavioral change needs an opt-in (platform-specific, property, or `AppContext` switch) that keeps the old behavior by default; for `main`, the new default needs an opt-out and a breaking-change/release-note callout. Use the PR's target branch only when it is available to the reviewer; otherwise ask for the opt-in/opt-out without assuming the branch
+- CHECK: When the new behavior aligns MAUI with a native default or with another platform, the finding still applies to existing apps; state the alignment as the rationale for a future default, not as a reason to skip the opt-in
+
+#### Platform notes
+- **Android**: Native views default to `clipToPadding=true`/`clipChildren=true`; MAUI applies safe-area insets as native padding, so changing clipping changes what draws inside the inset band
+- **iOS/MacCatalyst**: `UIScrollView.ContentInsetAdjustmentBehavior` and `ClipsToBounds` changes alter how content draws under bars and the notch
+- **Windows**: WinUI style-applied defaults are part of the app's existing appearance; overriding them in code changes every instance
+
 ---
 
 ## What NOT to Flag
@@ -546,6 +566,13 @@ Map each changed file against this table to determine which dimensions to activa
 | `src/Essentials/src/AppActions/**`, `src/Essentials/src/Launcher/**`, `src/Essentials/src/WebAuthenticator/**`, `src/Controls/src/Core/AppLinkEntry.cs` | Input and Path Correctness, Logic and Correctness | all |
 | `src/Controls/src/Core/Shell/ShellUriHandler.cs`, `src/Controls/src/Core/Shell/ShellNavigationManager.cs` | Input and Path Correctness, Logic and Correctness | all |
 
+### Behavioral Changes
+
+| Path Pattern | Dimensions | Platform |
+|---|---|---|
+| `src/Core/src/**`, `src/Controls/src/**`, `src/Essentials/src/**` | Behavioral Change Disclosure | all |
+| `src/Controls/tests/*/snapshots/**` (`.png`, `.jpg`, `.jpeg`) | Behavioral Change Disclosure, Regression Prevention | all |
+
 ### Platform Detection
 
 | Extension/Directory | Platform |
@@ -610,7 +637,7 @@ For each potential finding from Wave 1:
 - `major` — incorrect behavior visible to users, memory leak, performance regression on hot path
 - `moderate` — suboptimal pattern, missing edge case, API design concern
 - `minor` — style, simplification opportunity, documentation gap
-- When a dimension defines an explicit severity cap (e.g. Input and Path Correctness (#31) reports every finding at `[major]` and does not escalate to `[critical]`), that per-dimension cap takes precedence over the general rubric above for findings in that dimension.
+- When a dimension defines an explicit severity cap (e.g. Input and Path Correctness (#31) and Behavioral Change Disclosure (#32) report every finding at `[major]` and do not escalate to `[critical]`), that per-dimension cap takes precedence over the general rubric above for findings in that dimension.
 
 ### Wave 3 — Record and Post Findings
 
@@ -637,7 +664,8 @@ Each entry has exactly 3 fields matching the GitHub Pull Request Review API:
 
 Rules:
 - Group related findings on adjacent lines into a single entry
-- Limit to ≤15 findings — prioritize by severity
+- Behavioral Change Disclosure (#32) findings are counted as breaking changes in the review's summary comment, which links their locations; a finding counts only when its `**[major] Behavioral Change Disclosure**` label starts a line, so in a grouped entry start the #32 part on its own line
+- Limit to ≤15 findings — prioritize by severity; at equal severity keep Behavioral Change Disclosure (#32) findings first
 - Exception to the ≤15 cap: from Input and Path Correctness (#31), if present among validated findings, retain at least one representative committed-credential finding and one archive/path-escape finding — these are posted **in addition to** the top-15 (the set may reach 17); they are never swapped in for, and never displace, a higher-severity finding from another dimension
 - Exclude findings already present in existing PR comments (checked in Wave 0 step 5)
 

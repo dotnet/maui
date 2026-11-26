@@ -122,6 +122,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IEntry.Text));
 
 			handler.PlatformView?.UpdateIsReadOnly(entry);
+			handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 		}
 
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry)
@@ -178,6 +179,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			MapClearButtonVisibility(this, VirtualView);
+			PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 		}
 
 		// Check whether the touched position inbounds with clear button.

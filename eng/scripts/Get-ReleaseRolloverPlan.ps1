@@ -35,8 +35,8 @@ if ([string] $state.currentSr -cnotmatch '^[1-9][0-9]*$' -or
 if ($state.candidateNamingPolicy -cnotin @('unresolved', 'candidate')) {
     throw "The candidate naming policy must be 'unresolved' or 'candidate'."
 }
-if ($state.nightlyMode -cnotin @('legacy', 'versioned')) {
-    throw "The nightly mode must be 'legacy' or 'versioned'."
+if ($state.nightlyMode -cnotin @('legacy', 'versioned', 'candidate')) {
+    throw "The nightly mode must be 'legacy', 'versioned' or 'candidate'."
 }
 
 $repository = [string] $state.repository
@@ -97,7 +97,11 @@ if ($ResolveStateOnly) {
         stagingBranch = $targetNames.staging
         releaseBranch = "release/$band-sr$sr"
         nightlyMode = $state.nightlyMode
-        nightlyBranch = if ($state.nightlyMode -ceq 'legacy') { 'inflight/current' } else { $sourceNames.inflight }
+        nightlyBranch = switch -CaseSensitive ($state.nightlyMode) {
+            'legacy' { 'inflight/current' }
+            'candidate' { $sourceNames.candidate }
+            default { $sourceNames.inflight }
+        }
     } | ConvertTo-Json
     return
 }

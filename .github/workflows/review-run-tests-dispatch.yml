@@ -1,0 +1,171 @@
+# Last step of `/review run-tests` (and run-ui-tests / run-device-tests). copilot-review-run-tests.md (GPT-6.2 Sol) collects the
+# context and selects; copilot-review-run-tests-mai.md (MAI Code 2) selects from the same
+# context and dispatches this workflow with both runs. Only the union of the two selections runs.
+#
+# The agentic workflows run in the `copilot-pat-pool` environment for their Copilot tokens, so
+# they hand their validated inputs over to this environment-free workflow on the default branch.
+#
+# GitHub Actions cannot queue Azure DevOps builds: Microsoft Entra refuses the federated identity
+# (AADSTS53003, Conditional Access) and Azure Pipelines ignores `/azp run` from bots. This workflow
+# therefore pushes a dispatch commit to a run-tests/* branch; the CI trigger of maui-pr-uitests
+# builds it with only the selected tests. It also publishes the Skipped checks, a check that
+# follows the run, and the PR comment. See .github/scripts/Invoke-RunTests.ps1.
+
+name: Review run-tests dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR the selection belongs to
+        required: true
+        type: string
+      source_run_id:
+        description: Run of copilot-review-run-tests (GPT-6.2 Sol) that collected the context
+        required: true
+        type: string
+      second_run_id:
+        description: Run of copilot-review-run-tests-mai (MAI Code 2)
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: review-run-tests-dispatch-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    # Credentialed dispatch only from the trusted default branch.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    # Up to two dispatches (UI and device tests), each waiting up to 10 minutes for its build.
+    timeout-minutes: 40
+    permissions:
+      actions: read
+      checks: write
+      # Skipped, test selection and selected run statuses on the PR head.
+      statuses: write
+      # Creates the run-tests/* dispatch branch (Git Data API; no checkout is pushed).
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Verify the source run
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+          SECOND_RUN_ID: ${{ inputs.second_run_id }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        shell: pwsh
+        run: |
+          if ($env:PR_NUMBER -notmatch '^[1-9][0-9]{0,9}$' -or $env:SOURCE_RUN_ID -notmatch '^[1-9][0-9]{0,19}$' -or
+              $env:SECOND_RUN_ID -notmatch '^[1-9][0-9]{0,19}$') {
+            throw 'pr_number, source_run_id and second_run_id must be positive integers.'
+          }
+          $run = gh api "repos/$env:REPO/actions/runs/$env:SOURCE_RUN_ID" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the source run.' }
+          # Only the run-tests agentic workflow, from the default branch of this repository, may hand over a selection.
+          if ($run.path -ne '.github/workflows/copilot-review-run-tests.lock.yml' -or
+              $run.head_branch -ne $env:DEFAULT_BRANCH -or
+              $run.repository.full_name -ne $env:REPO -or
+              $run.event -notin @('issue_comment', 'workflow_dispatch')) {
+            throw "Run $env:SOURCE_RUN_ID is not a /review run-tests run on $env:DEFAULT_BRANCH."
+          }
+          if (([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($run.created_at)).TotalHours -gt 3) {
+            throw 'The source run is too old; request /review run-tests again.'
+          }
+          # The MAI Code 2 run must be the second model for this same request.
+          $second = gh api "repos/$env:REPO/actions/runs/$env:SECOND_RUN_ID" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the second model run.' }
+          if ($second.path -ne '.github/workflows/copilot-review-run-tests-mai.lock.yml' -or
+              $second.head_branch -ne $env:DEFAULT_BRANCH -or
+              $second.repository.full_name -ne $env:REPO -or
+              $second.event -ne 'workflow_dispatch' -or
+              [DateTimeOffset]::Parse($second.created_at) -lt [DateTimeOffset]::Parse($run.created_at)) {
+            throw "Run $env:SECOND_RUN_ID is not the MAI Code 2 selection for run $env:SOURCE_RUN_ID."
+          }
+          "requester=$($run.triggering_actor.login)" >> $env:GITHUB_OUTPUT
+          "run_url=$($run.html_url)" >> $env:GITHUB_OUTPUT
+
+      - name: Download the collected context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: run-tests-context-${{ inputs.source_run_id }}
+          path: ${{ runner.temp }}/run-tests
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download the AI proposals
+        # A model whose run produced no proposal is skipped; any other download failure fails the job,
+        # so a selection is never silently dropped.
+        id: proposals
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+          SECOND_RUN_ID: ${{ inputs.second_run_id }}
+        shell: pwsh
+        run: |
+          $paths = @()
+          foreach ($entry in @(@{ run = $env:SOURCE_RUN_ID; model = 'gpt-6.2-sol' }, @{ run = $env:SECOND_RUN_ID; model = 'mai-code-2' })) {
+            $name = "run-tests-proposal-$($entry.run)"
+            $listed = gh api "repos/$env:REPO/actions/runs/$($entry.run)/artifacts?name=$name" --jq '.total_count'
+            if ($LASTEXITCODE -ne 0) { throw "Could not list the artifacts of run $($entry.run)." }
+            if ([int]$listed -eq 0) { Write-Host "$($entry.model) produced no proposal."; continue }
+            $directory = "$env:RUNNER_TEMP/run-tests-proposal-$($entry.model)"
+            gh run download $entry.run --repo $env:REPO --name $name --dir $directory
+            if ($LASTEXITCODE -ne 0) { throw "Could not download the $($entry.model) proposal." }
+            $path = "$directory/proposal.json"
+            $proposal = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+            # Each run may only speak for its own model, and the second model for this request only.
+            if ($proposal.model -cne $entry.model) { throw "Run $($entry.run) did not produce a $($entry.model) proposal." }
+            if ($entry.model -eq 'mai-code-2' -and [string]$proposal.sourceRunId -ne $env:SOURCE_RUN_ID) {
+              throw 'The MAI Code 2 proposal belongs to a different request.'
+            }
+            $paths += $path
+          }
+          "paths=$($paths -join ';')" >> $env:GITHUB_OUTPUT
+
+      - name: Validate, dispatch maui-pr-uitests / maui-pr-devicetests, publish checks and comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REQUESTER: ${{ steps.source.outputs.requester }}
+          PROPOSAL_PATHS: ${{ steps.proposals.outputs.paths }}
+          SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
+          # Forks of the repository have no maui-pr-uitests to dispatch to: publish the selection only.
+          SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+        shell: pwsh
+        run: |
+          $arguments = @{
+            PrNumber = [int]$env:PR_NUMBER
+            ContextPath = "$env:RUNNER_TEMP/run-tests/context.json"
+            OutputDirectory = "$env:RUNNER_TEMP/run-tests-output"
+            Actor = $env:REQUESTER
+            WorkflowRunUrl = $env:SOURCE_RUN_URL
+          }
+          # No proposal from either model: nothing is queued and the comment says so.
+          $proposals = @($env:PROPOSAL_PATHS -split ';' | Where-Object { $_ })
+          if ($proposals.Count) { $arguments.ProposalPath = $proposals }
+          if ($env:SKIP_QUEUE -eq 'true') { $arguments.SkipQueue = $true }
+          ./.github/scripts/Invoke-RunTests.ps1 @arguments
+
+      - name: Keep the selection evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: run-tests-dispatch-${{ github.run_id }}
+          path: ${{ runner.temp }}/run-tests-output
+          if-no-files-found: warn
+          retention-days: 7

@@ -226,10 +226,15 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 100,
 			};
 
-			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
-
-			AssertPixelIsTransparent(bitmap, 10, 10);
-			AssertPixelIsRed(bitmap, 50, 50);
+			await AttachAndRun(border, (BorderHandler handler) =>
+			{
+				var contentPanel = GetNativeBorder(handler);
+				var clipHost = Assert.IsType<ContentPanelClipHost>(contentPanel.ContentClipHost);
+				// Transformed content (wrapped in WrapperView when it has a shadow) must be hosted in the clip host.
+				Assert.Same(clipHost, contentPanel.Content.Parent);
+				var clip = Assert.IsType<CompositionGeometricClip>(ElementCompositionPreview.GetElementVisual(clipHost).Clip);
+				Assert.NotNull(Assert.IsType<CompositionPathGeometry>(clip.Geometry).Path);
+			});
 		}
 
 		[Fact(DisplayName = "Border clips centered transformed content through nested layout - Issue 17523")]

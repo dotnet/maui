@@ -25,6 +25,8 @@ BeforeAll {
 
     Invoke-Expression (Get-FunctionBody -ScriptText $script:Content -FunctionName 'New-InlineReviewMarker')
     Invoke-Expression (Get-FunctionBody -ScriptText $script:Content -FunctionName 'Test-InlineReviewMarkerExists')
+    Invoke-Expression (Get-FunctionBody -ScriptText $script:Content -FunctionName 'Test-BreakingFindingBody')
+    Invoke-Expression (Get-FunctionBody -ScriptText $script:Content -FunctionName 'New-InlineReviewSummary')
 }
 
 Describe 'post-inline-review findings JSON handling' {
@@ -80,6 +82,27 @@ Describe 'post-inline-review findings JSON handling' {
 
             Test-InlineReviewMarkerExists -ReviewBodies @() -Marker $marker |
                 Should -BeFalse
+        }
+
+        It 'allows a same-head rerun whose only change is a newly unattachable finding' {
+            $oldMarker = New-InlineReviewMarker -ReviewedHead $script:HeadA -Comments $script:Findings
+            $newMarker = New-InlineReviewMarker -ReviewedHead $script:HeadA -Comments $script:Findings `
+                -UnattachedFindingBodies @("**[major] Behavioral Change Disclosure**`nSnapshot changed.")
+
+            $newMarker | Should -Not -Be $oldMarker
+            Test-InlineReviewMarkerExists -ReviewBodies @($oldMarker) -Marker $newMarker |
+                Should -BeFalse
+        }
+
+        It 'creates a marker and breaking-change summary when no finding is attachable' {
+            $breaking = "**[major] Behavioral Change Disclosure**`nSnapshot changed."
+            $marker = New-InlineReviewMarker -ReviewedHead $script:HeadA -Comments @() -UnattachedFindingBodies @($breaking)
+            $summary = New-InlineReviewSummary -FindingBodies @($breaking) -Comments @() -CommitSha $script:HeadA
+
+            $marker | Should -Match '^<!-- maui-copilot-inline-review:a{40}:[0-9a-f]{64} -->$'
+            $summary | Should -Match '1 breaking change'
+            $summary | Should -Match '1 could not be attached inline'
+            $summary | Should -Not -Match 'See inline comments'
         }
 
         It 'queries durable review bodies before the POST and keeps stale-head rejection' {

@@ -147,6 +147,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (handler.PlatformView is null)
 				return;
 
+			if (view.FlyoutBackgroundImage is null)
+				handler.UpdateValue(nameof(Shell.FlyoutBackground));
+
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 			handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget(handler);
 		}

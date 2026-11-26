@@ -195,7 +195,9 @@ someone merged a preview PR.
 After an explicitly authorized integration-branch reset, merged candidate PRs
 outside its pinned live history do not advance the cycle or count as duplicate
 integrations. A squash merge still in that history remains rejected; a reset
-does not relax the exact two-parent merge requirement or rewrite saved receipts.
+does not relax the exact two-parent merge requirement. If several eligible
+maintainer candidate merges remain in history, the latest merge is authoritative,
+not the first receipt or an older managed PR occupying the same cycle.
 
 GitHub can automatically delete a head branch after merge. If a current lane ref
 is missing, the reconciler restores it only from a live, verified, same-repo
@@ -259,16 +261,18 @@ byte-for-byte during production phase changes, rather than repeatedly stamping
 per-branch labels. Legacy one/two-label sources remain supported. Trial scopes
 use separately recognized conditions for both inflight and servicing refs.
 
-The policy also defaults `StabilizePackageVersion` to `true` when the effective
-label is `servicing` **and** the build source is a strict SR release ref.
-Development/candidate/inflight and initial `automation/release/*` refs remain non-stable. Explicit stabilization and
-Preview/RC/PR-label overrides remain authoritative; a Preview/RC override on an
-SR ref must not accidentally become a stable package. The setting is evaluated
-before Arcade, not overwritten by a later target.
+`StabilizePackageVersion` is an explicit boolean, defaulting to `false` on
+development/candidate/inflight and initial `automation/release/*` sources.
+The reviewed servicing configuration sets it to `true`; a release branch name
+alone never enables stable packages. The branch-derived label policy controls
+branding, not stabilization. Explicit MSBuild overrides remain authoritative.
+The setting is evaluated before Arcade, not overwritten by a later target.
 
 After an approved candidate merge, staging initially retains CI/non-stable output.
-The separate servicing PR makes stabilization explicit on staging, including
-for automatic-policy sources, while preserving the ordered branch-label properties.
+The separate servicing PR changes the stabilization boolean from `false` to
+`true` on staging while preserving the ordered branch-label properties.
+Historical regex-policy sources remain readable so existing receipts and
+reviewed servicing commits can still be reproduced; new sources use the boolean.
 Legacy sources receive the same pre-cut review with a literal servicing label.
 The receipt's original candidate and prepared next-lane identities remain unchanged.
 Readiness and
@@ -280,8 +284,8 @@ The next candidate includes the normalized fixes commit in its ancestry. A real
 three-way merge preserves both approved integration contents and future inflight
 payload. Conflicts stop the operation; no file is blindly replaced. Legacy
 servicing commits are children of the initial release cut and never enter
-candidate or future-lane ancestry. Automatic stabilization changes no release
-source bytes after the approved integration.
+candidate or future-lane ancestry. Creating the real release ref changes no
+source bytes after the reviewed servicing merge.
 Future inflight content is never included in the release already cut.
 
 The SR2 ref was originally seeded at patch10 and has been explicitly corrected
@@ -339,36 +343,88 @@ builds, `ci.inflight` package branding, workload artifacts, BAR registration, an
 the configured dogfood feed. Renaming or creating a public branch alone does not
 provide any of those external integrations.
 
-The official schedule recognizes versioned `inflight/*xx-sr*` refs. A selection
-stage runs before packing on scheduled inflight builds and reads the release
+The official schedule recognizes versioned `inflight/*xx-sr*` and
+`candidate/*xx-sr*` refs. A selection stage runs before packing on scheduled
+inflight and candidate builds and reads the release
 state from a pinned commit on public `main`. It selects only one publishing lane:
 
 | `nightlyMode` | Eligible nightly source |
 |---|---|
 | `legacy` | `inflight/current` |
 | `versioned` | `inflight/<releaseBand>-sr<currentSr+1>` |
+| `candidate` | `candidate/<releaseBand>-sr<currentSr>` |
 
-The checked-in mode remains **`legacy` during migration**. In versioned mode,
+The checked-in mode is **`candidate`**: official nightlies are built from the
+staged release contents, not from inflight. When the trusted release state
+advances `currentSr`, the nightly source moves to the next candidate (for
+example `candidate/11.0.1xx-sr2` → `candidate/11.0.1xx-sr3`) automatically;
+inflight lanes and older candidates skip packing. In versioned mode,
 SR1's inflight source is SR2; after the trusted release state advances to SR2,
 the source becomes SR3 automatically. Retained older inflight branches and the
 legacy branch skip packing when not selected, so they cannot make a retired
 stream appear fresh. Missing or invalid canonical state fails selection instead
 of falling back to another branch.
 
-Versioned inflight refs keep `PreReleaseVersionLabel=ci.inflight` and the existing
-signing path. `main`, candidate branches, tags, and other inflight experiments
-retain their existing branding. No feed or channel is invented from the SR name;
+Versioned inflight and candidate `*xx-srN` refs keep
+`PreReleaseVersionLabel=ci.inflight` and the existing signing path, so the
+dogfood stream contract is unchanged when the source moves to the candidate.
+`main`, tags, and other experiments retain their existing branding. No feed or channel is invented from the SR name;
 the existing publishing and Maestro configuration must be preserved and verified.
 The readiness feed check continues measuring `ci.inflight`, not a fresh
 `ci.main` build.
 
-Before switching `nightlyMode` to `versioned`, deploy the schedule/selection,
+Before switching `nightlyMode` to `versioned` or `candidate`, deploy the schedule/selection,
 signing, and branding changes to the mirrored legacy and active versioned
 branches. Verify that the internal mirror has the exact selected public commit,
 that its default-channel/feed wiring matches the existing nightly contract, and
 that a signed internal build publishes the expected artifacts. Do not rewrite
 mirror history or promote workload-release packages as part of this migration.
-The same deployment prerequisite applies when each new lane is created.
+The dnceng `dotnet-mirroring` configuration must list `candidate/<band>-srN` as
+an optional fast-forward pattern, as it does `main` and `release/*`, so the
+selected candidate reaches the internal `dotnet-maui` repository. The `net11`
+review lane and the `inflight/<band>-srN` staging lanes aren't mirrored, because
+official nightlies build only from the candidate. Switching `nightlyMode` to
+`versioned` would first require mirroring the inflight lanes. Fast-forward
+mirroring alone never follows a public rebase or force-push: the branch stops
+mirroring (and a mirroring issue is filed). The configuration must therefore
+also list the candidate lanes under its opt-in `followRewrites` patterns. For
+those branches, the mirror resets the internal branch to the rewritten public
+tip with a leased push, but only when the public repository activity shows that
+the internal tip was once a published tip of the same public branch, so no
+internal-only commit can be dropped. When that can't be verified, the branch
+stays blocked until a maintainer verifies that no internal-only commits would be
+dropped and performs a leased internal sync. The internal candidate's own
+05:00 UTC schedule then runs official pipeline 1095, without an additional
+competing build trigger. Advancing `currentSr` therefore selects and mirrors the
+next candidate without a manual per-SR change.
+
+Candidate nightlies publish to the production `.NET 11.0.1xx SDK` channel, so
+`.azuredevops/policies/branchClassification.yml` classifies `candidate/*` as a
+production branch, as it does `main`, `release/*` and `inflight/current`.
+Arcade's production-channel validation checks the build's branch against this
+classification during promotion. Today a mismatch is only an audit warning
+("is not classified as a production branch"), but enforcement would block
+publication. The classification service reads the file from the internal
+repository's default branch (`main`); after changing it, confirm the service
+lists the new pattern before relying on it.
+
+The **Prepare signed release publication** workflow also has an opt-in
+nightly-mirror job that performs those leased syncs. It runs only while the
+repository variable `RELEASE_NIGHTLY_MIRROR_ENABLED` is `true`; enable it only
+after the existing Azure federation identity is onboarded to the dnceng
+organization, because until then every run fails with TF400813. Once enabled it
+runs hourly, after release tracking succeeds, and when canonical state or mirror
+tooling changes on `main`. It uses trusted `main` code; candidate code is fetched
+as Git data, never executed in that credentialed job.
+
+The existing federated identity needs Git read/contribute/create-branch and
+force-push permission on the internal candidate and
+`automation/nightly-mirror/candidate/*` refs. It does not need a new PAT.
+New mirrors and fast-forwards can be adopted safely. Each verified sync records
+the public SHA in an internal ownership ref; later public rebases may replace
+only that exact last-mirrored tip, using explicit leases. Unrelated internal
+commits or concurrent ref changes fail the workflow instead of being overwritten.
+The `nightly-mirror-*` artifact records the selected source and verified mirror.
 
 The public PR and sandbox do not deploy internal mirrors, change Maestro
 subscriptions, or certify an actual signed nightly. They must not be reported as
@@ -410,12 +466,19 @@ preparation does not advance the train. Ambiguous sources,
 wrong versions, conflicts, unexpected refs, and squash/rebase merges fail rather
 than invent a release approval.
 
-Before creating lanes or PRs, it publishes a bounded, create-once receipt at
+Before creating lanes or PRs, it publishes a bounded receipt at
 `automation/release-lanes/<band>-srN`. The receipt retains the approved merge,
 source and prepared commit identities. If a later API call fails, schedule or
 manual retry reconstructs the same plan and finishes missing writes. Existing
-output refs must match or preserve the prepared ancestry; newer approved work
-is never reset. Consumed historical candidate heads are not recreated as fresh
+output refs must match or preserve the prepared ancestry. A newer maintainer
+candidate merge supersedes the canonical receipt using an exact SHA lease;
+the new receipt retains its predecessor as a commit parent and `supersedes`
+metadata, so previous plans remain reproducible. Only exact outputs from those
+verified previous plans may be replaced, including the previous candidate staging
+source or its exact reviewed servicing merge. Unrelated edits and concurrent
+newer sources are never overwritten. Actual API/Git failures remain explicit and
+retryable; historical failed checks or older PR routes do not veto the new source.
+Consumed historical candidate heads are not recreated as fresh
 PRs. The reconciler follows these verified receipts, so the unchanged initial
 configuration cannot reopen an obsolete PR pair after a completed integration.
 Recovery also rechecks the consumed inflight source before rollover writes and
@@ -428,30 +491,47 @@ interpolated into a ref-update URL; no direct integration-ref update is issued.
 An existing real `release/<band>-srN` ref is informational in this path: its
 ancestry does not gate staging, normalization or next-lane preparation. Publishing
 verifies the exact reviewed staging source and manual release cut before signing.
-Its create-only staging write happens before opening the draft normalization PR
-at `automation/normalization/<band>-srN`. The receipt makes this pause resumable:
+Its staging write happens before opening the draft normalization PR
+at `automation/normalization/<band>-srN/source-<candidate-merge-sha>`.
+Normalization, servicing and canonical-state PR heads are scoped to that full
+candidate merge SHA. Closed or merged PRs from an older source cannot occupy the
+new source's route. Existing unsuffixed PRs remain compatible only when their
+prepared head matches and, for identical-content state proposals, their recorded
+candidate source also matches. The receipt makes this pause resumable:
 `waiting-for-normalization-approval` preserves staging and the current tracking SR,
 does not activate the replacement lanes, and does not prepare forward flow.
 A maintainer must review, run required CI and use **Create a merge commit**,
 not squash/rebase, so the exact prepared child remains an ancestor of `net11`.
+Force-pushing or rebasing `net11` breaks that ancestry for every unpublished
+lane: the publication reconciler fails until its prepared commit is an ancestor
+of `net11` again.
 The merged-PR trigger then revalidates that ancestry and resumes the same receipt.
+If the normalization PR is squash- or rebase-merged anyway, the runner warns,
+ignores that merge and opens a replacement draft PR from the same pinned head
+(its diff may be empty because the tree already landed). Merging the replacement
+with **Create a merge commit** records the ancestry and resumes the receipt.
 Existing protections and bypass actors are never changed by this workflow.
-If net11 acquires unrelated work before normalization, the runner refuses to
-overwrite it. Servicing preparation runs independently in the publication
+While normalization is pending, net11 may advance from the approved candidate
+merge, but the runner never overwrites it and refuses history that no longer
+descends from that merge. Servicing preparation runs independently in the publication
 reconciler before a real manual cut. The next-lane runner reconciles the next tracking pair and prepares
 the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
 is not used, so servicing configuration cannot overwrite feature-major settings.
 
-Staging starts at the exact approved candidate merge and may advance only to
+Within one source generation, staging starts at the exact approved candidate merge and may advance only to
 its verified human-reviewed servicing merge. Retries validate the exact PR,
 prepared head, two ordered parents and unchanged prepared tree; arbitrary
 descendants and mutations are rejected. Candidate and net11 retain CI metadata.
-Neither runner merges PRs or moves staging back to the initial candidate source.
+Neither runner merges PRs or moves reviewed staging back to the same generation's
+initial candidate source. Only a newer maintainer candidate merge can replace a
+verified older generation. Publication rechecks the canonical receipt and newer
+reachable candidate merges before creating a servicing PR or dispatching a build;
+a superseded source cannot sign while its new receipt is still being reconciled.
 
 The effective `trackingSr` selects the upcoming PR pair. It does not silently
 change the canonical `currentSr` used for release readiness or the selected
 signed-nightly source. Once rollover is complete, `canonicalStatePullRequest`
-identifies the prepared draft at `automation/state/<band>-srN`; while
+identifies the prepared draft at `automation/state/<band>-srN/source-<candidate-merge-sha>`; while
 normalization is pending, no state PR is prepared. The runner rechecks the
 exact staging source, normalized fixes and both next-lane ancestries and refuses a stale
 canonical state snapshot or an unexpected existing proposal. Retries reuse the
@@ -463,7 +543,7 @@ required to prepare or merge this state update.
 `versioned` switch remains a separate owner-reviewed state change after exact
 internal mirroring, signed artifacts and feed/channel deployment have been
 verified. Once mode is `versioned`, advancing `currentSr` automatically selects
-inflight SR `N+1`; verify that newly selected lane's deployment before merging
+inflight SR `N+1`; in `candidate` mode it selects candidate SR `N`; verify that newly selected lane's deployment before merging
 each state update. A completed rollover is not signed-nightly acceptance.
 No pipeline, channel, subscription, protection or public-publishing permission
 is changed by preparing this PR.
@@ -506,6 +586,15 @@ housekeeping, next lanes and state-PR preparation do not require a real release 
 The **Prepare signed release publication** workflow follows completion and polls
 hourly, and wakes on merged staging servicing PRs and real release-branch creation.
 It inventories all retained receipts for the configured band, not just `currentSr`.
+A lane is reported as `published` and skipped when a stable, non-draft GitHub
+Release for that SR is tagged at the exact live release head, that commit's
+`eng/Versions.props` matches the tag, and its tree is identical to the reviewed
+servicing merge of the lane's current receipt generation. That check runs only
+after servicing preparation, so a superseding candidate generation still gets
+its own servicing PR and is never reported as published while the release
+branch holds older content. Nothing is signed, dispatched or re-verified
+against later integration history for a published lane. A hotfix that moves the
+release head is not covered until its own release is published.
 Its trusted job automatically prepares the separate servicing/stable PR against
 `automation/release/<band>-srN` before a real release exists. An old actual
 release ref does not block this preparation and is never adopted as approval.
@@ -635,6 +724,14 @@ manual activation. It reads trusted branch roles from `main` and uses a
 separate `automation/forward-servicing-fixes` head so GitHub's post-merge branch
 deletion cannot delete the servicing branch.
 
+Manual forward PRs must follow the same rule: push a separate branch such as
+`forward/net11-to-main-<sha>` and never open a PR whose head is `net11`,
+`inflight/*` or `candidate/*`. The repository has `delete_branch_on_merge`
+enabled, so merging such a PR deletes the long-lived branch and closes every PR
+that targets it. The `MAUI long-lived branch deletion guard` ruleset blocks
+deletion of `net11`, `net12`, `inflight/*` and `candidate/*`; keep its patterns
+in sync with the roles in `eng/release-rollover.json`.
+
 Forwarding waits until the feature branch's actual major exceeds the servicing
 major. It also waits for post-staging fixes housekeeping: the source must have
 `ci.main` branding and `StabilizePackageVersion=false`, not transient servicing
@@ -739,8 +836,8 @@ For a dummy SR1 candidate merge, it creates only these sandbox refs:
 
 | Dummy output under `release-rollover-trial/<trial>/` | Source commit |
 |---|---|
-| `automation/release/11.0.1xx-sr1` | The exact candidate merge commit on dummy `main`; create-once, CI/non-stable. |
-| `automation/normalization/11.0.1xx-sr1` | A housekeeping child of that exact merge, proposed in a draft PR to dummy `main`: next-cycle patch, `ci.main`, non-stable packages. |
+| `automation/release/11.0.1xx-sr1` | The latest authoritative candidate merge commit on dummy `main`; CI/non-stable until reviewed servicing. |
+| `automation/normalization/11.0.1xx-sr1/source-<candidate-merge-sha>` | A housekeeping child of that exact merge, proposed in a draft PR to dummy `main`: next-cycle patch, `ci.main`, non-stable packages. |
 | `candidate/11.0.1xx-sr2` | CI-configured child of a clean merge of normalized integration and pinned old SR2 inflight, plus its bug-template commit. |
 | `inflight/11.0.1xx-sr3` | CI-configured child of the next candidate, with SR3 patch metadata. |
 
@@ -762,8 +859,10 @@ Each sandbox has a serialized workflow concurrency group. Fixed commit identity,
 parent-derived commit time, and actual content changes make preparation deterministic.
 Existing outputs at the exact expected SHAs are left unchanged. Ref creation and
 reviewed fixes housekeeping are guarded, separately recoverable operations.
-Staging is created once and advances only through its reviewed servicing PR;
-the workflow never directly updates dummy integration for housekeeping or cuts
+Within one source generation, staging advances only through its reviewed servicing PR;
+a newer maintainer candidate merge can supersede verified older generated outputs
+using exact leases, just as in production. Unrelated edits remain protected.
+The workflow never directly updates dummy integration for housekeeping or cuts
 a release. The trial invokes publication with `-PlanOnly -PrepareServicing` to
 open the separate servicing PR against dummy staging. After review and
 **Create a merge commit**, manually create the dummy release at that exact

@@ -134,6 +134,16 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 	public void VerifyHybridWebViewWithShadow()
 	{
 		ResetToDefaults();
+		var heading = AppiumQuery.ByXPath(
+			"//*[@text='.NET MAUI HybridWebView' or @label='.NET MAUI HybridWebView' or @Name='.NET MAUI HybridWebView']");
+		var defaultHeadingBounds = App.WaitForElement(heading).GetRect();
+		App.Tap("NavigationHtmlButton");
+		WaitForStatus("Loaded: HybridWebView Navigation Page");
+		ResetToDefaults();
+		var resetHeadingBounds = App.WaitForElement(heading).GetRect();
+		TestContext.WriteLine($"Heading bounds before navigation: {defaultHeadingBounds}; after reset: {resetHeadingBounds}.");
+		Assert.That(resetHeadingBounds, Is.EqualTo(defaultHeadingBounds),
+			"Reset should restore the document's position after changing the default file.");
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));

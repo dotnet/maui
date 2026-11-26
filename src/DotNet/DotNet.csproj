@@ -73,6 +73,10 @@
     <ItemGroup>
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/*" />
     </ItemGroup>
+    <!-- Servicing SDKs bundle a versioned microsoft.net.sdk.maui/<version>/ manifest, which
+         takes precedence over the unversioned one copied below and installs the GA packs
+         instead of the locally built ones. -->
+    <RemoveDir Directories="$(_WorkloadManifestInstallDirectory)/microsoft.net.sdk.maui" />
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
@@ -184,6 +188,9 @@
     <_PacksToRemove Include="microsoft.net.sdk.macos" />
     <_PacksToRemove Include="microsoft.net.workload.emscripten" />
     <_PacksToRemove Include="microsoft.net.workload.mono.toolchain" />
+    <!-- Bundled final manifests take precedence over the pinned net10 prerelease manifests. -->
+    <_PacksToRemove Include="microsoft.net.workload.emscripten.net10" />
+    <_PacksToRemove Include="microsoft.net.workload.mono.toolchain.net10" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="android" />
     <_WorkloadIds Include="maccatalyst" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />

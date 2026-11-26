@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui29708External">
+    <Issue3076Button />
+</ContentPage>

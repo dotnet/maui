@@ -5,7 +5,7 @@ parameters:
   timeoutInMinutes: 120
   useCoreClr: true
   targetFrameworkVersion:
-    tfm: net11.0
+    tfm: net12.0
   project:
     name: name
     desc: Tests

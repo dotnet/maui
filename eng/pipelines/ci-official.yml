@@ -32,6 +32,7 @@ schedules:
     - net*.0
     - inflight/current
     - inflight/*xx-sr*
+    - candidate/*xx-sr*
     exclude:
     # net11 is the servicing branch; retired .0 refs must not duplicate its nightlies.
     - net10.0
@@ -91,9 +92,9 @@ extends:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
 
-    - ${{ if and(eq(variables['Build.Reason'], 'Schedule'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/')) }}:
+    - ${{ if and(eq(variables['Build.Reason'], 'Schedule'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/candidate/'))) }}:
       - stage: SelectInflightNightly
-        displayName: Select active inflight nightly
+        displayName: Select active nightly lane
         dependsOn: []
         jobs:
         - job: Select
@@ -121,7 +122,7 @@ extends:
 
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
-        ${{ if and(eq(variables['Build.Reason'], 'Schedule'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/')) }}:
+        ${{ if and(eq(variables['Build.Reason'], 'Schedule'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/candidate/'))) }}:
           dependsOn:
           - SelectInflightNightly
           condition: and(succeeded(), eq(dependencies.SelectInflightNightly.outputs['Select.Resolve.shouldBuild'], 'true'))
@@ -176,8 +177,7 @@ extends:
       parameters:
         publishingInfraVersion: 3
         enableSymbolValidation: true
-        enableSigningValidation: false
-        # Disable for now as we test the new signing process
+        enableSigningValidation: true
         enableSourceLinkValidation: false
         validateDependsOn:
         - Pack

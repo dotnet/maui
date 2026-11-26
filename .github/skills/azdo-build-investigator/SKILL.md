@@ -17,10 +17,8 @@ answering "why is CI red?" and "is this PR ready to merge?". Use it together wit
 > using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if
 > available). This skill provides MAUI-specific corrections and context on top of that.
 
-For the **automated** path (a maintainer comments `/review tests` on a PR), the
-`review-test-failures` skill relates failures to the PR diff and the latest five
-completed runs per pipeline on the PR's target branch, then posts one compact attribution
-comment. It does not issue merge approval. Both use the operational facts below.
+The standalone `/review tests` command is retired. Use this skill for CI failure
+investigations; test verification integrated into the full `/review` is unchanged.
 
 ## MAUI CI facts (canonical)
 
@@ -92,8 +90,9 @@ In the configured .NET 11 train, fixes belong to literal `net11`, staged SR1
 content to `candidate/11.0.1xx-sr1`, and future SR2 content to
 `inflight/11.0.1xx-sr2`. `main` is the next-major feature branch, not the
 servicing baseline. Historical `net11.0` is a different branch. `nightlyMode`
-retains `inflight/current` during migration; versioned mode selects SR `N+1`
-from the state record and advances with it.
+`candidate` (checked in) selects `candidate/<band>-sr<currentSr>`; versioned mode
+selects inflight SR `N+1`; legacy keeps `inflight/current`. Both state-derived
+modes advance with the state record.
 
 Use the state deployed at the time of the run and record its commit as evidence.
 Do not treat the local proposal, public branch existence, or a successful sandbox

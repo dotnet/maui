@@ -14,7 +14,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
-string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net11.0");
+string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net12.0");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
@@ -188,7 +188,7 @@ Task("dotnet-samples")
             }
             projectsToBuild = "./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
             properties["_UseNativeAot"] = "true";
-            properties["RuntimeIdentifier"] = "iossimulator-x64";
+            properties["RuntimeIdentifier"] = "iossimulator-arm64";
             properties["BuildIpa"] = "true";
         }
         else
@@ -218,7 +218,7 @@ Task("uitests-apphost")
         {
             Information("Building for NativeAOT");
             properties.Add("_UseNativeAot", "true");
-            properties.Add("RuntimeIdentifier", "iossimulator-x64");
+            properties.Add("RuntimeIdentifier", "iossimulator-arm64");
         }
 
         var useMaterial3 = Argument("usematerial3", false);

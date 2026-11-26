@@ -21,6 +21,7 @@ Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://gith
 * [.NET MAUI Customer Showcase](https://dotnet.microsoft.com/platform/customers?filters=technology%3Adotnet-maui)
 
 ## Current News
+* 2026 - [What's new in .NET MAUI for .NET 11](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-11)
 * 2025 - [What's new in .NET MAUI for .NET 10](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-10)
 * November 13, 2024 - [What's new in .NET MAUI for .NET 9](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-9)
 * November 12, 2024 - [Announcing .NET 9](https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/#.net-maui-–-enhancing-multi-platform-app-development)

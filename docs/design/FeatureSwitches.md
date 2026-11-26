@@ -10,7 +10,6 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiCssEnabled | Microsoft.Maui.RuntimeFeature.IsCssEnabled | When disabled, CSS stylesheets cannot be used. Defaults to `false` when no `MauiCss` items are present in the project, and `true` otherwise. |
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
-| MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
@@ -70,6 +69,10 @@ You can override the inflator for individual XAML files using item metadata:
 **Changes in .NET 12:**
 - The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
 
+### Source-generated XAML line information
+
+The XAML source generator emits line directives by default in all configurations so compiler diagnostics can point to the original XAML. Set `<MauiXamlLineInfo>disable</MauiXamlLineInfo>` to turn them off; `enable` and the values `true` and `false` are also supported.
+
 ## MauiCssEnabled
 
 When this feature is disabled, CSS stylesheets cannot be parsed or applied to UI elements. Any attempt to use CSS will throw a `NotSupportedException`.
@@ -95,7 +98,13 @@ When this feature is disabled, any value set to [`SearchHandler.DisplayMemberNam
 
 ## MauiQueryPropertyAttributeSupport
 
-When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. Instead, implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface whenever you need to accept query parameters.
+`MauiQueryPropertyAttributeSupport` is no longer supported. Remove it from your project files; the build reports an error if it is set.
+
+For `partial` classes, the Controls source generator turns `[QueryProperty(...)]` attributes into an explicit implementation of `IQueryAttributable` at build time. The generated code sets the properties and converts the values without reflection.
+
+Classes that aren't `partial`, including subclasses that inherit `[QueryProperty]` attributes, or that the generator can't handle (for example properties with `init` setters or ambiguous property names), fail when their query properties are applied. The generator also skips classes with a handwritten `IQueryAttributable` implementation: remove their `[QueryProperty]` attributes and handle the properties in the existing implementation instead. Existing implementations must also implement the new `ApplyQueryProperties` method.
+
+The `MAUI1201` analyzer warning reports classes that combine `[QueryProperty]` attributes with a handwritten `IQueryAttributable` implementation, including inherited implementations and attributes. The source generator skips these classes; handle their query properties manually or remove the interface implementation to use generated setters. Implementations emitted by the Controls source generator do not trigger this warning.
 
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 

@@ -32,13 +32,20 @@ public partial class CollectionViewHandler2
 
 	};
 }
-public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>
+public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>, IScrollToEdgeHandler
 {
+	bool IScrollToEdgeHandler.ScrollToStart(bool animate) => ScrollToEdgeItem(end: false, animate);
+
+	bool IScrollToEdgeHandler.ScrollToEnd(bool animate) => ScrollToEdgeItem(end: true, animate);
+
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
 	bool _selectionUpdateQueued;
 	bool _platformSelectionUpdateQueued;
 	Action<int>? _containerPreparedHandler;
+
+
+	internal override bool PreventGestureBubbling => VirtualView.SelectionMode is not SelectionMode.None;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;

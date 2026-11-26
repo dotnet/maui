@@ -13,12 +13,47 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using SoftInput = Android.Views.SoftInput;
 using WindowSoftInputModeAdjust = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task ImmediatePopAfterNonAnimatedPushDismissesDialog(bool useShell, bool animatedPop)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			Page root = useShell ? new Shell { CurrentItem = page } : new NavigationPage(page);
+			var window = new Window(root);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async handler =>
+				{
+					var fragmentManager = handler.MauiContext.GetFragmentManager();
+
+					for (int i = 0; i < 2; i++)
+					{
+						var modal = new ContentPage { BackgroundColor = Colors.Yellow };
+						await page.Navigation.PushModalAsync(modal, animated: false);
+						bool loadedAtPop = modal.IsLoaded;
+						var popped = await page.Navigation.PopModalAsync(animatedPop);
+
+						Assert.True(loadedAtPop);
+						Assert.Same(modal, popped);
+						Assert.Empty(page.Navigation.ModalStack);
+						await AssertEventually(() => !fragmentManager.Fragments
+							.OfType<ModalNavigationManager.ModalFragment>()
+							.Any(fragment => fragment.Dialog?.IsShowing == true));
+					}
+				});
+		}
+
 		[Fact]
 		public async Task ChangeModalStackWhileDeactivated()
 		{
@@ -176,6 +211,77 @@ namespace Microsoft.Maui.DeviceTests
 						activityWindow.SetStatusBarColor(new global::Android.Graphics.Color(originalStatusBarColor));
 					}
 #pragma warning restore CA1422
+				});
+		}
+
+		// A modal is hosted in its own dialog window, so its soft input mode can differ from the activity's
+		// once either one changes after the modal opens. The keyboard padding must follow the dialog window.
+		[Theory]
+		[InlineData(SoftInput.AdjustResize, SoftInput.AdjustPan, false)]
+		[InlineData(SoftInput.AdjustPan, SoftInput.AdjustResize, false)]
+		[InlineData(SoftInput.AdjustNothing, SoftInput.AdjustPan, true)]
+		[InlineData(SoftInput.AdjustPan, SoftInput.AdjustNothing, true)]
+		public async Task ModalSoftInputPaddingFollowsDialogWindowAdjustMode(SoftInput dialogMode, SoftInput activityMode, bool imeAnimating)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var modalPage = new ContentPage
+			{
+				SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.None, SafeAreaRegions.SoftInput),
+				Content = new Label()
+			};
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window,
+				async handler =>
+				{
+					await page.Navigation.PushModalAsync(modalPage, animated: false);
+					await OnLoadedAsync(modalPage);
+
+					var activityWindow = handler.PlatformView.Window;
+					var dialogWindow = GetModalDialogFragment(handler).Dialog?.Window;
+					Assert.NotNull(dialogWindow);
+					var originalActivityMode = activityWindow.Attributes.SoftInputMode;
+
+					var pageView = (global::Android.Views.View)modalPage.Handler.PlatformView;
+					var listener = MauiWindowInsetListener.FindListenerForView(pageView);
+					Assert.NotNull(listener);
+
+					const int imeBottom = 500;
+					var insets = new WindowInsetsCompat.Builder()
+						.SetInsets(WindowInsetsCompat.Type.Ime(), AndroidX.Core.Graphics.Insets.Of(0, 0, 0, imeBottom))
+						.Build();
+					var animation = new WindowInsetsAnimationCompat(WindowInsetsCompat.Type.Ime(), null, 250);
+
+					try
+					{
+						dialogWindow.SetSoftInputMode(dialogMode);
+						activityWindow.SetSoftInputMode(activityMode);
+
+						if (imeAnimating)
+						{
+							// Gated during the animation, the view gets its padding from OnProgress
+							listener.OnPrepare(animation);
+							listener.OnApplyWindowInsets(pageView, insets);
+							listener.OnProgress(insets, new List<WindowInsetsAnimationCompat> { animation });
+						}
+						else
+						{
+							listener.OnApplyWindowInsets(pageView, insets);
+						}
+
+						// Only a panning window leaves the content unpadded
+						Assert.Equal(dialogMode == SoftInput.AdjustPan ? 0 : imeBottom, pageView.PaddingBottom);
+					}
+					finally
+					{
+						if (imeAnimating)
+						{
+							listener.OnEnd(animation);
+						}
+
+						activityWindow.SetSoftInputMode(originalActivityMode);
+					}
 				});
 		}
 

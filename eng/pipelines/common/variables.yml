@@ -13,9 +13,17 @@ variables:
 - name: DOTNET_VERSION
   value: 10.0.100
 - name: REQUIRED_XCODE
-  value: 27.0.0
+  value: 27.1.0
 - name: XCODE
-  value: 27.0
+  value: 27.1
+# The .NET 12 Apple workloads require Xcode 27.1. Agents without it fall back to Xcode_27.app (27.0)
+# during "Select Xcode Version", so keep validation off until every image has Xcode 27.1.
+- name: ValidateXcodeVersion
+  value: false
+# Tools such as Cake target net10.0; let them run on the repo's .NET 12 preview runtime when
+# no .NET 10 runtime is installed (their own roll-forward setting skips prerelease runtimes).
+- name: DOTNET_ROLL_FORWARD
+  value: Major
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Workaround for PowerShell/PowerShell#20802 (open since Nov 2023):
@@ -33,7 +41,7 @@ variables:
 - name: isLocHandoffBranch
   value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main')]
 - name: signingCondition
-  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main', 'refs/heads/inflight/current' ), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), contains(variables['Build.SourceBranch'], 'xx-sr')), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
+  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/net11', 'refs/heads/main', 'refs/heads/inflight/current' ), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'), contains(variables['Build.SourceBranch'], 'xx-sr')), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/candidate/'), contains(variables['Build.SourceBranch'], 'xx-sr')), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
 # Hosted and Aces images receive new Xcode versions at different times.
 - name: HostedMacImage
@@ -70,7 +78,11 @@ variables:
 - name: nugetMultiFeedWarnLevel
   value: none
 
-- group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
+# `/review run-ui-tests` and `/review run-device-tests` dispatch branches (refs/heads/run-tests/*,
+# refs/heads/run-devicetests/*) build pull-request code as a branch build, so they never get this
+# group's secret; pull-request builds from forks don't get it either.
+- ${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:
+  - group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
 
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:

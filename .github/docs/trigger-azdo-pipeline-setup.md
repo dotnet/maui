@@ -28,10 +28,13 @@ on pull requests, including acknowledgments with the standard "There may be
 pipelines that require an authorized user to comment /azp run to run" hint.
 It also collapses workflow-failure notices from `github-actions[bot]`: marked
 review failures, agent-job failures, failed workflow status messages, and
-security-scanning failure notices. Comments remain expandable; nothing is
-deleted. Substantive review reports (including Tests Failure Analysis), actual
-Azure Pipelines failures, standalone authorization warnings, and ordinary
-discussion remain visible.
+security-scanning failure notices. Marked dogfooding and Skill Validation
+results comments from `github-actions[bot]` are also collapsed as resolved.
+Their updated workflows minimize new or updated comments immediately; Skill
+Validation results no longer mention the PR author. Comments remain expandable;
+nothing is deleted. Other substantive review reports (including Tests Failure
+Analysis), actual Azure Pipelines failures, standalone authorization warnings,
+and ordinary discussion remain visible.
 
 This is independent of pipeline dispatch and does not change which pipelines run
 or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
@@ -185,6 +188,7 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 |---|---|---|
 | `dnceng-public` | `public` | 302 (maui-pr), 313 (maui-pr-uitests), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
+| `dnceng` | `internal` | 1095 (official signed build), 1445 (release publication), `dotnet-maui` Git mirror. Used by `release-publishing.yml`; its nightly-mirror job stays off until `RELEASE_NIGHTLY_MIRROR_ENABLED` is `true`. |
 
 ## Step 4: Set GitHub Repository Secrets
 
@@ -276,7 +280,7 @@ fires after direct issue-free PR creation and follow-up pushes.
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
 5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
-   token: the Pipelines Runs API for `/review` and `/review gate`, or the Build Queue API for
+   token: the Pipelines Runs API for `/review`, or the Build Queue API for
    CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```
@@ -295,6 +299,7 @@ fires after direct issue-free PR creation and follow-up pushes.
 | `AADSTS7002381: ... enterprise claim ... actual value is ''` | Personal fork outside GitHub Enterprise | Microsoft tenant requires `enterprise` claim. Only repos in `dotnet`, `microsoft`, etc. GitHub Enterprise orgs work. |
 | `TF215106: Access denied. <name> needs Queue builds permissions` | Stakeholder access level or missing permission | Upgrade identity to **Basic** access (not Stakeholder). Verify "Queue builds" is explicitly allowed on the pipeline. |
 | `TF401444: Sign-in required` | Identity not added to AzDO org | Add the MI as a user in the AzDO Organization Settings → Users. |
+| `TF400813: The user ... is not authorized to access this resource` | The token is valid but the identity is not a member of that AzDO org (seen against `dnceng`) | Add the MI to that organization with access to the project. For `dnceng`, keep `RELEASE_NIGHTLY_MIRROR_ENABLED` unset until then. |
 | `403` from AzDO REST API | Missing permissions | Ensure the identity has "Queue builds" on the specific pipeline AND Basic access level. |
 | `OIDC environment variables not available` | Missing `id-token: write` permission | Add `permissions: { id-token: write }` at the **job** level (not workflow level). |
 | `Failed to get Azure AD token` | Wrong client_id/tenant_id or federated credential mismatch | Verify secrets match the MI's Client ID and Tenant ID. Check federated credential subject matches the actual OIDC claim. |

@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "11.0.100-rtm.26514.118"
+    "dotnet": "12.0.100-alpha.1.26523.103"
   },
   "sdk": {
     "paths": [
@@ -14,6 +14,6 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26514.118"
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26566.116"
   }
 }

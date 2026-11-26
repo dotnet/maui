@@ -27,6 +27,7 @@
     <ApplicationTitle>Core Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.core.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
+    <UseXHarnessSceneManifest>true</UseXHarnessSceneManifest>
   </PropertyGroup>
 
   <PropertyGroup>

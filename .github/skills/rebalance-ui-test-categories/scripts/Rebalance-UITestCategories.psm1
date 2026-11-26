@@ -921,10 +921,19 @@ function Set-ShardInfrastructure {
 	$matrixStart = -1
 	$matrixEnd = $lines.Count
 	$matrixIndentLength = 0
+	# Supports both the untyped form (`categoryGroupsToTest:`) and the typed form
+	# (`- name: categoryGroupsToTest` with `type:` and `default:`).
+	$typedParameter = $false
 	for ($i = 0; $i -lt $lines.Count; $i++) {
 		if ($lines[$i] -match '^(?<indent>[ \t]*)categoryGroupsToTest\s*:') {
 			$matrixStart = $i
 			$matrixIndentLength = $Matches['indent'].Length
+			break
+		}
+		if ($lines[$i] -match '^(?<indent>[ \t]*)-[ \t]*name[ \t]*:[ \t]*categoryGroupsToTest[ \t]*$') {
+			$matrixStart = $i
+			$matrixIndentLength = $Matches['indent'].Length
+			$typedParameter = $true
 			break
 		}
 	}
@@ -933,6 +942,11 @@ function Set-ShardInfrastructure {
 	}
 	for ($i = $matrixStart + 1; $i -lt $lines.Count; $i++) {
 		if ($lines[$i] -match '^(?<indent>[ \t]*)[A-Za-z_][^:]*:' -and
+			$Matches['indent'].Length -le $matrixIndentLength) {
+			$matrixEnd = $i
+			break
+		}
+		if ($typedParameter -and $lines[$i] -match '^(?<indent>[ \t]*)-[ \t]*name[ \t]*:' -and
 			$Matches['indent'].Length -le $matrixIndentLength) {
 			$matrixEnd = $i
 			break

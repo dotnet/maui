@@ -47,6 +47,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
+				handlers.AddHandler<ContentButton, ContentButtonHandler>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
@@ -239,6 +240,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(BoxView))]
 	[InlineData(typeof(Button))]
 	[InlineData(typeof(CarouselView))]
+	[InlineData(typeof(ContentButton))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
 	// [InlineData(typeof(DatePicker))] - This test was moved to MemoryTests.cs inside Appium

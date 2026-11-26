@@ -9,7 +9,7 @@ parameters:
   windowsVersions: [ packaged, unpackaged ]
   skipProvisioning: true
   targetFrameworkVersion:
-    tfm: net11.0
+    tfm: net12.0
     dependsOn: ''
   projects: []
   platforms: [ android, ios, catalyst, windows ]

@@ -361,7 +361,7 @@ internal static class ExpressionAnalyzer
 					return false;
 
 				if (h.ParentExpression == sourceParameterName)
-					return HasProperty(dataType, h.PropertyName);
+					return MemberResolver.HasMember(dataType, h.PropertyName, includeMethods: false, compilation);
 
 				if (h.ParentExpression.Contains("__capture_"))
 					return false;
@@ -372,7 +372,7 @@ internal static class ExpressionAnalyzer
 				var afterSource = h.ParentExpression.Substring(sourcePrefix.Length);
 				var dotIdx = afterSource.IndexOf('.');
 				var rootIdent = dotIdx >= 0 ? afterSource.Substring(0, dotIdx) : afterSource;
-				return HasProperty(dataType, rootIdent);
+				return MemberResolver.HasMember(dataType, rootIdent, includeMethods: false, compilation);
 			}).ToList();
 		}
 
@@ -380,7 +380,7 @@ internal static class ExpressionAnalyzer
 		// This handles complex expressions like "(Price * __capture_TaxRate).ToString()" -> "(__source.Price * __capture_TaxRate).ToString()"
 		if (dataType != null)
 		{
-			transformedExpression = TransformRootIdentifiers(transformedExpression, sourceParameterName, dataType, seenCaptures);
+			transformedExpression = TransformRootIdentifiers(transformedExpression, sourceParameterName, dataType, seenCaptures, compilation);
 		}
 
 		// Determine if this is a simple settable property chain (no captures, just member access)
@@ -399,7 +399,7 @@ internal static class ExpressionAnalyzer
 			return false;
 
 		var rootIdentifier = chain[0];
-		if (HasProperty(dataType, rootIdentifier))
+		if (MemberResolver.HasMember(dataType, rootIdentifier, includeMethods: false, compilation))
 			return false;
 
 		for (var i = chain.Count; i >= 1; i--)
@@ -496,7 +496,7 @@ internal static class ExpressionAnalyzer
 	/// <summary>
 	/// Transforms root identifiers that are on the DataType to use the source parameter prefix.
 	/// </summary>
-	private static string TransformRootIdentifiers(string expression, string sourceParameterName, ITypeSymbol dataType, HashSet<string> capturedIdentifiers)
+	private static string TransformRootIdentifiers(string expression, string sourceParameterName, ITypeSymbol dataType, HashSet<string> capturedIdentifiers, Compilation? compilation)
 	{
 		// Parse as an expression and walk the syntax tree
 		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
@@ -523,12 +523,20 @@ internal static class ExpressionAnalyzer
 				if (identifier.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Name == identifier)
 					continue;
 
+				// Skip if it's part of a global:: alias-qualified name
+				if (identifier.Parent is AliasQualifiedNameSyntax)
+					continue;
+
+				// Skip if it's a named-argument label (e.g., Format(local:Name) - skip "local")
+				if (identifier.Parent is NameColonSyntax nameColon && nameColon.Name == identifier)
+					continue;
+
 				// Check if this is a root-level invocation (not already prefixed)
 				// e.g., GetDisplayName() should become __source.GetDisplayName()
 				if (identifier.Parent is InvocationExpressionSyntax invocation && invocation.Expression == identifier)
 				{
 					// This is a standalone method call - check if method exists on DataType
-					if (HasMember(dataType, identifierName))
+					if (MemberResolver.HasMember(dataType, identifierName, includeMethods: true, compilation))
 					{
 						identifiersToTransform.Add((identifier.SpanStart, identifier.Span.Length, $"{sourceParameterName}.{identifierName}"));
 					}
@@ -536,7 +544,7 @@ internal static class ExpressionAnalyzer
 				}
 
 				// Check if this identifier exists on the DataType
-				if (HasMember(dataType, identifierName))
+				if (MemberResolver.HasMember(dataType, identifierName, includeMethods: true, compilation))
 				{
 					identifiersToTransform.Add((identifier.SpanStart, identifier.Span.Length, $"{sourceParameterName}.{identifierName}"));
 				}
@@ -551,69 +559,6 @@ internal static class ExpressionAnalyzer
 		}
 
 		return result;
-	}
-
-	/// <summary>
-	/// Checks if a type has a member (property, field, or method) with the given name.
-	/// </summary>
-	private static bool HasMember(ITypeSymbol type, string memberName)
-	{
-		var currentType = type;
-		while (currentType != null)
-		{
-			foreach (var member in currentType.GetMembers(memberName))
-			{
-				if (member is IPropertySymbol || member is IFieldSymbol || member is IMethodSymbol)
-					return true;
-			}
-			currentType = currentType.BaseType;
-		}
-
-		if (type.TypeKind == TypeKind.Interface)
-		{
-			foreach (var interfaceType in type.AllInterfaces)
-			{
-				foreach (var member in interfaceType.GetMembers(memberName))
-				{
-					if (member is IPropertySymbol || member is IFieldSymbol || member is IMethodSymbol)
-						return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// Checks if a type has a property or field (not method) with the given name.
-	/// Used for INPC handlers which only track properties/fields.
-	/// </summary>
-	private static bool HasProperty(ITypeSymbol type, string memberName)
-	{
-		var currentType = type;
-		while (currentType != null)
-		{
-			foreach (var member in currentType.GetMembers(memberName))
-			{
-				if (member is IPropertySymbol || member is IFieldSymbol)
-					return true;
-			}
-			currentType = currentType.BaseType;
-		}
-
-		if (type.TypeKind == TypeKind.Interface)
-		{
-			foreach (var interfaceType in type.AllInterfaces)
-			{
-				foreach (var member in interfaceType.GetMembers(memberName))
-				{
-					if (member is IPropertySymbol || member is IFieldSymbol)
-						return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	/// <summary>
@@ -653,11 +598,11 @@ internal static class ExpressionAnalyzer
 			}
 		}
 
-		// Handle bare identifiers (e.g., just "Name") that are not part of a member access
+		// Handle bare identifiers (e.g., just "Name") that are not part of a member access or alias qualifier
 		foreach (var identifier in identifiers)
 		{
-			// Skip if this identifier is part of a member access expression
-			if (identifier.Parent is MemberAccessExpressionSyntax)
+			// Skip if this identifier is part of a member access expression or global:: alias
+			if (identifier.Parent is MemberAccessExpressionSyntax || identifier.Parent is AliasQualifiedNameSyntax)
 				continue;
 
 			// Skip if this identifier is the method name in an invocation
@@ -689,7 +634,9 @@ internal static class ExpressionAnalyzer
 		{
 			memberAccesses.Add(memberAccess);
 		}
-		else if (node is IdentifierNameSyntax identifier)
+		else if (node is IdentifierNameSyntax identifier
+			&& identifier.Parent is not AliasQualifiedNameSyntax
+			&& identifier.Parent is not NameColonSyntax)
 		{
 			identifiers.Add(identifier);
 		}
@@ -719,10 +666,14 @@ internal static class ExpressionAnalyzer
 			current = ma.Expression;
 		}
 
-		// The root should be an identifier (the first property after the source)
+		// The root should be an identifier (the first property after the source) or global::Namespace root
 		if (current is IdentifierNameSyntax rootIdentifier)
 		{
 			chain.Insert(0, rootIdentifier.Identifier.Text);
+		}
+		else if (current is AliasQualifiedNameSyntax aliasQualified)
+		{
+			chain.Insert(0, aliasQualified.ToString());
 		}
 
 		return chain;

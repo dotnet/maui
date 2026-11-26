@@ -26,17 +26,92 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
 		}
 
-		[Fact(DisplayName = "ReadOnly Keeps MultiLine Flag")]
-		public async Task InputTypeInitializesWithMultiLineFlag()
+		[Fact(DisplayName = "ReadOnly Keeps MultiLine")]
+		public async Task ReadOnlyKeepsMultiLine()
 		{
 			var editor = new EditorStub() { IsReadOnly = true };
-			var inputType = await GetValueAsync(editor, (handler) =>
+
+			// A read-only Editor has no key listener (InputType is TYPE_NULL), but keeps its multi-line layout
+			var maxLines = await GetValueAsync(editor, (handler) =>
 			{
-				return GetNativeEditor(handler).InputType;
+				return GetNativeEditor(handler).MaxLines;
 			});
 
-			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
+			Assert.NotEqual(1, maxLines);
 		}
+
+		[Fact(DisplayName = "ReadOnly Editor Is Still Focusable")]
+		public async Task ReadOnlyEditorIsFocusable()
+		{
+			var editor = new EditorStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(editor, handler =>
+				GetNativeEditor(handler).Focusable && GetNativeEditor(handler).FocusableInTouchMode);
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating IsReadOnly Keeps The Selection")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task UpdatingIsReadOnlyKeepsSelection(bool isReadOnly)
+		{
+			var editor = new EditorStub() { Text = "abcdef" };
+
+			var selection = await GetValueAsync(editor, handler =>
+			{
+				var editText = GetNativeEditor(handler);
+				editText.SetSelection(1, 4);
+
+				editor.IsReadOnly = isReadOnly;
+				handler.UpdateValue(nameof(IEditor.IsReadOnly));
+
+				return (editText.SelectionStart, editText.SelectionEnd);
+			});
+
+			Assert.Equal((1, 4), selection);
+			Assert.Equal(3, editor.SelectionLength);
+		}
+
+		[Theory(DisplayName = "Turning Off IsReadOnly Restores Editing")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TurningOffIsReadOnlyRestoresEditing(bool material3)
+		{
+			// The input properties change while the Editor is read-only and must apply once it's editable again
+			var editor = new EditorStub() { Text = "123456", IsReadOnly = true };
+			var expected = new EditorStub() { Text = "123456", Keyboard = Keyboard.Numeric, IsTextPredictionEnabled = false, IsSpellCheckEnabled = false };
+
+			var (keyListener, isTextEditor, inputType, expectedInputType, text, selection) = await InvokeOnMainThreadAsync(() =>
+			{
+				var expectedInputType = ((AppCompatEditText)CreateEditorHandler(expected, material3).PlatformView).InputType;
+
+				var handler = CreateEditorHandler(editor, material3);
+				var editText = (AppCompatEditText)handler.PlatformView;
+				editText.SetSelection(1, 4);
+
+				editor.Keyboard = Keyboard.Numeric;
+				handler.UpdateValue(nameof(IEditor.Keyboard));
+				editor.IsTextPredictionEnabled = false;
+				handler.UpdateValue(nameof(IEditor.IsTextPredictionEnabled));
+				editor.IsSpellCheckEnabled = false;
+				handler.UpdateValue(nameof(IEditor.IsSpellCheckEnabled));
+
+				editor.IsReadOnly = false;
+				handler.UpdateValue(nameof(IEditor.IsReadOnly));
+
+				return (editText.KeyListener, editText.OnCheckIsTextEditor(), editText.InputType, expectedInputType, editText.Text, (editText.SelectionStart, editText.SelectionEnd));
+			});
+
+			Assert.NotNull(keyListener);
+			Assert.True(isTextEditor);
+			Assert.Equal(expectedInputType, inputType);
+			Assert.Equal("123456", text);
+			Assert.Equal((1, 4), selection);
+		}
+
+		IViewHandler CreateEditorHandler(EditorStub editor, bool material3) =>
+			material3 ? CreateHandler<EditorHandler2>(editor) : CreateHandler<EditorHandler>(editor);
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
@@ -124,7 +199,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
-			!GetNativeEditor(editorHandler).Focusable;
+			!GetNativeEditor(editorHandler).OnCheckIsTextEditor();
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagAutoCorrect);

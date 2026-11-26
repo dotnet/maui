@@ -378,6 +378,26 @@ namespace Microsoft.Maui.Handlers
 
 			public bool ShouldBeginInteractivePop() => ShouldPop();
 
+			public IView? NavigationView => _handlerRef.TryGetTarget(out var handler) ? ((IElementHandler)handler).VirtualView as IView : null;
+
+			public IView? GetViewForViewController(UIViewController viewController)
+			{
+				if (!_handlerRef.TryGetTarget(out var handler))
+				{
+					return null;
+				}
+
+				foreach (var kvp in handler._viewControllerMap)
+				{
+					if (kvp.Value == viewController)
+					{
+						return kvp.Key;
+					}
+				}
+
+				return null;
+			}
+
 			public bool ShouldPop()
 			{
 				if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is null)

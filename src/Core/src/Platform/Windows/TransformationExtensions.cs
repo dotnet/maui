@@ -8,6 +8,7 @@ public static class TransformationExtensions
 {
 	public static void UpdateTransformation(this FrameworkElement frameworkElement, IView view)
 	{
+		TransformationDiagnostics.OnRebuilt(view);
 		double rotationX = view.RotationX;
 		double rotationY = view.RotationY;
 		double rotation = view.Rotation;

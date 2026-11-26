@@ -73,6 +73,26 @@ Describe 'review command helpers' {
         $parsed.Platform | Should -BeNullOrEmpty
     }
 
+    It 'leaves the test-selection commands to their own workflow' -TestCases @(
+        @{ Command = '/review run-tests' }
+        @{ Command = '/review run-ui-tests' }
+        @{ Command = '/review run-device-tests' }
+    ) {
+        param($Command)
+
+        ConvertFrom-ReviewCommand $Command | Should -BeNullOrEmpty
+    }
+
+    It 'does not parse commands that previously launched a gate-only review' -TestCases @(
+        @{ Command = '/review gate' }
+        @{ Command = '/review gate ios' }
+        @{ Command = '/review expert-review-with-gate' }
+    ) {
+        param($Command)
+
+        ConvertFrom-ReviewCommand $Command | Should -BeNullOrEmpty
+    }
+
     It 'strips refs heads prefix when normalizing review pipeline refs' {
         Normalize-ReviewPipelineRef 'refs/heads/feature/regression-check' |
             Should -Be 'feature/regression-check'
@@ -156,8 +176,10 @@ Describe 'Select-ReviewCommandCandidates' {
             New-RecoveryTestComment -Id 2 -Body '/review ios' -CreatedAt '2026-08-06T21:55:00Z'
             New-RecoveryTestComment -Id 3 -Body '/review tests' -CreatedAt '2026-08-06T21:30:00Z'
             New-RecoveryTestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-08-06T21:20:00Z'
-            New-RecoveryTestComment -Id 5 -Body 'please review' -CreatedAt '2026-08-06T21:10:00Z'
-            New-RecoveryTestComment -Id 6 -Body '/review windows' -CreatedAt '2026-08-05T20:00:00Z'
+            New-RecoveryTestComment -Id 5 -Body '/review gate ios' -CreatedAt '2026-08-06T21:15:00Z'
+            New-RecoveryTestComment -Id 6 -Body '/review expert-review-with-gate' -CreatedAt '2026-08-06T21:10:00Z'
+            New-RecoveryTestComment -Id 7 -Body 'please review' -CreatedAt '2026-08-06T21:05:00Z'
+            New-RecoveryTestComment -Id 8 -Body '/review windows' -CreatedAt '2026-08-05T20:00:00Z'
         )
 
         $result = @(Select-ReviewCommandCandidates `

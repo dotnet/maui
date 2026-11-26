@@ -4,7 +4,7 @@ parameters:
   apiVersion: latest
   device: ''
   deviceTestConfiguration: Release
-  targetFrameworkVersion: net11.0
+  targetFrameworkVersion: net12.0
   useCoreClr: true
   testFilter: ''
   applicationId: ''

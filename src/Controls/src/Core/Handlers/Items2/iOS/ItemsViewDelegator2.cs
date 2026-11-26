@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		where TViewController : ItemsViewController2<TItemsView>
 	{
 		readonly WeakReference<TViewController> _viewController;
+		bool _notifyingThreshold;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public UICollectionViewLayout ItemsViewLayout { get; }
@@ -37,6 +38,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
+			if (scrollView is UICollectionView scrolledCollectionView && ViewController is { ScrollAnchor: { } scrollAnchor } controller)
+			{
+				scrollAnchor.Scrolled(scrolledCollectionView, controller.ItemsView as StructuredItemsView,
+					controller.GetScrollDirection() == UICollectionViewScrollDirection.Vertical);
+			}
+
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			var contentInset = scrollView.ContentInset;
@@ -60,40 +67,72 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var itemsView = viewController.ItemsView;
 			var source = viewController.ItemsSource;
+			if (itemsView is null || source is null)
+				return;
+
 			itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
 			PreviousHorizontalOffset = (float)contentOffsetX;
 			PreviousVerticalOffset = (float)contentOffsetY;
 
-			if (!visibleItems)
+			if (!visibleItems || viewController.ItemsSource != source ||
+				_notifyingThreshold)
 			{
 				return;
 			}
 
-			switch (itemsView.RemainingItemsThreshold)
+			// Collection updates can synchronously scroll and reach the threshold again.
+			_notifyingThreshold = true;
+			try
 			{
-				case -1:
-					return;
-				case 0:
-					if (lastVisibleItemIndex == source.ItemCount - 1)
-						itemsView.SendRemainingItemsThresholdReached();
-					break;
-				default:
-					if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
-						itemsView.SendRemainingItemsThresholdReached();
-					break;
+				switch (itemsView.RemainingItemsThreshold)
+				{
+					case -1:
+						return;
+					case 0:
+						if (lastVisibleItemIndex == source.ItemCount - 1)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
+					default:
+						if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
+							itemsView.SendRemainingItemsThresholdReached();
+						break;
+				}
+			}
+			finally
+			{
+				_notifyingThreshold = false;
 			}
 		}
 
-#if MACCATALYST
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
+#if MACCATALYST
 			if (scrollView is MauiCollectionView mauiCV)
 			{
 				mauiCV.ClearPendingScrollRestore();
 			}
-		}
 #endif
+
+			// The user takes over: an animated scroll a drag stops never reports ending, so nothing waits for it to.
+			ViewController?.ScrollingToEdge(null);
+		}
+
+		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
+		{
+			if (!willDecelerate && scrollView is UICollectionView collectionView)
+			{
+				ViewController?.ScrollAnchor?.UserScrollEnded(collectionView);
+			}
+		}
+
+		public override void DecelerationEnded(UIScrollView scrollView)
+		{
+			if (scrollView is UICollectionView collectionView)
+			{
+				ViewController?.ScrollAnchor?.UserScrollEnded(collectionView);
+			}
+		}
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
@@ -147,9 +186,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (visibleItems)
 			{
-				firstVisibleItemIndex = GetFirstVisibleIndexPathUsingLayoutAttributes(collectionView, indexPathsForVisibleItems);
+				(firstVisibleItemIndex, lastVisibleItemIndex) = GetVisibleIndexPathsUsingLayoutAttributes(collectionView, indexPathsForVisibleItems);
 				centerItemIndex = GetCenteredIndexPath(collectionView);
-				lastVisibleItemIndex = indexPathsForVisibleItems.Last();
 			}
 
 			return (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
@@ -185,24 +223,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return index;
 		}
 
-		static NSIndexPath GetFirstVisibleIndexPathUsingLayoutAttributes(UICollectionView collectionView, IEnumerable<NSIndexPath> indexPathsForVisibleItems)
+		static (NSIndexPath First, NSIndexPath Last) GetVisibleIndexPathsUsingLayoutAttributes(UICollectionView collectionView, IEnumerable<NSIndexPath> indexPathsForVisibleItems)
 		{
 			if (!indexPathsForVisibleItems.Any())
-				return null;
+				return default;
 
 			var layout = collectionView.CollectionViewLayout;
 			if (layout is null)
-				return indexPathsForVisibleItems.First();
+				return (indexPathsForVisibleItems.First(), indexPathsForVisibleItems.Last());
 
 			var visibleRect = new CGRect(collectionView.ContentOffset, collectionView.Bounds.Size);
 			var layoutAttributes = layout.LayoutAttributesForElementsInRect(visibleRect);
 			if (layoutAttributes is null || layoutAttributes.Length == 0)
-				return indexPathsForVisibleItems.First();
+				return (indexPathsForVisibleItems.First(), indexPathsForVisibleItems.Last());
 
 			var flowLayout = layout as UICollectionViewFlowLayout;
 			bool isVertical = flowLayout?.ScrollDirection != UICollectionViewScrollDirection.Horizontal;
 			// Find the first visible cell (not headers/footers) based on scroll direction
-			NSIndexPath firstVisibleIndexPath = null;
+			NSIndexPath firstVisibleIndexPath = null, lastVisibleIndexPath = null;
 			nfloat minPosition = nfloat.MaxValue;
 
 			for (int i = 0; i < layoutAttributes.Length; i++)
@@ -222,9 +260,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					minPosition = position;
 					firstVisibleIndexPath = attr.IndexPath;
 				}
+
+				// The native visible-cell cache can lag behind the current viewport during Scrolled.
+				var indexPath = attr.IndexPath;
+				if (lastVisibleIndexPath is null
+					|| indexPath.Section > lastVisibleIndexPath.Section
+					|| (indexPath.Section == lastVisibleIndexPath.Section && indexPath.Item > lastVisibleIndexPath.Item))
+				{
+					lastVisibleIndexPath = indexPath;
+				}
 			}
 
-			return firstVisibleIndexPath ?? indexPathsForVisibleItems.First();
+			return (firstVisibleIndexPath ?? indexPathsForVisibleItems.First(),
+				lastVisibleIndexPath ?? indexPathsForVisibleItems.Last());
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)

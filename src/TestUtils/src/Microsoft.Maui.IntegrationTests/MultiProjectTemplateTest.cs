@@ -76,8 +76,8 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
-	[InlineData("Debug", Skip = AvaloniaBuildSkipReason)]
-	[InlineData("Release", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Debug")]
+	[InlineData("Release")]
 	public void BuildMultiProjectWithAvalonia(string config)
 	{
 		SetTestIdentifier(config);
@@ -98,8 +98,8 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
-	[InlineData("Debug", "--android", Skip = AvaloniaBuildSkipReason)]
-	[InlineData("Debug", "--macos", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Debug", "--android")]
+	[InlineData("Debug", "--macos")]
 	public void BuildMultiProjectWithAvaloniaEmbedding(string config, string platformArg)
 	{
 		SetTestIdentifier(config, platformArg);

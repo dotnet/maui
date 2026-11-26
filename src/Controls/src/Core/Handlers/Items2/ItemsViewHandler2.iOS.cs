@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
+			Controller?.DetachScrollAnchor();
 			Controller?.DisposeItemsSource();
 			Controller?.DisposeObserver();
 			base.DisconnectHandler(platformView);
@@ -169,17 +170,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 #endif
 
-		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
+		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args) => TryScrollTo(args);
+
+		internal bool TryScrollTo(ScrollToRequestEventArgs args) => TryScrollTo(args, out _);
+
+		// Scrolls to the item the request is for. Returns whether the request still stands once that scroll returns: not when
+		// the view doesn't have the item, which it doesn't scroll for, nor when the app made a newer request from what the
+		// scroll raised (its Scrolled event), which wins. It also says whether UIKit animates the scroll, and reports when the
+		// animation ends (see ItemsViewController2.ScrollToItem).
+		internal bool TryScrollTo(ScrollToRequestEventArgs args, out bool animating)
 		{
 			int section = 0, item = 0;
+			int request;
 			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
+			animating = false;
 
 			using (var indexPath = DetermineIndex(args))
 			{
 				if (!IsIndexPathValid(indexPath))
 				{
 					// Specified path wasn't valid, or item wasn't found
-					return;
+					return false;
 				}
 
 				var scrollDirection = Controller.GetScrollDirection();
@@ -188,6 +199,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Capture section and item as ints before the using block disposes the indexPath
 				section = (int)indexPath.Section;
 				item = (int)indexPath.Item;
+
+				// A newer request: what an earlier scroll left for when its animation ends, or for the next layout, no longer
+				// applies. A request for an item the view doesn't have scrolls nowhere, and returned above, leaving it.
+				request = Controller.StartScrollRequest();
+				Controller.ScrollingToEdge(null);
 
 				// Clear any previously armed restore before issuing the new scroll. Otherwise the
 				// synchronous KVO contentOffset notification fired by this ScrollToItem call could be
@@ -199,8 +215,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 #endif
 
-				Controller.CollectionView.ScrollToItem(indexPath,
-					scrollPosition, args.IsAnimated);
+				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. An animated
+				// one is judged once UIKit reports that it ended.
+				var scrollAnchor = Controller.ScrollAnchor;
+				scrollAnchor?.ScrollRequesting();
+				try
+				{
+					animating = Controller.ScrollToItem(indexPath, scrollPosition, args.IsAnimated);
+				}
+				finally
+				{
+					scrollAnchor?.ScrollRequested(Controller.CollectionView, Controller.IsLatestScrollRequest(request), animating);
+				}
+			}
+
+			// A newer request the app made from the Scrolled event the scroll raised wins: this one doesn't keep its item in
+			// view. A ScrollToStart or ScrollToEnd scrolls now that this scroll returned (see ScrollToItem).
+			if (!Controller.IsLatestScrollRequest(request))
+			{
+				animating = false;
+				Controller.ScrolledToItem();
+				return false;
 			}
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift
@@ -213,6 +248,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 #endif
+
+			return true;
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{
@@ -313,11 +350,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					((scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
 					 (scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0));
 
+				var measurementWidth = widthConstraint;
+				var measurementHeight = heightConstraint;
+				if (VirtualView is CollectionView and IView view)
+				{
+					static double ResolveMeasurementConstraint(double constraint, double exact, double minimum, double maximum)
+					{
+						// An explicit request or finite maximum can bound an otherwise unbounded probe.
+						return double.IsFinite(exact) || double.IsFinite(maximum)
+							? ViewHandlerExtensions.ResolveConstraints(constraint, exact, minimum, maximum)
+							: constraint;
+					}
+
+					if (scrollDirection == UICollectionViewScrollDirection.Vertical &&
+						!double.IsFinite(widthConstraint))
+					{
+						measurementWidth = ResolveMeasurementConstraint(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
+					}
+					else if (scrollDirection == UICollectionViewScrollDirection.Horizontal &&
+						!double.IsFinite(heightConstraint))
+					{
+						measurementHeight = ResolveMeasurementConstraint(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
+					}
+				}
+
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null || frameIsZeroInScrollDirection)
+				// Skip unbounded CollectionView cross-axis probes to avoid measuring the synthetic frame.
+				bool canMeasureContent = VirtualView is not CollectionView ||
+					((scrollDirection != UICollectionViewScrollDirection.Horizontal || double.IsFinite(measurementHeight)) &&
+					 (scrollDirection != UICollectionViewScrollDirection.Vertical || double.IsFinite(measurementWidth)));
+
+				if (canMeasureContent && (collectionView.Window == null || frameIsZeroInScrollDirection))
 				{
 					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
 					nfloat ClampConstraint(double constraint, nfloat fallback)
@@ -340,8 +406,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					try
 					{
 						// Give the CollectionView a finite available size so the layout calculates correctly
-						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
-						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
+						var frameWidth = ClampConstraint(measurementWidth, UIView.UILayoutFittingExpandedSize.Width);
+						var frameHeight = ClampConstraint(measurementHeight, UIView.UILayoutFittingExpandedSize.Height);
 
 						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
 						collectionView.SetNeedsLayout();
@@ -375,17 +441,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					contentSize.Width = desiredSize.Width;
 
-					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
-					// the CollectionView's current frame height. When no items are loaded (Width == 0),
-					// contentSize.Height reflects the container's frame height rather than actual content.
-					// This creates a circular sizing issue in Auto-height containers: the frame grows based
-					// on the incorrect content height and stays locked in even after items load.
-					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
-					contentSize.Height = 0;
+					// Horizontal items fill the native frame, so its height is not an intrinsic measurement.
+					// Bootstrap unbounded Auto rows from real item content rather than a synthetic frame.
+					contentSize.Height = VirtualView is CollectionView { ItemsLayout: LinearItemsLayout or GridItemsLayout } &&
+						!double.IsFinite(measurementHeight)
+							? MeasureHorizontalContentHeight()
+							: 0;
 				}
 			}
 
 			return contentSize;
+		}
+
+		double MeasureHorizontalContentHeight()
+		{
+			var source = Controller.ItemsSource;
+			for (int group = 0; group < source.GroupCount; group++)
+			{
+				if (source.ItemCountInGroup(group) == 0)
+				{
+					continue;
+				}
+
+				using var indexPath = NSIndexPath.Create(group, 0);
+				var item = source[indexPath];
+				double itemHeight;
+				if (ItemsView.ItemTemplate is null)
+				{
+					using var cell = new HorizontalDefaultCell2(CGRect.Empty);
+					cell.Label.Text = item.ToString();
+					itemHeight = cell.Label.IntrinsicContentSize.Height;
+				}
+				else
+				{
+					using var measurementCell = new TemplatedCell2(CGRect.Empty);
+					try
+					{
+						measurementCell.Bind(ItemsView.ItemTemplate, item, ItemsView);
+						itemHeight = measurementCell.PlatformHandler.VirtualView.Measure(
+							double.PositiveInfinity, double.PositiveInfinity).Height;
+					}
+					finally
+					{
+						var view = measurementCell.PlatformHandler?.VirtualView;
+						measurementCell.Unbind();
+						view?.DisconnectHandlers();
+					}
+				}
+
+				return ItemsView is CollectionView { ItemsLayout: GridItemsLayout grid }
+					? itemHeight * grid.Span + grid.VerticalItemSpacing * (grid.Span - 1)
+					: itemHeight;
+			}
+
+			return 0;
 		}
 	}
 }

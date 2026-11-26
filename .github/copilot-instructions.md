@@ -123,10 +123,6 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 ### Investigating CI Failures
 
-For `/review tests` and the local `Review-Tests.ps1` runner, use only the
-`review-test-failures` skill. It owns failure attribution and the single structured
-comment; do not chain other review skills in that lane.
-
 For other CI investigations or merge-readiness assessments, **always use the
 `azdo-build-investigator` skill**. Its instructions direct you to invoke the
 `ci-analysis` skill first for the core investigation workflow, then apply
@@ -159,14 +155,6 @@ Always format code before committing:
 ```bash
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
-
-### Performance PR Reviews
-
-The explicit `/review performance` PR command is a separate hosted entrypoint:
-`copilot-review-performance.md` runs isolated managed benchmarks and calls
-`perf-analysis`, then renders and validates one gh-aw safe-output comment. It does
-not run native devices; keep those coverage gaps explicit. Do not route this
-subcommand through the full `/review` pipeline or missed-command recovery.
 
 ## Contribution Guidelines
 

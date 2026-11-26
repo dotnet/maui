@@ -1,3 +1,6 @@
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -217,5 +220,86 @@ public class DisplayRotationStateTriggerTests : BaseTestFixture
 		Assert.Equal(greenBrush, label.Background);
 
 		window.Page = new ContentPage();
+	}
+
+	[Fact, Category(TestCategory.Memory)]
+	public async Task AttachedTriggerDoesNotKeepPageAlive()
+	{
+		DeviceDisplay.SetCurrent(new MockDeviceDisplay());
+
+		// The window keeps its page, as it does after an Android Activity is recreated.
+		var pageReference = CreatePageInWindow();
+
+		Assert.False(await pageReference.WaitForCollect(), "Page should not be alive!");
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static WeakReference CreatePageInWindow()
+	{
+		var layout = new VerticalStackLayout();
+		var page = new ContentPage { Content = layout };
+
+		// Like a XAML DataTemplate that needs the root object of its file.
+		var template = new DataTemplate(() => new Label { BindingContext = page });
+
+		var trigger = new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation90 };
+		VisualStateManager.SetVisualStateGroups(layout, new VisualStateGroupList
+		{
+			new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState
+					{
+						Name = "TriggeredState",
+						StateTriggers = { trigger },
+						Setters = { new Setter { Property = BindableLayout.ItemTemplateProperty, Value = template } }
+					}
+				}
+			}
+		});
+
+		_ = new Window(page);
+		Assert.True(trigger.IsAttached);
+
+		return new WeakReference(page);
+	}
+
+	[Fact]
+	public async Task TriggerStillUpdatesAfterGarbageCollection()
+	{
+		var mockDeviceDisplay = new MockDeviceDisplay(
+			new(100, 200, 2, DisplayOrientation.Portrait, DisplayRotation.Rotation0));
+		DeviceDisplay.SetCurrent(mockDeviceDisplay);
+
+		var redBrush = new SolidColorBrush(Colors.Red);
+		var greenBrush = new SolidColorBrush(Colors.Green);
+
+		var label = new Label { Background = redBrush };
+
+		VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+		{
+			new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState
+					{
+						Name = "TriggeredState",
+						StateTriggers = { new DisplayRotationStateTrigger { Rotation = DisplayRotation.Rotation90 } },
+						Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
+					}
+				}
+			}
+		});
+
+		var window = new Window(new ContentPage() { Content = label });
+
+		await TestHelpers.Collect();
+
+		mockDeviceDisplay.SetMainDisplayRotation(DisplayRotation.Rotation90);
+
+		Assert.Equal(greenBrush, label.Background);
+		GC.KeepAlive(window);
 	}
 }

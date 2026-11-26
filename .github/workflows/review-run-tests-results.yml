@@ -1,0 +1,60 @@
+# Updates `/review run-tests` (and run-ui-tests / run-device-tests) comments and their "maui-pr-uitests (selected run)" check when the
+# maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
+# Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
+# check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
+#
+# The dispatch commit is pushed with GITHUB_TOKEN, and GitHub does not start workflows from
+# check_run events on such commits, so the selected run's completion is normally picked up by the
+# sweep, not by check_run. Keep the sweep frequent so the PR updates within ~10 minutes.
+
+name: Review run-tests results
+
+on:
+  check_run:
+    types: [completed]
+  schedule:
+    - cron: '7-59/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Only update comments for this PR head SHA (optional)
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: review-run-tests-results-${{ github.event.check_run.head_sha || 'sweep' }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # check_run fires for every check; only the overall maui-pr-uitests and maui-pr-devicetests checks matter.
+    if: >-
+      github.repository_owner == 'dotnet' &&
+      (github.event_name != 'check_run' ||
+       ((github.event.check_run.name == 'maui-pr-uitests' || github.event.check_run.name == 'maui-pr-devicetests') && github.event.check_run.app.slug == 'azure-pipelines'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      checks: write
+      # One commit status per job of the selected build.
+      statuses: write
+      # Deletes expired run-tests/* dispatch branches.
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Update run-tests comments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.check_run.head_sha || inputs.head_sha }}
+        shell: pwsh
+        run: |
+          $arguments = @{}
+          if ($env:HEAD_SHA) { $arguments.HeadSha = $env:HEAD_SHA }
+          ./.github/scripts/Update-RunTestsResults.ps1 @arguments

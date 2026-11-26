@@ -11,6 +11,8 @@
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <!-- The animations API ships [Experimental] for one release; its own implementation uses it. -->
+    <NoWarn>$(NoWarn);MAUIANIM0001</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
@@ -78,8 +80,13 @@
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">

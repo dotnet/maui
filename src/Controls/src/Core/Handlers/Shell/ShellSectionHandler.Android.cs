@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers
     /// <summary>
     /// UNIFIED Handler for ShellSection on Android.
     /// Always uses ViewPager2 for content switching - works for both single and multiple ShellContents.
-    /// TabLayout visibility is controlled by item count (hidden if 1 item).
+    /// TabLayout is visible only at the navigation root with multiple content items.
     /// Each ShellContent gets its own StackNavigationManager for independent navigation.
     /// </summary>
     public partial class ShellSectionHandler : ElementHandler<ShellSection, AView>, IAppearanceObserver
@@ -310,6 +310,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
 
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _tabLayoutAppearanceTracker is ShellTabLayoutAppearanceTracker concreteTabLayoutAppearanceTracker)
+            {
+                concreteTabLayoutAppearanceTracker.CaptureNativeColors(_contentTabLayout);
+            }
+
             // Initial setup registers the appearance observer immediately afterward. When
             // setup was deferred, replay the appearance for the newly-created TabLayout.
             if (_registeredShell is not null && IsCurrentlyActiveSection() && VirtualView.CurrentItem is ShellContent currentContent)
@@ -339,7 +345,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabLayoutVisibility()
         {
-            if (VirtualView is null)
+            var shellSection = VirtualView;
+            if (shellSection is null)
             {
                 return;
             }
@@ -349,14 +356,14 @@ namespace Microsoft.Maui.Controls.Handlers
             // so without this guard, inactive sections with ≤1 content call RemoveTopTabs()
             // which hides the shared navigationlayout_toptabs container — overriding the
             // active section's PlaceTopTabs() and making top tabs invisible.
-            if (VirtualView?.Parent is ShellItem parentItem && parentItem.CurrentItem != VirtualView)
+            if (shellSection.Parent is ShellItem parentItem && parentItem.CurrentItem != shellSection)
             {
                 return;
             }
 
-            // Hide TabLayout when 0 or 1 visible content
+            // Hide top tabs when a page is pushed, even if multiple contents are visible.
             var visibleCount = SectionController.GetItems().Count;
-            bool showTabs = visibleCount > 1;
+            bool showTabs = visibleCount > 1 && shellSection.Stack.Count == 1;
 
             if (showTabs)
             {

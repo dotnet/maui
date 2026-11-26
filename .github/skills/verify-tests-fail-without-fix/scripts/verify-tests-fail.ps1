@@ -1787,7 +1787,7 @@ function Limit-ExpensiveGateTests {
         tests → 120-min timeout). This caps the expensive tests, prioritising
         the PR's own newly-added (fix-authored) regression tests. Dropped native
         groups are persisted as explicit coverage limitations in the report;
-        /review gate runs no subsequent sweep. Cheap unit/XAML tests are never capped
+        this verification phase runs no subsequent sweep. Cheap unit/XAML tests are never capped
         (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
         GATE_MAX_UI_TESTS.
     #>
@@ -1830,13 +1830,13 @@ function Limit-ExpensiveGateTests {
     }
     if ($droppedDevice.Count -gt 0) {
         $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
-        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Separate device-test validation is required; /review gate does not run a subsequent sweep."
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Separate device-test validation is required; this verification phase does not run a subsequent sweep."
         $script:GateCoverageLimitations += $deviceLimitation
         Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
     }
     if ($droppedUi.Count -gt 0) {
         $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
-        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Separate UI-test validation is required; /review gate does not run a subsequent category sweep."
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Separate UI-test validation is required; this verification phase does not run a subsequent category sweep."
         $script:GateCoverageLimitations += $uiLimitation
         Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }

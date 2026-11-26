@@ -249,8 +249,11 @@
 
       <!-- Define privilege escalation commands -->
       <PropertyGroup Condition=" '$(IsMacOS)' == 'True' OR '$(IsLinux)' == 'True' ">
-          <!-- macOS/Linux privilege elevation -->
-          <ElevatedNpmCommand>sudo -E npm i --location=global appium@$(AppiumVersion)</ElevatedNpmCommand>
+          <!-- macOS/Linux privilege elevation. sudo -E keeps HOME, so root npm would otherwise leave
+               root-owned files in the user's ~/.npm cache and every later non-root npm call
+               (such as 'appium driver install') would fail with EACCES. -->
+          <_ElevatedNpmCache>$([System.IO.Path]::Combine($([System.IO.Path]::GetTempPath()), 'maui-elevated-npm-cache'))</_ElevatedNpmCache>
+          <ElevatedNpmCommand>sudo -E npm i --location=global appium@$(AppiumVersion) --cache "$(_ElevatedNpmCache)"</ElevatedNpmCommand>
       </PropertyGroup>
 
       <PropertyGroup Condition=" '$(IsWindows)' == 'True' ">

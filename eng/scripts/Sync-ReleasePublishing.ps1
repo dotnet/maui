@@ -5,6 +5,7 @@ param (
     [Parameter(Mandatory)][string] $OutputDirectory,
     [switch] $PlanOnly,
     [switch] $PrepareServicing,
+    [switch] $SyncNightlyMirror,
     [string] $SandboxPrefix
 )
 
@@ -21,6 +22,9 @@ if ($SandboxPrefix -and (!$PlanOnly -or
 }
 if ($PrepareServicing -and (!$SandboxPrefix -or !$PlanOnly)) {
     throw 'PrepareServicing is only supported for isolated plan-only trials; production prepares servicing automatically.'
+}
+if ($SyncNightlyMirror -and ($SandboxPrefix -or $PrepareServicing)) {
+    throw 'Nightly mirroring is separate from release servicing and sandbox preparation.'
 }
 $scope = if ($SandboxPrefix) { $SandboxPrefix } else { 'production' }
 $prefix = if ($SandboxPrefix) { "$SandboxPrefix/" } else { '' }
@@ -65,6 +69,43 @@ function Fetch-PublishingCommit {
     $arguments = @('fetch', '--quiet', '--no-tags')
     if ((Invoke-PublishingGit @('rev-parse', '--is-shallow-repository')) -ceq 'true') { $arguments += '--unshallow' }
     $null = Invoke-PublishingGit ($arguments + @('--', $roles.repository) + $Commits)
+}
+
+<#
+.SYNOPSIS
+Returns verified evidence when a stable GitHub Release for this SR is tagged at
+the exact live release head and that head has exactly the tree of this receipt
+generation's reviewed servicing merge. The published lane is then reported
+instead of being re-signed or re-verified against later integration history;
+a superseding generation with different content is never treated as published.
+#>
+function Get-PublishedReleaseLane {
+    param([int] $Sr, [string] $LiveCommit, [string] $SourceCommit)
+    if ($SandboxPrefix) { return $null }
+    Fetch-PublishingCommit @($LiveCommit, $SourceCommit)
+    if ((Invoke-PublishingGit @('rev-parse', "$($LiveCommit)^{tree}")) -cne
+        (Invoke-PublishingGit @('rev-parse', "$($SourceCommit)^{tree}"))) { return $null }
+    $major = $roles.releaseBand.Split('.')[0]
+    $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/releases?per_page=100', '--paginate', '--slurp'))
+    foreach ($page in $pages) {
+        foreach ($published in @($page)) {
+            $names = $published.PSObject.Properties.Name
+            if (@('tag_name', 'draft', 'prerelease', 'published_at') | Where-Object { $_ -notin $names }) { continue }
+            if ($published.draft -or $published.prerelease -or !$published.published_at -or
+                $published.tag_name -cnotmatch "^$major\.0\.(?<patch>[1-9][0-9]*)$" -or
+                [Math]::Floor([long]$Matches.patch / 10) -ne $Sr) { continue }
+            $object = (Invoke-PublishingApi @("repos/dotnet/maui/git/ref/tags/$($published.tag_name)")).object
+            for ($depth = 0; $object.type -ceq 'tag' -and $depth -lt 4; $depth++) {
+                $object = (Invoke-PublishingApi @("repos/dotnet/maui/git/tags/$($object.sha)")).object
+            }
+            if ($object.type -cne 'commit' -or $object.sha -cne $LiveCommit) { continue }
+            $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LiveCommit -Path 'eng/Versions.props'
+            $verified = Get-MauiVerifiedPublishedVersion -Release $published -VersionContent $content `
+                -ReleaseBand $roles.releaseBand -CurrentSr $roles.currentSr -TagCommit $LiveCommit
+            if ($verified.sr -eq $Sr) { return $verified }
+        }
+    }
+    $null
 }
 
 function Get-ReleaseAzureHeaders {
@@ -117,6 +158,109 @@ function Get-ReleaseAzureHeaders {
 function Invoke-ReleaseAzure {
     param([string] $Path)
     Invoke-RestMethod -Method Get -Uri "$internalBase/$Path" -Headers $azureHeaders -TimeoutSec 60
+}
+
+function Get-NightlyMirrorRef {
+    param([string] $Branch)
+    $response = Invoke-ReleaseAzure ("git/repositories/$mirrorId/refs?filter=" +
+        [Uri]::EscapeDataString("heads/$Branch") + '&api-version=7.1')
+    $refs = @($response.value | Where-Object name -CEQ "refs/heads/$Branch")
+    if ($refs.Count -gt 1 -or ($refs.Count -eq 1 -and $refs[0].objectId -cnotmatch '^[0-9a-f]{40}$')) {
+        throw "Invalid internal nightly ref '$Branch'."
+    }
+    if ($refs.Count) { return [string]$refs[0].objectId }
+    return ''
+}
+
+function Invoke-NightlyMirrorGit {
+    param([string[]] $Arguments)
+    $previousAuth = $env:MAUI_NIGHTLY_MIRROR_AUTH
+    $previousPrompt = $env:GIT_TERMINAL_PROMPT
+    try {
+        $env:MAUI_NIGHTLY_MIRROR_AUTH = "Authorization: $($azureHeaders.Authorization)"
+        $env:GIT_TERMINAL_PROMPT = '0'
+        Invoke-PublishingGit (@('-c', 'credential.helper=',
+            '--config-env=http.extraHeader=MAUI_NIGHTLY_MIRROR_AUTH') + $Arguments)
+    } finally {
+        $env:MAUI_NIGHTLY_MIRROR_AUTH = $previousAuth
+        $env:GIT_TERMINAL_PROMPT = $previousPrompt
+    }
+}
+
+function Sync-PublishingNightlyMirror {
+    param([System.Collections.IDictionary] $Result)
+    $Result.mode = $roles.nightlyMode
+    $Result.stateSha256 = $roles.stateSha256
+    if ($roles.nightlyMode -cne 'candidate') {
+        $Result.status = 'disabled-by-nightly-mode'
+        Write-Host "Candidate mirroring is disabled by nightlyMode '$($roles.nightlyMode)'."
+        return
+    }
+    $branch = $roles.nightlyBranch
+    if ($branch -cne $roles.candidateBranch) { throw 'The nightly source is not the canonical candidate.' }
+    $source = @(Get-PublishingRefs $branch)
+    if ($source.Count -ne 1) { throw "The selected public candidate '$branch' is missing or ambiguous." }
+    $commit = $source[0].sha
+    Fetch-PublishingCommit @($commit)
+    $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
+    $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $roles.releaseBand `
+        -Sr $roles.currentSr -Role candidate
+    $version = Get-MauiReleaseVersion -Content $content
+    if ($version.stable -or $version.label -cne 'ci.main' -or !$version.branchDerivedLabels -or $version.labelSandboxPrefix) {
+        throw 'The nightly candidate must retain production CI/non-stable branch-derived branding.'
+    }
+    $mirrorUrl = 'https://dev.azure.com/dnceng/internal/_git/dotnet-maui'
+    $baselineBranch = "automation/nightly-mirror/$branch"
+    $Result.sourceBranch = $branch
+    $Result.sourceSha = $commit
+    $Result.baselineBranch = $baselineBranch
+    $Result.nextScheduledBuildUtc = '05:00'
+    $Result.status = 'planned'
+    if ($PlanOnly) { return }
+
+    $definition = Invoke-ReleaseAzure 'build/definitions/1095?api-version=7.1'
+    if ($definition.repository.id -cne $mirrorId -or $definition.repository.type -cne 'TfsGit' -or
+        $definition.process.yamlFilename -cne 'eng/pipelines/ci-official.yml') {
+        throw 'Nightly mirroring requires the existing MAUI internal signed-build definition.'
+    }
+    $mirrorSha = Get-NightlyMirrorRef $branch
+    $baselineSha = Get-NightlyMirrorRef $baselineBranch
+    $Result.previousMirrorSha = $mirrorSha
+    $Result.previousBaselineSha = $baselineSha
+    if ($mirrorSha -and $mirrorSha -cne $commit -and $mirrorSha -cne $baselineSha) {
+        $null = Invoke-NightlyMirrorGit @('fetch', '--quiet', '--no-tags', '--no-recurse-submodules',
+            '--', $mirrorUrl, $mirrorSha)
+        & git -C $RepositoryPath merge-base --is-ancestor $mirrorSha $commit
+        if ($LASTEXITCODE -eq 1) {
+            throw "Internal candidate '$branch' differs from its last automated mirror and is not an ancestor of public $commit. Review its unique work before synchronizing."
+        }
+        if ($LASTEXITCODE -ne 0) { throw 'Unable to verify internal nightly ancestry.' }
+    }
+    $state = Invoke-PublishingApi @('repos/dotnet/maui/contents/eng/release-rollover.json',
+        '--method', 'GET', '-f', 'ref=main')
+    $stateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Convert]::FromBase64String($state.content))).ToLowerInvariant()
+    $liveSource = @(Get-PublishingRefs $branch)
+    if ($stateHash -cne $roles.stateSha256 -or $liveSource.Count -ne 1 -or $liveSource[0].sha -cne $commit) {
+        throw 'The canonical nightly state or candidate changed; retry from a fresh trusted main checkout.'
+    }
+    $Result.status = 'mirroring'
+    if ($mirrorSha -cne $commit) {
+        $null = Invoke-NightlyMirrorGit @('push', '--quiet', "--force-with-lease=refs/heads/${branch}:$mirrorSha",
+            '--', $mirrorUrl, "${commit}:refs/heads/$branch")
+    }
+    if ((Get-NightlyMirrorRef $branch) -cne $commit) { throw 'The internal candidate did not retain the pinned public commit.' }
+    # The receipt permits later public rebases, but never overwrites unrelated internal work.
+    if ($baselineSha -cne $commit) {
+        $null = Invoke-NightlyMirrorGit @('push', '--quiet', "--force-with-lease=refs/heads/${baselineBranch}:$baselineSha",
+            '--', $mirrorUrl, "${commit}:refs/heads/$baselineBranch")
+    }
+    if ((Get-NightlyMirrorRef $baselineBranch) -cne $commit -or (Get-NightlyMirrorRef $branch) -cne $commit) {
+        throw 'The nightly mirror or its ownership receipt changed during synchronization.'
+    }
+    $Result.status = 'verified'
+    $Result.verifiedMirrorSha = $commit
+    Write-Host "Verified nightly mirror '$branch' at $commit; official pipeline 1095 runs daily at 05:00 UTC."
 }
 
 function Get-MatchingReleaseBuild {
@@ -247,7 +391,7 @@ function Get-CompletedReleaseDispatch {
 }
 
 function Get-PublishingReleaseSource {
-    param([string] $Branch, [object] $Plan, [object] $Record)
+    param([string] $Branch, [object] $Plan, [object] $Record, [string] $ReceiptSha)
     $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
     $candidateBranch = "${prefix}candidate/$($roles.releaseBand)-sr$($Record.sr)"
     $candidateMarker = "<!-- maui-release-tracking:${scope}:candidate -->"
@@ -261,8 +405,16 @@ function Get-PublishingReleaseSource {
     }
     $prepared = New-MauiReviewedServicingCommit -RepositoryPath $RepositoryPath -LanePlan $Plan `
         -ReleaseBand $roles.releaseBand -Sr $Record.sr -SandboxPrefix $SandboxPrefix
-    $servicingHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
+    Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
+    $legacyHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
+    $servicingHead = Get-MauiReleaseGenerationHead -Head $legacyHead -Source $Plan.mergeSha
     $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$($Record.sr) -->"
+    $legacyPages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$legacyHead", '-F', 'per_page=100'))
+    $legacy = @(foreach ($page in $legacyPages) { foreach ($pr in $page) {
+        if ($pr.head.sha -ceq $prepared.sha -and ([string]$pr.body).Contains($marker)) { $pr }
+    } })
+    if ($legacy.Count) { $servicingHead = $legacyHead }
     $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
     $closed = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
@@ -286,6 +438,7 @@ function Get-PublishingReleaseSource {
             throw 'The create-once servicing head differs from the prepared configuration.'
         }
         if (!$head.Count) {
+            Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
             $uploadBranch = "${prefix}automation/servicing/upload-$([guid]::NewGuid().ToString('N'))"
             try {
                 $null = Invoke-PublishingGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
@@ -329,9 +482,15 @@ function Get-PublishingReleaseSource {
 '@
         $body = $note + "`n`n" + $template.Replace('<!-- Enter description of the fix in this section -->',
             "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - reviewed release servicing configuration.')
-        $null = Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'POST',
+        Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
+        $created = Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'POST',
             '-f', "base=$Branch", '-f', "head=$servicingHead",
             '-f', "title=[Servicing] $($Record.releaseBand) SR$($Record.sr)", '-f', "body=$body", '-F', 'draft=true')
+        if ($created.number -le 0 -or $created.head.ref -cne $servicingHead -or
+            $created.head.sha -cne $prepared.sha -or $created.base.ref -cne $Branch -or
+            !([string]$created.body).Contains($marker)) {
+            throw 'The created servicing PR did not match its prepared route and source; retry reconciliation.'
+        }
         return $null
     }
     if ($approved.Count -ne 1 -or $closed.Count -ne 1) { throw 'Multiple servicing PRs claim the same release; publication is blocked.' }
@@ -341,6 +500,52 @@ function Get-PublishingReleaseSource {
         -ReleaseBand $roles.releaseBand -Sr $Record.sr -Commit $proof.merge_commit_sha `
         -PullRequest $proof -SandboxPrefix $SandboxPrefix
     return $proof.merge_commit_sha
+}
+
+function Assert-PublishingSourceCurrent {
+    param([object] $Plan, [object] $Record, [Parameter(Mandatory)][string] $ReceiptSha)
+    $receiptName = "$receiptPrefix/$($Record.releaseBand)-sr$($Record.sr)"
+    $live = @(Get-PublishingRefs $receiptName)
+    if ($live.Count -ne 1 -or $live[0].sha -cne $ReceiptSha) {
+        throw 'The release receipt changed during publication; retry from the latest candidate source.'
+    }
+    $candidateBranch = "${prefix}candidate/$($Record.releaseBand)-sr$($Record.sr)"
+    $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=closed', '-f', "base=$($roles.fixBranch)", '-f', "head=dotnet:$candidateBranch", '-F', 'per_page=100'))
+    $current = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
+    if ($current.merge_commit_sha -cne $Plan.mergeSha) {
+        throw 'The recorded candidate source changed during publication.'
+    }
+    foreach ($page in $pages) { foreach ($pr in $page) {
+        if (!$pr.merged_at -or [DateTimeOffset]$pr.merged_at -lt [DateTimeOffset]$current.merged_at -or
+            ([DateTimeOffset]$pr.merged_at -eq [DateTimeOffset]$current.merged_at -and [int]$pr.number -le [int]$current.number) -or
+            !([string]$pr.body).Contains("<!-- maui-release-tracking:${scope}:candidate -->")) { continue }
+        $newer = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($pr.number)")
+        if (!$newer.merged -or $newer.merged_by.type -cne 'User' -or
+            $null -eq $newer.head.repo -or $null -eq $newer.base.repo -or
+            $newer.head.repo.full_name -cne 'dotnet/maui' -or $newer.base.repo.full_name -cne 'dotnet/maui' -or
+            $newer.head.ref -cne $candidateBranch -or $newer.base.ref -cne $roles.fixBranch) { continue }
+        $fixes = @(Get-PublishingRefs $roles.fixBranch)
+        if ($fixes.Count -ne 1) { throw 'The candidate integration branch is missing or ambiguous.' }
+        Fetch-PublishingCommit @($newer.merge_commit_sha, $fixes[0].sha)
+        if ((Invoke-PublishingGit @('merge-base', $newer.merge_commit_sha, $fixes[0].sha)) -ceq $newer.merge_commit_sha) {
+            throw 'A newer human candidate merge supersedes publication bookkeeping; wait for its reconciliation.'
+        }
+    } }
+}
+
+if ($SyncNightlyMirror) {
+    $nightlyResult = [ordered]@{ status = 'resolving'; publicPublicationRequested = $false }
+    try {
+        if (!$PlanOnly -and $roles.nightlyMode -ceq 'candidate') { $azureHeaders = Get-ReleaseAzureHeaders }
+        Sync-PublishingNightlyMirror -Result $nightlyResult
+    } finally {
+        $azureHeaders = $null
+        $nightlyResult | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath (Join-Path $outputPath 'nightly-mirror-result.json') -Encoding utf8
+    }
+    Get-Content -LiteralPath (Join-Path $outputPath 'nightly-mirror-result.json') -Raw
+    return
 }
 
 try {
@@ -364,6 +569,7 @@ try {
             schemaVersion = 1; scope = $scope; releaseBand = $roles.releaseBand; sr = $sr
             fixBranch = $roles.fixBranch; featureBranch = $roles.featureBranch; pullRequest = [int]$record.pullRequest; plan = $verifiedPlan
         }
+        if ('supersedes' -in $record.PSObject.Properties.Name) { $verifiedRecord.supersedes = $record.supersedes }
         if ((New-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Record $verifiedRecord) -cne $receipt.sha) {
             throw 'The publishing receipt does not reproduce its approved release source.'
         }
@@ -382,7 +588,7 @@ try {
         if (!$staging.Count) { continue }
         if ($staging.Count -ne 1) { throw 'Ambiguous release staging ref.' }
         Fetch-PublishingCommit @($staging[0].sha)
-        $commit = Get-PublishingReleaseSource -Branch $stagingBranch -Plan $verifiedPlan -Record $record
+        $commit = Get-PublishingReleaseSource -Branch $stagingBranch -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $expectedStaging = if ($commit) { $commit } else { $verifiedPlan.mergeSha }
         if ($staging[0].sha -cne $expectedStaging) {
             throw 'Release staging differs from the exact candidate source or reviewed servicing merge.'
@@ -392,6 +598,16 @@ try {
         $entry.sourceSha = $commit
         $entry.status = 'waiting-for-manual-release-cut'
         if (!$release.Count) { continue }
+        if ($release.Count -eq 1) {
+            $published = Get-PublishedReleaseLane -Sr $sr -LiveCommit $release[0].sha -SourceCommit $commit
+            if ($published) {
+                $entry.liveReleaseSha = $release[0].sha
+                $entry.publishedRelease = $published
+                $entry.publicPublicationApprovalRequired = $false
+                $entry.status = 'published'
+                continue
+            }
+        }
         $fixes = @(Get-PublishingRefs $roles.fixBranch)
         if ($release.Count -ne 1 -or $fixes.Count -ne 1) { throw 'Ambiguous release or integration refs.' }
         Fetch-PublishingCommit @($fixes[0].sha, $release[0].sha)
@@ -437,6 +653,7 @@ try {
         if ($liveStaging.Count -ne 1 -or $liveStaging[0].sha -cne $commit) {
             throw 'The reviewed staging ref moved before signed dispatch; retry from a verified snapshot.'
         }
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         if (!$azureHeaders) { $azureHeaders = Get-ReleaseAzureHeaders }
         $definition = Invoke-ReleaseAzure 'build/definitions/1095?api-version=7.1'
         if ($definition.repository.id -cne $mirrorId -or $definition.repository.type -cne 'TfsGit' -or
@@ -449,6 +666,7 @@ try {
         if ($exactMirror.Count -ne 1 -or $exactMirror[0].objectId -cne $commit) {
             throw "Internal mirror '$branch' is not at approved cut $commit. Synchronize and authorize the existing mirror before dispatch; no alternative source is substituted."
         }
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $signed = Queue-ReleaseBuildOnce -Definition 1095 -Branch $branch -Commit $commit -Parameters @{} -Stage signed -Record $record
         $signedResult = if ('result' -in $signed.PSObject.Properties.Name) { $signed.result } else { $null }
         $entry.signedBuild = @{ status = $signed.status; result = $signedResult }
@@ -468,6 +686,7 @@ try {
         }
         # Prepare the immutable release set automatically. Customer publication
         # and workload promotion stay in the separately approved canonical run.
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $prepared = Queue-ReleaseBuildOnce -Definition 1445 -Branch main -Commit $publisherHeads[0].objectId `
             -Parameters $parameters -Stage prepare -Record $record
         $preparedResult = if ('result' -in $prepared.PSObject.Properties.Name) { $prepared.result } else { $null }

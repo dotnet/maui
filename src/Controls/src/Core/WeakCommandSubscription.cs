@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls
 
 		internal class CommandCanExecuteSubscription : IDisposable
 		{
+			readonly WeakReference<BindableObject> _weakTarget;
 			DependentHandle _dependentHandle;
 			ICommand? _command;
 			bool _disposed;
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Controls
 				Action<object, EventArgs> canExecuteChangedHandler)
 			{
 				_command = command;
+				_weakTarget = new WeakReference<BindableObject>(bindableObject);
 				// Create a DependentHandle linking the BindableObject (primary) to the handler (dependent)
 				_dependentHandle = new DependentHandle(bindableObject, canExecuteChangedHandler);
 				_command.CanExecuteChanged += CanExecuteChanged;
@@ -69,11 +71,17 @@ namespace Microsoft.Maui.Controls
 				if (_disposed)
 					return;
 
-				// Try to get both the primary (BindableObject) and dependent (handler) objects
-				var bindableObject = _dependentHandle.Target;
+				// A dependent handle can expose a finalization-reachable target after its
+				// binding weak references have been finalized. Do not notify that target.
+				if (!_weakTarget.TryGetTarget(out var bindableObject))
+				{
+					Dispose();
+					return;
+				}
+
 				var handler = _dependentHandle.Dependent as Action<object, EventArgs>;
 
-				if (bindableObject is not null && handler is not null)
+				if (handler is not null)
 				{
 					handler.Invoke(bindableObject, args);
 				}

@@ -620,42 +620,25 @@ internal static class LayoutFactory2
 		{
 			base.FinalizeCollectionViewUpdates();
 
-			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			{
-				ForceScrollToLastItem(CollectionView);
-			}
-		}
-
-		void ForceScrollToLastItem(UICollectionView collectionView)
-		{
-			var sections = (int)collectionView.NumberOfSections();
-
-			if (sections == 0)
+			// While the view follows an edge (ScrollAnchorMode), the anchor keeps it there instead.
+			if (CollectionView is Items.MauiCollectionView { IsFollowingEdge: true })
 			{
 				return;
 			}
 
-			for (int section = sections - 1; section >= 0; section--)
+			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				var itemCount = collectionView.NumberOfItemsInSection(section);
-				if (itemCount > 0)
-				{
-					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
-					if (Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical)
-					{
-						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
-					}
-					else
-					{
-						// Adjust scroll position for RTL layouts
-						var layoutDirection = collectionView.EffectiveUserInterfaceLayoutDirection;
-						var scrollPosition = layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
-							? UICollectionViewScrollPosition.Left
-							: UICollectionViewScrollPosition.Right;
-						collectionView.ScrollToItem(lastIndexPath, scrollPosition, true);
-					}
-					return;
-				}
+				var position = Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? UICollectionViewScrollPosition.Bottom
+					: CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+						? UICollectionViewScrollPosition.Left
+						: UICollectionViewScrollPosition.Right;
+				ItemsViewScrollHelper.ForceScrollToLastItem(CollectionView, position);
+			}
+			else if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& CollectionView?.DataSource is not CarouselViewController2)
+			{
+				ItemsViewScrollHelper.ScrollToFirstItem(CollectionView, _itemsLayout.Orientation);
 			}
 		}
 

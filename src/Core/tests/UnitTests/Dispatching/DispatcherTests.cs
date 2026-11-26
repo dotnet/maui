@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -206,6 +207,73 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				// If it's repeating, ticks will be greater than 1
 				Assert.True(ticks > 1);
 			});
+
+		[Fact]
+		public async Task CreateTimerQueuedCallbacksDoNotOverlapOrRunAfterStop()
+		{
+			var pendingCallbacks = new ConcurrentQueue<Action>();
+			var dispatcher = new DispatcherStub(null, pendingCallbacks.Enqueue);
+			var timer = dispatcher.CreateTimer();
+			timer.Interval = TimeSpan.FromMilliseconds(200);
+			timer.IsRepeating = true;
+
+			var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var secondStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var overlappingTick = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			using var releaseFirst = new ManualResetEventSlim();
+			var ticks = 0;
+			var first = Task.CompletedTask;
+			var second = Task.CompletedTask;
+
+			timer.Tick += (_, _) =>
+			{
+				if (Interlocked.Increment(ref ticks) == 1)
+				{
+					firstEntered.SetResult();
+					if (!releaseFirst.Wait(TimeSpan.FromSeconds(5)))
+						throw new TimeoutException("The first tick was not released.");
+					timer.Stop();
+				}
+				else
+				{
+					overlappingTick.SetResult();
+				}
+			};
+
+			try
+			{
+				timer.Start();
+				Assert.True(SpinWait.SpinUntil(() => pendingCallbacks.Count >= 2, TimeSpan.FromSeconds(5)));
+				Assert.True(pendingCallbacks.TryDequeue(out var firstCallback));
+				Assert.True(pendingCallbacks.TryDequeue(out var secondCallback));
+				first = Task.Factory.StartNew(firstCallback!, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+				await firstEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				second = Task.Factory.StartNew(() =>
+				{
+					secondStarted.SetResult();
+					secondCallback!();
+				}, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+				await secondStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				await Task.WhenAny(overlappingTick.Task, Task.Delay(200));
+				Assert.False(overlappingTick.Task.IsCompleted);
+			}
+			finally
+			{
+				releaseFirst.Set();
+				try
+				{
+					await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5));
+				}
+				finally
+				{
+					timer.Stop();
+				}
+			}
+
+			Assert.Equal(1, ticks);
+			Assert.False(timer.IsRunning);
+		}
 
 #nullable enable
 		sealed class NonDisposableDispatcherProviderStub : IDispatcherProvider

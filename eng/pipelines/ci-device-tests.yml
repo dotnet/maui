@@ -1,7 +1,16 @@
 trigger:
   batch: true
   branches:
-    include: [ main, net11, release/*, net*.0, inflight/*, candidate/*, darc-* ]
+    include:
+    - main
+    - net11
+    - release/*
+    - net*.0
+    - inflight/*
+    - candidate/*
+    - darc-*
+    # `/review run-device-tests` dispatch commits (see eng/pipelines/common/run-devicetests-request.yml).
+    - run-devicetests/*
   tags:
     include: [ '*' ]
   paths:
@@ -19,6 +28,9 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# A `/review run-device-tests` dispatch branch carries the AI selection for one PR (RunDeviceTests* variables).
+- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/') }}:
+  - template: /eng/pipelines/common/run-devicetests-request.yml@self
 
 parameters:
 - name: androidPoolPublic
@@ -76,14 +88,13 @@ parameters:
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net11.0
+  - tfm: net12.0
+# The net12 mobile workloads no longer supply the Mono runtime packs, so only CoreCLR runs.
 - name: runtimes
   type: object
   default:
   - name: coreclr
     useCoreClr: true
-  - name: mono
-    useCoreClr: false
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -102,3 +113,17 @@ stages:
       requireWindows11: ${{ parameters.requireWindows11 }}
       runtimes: ${{ parameters.runtimes }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      # A `/review run-device-tests` dispatch: only the selected platforms (CoreCLR only), projects and
+      # categories. Only RunTestsMode 'full' keeps everything; any other value narrows to the listed
+      # platforms, so an unfilled request runs nothing.
+      ${{ if and(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'), ne(variables['RunTestsMode'], 'full')) }}:
+        selectedRun: true
+        selectedPlatforms:
+        - ${{ each platform in split(variables['RunDeviceTestsPlatforms'], ',') }}:
+          - ${{ platform }}
+        selectedProjects: ${{ variables['RunDeviceTestsProjects'] }}
+        selectedFilters:
+          ${{ if ne(variables['RunDeviceTestsControlsSkip'], '') }}:
+            controls: SkipCategories=${{ replace(variables['RunDeviceTestsControlsSkip'], '+', ',') }}
+          ${{ if ne(variables['RunDeviceTestsCoreSkip'], '') }}:
+            core: SkipCategories=${{ replace(variables['RunDeviceTestsCoreSkip'], '+', ',') }}

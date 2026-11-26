@@ -2,30 +2,39 @@ parameters:
   androidPool: {}
   windowsPool: {}
   applePools: []
-  TargetFrameworkVersion: net11.0
+  TargetFrameworkVersion: net12.0
   BuildConfiguration: Release
   runWindowsTests: true
   windowsPackaging: both
   requireWindows11: false
+  # `/review run-device-tests` (eng/pipelines/common/run-devicetests-request.yml): run only the selected
+  # platforms (android, ios, catalyst, windows), projects ('+'-separated scenarios) and per-project filters.
+  selectedRun: false
+  selectedPlatforms: []
+  selectedProjects: ''
+  selectedFilters: {}
   runtimes:
   - name: coreclr
     useCoreClr: true
-  - name: mono
-    useCoreClr: false
   projects:
   - name: controls
+    scenario: Controls
     path: src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
     applicationId: com.microsoft.maui.controls.devicetests
   - name: core
+    scenario: Core
     path: src/Core/tests/DeviceTests/Core.DeviceTests.csproj
     applicationId: com.microsoft.maui.core.devicetests
   - name: graphics
+    scenario: Graphics
     path: src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
     applicationId: com.microsoft.maui.graphics.devicetests
   - name: essentials
+    scenario: Essentials
     path: src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
     applicationId: com.microsoft.maui.essentials.devicetests
   - name: blazorwebview
+    scenario: MauiBlazorWebView
     path: src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
     applicationId: com.microsoft.maui.mauiblazorwebview.devicetests
 
@@ -35,79 +44,89 @@ stages:
   dependsOn: []
   jobs:
   - ${{ each project in parameters.projects }}:
-    - ${{ each runtime in parameters.runtimes }}:
-      - job: android_${{ project.name }}_${{ runtime.name }}
-        displayName: Android API 33 ${{ project.name }} ${{ runtime.name }}
-        pool: ${{ parameters.androidPool }}
-        timeoutInMinutes: 120
-        cancelTimeoutInMinutes: 15
-        steps:
-        - template: /eng/pipelines/common/device-tests-steps.yml@self
-          parameters:
-            platform: android
-            path: $(Build.SourcesDirectory)/${{ project.path }}
-            apiVersion: '33'
-            deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
-            targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
-            useCoreClr: ${{ runtime.useCoreClr }}
-            expectedArchitecture: X64
+    - ${{ if or(not(parameters.selectedRun), contains(format('+{0}+', parameters.selectedProjects), format('+{0}+', project.scenario))) }}:
+      - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'android')) }}:
+        - ${{ each runtime in parameters.runtimes }}:
+          - job: android_${{ project.name }}_${{ runtime.name }}
+            displayName: Android API 33 ${{ project.name }} ${{ runtime.name }}
+            pool: ${{ parameters.androidPool }}
+            timeoutInMinutes: 120
+            cancelTimeoutInMinutes: 15
+            steps:
+            - template: /eng/pipelines/common/device-tests-steps.yml@self
+              parameters:
+                platform: android
+                path: $(Build.SourcesDirectory)/${{ project.path }}
+                apiVersion: '33'
+                deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
+                targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
+                useCoreClr: ${{ runtime.useCoreClr }}
+                expectedArchitecture: X64
+                testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
 
-    - ${{ each apple in parameters.applePools }}:
-      - ${{ each runtime in parameters.runtimes }}:
-        - ${{ each shard in split(iif(eq(project.name, 'controls'), 'CollectionView;Shell;HybridWebView;General', 'All'), ';') }}:
-          - job: ios_${{ project.name }}_${{ runtime.name }}_${{ apple.name }}_${{ shard }}
-            displayName: iOS ${{ project.name }} ${{ runtime.name }} ${{ apple.name }} ${{ shard }}
+      - ${{ each apple in parameters.applePools }}:
+        - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'ios')) }}:
+          - ${{ each runtime in parameters.runtimes }}:
+            # A selected run executes the project as one filtered job instead of the category shards.
+            - ${{ each shard in split(iif(and(eq(project.name, 'controls'), not(parameters.selectedRun)), 'CollectionView;Shell;HybridWebView;General', 'All'), ';') }}:
+              - job: ios_${{ project.name }}_${{ runtime.name }}_${{ apple.name }}_${{ shard }}
+                displayName: iOS ${{ project.name }} ${{ runtime.name }} ${{ apple.name }} ${{ shard }}
+                pool: ${{ apple.pool }}
+                timeoutInMinutes: 120
+                cancelTimeoutInMinutes: 15
+                steps:
+                - template: /eng/pipelines/common/device-tests-steps.yml@self
+                  parameters:
+                    platform: ios
+                    applicationId: ${{ project.applicationId }}
+                    path: $(Build.SourcesDirectory)/${{ project.path }}
+                    apiVersion: latest
+                    deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
+                    targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
+                    useCoreClr: ${{ runtime.useCoreClr }}
+                    expectedOSMajor: ${{ apple.osMajor }}
+                    expectedArchitecture: Arm64
+                    ${{ if eq(shard, 'General') }}:
+                      testFilter: SkipCategories=CollectionView,Shell,HybridWebView
+                    ${{ elseif ne(shard, 'All') }}:
+                      testFilter: Category=${{ shard }}
+                    ${{ else }}:
+                      testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
+
+        - ${{ if or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'catalyst')) }}:
+          - job: catalyst_${{ project.name }}_${{ apple.name }}
+            displayName: Catalyst ${{ project.name }} CoreCLR ${{ apple.name }}
             pool: ${{ apple.pool }}
             timeoutInMinutes: 120
             cancelTimeoutInMinutes: 15
             steps:
             - template: /eng/pipelines/common/device-tests-steps.yml@self
               parameters:
-                platform: ios
-                applicationId: ${{ project.applicationId }}
+                platform: catalyst
                 path: $(Build.SourcesDirectory)/${{ project.path }}
-                apiVersion: latest
                 deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
                 targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
-                useCoreClr: ${{ runtime.useCoreClr }}
+                useCoreClr: true
                 expectedOSMajor: ${{ apple.osMajor }}
                 expectedArchitecture: Arm64
-                ${{ if eq(shard, 'General') }}:
-                  testFilter: SkipCategories=CollectionView,Shell,HybridWebView
-                ${{ elseif ne(shard, 'All') }}:
-                  testFilter: Category=${{ shard }}
+                testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}
 
-      - job: catalyst_${{ project.name }}_${{ apple.name }}
-        displayName: Catalyst ${{ project.name }} CoreCLR ${{ apple.name }}
-        pool: ${{ apple.pool }}
-        timeoutInMinutes: 120
-        cancelTimeoutInMinutes: 15
-        steps:
-        - template: /eng/pipelines/common/device-tests-steps.yml@self
-          parameters:
-            platform: catalyst
-            path: $(Build.SourcesDirectory)/${{ project.path }}
-            deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
-            targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
-            useCoreClr: true
-            expectedOSMajor: ${{ apple.osMajor }}
-            expectedArchitecture: Arm64
-
-    - ${{ if eq(parameters.runWindowsTests, true) }}:
-      - ${{ each packaging in split(iif(eq(parameters.windowsPackaging, 'both'), 'packaged;unpackaged', parameters.windowsPackaging), ';') }}:
-        - job: windows_${{ project.name }}_${{ packaging }}
-          displayName: Windows ${{ project.name }} ${{ packaging }}
-          pool: ${{ parameters.windowsPool }}
-          timeoutInMinutes: 120
-          cancelTimeoutInMinutes: 15
-          steps:
-          - template: /eng/pipelines/common/device-tests-steps.yml@self
-            parameters:
-              platform: windows
-              applicationId: ${{ project.applicationId }}
-              path: $(Build.SourcesDirectory)/${{ project.path }}
-              device: ${{ packaging }}
-              deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
-              targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
-              expectedArchitecture: X64
-              requireWindows11: ${{ parameters.requireWindows11 }}
+      - ${{ if and(eq(parameters.runWindowsTests, true), or(not(parameters.selectedRun), containsValue(parameters.selectedPlatforms, 'windows'))) }}:
+        - ${{ each packaging in split(iif(eq(parameters.windowsPackaging, 'both'), 'packaged;unpackaged', parameters.windowsPackaging), ';') }}:
+          - job: windows_${{ project.name }}_${{ packaging }}
+            displayName: Windows ${{ project.name }} ${{ packaging }}
+            pool: ${{ parameters.windowsPool }}
+            timeoutInMinutes: 120
+            cancelTimeoutInMinutes: 15
+            steps:
+            - template: /eng/pipelines/common/device-tests-steps.yml@self
+              parameters:
+                platform: windows
+                applicationId: ${{ project.applicationId }}
+                path: $(Build.SourcesDirectory)/${{ project.path }}
+                device: ${{ packaging }}
+                deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
+                targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
+                expectedArchitecture: X64
+                requireWindows11: ${{ parameters.requireWindows11 }}
+                testFilter: ${{ coalesce(parameters.selectedFilters[project.name], '') }}

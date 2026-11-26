@@ -25,6 +25,7 @@
 				const body = await response.text();
 				return {
 					status: response.status,
+					contentType: response.headers.get('content-type'),
 					bodyLength: body.length,
 					bodyPreview: body.substring(0, 200),
 					url: url

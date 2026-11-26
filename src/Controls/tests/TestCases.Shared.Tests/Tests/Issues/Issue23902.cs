@@ -29,6 +29,9 @@ public class Issue23902 : _IssuesUITest
 		App.Tap("FourthPageButton");
 		App.WaitForElement("Go Back to 3rd Page");
 		App.Tap("ThirdPageButton");
+		// HeaderLabel is visible during the pop transition, but OnNavigatedTo only runs once it completes.
+		App.WaitForNoElement("ThirdPageButton");
+		App.WaitForTextEqualToElement("HeaderLabel", "NavigatedTo called 3 times");
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 3 times"));
 	}
 }

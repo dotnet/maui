@@ -41,7 +41,6 @@ namespace Microsoft.Maui.IntegrationTests
 				// Detailed trimmer warnings, if present
 				"TrimmerSingleWarn=false",
 			};
-
 			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog, output: _output),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}

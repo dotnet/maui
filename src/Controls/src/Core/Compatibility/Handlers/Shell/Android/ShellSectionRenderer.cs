@@ -416,15 +416,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
 			{
-				var newIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
-
+				var currentItem = ShellSection.CurrentItem;
 				if (SectionController.GetItems().Count != _viewPager.ChildCount)
 				{
 					SafeNotifyDataSetChanged();
 				}
 
+				// Refreshing the adapter can change which tabs are visible or selected.
+				if (_rootView is null || currentItem is null || currentItem != ShellSection.CurrentItem || !SectionController.GetItems().Contains(currentItem))
+				{
+					return;
+				}
+
+				var page = ((IShellContentController)currentItem).GetOrCreateContent();
+				// Page creation can change the selection before we update the toolbar.
+				if (_rootView is null || currentItem != ShellSection.CurrentItem)
+				{
+					return;
+				}
+
+				_toolbarTracker.Page = page;
+
+				// Toolbar callbacks can change the selection; look up the latest index before moving the pager.
+				if (_rootView is null || currentItem != ShellSection.CurrentItem)
+				{
+					return;
+				}
+
+				var newIndex = SectionController.GetItems().IndexOf(currentItem);
 				if (newIndex >= 0)
 				{
+					_toolbarTracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
 					_viewPager.CurrentItem = newIndex;
 				}
 			}

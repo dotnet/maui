@@ -31,6 +31,15 @@ minimum remains 17.0. The Apple workload manifests also require the .NET 10
 26.5.10322 compatibility SDK packs, which are pinned separately from the
 .NET 11 packs.
 
+The newer .NET 11 SDK also bundles .NET 10 runtime manifests requiring 10.0.15
+packs that are not yet on the public feeds. Provisioning pins only the .NET 10
+Mono/Emscripten manifests to `11.0.100-rtm.26480.113` (public 10.0.12 packs) and
+removes the bundled .NET 10 manifests before installing them. Integration tests
+use the same 10.0.12 framework, reference, linker and compiler packs through
+`src/Templates/TemplateTestExtraTargets.targets`. Remove both compatibility
+overrides together once all required 10.0.15 packs are publicly available;
+the current .NET 11 and Apple SDK pins are unchanged.
+
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
 until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
 UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
@@ -97,11 +106,29 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Public CI Apple toolchains
 
-The macOS template `Build` category uses separate toolchains without removing
-coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
-with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
-retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
-filters use single-quoted arguments in the shared PowerShell runner.
+The macOS template `Build` and `AOT` categories separate current- and
+previous-framework cases. Previous-framework iOS-only jobs select Xcode 27.0,
+matching the .NET 11 iOS compatibility SDK. Template `Build` cases can target
+multiple platforms and use the default compilation pool: the .NET 11
+MacCatalyst compatibility SDK recommends Xcode 27.1, as does the .NET 12 iOS
+SDK. The pool must provide the Xcode 27.1 SDK for .NET 12 iOS builds; Xcode 27.0
+is not sufficient. Apple SDK version validation is currently bypassed in the
+integration tests. Compound test filters use single-quoted arguments in the
+shared PowerShell runner.
+
+Internal jobs that install the pinned Xcode Universal Package select that exact
+application and verify its build version before compiling.
+
+The iOS simulator x64 NativeAOT cases target .NET 11 because the .NET 12 Apple
+workload no longer provides an x64 simulator runtime pack. They do not provide
+.NET 12 x64 simulator coverage.
+
+macOS jobs, public and internal, select the agent image's Xcode that matches
+`XCODE` in `eng/pipelines/common/variables.yml`, because the iOS SDK requires that
+exact Xcode version. Internal jobs can opt in to installing the Xcode Universal
+Package that dotnet/macios pins with `installXcodePackage: true`
+(`xcodePackageVersion` in `eng/pipelines/common/provision.yml`); they then select
+that exact application and verify its build version before compiling.
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 

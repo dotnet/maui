@@ -279,6 +279,37 @@ public static class UITestRetry
 			originalReason == (string)retry.Element("reason")?.Element("message");
 	}
 
+	// A parent error from OneTimeSetUp means the test body never ran; a later OneTimeTearDown error can move the fixture site to TearDown.
+	static bool NeverRan(XElement original)
+	{
+		if (original.Name != "test-case" ||
+			(string)original.Attribute("site") != "Parent" ||
+			(string)original.Attribute("label") != "Error")
+			return false;
+
+		var fixture = original.Ancestors("test-suite").FirstOrDefault(parent => (string)parent.Attribute("type") == "TestFixture");
+		if (fixture == null || (string)fixture.Attribute("result") != "Failed")
+			return false;
+
+		return (string)fixture.Attribute("site") == "SetUp" ||
+			((string)original.Element("failure")?.Element("message"))?.StartsWith("OneTimeSetUp:", StringComparison.Ordinal) == true;
+	}
+
+	static bool IsRuntimeIgnore(XElement original, XElement retry)
+	{
+		return original.Name == "test-case" && retry.Name == "test-case" &&
+			(string)original.Attribute("runstate") == "Runnable" &&
+			(string)retry.Attribute("runstate") == "Runnable" &&
+			(string)retry.Attribute("result") == "Skipped" &&
+			(string)retry.Attribute("label") == "Ignored" &&
+			!string.IsNullOrWhiteSpace((string)retry.Element("reason")?.Element("message"));
+	}
+
+	static bool IsRecoveredIgnore(XElement original, XElement retry)
+	{
+		return NeverRan(original) && (IsPreservedIgnore(original, retry) || IsRuntimeIgnore(original, retry));
+	}
+
 	static bool FailureCompletedSuccessfully(XElement failure, IEnumerable<XDocument> retryReports)
 	{
 		var fullName = (string)failure.Attribute("fullname");
@@ -303,14 +334,8 @@ public static class UITestRetry
 				(suite.Name != "test-case" && (!int.TryParse((string)suite.Attribute("total"), out var total) || total != cases.Count)))
 				return false;
 
-			// Fixture setup can shadow a discovery-time Ignore with a parent error.
-			if ((string)failure.Attribute("site") == "Parent" &&
-				(string)failure.Attribute("label") == "Error" &&
-				failure.Ancestors("test-suite").Any(parent =>
-					(string)parent.Attribute("type") == "TestFixture" &&
-					(string)parent.Attribute("result") == "Failed" &&
-					(string)parent.Attribute("site") == "SetUp") &&
-				IsPreservedIgnore(failure, suite))
+			// Fixture setup can shadow an Ignore with a parent error.
+			if (IsRecoveredIgnore(failure, suite))
 				return true;
 
 			var recoveredIgnoredFixture = suite.Name == "test-suite" &&
@@ -322,10 +347,10 @@ public static class UITestRetry
 				{
 					var originals = failure.Descendants("test-case")
 						.Where(original => (string)original.Attribute("fullname") == (string)test.Attribute("fullname")).ToList();
-					return originals.Count == 1 && IsPreservedIgnore(originals[0], test);
+					return originals.Count == 1 && IsRecoveredIgnore(originals[0], test);
 				});
 			return ((string)suite.Attribute("result") == "Passed" || recoveredIgnoredFixture) &&
-				cases.Any(test => (string)test.Attribute("result") == "Passed") &&
+				(recoveredIgnoredFixture || cases.Any(test => (string)test.Attribute("result") == "Passed")) &&
 				cases.All(test => (string)test.Attribute("result") == "Passed" || (string)test.Attribute("result") == "Skipped");
 		});
 	}
@@ -338,7 +363,7 @@ public static class UITestRetry
 			.Select(result => (string)result.Attribute("testId")) ?? Enumerable.Empty<string>());
 		var recoveredIgnores = originalReports.SelectMany(report => report.Descendants("test-case"))
 			.Where(test => (string)test.Attribute("result") == "Failed" &&
-				(string)test.Attribute("runstate") == "Ignored" &&
+				((string)test.Attribute("runstate") == "Ignored" || (string)test.Attribute("runstate") == "Runnable") &&
 				FailureCompletedSuccessfully(test, retryReports)).ToList();
 		var recoveredIgnoredIds = new HashSet<string>(original.Root.Element(ns + "TestDefinitions")?.Elements(ns + "UnitTest")
 			.Where(definition =>

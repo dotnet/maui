@@ -80,10 +80,15 @@ namespace Microsoft.Maui
 
 			CGSize sizeThatFits;
 
-			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
-			// This also affects ImageButtons
-			if (platformView is UIImageView imageView)
+			if (virtualView is IContentButton && (platformView is MauiContentButton || platformView is WrapperView))
 			{
+				widthConstraint = ResolveConstraints(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+				heightConstraint = ResolveConstraints(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+			}
+			else if (platformView is UIImageView imageView)
+			{
+				// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method.
 				var widthIsExplicit = IsExplicitSet(virtualView.Width);
 				var heightIsExplicit = IsExplicitSet(virtualView.Height);
 				widthConstraint = widthIsExplicit ? virtualView.Width : widthConstraint;
@@ -94,8 +99,8 @@ namespace Microsoft.Maui
 			else if (platformView is LayoutView || platformView is MauiLabel)
 			{
 				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-			   	heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
-				
+				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
 			else if (platformView is WrapperView wrapper)

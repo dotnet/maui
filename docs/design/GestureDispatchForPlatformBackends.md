@@ -40,25 +40,29 @@ stay out of IntelliSense for app authors.
 - `SendLongPressing` sets `LongPressGestureRecognizer.State` and raises `LongPressing` with a
   `GestureStatus`. It is the state machine.
 - `SendLongPressed` executes `Command` (when `Command.CanExecute(CommandParameter)` is `true`) and
-  raises `LongPressed`. It is the "the long press succeeded" notification and carries
+  raises `LongPressed`. It is the "the long press was recognized" notification, dispatched while
+  the press is still held, and carries
   `CommandParameter` on the event args.
 
 Backends should follow the same ordering the in-box platforms use:
 
 | Platform signal | Calls |
 | --------------- | ----- |
-| Press recognized | `SendLongPressing(view, GestureStatus.Started, getPosition)` |
+| Press recognized | `SendLongPressing(view, GestureStatus.Started, getPosition)` **then** `SendLongPressed(view, getPosition)` |
 | Press held / moved within `AllowableMovement` | `SendLongPressing(view, GestureStatus.Running, getPosition)` |
-| Press released after the minimum duration | `SendLongPressed(view, getPosition)` **then** `SendLongPressing(view, GestureStatus.Completed, getPosition)` |
+| Press released after recognition | `SendLongPressing(view, GestureStatus.Completed, getPosition)` |
 | Press cancelled or failed | `SendLongPressing(view, GestureStatus.Canceled, getPosition)` |
 
 Notes:
 
-- `SendLongPressed` is raised **before** `Completed` so handlers observing `LongPressed` see the
-  gesture result before the terminal state change.
-- A cancelled gesture must **not** raise `LongPressed` and must **not** execute `Command`.
+- `SendLongPressed` is raised once at recognition, not again on release or cancellation.
+  `Command` and `LongPressed` therefore run before `Completed`.
+- Cancellation before recognition must **not** raise `LongPressed` or execute `Command`.
+  Cancellation after recognition reports `Canceled` but does not undo the callbacks already raised.
 - `Started`/`Running` are optional for platforms that only surface a single "long press happened"
-  callback. Android and Windows go straight to `SendLongPressed` + `Completed`.
+  callback. Android and Windows go straight to `SendLongPressed` + `Completed` at recognition;
+  their `Completed` notification does not indicate release. iOS and Mac Catalyst report
+  `Started` + `SendLongPressed` at recognition and `Completed` on release.
 - `MinimumPressDuration`, `NumberOfTouchesRequired`, and `AllowableMovement` are *inputs* for the
   backend's detector. MAUI does not enforce them; the backend decides which of them the platform can
   honor and documents the gaps.
@@ -95,12 +99,12 @@ public sealed class MyPlatformLongPressHandler
             {
                 case PlatformGestureState.Began:
                     recognizer.SendLongPressing(_view, GestureStatus.Started, position);
+                    recognizer.SendLongPressed(_view, position);
                     break;
                 case PlatformGestureState.Changed:
                     recognizer.SendLongPressing(_view, GestureStatus.Running, position);
                     break;
                 case PlatformGestureState.Ended:
-                    recognizer.SendLongPressed(_view, position);
                     recognizer.SendLongPressing(_view, GestureStatus.Completed, position);
                     break;
                 case PlatformGestureState.Cancelled:

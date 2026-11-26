@@ -8,6 +8,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -142,6 +143,34 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(updatedText, updatedAttributedText.Value);
 				Assert.Equal(button.CharacterSpacing, updatedAttributedText.CharacterSpacing);
+			});
+		}
+
+		[Fact]
+		[Description("Changing the Text of a Button in a window should not fade its title label out")]
+		public async Task TextChangeKeepsTitleLabelVisible()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
+
+			var button = new Button { Text = "Initial" };
+
+			await CreateHandlerAndAddToWindow<ButtonHandler>(button, async handler =>
+			{
+				var titleLabel = GetPlatformButton(handler).TitleLabel;
+				await AssertEventually(() => titleLabel.Bounds.Width > 0);
+
+				button.Text = "Updated with a much longer title";
+
+				// A system UIButton cross-fades its title on change. The fade-out sets the label's
+				// alpha to 0 and only the animation's completion restores it.
+				Assert.Equal(1, (double)titleLabel.Alpha);
+				Assert.Null(titleLabel.Layer.AnimationForKey("opacity"));
 			});
 		}
 

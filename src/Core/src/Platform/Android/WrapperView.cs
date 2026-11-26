@@ -217,7 +217,8 @@ namespace Microsoft.Maui.Platform
 
 		internal void ScheduleInvalidate()
 		{
-			Post(() => Invalidate());
+			// Unlike Post(Action), this creates no managed Runnable peer (and its JNI global reference) per call.
+			PostInvalidateOnAnimation();
 		}
 
 		static void TransferTransformsPropertyValues(AView sourceView, AView targetView, bool resetSource)

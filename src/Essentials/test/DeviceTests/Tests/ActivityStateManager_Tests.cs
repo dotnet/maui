@@ -63,34 +63,46 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		/// listeners (simulating Android dispatching to every registered callback).
 		/// With the fix all three are the same object → fires once.
 		/// With the bug all three are different objects → fires three times.
+		///
+		/// Init registers the listener with the real Application, and Android delivers real
+		/// lifecycle callbacks on the main looper. The body runs synchronously on the main thread
+		/// and unregisters before returning, so only the simulated dispatch can be counted.
 		/// </summary>
 		[Fact]
-		public void Init_CalledMultipleTimes_ActivityStateChangedFiresOnce()
-		{
-			var app = (global::Android.App.Application)global::Android.App.Application.Context;
-			var activity = MauiPlatform.CurrentActivity;
+		public Task Init_CalledMultipleTimes_ActivityStateChangedFiresOnce() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				var app = (global::Android.App.Application)global::Android.App.Application.Context;
+				var activity = MauiPlatform.CurrentActivity;
 
-			int invocations = 0;
-			manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
+				try
+				{
+					int invocations = 0;
+					manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
 
-			// Capture the listener after EACH Init call, before the next one overwrites it.
-			manager.Init(app);
-			var l1 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					// Capture the listener after EACH Init call, before the next one overwrites it.
+					manager.Init(app);
+					var l1 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			manager.Init(app);
-			var l2 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					manager.Init(app);
+					var l2 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			manager.Init(app);
-			var l3 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					manager.Init(app);
+					var l3 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			// Simulate Android dispatching a Resumed event to every distinct registered listener.
-			// With fix:  l1 == l2 == l3 (same object) → 1 unique listener → 1 invocation ✅
-			// With bug:  l1 != l2 != l3 (different)   → 3 unique listeners → 3 invocations ❌
-			foreach (var l in new[] { l1, l2, l3 }.Distinct())
-				l?.OnActivityResumed(activity);
+					// Simulate Android dispatching a Resumed event to every distinct registered listener.
+					// With fix:  l1 == l2 == l3 (same object) → 1 unique listener → 1 invocation ✅
+					// With bug:  l1 != l2 != l3 (different)   → 3 unique listeners → 3 invocations ❌
+					foreach (var l in new[] { l1, l2, l3 }.Distinct())
+						l?.OnActivityResumed(activity);
 
-			Assert.Equal(1, invocations);
-		}
+					Assert.Equal(1, invocations);
+				}
+				finally
+				{
+					manager.Dispose();
+				}
+			});
 
 		[Fact]
 		public async Task PendingRequest_IsAdoptedFromRecreatedActivityState()

@@ -246,6 +246,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
+				// Android WebView writes the mimeType argument as the Content-Type header and then appends every
+				// entry of responseHeaders, so leaving Content-Type in the map sends it twice ("text/css, text/css").
+				headers.Remove("Content-Type");
+
 				// By default local caching is disabled so that user scripts are always re-executed. Applications can
 				// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
 				// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
