@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using Xunit;
 
@@ -245,6 +246,90 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void FailsWithUnsupportedType() =>
 			Assert.Throws<NotSupportedException>(() => Preferences.Default.Set("anything", new int[] { 1 }));
+
+		[Fact]
+		public void Set_Get_AppTheme_NonStatic()
+		{
+			const string key = nameof(Set_Get_AppTheme_NonStatic);
+			var preferences = Preferences.Default;
+
+			try
+			{
+				preferences.Set(key, AppTheme.Dark);
+
+				Assert.Equal(AppTheme.Dark, preferences.Get(key, AppTheme.Light));
+			}
+			finally
+			{
+				preferences.Remove(key);
+			}
+		}
+
+		[Fact]
+		public void Signed_Enum_Containers_Are_Isolated_NonStatic()
+		{
+			const string key = nameof(Signed_Enum_Containers_Are_Isolated_NonStatic);
+			var preferences = Preferences.Default;
+
+			try
+			{
+				preferences.Set(key, SignedPreference.Negative);
+				preferences.Set(key, SignedPreference.Positive, sharedNameTestData);
+
+				Assert.Equal(SignedPreference.Negative, preferences.Get(key, SignedPreference.None));
+				Assert.Equal(SignedPreference.Positive, preferences.Get(key, SignedPreference.None, sharedNameTestData));
+
+				preferences.Remove(key, sharedNameTestData);
+
+				Assert.Equal(SignedPreference.None, preferences.Get(key, SignedPreference.None, sharedNameTestData));
+				Assert.Equal(SignedPreference.Negative, preferences.Get(key, SignedPreference.None));
+			}
+			finally
+			{
+				preferences.Remove(key);
+				preferences.Remove(key, sharedNameTestData);
+			}
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData(sharedNameTestData)]
+		public void Unsigned_Enum_RoundTrips_And_Uses_Default_NonStatic(string sharedName)
+		{
+			const string key = nameof(Unsigned_Enum_RoundTrips_And_Uses_Default_NonStatic);
+			var preferences = Preferences.Default;
+			preferences.Remove(key, sharedName);
+
+			try
+			{
+				Assert.Equal(UnsignedPreference.HighBit, preferences.Get(key, UnsignedPreference.HighBit, sharedName));
+
+				preferences.Set(key, UnsignedPreference.Max, sharedName);
+				Assert.Equal(UnsignedPreference.Max, preferences.Get(key, UnsignedPreference.None, sharedName));
+				Assert.Equal(UnsignedPreference.Max, preferences.Get(key, UnsignedPreference.HighBit, sharedName));
+
+				preferences.Remove(key, sharedName);
+				Assert.Equal(UnsignedPreference.Max, preferences.Get(key, UnsignedPreference.Max, sharedName));
+			}
+			finally
+			{
+				preferences.Remove(key, sharedName);
+			}
+		}
+
+		enum SignedPreference : long
+		{
+			None = 0,
+			Negative = long.MinValue,
+			Positive = 1
+		}
+
+		enum UnsignedPreference : ulong
+		{
+			None = 0,
+			HighBit = 1UL << 63,
+			Max = ulong.MaxValue
+		}
 
 #if WINDOWS
 		[Fact]
