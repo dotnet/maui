@@ -46,8 +46,6 @@ The source generator reports `MAUIX2024` when an element's `Style` is set to a `
 
 `MauiXamlTrimmableStyles` defaults to `$(PublishAot)`. Other apps get eager styles, which apply to mismatched elements as before but cannot be trimmed.
 
-If `PublishAot` is only set for some configurations, styles behave differently in the others. Set `MauiXamlTrimmableStyles` explicitly to get the same behavior everywhere.
-
 To opt in or out globally:
 ```xml
 <MauiXamlTrimmableStyles>false</MauiXamlTrimmableStyles>
