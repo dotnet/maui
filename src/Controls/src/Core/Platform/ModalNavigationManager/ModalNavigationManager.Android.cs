@@ -223,6 +223,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class ModalFragment : DialogFragment
 		{
 			readonly Window _window;
+			Page? _windowPage;
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
@@ -426,16 +427,23 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnViewCreated(view, savedInstanceState);
 				UpdateLayoutDirection(view);
-				_window.PropertyChanged += OnWindowPropertyChanged;
+				_window.PropertyChanged += OnFlowDirectionChanged;
+				// IWindow.FlowDirection can come from the root page when the window uses MatchParent.
+				_windowPage = _window.Page;
+				if (_windowPage is not null)
+					_windowPage.PropertyChanged += OnFlowDirectionChanged;
 			}
 
 			public override void OnDestroyView()
 			{
-				_window.PropertyChanged -= OnWindowPropertyChanged;
+				_window.PropertyChanged -= OnFlowDirectionChanged;
+				if (_windowPage is not null)
+					_windowPage.PropertyChanged -= OnFlowDirectionChanged;
+				_windowPage = null;
 				base.OnDestroyView();
 			}
 
-			void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			void OnFlowDirectionChanged(object? sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == nameof(Window.FlowDirection) && View is { } view)
 					UpdateLayoutDirection(view);

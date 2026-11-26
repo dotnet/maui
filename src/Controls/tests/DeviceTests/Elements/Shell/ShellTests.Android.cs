@@ -264,10 +264,16 @@ namespace Microsoft.Maui.DeviceTests
 			GetPlatformToolbar(handler);
 
 		[Theory]
-		[InlineData(FlowDirection.LeftToRight, 1)]
-		[InlineData(FlowDirection.RightToLeft, -1)]
-		[InlineData(FlowDirection.MatchParent, -1)]
-		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage(FlowDirection flowDirection, int expectedOffsetSign)
+		[InlineData(FlowDirection.LeftToRight, FlowDirection.RightToLeft, false, false)]
+		[InlineData(FlowDirection.RightToLeft, FlowDirection.LeftToRight, false, false)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.LeftToRight, false, false)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.RightToLeft, false, false)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.LeftToRight, true, false)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.RightToLeft, true, false)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.LeftToRight, true, true)]
+		[InlineData(FlowDirection.MatchParent, FlowDirection.RightToLeft, true, true)]
+		public async Task ShellRouteSlidesSecondStepInsideModalNavigationPage(
+			FlowDirection flowDirection, FlowDirection inheritedDirection, bool updateDirection, bool inheritFromShell)
 		{
 			SetupBuilder();
 			const string flowRoute = "Issue21749Flow";
@@ -276,14 +282,24 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
-				Routing.RegisterRoute(flowRoute, typeof(Issue21749ModalFlow));
-				Routing.RegisterRoute(nextStepRoute, typeof(Issue21749FlowEndPage));
+				var window = shell.Window;
+				var hadWindowFlowDirection = window.IsSet(Controls.Window.FlowDirectionProperty);
+				var originalWindowFlowDirection = window.FlowDirection;
+				var hadShellFlowDirection = shell.IsSet(VisualElement.FlowDirectionProperty);
+				var originalShellFlowDirection = shell.FlowDirection;
 				try
 				{
-					if (flowDirection == FlowDirection.MatchParent)
-						shell.Window.FlowDirection = FlowDirection.RightToLeft;
+					Routing.RegisterRoute(flowRoute, typeof(Issue21749ModalFlow));
+					Routing.RegisterRoute(nextStepRoute, typeof(Issue21749FlowEndPage));
+					if (inheritFromShell)
+					{
+						shell.FlowDirection = inheritedDirection;
+						window.FlowDirection = FlowDirection.MatchParent;
+					}
+					else
+						window.FlowDirection = inheritedDirection;
 
-					await shell.GoToAsync(flowRoute, animate: true);
+					await shell.GoToAsync(flowRoute, animate: true).WaitAsync(TimeSpan.FromSeconds(5));
 					var flow = Assert.IsType<Issue21749ModalFlow>(Assert.Single(shell.Navigation.ModalStack));
 					var startPage = flow.CurrentPage;
 					if (flowDirection != FlowDirection.MatchParent)
@@ -292,49 +308,120 @@ namespace Microsoft.Maui.DeviceTests
 					var manager = Assert.IsType<NavigationViewHandler>(flow.Handler).StackNavigationManager;
 					manager.SetNavigationViewFragmentType(typeof(SlideProbeFragment));
 
-					await shell.GoToAsync(nextStepRoute, animate: true);
+					await VerifyPushAndPopAsync();
+					if (updateDirection)
+					{
+						// Change direction while the same modal is open, rather than recreating it.
+						inheritedDirection = inheritedDirection == FlowDirection.LeftToRight
+							? FlowDirection.RightToLeft
+							: FlowDirection.LeftToRight;
+						if (inheritFromShell)
+							shell.FlowDirection = inheritedDirection;
+						else
+							window.FlowDirection = inheritedDirection;
+						await VerifyPushAndPopAsync();
+					}
 
-					Assert.Same(flow, Assert.Single(shell.Navigation.ModalStack));
-					Assert.Collection(flow.Navigation.NavigationStack,
-						page => Assert.Same(startPage, page),
-						page => Assert.IsType<Issue21749FlowEndPage>(page));
-					Assert.IsType<Issue21749FlowEndPage>(flow.CurrentPage);
+					async Task VerifyPushAndPopAsync()
+					{
+						if (inheritFromShell)
+						{
+							Assert.Equal(FlowDirection.MatchParent, window.FlowDirection);
+							Assert.Equal(inheritedDirection, ((IWindow)window).FlowDirection);
+						}
+						var effectiveDirection = flowDirection == FlowDirection.MatchParent ? inheritedDirection : flowDirection;
+						var nativeDirection = effectiveDirection == FlowDirection.RightToLeft ? LayoutDirection.Rtl : LayoutDirection.Ltr;
+						await AssertEventually(() => ((AView)flow.Handler.PlatformView).LayoutDirection == nativeDirection,
+							timeout: 5000, message: "The modal navigation view did not inherit the expected layout direction.");
 
-					var fragment = Assert.IsType<SlideProbeFragment>(manager.NavHost.ChildFragmentManager.PrimaryNavigationFragment);
-					var animation = fragment.EnterAnimation;
-					Assert.NotNull(animation);
-					await shell.Navigation.PopModalAsync(animated: false);
+						await shell.GoToAsync(nextStepRoute, animate: true).WaitAsync(TimeSpan.FromSeconds(5));
 
-					// Sample the actual enter animation after dismissal so the test does not race the renderer.
-					const int size = 200;
-					animation.Reset();
-					animation.Initialize(size, size, size, size);
-					animation.StartTime = 0;
-					using var transformation = new Transformation();
-					animation.GetTransformation(animation.ComputeDurationHint() / 2, transformation);
-					var origin = new float[2];
-					transformation.Matrix.MapPoints(origin);
+						Assert.Same(flow, Assert.Single(shell.Navigation.ModalStack));
+						Assert.Collection(flow.Navigation.NavigationStack,
+							page => Assert.Same(startPage, page),
+							page => Assert.IsType<Issue21749FlowEndPage>(page));
+						SlideProbeFragment fragment = null;
+						await AssertEventually(() =>
+							(fragment = manager.NavHost.ChildFragmentManager.PrimaryNavigationFragment as SlideProbeFragment)?.EnterAnimation != null &&
+							fragment.View?.IsAttachedToWindow == true,
+							timeout: 5000, message: "Step 2 did not create an enter animation on an attached fragment.");
+						var enterAnimation = fragment.EnterAnimation;
 
-					Assert.True(origin[0] * expectedOffsetSign > 0,
-						$"Expected Step 2 to slide in from the {(expectedOffsetSign > 0 ? "right" : "left")}, but its horizontal offset was {origin[0]}.");
+						// Do not Reset/GetTransformation until Android itself has rendered the animation.
+						// Otherwise a captured but never started animation could make this test pass.
+						await AssertEventually(() => enterAnimation.HasStarted && enterAnimation.HasEnded,
+							timeout: 5000, message: "Step 2's enter animation did not start and finish.");
+						Assert.True(fragment.View.IsAttachedToWindow);
+
+						await shell.GoToAsync("..", animate: true).WaitAsync(TimeSpan.FromSeconds(5));
+						Assert.Same(startPage, flow.CurrentPage);
+						Assert.Same(startPage, Assert.Single(flow.Navigation.NavigationStack));
+						Assert.Same(flow, Assert.Single(shell.Navigation.ModalStack));
+						await AssertEventually(() => fragment.ExitAnimation != null,
+							timeout: 5000, message: "Step 2 did not create a back-navigation exit animation.");
+						var exitAnimation = fragment.ExitAnimation;
+						await AssertEventually(() => exitAnimation.HasStarted && exitAnimation.HasEnded,
+							timeout: 5000, message: "Step 2's back-navigation exit animation did not start and finish.");
+						await OnLoadedAsync(startPage).WaitAsync(TimeSpan.FromSeconds(5));
+
+						var expectedOffsetSign = effectiveDirection == FlowDirection.RightToLeft ? -1 : 1;
+						AssertSlideOffset(enterAnimation, expectedOffsetSign, "forward enter");
+						AssertSlideOffset(exitAnimation, expectedOffsetSign, "back exit");
+					}
 				}
 				finally
 				{
-					Routing.UnRegisterRoute(nextStepRoute);
-					Routing.UnRegisterRoute(flowRoute);
+					try
+					{
+						while (shell.Navigation.ModalStack.Count > 0)
+							await shell.Navigation.PopModalAsync(animated: false).WaitAsync(TimeSpan.FromSeconds(5));
+					}
+					finally
+					{
+						if (hadShellFlowDirection)
+							shell.FlowDirection = originalShellFlowDirection;
+						else
+							shell.ClearValue(VisualElement.FlowDirectionProperty);
+						if (hadWindowFlowDirection)
+							window.FlowDirection = originalWindowFlowDirection;
+						else
+							window.ClearValue(Controls.Window.FlowDirectionProperty);
+						Routing.UnRegisterRoute(nextStepRoute);
+						Routing.UnRegisterRoute(flowRoute);
+					}
 				}
 			});
+		}
+
+		static void AssertSlideOffset(AAnimation animation, int expectedOffsetSign, string transition)
+		{
+			// Rendering has completed; sampling cannot interfere with Android's animation clock.
+			const int size = 200;
+			animation.Reset();
+			animation.Initialize(size, size, size, size);
+			animation.StartTime = 0;
+			using var transformation = new Transformation();
+			animation.GetTransformation(animation.ComputeDurationHint() / 2, transformation);
+			var origin = new float[2];
+			transformation.Matrix.MapPoints(origin);
+
+			Assert.True(origin[0] * expectedOffsetSign > 0,
+				$"Expected {transition} to have a {(expectedOffsetSign > 0 ? "positive" : "negative")} horizontal offset, but it was {origin[0]}.");
+			Assert.InRange(transformation.Alpha, 0.01f, 0.99f);
 		}
 
 		public class SlideProbeFragment : NavigationViewFragment
 		{
 			internal AAnimation EnterAnimation { get; private set; }
+			internal AAnimation ExitAnimation { get; private set; }
 
 			public override AAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 			{
 				var animation = base.OnCreateAnimation(transit, enter, nextAnim);
 				if (enter)
 					EnterAnimation = animation;
+				else
+					ExitAnimation = animation;
 
 				return animation;
 			}
