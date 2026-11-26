@@ -753,6 +753,13 @@ function Invoke-ExpertPrepare {
         }
         $noun = if ($findingCount -eq 1) { 'finding' } else { 'findings' }
         $body = "## Expert Review $([char]0x2014) $findingCount $noun"
+        if ($findingCount -eq 0) {
+            # A clean re-review (for example in a maui-expert-autopilot loop) says so in words.
+            $earlier = @($feedback.reviews | Where-Object {
+                $_.user.login -ceq 'github-actions[bot]' -and ([string]$_.body).StartsWith('## Expert Review')
+            })
+            $body = if ($earlier.Count) { "## Expert Review $([char]0x2014) No more findings" } else { "## Expert Review $([char]0x2014) No findings" }
+        }
         if ($breakingCount) {
             $breakingNoun = if ($breakingCount -eq 1) { 'breaking change' } else { 'breaking changes' }
             $body += " $([char]0x00B7) $([char]0x26A0)$([char]0xFE0F) $breakingCount $breakingNoun"

@@ -151,6 +151,7 @@ on:
           if (!expert) {
             stage = 'review';
           } else if (Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(expert.body)?.[1]) > 0) {
+            // "No findings" / "No more findings" are clean.
             stage = 'fix'; source = 'expert';
           } else {
             const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 });

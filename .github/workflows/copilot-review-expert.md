@@ -579,7 +579,8 @@ the write. An invalid inline anchor fails the entire transaction: it never
 falls back to finding text in the review body.
 It publishes only actionable
 inline comments and submits one COMMENT review with a compact trusted receipt:
-`Expert Review - N findings` and a link to the reviewed commit. It also counts
+`Expert Review - N findings` (or `No findings` / `No more findings` after an
+earlier expert review) and a link to the reviewed commit. It also counts
 Behavioral Change Disclosure findings as breaking changes and lists their
 locations as links into the reviewed commit, never their text. Completed
 zero-finding reviews also post this receipt so the requester can see the run.
