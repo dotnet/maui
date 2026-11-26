@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 			if (view is ITitledElement page)
 				Title = page.Title;
 
-			if (view is IHotReloadableView ihr)
+			if (RuntimeFeature.IsHotReloadEnabled && view is IHotReloadableView ihr)
 			{
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);

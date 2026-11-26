@@ -136,12 +136,16 @@ namespace Microsoft.Maui.Controls
 
 		#region HotReload
 
-		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
+		IView IReplaceableView.ReplacedView =>
+			RuntimeFeature.IsHotReloadEnabled ? HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this : this;
 
 		HotReload.IReloadHandler HotReload.IHotReloadableView.ReloadHandler { get; set; }
 
 		void HotReload.IHotReloadableView.TransferState(IView newView)
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			//TODO: Let you hot reload the the ViewModel
 			//TODO: Lets do a real state transfer
 			if (newView is View v)
@@ -150,6 +154,9 @@ namespace Microsoft.Maui.Controls
 
 		void HotReload.IHotReloadableView.Reload()
 		{
+			if (!RuntimeFeature.IsHotReloadEnabled)
+				return;
+
 			Dispatcher.Dispatch(() =>
 			{
 				this.CheckHandlers();

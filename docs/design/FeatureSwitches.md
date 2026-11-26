@@ -17,6 +17,20 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
+| MauiEnableHotReload | Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled | Enables Hot Reload handler/view tracking and XAML Hot Reload hooks. Defaults to `false` for Release, optimized builds (`Optimize=true`), NativeAOT, and full trimming; otherwise `true`. |
+
+## MauiEnableHotReload
+
+Hot Reload is a development-only feature. `MauiEnableHotReload=false` disables both
+legacy Hot Reload and incremental XAML Hot Reload, including when
+`EnableMauiIncrementalHotReload=true`. With trimming enabled, the corresponding
+runtime paths can be removed. Untrimmed Release builds disable the hooks but still
+contain the library IL. Debug builds retain Hot Reload by default; setting
+`EnableMauiIncrementalHotReload=false` alone still allows legacy Hot Reload.
+
+An untrimmed, non-AOT optimized build can explicitly opt back in with
+`MauiEnableHotReload=true` for a development scenario. Hot Reload still requires
+runtime metadata-update support; it is not supported with NativeAOT.
 
 ## Runtime settings
 

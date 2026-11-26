@@ -13,6 +13,8 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 
 	public bool EnablePreviewFeatures => Options.IsTrue("build_property.EnablePreviewFeatures");
 
+	public bool EnableHotReload => !Options.IsFalse("build_property.MauiEnableHotReload");
+
 	public bool EnableLineInfo
 	{
 		get
@@ -55,6 +57,9 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	{
 		get
 		{
+			if (!EnableHotReload)
+				return false;
+
 			if (Options.IsTrue("build_metadata.additionalfiles.EnableIncrementalHotReload"))
 				return true;
 			if (Options.IsFalse("build_metadata.additionalfiles.EnableIncrementalHotReload"))

@@ -37,7 +37,8 @@ public static class XamlIncrementalHotReloadHandler
 		if (instance is null)
 			throw new ArgumentNullException(nameof(instance));
 
-		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
+		if (!global::Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled
+			|| !global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
 		XamlComponentRegistry.RegisterComponent(instance, string.Empty);
@@ -59,7 +60,8 @@ public static class XamlIncrementalHotReloadHandler
 		if (updatedTypes is null)
 			return;
 
-		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
+		if (!global::Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled
+			|| !global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
 		var typesArray = (IReadOnlyList<Type>)updatedTypes;
