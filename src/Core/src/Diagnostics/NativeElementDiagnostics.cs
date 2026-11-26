@@ -13,21 +13,25 @@ namespace Microsoft.Maui.Diagnostics
 		internal static readonly string RegisteredEventName = $"{ListenerName}.Registered.v{ContractVersion}";
 		internal static readonly string UnregisteredEventName = $"{ListenerName}.Unregistered.v{ContractVersion}";
 
-		static readonly NativeElementDiagnosticListener s_listener = new NativeElementDiagnosticListener(ListenerName);
+		static NativeElementDiagnosticListener? s_listener;
+		static readonly object s_listenerLock = new object();
 		static int s_subscriptionNotificationRequested;
 		static int s_subscriptionNotificationWorkerScheduled;
 
-		internal static DiagnosticListener Listener => s_listener;
-		internal static long SubscriptionEpoch => s_listener.SubscriptionEpoch;
+		internal static DiagnosticListener Listener => GetListener();
+		internal static long SubscriptionEpoch => RuntimeFeature.EnableMauiDiagnostics ? GetListener().SubscriptionEpoch : 0;
 		internal static event Action? SubscriptionAdded;
 
 		internal static bool IsRegistrationEnabled
 		{
 			get
 			{
+				if (!RuntimeFeature.EnableMauiDiagnostics)
+					return false;
+
 				try
 				{
-					return s_listener.IsRegistrationEnabled;
+					return GetListener().IsRegistrationEnabled;
 				}
 				catch (Exception ex)
 				{
@@ -73,7 +77,9 @@ namespace Microsoft.Maui.Diagnostics
 			out long subscriptionEpoch)
 		{
 			ValidateRegistrationArguments(owner, nativeElement, role);
-			if (s_listener.TryWriteRegistered(
+			subscriptionEpoch = 0;
+			if (RuntimeFeature.EnableMauiDiagnostics &&
+				GetListener().TryWriteRegistered(
 				owner,
 				nativeElement,
 				role,
@@ -102,7 +108,10 @@ namespace Microsoft.Maui.Diagnostics
 			string? discriminator,
 			long afterSubscriptionEpoch)
 		{
-			return s_listener.ReplayRegistered(
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				return afterSubscriptionEpoch;
+
+			return GetListener().ReplayRegistered(
 				owner,
 				nativeElement,
 				role,
@@ -118,7 +127,13 @@ namespace Microsoft.Maui.Diagnostics
 			long afterSubscriptionEpoch,
 			IDisposable registration)
 		{
-			return s_listener.ReplayRegisteredAndDispose(
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+			{
+				registration.Dispose();
+				return afterSubscriptionEpoch;
+			}
+
+			return GetListener().ReplayRegisteredAndDispose(
 				owner,
 				nativeElement,
 				role,
@@ -134,9 +149,12 @@ namespace Microsoft.Maui.Diagnostics
 			string? discriminator,
 			long afterSubscriptionEpoch)
 		{
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				return;
+
 			try
 			{
-				s_listener.ReplayRegisteredAndUnregister(
+				GetListener().ReplayRegisteredAndUnregister(
 					owner,
 					nativeElement,
 					role,
@@ -169,14 +187,30 @@ namespace Microsoft.Maui.Diagnostics
 			if (nativeElement is null)
 				return;
 
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				return;
+
 			try
 			{
-				s_listener.WriteUnregistered(nativeElement);
+				GetListener().WriteUnregistered(nativeElement);
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"Native element unregistration observer failed: {ex}");
 			}
+		}
+
+		static NativeElementDiagnosticListener GetListener()
+		{
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				throw new InvalidOperationException("Native element diagnostics are disabled.");
+
+			var listener = Volatile.Read(ref s_listener);
+			if (listener is not null)
+				return listener;
+
+			lock (s_listenerLock)
+				return s_listener ??= new NativeElementDiagnosticListener(ListenerName);
 		}
 
 		sealed class Registration : IDisposable

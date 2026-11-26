@@ -17,8 +17,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	}
 
 	[Collection(NativeElementDiagnosticsCollection.CollectionName)]
-	public class NativeElementDiagnosticsTests
+	public class NativeElementDiagnosticsTests : IDisposable
 	{
+		readonly bool _enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+
+		public NativeElementDiagnosticsTests()
+		{
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
+		}
+
+		public void Dispose()
+		{
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", _enableMauiDiagnosticsInitialState);
+		}
+
+		[Fact]
+		public void RegistrationIsDisabledWhenMauiDiagnosticsAreDisabled()
+		{
+			var events = new List<KeyValuePair<string, object>>();
+			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(events));
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", false);
+
+			Assert.False(NativeElementDiagnostics.IsRegistrationEnabled);
+			Assert.False(NativeElementDiagnostics.TryRegister(
+				new object(), new object(), NativeElementRoles.ToolbarItem, null,
+				out var registration, out var subscriptionEpoch));
+			Assert.Null(registration);
+			Assert.Equal(0, subscriptionEpoch);
+			Assert.Empty(events);
+		}
+
 		[Fact]
 		public void EventNamesUseContractVersion()
 		{

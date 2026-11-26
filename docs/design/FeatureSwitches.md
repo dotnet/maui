@@ -14,8 +14,8 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
-| EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
-| EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
+| EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostics for the running app |
+| EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables visual-tree, binding, and native element diagnostics. Enabled by default in unoptimized builds; honors EnableDiagnostics when set |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
 ## Runtime settings
@@ -165,13 +165,23 @@ As of NET10.0, the default is `true` so full compatibility is maintained, but mi
 
 Turn on various diagnostics at runtime and Maui level.
 
-Defaults to `false`
+Defaults to `false`.
 
 ## EnableMauiDiagnostics
 
-Enable VisualDiagnostics and BindingDiagnostics
+Enable visual-tree, binding, and native element diagnostics.
 
-Defaults to `EnableDiagnostics`
+Defaults to `EnableDiagnostics` when that property is set. Otherwise, enabled when `Optimize` is not `true` (including Debug builds), and disabled in optimized builds. The value is passed to the trimmer so visual-tree diagnostics, binding diagnostics, and native element diagnostics can be removed when disabled.
+
+To keep diagnostics available in an optimized build, explicitly enable them in the app project:
+
+```xml
+<PropertyGroup>
+  <EnableMauiDiagnostics>true</EnableMauiDiagnostics>
+</PropertyGroup>
+```
+
+`ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO=1` no longer overrides this switch. Enable diagnostics in the project before publishing; setting an environment variable cannot restore code that has been trimmed.
 
 ## _EnableMauiAspire
 

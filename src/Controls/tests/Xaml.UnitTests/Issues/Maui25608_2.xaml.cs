@@ -15,22 +15,22 @@ public partial class Maui25608_2
 	[Collection("Issue")]
 	public class Test : IDisposable
 	{
-		bool enableDiagnosticsInitialState;
+		bool enableMauiDiagnosticsInitialState;
 		bool bindingFailureReported = false;
 
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 			BindingDiagnostics.BindingFailed += BindingFailed;
 		}
 
 		public void Dispose()
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 			DispatcherProvider.SetCurrent(null);
 			AppInfo.SetCurrent(null);
 		}

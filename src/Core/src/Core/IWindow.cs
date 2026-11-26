@@ -17,6 +17,9 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the current visual diagnostics overlay for the Window.
 		/// </summary>
+		/// <remarks>
+		/// For the default MAUI window, this overlay does not provide diagnostic adorners when MAUI diagnostics are disabled.
+		/// </remarks>
 		IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
 
 		/// <summary>

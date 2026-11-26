@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Controls.Diagnostics
 			string role,
 			string? discriminator = null)
 		{
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				return;
+
 			NativeElementDiagnostics.ValidateRegistrationArguments(owner, nativeElement, role);
 
 			if (_registrations.TryGetValue(nativeElement, out var existing))
@@ -56,6 +59,9 @@ namespace Microsoft.Maui.Controls.Diagnostics
 			string role,
 			string? discriminator = null)
 		{
+			if (!RuntimeFeature.EnableMauiDiagnostics)
+				return;
+
 			NativeElementDiagnostics.ValidateRegistrationArguments(owner, nativeElement, role);
 
 			List<object>? replacedElements = null;
