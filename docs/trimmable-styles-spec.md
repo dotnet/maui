@@ -2,14 +2,14 @@
 
 ## Overview
 
-When XAML is compiled by the source generator, styles are generated so that the trimmer can remove a style's setters, triggers and behaviors (and everything they reference) when the app never creates an instance of the style's `TargetType`.
+When XAML is compiled by the source generator and trimmable styles are enabled, styles are generated so that NativeAOT can remove a style's setters, triggers and behaviors (and everything they reference) when the app never creates an instance of the style's `TargetType`.
 
 ## How it works
 
-For a style with a compile-time `TargetType`, the generator creates the style by type name and populates it lazily:
+For a style with a compile-time `TargetType`, the generator populates the style lazily:
 
 ```csharp
-var style = new Style("MyApp.MyControl, MyApp, ...");
+var style = new Style(typeof(global::MyApp.MyControl));
 bool lazyInitialization(Style __style, BindableObject __target)
 {
     if (__target is global::MyApp.MyControl target)
@@ -24,11 +24,15 @@ bool lazyInitialization(Style __style, BindableObject __target)
 style.LazyInitialization = new Func<Style, BindableObject, bool>(lazyInitialization);
 ```
 
+When `MyControl` is never instantiated, NativeAOT folds the type check to `false` and removes the setter code. `typeof(MyControl)` only keeps the type's identity (its type descriptor), not its code.
+
 The initializer is a local function wrapped in an explicit delegate rather than a lambda. A lambda that captures nothing is cached in a compiler-generated static field, and XAML Hot Reload cannot add fields to a compiler-generated class from an earlier update.
 
-When `MyControl` is never instantiated, NativeAOT can fold the type check to `false` and remove the setter code. Constructed generic target types use `typeof(T)` instead of a type name, which keeps only the type's identity.
+Implicit styles are registered under the target type's full name (`Type.FullName` format, with `+` for nested types). Constructed generic target types are registered with `typeof(T)`.
 
-Styles whose `TargetType` is only known at runtime (for example `{x:Static}`) are created eagerly with `new Style(typeof(...))`, as before.
+Styles whose `TargetType` is only known at runtime (for example `{x:Static}`) are created eagerly, as before.
+
+ILLink does not remove code behind type checks, so trimmable styles reduce size only with NativeAOT.
 
 ## Behavior differences
 
@@ -40,14 +44,16 @@ The source generator reports `MAUIX2024` when an element's `Style` is set to a `
 
 ## Feature Flag
 
-Trimmable styles are **enabled by default** for all XAML files compiled with SourceGen. Disabling them restores eager styles, which apply to mismatched elements as before but cannot be trimmed.
+`MauiXamlTrimmableStyles` defaults to `$(PublishAot)`. Other apps get eager styles, which apply to mismatched elements as before but cannot be trimmed.
 
-To opt-out per file:
-```xml
-<MauiXaml Update="MyPage.xaml" TrimmableStyles="false" />
-```
+If `PublishAot` is only set for some configurations, styles behave differently in the others. Set `MauiXamlTrimmableStyles` explicitly to get the same behavior everywhere.
 
-To opt-out globally:
+To opt in or out globally:
 ```xml
 <MauiXamlTrimmableStyles>false</MauiXamlTrimmableStyles>
+```
+
+To opt in or out per file:
+```xml
+<MauiXaml Update="MyPage.xaml" TrimmableStyles="false" />
 ```

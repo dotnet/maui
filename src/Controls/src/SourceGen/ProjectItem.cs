@@ -116,9 +116,9 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	}
 
 	/// <summary>
-	/// When true, styles with a compile-time TargetType are created so that the trimmer can remove them,
-	/// with their setters, when the target type is unused. Set <c>MauiXamlTrimmableStyles</c> to false
-	/// to create styles eagerly, as before.
+	/// When true, styles with a compile-time TargetType are populated lazily so that NativeAOT can remove
+	/// their setters when the target type is never instantiated. MSBuild defaults <c>MauiXamlTrimmableStyles</c>
+	/// to <c>$(PublishAot)</c>; otherwise styles are created eagerly.
 	/// </summary>
 	public bool TrimmableStyles
 	{
@@ -128,11 +128,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsFalse("build_metadata.additionalfiles.TrimmableStyles"))
 				return false;
-			if (Options.IsTrue("build_property.MauiXamlTrimmableStyles"))
-				return true;
-			if (Options.IsFalse("build_property.MauiXamlTrimmableStyles"))
-				return false;
-			return true;
+			return Options.IsTrue("build_property.MauiXamlTrimmableStyles");
 		}
 	}
 

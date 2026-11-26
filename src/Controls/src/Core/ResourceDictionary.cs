@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
-				Add(style.TargetTypeFullName, style);
+				Add(style.TargetType.FullName, style);
 			else
 			{
 				IList<Style> classes;

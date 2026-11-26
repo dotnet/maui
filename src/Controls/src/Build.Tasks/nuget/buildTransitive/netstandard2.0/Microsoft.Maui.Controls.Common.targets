@@ -18,6 +18,11 @@
 		<SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
 	</PropertyGroup>
 
+	<!-- Only NativeAOT removes the setters of styles whose target type is never instantiated; ILLink keeps them. -->
+	<PropertyGroup>
+		<MauiXamlTrimmableStyles Condition=" '$(MauiXamlTrimmableStyles)' == '' ">$(PublishAot)</MauiXamlTrimmableStyles>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenKind" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />

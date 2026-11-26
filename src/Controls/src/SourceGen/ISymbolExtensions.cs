@@ -37,30 +37,4 @@ static class ISymbolExtensions
 
 		return $"{string.Join(".", namespaceNames)}{(namespaceNames.Count > 0 ? "." : string.Empty)}{string.Join("+", typeNames)}";
 	}
-
-	public static string GetAssemblyQualifiedName(this INamedTypeSymbol type)
-	{
-		var metadataName = type.GetMetadataFullName();
-		var typeArguments = new List<INamedTypeSymbol>();
-		var hasUnsupportedTypeArgument = false;
-		for (var current = type; current is not null; current = current.ContainingType)
-		{
-			if (!current.IsGenericType)
-				continue;
-
-			var currentTypeArguments = current.TypeArguments.OfType<INamedTypeSymbol>().ToArray();
-			if (currentTypeArguments.Length != current.TypeArguments.Length)
-			{
-				hasUnsupportedTypeArgument = true;
-				break;
-			}
-
-			typeArguments.InsertRange(0, currentTypeArguments);
-		}
-
-		if (typeArguments.Count > 0 && !hasUnsupportedTypeArgument)
-			metadataName += $"[{string.Join(",", typeArguments.Select(typeArgument => $"[{typeArgument.GetAssemblyQualifiedName()}]"))}]";
-
-		return $"{metadataName}, {type.ContainingAssembly.Identity}";
-	}
 }

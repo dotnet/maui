@@ -402,10 +402,11 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	}
 
 	/// <summary>
-	/// Creates a Style whose TargetType is known at compile time. Non-generic targets use the type-name
-	/// constructor so the target type can be trimmed when unused. Content marked by
-	/// <see cref="MarkDeferredStyleContentVisitor"/> is emitted later in the style's lazy initializer.
-	/// Returns false for a runtime Type value (e.g. {x:Static}), which uses the Type constructor.
+	/// Creates a Style whose TargetType is known at compile time. Content marked by
+	/// <see cref="MarkDeferredStyleContentVisitor"/> is emitted later in the style's lazy initializer, so
+	/// the trimmer can remove it when the target type is never instantiated. <c>typeof</c> only keeps the
+	/// target type's identity. Returns false for a runtime Type value (e.g. {x:Static}), which is created
+	/// eagerly by the regular code path.
 	/// </summary>
 	static bool TryCreateTrimmableStyle(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext context)
 	{
@@ -428,19 +429,12 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (targetType is null)
 			return CreateInvalidStyle(node, writer, variables, styleType, targetTypeXmlName, context);
 
-		// Constructed generic names embed type-argument assembly identities that differ between
-		// reference and runtime assemblies, so name-based matching is unreliable. Use typeof for the
-		// style's identity; the setters still go through the guarded lazy initializer.
-		var constructorArgument = targetType.IsGenericType
-			? $"typeof({targetType.ToFQDisplayString()})"
-			: $"\"{CSharpExpressionHelpers.EscapeForString(targetType.GetAssemblyQualifiedName())}\"";
-
 		context.Types[node] = targetType;
 		if (!node.SkipProperties.Contains(targetTypeXmlName))
 			node.SkipProperties.Add(targetTypeXmlName);
 
 		var variableName = NamingHelpers.CreateUniqueVariableName(context, styleType);
-		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}({constructorArgument});");
+		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(typeof({targetType.ToFQDisplayString()}));");
 		variables[node] = new LocalVariable(styleType, variableName);
 		node.RegisterSourceInfo(context, writer);
 		return true;

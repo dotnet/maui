@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -20,8 +19,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
-		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached(
-			"BasedOnResource", typeof(Style), typeof(Style), default(Style),
+		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
 			propertyChanged: OnBasedOnResourceChanged);
 
 		readonly ConditionalWeakTable<BindableObject, object> _targets = new();
@@ -35,11 +33,10 @@ namespace Microsoft.Maui.Controls
 		IList<TriggerBase> _triggers;
 
 		// Fields for lazy/trimmable styles
-		readonly string _assemblyQualifiedTargetTypeName;
 		readonly object _initializerLock = new();
 		List<(BindableObject Target, SetterSpecificity Specificity)> _targetsAppliedDuringInitialization;
 		bool _isInitialized;
-		Type _targetType;
+		bool _settersReplacedBeforeInitialization;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Style"/> class.
@@ -47,20 +44,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="targetType">The type to which the style applies.</param>
 		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
 		{
-			_targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
-			Setters = new List<Setter>();
-		}
-
-		/// <summary>
-		/// Creates a style that refers to its target type by name, so that the target type can be trimmed
-		/// when the app never uses it. <see cref="TargetType"/> returns <see langword="null"/> in that case.
-		/// This constructor is intended for source generator use only.
-		/// </summary>
-		/// <param name="assemblyQualifiedTargetTypeName">The assembly-qualified type name of the target type.</param>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Style(string assemblyQualifiedTargetTypeName)
-		{
-			_assemblyQualifiedTargetTypeName = assemblyQualifiedTargetTypeName ?? throw new ArgumentNullException(nameof(assemblyQualifiedTargetTypeName));
+			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
 
@@ -130,12 +114,12 @@ namespace Microsoft.Maui.Controls
 		/// Gets the collection of <see cref="Behavior"/> objects attached to this style.
 		/// </summary>
 		/// <remarks>
-		/// Styles declared in XAML and compiled by the XAML source generator are initialized lazily:
-		/// the setters, behaviors and triggers declared in XAML are added the first time the style is
-		/// applied to an instance of <see cref="TargetType"/> (or a derived type). Until then, this
-		/// collection only contains items added from code. Such a style is never applied to elements that
-		/// are not instances of <see cref="TargetType"/>; a warning is logged instead. Set the
-		/// <c>MauiXamlTrimmableStyles</c> MSBuild property to <c>false</c> to create styles eagerly.
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
 		/// </remarks>
 		public IList<Behavior> Behaviors => _behaviors ??= new AttachedCollection<Behavior>();
 
@@ -153,12 +137,12 @@ namespace Microsoft.Maui.Controls
 		/// Gets the collection of <see cref="Setter"/> objects that define the property values for this style.
 		/// </summary>
 		/// <remarks>
-		/// Styles declared in XAML and compiled by the XAML source generator are initialized lazily:
-		/// the setters, behaviors and triggers declared in XAML are added the first time the style is
-		/// applied to an instance of <see cref="TargetType"/> (or a derived type). Until then, this
-		/// collection only contains items added from code. Such a style is never applied to elements that
-		/// are not instances of <see cref="TargetType"/>; a warning is logged instead. Set the
-		/// <c>MauiXamlTrimmableStyles</c> MSBuild property to <c>false</c> to create styles eagerly.
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
 		/// </remarks>
 		public IList<Setter> Setters { get; }
 
@@ -166,12 +150,12 @@ namespace Microsoft.Maui.Controls
 		/// Gets the collection of <see cref="TriggerBase"/> objects attached to this style.
 		/// </summary>
 		/// <remarks>
-		/// Styles declared in XAML and compiled by the XAML source generator are initialized lazily:
-		/// the setters, behaviors and triggers declared in XAML are added the first time the style is
-		/// applied to an instance of <see cref="TargetType"/> (or a derived type). Until then, this
-		/// collection only contains items added from code. Such a style is never applied to elements that
-		/// are not instances of <see cref="TargetType"/>; a warning is logged instead. Set the
-		/// <c>MauiXamlTrimmableStyles</c> MSBuild property to <c>false</c> to create styles eagerly.
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
 		/// </remarks>
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();
 
@@ -231,7 +215,7 @@ namespace Microsoft.Maui.Controls
 
 		void LogTargetTypeMismatch(BindableObject bindable)
 		{
-			var message = $"Style TargetType {TargetTypeFullName} is not compatible with element target type {bindable.GetType()}. The style is not applied.";
+			var message = $"Style TargetType {TargetType.FullName} is not compatible with element target type {bindable.GetType()}. The style is not applied.";
 			var logger = bindable is Element element
 				? element.CreateLogger<Style>()
 				: Application.Current?.FindMauiContext()?.CreateLogger<Style>();
@@ -277,7 +261,11 @@ namespace Microsoft.Maui.Controls
 
 				if (isCompatible)
 				{
-					MoveInitializedSettersBeforeExisting(existingSetterCount);
+					// Setters replaced by Hot Reload before initialization already reflect the edited XAML.
+					if (_settersReplacedBeforeInitialization)
+						RemoveSettersFrom(existingSetterCount);
+					else
+						MoveInitializedSettersBeforeExisting(existingSetterCount);
 					Volatile.Write(ref _isInitialized, true);
 				}
 			}
@@ -286,6 +274,12 @@ namespace Microsoft.Maui.Controls
 				((IStyle)this).Apply(target, targetSpecificity);
 
 			return true;
+		}
+
+		void RemoveSettersFrom(int index)
+		{
+			for (var i = Setters.Count - 1; i >= index; i--)
+				Setters.RemoveAt(i);
 		}
 
 		void MoveInitializedSettersBeforeExisting(int existingSetterCount)
@@ -303,41 +297,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the type to which this style applies.
 		/// </summary>
-		public Type TargetType => _targetType ??= ResolveTargetType();
-
-		/// <summary>
-		/// Attempts to resolve the target type from the assembly-qualified name.
-		/// Returns null if the type was trimmed away.
-		/// </summary>
-		[UnconditionalSuppressMessage("Trimming", "IL2057:Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String, Boolean)'",
-			Justification = "Lazy styles intentionally allow target types to be trimmed. When a type is trimmed, TargetType returns null and the style is skipped at runtime. This enables the trimmer to remove unused styles.")]
-		private Type ResolveTargetType()
-		{
-			Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
-			return Type.GetType(_assemblyQualifiedTargetTypeName, throwOnError: false);
-		}
-
-		/// <summary>
-		/// Gets the full name of the target type (namespace-qualified, without assembly).
-		/// </summary>
-		internal string TargetTypeFullName
-		{
-			get
-			{
-				// If we have the type already, use it (FullName may be null for special/generic types)
-				if (_targetType?.FullName is not null)
-					return _targetType.FullName;
-
-				// Extract FullName from AQN: "Namespace.TypeName, AssemblyName, ..."
-				// FullName is everything before the first comma
-				Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
-
-				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(",", StringComparison.Ordinal);
-				return commaIndex > 0
-					? _assemblyQualifiedTargetTypeName.Substring(0, commaIndex)
-					: _assemblyQualifiedTargetTypeName;
-			}
-		}
+		public Type TargetType { get; }
 
 		void IStyle.UnApply(BindableObject bindable)
 		{
@@ -358,19 +318,16 @@ namespace Microsoft.Maui.Controls
 
 		internal bool CanBeAppliedTo(Type targetType)
 		{
-			// Use FullName comparison to avoid resolving the type (which may have been trimmed)
-			if (targetType.FullName is not null && TargetTypeFullName == targetType.FullName)
+			if (TargetType == targetType)
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
-			while (targetType != typeof(Element))
+			do
 			{
 				targetType = targetType.BaseType;
-				if (targetType is null)
-					return false;
-				if (targetType.FullName is not null && TargetTypeFullName == targetType.FullName)
+				if (TargetType == targetType)
 					return true;
-			}
+			} while (targetType != typeof(Element));
 			return false;
 		}
 
@@ -463,6 +420,15 @@ namespace Microsoft.Maui.Controls
 			foreach (var setter in newSetters)
 				Setters.Add(setter);
 
+			if (LazyInitialization is not null)
+			{
+				lock (_initializerLock)
+				{
+					if (!_isInitialized)
+						_settersReplacedBeforeInitialization = true;
+				}
+			}
+
 			foreach (var (target, specificity) in targets)
 			{
 				var mergedStyle = target switch
@@ -484,23 +450,7 @@ namespace Microsoft.Maui.Controls
 		internal bool ContainsStyle(Style style, BindableObject target)
 			=> ReferenceEquals(this, style) || (BasedOn ?? GetBasedOnResource(target))?.ContainsStyle(style, target) == true;
 
-		/// <summary>
-		/// Validates that BasedOn.TargetType is compatible with this style's TargetType.
-		/// Returns true if validation passes or cannot be performed (types trimmed).
-		/// </summary>
 		bool ValidateBasedOn(Style value)
-		{
-			if (value is null)
-				return true;
-
-			// If either type was trimmed, we can't validate - allow it and let runtime handle it
-			var basedOnTargetType = value.TargetType;
-			var thisTargetType = TargetType;
-
-			if (basedOnTargetType is null || thisTargetType is null)
-				return true;
-
-			return basedOnTargetType.IsAssignableFrom(thisTargetType);
-		}
+			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
 	}
 }

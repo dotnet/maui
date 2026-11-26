@@ -1,6 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
@@ -45,9 +48,16 @@ public partial class TestPage : ContentPage
 }
 """;
 
-		var (result, generated) = RunGenerator(xaml, code, enableIncrementalHotReload: true);
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var xamlFile = new AdditionalXamlFile(Path.Combine(Environment.CurrentDirectory, "Test.xaml"), xaml, RelativePath: "Test.xaml",
+			ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", EnableIncrementalHotReload: true, TrimmableStyles: "true");
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile);
+		var generated = result.Results.Single().GeneratedSources
+			.Single(source => source.HintName.EndsWith(".xsg.cs", StringComparison.Ordinal) && !source.HintName.EndsWith(".handler.xsg.cs", StringComparison.Ordinal) && !source.HintName.Contains(".uc.xsg", StringComparison.Ordinal))
+			.SourceText.ToString();
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 		Assert.NotNull(generated);
+		Assert.Contains("LazyInitialization", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain(", );", generated, StringComparison.Ordinal);
 	}
 }

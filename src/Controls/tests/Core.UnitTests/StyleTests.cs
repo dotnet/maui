@@ -1341,7 +1341,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleIsNotInitializedUntilApplied()
 		{
 			bool initializerCalled = false;
-			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			var style = new Style(typeof(Label))
 			{
 				LazyInitialization = (s, target) =>
 				{
@@ -1366,7 +1366,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleSettersAreAppliedCorrectly()
 		{
-			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			var style = new Style(typeof(Label))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1387,17 +1387,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void LazyStyleTargetTypeFullNameReturnsCorrectValue()
-		{
-			var style = new Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
-
-			Assert.Equal("Microsoft.Maui.Controls.Label", style.TargetTypeFullName.ToString());
-		}
-
-		[Fact]
 		public void LazyStyleCanBeAppliedToMatchingType()
 		{
-			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			var style = new Style(typeof(Label))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1418,7 +1410,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleIsPopulatedOnlyOnce()
 		{
 			int callCount = 0;
-			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			var style = new Style(typeof(Label))
 			{
 				LazyInitialization = (s, target) =>
 				{
@@ -1443,31 +1435,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void LazyStyleTargetTypeReturnsTypeForExistingType()
-		{
-			var style = new Style(typeof(Label).AssemblyQualifiedName);
-
-			var targetType = ((IStyle)style).TargetType;
-
-			Assert.NotNull(targetType);
-			Assert.Equal(typeof(Label), targetType);
-		}
-
-		[Fact]
-		public void RegularStyleTargetTypeReturnsType()
-		{
-			var style = new Style(typeof(Label));
-
-			var targetType = ((IStyle)style).TargetType;
-
-			Assert.NotNull(targetType);
-			Assert.Equal(typeof(Label), targetType);
-		}
-
-		[Fact]
 		public void LazyStyleCanBeAddedToResourceDictionary()
 		{
-			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			var style = new Style(typeof(Label))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1490,7 +1460,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleWithBehaviors()
 		{
 			var behavior = new MockBehavior<Entry>();
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = (s, target) =>
 				{
@@ -1513,7 +1483,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleWithTriggers()
 		{
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1543,7 +1513,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleWithWrongFirstTargetInitializesForMatchingTarget()
 		{
-			var style = new Style(typeof(Button).AssemblyQualifiedName)
+			var style = new Style(typeof(Button))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1566,7 +1536,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleXamlSettersPrecedeSettersAddedInCode()
 		{
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1592,7 +1562,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleIsNotAppliedToIncompatibleTargets()
 		{
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = static (s, target) =>
 				{
@@ -1622,7 +1592,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleTargetTypeMismatchIsTracedWhenNoLoggerIsAvailable()
 		{
 			Application.ClearCurrent();
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = static (s, target) => target is Entry
 			};
@@ -1668,7 +1638,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleFirstAppliedToIncompatibleTargetAttachesTriggersAndBehaviorsOnlyToMatchingTargets()
 		{
 			var behavior = new MockBehavior<Entry>();
-			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			var style = new Style(typeof(Entry))
 			{
 				LazyInitialization = (s, target) =>
 				{
@@ -1702,7 +1672,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var callCount = 0;
 			Label nestedLabel = null;
-			var style = new Style(typeof(Label).AssemblyQualifiedName);
+			var style = new Style(typeof(Label));
 			style.LazyInitialization = (s, target) =>
 			{
 				if (target is not Label)
@@ -1725,6 +1695,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Single(style.Setters);
 			Assert.Equal("lazy", label.Text);
 			Assert.Equal("lazy", nestedLabel.Text);
+		}
+
+		[Fact]
+		public void LazyStyleKeepsSettersReplacedBeforeInitialization()
+		{
+			var style = new Style(typeof(Button))
+			{
+				LazyInitialization = static (s, target) =>
+				{
+					if (target is not Button)
+						return false;
+					if (s is null)
+						return true;
+					s.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
+					s.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = Colors.Red });
+					s.Triggers.Add(new Trigger(typeof(Button)) { Property = VisualElement.IsEnabledProperty, Value = false });
+					return true;
+				}
+			};
+
+			// Hot Reload replaces the setters before the style was first applied: the TextColor setter
+			// was removed and BackgroundColor changed. The initializer's stale setters must not come back.
+			style.ReplaceSetters(new[] { new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Blue } });
+			var button = new Button { Style = style };
+
+			Assert.Single(style.Setters);
+			Assert.Equal(Colors.Blue, button.BackgroundColor);
+			Assert.Null(button.TextColor);
+			Assert.Single(style.Triggers);
 		}
 
 		#endregion

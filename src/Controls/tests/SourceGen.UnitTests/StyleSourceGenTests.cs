@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 
 public class StyleSourceGenTests : SourceGenTestsBase
 {
-	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, string? TrimmableStyles = null)
+	private record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, string? NoWarn = null, string? TrimmableStyles = "true")
 		: AdditionalFile(Text: SourceGeneratorDriver.ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, NoWarn: NoWarn, TrimmableStyles: TrimmableStyles);
 
 static string Normalize(string text)
@@ -56,7 +56,7 @@ static string GetGeneratedCode(GeneratorDriverRunResult result)
 
 		// Find the actual generated code (the .xsg.cs file)
 		var generatedCode = GetGeneratedCode(result);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = new global::System.Func<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject, bool>(lazyInitialization", generatedCode, StringComparison.Ordinal);
 	}
@@ -417,7 +417,7 @@ public static class StyleTypes
 		Assert.Empty(errors);
 
 		var generatedCode = GetGeneratedCode(result);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontSizeProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontAttributesProperty", generatedCode, StringComparison.Ordinal);
@@ -486,7 +486,7 @@ public static class StyleTypes
 		var generatedCode = GetGeneratedCode(result);
 
 		// Verify key elements exist
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = new global::System.Func<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject, bool>(lazyInitialization", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
@@ -619,8 +619,11 @@ public static class StyleTypes
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2024");
 	}
 
-	[Fact]
-	public void TrimmableStylesCanBeDisabled()
+	// MSBuild sets MauiXamlTrimmableStyles from PublishAot; without it, styles are eager.
+	[Theory]
+	[InlineData("false")]
+	[InlineData(null)]
+	public void StylesAreEagerWhenTrimmableStylesAreNotEnabled(string? trimmableStyles)
 	{
 		var xaml =
 """
@@ -641,16 +644,15 @@ public static class StyleTypes
 </ContentPage>
 """;
 
-		var result = RunGenerator<XamlGenerator>(CreateMauiCompilation(), new AdditionalXamlFile("Test.xaml", xaml, TrimmableStyles: "false"));
+		var result = RunGenerator<XamlGenerator>(CreateMauiCompilation(), new AdditionalXamlFile("Test.xaml", xaml, TrimmableStyles: trimmableStyles));
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 		// Eagerly created styles still apply to mismatched elements, so the build warning would be wrong.
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2024");
 
 		var generatedCode = GetGeneratedCode(result);
-		Assert.Contains("typeof(global::Microsoft.Maui.Controls.Label)", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("typeof(global::Microsoft.Maui.Controls.Entry)", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Entry))", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
-		Assert.DoesNotContain("Style(\"Microsoft.Maui.Controls.", generatedCode, StringComparison.Ordinal);
 		Assert.DoesNotContain("LazyInitialization", generatedCode, StringComparison.Ordinal);
 	}
 
