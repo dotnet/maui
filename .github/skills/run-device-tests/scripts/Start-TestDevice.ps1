@@ -27,9 +27,12 @@ function Get-CompatibleIosDeviceType {
         [version]$_.maxRuntimeVersionString -ge $RuntimeVersion -and
         (!$SupportedDeviceTypes -or $SupportedDeviceTypes -contains $_.identifier)
     } | Sort-Object { [version]$_.minRuntimeVersionString } -Descending)
-    $preferred = $compatible | Where-Object identifier -EQ 'com.apple.CoreSimulator.SimDeviceType.iPhone-16' |
-        Select-Object -First 1
-    if ($preferred) { return $preferred.identifier }
+    # Keep the iPhone 11 Pro profile XHarness used where the runtime still supports it: some device tests
+    # assert geometry (safe-area insets, header heights) that differs on Dynamic Island phones.
+    foreach ($identifier in 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro', 'com.apple.CoreSimulator.SimDeviceType.iPhone-16') {
+        $preferred = $compatible | Where-Object identifier -EQ $identifier | Select-Object -First 1
+        if ($preferred) { return $preferred.identifier }
+    }
     if (!$compatible.Count) { throw "No installed iPhone device type supports iOS $RuntimeVersion." }
     return $compatible[0].identifier
 }

@@ -224,6 +224,17 @@ Describe 'Direct native CI contracts' {
             Should -Be "com.apple.CoreSimulator.SimDeviceType.$Expected"
     }
 
+    It 'keeps the former XHarness iPhone 11 Pro profile while the runtime supports it' {
+        $types = @(
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-16'; minRuntimeVersionString='18.0.0'; maxRuntimeVersionString='65535.255.255' },
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro'; minRuntimeVersionString='13.0.0'; maxRuntimeVersionString='27.0.255' }
+        )
+        Get-CompatibleIosDeviceType -RuntimeVersion '26.5' -DeviceTypes $types |
+            Should -Be 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro'
+        Get-CompatibleIosDeviceType -RuntimeVersion '27.1' -DeviceTypes $types |
+            Should -Be 'com.apple.CoreSimulator.SimDeviceType.iPhone-16'
+    }
+
     It 'only selects iPhone profiles that a device-specific runtime lists as supported' {
         $types = @(
             [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-16'; minRuntimeVersionString='18.0.0'; maxRuntimeVersionString='65535.255.255' },

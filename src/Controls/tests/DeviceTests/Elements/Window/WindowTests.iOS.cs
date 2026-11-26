@@ -122,7 +122,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var page = new ContentPage();
 			var window = new Window(page);
-			var app = (ApplicationStub)ApplicationServices.GetRequiredService<IApplication>();
+			// Application's constructor reads UIKit state, so resolve it on the UI thread.
+			var app = await InvokeOnMainThreadAsync(() => (ApplicationStub)ApplicationServices.GetRequiredService<IApplication>());
 #pragma warning disable CS0618 // Type or member is obsolete
 			await InvokeOnMainThreadAsync(() => app.MainPage = page);
 #pragma warning restore CS0618 // Type or member is obsolete
