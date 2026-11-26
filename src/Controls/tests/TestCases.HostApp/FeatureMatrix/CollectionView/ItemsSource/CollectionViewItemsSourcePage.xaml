@@ -113,6 +113,7 @@
                       Clicked="SetSelectedItemsNull_Clicked"
                       AutomationId="SetSelectedItemsNull"/>
               <Button Text="Clear Old SelectedItems"
+                      x:Name="ClearOldSelectedItemsButton"
                       Grid.Row="9"
                       Grid.Column="0"
                       Clicked="ClearOldSelectedItems_Clicked"

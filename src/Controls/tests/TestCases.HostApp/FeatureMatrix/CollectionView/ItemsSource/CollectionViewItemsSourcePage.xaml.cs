@@ -25,6 +25,7 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		_viewModel.ResetItemsSourceProperties();
+		ClearOldSelectedItemsButton.Text = "Clear Old SelectedItems";
 		await Navigation.PushAsync(new ItemsSourceOptionsPage(_viewModel));
 	}
 
@@ -76,15 +77,8 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 				}).Where(caption => caption != null))
 				: "No previous items";
 
-			IEnumerable<object> currentSelectionItems = vm.SelectionMode switch
-			{
-				SelectionMode.Multiple => vm.SelectedItems,
-				SelectionMode.Single when vm.SelectedItem is not null => new[] { vm.SelectedItem },
-				_ => Enumerable.Empty<object>()
-			};
-
-			var currentSelection = currentSelectionItems.Any()
-				? string.Join(", ", currentSelectionItems.Select(obj =>
+			var currentSelection = e.CurrentSelection.Any()
+				? string.Join(", ", e.CurrentSelection.Select(obj =>
 				{
 					if (obj is CollectionViewViewModel.CollectionViewTestItem item)
 						return item.Caption;
@@ -176,7 +170,8 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 
 	private void ClearOldSelectedItems_Clicked(object sender, EventArgs e)
 	{
-		_viewModel.ClearPreviousSelectedItemsForTest();
+		if (sender is Button button)
+			button.Text = $"Old collection notifications: {_viewModel.ClearPreviousSelectedItemsForTest()}";
 	}
 
 	private void MutateNewSelectedItems_Clicked(object sender, EventArgs e)

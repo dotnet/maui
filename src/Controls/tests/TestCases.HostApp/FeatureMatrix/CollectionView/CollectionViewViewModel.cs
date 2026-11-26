@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Maui.Controls.Sample.CollectionViewGalleries;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -94,6 +93,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private string _scrollToItem;
 	private int _scrollToIndex = 0;
 	private int _selectionChangedEventCount = 0;
+	private int _staleSelectedItemsChangedCount;
 	private string _previousSelectionText;
 	private string _currentSelectionText;
 	private int fruitIndex = 0;
@@ -149,6 +149,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				FontSize = 24,
 			};
 			label.SetBinding(Label.TextProperty, "Key");
+			label.SetBinding(Label.AutomationIdProperty, "Key");
 			stackLayout.Children.Add(label);
 			return stackLayout;
 		});
@@ -160,6 +161,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	public void ResetItemsSourceProperties()
 	{
 		ClearSelection();
+		_previousSelectedItems = null;
+		_staleSelectedItemsChangedCount = 0;
 
 		ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 		ItemsSourceType = ItemsSourceType.None;
@@ -524,15 +527,23 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	{
 		get
 		{
-			if (SelectionMode == SelectionMode.Single && SelectedItem is CollectionViewTestItem item)
+			if (SelectionMode == SelectionMode.Single)
 			{
-				return $"{item.Caption}";
+				return SelectedItem switch
+				{
+					CollectionViewTestItem item => item.Caption,
+					CollectionViewTestModelItem modelItem => modelItem.Caption,
+					_ => "No items selected"
+				};
 			}
 			else if (SelectionMode == SelectionMode.Multiple && SelectedItems?.Count > 0)
 			{
-				var selectedCaptions = SelectedItems
-					.OfType<CollectionViewTestItem>()
-					.Select(i => i.Caption);
+				var selectedCaptions = SelectedItems.Select(selectedItem => selectedItem switch
+				{
+					CollectionViewTestItem item => item.Caption,
+					CollectionViewTestModelItem modelItem => modelItem.Caption,
+					_ => null
+				}).Where(caption => caption is not null);
 				return string.Join(", ", selectedCaptions);
 			}
 			return "No items selected";
@@ -911,13 +922,14 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 					HorizontalOptions = LayoutOptions.Center
 				};
 				label.SetBinding(Label.TextProperty, "Caption");
+				label.SetBinding(Label.AutomationIdProperty, "Caption");
 				stackLayout.Children.Add(label);
 				return stackLayout;
 			});
 		}
 		else if (!ItemsSourceStringItems)
 		{
-			ItemTemplate = ExampleTemplates.PhotoTemplate();
+			ItemTemplate = CreatePhotoItemTemplate();
 		}
 		else
 		{
@@ -936,10 +948,54 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 					HorizontalOptions = LayoutOptions.Center
 				};
 				label.SetBinding(Label.TextProperty, "Caption");
+				label.SetBinding(Label.AutomationIdProperty, "Caption");
 				stackLayout.Children.Add(label);
 				return stackLayout;
 			});
 		}
+	}
+
+	private static DataTemplate CreatePhotoItemTemplate()
+	{
+		return new DataTemplate(() =>
+		{
+			var templateLayout = new Grid
+			{
+				RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
+				WidthRequest = 200,
+				HeightRequest = 100,
+			};
+
+			var image = new Image
+			{
+				WidthRequest = 100,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Margin = new Thickness(2, 5, 2, 2),
+				AutomationId = "photo"
+			};
+
+			image.SetBinding(Image.SourceProperty, new Binding("Image"));
+
+			var caption = new Label
+			{
+				FontSize = 12,
+				HorizontalOptions = LayoutOptions.Fill,
+				HorizontalTextAlignment = TextAlignment.Center,
+				Margin = new Thickness(2, 0, 2, 2),
+				BackgroundColor = Colors.Blue
+			};
+
+			caption.SetBinding(Label.TextProperty, new Binding("Caption"));
+			caption.SetBinding(Label.AutomationIdProperty, new Binding("Caption"));
+
+			templateLayout.Children.Add(image);
+			templateLayout.Children.Add(caption);
+
+			Grid.SetRow(caption, 1);
+
+			return templateLayout;
+		});
 	}
 
 	public void AddSequentialItem()
@@ -1381,12 +1437,14 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		SelectedItems = new ObservableCollection<object>(replacement);
 	}
 
-	public void ClearPreviousSelectedItemsForTest()
+	public int ClearPreviousSelectedItemsForTest()
 	{
 		if (_previousSelectedItems is null)
-			return;
+			return 0;
 
+		_staleSelectedItemsChangedCount = 0;
 		_previousSelectedItems.Clear();
+		return _staleSelectedItemsChangedCount;
 	}
 
 	public void MutateCurrentSelectedItemsForTest()
@@ -1418,6 +1476,9 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
 	private void OnSelectedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
+		if (!ReferenceEquals(sender, _selectedItems))
+			_staleSelectedItemsChangedCount++;
+
 		OnPropertyChanged(nameof(SelectedItemsCount));
 		OnPropertyChanged(nameof(SelectedItemText));
 	}

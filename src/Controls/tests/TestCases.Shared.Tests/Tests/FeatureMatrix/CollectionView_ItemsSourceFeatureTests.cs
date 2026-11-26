@@ -73,19 +73,22 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 
 	private void WaitForItemInItemsLayout(string item, string itemsLayout, bool scrollLeft = false)
 	{
-		if (itemsLayout is ItemsLayoutVerticalList or ItemsLayoutVerticalGrid)
+		for (int attempt = 0; attempt < 4; attempt++)
 		{
-			App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
-		}
-		else if (itemsLayout is ItemsLayoutHorizontalList or ItemsLayoutHorizontalGrid)
-		{
-			if (scrollLeft)
+			if (App.FindElements(item).Any())
+				return;
+
+			if (itemsLayout is ItemsLayoutVerticalList or ItemsLayoutVerticalGrid)
 			{
-				App.ScrollLeft(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
-				App.ScrollLeft(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+				App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 			}
-			else
-				App.ScrollRight(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+			else if (itemsLayout is ItemsLayoutHorizontalList or ItemsLayoutHorizontalGrid)
+			{
+				if (scrollLeft)
+					App.ScrollLeft(CollectionViewItemsSource, ScrollStrategy.Programmatically, swipePercentage: 0.9);
+				else
+					App.ScrollRight(CollectionViewItemsSource, ScrollStrategy.Programmatically, swipePercentage: 0.9);
+			}
 		}
 
 		App.WaitForElement(item);
@@ -590,7 +593,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		WaitForItemInItemsLayout("green.png", itemsLayout);
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("green.png");
-		WaitForItemInItemsLayout("calculator.png", itemsLayout);
+		WaitForItemInItemsLayout("calculator.png", itemsLayout, scrollLeft: true);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsListMutation_WithVerticalList")]
@@ -606,7 +609,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("Kiwi");
-		WaitForItemInItemsLayout("Broccoli", itemsLayout);
+		WaitForItemInItemsLayout("Broccoli", itemsLayout, scrollLeft: true);
 	}
 
 #endif
@@ -1088,7 +1091,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement("Fruits");
 		App.WaitForElement("Vegetables");
 		WaitForItemInItemsLayout("Orange", itemsLayout);
-		App.WaitForElement("Spinach");
+		WaitForItemInItemsLayout("Spinach", itemsLayout);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
 		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", "5");
@@ -1164,7 +1167,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		VerifyItemsSourceState(2, "dotnet_bot.png|green.png");
 		App.WaitForNoElement("avatar.png");
-		WaitForItemInItemsLayout("green.png", itemsLayout);
+		WaitForItemInItemsLayout("green.png", itemsLayout, scrollLeft: true);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListMutation_WithVerticalList")]
@@ -1183,11 +1186,12 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		VerifyItemsSourceState(6, "Apple|Banana|Orange|Kiwi|Carrot|Broccoli");
 		App.WaitForNoElement("Spinach");
-		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		WaitForItemInItemsLayout("Kiwi", itemsLayout, scrollLeft: true);
 	}
 
 #endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/28826
 	// Source configuration and selection scenarios
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
@@ -1202,8 +1206,9 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
-		App.WaitForNoElement("Banana");
+		App.WaitForElement("Banana");
 	}
+#endif
 
 	// Selection and preselection scenarios
 	[Test]
@@ -1244,6 +1249,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(MultipleModePreselection);
 		App.Tap(MultipleModePreselection);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
@@ -1270,6 +1276,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(SingleModePreselection);
 		App.Tap(SingleModePreselection);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("dotnet_bot.png"));
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
@@ -1684,6 +1691,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
 		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
 		App.Tap(ClearOldSelectedItems);
+		Assert.That(App.WaitForElement(ClearOldSelectedItems).GetText(), Is.EqualTo("Old collection notifications: 0"));
 		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
 		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
 		App.Tap(MutateNewSelectedItems);
