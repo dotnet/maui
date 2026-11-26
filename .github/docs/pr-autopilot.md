@@ -74,8 +74,25 @@ How the fixes are published:
 - **Fork PRs:** gh-aw cannot push to contributor forks, so the round opens an `[autopilot]` follow-up PR. That PR
   keeps the contributor's commits, and the loop moves to it.
 
-Each round posts one comment. It lists every item, which model's fix was kept and why, what it didn't fix, and what
-it validated.
+### The conversation happens in the review threads
+
+The top level of the PR stays quiet. It gets a **start** comment ("PR Autopilot started by @maintainer") and a
+**finish** comment, for example: "ready for maintainer review · expert review clean · tests passed · 3 threads
+resolved · 1 left open for maintainers". Commits, expert reviews, and test runs show up as normal timeline events.
+
+In each review thread it handled, a fix round replies with one of:
+
+- `✅ Fixed in <sha> <commit title>`: what changed, the test that proves it (fails before, passes after), and which
+  model's fix was kept over the other model's, with the reason.
+- `➖ Not changed`: why. For example, the finding was wrong, an optional nit matching the file's style, would change
+  the author's approach, or couldn't be reproduced.
+
+It then resolves the threads it fixed that the expert reviewer or the AI review started. Maintainers' threads stay
+open with "I left this thread open so you can confirm and resolve it." Failing tests have no thread, so a fix round
+for tests posts one short top-level comment. So does a round that published nothing, to explain why.
+
+There are no footers, firewall notices, or "Commit pushed" comments. Commits are pushed unsigned with plain `git push`,
+so the SHA in each reply matches the commit on the PR.
 
 ## Security
 

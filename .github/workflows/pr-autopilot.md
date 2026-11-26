@@ -110,7 +110,7 @@ on:
           }
           if (!hasLabel) {
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
-            await comment(`🤖 PR Autopilot started by @${requester}. It loops **MAUI expert review → fix** until the review is clean, then **\`/review run-tests\` → fix** until the relevant tests pass. Each fix round compares a GPT-6.2 Sol fix with a MAI Code 2 fix and keeps the better one. Comment \`/autopilot stop\` to stop it.`);
+            await comment(`🤖 **PR Autopilot started** by @${requester}. I'll reply in each review thread as I fix findings, then run the relevant tests. <sub>· \`/autopilot stop\` to stop</sub>`);
           }
 
           // Where is the current head in the loop?
@@ -138,15 +138,49 @@ on:
                 stage = 'stop'; note = `⏹️ PR Autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/autopilot\` again.`;
               } else {
                 stage = 'done';
-                note = results.length && results.every(r => r === 'NOTHING TO RUN')
-                  ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean, and the [test selection](${tests.html_url}) found no UI or device tests affected by this PR. Ready for maintainer review.`
+                const testsText = results.length && results.every(r => r === 'NOTHING TO RUN')
+                  ? `[no UI or device tests affected](${tests.html_url})`
                   : results.includes('SELECTION ONLY')
-                  ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean. Tests were [selected](${tests.html_url}) but this repository cannot run them. Ready for maintainer review.`
-                  : `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean and the [relevant tests](${tests.html_url}) pass. Ready for maintainer review.`;
+                  ? `[tests selected](${tests.html_url}), but this repository can't run them`
+                  : `[tests passed](${tests.html_url})`;
+                // Thread outcomes, from PR Autopilot's replies (later comments by github-actions[bot]).
+                const { repository } = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
+                  repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes {
+                    isResolved comments(first: 30) { nodes { url body author { login } } } } } } } }`, { ...repo, number });
+                let resolved = 0, notChanged = 0;
+                const waiting = [];
+                for (const t of repository.pullRequest.reviewThreads.nodes) {
+                  const replies = t.comments.nodes.slice(1).filter(c => c.author?.login === 'github-actions[bot]' && (c.body || '').includes('PR Autopilot'));
+                  const last = replies.pop();
+                  if (!last) continue;
+                  if (t.isResolved) resolved++;
+                  else if (last.body.includes('➖')) notChanged++;
+                  else waiting.push(last.url);
+                }
+                const counts = [`${resolved} thread${resolved === 1 ? '' : 's'} resolved`];
+                if (waiting.length) counts.push(`${waiting.length} left open for maintainers`);
+                if (notChanged) counts.push(`${notChanged} not changed`);
+                note = [
+                  `**✅ PR Autopilot finished: ready for maintainer review**${waiting.length ? ` · ${waiting.length} thread${waiting.length === 1 ? '' : 's'} waiting for a maintainer` : ''}`,
+                  '',
+                  `<sub>Expert review of \`${head.slice(0, 7)}\` clean · ${testsText} · ${counts.join(' · ')}</sub>`,
+                  ...(waiting.length ? ['', `Please confirm and resolve: ${waiting.map((u, i) => `[thread ${i + 1}](${u})`).join(', ')}`] : []),
+                ].join('\n');
               }
             }
           }
-          core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source})` : ''}, on behalf of @${requester}.`);
+          // Fix round number since the loop started: reviews with findings and failed test runs so far.
+          let round = 0;
+          if (stage === 'fix') {
+            const starts = (await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 }))
+              .filter(c => c.user?.type === 'User' && /^\s*\/autopilot\s*$/i.test(c.body || ''));
+            const since = starts.length ? starts[starts.length - 1].created_at : '';
+            round = reviews.filter(r => r.user?.login === 'github-actions[bot]' && (r.submitted_at || '') > since &&
+              Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(r.body || '')?.[1]) > 0).length;
+            if (source === 'tests') round++;
+          }
+          core.setOutput('round', String(Math.max(round, 1)));
+          core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
           if (stage === 'done' || stage === 'stop') { await stopLoop(note); stage = 'none'; }
 
           const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
@@ -166,6 +200,7 @@ jobs:
     outputs:
       autopilot_stage: ${{ steps.state.outputs.stage }}
       autopilot_source: ${{ steps.state.outputs.source }}
+      autopilot_round: ${{ steps.state.outputs.round }}
       autopilot_pr: ${{ steps.state.outputs.pr_number }}
       autopilot_head_ref: ${{ steps.state.outputs.head_ref }}
       autopilot_base_ref: ${{ steps.state.outputs.base_ref }}
@@ -308,6 +343,7 @@ steps:
     env:
       PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
       SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
+      ROUND: ${{ needs.pre_activation.outputs.autopilot_round }}
       GH_TOKEN: ${{ github.token }}
       HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
       BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
@@ -345,8 +381,8 @@ steps:
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
-        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" \
-        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source}' \
+        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" \
+        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber)}' \
         > /tmp/gh-aw/autopilot/context.json
       cat /tmp/gh-aw/autopilot/context.json
 
@@ -378,6 +414,8 @@ safe-outputs:
     max: 1
     if-no-changes: "ignore"
     fallback-as-pull-request: false
+    # Plain git push keeps the agent's commit SHAs, so thread replies can name the commit.
+    signed-commits: false
     protected-files: blocked
     allowed-files:
       - "src/**"
@@ -405,8 +443,10 @@ safe-outputs:
     max: 30
   noop:
     report-as-issue: false
-  messages:
-    footer: "> 🤖 *[{workflow_name}]({run_url}) · the PR author opted in. Maintainers decide whether this is merged.*\n<!-- pr-autopilot -->"
+  # Thread-first: the conversation lives in the review threads. No footers (they carried firewall
+  # notices and a "run again" hint) and no separate "Commit pushed" comment.
+  footer: false
+  activation-comments: false
 ---
 
 # PR Autopilot — fix round
@@ -418,7 +458,7 @@ The loop is: MAUI expert review → fix → expert review … until the review i
 one fix round.** After you publish, the loop reviews the new head again. A maintainer still decides
 whether the PR is merged.
 
-`source` in the context file says what to fix:
+`source` in the context file says what to fix, and `round` is this fix round's number:
 - `expert`: the latest `## Expert Review` (by `github-actions[bot]`) on `head_sha` has findings.
 - `tests`: the expert review is clean, but the latest `/review run-tests` comment (by
   `github-actions[bot]`, marked `<!-- review-run-tests-head: <head_sha> -->`) reports failing tests.
@@ -475,29 +515,32 @@ The PR head is checked out on `work_branch`.
      `- [x] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**`
      then list the fixes.
    - If there is nothing you can fix, don't publish. That ends the loop.
-7. **Answer the review threads.** `/tmp/gh-aw/autopilot/threads.json` lists the PR's review threads.
-   For every unresolved thread you handled this round, from a trusted reviewer:
-   - Call `reply_to_pull_request_review_comment` with the thread's **first** `comment_id`.
-     - If you fixed it: say in 1–3 sentences what changed and in which commit (use its title; the push
-       may rewrite commit SHAs). Name the model whose fix was kept. For a fork PR, say the fix is in
-       the `[autopilot]` follow-up PR.
-     - If you did not fix it: say why (wrong, out of scope, would change the author's approach, could
-       not reproduce).
-   - Then call `resolve_pull_request_review_thread` with its `thread_id`, but only when you fixed it
-     **and** the thread was started by the MAUI expert reviewer (`github-actions[bot]`) or the AI
-     review (`MauiBot`/`maui-bot`).
-   - Leave maintainers' threads unresolved. Your reply tells them it's ready for them to resolve.
-   - Leave threads you did not fix unresolved.
-   - Never reply to or resolve threads you did not handle, and only do so when you publish a fix. If
-     nothing was published, reply only to explain items you rejected as wrong.
-8. **Comment.** Finish with exactly one `add_comment`:
-   - first line: `Round fixed N <findings|failing tests>` (or why nothing was fixed), and that the
-     loop will review again,
-   - a checklist of the items, each linking to its review thread or test result, marked with the
-     model whose fix was chosen (`GPT-6.2 Sol` / `MAI Code 2`) and the one-line reason,
-   - items you did not fix and why,
-   - what you validated.
-   Keep it short.
+7. **Answer in the review threads.** The conversation happens where the code is.
+   `/tmp/gh-aw/autopilot/threads.json` lists the PR's review threads. For every unresolved thread you handled
+   this round, from a trusted reviewer, call `reply_to_pull_request_review_comment` with the thread's
+   **first** `comment_id`. Use exactly this shape (markdown, no headings):
+   - Fixed:
+     `🤖 **PR Autopilot** · <GPT-6.2 Sol|MAI Code 2> · round <round>`, then a blank line, then
+     `✅ Fixed in <short sha> *<commit title>*. <what changed, one or two sentences>. <the test that proves it: fails before, passes after>.`,
+     then a blank line and one muted line:
+     `<sub><Model>'s fix was kept over <other model>'s <its approach> because <reason>.</sub>`
+     Use the short SHA of your commit on `work_branch` (`git rev-parse --short HEAD` after committing); the push keeps it.
+     For a fork PR, write `✅ Fixed in the [autopilot] follow-up PR, commit *<commit title>*.` instead.
+   - Fixed, thread started by a maintainer: same, then add the line
+     `**I left this thread open so you can confirm and resolve it.**`
+   - Not changed:
+     `🤖 **PR Autopilot** · round <round>`, then a blank line, then
+     `➖ Not changed. <why: wrong, optional nit that matches the file's style, would change the author's approach, could not reproduce>.`
+   Then call `resolve_pull_request_review_thread` with its `thread_id` only when you fixed it **and** the
+   thread was started by the MAUI expert reviewer (`github-actions[bot]`) or the AI review
+   (`MauiBot`/`maui-bot`). Leave maintainers' threads and threads you did not change unresolved.
+   Never reply to or resolve threads you did not handle. Only claim a fix when you publish it.
+8. **Top-level comment: only when the threads can't carry it.** Do not post a round summary. Call
+   `add_comment` once only when:
+   - `source` is `tests`: list each failing test with its result link, and either the commit that fixes it
+     (with the kept model) or why it isn't caused by this PR,
+   - or you published nothing: say why in one or two sentences. That ends the loop.
+   Keep it short and use the same `🤖 **PR Autopilot** · round <round>` first line.
 
 Never merge, approve, retarget, or close pull requests.
 
