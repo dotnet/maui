@@ -523,6 +523,10 @@ $$"""
 		if (!string.IsNullOrEmpty(visitorContext.ProjectItem.TargetFramework))
 			rootnode.Accept(new SimplifyOnPlatformVisitor(visitorContext.ProjectItem.TargetFramework), null);
 		rootnode.Accept(new InferOnIdiomTypeArgumentsVisitor(visitorContext), null);
+		// Eagerly created styles still apply to mismatched elements, so the warning only holds for trimmable styles.
+		if (visitorContext.ProjectItem.TrimmableStyles)
+			rootnode.Accept(new ValidateStyleTargetTypesVisitor(visitorContext), null);
+		rootnode.Accept(new MarkDeferredStyleContentVisitor(visitorContext), null);
 		rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 		rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null); //set namescopes for {x:Reference} and FindByName
 		rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);

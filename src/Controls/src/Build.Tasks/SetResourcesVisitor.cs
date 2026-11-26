@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
+		public bool StopOnStyle => false;
+
+		public bool IsStyle(ElementNode node) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

@@ -136,15 +136,24 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 
 		if (!SkipChildren(visitor, this, parentNode))
 		{
-			foreach (var node in Properties.Values.ToArray())
-				node.Accept(visitor, this);
-			foreach (var node in CollectionItems.ToArray())
-				node.Accept(visitor, this);
+			if (visitor.StopOnStyle && IsDeferredStyle(visitor))
+			{
+				// Deferred style content is emitted by the style's lazy initializer; other properties are visited normally.
+				foreach (var property in Properties.ToArray())
+					if (property.Key != XmlName._StyleContent && !SkipProperties.Contains(property.Key))
+						property.Value.Accept(visitor, this);
+			}
+			else
+			{
+				foreach (var node in Properties.Values.ToArray())
+					node.Accept(visitor, this);
+				foreach (var node in CollectionItems.ToArray())
+					node.Accept(visitor, this);
+			}
 		}
 
 		if (visitor.VisitingMode == TreeVisitingMode.BottomUp && !SkipVisitNode(visitor, parentNode))
 			visitor.Visit(this, parentNode);
-
 	}
 
 	bool IsDataTemplate(INode parentNode)
@@ -155,6 +164,9 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 			return true;
 		return false;
 	}
+
+	bool IsDeferredStyle(IXamlNodeVisitor visitor)
+		=> Properties.ContainsKey(XmlName._StyleContent) && visitor.IsStyle(this);
 
 	protected bool SkipChildren(IXamlNodeVisitor visitor, INode node, INode parentNode) =>
 		   (visitor.StopOnDataTemplate && IsDataTemplate(parentNode))
