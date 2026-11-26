@@ -216,6 +216,21 @@ function Get-VerifiedPullRequest {
     }
 }
 
+function Get-RunTestsTreeEntry {
+    <#
+    .SYNOPSIS
+    The entry at a slash-separated path under a git tree, or $null.
+    #>
+    param([Parameter(Mandatory)][string]$TreeSha, [Parameter(Mandatory)][string]$Path)
+    $entry = $null
+    foreach ($segment in $Path -split '/') {
+        $entry = @((Invoke-GhJson @("repos/$Repository/git/trees/$TreeSha")).tree | Where-Object { $_.path -ceq $segment })[0]
+        if (-not $entry) { return $null }
+        $TreeSha = $entry.sha
+    }
+    return $entry
+}
+
 function New-RunTestsDispatch {
     <#
     .SYNOPSIS
@@ -234,39 +249,43 @@ function New-RunTestsDispatch {
     }
     if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
     $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
-    $sourceRoot = Invoke-GhJson @("repos/$Repository/git/trees/$($source.tree.sha)")
-    # PR code with the trusted pipeline, workflows (and for device tests the Helix project and
-    # Windows runner that apply the selection). Taking .github from the parent also means the commit
-    # changes no workflow, which GITHUB_TOKEN may not do.
+    # PR code with the trusted pipeline and scripts (and for device tests the Helix project and
+    # Windows runner that apply the selection) of the target branch.
     $entries = foreach ($path in $script:RunTestsTrustedPaths) {
-        $parentTree = $source.tree.sha
-        $segments = $path -split '/'
-        $entry = $null
-        foreach ($segment in $segments) {
-            $entry = @((Invoke-GhJson @("repos/$Repository/git/trees/$parentTree")).tree | Where-Object { $_.path -ceq $segment })[0]
-            if (-not $entry) { break }
-            $parentTree = $entry.sha
-        }
+        $entry = Get-RunTestsTreeEntry -TreeSha $source.tree.sha -Path $path
         if (-not $entry) { throw "The trusted commit has no $path." }
         @{ path = $path; mode = $entry.mode; type = $entry.type; sha = $entry.sha }
     }
     $overlay = @{ base_tree = $MergeCommit.tree.sha; tree = @($entries) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $overlay
+    # GITHUB_TOKEN may not create a branch whose workflows differ from the default branch's, so a
+    # release-branch dispatch is refused (HTTP 403). Workflows don't build anything here; take them,
+    # and the parent, from the default branch so the commit changes no workflow from either.
+    $parentSha = $sourceSha
+    $defaultBranch = [string]$PullRequest.base.repo.default_branch
+    if ($defaultBranch -and $defaultBranch -cne $PullRequest.base.ref) {
+        $parentSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$defaultBranch")).object.sha
+        $default = Invoke-GhJson @("repos/$Repository/git/commits/$parentSha")
+        $workflows = Get-RunTestsTreeEntry -TreeSha $default.tree.sha -Path '.github/workflows'
+        if (-not $workflows) { throw "$defaultBranch has no .github/workflows." }
+        $patch = @{ path = '.github/workflows'; mode = $workflows.mode; type = $workflows.type; sha = $workflows.sha }
+        $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson (@{ base_tree = $tree.sha; tree = @($patch) } | ConvertTo-Json -Depth 5)
+    }
     $yaml = New-RunTestsSuiteRequestYaml -Selection $Selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $PullRequest.head.sha
     $request = @{ base_tree = $tree.sha; tree = @(@{ path = $script:RunTestsRequestPath; mode = '100644'; type = 'blob'; content = $yaml }) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $request
 
     $message = "/review $($script:RunTestsCommand) dispatch for #$PrNumber at $($PullRequest.head.sha.Substring(0, 8))`n`n" +
         "Test-merge $($MergeCommit.sha) with $($script:RunTestsTrustedPaths -join ', ') from $sourceSha.`nRequested in $runUrl"
-    $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($sourceSha) } | ConvertTo-Json)
+    $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($parentSha) } | ConvertTo-Json)
     $branch = Get-RunTestsDispatchBranch -PrNumber $PrNumber -RunId $DispatchRunId
     try {
         Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
     } catch {
         # Say what the rejected commit changes, so a refusal (e.g. HTTP 403) can be diagnosed from the log.
-        Write-Host "Creating $branch at $($commit.sha) (parent $sourceSha, test-merge $($MergeCommit.sha) of base $(@($MergeCommit.parents)[0].sha)) was refused."
+        Write-Host "Creating $branch at $($commit.sha) (parent $parentSha, trusted $sourceSha, test-merge $($MergeCommit.sha) of base $(@($MergeCommit.parents)[0].sha)) was refused."
         try {
-            $files = @((Invoke-GhJson @("repos/$Repository/compare/$sourceSha...$($commit.sha)")).files | ForEach-Object { "$($_.status) $($_.filename)" })
+            $files = @((Invoke-GhJson @("repos/$Repository/compare/$parentSha...$($commit.sha)")).files | ForEach-Object { "$($_.status) $($_.filename)" })
             Write-Host "The dispatch commit changes $($files.Count) file(s) from its parent:`n$(($files | Select-Object -First 100) -join "`n")"
         } catch { Write-Host 'Could not compare the dispatch commit with its parent.' }
         throw
