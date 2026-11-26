@@ -9,7 +9,7 @@ trigger:
     - inflight/*
     - candidate/*
     - darc-*
-    # `/review run-tests` dispatch commits (see eng/pipelines/common/run-tests-request.yml).
+    # `/review run-ui-tests` dispatch commits (see eng/pipelines/common/run-tests-request.yml).
     - run-tests/*
   tags:
     include:
@@ -56,7 +56,7 @@ variables:
   - template: /eng/pipelines/common/variables.yml@self
   - name: IosUITestImageOverride
     value: ACES_VM_SharedPool_Tahoe
-  # A `/review run-tests` dispatch branch carries the AI selection for one PR (RunTests* variables).
+  # A `/review run-ui-tests` dispatch branch carries the AI selection for one PR (RunTests* variables).
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:
     - template: /eng/pipelines/common/run-tests-request.yml@self
 
@@ -66,7 +66,7 @@ parameters:
     type: boolean
     default: false
 
-  # /review run-tests selection: on which platforms each UI test category runs. Every value comes
+  # /review run-ui-tests selection: on which platforms each UI test category runs. Every value comes
   # from a fixed list, because Azure DevOps lets an identity with only 'Queue builds' set such
   # parameters, while free-text or object parameters need 'Edit queue build configuration'.
   # Platforms are joined with '+'; uitestPlatform* say which platforms build and run at all.
@@ -503,7 +503,7 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
-      # A selection (/review run-tests) only narrows pull-request builds. Branch, scheduled and
+      # A selection (/review run-ui-tests) only narrows pull-request builds. Branch, scheduled and
       # manual builds of main, release/*, candidate/* and the other CI branches always run the
       # full suite, whatever parameters they were queued with.
       ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
@@ -526,7 +526,7 @@ stages:
               - ${{ if and(startsWith(selection.key, 'uitest_'), ne(selection.value, 'none')) }}:
                 - ${{ each platform in split(selection.value, '+') }}:
                   - ${{ format('{0}:{1}', platform, replace(selection.key, 'uitest_', '')) }}
-      # A `/review run-tests` dispatch branch: the selection comes from run-tests-request.yml, written by
+      # A `/review run-ui-tests` dispatch branch: the selection comes from run-tests-request.yml, written by
       # .github/scripts/Invoke-RunTests.ps1 with the same values the parameters above would carry.
       # Only RunTestsMode 'full' keeps the defaults (every category on every platform); any other value
       # narrows to the listed platforms and categories, so an unfilled request runs nothing.
@@ -561,7 +561,7 @@ stages:
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      # `/review run-tests` dispatch branches build a PR, so they get the pull-request lanes.
+      # `/review run-ui-tests` dispatch branches build a PR, so they get the pull-request lanes.
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')))) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.5', 'latest' ]
