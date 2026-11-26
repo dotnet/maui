@@ -173,7 +173,7 @@ jobs:
             for (const c of all.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
               await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `## maui-expert-autopilot — Stopped\n\n❌ The [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
+              body: `## Expert Autopilot — Stopped\n\n❌ The [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.

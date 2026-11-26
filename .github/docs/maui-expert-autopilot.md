@@ -1,5 +1,7 @@
 # maui-expert-autopilot
 
+Its comments are titled **Expert Autopilot**, like the **Expert Review** it runs.
+
 Contributors can let the MAUI agent finish their pull request instead of going through more rounds of review
 themselves. The PR template has one checkbox:
 
@@ -97,8 +99,8 @@ How the fixes are published:
 
 The top level of the PR stays quiet. It gets two comments:
 
-- a **start** comment, "maui-expert-autopilot — Started", with collapsed **Models** and **Info** (what each label means) sections,
-- a **finish** comment, "maui-expert-autopilot — Ready for maintainer review", with collapsed **Results** (the clean
+- a **start** comment, "Expert Autopilot — Started", with collapsed **Models** and **Info** (what each label means) sections,
+- a **finish** comment, "Expert Autopilot — Ready for maintainer review", with collapsed **Results** (the clean
   expert review commit, the test result, review threads resolved) and, when needed, **Needs a decision** (threads
   left unchanged, by title). This comment is never hidden.
 

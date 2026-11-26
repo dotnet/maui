@@ -64,10 +64,10 @@ on:
           };
           // Phase labels: exactly one of these sits next to s/autopilot-running while the loop runs.
           const PHASES = {
-            reviewing: ['FBCA04', 'maui-expert-autopilot: MAUI expert review in progress'],
-            fixing: ['D93F0B', 'maui-expert-autopilot: fixing review findings or failing tests (GPT-6.2 Sol vs MAI Code 2)'],
-            testing: ['1D76DB', 'maui-expert-autopilot: relevant UI/device tests are being selected or run'],
-            'waiting-for-maintainer-review': ['0E8A16', 'maui-expert-autopilot finished: expert review clean and tests passed; waiting for maintainer review'],
+            reviewing: ['FBCA04', 'Expert Autopilot: MAUI expert review in progress'],
+            fixing: ['D93F0B', 'Expert Autopilot: fixing review findings or failing tests (GPT-6.2 Sol vs MAI Code 2)'],
+            testing: ['1D76DB', 'Expert Autopilot: relevant UI/device tests are being selected or run'],
+            'waiting-for-maintainer-review': ['0E8A16', 'Expert Autopilot finished: expert review clean and tests passed; waiting for maintainer review'],
           };
           const current = new Set(pr.labels.map(l => l.name));
           const setPhase = async phase => {
@@ -118,7 +118,7 @@ on:
             await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
               { id: context.payload.comment.node_id }).catch(e => core.warning(`Could not hide the command: ${e.message}`));
             if (command[1]) {
-              if (pr.state === 'open') await stopLoop(`## maui-expert-autopilot — Stopped\n\nStopped by @${requester}.`);
+              if (pr.state === 'open') await stopLoop(`## Expert Autopilot — Stopped\n\nStopped by @${requester}.`);
               return;
             }
           } else if (kicked) {
@@ -130,7 +130,7 @@ on:
           }
           if (pr.state !== 'open') return core.info(`#${number} is not open.`);
           if (!(await canWrite(requester))) {
-            await stopLoop(hasLabel ? '## maui-expert-autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.' : '');
+            await stopLoop(hasLabel ? '## Expert Autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.' : '');
             return;
           }
           let optedIn = OPT_IN.test(pr.body || '');
@@ -139,7 +139,7 @@ on:
             optedIn = OPT_IN.test(origin.body || '');
           }
           if (!optedIn) {
-            await stopLoop(`maui-expert-autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/review autopilot\` again.`);
+            await stopLoop(`Expert Autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/review autopilot\` again.`);
             return;
           }
 
@@ -166,7 +166,7 @@ on:
               if (states.includes('running')) stage = 'wait';
               else if (results.includes('FAILED')) { stage = 'fix'; source = 'tests'; }
               else if (states.includes('error') || results.includes('NOT QUEUED') || results.includes('CANCELED')) {
-                stage = 'stop'; note = `## maui-expert-autopilot — Stopped\n\n❌ The [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/review autopilot\` again.`;
+                stage = 'stop'; note = `## Expert Autopilot — Stopped\n\n❌ The [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/review autopilot\` again.`;
               } else {
                 stage = 'done';
                 // Thread outcomes, from maui-expert-autopilot's replies (later comments by the bot).
@@ -180,7 +180,7 @@ on:
                 let resolved = 0;
                 const undecided = [];
                 for (const t of repository.pullRequest.reviewThreads.nodes) {
-                  const reply = t.comments.nodes.slice(1).filter(c => isBot(c) && (c.body || '').includes('maui-expert-autopilot')).pop();
+                  const reply = t.comments.nodes.slice(1).filter(c => isBot(c) && /Expert Autopilot|maui-expert-autopilot/.test(c.body || '')).pop();
                   if (!reply) continue;
                   if (!t.isResolved && reply.body.includes('✅ Fixed')) {
                     // Finish any resolution that failed earlier.
@@ -204,7 +204,7 @@ on:
                 const threadsCell = resolved + undecided.length === 0 ? 'None'
                   : `${resolved} resolved` + (undecided.length ? `, ${undecided.length} need${undecided.length === 1 ? 's' : ''} a decision` : '');
                 note = [
-                  '## maui-expert-autopilot — Ready for maintainer review',
+                  '## Expert Autopilot — Ready for maintainer review',
                   '',
                   '<details><summary>Results</summary>',
                   '',
@@ -233,11 +233,11 @@ on:
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
           if (!current.has(LABEL) && stage !== 'done' && stage !== 'stop') {
-            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'maui-expert-autopilot loop is running; /review autopilot stop ends it' }).catch(() => {});
+            await github.rest.issues.createLabel({ ...repo, name: LABEL, color: '5319E7', description: 'Expert Autopilot loop is running; /review autopilot stop ends it' }).catch(() => {});
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
             current.add(LABEL);
             await comment([
-              '## maui-expert-autopilot — Started',
+              '## Expert Autopilot — Started',
               '',
               '<details><summary>Models</summary>',
               '',
@@ -356,7 +356,7 @@ jobs:
               const [, ...rest] = t.comments.nodes;
               if (t.isResolved) continue;
               const reply = rest.filter(c => c.author?.login === 'github-actions' || c.author?.login === 'github-actions[bot]').pop();
-              if (!reply || !reply.body.includes('maui-expert-autopilot') || !reply.body.includes('✅ Fixed')) continue;
+              if (!reply || !/Expert Autopilot|maui-expert-autopilot/.test(reply.body) || !reply.body.includes('✅ Fixed')) continue;
               for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
                   await github.graphql('mutation($id: ID!) { resolveReviewThread(input: { threadId: $id }) { thread { isResolved } } }', { id: t.id });
@@ -636,14 +636,14 @@ The PR head is checked out on `work_branch`.
    this round, from a trusted reviewer, call `reply_to_pull_request_review_comment` with the thread's
    **first** `comment_id`. Use exactly this shape. The only emojis allowed anywhere are ✅ and ❌.
    - Fixed:
-     `**maui-expert-autopilot** · <GPT-6.2 Sol|MAI Code 2> · round <round>`, then a blank line, then
+     `**Expert Autopilot** · <GPT-6.2 Sol|MAI Code 2> · round <round>`, then a blank line, then
      `✅ Fixed in <short sha> *<commit title>*. <what changed, one or two sentences>. <the test that proves it: fails before, passes after>.`,
      then a blank line and one muted line:
      `<sub><Model>'s fix was kept over <other model>'s <its approach> because <reason>.</sub>`
      Use the short SHA of your commit on `work_branch` (`git rev-parse --short HEAD` after committing); the push keeps it.
      For a fork PR, write `✅ Fixed in the [autopilot] follow-up PR, commit *<commit title>*.` instead.
    - Not changed:
-     `**maui-expert-autopilot** · round <round>`, then a blank line, then
+     `**Expert Autopilot** · round <round>`, then a blank line, then
      `❌ Not changed. <why: wrong, optional nit that matches the file's style, would change the author's approach, could not reproduce>.`
    Then call `resolve_pull_request_review_thread` with its `thread_id` for **every thread you fixed**, whoever
    started it. Leave threads you did not change unresolved; a maintainer decides those.
@@ -653,7 +653,7 @@ The PR head is checked out on `work_branch`.
    - `source` is `tests`: list each failing test with its result link, and either the commit that fixes it
      (with the kept model) or why it isn't caused by this PR,
    - or you published nothing: say why in one or two sentences. That ends the loop.
-   Keep it short, use the same `**maui-expert-autopilot** · round <round>` first line, and no emojis other than ✅ and ❌.
+   Keep it short, use the same `**Expert Autopilot** · round <round>` first line, and no emojis other than ✅ and ❌.
 
 Never merge, approve, retarget, or close pull requests.
 
