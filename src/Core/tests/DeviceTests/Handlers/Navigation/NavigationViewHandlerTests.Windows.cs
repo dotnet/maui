@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
@@ -10,6 +11,18 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationViewHandlerTests
 	{
+		[Fact]
+		public void NavigationItemsExposeGeneratedWinUIBindingProperties()
+		{
+			var item = new NavigationViewItemViewModel();
+			var properties = Assert.IsAssignableFrom<UI.Xaml.Data.IBindableCustomPropertyImplementation>(item);
+
+			Assert.NotNull(properties.GetProperty(nameof(NavigationViewItemViewModel.Content)));
+			Assert.NotNull(properties.GetProperty(nameof(NavigationViewItemViewModel.IsSelected)));
+			Assert.NotNull(properties.GetProperty(nameof(NavigationViewItemViewModel.MenuItemsSource)));
+			Assert.NotNull(properties.GetProperty(nameof(NavigationViewItemViewModel.BadgeVisibility)));
+		}
+
 		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler) =>
 			navigationViewHandler.PlatformView.BackStackDepth + 1;
 
