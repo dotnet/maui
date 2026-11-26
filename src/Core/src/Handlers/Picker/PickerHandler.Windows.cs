@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler is PickerHandler ph1)
 				ph1.SetUpdatingItemSource(true);
 
-			handler.PlatformView.ItemsSource = new ItemDelegateList<string>(handler.VirtualView);
+			handler.PlatformView.ItemsSource = new PickerItemDelegateList(handler.VirtualView);
 
 			if (handler is PickerHandler ph2)
 				ph2.SetUpdatingItemSource(false);
@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
@@ -186,6 +187,13 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			VirtualView.IsOpen = false;
+		}
+
+		sealed partial class PickerItemDelegateList : ItemDelegateList<string>
+		{
+			public PickerItemDelegateList(IItemDelegate<string> itemDelegate) : base(itemDelegate)
+			{
+			}
 		}
 	}
 }

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
-			_mainLevelTabs = new ObservableCollection<NavigationViewItemViewModel>();
+			_mainLevelTabs = new NavigationViewItemViewModelCollection();
 		}
 
 		protected override FrameworkElement CreatePlatformElement()
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 				else
 				{
-					navItem.MenuItemsSource ??= new ObservableCollection<NavigationViewItemViewModel>();
+					navItem.MenuItemsSource ??= new NavigationViewItemViewModelCollection();
 					navItem
 						.MenuItemsSource
 						.SyncItems(shellSectionItems, (shellContentNavItem, shellContent) =>

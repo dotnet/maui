@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// Used when the source does not implement <see cref="System.Collections.IList"/>.
 /// References the owner weakly so a retained enumerable does not extend its lifetime.
 /// </summary>
-internal class ItemTemplateContextEnumerable2 : IEnumerable
+/// <remarks>Declared partial for C#/WinRT NativeAOT projection.</remarks>
+internal partial class ItemTemplateContextEnumerable2 : IEnumerable
 {
 	readonly IEnumerable _itemsSource;
 	readonly DataTemplate _itemTemplate;
