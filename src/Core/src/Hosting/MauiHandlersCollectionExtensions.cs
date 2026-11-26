@@ -1,8 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -23,7 +24,6 @@ namespace Microsoft.Maui.Hosting
 			if (!typeof(IElement).IsAssignableFrom(viewType) || !typeof(IElementHandler).IsAssignableFrom(handlerType))
 				throw new InvalidOperationException($"Unable to add handler mapping for {viewType} and {handlerType}. Please ensure that {viewType} implements {nameof(IElement)} and {handlerType} implements {nameof(IElementHandler)}.");
 
-			handlersCollection.RegisterHandlerServiceType(viewType);
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.AddTransient(viewType, handlerType);
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Hosting
 			where TType : IElement
 			where TTypeRender : IElementHandler
 		{
-			handlersCollection.RegisterHandlerServiceType(typeof(TType));
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.AddTransient(typeof(TType), typeof(TTypeRender));
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -61,7 +60,6 @@ namespace Microsoft.Maui.Hosting
 			Func<IServiceProvider, IElementHandler> handlerImplementationFactory)
 			where TType : IElement
 		{
-			handlersCollection.RegisterHandlerServiceType(typeof(TType));
 			handlersCollection.AddTransient(typeof(TType), handlerImplementationFactory);
 			return handlersCollection;
 		}
@@ -81,7 +79,9 @@ namespace Microsoft.Maui.Hosting
 			if (!typeof(IElement).IsAssignableFrom(viewType) || !typeof(IElementHandler).IsAssignableFrom(handlerType))
 				throw new InvalidOperationException($"Unable to add handler mapping for {viewType} and {handlerType}. Please ensure that {viewType} implements {nameof(IElement)} and {handlerType} implements {nameof(IElementHandler)}.");
 
-			handlersCollection.RegisterHandlerServiceType(viewType);
+			if (HasEnabledElementHandlerDefault(handlersCollection, viewType))
+				return handlersCollection;
+
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.TryAddTransient(viewType, handlerType);
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -100,7 +100,9 @@ namespace Microsoft.Maui.Hosting
 			where TType : IView
 			where TTypeRender : IViewHandler
 		{
-			handlersCollection.RegisterHandlerServiceType(typeof(TType));
+			if (HasEnabledElementHandlerDefault(handlersCollection, typeof(TType)))
+				return handlersCollection;
+
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.TryAddTransient(typeof(TType), typeof(TTypeRender));
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -119,14 +121,15 @@ namespace Microsoft.Maui.Hosting
 			Func<IServiceProvider, IElementHandler> handlerImplementationFactory)
 			where TType : IElement
 		{
-			handlersCollection.RegisterHandlerServiceType(typeof(TType));
+			if (HasEnabledElementHandlerDefault(handlersCollection, typeof(TType)))
+				return handlersCollection;
+
 			handlersCollection.TryAddTransient(typeof(TType), handlerImplementationFactory);
 			return handlersCollection;
 		}
 
-		private static void RegisterHandlerServiceType(this IMauiHandlersCollection handlersCollection, Type virtualViewType)
-		{
-			RegisteredHandlerServiceTypeSet.GetInstance(handlersCollection).Add(virtualViewType);
-		}
+		private static bool HasEnabledElementHandlerDefault(IMauiHandlersCollection handlersCollection, Type viewType) =>
+			handlersCollection is IElementHandlerDefaultsCollection { ElementHandlerDefaultsEnabled: true }
+			&& viewType.GetCustomAttribute<ElementHandlerAttribute>(inherit: false) is not null;
 	}
 }

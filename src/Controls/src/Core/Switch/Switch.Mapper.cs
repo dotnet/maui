@@ -8,15 +8,19 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Switch
 	{
-		static Switch() => RemapForControls();
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 
-		private new static void RemapForControls()
+		internal override void RemapForControls()
 		{
-			VisualElement.RemapIfNeeded();
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 #if IOS || MACCATALYST
 			// Prepended, so an OnColor mapping that an app adds before the first Switch is created still runs
-			SwitchHandler.Mapper.PrependToMapping<Switch, ISwitchHandler>(nameof(OnColor), MapOnColor);
+			SwitchHandler.Mapper.PrependToMappingForControls<Switch, ISwitchHandler>(nameof(OnColor), MapOnColor);
 #endif
 		}
 
