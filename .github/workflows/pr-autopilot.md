@@ -60,7 +60,7 @@ on:
             reviewing: ['FBCA04', 'PR Autopilot: MAUI expert review in progress'],
             fixing: ['D93F0B', 'PR Autopilot: fixing review findings or failing tests (GPT-6.2 Sol vs MAI Code 2)'],
             testing: ['1D76DB', 'PR Autopilot: relevant UI/device tests are being selected or run'],
-            ready: ['0E8A16', 'PR Autopilot finished: expert review clean and tests passed; ready for maintainer review'],
+            'waiting-for-maintainer-review': ['0E8A16', 'PR Autopilot finished: expert review clean and tests passed; waiting for maintainer review'],
           };
           const current = new Set(pr.labels.map(l => l.name));
           const setPhase = async phase => {
@@ -213,7 +213,7 @@ on:
           }
           core.setOutput('round', String(Math.max(round, 1)));
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
-          if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'ready' : ''); stage = 'none'; }
+          if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }
           else await setPhase({ review: 'reviewing', fix: 'fixing', tests: 'testing', wait: 'testing' }[stage]);
 
           const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;

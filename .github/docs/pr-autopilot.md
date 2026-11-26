@@ -60,10 +60,10 @@ the loop moves:
 | `s/autopilot-reviewing` | The MAUI expert review is running |
 | `s/autopilot-fixing` | A fix round (GPT-6.2 Sol vs MAI Code 2) is running |
 | `s/autopilot-testing` | `/review run-tests` is selecting or running the relevant tests |
-| `s/autopilot-ready` | Done: the expert review is clean and the tests passed. Ready for maintainer review |
+| `s/autopilot-waiting-for-maintainer-review` | Done: the expert review is clean and the tests passed. Waiting for a maintainer |
 
 Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/autopilot` replaces
-`s/autopilot-ready`. Missing labels are created automatically.
+`s/autopilot-waiting-for-maintainer-review`. Missing labels are created automatically.
 
 ### Fix rounds use two models
 
