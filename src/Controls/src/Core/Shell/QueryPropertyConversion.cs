@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class QueryPropertyConversion
 	{
-		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This reflection fallback preserves QueryProperty behavior for already-compiled IQueryAttributable implementations; source-generated implementations avoid it.")]
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "This reflection fallback preserves QueryProperty behavior for already-compiled IQueryAttributable implementations; source-generated implementations avoid it.")]
 		internal static void ApplyLegacyQueryProperties(object target, IDictionary<string, object> query, IDictionary<string, object> previousQuery)
 		{
@@ -89,7 +88,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Validates that the target's runtime type has a generated query-property implementation.</summary>
 		/// <param name="target">The instance receiving query properties.</param>
 		/// <param name="implementationType">The type declaring the generated implementation.</param>
-		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Only derived runtime types without their own generated handler reach this compatibility guard.")]
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "This compatibility guard reflects over derived runtime types to preserve runtime QueryProperty lookup; generated implementations avoid reflection.")]
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Only derived runtime types without their own generated handler reach this compatibility guard.")]
 		public static void ValidateGeneratedQueryProperties(object target, Type implementationType)
