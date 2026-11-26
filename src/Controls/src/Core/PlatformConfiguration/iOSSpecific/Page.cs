@@ -462,5 +462,91 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
 			return config;
 		}
+
+		/// <summary>
+		/// Defines whether a page presented as a <see cref="Maui.Controls.BottomSheet"/> stays attached to the bottom edge in compact height
+		/// (iPhone landscape) instead of covering the screen. Maps to <c>UISheetPresentationController.prefersEdgeAttachedInCompactHeight</c>.
+		/// </summary>
+		public static readonly BindableProperty BottomSheetPrefersEdgeAttachedInCompactHeightProperty =
+			BindableProperty.Create("BottomSheetPrefersEdgeAttachedInCompactHeight", typeof(bool), typeof(Page), false);
+
+		/// <summary>
+		/// Defines whether scrolling to the edge of a scroll view in a page presented as a <see cref="Maui.Controls.BottomSheet"/> expands the sheet
+		/// to its next detent rather than scrolling. Maps to <c>UISheetPresentationController.prefersScrollingExpandsWhenScrolledToEdge</c>.
+		/// </summary>
+		public static readonly BindableProperty BottomSheetPrefersScrollingExpandsWhenScrolledToEdgeProperty =
+			BindableProperty.Create("BottomSheetPrefersScrollingExpandsWhenScrolledToEdge", typeof(bool), typeof(Page), true);
+
+		/// <summary>
+		/// Gets whether the bottom sheet stays attached to the bottom edge in compact height.
+		/// </summary>
+		/// <param name="element">The page.</param>
+		/// <returns><see langword="true"/> if the sheet stays attached to the bottom edge in compact height; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</returns>
+		public static bool GetBottomSheetPrefersEdgeAttachedInCompactHeight(BindableObject element)
+			=> (bool)element.GetValue(BottomSheetPrefersEdgeAttachedInCompactHeightProperty);
+
+		/// <summary>
+		/// Sets whether the bottom sheet stays attached to the bottom edge in compact height (iPhone landscape) instead of covering the screen.
+		/// </summary>
+		/// <param name="element">The page.</param>
+		/// <param name="value"><see langword="true"/> to keep the sheet attached to the bottom edge.</param>
+		public static void SetBottomSheetPrefersEdgeAttachedInCompactHeight(BindableObject element, bool value)
+			=> element.SetValue(BottomSheetPrefersEdgeAttachedInCompactHeightProperty, BooleanBoxes.Box(value));
+
+		/// <summary>
+		/// Gets whether the bottom sheet stays attached to the bottom edge in compact height.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if the sheet stays attached to the bottom edge in compact height; otherwise, <see langword="false"/>.</returns>
+		public static bool BottomSheetPrefersEdgeAttachedInCompactHeight(this IPlatformElementConfiguration<iOS, FormsElement> config)
+			=> GetBottomSheetPrefersEdgeAttachedInCompactHeight(config.Element);
+
+		/// <summary>
+		/// Sets whether the bottom sheet stays attached to the bottom edge in compact height (iPhone landscape) instead of covering the screen.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value"><see langword="true"/> to keep the sheet attached to the bottom edge.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetBottomSheetPrefersEdgeAttachedInCompactHeight(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetBottomSheetPrefersEdgeAttachedInCompactHeight(config.Element, value);
+			return config;
+		}
+
+		/// <summary>
+		/// Gets whether scrolling to the edge of a scroll view in the bottom sheet expands the sheet.
+		/// </summary>
+		/// <param name="element">The page.</param>
+		/// <returns><see langword="true"/> if scrolling expands the sheet; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</returns>
+		public static bool GetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(BindableObject element)
+			=> (bool)element.GetValue(BottomSheetPrefersScrollingExpandsWhenScrolledToEdgeProperty);
+
+		/// <summary>
+		/// Sets whether scrolling to the edge of a scroll view in the bottom sheet expands the sheet to its next detent rather than scrolling.
+		/// </summary>
+		/// <param name="element">The page.</param>
+		/// <param name="value"><see langword="false"/> to scroll the content instead of expanding the sheet.</param>
+		public static void SetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(BindableObject element, bool value)
+			=> element.SetValue(BottomSheetPrefersScrollingExpandsWhenScrolledToEdgeProperty, BooleanBoxes.Box(value));
+
+		/// <summary>
+		/// Gets whether scrolling to the edge of a scroll view in the bottom sheet expands the sheet.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if scrolling expands the sheet; otherwise, <see langword="false"/>.</returns>
+		public static bool BottomSheetPrefersScrollingExpandsWhenScrolledToEdge(this IPlatformElementConfiguration<iOS, FormsElement> config)
+			=> GetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(config.Element);
+
+		/// <summary>
+		/// Sets whether scrolling to the edge of a scroll view in the bottom sheet expands the sheet to its next detent rather than scrolling.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value"><see langword="false"/> to scroll the content instead of expanding the sheet.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(config.Element, value);
+			return config;
+		}
 	}
 }

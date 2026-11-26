@@ -9,18 +9,25 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ControlsModalWrapper : ModalWrapper, IUIAdaptivePresentationControllerDelegate
+	internal class ControlsModalWrapper : ModalWrapper, IUIAdaptivePresentationControllerDelegate, IUISheetPresentationControllerDelegate
 	{
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The modal handler is owned by this wrapper while presented and is released in Dispose.")]
 		IPlatformViewHandler? _modal;
+		BottomSheetPresentation? _bottomSheet;
 		bool _isDisposed;
+		Rect _arrangedBounds;
 		Page Page => ((Page?)_modal?.VirtualView) ?? throw new InvalidOperationException("Page cannot be null here");
 
 		internal ControlsModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 
-			if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration)
+			if (_modal.VirtualView is Page sheetPage && BottomSheet.GetIsEnabled(sheetPage))
+			{
+				// Configured before anything reads a presentation controller, which UIKit creates for the style set at that time.
+				_bottomSheet = new BottomSheetPresentation(this, sheetPage);
+			}
+			else if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration)
 			{
 				if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 				{
@@ -82,26 +89,15 @@ namespace Microsoft.Maui.Controls.Platform
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public void DidDismiss(UIPresentationController _)
 		{
-			var window = (_modal?.VirtualView as Page)?.Window;
-			if (window?.Page is Shell shell)
-			{
-				// The modal page might have a NavigationPage so it's not enough to just send
-				// GotoAsync(..) we need build up what the uri will be once the last modal page is removed
-				// and then submit that to shell
-				var modalStack = new List<Page>(shell.CurrentItem.CurrentItem.Navigation.ModalStack);
-				if (modalStack.Count > 0)
-					modalStack.RemoveAt(modalStack.Count - 1);
+			if (_modal?.VirtualView is Page page && page.Window is Window window)
+				window.ModalNavigationManager.OnPlatformModalDismissedAsync(page).FireAndForget();
+		}
 
-				var result = ShellNavigationManager.GetNavigationParameters(
-					shell.CurrentItem,
-					shell.CurrentItem.CurrentItem,
-					shell.CurrentItem.CurrentItem.CurrentItem,
-					shell.CurrentItem.CurrentItem.Stack, modalStack);
-
-				shell.NavigationManager.GoToAsync(result).FireAndForget();
-			}
-			else
-				Page.Navigation.PopModalAsync(false).FireAndForget();
+		[Export("sheetPresentationControllerDidChangeSelectedDetentIdentifier:")]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		public void DidChangeSelectedDetentIdentifier(UISheetPresentationController sheetPresentationController)
+		{
+			_bottomSheet?.OnPlatformSelectedDetentChanged(sheetPresentationController);
 		}
 
 		public override void DismissViewController(bool animated, Action? completionHandler)
@@ -159,8 +155,17 @@ namespace Microsoft.Maui.Controls.Platform
 			// when VirtualView may be disposed during app state transitions
 			if (_modal?.VirtualView is Page)
 			{
-				_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+				var bounds = new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height);
+
+				// While a sheet animates, arranging the page again at the same size makes UIKit lay the sheet out again, endlessly.
+				if (_bottomSheet is null || bounds != _arrangedBounds)
+				{
+					_arrangedBounds = bounds;
+					_modal?.PlatformArrange(bounds);
+				}
 			}
+
+			_bottomSheet?.OnLayout();
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -180,6 +185,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (disposing)
 			{
+				_bottomSheet?.Dispose();
+				_bottomSheet = null;
+
 				if (_modal?.VirtualView is Page modalPage)
 				{
 					modalPage.PropertyChanged -= OnModalPagePropertyChanged;
@@ -223,6 +231,15 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				View!.BackgroundColor = UIColor.Clear;
+			}
+
+			// Since iOS 26 the sheet draws its own adaptive material, which an opaque page background would hide.
+			if (_bottomSheet is not null &&
+				(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+				Brush.IsNullOrEmpty(Page.Background) && Page.BackgroundColor is null &&
+				_modal?.ViewController?.View is UIView pageView)
+			{
+				pageView.BackgroundColor = UIColor.Clear;
 			}
 		}
 	}

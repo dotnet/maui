@@ -372,3 +372,64 @@ static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.BottomSheet
+Microsoft.Maui.Controls.BottomSheetDetent
+Microsoft.Maui.Controls.BottomSheetDetent.Equals(Microsoft.Maui.Controls.BottomSheetDetent? other) -> bool
+Microsoft.Maui.Controls.BottomSheetDetent.Kind.get -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetent.Value.get -> double
+Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter
+Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter.BottomSheetDetentCollectionTypeConverter() -> void
+Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentKind.FitContent = 2 -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentKind.Fraction = 3 -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentKind.Height = 4 -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentKind.Large = 1 -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentKind.Medium = 0 -> Microsoft.Maui.Controls.BottomSheetDetentKind
+Microsoft.Maui.Controls.BottomSheetDetentTypeConverter
+Microsoft.Maui.Controls.BottomSheetDetentTypeConverter.BottomSheetDetentTypeConverter() -> void
+override Microsoft.Maui.Controls.BottomSheetDetent.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.BottomSheetDetent.GetHashCode() -> int
+override Microsoft.Maui.Controls.BottomSheetDetent.ToString() -> string!
+override Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.BottomSheetDetentCollectionTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.BottomSheetDetentTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.BottomSheetDetentTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.BottomSheetDetentTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.BottomSheetDetentTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+static Microsoft.Maui.Controls.BottomSheet.GetCornerRadius(Microsoft.Maui.Controls.BindableObject! bindable) -> double
+static Microsoft.Maui.Controls.BottomSheet.GetDetents(Microsoft.Maui.Controls.BindableObject! bindable) -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.BottomSheetDetent!>!
+static Microsoft.Maui.Controls.BottomSheet.GetHasDragHandle(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
+static Microsoft.Maui.Controls.BottomSheet.GetIsDismissible(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
+static Microsoft.Maui.Controls.BottomSheet.GetIsEnabled(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
+static Microsoft.Maui.Controls.BottomSheet.GetSelectedDetent(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.BottomSheetDetent?
+static Microsoft.Maui.Controls.BottomSheet.SetCornerRadius(Microsoft.Maui.Controls.BindableObject! bindable, double value) -> void
+static Microsoft.Maui.Controls.BottomSheet.SetDetents(Microsoft.Maui.Controls.BindableObject! bindable, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.BottomSheetDetent!>! value) -> void
+static Microsoft.Maui.Controls.BottomSheet.SetHasDragHandle(Microsoft.Maui.Controls.BindableObject! bindable, bool value) -> void
+static Microsoft.Maui.Controls.BottomSheet.SetIsDismissible(Microsoft.Maui.Controls.BindableObject! bindable, bool value) -> void
+static Microsoft.Maui.Controls.BottomSheet.SetIsEnabled(Microsoft.Maui.Controls.BindableObject! bindable, bool value) -> void
+static Microsoft.Maui.Controls.BottomSheet.SetSelectedDetent(Microsoft.Maui.Controls.BindableObject! bindable, Microsoft.Maui.Controls.BottomSheetDetent? value) -> void
+static Microsoft.Maui.Controls.BottomSheetDetent.FitContent.get -> Microsoft.Maui.Controls.BottomSheetDetent!
+static Microsoft.Maui.Controls.BottomSheetDetent.Fraction(double fraction) -> Microsoft.Maui.Controls.BottomSheetDetent!
+static Microsoft.Maui.Controls.BottomSheetDetent.Height(double height) -> Microsoft.Maui.Controls.BottomSheetDetent!
+static Microsoft.Maui.Controls.BottomSheetDetent.Large.get -> Microsoft.Maui.Controls.BottomSheetDetent!
+static Microsoft.Maui.Controls.BottomSheetDetent.Medium.get -> Microsoft.Maui.Controls.BottomSheetDetent!
+static Microsoft.Maui.Controls.BottomSheetDetent.operator !=(Microsoft.Maui.Controls.BottomSheetDetent? left, Microsoft.Maui.Controls.BottomSheetDetent? right) -> bool
+static Microsoft.Maui.Controls.BottomSheetDetent.operator ==(Microsoft.Maui.Controls.BottomSheetDetent? left, Microsoft.Maui.Controls.BottomSheetDetent? right) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.BottomSheetPrefersEdgeAttachedInCompactHeight(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.BottomSheetPrefersScrollingExpandsWhenScrolledToEdge(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetBottomSheetPrefersEdgeAttachedInCompactHeight(Microsoft.Maui.Controls.BindableObject element) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(Microsoft.Maui.Controls.BindableObject element) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetBottomSheetPrefersEdgeAttachedInCompactHeight(Microsoft.Maui.Controls.BindableObject element, bool value) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetBottomSheetPrefersEdgeAttachedInCompactHeight(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, bool value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(Microsoft.Maui.Controls.BindableObject element, bool value) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, bool value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+static readonly Microsoft.Maui.Controls.BottomSheet.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.BottomSheet.DetentsProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.BottomSheet.HasDragHandleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.BottomSheet.IsDismissibleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.BottomSheet.IsEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.BottomSheet.SelectedDetentProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.BottomSheetPrefersEdgeAttachedInCompactHeightProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.BottomSheetPrefersScrollingExpandsWhenScrolledToEdgeProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -590,6 +590,179 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		public class BottomSheetTestPage : ContentPage
+		{
+			public BottomSheetTestPage()
+			{
+				BottomSheet.SetIsEnabled(this, true);
+			}
+		}
+
+		[Fact]
+		public async Task BottomSheetRouteIsPresentedModally()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+
+			await shell.GoToAsync("BottomSheetTestPage");
+
+			var navStack = shell.Items[0].Items[0].Navigation;
+			Assert.IsType<BottomSheetTestPage>(Assert.Single(navStack.ModalStack));
+			Assert.Single(navStack.NavigationStack);
+			Assert.Equal("//NewRoute/Section/Content/BottomSheetTestPage", shell.CurrentState.Location.ToString());
+
+			await shell.GoToAsync("..");
+
+			Assert.Empty(navStack.ModalStack);
+			Assert.Equal("//NewRoute/Section/Content", shell.CurrentState.Location.ToString());
+		}
+
+		[Fact]
+		public async Task BottomSheetRouteIsNotPushedIntoModalNavigationPage()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+
+			await shell.GoToAsync("ModalNavigationTestPage/BottomSheetTestPage/ModalTestPage");
+
+			var navStack = shell.Items[0].Items[0].Navigation;
+			Assert.Equal(3, navStack.ModalStack.Count);
+			Assert.Single(navStack.ModalStack[0].Navigation.NavigationStack);
+			Assert.IsType<BottomSheetTestPage>(navStack.ModalStack[1]);
+
+			// A modal route after a sheet is presented above the sheet, not in the navigation stack hidden under it.
+			Assert.IsType<ModalTestPage>(navStack.ModalStack[2]);
+		}
+
+		[Fact]
+		public async Task PlatformDismissalOfShellModalUpdatesShellLocation()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+			var window = new TestWindow(shell);
+
+			await shell.GoToAsync("BottomSheetTestPage");
+			var sheet = Assert.Single(window.Navigation.ModalStack);
+
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(sheet);
+
+			Assert.Empty(window.Navigation.ModalStack);
+			Assert.Equal("//NewRoute/Section/Content", shell.CurrentState.Location.ToString());
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ModalPushedDuringDeferredPlatformDismissalIsKept(bool cancelNavigation)
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+			var window = new TestWindow(shell);
+
+			await shell.GoToAsync("BottomSheetTestPage");
+			var sheet = Assert.Single(window.Navigation.ModalStack);
+
+			ShellNavigatingEventArgs navigating = null;
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, e) =>
+			{
+				if (deferral is null)
+				{
+					navigating = e;
+					deferral = e.GetDeferral();
+				}
+			};
+
+			var dismissal = window.ModalNavigationManager.OnPlatformModalDismissedAsync(sheet);
+			Assert.NotNull(deferral);
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			if (cancelNavigation)
+				navigating.Cancel();
+			deferral.Complete();
+			await dismissal;
+
+			// The sheet can't come back underneath the newer modal, which stays.
+			Assert.Same(modal, Assert.Single(window.Navigation.ModalStack));
+			Assert.Null(sheet.Parent);
+		}
+
+		[Fact]
+		public async Task DeferredPlatformDismissalOfAModalAlreadyPoppedDoesNothing()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+			var window = new TestWindow(shell);
+
+			await shell.GoToAsync("BottomSheetTestPage");
+			var sheet = Assert.Single(window.Navigation.ModalStack);
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, e) => deferral ??= e.GetDeferral();
+
+			var dismissal = window.ModalNavigationManager.OnPlatformModalDismissedAsync(sheet);
+			Assert.NotNull(deferral);
+
+			await window.ModalNavigationManager.PopModalAsync(false);
+			var details = new ContentPage();
+			await shell.Navigation.PushAsync(details, false);
+
+			deferral.Complete();
+			Assert.Same(dismissal, await Task.WhenAny(dismissal, Task.Delay(5000)));
+			await dismissal;
+
+			// The route captured for the dismissal is stale: replaying it would pop the details page.
+			Assert.Empty(window.Navigation.ModalStack);
+			Assert.Same(details, shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1]);
+		}
+
+		[Fact]
+		public async Task CanceledPlatformDismissalKeepsTheModalNavigationStack()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+			var window = new TestWindow(shell);
+
+			var sheet = new NavigationPage(new ContentPage());
+			BottomSheet.SetIsEnabled(sheet, true);
+			await shell.Navigation.PushModalAsync(sheet);
+			await sheet.PushAsync(new ContentPage());
+			int popping = 0;
+			window.ModalPopping += (_, e) => { popping++; e.Cancel = true; };
+
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(sheet);
+
+			Assert.Equal(1, popping);
+			Assert.Same(sheet, Assert.Single(window.Navigation.ModalStack));
+			Assert.Equal(2, sheet.Navigation.NavigationStack.Count);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CanceledPlatformDismissalOfShellModalPresentsItAgain(bool withPushedPage)
+		{
+			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+			var window = new TestWindow(shell);
+
+			await shell.GoToAsync(withPushedPage ? "ContentPage/BottomSheetTestPage" : "BottomSheetTestPage");
+			var sheet = Assert.Single(window.Navigation.ModalStack);
+			var location = shell.CurrentState.Location.ToString();
+			window.ModalPopping += (_, e) => e.Cancel = true;
+
+			// Shell used to retry the canceled pop forever.
+			var dismissal = window.ModalNavigationManager.OnPlatformModalDismissedAsync(sheet);
+			Assert.Same(dismissal, await Task.WhenAny(dismissal, Task.Delay(5000)));
+			await dismissal;
+
+			Assert.Same(sheet, Assert.Single(window.Navigation.ModalStack));
+			Assert.Equal(location, shell.CurrentState.Location.ToString());
+		}
+
 		public ShellModalTests()
 		{
 
@@ -599,6 +772,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("ContentPage", typeof(ContentPage));
 			Routing.RegisterRoute("LifeCyclePage", typeof(ShellLifeCycleTests.LifeCyclePage));
 			Routing.RegisterRoute("ModalNavigationTestPage", typeof(ModalNavigationTestPage));
+			Routing.RegisterRoute("BottomSheetTestPage", typeof(BottomSheetTestPage));
 		}
 	}
 }

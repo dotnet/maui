@@ -615,6 +615,161 @@ namespace Microsoft.Maui.Controls.Platform
 		internal Animations.PageTransition? GetDeferredTransition(Page page)
 			=> _modalPages.TryGetValue(page, out var request) ? request.Transition : null;
 
+		/// <summary>
+		/// Brings the modal stacks in line with a modal the user dismissed on the platform, for example by swiping a sheet down.
+		/// </summary>
+		/// <remarks>
+		/// The modal is popped like any other. If navigation code cancels the pop, the modal is presented again so that what is
+		/// on screen keeps matching the modal stack. A notification for a page that is no longer a modal is ignored.
+		/// </remarks>
+		internal async Task OnPlatformModalDismissedAsync(Page modal)
+		{
+			if (!_modalPages.TryGetValue(modal, out var request))
+			{
+#if ANDROID
+				// Navigation removed the modal while the user was dismissing it: only its platform views are left to release.
+				if (_platformModalPages.Remove(modal))
+				{
+					OnPlatformModalRemoved(modal);
+					_pendingPopAnimations.Remove(modal);
+					_pendingPopTransitions.Remove(modal);
+				}
+				ReleasePlatformModal(modal);
+#endif
+				return;
+			}
+
+			var stack = ModalStack;
+			bool isTop = stack[stack.Count - 1] == modal;
+
+#if ANDROID
+			// A modal is only presented over a loaded platform page, which the dismissed one no longer is, so it leaves the
+			// platform stack before it is popped.
+			bool removed = _platformModalPages.Remove(modal);
+			if (removed)
+				OnPlatformModalRemoved(modal);
+
+			if (!isTop)
+			{
+				// Another modal was pushed while this one was being dismissed: it leaves the stack without disturbing the one on top.
+				RemoveCoveredModal(modal);
+				if (removed)
+					ReleasePlatformModal(modal);
+
+				if (_window.Page is IShellController shellController)
+					shellController.UpdateCurrentState(ShellNavigationSource.Pop);
+
+				return;
+			}
+#else
+			if (!isTop)
+				return;
+#endif
+
+			// Asked before anything is popped: Shell would otherwise unwind a NavigationPage inside the modal first.
+			bool canceled = _window.OnModalPopping(modal);
+			if (canceled)
+				_window.OnPopCanceled();
+			else
+				_approvedModalPop = modal;
+
+			try
+			{
+				if (!canceled && _window.Page is Shell shell && shell.CurrentItem?.CurrentItem is ShellSection section)
+				{
+					// The modal might host a NavigationPage, so popping isn't enough: build the location Shell has once the
+					// modal is removed and navigate there.
+					var modalStack = new List<Page>(section.Navigation.ModalStack);
+					if (modalStack.Count > 0)
+						modalStack.RemoveAt(modalStack.Count - 1);
+
+					var result = ShellNavigationManager.GetNavigationParameters(
+						shell.CurrentItem,
+						section,
+						section.CurrentItem,
+						section.Stack,
+						modalStack);
+
+					result.DismissalStillApplies = () => IsTopModalRequest(request);
+					await shell.NavigationManager.GoToAsync(result);
+				}
+				else if (!canceled)
+				{
+					// A push in progress finishes first; the pop must not take the modal it puts on top.
+					await _waitForModalToFinishTask;
+					if (IsTopModalRequest(request))
+						await PopModalAsync(false);
+				}
+			}
+			finally
+			{
+				_approvedModalPop = null;
+
+#if ANDROID
+				if (removed)
+					ReleasePlatformModal(modal);
+#endif
+
+				// Only the presentation the user dismissed: the same page pushed again since is another presentation.
+				if (_modalPages.Contains(request))
+				{
+					// The modal wasn't popped, but the presentation the user dismissed is gone.
+#if !ANDROID
+					// The platform stack still lists it.
+					if (_platformModalPages.Remove(modal))
+					{
+#if IOS || MACCATALYST
+						// The dismissed presentation still holds the page's view controller.
+						Handlers.Compatibility.DisposeHelpers.DisposeModalAndChildHandlers(modal);
+#endif
+					}
+#endif
+
+					if (_platformModalPages.Contains(modal))
+					{
+						// It left the platform stack when it was dismissed, so this is a new presentation that reconciliation
+						// made meanwhile (the app was resumed, for example): the modal is already back on screen.
+					}
+					else if (IsTopModalRequest(request))
+					{
+						// The pop was canceled, or failed: present it again.
+						SyncModalStackWhenPlatformIsReady();
+					}
+					else
+					{
+						// A modal pushed meanwhile covers it, and it can't be presented again underneath: the dismissal stands.
+						_pendingPopAnimations.Remove(modal);
+						_pendingPopTransitions.Remove(modal);
+						RemoveCoveredModal(modal);
+						if (_window.Page is IShellController shellController)
+							shellController.UpdateCurrentState(ShellNavigationSource.Pop);
+					}
+				}
+			}
+		}
+
+		Page? _approvedModalPop;
+
+		bool IsTopModalRequest(NavigationStepRequest request) =>
+			_modalPages.Count > 0 && _modalPages[_modalPages.Count - 1] == request;
+
+		// Removes a modal another modal covers, which can't be popped, from the modal stack.
+		void RemoveCoveredModal(Page modal)
+		{
+			_modalPages.Remove(modal);
+			modal.Parent?.RemoveLogicalChild(modal);
+			_window.OnModalPopped(modal);
+
+			if (FireLifeCycleEvents)
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
+		}
+
+		/// <summary>Updates the platform bookkeeping for a modal the user dismissed on the platform, before it is popped.</summary>
+		partial void OnPlatformModalRemoved(Page modal);
+
+		/// <summary>Releases the platform views of a modal the user dismissed on the platform, once it has been popped.</summary>
+		partial void ReleasePlatformModal(Page modal);
+
 		Task _waitForModalToFinishTask = Task.CompletedTask;
 
 		public async Task<Page?> PopModalAsync(bool animated)
@@ -631,7 +786,11 @@ namespace Microsoft.Maui.Controls.Platform
 			Animations.PageTransitionResolver.ModalPopTransition = null;
 			var explicitToken = explicitTransition is null ? null : Animations.PageTransitionResolver.SetPending(modal, Animations.NavigationTransitionKind.PopModal, explicitTransition);
 
-			if (_window.OnModalPopping(modal))
+			// A modal the user dismissed on the platform was already allowed to pop.
+			bool approved = ReferenceEquals(_approvedModalPop, modal);
+			_approvedModalPop = null;
+
+			if (!approved && _window.OnModalPopping(modal))
 			{
 				if (explicitToken is not null)
 					Animations.PageTransitionResolver.ClearPending(modal, explicitToken);
@@ -833,8 +992,13 @@ namespace Microsoft.Maui.Controls.Platform
 				// Nothing is presented any more, so there are no deferred dismissals left to describe.
 				_pendingPopAnimations.Clear();
 				_pendingPopTransitions.Clear();
+
+				OnPlatformModalPagesCleared();
 			}
 		}
+
+		/// <summary>Releases the platform state of every presented modal once the platform modal stack is cleared.</summary>
+		partial void OnPlatformModalPagesCleared();
 
 		// Windows and Android have basically the same requirement that
 		// we need to wait for the current page to finish loading before

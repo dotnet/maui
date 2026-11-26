@@ -24,7 +24,49 @@ namespace Microsoft.Maui.Controls.Platform
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
-		readonly Stack<string> _modals = [];
+		// Fragment tags of the presented modals, bottom to top.
+		readonly List<string> _modals = [];
+
+		// Sheets by fragment tag: once the user dismissed one, the fragment manager no longer finds it, but its page still needs releasing.
+		readonly Dictionary<string, BottomSheetModalFragment> _sheetFragments = [];
+		readonly Dictionary<Page, string> _sheetTags = [];
+
+		// Sheets the user dismissed, kept until the modal stack has popped them.
+		readonly Dictionary<Page, BottomSheetModalFragment> _dismissedSheets = [];
+
+		partial void OnPlatformModalRemoved(Page modal)
+		{
+			if (!_sheetTags.Remove(modal, out var dialogFragmentId))
+				return;
+
+			_modals.Remove(dialogFragmentId);
+			if (_sheetFragments.Remove(dialogFragmentId, out var sheetFragment))
+				_dismissedSheets[modal] = sheetFragment;
+		}
+
+		partial void ReleasePlatformModal(Page modal)
+		{
+			if (_dismissedSheets.Remove(modal, out var sheetFragment))
+				sheetFragment.ReleasePage();
+		}
+
+		partial void OnPlatformModalPagesCleared()
+		{
+			foreach (var dialogFragmentId in _sheetFragments.Keys)
+				_modals.Remove(dialogFragmentId);
+
+			// The sheets belong to the platform window being torn down: a new presentation creates new fragments, so the old
+			// ones let go of their pages and are forgotten.
+			foreach (var sheetFragment in _sheetFragments.Values)
+				sheetFragment.ReleasePage();
+
+			foreach (var sheetFragment in _dismissedSheets.Values)
+				sheetFragment.ReleasePage();
+
+			_sheetFragments.Clear();
+			_sheetTags.Clear();
+			_dismissedSheets.Clear();
+		}
 
 		partial void InitializePlatform()
 		{
@@ -45,13 +87,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (CurrentPage is not null &&
 				_window.Page != CurrentPage)
 			{
+				// Clearing the platform modals forgets the sheets, which are dismissed with the other modals below.
+				var dialogFragmentIds = _modals.ToArray();
 				ClearModalPages(xplat: true, platform: true);
 
 				var fragmentManager = WindowMauiContext.GetFragmentManager();
 
-				foreach (var dialogFragmentId in _modals)
+				foreach (var dialogFragmentId in dialogFragmentIds)
 				{
-					var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
+					var dialogFragment = (DialogFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
 					dialogFragment?.Dismiss();
 				}
 				_modals.Clear();
@@ -99,8 +143,23 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 
-			var dialogFragmentId = _modals.Pop();
-			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
+			var dialogFragmentId = _modals[_modals.Count - 1];
+			_modals.RemoveAt(_modals.Count - 1);
+			_sheetTags.Remove(modal);
+			var fragment = fragmentManager.FindFragmentByTag(dialogFragmentId);
+
+			if (_sheetFragments.Remove(dialogFragmentId, out var sheetFragment))
+			{
+				// A sheet keeps Material's own dismissal: only suppressing the animation applies to it.
+				var presenterPage = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
+				if (Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PopModal, modal, presenterPage, animated).IsSuppressed)
+					animated = false;
+
+				await sheetFragment.DismissAsync(animated);
+				return modal;
+			}
+
+			var dialogFragment = fragment as ModalFragment;
 
 			// If for the dialog is null what we want to do?
 			if (dialogFragment is null)
@@ -204,6 +263,20 @@ namespace Microsoft.Maui.Controls.Platform
 			// Page transitions: the modal's own presentation, or a per-navigation one.
 			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
 			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PushModal, presenter, modal, animated);
+
+			if (BottomSheet.GetIsEnabled(modal))
+			{
+				// A sheet keeps Material's own presentation: only suppressing the animation applies to it.
+				var sheetFragment = new BottomSheetModalFragment(WindowMauiContext, modal, animated && !resolved.IsSuppressed);
+				var sheetFragmentId = AView.GenerateViewId().ToString();
+				_modals.Add(sheetFragmentId);
+				_sheetFragments[sheetFragmentId] = sheetFragment;
+				_sheetTags[modal] = sheetFragmentId;
+				sheetFragment.Show(WindowMauiContext.GetFragmentManager(), sheetFragmentId);
+				await sheetFragment.PresentationTask;
+				return;
+			}
+
 			AAnimation? enterAnimation = null;
 			if (resolved.IsSuppressed)
 			{
@@ -224,7 +297,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			var dialogFragmentId = AView.GenerateViewId().ToString();
-			_modals.Push(dialogFragmentId);
+			_modals.Add(dialogFragmentId);
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
 			if (animated)
@@ -550,60 +623,20 @@ namespace Microsoft.Maui.Controls.Platform
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
 				}
 
-				public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
-				{
-					var handled = false;
-					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
-					{
-						handled = del(this, keyCode, e) || handled;
-					});
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent e) =>
+					ModalDialogEvents.OnKeyDown(this, keyCode, e) || base.OnKeyDown(keyCode, e);
 
-					return handled || base.OnKeyDown(keyCode, e);
-				}
+				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent e) =>
+					ModalDialogEvents.OnKeyLongPress(this, keyCode, e) || base.OnKeyLongPress(keyCode, e);
 
-				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent e)
-				{
-					var handled = false;
-					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
-					{
-						handled = del(this, keyCode, e) || handled;
-					});
+				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent e) =>
+					ModalDialogEvents.OnKeyMultiple(this, keyCode, repeatCount, e) || base.OnKeyMultiple(keyCode, repeatCount, e);
 
-					return handled || base.OnKeyLongPress(keyCode, e);
-				}
+				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent e) =>
+					ModalDialogEvents.OnKeyShortcut(this, keyCode, e) || base.OnKeyShortcut(keyCode, e);
 
-				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent e)
-				{
-					var handled = false;
-					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
-					{
-						handled = del(this, keyCode, repeatCount, e) || handled;
-					});
-
-					return handled || base.OnKeyMultiple(keyCode, repeatCount, e);
-				}
-
-				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent e)
-				{
-					var handled = false;
-					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyShortcut>(del =>
-					{
-						handled = del(this, keyCode, e) || handled;
-					});
-
-					return handled || base.OnKeyShortcut(keyCode, e);
-				}
-
-				public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
-				{
-					var handled = false;
-					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
-					{
-						handled = del(this, keyCode, e) || handled;
-					});
-
-					return handled || base.OnKeyUp(keyCode, e);
-				}
+				public override bool OnKeyUp(Keycode keyCode, KeyEvent e) =>
+					ModalDialogEvents.OnKeyUp(this, keyCode, e) || base.OnKeyUp(keyCode, e);
 
 				public override bool DispatchTouchEvent(MotionEvent? e)
 				{
@@ -613,15 +646,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					bool handled = base.DispatchTouchEvent(e);
-
-					// Modal dialogs have their own Android Window, so touch events don't
-					// reach the Activity's DispatchTouchEvent. Forward them to the MAUI
-					// Window so that HideSoftInputOnTappedChangedManager can detect taps
-					// and dismiss the keyboard when HideSoftInputOnTapped is enabled.
-					bool implHandled =
-						(Context.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
-
-					return handled || implHandled;
+					return ModalDialogEvents.DispatchTouchEvent(this, e) || handled;
 				}
 
 				sealed class CallBack : OnBackPressedCallback

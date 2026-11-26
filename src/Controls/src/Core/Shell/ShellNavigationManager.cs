@@ -125,6 +125,16 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			if (shellNavigationParameters.DismissalStillApplies is { } dismissalStillApplies && !dismissalStillApplies())
+			{
+				if (registeredPagePushingRoute)
+				{
+					Routing.UnregisterImplicitPageRoute(shellNavigationParameters.PagePushing, pagePushingRoute, previousPagePushingRoute);
+				}
+
+				return;
+			}
+
 			Routing.RegisterImplicitPageRoutes(_shell);
 
 			// The navigation's own page transition, installed now that it runs (after any deferral) and removed when

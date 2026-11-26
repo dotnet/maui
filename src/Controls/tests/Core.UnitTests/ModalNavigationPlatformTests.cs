@@ -334,6 +334,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task PlatformDismissalPopsTheDismissedModal()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(modal);
+
+			Assert.Empty(window.Navigation.ModalStack);
+			Assert.Empty(Host(window).PlatformModalStack);
+
+			// Popping an already dismissed modal is idempotent for a platform, so it is popped like any other.
+			Assert.Same(modal, Assert.Single(platform.Popped).Page);
+		}
+
+		[Fact]
+		public async Task PlatformDismissalOfAModalThatIsNotOnTopIsIgnored()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var first = new ContentPage();
+			var second = new ContentPage();
+			await window.Navigation.PushModalAsync(first);
+			await window.Navigation.PushModalAsync(second);
+
+			// A late notification for a modal that is no longer on top must not pop the one that is.
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(first);
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(new ContentPage());
+
+			Assert.Equal(new Page[] { first, second }, window.Navigation.ModalStack);
+			Assert.Empty(platform.Popped);
+		}
+
+		[Fact]
+		public async Task CanceledPlatformDismissalPresentsTheModalAgain()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+			window.ModalPopping += (_, e) => e.Cancel = true;
+
+			// The user already dismissed it natively: canceling the pop must put it back on screen.
+			await window.ModalNavigationManager.OnPlatformModalDismissedAsync(modal);
+
+			Assert.Same(modal, Assert.Single(window.Navigation.ModalStack));
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+			Assert.Equal(2, platform.Pushed.Count);
+			Assert.Empty(platform.Popped);
+		}
+
+		[Fact]
 		public async Task FactoryReturningNullFallsBackToTheBuiltInPlatform()
 		{
 			var factory = new StubModalNavigationPlatformFactory(_ => null);

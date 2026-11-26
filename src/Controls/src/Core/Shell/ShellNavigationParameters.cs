@@ -23,5 +23,9 @@ namespace Microsoft.Maui.Controls
 		// A per-navigation page transition (PageTransitions.GoToAsync). It applies only while this navigation runs,
 		// so a navigation suspended in Navigating doesn't lend it to another.
 		public Animations.PageTransition PageTransition { get; set; }
+
+		// Set for the navigation that removes a modal the user dismissed on the platform. Its route was built for the stack
+		// at that time, so it only applies while that modal is still on top: once it is gone, or covered, the route is stale.
+		public Func<bool> DismissalStillApplies { get; set; }
 	}
 }

@@ -441,6 +441,7 @@ namespace Microsoft.Maui.Controls
 						// We use this inside ModalNavigationManager to indicate that we're going to be popping multiple
 						// modal pages so we don't want it to fire any appearing events
 						IsPoppingModalStack = true;
+						bool modalPopCanceled = false;
 
 						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)
 						{
@@ -461,7 +462,15 @@ namespace Microsoft.Maui.Controls
 
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
 							{
+								int modalCount = Navigation.ModalStack.Count;
 								await PopModalAsync(isAnimated);
+
+								// A ModalPopping handler canceled the pop: retrying would never end, so the navigation stops here.
+								if (Navigation.ModalStack.Count == modalCount)
+								{
+									modalPopCanceled = true;
+									break;
+								}
 							}
 							else if (Navigation.ModalStack.Count > 0)
 							{
@@ -469,6 +478,12 @@ namespace Microsoft.Maui.Controls
 							}
 
 							navStack = ShellNavigationManager.BuildFlattenedNavigationStack(_navStack, Navigation?.ModalStack);
+						}
+
+						if (modalPopCanceled)
+						{
+							IsPoppingModalStack = false;
+							break;
 						}
 
 						while (_navStack.Count > popCount)
@@ -605,6 +620,10 @@ namespace Microsoft.Maui.Controls
 					activeModalNavigationPage = np;
 					break;
 				}
+
+				// Pages pushed now must not go into a navigation stack hidden under a bottom sheet.
+				if (BottomSheet.GetIsEnabled(Navigation.ModalStack[i]))
+					break;
 			}
 
 			for (int i = 0; i < modalPageStacks.Count; i++)
@@ -618,6 +637,12 @@ namespace Microsoft.Maui.Controls
 				{
 					await PushModalAsync(modalPage, isAnimated);
 					activeModalNavigationPage = np;
+				}
+				else if (BottomSheet.GetIsEnabled(modalPage))
+				{
+					// A bottom sheet is always its own modal presentation.
+					await PushModalAsync(modalPage, isAnimated);
+					activeModalNavigationPage = null;
 				}
 				else
 				{
@@ -665,7 +690,8 @@ namespace Microsoft.Maui.Controls
 
 		bool IsModal(BindableObject bo)
 		{
-			return (Shell.GetPresentationMode(bo) & PresentationMode.Modal) == PresentationMode.Modal;
+			return (Shell.GetPresentationMode(bo) & PresentationMode.Modal) == PresentationMode.Modal
+				|| BottomSheet.GetIsEnabled(bo);
 		}
 
 		bool IsNavigationAnimated(BindableObject bo)

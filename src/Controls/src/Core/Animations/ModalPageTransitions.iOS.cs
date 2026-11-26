@@ -31,6 +31,12 @@ namespace Microsoft.Maui.Controls.Animations
 				return false;
 			}
 
+			// A custom transition would replace the sheet's presentation controller: sheets keep UIKit's own transition.
+			if (BottomSheet.GetIsEnabled(modal))
+			{
+				return animated;
+			}
+
 			// A custom transition shows the presenter underneath (a fade or a scale has something to show),
 			// unless the page chose its own presentation style.
 			if (!modal.IsSet(iOSPage.ModalPresentationStyleProperty))
@@ -53,6 +59,11 @@ namespace Microsoft.Maui.Controls.Animations
 			if (resolved.IsSuppressed)
 			{
 				return false;
+			}
+
+			if (BottomSheet.GetIsEnabled(modal))
+			{
+				return animated;
 			}
 
 			if (s_delegates.TryGetValue(wrapper, out var transitionDelegate))

@@ -557,6 +557,10 @@ namespace Microsoft.Maui.Controls
 			if (window == null || this == window.Page)
 				return false;
 
+			// A sheet the user may not dismiss consumes the back button, as it does the dismissal gestures.
+			if (BottomSheet.IsPresentedAsBottomSheet(this) && !BottomSheet.GetIsDismissible(this))
+				return true;
+
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
 			window.PopCanceled += handler;
@@ -925,7 +929,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 #endif
-				
+
 				if (!this.IsLoaded)
 				{
 					this.DisconnectHandlers();
