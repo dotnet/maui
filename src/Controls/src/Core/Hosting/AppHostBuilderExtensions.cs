@@ -129,8 +129,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Application>(static _ => new ApplicationHandler());
 		handlersCollection.AddHandler<BoxView>(static _ => new BoxViewHandler());
 		handlersCollection.AddHandler<Button>(static _ => new ButtonHandler());
-		handlersCollection.AddHandler<IContentButton>(static _ => new ContentButtonHandler());
-		handlersCollection.AddHandler<ContentButton>(static _ => new ContentButtonHandler());
 		handlersCollection.AddHandler<CheckBox>(static _ => new CheckBoxHandler());
 		handlersCollection.AddHandler<GraphicsView>(static _ => new GraphicsViewHandler());
 		handlersCollection.AddHandler<Layout>(static _ => new LayoutHandler());
@@ -338,7 +336,6 @@ public static partial class AppHostBuilderExtensions
 		Application.RemapForControls();
 		VisualElement.RemapIfNeeded();
 		Button.RemapForControls();
-		ContentButton.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
@@ -365,8 +362,6 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		NavigationPage.RemapForControls();
 #endif
-
-		Animations.ControlsNavigationTransitionHooks.Install();
 
 		return builder;
 	}

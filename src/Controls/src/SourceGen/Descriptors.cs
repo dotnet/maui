@@ -398,22 +398,6 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor QueryPropertyConflictsWithIQueryAttributable = new DiagnosticDescriptor(
-			id: "MAUI1201",
-			title: "Use a single query parameter handling mechanism",
-			messageFormat: "'{0}' implements IQueryAttributable and uses [QueryProperty] attributes. The source generator skips this type; handle the properties manually or remove the interface implementation.",
-			category: "QueryProperty",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
-
-		public static DiagnosticDescriptor QueryPropertyRequiresReflection = new DiagnosticDescriptor(
-			id: "MAUI1200",
-			title: "QueryProperty attributes cannot be source generated",
-			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). Applying them will fail at runtime. Make the type partial or replace the attributes with an IQueryAttributable implementation.",
-			category: "QueryProperty",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
-
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");

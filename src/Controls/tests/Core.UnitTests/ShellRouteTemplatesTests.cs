@@ -5,17 +5,17 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public partial class ShellRouteTemplatesTests : ShellTestBase
+	public class ShellRouteTemplatesTests : ShellTestBase
 	{
 		[QueryProperty(nameof(Sku), "sku")]
-		public partial class ProductPage : ContentPage
+		public class ProductPage : ContentPage
 		{
 			public string Sku { get; set; }
 		}
 
 		[QueryProperty(nameof(Sku), "sku")]
 		[QueryProperty(nameof(ReviewId), "reviewId")]
-		public partial class ReviewPage : ContentPage
+		public class ReviewPage : ContentPage
 		{
 			public string Sku { get; set; }
 			public string ReviewId { get; set; }
@@ -237,8 +237,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ReceivedQuery = new Dictionary<string, object>(query);
 			}
-
-			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
 		[Fact]
@@ -306,7 +304,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Default Values =====
 
 		[QueryProperty(nameof(Stars), "stars")]
-		public partial class DefaultStarsPage : ContentPage
+		public class DefaultStarsPage : ContentPage
 		{
 			public string Stars { get; set; }
 		}
@@ -345,7 +343,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Catch-All Parameters =====
 
 		[QueryProperty(nameof(FilePath), "path")]
-		public partial class FileBrowserPage : ContentPage
+		public class FileBrowserPage : ContentPage
 		{
 			public string FilePath { get; set; }
 		}
@@ -390,7 +388,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Constraints =====
 
 		[QueryProperty(nameof(OrderId), "id")]
-		public partial class OrderDetailPage : ContentPage
+		public class OrderDetailPage : ContentPage
 		{
 			public string OrderId { get; set; }
 		}
@@ -698,7 +696,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[QueryProperty(nameof(Category), "cat")]
 		[QueryProperty(nameof(ItemId), "id")]
-		public partial class TwoParamPage : ContentPage
+		public class TwoParamPage : ContentPage
 		{
 			public string Category { get; set; }
 			public string ItemId { get; set; }
