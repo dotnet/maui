@@ -69,6 +69,7 @@ public class MainInstrumentation : Instrumentation
 			// ImageBenchmark class is hardcoded here for now
 			BenchmarkRunner.Run<ImageBenchmark>(config);
 			BenchmarkRunner.Run<ViewHandlerBenchmark>(config);
+			BenchmarkRunner.Run<CollectionViewItemSpacingBenchmark>(config);
 
 			success = true;
 		}

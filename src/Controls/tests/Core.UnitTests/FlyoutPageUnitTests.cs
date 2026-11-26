@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
@@ -727,6 +728,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(flyout.NavigatedToArgs);
 			Assert.Null(flyout.NavigatedToArgs.PreviousPage);
 			Assert.Equal(NavigationType.Replace, flyout.NavigatedToArgs.NavigationType);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task FlyoutPageInWindowDoesNotStayAlive()
+		{
+			// The window keeps its page, as it does after an Android Activity is recreated.
+			var pageReference = CreateFlyoutPageInWindow();
+
+			Assert.False(await pageReference.WaitForCollect(), "FlyoutPage should not be alive!");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateFlyoutPageInWindow()
+		{
+			var flyoutPage = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage { Title = "Detail" }
+			};
+
+			_ = new Window(flyoutPage);
+			Assert.NotNull(flyoutPage.Window);
+
+			return new WeakReference(flyoutPage);
+		}
+
+		[Fact]
+		public async Task FlyoutPageMovedToAnotherWindowHandlesDisplayChangesOnce()
+		{
+			int updates = 0;
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IFlyoutView.FlyoutBehavior)] = (_, _) => updates++
+			};
+
+			var flyoutPage = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage { Title = "Detail" },
+				Handler = new HandlerStub(mapper)
+			};
+
+			var firstWindow = new Window(flyoutPage);
+			var secondWindow = new Window { Page = flyoutPage };
+			Assert.Equal(secondWindow, flyoutPage.Window);
+
+			await TestHelpers.Collect();
+
+			updates = 0;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
+			Assert.Equal(1, updates);
+
+			secondWindow.Page = null;
+			Assert.Null(flyoutPage.Window);
+
+			updates = 0;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
+			Assert.Equal(0, updates);
+			GC.KeepAlive(firstWindow);
 		}
 
 		public class NavigationObserverPage : ContentPage

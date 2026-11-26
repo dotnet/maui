@@ -590,7 +590,7 @@ Describe 'Pipeline templates' {
         $ci | Should -Match '(?m)^    - run-tests/\*\s*$'
         $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/') }}:") + '\s+- template: /eng/pipelines/common/run-tests-request\.yml@self')
         $variables = Get-Content (Join-Path $pipelines 'variables.yml') -Raw
-        $variables | Should -Match ([regex]::Escape("- `${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')) }}:") + '\s+- group: MAUI')
+        $variables | Should -Match ([regex]::Escape("- `${{ if and(not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-tests/')), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/'))) }}:") + '\s+- group: MAUI')
         # No other pipeline builds run-tests/* branches.
         foreach ($other in 'ci.yml', 'ci-device-tests.yml', 'ci-official.yml') {
             $path = Join-Path $pipelines "../$other"

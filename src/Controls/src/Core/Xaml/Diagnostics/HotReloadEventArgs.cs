@@ -46,7 +46,8 @@ public class HotReloadAppliedEventArgs : EventArgs
 		int fromVersion,
 		int toVersion,
 		TimeSpan duration,
-		DateTimeOffset timestamp)
+		DateTimeOffset timestamp,
+		IReadOnlyList<Type>? reloadRequiredTypes = null)
 	{
 		UpdatedTypes = updatedTypes;
 		InstanceCount = instanceCount;
@@ -54,6 +55,7 @@ public class HotReloadAppliedEventArgs : EventArgs
 		ToVersion = toVersion;
 		Duration = duration;
 		Timestamp = timestamp;
+		ReloadRequiredTypes = reloadRequiredTypes ?? Array.Empty<Type>();
 	}
 
 	/// <summary>Gets the types that were successfully updated.</summary>
@@ -73,6 +75,14 @@ public class HotReloadAppliedEventArgs : EventArgs
 
 	/// <summary>Gets the timestamp when the update completed.</summary>
 	public DateTimeOffset Timestamp { get; }
+
+	/// <summary>
+	/// Gets the XAML types whose change in this update could not be applied to live instances (for
+	/// example, a structural change). Their existing instances keep the previous XAML tree, including
+	/// the source info reported by <see cref="Microsoft.Maui.VisualDiagnostics.GetSourceInfo(object)"/>,
+	/// until they are recreated. Empty when every XAML change was applied.
+	/// </summary>
+	public IReadOnlyList<Type> ReloadRequiredTypes { get; }
 }
 
 // XamlTools contract: reads UpdatedType, Exception, Version BY NAME (surfaced as a per-type hot
@@ -118,11 +128,12 @@ public class HotReloadErrorEventArgs : EventArgs
 /// </summary>
 public class HotReloadSkippedEventArgs : EventArgs
 {
-	internal HotReloadSkippedEventArgs(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes, DateTimeOffset timestamp)
+	internal HotReloadSkippedEventArgs(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes, DateTimeOffset timestamp, IReadOnlyList<Type>? reloadRequiredTypes = null)
 	{
 		UpdatedTypes = updatedTypes;
 		HandledTypes = handledTypes;
 		Timestamp = timestamp;
+		ReloadRequiredTypes = reloadRequiredTypes ?? Array.Empty<Type>();
 	}
 
 	/// <summary>Gets the types the runtime requested to update.</summary>
@@ -134,4 +145,12 @@ public class HotReloadSkippedEventArgs : EventArgs
 
 	/// <summary>Gets the timestamp when the update was skipped.</summary>
 	public DateTimeOffset Timestamp { get; }
+
+	/// <summary>
+	/// Gets the XAML types whose change in this update could not be applied to live instances (for
+	/// example, a structural change). Their existing instances keep the previous XAML tree, including
+	/// the source info reported by <see cref="Microsoft.Maui.VisualDiagnostics.GetSourceInfo(object)"/>,
+	/// until they are recreated. Empty when no such change was found.
+	/// </summary>
+	public IReadOnlyList<Type> ReloadRequiredTypes { get; }
 }

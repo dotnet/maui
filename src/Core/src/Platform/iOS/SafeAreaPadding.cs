@@ -36,11 +36,16 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 	/// </summary>
 	public bool EqualsAtPixelLevel(SafeAreaPadding other, double scale)
 	{
-		return RoundToPixel(Left, scale) == RoundToPixel(other.Left, scale)
-			&& RoundToPixel(Right, scale) == RoundToPixel(other.Right, scale)
-			&& RoundToPixel(Top, scale) == RoundToPixel(other.Top, scale)
-			&& RoundToPixel(Bottom, scale) == RoundToPixel(other.Bottom, scale);
+		return EqualsAtPixelLevel(Left, other.Left, scale)
+			&& EqualsAtPixelLevel(Right, other.Right, scale)
+			&& EqualsAtPixelLevel(Top, other.Top, scale)
+			&& EqualsAtPixelLevel(Bottom, other.Bottom, scale);
 	}
+
+	// Floating-point noise on a value at a half pixel rounds to different pixels on alternate passes (#36975).
+	static bool EqualsAtPixelLevel(double value, double other, double scale)
+		=> RoundToPixel(value, scale) == RoundToPixel(other, scale)
+			|| Math.Abs(value - other) * scale < 0.01;
 
 	internal static bool IsNonZeroAtPixelLevel(double value, double scale) =>
 		RoundToPixel(value, scale) != 0;

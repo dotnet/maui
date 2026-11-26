@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -222,6 +225,72 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(handler.PlatformView.Editable);
 				Assert.True(handler.PlatformView.UserInteractionEnabled);
+			});
+		}
+
+		[Theory(DisplayName = "Vertical Alignment Offset Survives Animated Resize")]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalAlignmentOffsetSurvivesAnimatedResize(TextAlignment alignment)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var textView = new MauiTextView(new CGRect(0, 0, 300, 100))
+				{
+					Text = "Hello",
+					VerticalTextAlignment = alignment
+				};
+
+				await textView.AttachAndRun(async () =>
+				{
+					// UIKit can reset ContentOffset after an animated resize, without another layout.
+					foreach (var width in new[] { 600, 300 })
+					{
+						var animationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+						UIView.Animate(0.3, () =>
+						{
+							textView.Frame = new CGRect(0, 0, width, 100);
+							textView.Superview.LayoutIfNeeded();
+						}, () => animationCompleted.TrySetResult());
+						await animationCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						await Task.Delay(500);
+					}
+
+					var availableSpace = textView.Bounds.Height - textView.ContentSize.Height * textView.ZoomScale;
+					var expected = alignment == TextAlignment.Center ? -availableSpace / 2 : -availableSpace;
+
+					Assert.True(expected < 0);
+					Assert.InRange(Math.Abs((double)(expected - textView.ContentOffset.Y)), 0, 1 / (double)textView.ContentScaleFactor);
+				});
+			});
+		}
+
+		[Fact(DisplayName = "Native ContentSize Update Keeps Scroll Position When Content Overflows")]
+		public async Task ContentSizeUpdateKeepsScrollPositionWhenContentOverflows()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var textView = new MauiTextView(new CGRect(0, 0, 300, 100))
+				{
+					Text = string.Join("\n", Enumerable.Range(0, 30)),
+					VerticalTextAlignment = TextAlignment.Center
+				};
+
+				await textView.AttachAndRun(() =>
+				{
+					textView.SetNeedsLayout();
+					textView.LayoutIfNeeded();
+					Assert.True(textView.ContentSize.Height > textView.Bounds.Height);
+
+					textView.ContentOffset = new CGPoint(0, 40);
+					var scrolledOffset = textView.ContentOffset.Y;
+					Assert.Equal(40, scrolledOffset, 3);
+
+					textView.ContentSize = new CGSize(textView.ContentSize.Width + 100, textView.ContentSize.Height);
+					textView.LayoutIfNeeded();
+
+					Assert.Equal(scrolledOffset, textView.ContentOffset.Y, 3);
+				});
 			});
 		}
 

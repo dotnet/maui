@@ -930,6 +930,56 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
+	public void LineShiftOnly_WithoutDiagnostics_EmitsEmptyUC()
+	{
+		// https://github.com/dotnet/maui/issues/40605: locations only matter for VisualDiagnostics, so a
+		// pure line shift stays a no-op when diagnostics are disabled.
+		XamlHotReloadState.Reset();
+		var shifted = PageXamlV1.Replace("<VerticalStackLayout>", "<VerticalStackLayout>\n", StringComparison.Ordinal);
+		var v1 = MakeFile(PageXamlV1) with { EnableDiagnostics = false };
+		var v2 = MakeFile(shifted) with { EnableDiagnostics = false };
+
+		var (_, run2) = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(
+			CreateCompilation(),
+			applyChanges: (driver, comp) => (driver.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])), comp),
+			v1);
+
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("RegisterSourceInfo", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry.TryGet", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void StructuralReset_SignalsRequiresReload_StableAcrossCSharpOnlyEdits()
+	{
+		// https://github.com/dotnet/maui/issues/40605: a structural change (here, changing x:FieldModifier,
+		// which a patch can't apply) can't be applied to live instances. The companion signal reports it, and a later
+		// generation with the same XAML re-emits the same output, so it isn't reported twice.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		static string Named(string fieldModifier) => PageXamlV1.Replace(
+			"<Label Text=\"Hello\" />",
+			$"<Label x:Name=\"label\" x:FieldModifier=\"{fieldModifier}\" Text=\"Hello\" />",
+			StringComparison.Ordinal);
+		var v1 = MakeFile(Named("private"));
+		var v2 = MakeFile(Named("internal"));
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		var structural = FindUCSource(edited.GetRunResult(), "uc.xsg");
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
+		var afterCSharpEdit = FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg");
+
+		Assert.Contains("RequiresReload() => false", baselineUc!, StringComparison.Ordinal);
+		Assert.Contains("RequiresReload() => true", structural!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", structural!, StringComparison.Ordinal);
+		Assert.NotEqual(GetSignalFingerprint(baselineUc), GetSignalFingerprint(structural));
+		Assert.Equal(structural, afterCSharpEdit);
+	}
+
+	[Fact]
 	public void WithoutIHR_Disabled_NoStateSeeded()
 	{
 		// Arrange
@@ -3078,7 +3128,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 				"build_metadata.additionalfiles.Inflator" => "SourceGen",
 				"build_property.targetFramework" => _file.TargetFramework,
 				"build_property.Configuration" => "Debug",
-				"build_property.EnableMauiXamlDiagnostics" => "true",
+				"build_property.EnableMauiXamlDiagnostics" => _file.EnableDiagnostics ? "true" : "false",
 				"build_property.EnableMauiIncrementalHotReload" => _file.EnableIncrementalHotReload ? "true" : "false",
 				_ => null
 			};

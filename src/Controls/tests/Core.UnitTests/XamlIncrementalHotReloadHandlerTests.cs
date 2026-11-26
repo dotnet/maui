@@ -67,6 +67,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static readonly Type SignalType = typeof(SignaledHotReloadablePage).GetNestedType("__XamlHotReloadSignal", System.Reflection.BindingFlags.NonPublic)!;
 
+		// A generated page after a structural change: UpdateComponent() is empty (live instances can't be
+		// patched) and the companion reports it.
+		sealed class StructurallyChangedPage
+		{
+			void UpdateComponent()
+			{
+			}
+
+			static class __XamlHotReloadSignal
+			{
+				internal static string Fingerprint() => "reload";
+
+				internal static bool RequiresReload() => true;
+			}
+		}
+
+		static readonly Type StructuralSignalType = typeof(StructurallyChangedPage).GetNestedType("__XamlHotReloadSignal", System.Reflection.BindingFlags.NonPublic)!;
+
 		sealed class ThrowingHotReloadablePage
 		{
 			public int Attempts;
@@ -252,6 +270,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, page.UpdateComponentCalls);
 			Assert.Equal(new[] { typeof(SignaledHotReloadablePage) }, recorder.Requested[1].HandledTypes.ToArray());
+		}
+
+		[Fact]
+		public void StructuralChange_IsReportedInReloadRequiredTypes_NotHandledTypes()
+		{
+			using var _ = IncrementalHotReloadEnabled();
+			RegisterLiveInstance<StructurallyChangedPage>();
+			using var recorder = new DiagnosticsRecorder();
+
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { typeof(StructurallyChangedPage), StructuralSignalType });
+
+			Assert.Empty(Assert.Single(recorder.Requested).HandledTypes);
+			Assert.Empty(recorder.Applied);
+			var skipped = Assert.Single(recorder.Skipped);
+			Assert.Empty(skipped.HandledTypes);
+			Assert.Equal(new[] { typeof(StructurallyChangedPage) }, skipped.ReloadRequiredTypes.ToArray());
+
+			// Not reported again by a delta that doesn't update its signal (e.g. a later C#-only edit).
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { typeof(StructurallyChangedPage) });
+			Assert.Empty(recorder.Skipped[1].ReloadRequiredTypes);
+		}
+
+		[Fact]
+		public void StructuralChange_IsReportedOnApplied_AlongsidePatchedTypes()
+		{
+			using var _ = IncrementalHotReloadEnabled();
+			var patched = RegisterLiveInstance<SignaledHotReloadablePage>();
+			RegisterLiveInstance<StructurallyChangedPage>();
+			using var recorder = new DiagnosticsRecorder();
+
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { SignalType, StructuralSignalType });
+
+			Assert.Equal(1, patched.UpdateComponentCalls);
+			var applied = Assert.Single(recorder.Applied);
+			Assert.Equal(1, applied.InstanceCount);
+			Assert.Equal(new[] { typeof(StructurallyChangedPage) }, applied.ReloadRequiredTypes.ToArray());
+			Assert.Empty(recorder.Skipped);
 		}
 
 		[Fact]

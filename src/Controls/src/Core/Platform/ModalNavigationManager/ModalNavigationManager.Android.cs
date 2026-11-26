@@ -609,14 +609,21 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
-						try
+						if (activity is MauiAppCompatActivity mauiActivity)
 						{
-							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
-							{
-								del(activity);
-							});
+							mauiActivity.DispatchModalBackPress(() => InvokeBackPressed(activity));
+							return;
 						}
-						finally { }
+
+						InvokeBackPressed(activity);
+					}
+
+					static void InvokeBackPressed(global::Android.App.Activity activity)
+					{
+						IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
+						{
+							del(activity);
+						});
 					}
 				}
 			}

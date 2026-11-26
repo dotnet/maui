@@ -168,6 +168,21 @@ namespace Microsoft.Maui.Platform
 		nfloat GetPlaceholderContentHeight(nfloat width) =>
 			GetPlaceholderSize(width).Height + TextContainerInset.Top + TextContainerInset.Bottom;
 
+		public override CGSize ContentSize
+		{
+			get => base.ContentSize;
+			set
+			{
+				var changed = base.ContentSize != value;
+				base.ContentSize = value;
+
+				if (changed
+					&& _verticalTextAlignment != Maui.TextAlignment.Start
+					&& Bounds.Height > value.Height * ZoomScale)
+					SetNeedsLayout();
+			}
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();

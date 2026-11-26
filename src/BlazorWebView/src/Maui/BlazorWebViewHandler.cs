@@ -98,6 +98,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			VirtualView.ProcessTerminated(args);
 
 		private RootComponentsCollection? _rootComponents;
+		private RootComponent[] _rootComponentsSnapshot = Array.Empty<RootComponent>();
 
 		private void DisconnectRootComponents()
 		{
@@ -106,6 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_rootComponents.CollectionChanged -= OnRootComponentsCollectionChanged;
 				_rootComponents = null;
 			}
+			_rootComponentsSnapshot = Array.Empty<RootComponent>();
 		}
 
 		private RootComponentsCollection? RootComponents
@@ -121,6 +123,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				_rootComponents = value;
+				_rootComponentsSnapshot = value?.ToArray() ?? Array.Empty<RootComponent>();
 
 				if (_rootComponents != null)
 				{
@@ -140,6 +143,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void OnRootComponentsCollectionChanged(object? sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs eventArgs)
 		{
+			// Reset does not include the removed items, so capture the previous collection before updating it.
+			var previousComponents = _rootComponentsSnapshot;
+			var currentComponents = _rootComponents?.ToArray() ?? Array.Empty<RootComponent>();
+			_rootComponentsSnapshot = currentComponents;
+			var isReset = eventArgs.Action == global::System.Collections.Specialized.NotifyCollectionChangedAction.Reset;
+			var newItems = isReset ? currentComponents : eventArgs.NewItems?.Cast<RootComponent>() ?? Enumerable.Empty<RootComponent>();
+			var oldItems = isReset ? previousComponents : eventArgs.OldItems?.Cast<RootComponent>() ?? Enumerable.Empty<RootComponent>();
+
 			// If we haven't initialized yet, this is a no-op
 			if (_webviewManager != null)
 			{
@@ -149,9 +160,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Dispatch because this is going to be async, and we want to catch any errors
 				var dispatchTask = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
-					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
-					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
-
 					foreach (var item in newItems.Except(oldItems))
 					{
 						await item.AddToWebViewManagerAsync(_webviewManager);

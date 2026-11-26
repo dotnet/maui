@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 				if (OperatingSystem.IsIOSVersionAtLeast(26))
 				{
 					using var line = new CTLine(attString);
-					var glyphBounds = line.GetBounds(CTLineBoundsOptions.UseGlyphPathBounds);
+					var glyphBounds = GetGlyphOutlineBounds(line);
 					if (glyphBounds.Width > 0 && glyphBounds.Height > 0)
 					{
 						// Center the visible ink, rather than the font's ascent and descent.
@@ -75,6 +75,31 @@ namespace Microsoft.Maui
 				// Using UIRenderingMode.Automatic when the FontImageSource color is null (where 'Automatic' adapts based on the context and properly applies color) 
 				// and UIRenderingMode.AlwaysOriginal when the FontImageSource color is specified ensures the given color is applied correctly
 			}).ImageWithRenderingMode(imageSource.Color == null ? UIImageRenderingMode.Automatic : UIImageRenderingMode.AlwaysOriginal);
+		}
+
+		// CTLine glyph path bounds use the bounding boxes stored in the font, which some icon fonts
+		// don't fit to the outlines, so measure the outlines themselves.
+		static CGRect GetGlyphOutlineBounds(CTLine line)
+		{
+			using var outlines = new CGPath();
+			foreach (var run in line.GetGlyphRuns())
+			{
+				var font = run.GetAttributes()?.Font;
+				var glyphs = run.GetGlyphs();
+				var positions = run.GetPositions();
+				for (var i = 0; i < glyphs.Length; i++)
+				{
+					var position = CGAffineTransform.MakeTranslation(positions[i].X, positions[i].Y);
+					using var glyph = font?.GetPathForGlyph(glyphs[i]);
+					if (glyph is not null)
+						outlines.AddPath(position, glyph);
+					// Bitmap glyphs, such as emoji, have no outlines, so use the box stored in the font (empty for spaces).
+					else if (font?.GetBoundingRects(CTFontOrientation.Default, new[] { glyphs[i] }) is { IsEmpty: false } storedBounds)
+						outlines.AddRect(position, storedBounds);
+				}
+			}
+
+			return outlines.IsEmpty ? line.GetBounds(CTLineBoundsOptions.UseGlyphPathBounds) : outlines.PathBoundingBox;
 		}
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)

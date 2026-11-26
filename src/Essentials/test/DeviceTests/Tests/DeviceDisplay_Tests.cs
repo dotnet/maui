@@ -22,6 +22,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			});
 		}
 
+#if __ANDROID__
+		[Fact]
+		public void Reading_Metrics_Does_Not_Dispose_Shared_WindowManager()
+		{
+			// GetSystemService hands every caller the same managed peer for the WindowManager.
+			var windowManager = global::Android.App.Application.Context.GetSystemService(global::Android.Content.Context.WindowService);
+			Assert.NotNull(windowManager);
+
+			_ = DeviceDisplay.MainDisplayInfo;
+
+			Assert.NotEqual(IntPtr.Zero, windowManager.Handle);
+		}
+#endif
+
 		[Fact]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
 		public Task ScreenLock_Locks()

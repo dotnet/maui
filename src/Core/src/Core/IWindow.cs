@@ -84,37 +84,55 @@ namespace Microsoft.Maui
 		bool RemoveOverlay(IWindowOverlay overlay);
 
 		/// <summary>
-		/// Occurs when the Window is created.
+		/// Occurs after the native window has been created. The cross-platform window has a native window handler at this point, but the window might not be visible yet.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnPostCreate</c> on Android, <c>UIApplicationDelegate.FinishedLaunching</c> on iOS and Mac Catalyst (<c>SceneWillConnect</c> when using the scene lifecycle), and <c>MauiWinUIWindow.Created</c> on Windows.
+		/// </remarks>
 		void Created();
 
 		/// <summary>
-		/// Occurs when the Window is resumed from a sleeping state.
+		/// Occurs when the app is resumed after having been stopped. This is not raised when the app first launches; it is only raised after <see cref="Stopped"/>.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnRestart</c> on Android (which likewise only fires after <c>Activity.OnStop</c>), <c>UIApplicationDelegate.WillEnterForeground</c> on iOS and Mac Catalyst (<c>SceneWillEnterForeground</c> under the scene lifecycle), and <c>MauiWinUIWindow.Resumed</c> on Windows.
+		/// </remarks>
 		void Resumed();
 
 		/// <summary>
-		/// Occurs when the Window is activated.
+		/// Occurs when the window has been activated and is, or will become, the focused window.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnResume</c> on Android (despite the name, Android's <c>OnResume</c> maps to this event, not to <see cref="Resumed"/>), <c>UIApplicationDelegate.OnActivated</c> on iOS and Mac Catalyst (<c>SceneOnActivated</c> under the scene lifecycle), and <c>Window.Activated</c> with <c>CodeActivated</c> or <c>PointerActivated</c> on Windows.
+		/// </remarks>
 		void Activated();
 
 		/// <summary>
-		/// Occurs when the Window is deactivated.
+		/// Occurs when the window is no longer the focused window. The window might still be visible, for example behind a permission dialog on Android.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnPause</c> on Android, <c>UIApplicationDelegate.OnResignActivation</c> on iOS and Mac Catalyst (<c>SceneOnResignActivation</c> under the scene lifecycle), and <c>Window.Activated</c> with the <c>Deactivated</c> state on Windows, where activation and deactivation are the same native event distinguished by its state argument.
+		/// </remarks>
 		void Deactivated();
 
 		/// <summary>
-		/// Occurs when the Window is stopped.
+		/// Occurs when the window is no longer visible. The operating system may terminate the app from this state, so there is no guarantee that <see cref="Resumed"/> will follow.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnStop</c> on Android, <c>UIApplicationDelegate.DidEnterBackground</c> on iOS and Mac Catalyst (<c>SceneDidEnterBackground</c> under the scene lifecycle), and <c>Window.VisibilityChanged</c> on Windows.
+		/// </remarks>
 		void Stopped();
 
 		/// <summary>
-		/// Occurs when the Window is destroyed.
+		/// Occurs when the native window is being destroyed and deallocated. The same cross-platform window might be used with a new native window when the app is reopened.
 		/// </summary>
+		/// <remarks>
+		/// Raised from <c>Activity.OnDestroy</c> on Android, <c>UIApplicationDelegate.WillTerminate</c> on iOS and Mac Catalyst (<c>SceneDidDisconnect</c> under the scene lifecycle), and <c>Window.Closed</c> on Windows.
+		/// </remarks>
 		void Destroying();
 
 		/// <summary>
-		/// Occurs when the Window is entering a background state.
+		/// Occurs when the window is entering a background state. Raised on iOS and Mac Catalyst only; persist any state to <paramref name="state"/> so the operating system can restore it when the window resumes.
 		/// </summary>
 		void Backgrounding(IPersistedState state);
 

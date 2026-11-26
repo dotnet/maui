@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -653,7 +655,8 @@ namespace Microsoft.Maui.Platform
 				var inflateWidth = width <= Bounds.Width &&
 					(horizontalInset + width) > Bounds.Width;
 				var inflateHeight = height <= Bounds.Height &&
-					(verticalInset + height) > Bounds.Height;
+					(verticalInset + height) > Bounds.Height &&
+					!IsLargeTitleTrackedScrollView();
 
 				// We do this to keep the content scrollable
 				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
@@ -727,6 +730,80 @@ namespace Microsoft.Maui.Platform
 
 			return contentSize;
 		}
+
+		/// <summary>
+		/// Whether this is the scroll view UIKit tracks for the large title of its navigation bar:
+		/// the content scroll view the controller sets explicitly or, otherwise, the scroll view reached
+		/// by following the first subview from the controller's view, for a controller whose navigation
+		/// bar shows large titles.
+		/// </summary>
+		bool IsLargeTitleTrackedScrollView()
+		{
+			UIResponder? responder = this;
+			while (responder is not null)
+			{
+				if (responder is UIViewController controller)
+				{
+					var navigationController = controller.NavigationController;
+					if (navigationController?.NavigationBar.PrefersLargeTitles != true)
+					{
+						return false;
+					}
+
+					while (controller.ParentViewController is { } parent && parent != navigationController)
+					{
+						controller = parent;
+					}
+
+					if (controller.NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never ||
+						controller.View is null)
+					{
+						return false;
+					}
+
+					if ((OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15)) &&
+						controller.GetContentScrollView(NSDirectionalRectEdge.Top) is { } explicitScrollView)
+					{
+						return explicitScrollView == this;
+					}
+
+					return IsFirstScrollViewInFirstSubviewChain(controller.View);
+				}
+
+				responder = responder.NextResponder;
+			}
+
+			return false;
+		}
+
+		bool IsFirstScrollViewInFirstSubviewChain(UIView? view)
+		{
+			var current = view?.Handle ?? NativeHandle.Zero;
+			var scrollViewClass = ObjCRuntime.Class.GetHandle(typeof(UIScrollView));
+
+			while (current != NativeHandle.Zero)
+			{
+				if (byte_objc_msgSend_NativeHandle(current, IsKindOfClassSelector, scrollViewClass) != 0)
+				{
+					return current == Handle;
+				}
+
+				var subviews = NativeHandle_objc_msgSend(current, SubviewsSelector);
+				current = subviews == NativeHandle.Zero ? NativeHandle.Zero : NativeHandle_objc_msgSend(subviews, FirstObjectSelector);
+			}
+
+			return false;
+		}
+
+		static NativeHandle IsKindOfClassSelector => ObjCRuntime.Selector.GetHandle("isKindOfClass:");
+		static NativeHandle SubviewsSelector => ObjCRuntime.Selector.GetHandle("subviews");
+		static NativeHandle FirstObjectSelector => ObjCRuntime.Selector.GetHandle("firstObject");
+
+		[DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		static extern NativeHandle NativeHandle_objc_msgSend(NativeHandle receiver, NativeHandle selector);
+
+		[DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		static extern byte byte_objc_msgSend_NativeHandle(NativeHandle receiver, NativeHandle selector, NativeHandle arg1);
 
 		bool IsInsidePageSheet()
 		{

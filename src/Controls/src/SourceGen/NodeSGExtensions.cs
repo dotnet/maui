@@ -760,8 +760,6 @@ static class NodeSGExtensions
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return;
 
-		var assembly = context.Compilation.Assembly.Name;
-		var filePath = context.ProjectItem.RelativePath;
 		var lineInfo = node as IXmlLineInfo;
 
 		if (!update)
@@ -771,10 +769,17 @@ static class NodeSGExtensions
 		}
 		// on other inflators, we do not replace path separator, so keep the bug for compat
 		// filePath = new UriBuilder() { Path = filePath }.Path; // ensure the file use the right separator
-		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.ValueAccessor}!, new global::System.Uri(@\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+		writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.ValueAccessor}!, {GetSourceInfoUriExpression(context.ProjectItem.RelativePath, context.Compilation.Assembly.Name)}, {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
 		if (!update)
 			writer.Indent--;
 	}
+
+	/// <summary>
+	/// The C# expression for the <see cref="Uri"/> passed to <c>VisualDiagnostics.RegisterSourceInfo</c>.
+	/// Shared by <c>InitializeComponent()</c> and <c>UpdateComponent()</c> so both report the same URI.
+	/// </summary>
+	public static string GetSourceInfoUriExpression(string? relativePath, string assemblyName)
+		=> $"new global::System.Uri(@\"{relativePath};assembly={assemblyName}\", global::System.UriKind.Relative)";
 
 	public static (IFieldSymbol?, IPropertySymbol?) GetFieldOrBP(ITypeSymbol owner, XmlName name, SourceGenContext context)
 	{

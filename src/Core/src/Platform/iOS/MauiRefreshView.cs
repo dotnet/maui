@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Platform
 		public MauiRefreshView()
 		{
 			_refreshControl = new UIRefreshControl();
+			// UIRefreshControl throws when it is attached to a scroll view in the Mac idiom.
+			_refreshControl.UsePadIdiomInMacIdiom();
 			_refreshControlParent = this;
 		}
 

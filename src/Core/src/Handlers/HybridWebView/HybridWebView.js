@@ -78,7 +78,8 @@
                     headers: {
                         'Content-Type': 'text/plain',
                         'X-Maui-Invoke-Token': 'HybridWebView',
-                        'X-Maui-Request-Body': msg
+                        'X-Maui-Request-Body': encodeURIComponent(msg),
+                        'X-Maui-Request-Body-Encoding': 'uri'
                     },
                     body: msg
                 }).catch(err => {
@@ -189,7 +190,8 @@
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Maui-Invoke-Token': 'HybridWebView',
-                'X-Maui-Request-Body': message // Some platforms (Android) do not expose the POST body
+                'X-Maui-Request-Body': encodeURIComponent(message), // Some platforms (Android) do not expose the POST body
+                'X-Maui-Request-Body-Encoding': 'uri'
             },
             body: message
         });

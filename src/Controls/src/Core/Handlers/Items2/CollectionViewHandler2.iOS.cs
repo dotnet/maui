@@ -9,12 +9,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	// Flags only: a header/footer view referenced from the native layout keeps its page alive (#34461)
 	internal class LayoutHeaderFooterInfo
 	{
-		public IView FooterView { get; set; }
-		public IView HeaderView { get; set; }
-		public DataTemplate FooterTemplate { get; set; }
-		public DataTemplate HeaderTemplate { get; set; }
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 	}
@@ -170,16 +167,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (ItemsView is StructuredItemsView structuredItemsView)
 			{
-				headerFooterInfo.HeaderTemplate = structuredItemsView.HeaderTemplate;
-				headerFooterInfo.FooterTemplate = structuredItemsView.FooterTemplate;
-				if (structuredItemsView.Header is View headerView)
-				{
-					headerFooterInfo.HeaderView = headerView;
-				}
-				if (structuredItemsView.Footer is View footerView)
-				{
-					headerFooterInfo.FooterView = footerView;
-				}
 				headerFooterInfo.HasHeader = structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null;
 				headerFooterInfo.HasFooter = structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null;
 			}
