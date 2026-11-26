@@ -248,13 +248,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
+		[System.Runtime.Versioning.ObsoletedOSPlatform("ios17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("maccatalyst17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("tvos17.0")]
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			// UITabBarController re-evaluates which tabs go into More here (on iOS 27, after a
 			// size class change such as folding a foldable iPhone), so it has to run.
-#pragma warning disable CA1422 // TraitCollectionDidChange is obsolete on Mac Catalyst 17+, but this override still forwards to it
 			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422
 
 			// That re-evaluation resets CustomizableViewControllers, which adds an Edit button
 			// to the More page; Shell keeps it empty (see CreateTabRenderers).

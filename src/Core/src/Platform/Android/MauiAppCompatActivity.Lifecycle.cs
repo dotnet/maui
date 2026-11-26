@@ -138,7 +138,7 @@ namespace Microsoft.Maui
 
 			if (!preventBackPropagation)
 			{
-				// Disable the callback before dispatching base.OnBackPressed() to prevent re-entry
+				// Disable the callback before dispatching to prevent re-entry
 				// through OnBackPressedDispatcher, which would re-invoke this same enabled callback.
 				if (_mauiOnBackPressedCallback is not null)
 				{
@@ -147,9 +147,7 @@ namespace Microsoft.Maui
 
 				try
 				{
-#pragma warning disable CA1422 // Activity.OnBackPressed is obsolete on API 33+, but this deliberately propagates the unhandled back press
-					base.OnBackPressed();
-#pragma warning restore CA1422
+					OnBackPressedDispatcher.OnBackPressed();
 				}
 				finally
 				{

@@ -100,11 +100,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[System.Runtime.Versioning.ObsoletedOSPlatform("ios17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("maccatalyst17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("tvos17.0")]
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
-#pragma warning disable CA1422 // TraitCollectionDidChange is obsolete on Mac Catalyst 17+, but this override still forwards to it
 			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422
 			if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
 				previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
 			{

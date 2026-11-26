@@ -452,11 +452,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return shown;
 		}
 
+		[System.Runtime.Versioning.ObsoletedOSPlatform("ios17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("maccatalyst17.0")]
+		[System.Runtime.Versioning.ObsoletedOSPlatform("tvos17.0")]
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
-#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
@@ -1813,11 +1814,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			[System.Runtime.Versioning.ObsoletedOSPlatform("ios17.0")]
+			[System.Runtime.Versioning.ObsoletedOSPlatform("maccatalyst17.0")]
+			[System.Runtime.Versioning.ObsoletedOSPlatform("tvos17.0")]
 			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 			{
-#pragma warning disable CA1422 // TraitCollectionDidChange is obsolete on Mac Catalyst 17+, but this override still forwards to it
 				base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422
 
 				// Check if orientation changed (size class transition)
 				if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||

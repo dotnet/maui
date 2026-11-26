@@ -81,18 +81,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 			""";
 
-#pragma warning disable CA1416 // MatchExternal (API 28+) is only a mask bit here; older versions ignore it
 		private const ActivityFlags AllowedIntentFlags =
 			ActivityFlags.ExcludeStoppedPackages |
 			ActivityFlags.ClearTop |
 			ActivityFlags.SingleTop |
-			ActivityFlags.MatchExternal |
 			ActivityFlags.NewTask |
 			ActivityFlags.MultipleTask |
 			ActivityFlags.NewDocument |
 			ActivityFlags.RetainInRecents |
 			ActivityFlags.LaunchAdjacent;
-#pragma warning restore CA1416
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 		// Android does not store WebResourceResponse instances returned from ShouldInterceptRequest in Chromium's
@@ -164,7 +161,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				intent.AddCategory(Intent.CategoryBrowsable);
 				intent.SetComponent(null);
 				intent.Selector = null;
-				intent.SetFlags(intent.Flags & AllowedIntentFlags);
+				var allowedFlags = AllowedIntentFlags;
+				if (OperatingSystem.IsAndroidVersionAtLeast(28))
+					allowedFlags |= ActivityFlags.MatchExternal;
+				intent.SetFlags(intent.Flags & allowedFlags);
 			}
 
 			return intent;

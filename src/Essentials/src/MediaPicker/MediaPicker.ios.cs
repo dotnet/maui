@@ -10,10 +10,10 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
-using MobileCoreServices;
 using Photos;
 using PhotosUI;
 using UIKit;
+using UniformTypeIdentifiers;
 
 namespace Microsoft.Maui.Media
 {
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Media
 
 			PHPickerFileResult.CleanupTemporaryFiles();
 
-			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			if (pickExisting)
 			{
 				var config = new PHPickerConfiguration
 				{
@@ -110,13 +110,9 @@ namespace Microsoft.Maui.Media
 					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
 				}
 
-				var sourceType = pickExisting
-#pragma warning disable CA1422 // Legacy UIImagePickerController/MobileCoreServices path, kept for compatibility
-					? UIImagePickerControllerSourceType.PhotoLibrary
-					: UIImagePickerControllerSourceType.Camera;
+				var sourceType = UIImagePickerControllerSourceType.Camera;
 
-				var mediaType = photo ? UTType.Image : UTType.Movie;
-#pragma warning restore CA1422
+				var mediaType = photo ? UTTypes.Image.Identifier : UTTypes.Movie.Identifier;
 
 				if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				{
@@ -451,9 +447,15 @@ namespace Microsoft.Maui.Media
 				return null;
 			}
 
-#pragma warning disable CA1422 // PHAssetResource.OriginalFilename is obsolete on Mac Catalyst 27+
-			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-#pragma warning restore CA1422
+			var resource = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault();
+			string originalFilename = null;
+			if (resource is not null)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(27) || OperatingSystem.IsMacCatalystVersionAtLeast(27))
+					originalFilename = resource.Filename;
+				else
+					originalFilename = resource.OriginalFilename;
+			}
 			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 
 			// Apply rotation if needed and this is a photo
@@ -679,11 +681,11 @@ namespace Microsoft.Maui.Media
 			_provider = provider;
 			var identifiers = provider?.RegisteredTypeIdentifiers;
 
-#pragma warning disable CA1422 // MobileCoreServices UTType constants are obsolete on Mac Catalyst 14+
-			_identifier = (identifiers?.Any(i => i.StartsWith(UTType.LivePhoto)) ?? false)
-				&& (identifiers?.Contains(UTType.JPEG) ?? false)
-				? identifiers?.FirstOrDefault(i => i == UTType.JPEG)
-#pragma warning restore CA1422
+			var livePhoto = UTTypes.LivePhoto.Identifier;
+			var jpeg = UTTypes.Jpeg.Identifier;
+			_identifier = (identifiers?.Any(i => i.StartsWith(livePhoto)) ?? false)
+				&& (identifiers?.Contains(jpeg) ?? false)
+				? identifiers?.FirstOrDefault(i => i == jpeg)
 				: identifiers?.FirstOrDefault();
 
 			if (string.IsNullOrWhiteSpace(_identifier))
@@ -986,9 +988,7 @@ namespace Microsoft.Maui.Media
 
 		static string GetFileExtension(string identifier)
 		{
-#pragma warning disable CA1422 // MobileCoreServices UTType APIs are obsolete on Mac Catalyst 14+
-			var extension = GetTag(identifier, UTType.TagClassFilenameExtension);
-#pragma warning restore CA1422
+			var extension = UTType.CreateFromIdentifier(identifier)?.PreferredFilenameExtension;
 
 			return NormalizeExtension(extension);
 		}
@@ -1006,11 +1006,6 @@ namespace Microsoft.Maui.Media
 
 			return fileName;
 		}
-
-		protected internal static string GetTag(string identifier, string tagClass)
-#pragma warning disable CA1422 // MobileCoreServices UTType APIs are obsolete on Mac Catalyst 14+
-			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
-#pragma warning restore CA1422
 
 		public void Dispose()
 		{
