@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -39,14 +38,6 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 	const string InterfaceName = "global::Microsoft.Maui.Controls.IQueryAttributable";
 	const string ConversionName = "global::Microsoft.Maui.Controls.QueryPropertyConversion";
 
-	/// <summary>
-	/// Marks MAUI1200 diagnostics that adding the <c>partial</c> modifier to the type and its containing types resolves.
-	/// </summary>
-	internal const string MissingPartialProperty = "MissingPartial";
-
-	static readonly ImmutableDictionary<string, string?> MissingPartialProperties =
-		ImmutableDictionary<string, string?>.Empty.Add(MissingPartialProperty, "true");
-
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var types = context.SyntaxProvider
@@ -65,12 +56,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 				if (model.Source is not null)
 					spc.AddSource(model.HintName, SourceText.From(model.Source, Encoding.UTF8));
 				else if (model.UnsupportedReason is not null)
-					spc.ReportDiagnostic(Diagnostic.Create(
-						Descriptors.QueryPropertyRequiresReflection,
-						model.Location?.ToLocation(),
-						model.IsMissingPartial ? MissingPartialProperties : null,
-						model.DisplayName,
-						model.UnsupportedReason));
+					spc.ReportDiagnostic(Diagnostic.Create(Descriptors.QueryPropertyRequiresReflection, model.Location?.ToLocation(), model.DisplayName, model.UnsupportedReason));
 			}
 		});
 	}
@@ -126,8 +112,8 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		var location = LocationModel.From(declaration.Identifier.GetLocation());
 		var hintName = GetHintName(typeName);
 
-		var source = TryGenerateSource(compilation, type, attributes, attributeType, customQueryPropertiesHandler, out var unsupportedReason, out var isMissingPartial);
-		return new TypeModel(typeName, type.ToString(), hintName, source, unsupportedReason, isMissingPartial, location);
+		var source = TryGenerateSource(compilation, type, attributes, attributeType, customQueryPropertiesHandler, out var unsupportedReason);
+		return new TypeModel(typeName, type.ToString(), hintName, source, unsupportedReason, location);
 	}
 
 	internal static bool IsGeneratedQueryPropertyImplementation(ISymbol? implementation) =>
@@ -136,10 +122,9 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 			&& attribute.ConstructorArguments.Length > 0
 			&& attribute.ConstructorArguments[0].Value is "Microsoft.Maui.Controls.SourceGen");
 
-	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, IMethodSymbol? customQueryPropertiesHandler, out string? unsupportedReason, out bool isMissingPartial)
+	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, IMethodSymbol? customQueryPropertiesHandler, out string? unsupportedReason)
 	{
 		unsupportedReason = null;
-		isMissingPartial = false;
 
 		for (var current = type; current is not null; current = current.ContainingType)
 		{
@@ -154,7 +139,6 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 				unsupportedReason = SymbolEqualityComparer.Default.Equals(current, type)
 					? "the type is not partial"
 					: $"the containing type '{current.ToString()}' is not partial";
-				isMissingPartial = true;
 				return null;
 			}
 		}
@@ -426,7 +410,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 			&& a.ConstructorArguments.Length == 2
 			&& a.ConstructorArguments[1].Value is true);
 
-	sealed record TypeModel(string TypeName, string DisplayName, string HintName, string? Source, string? UnsupportedReason, bool IsMissingPartial, LocationModel? Location);
+	sealed record TypeModel(string TypeName, string DisplayName, string HintName, string? Source, string? UnsupportedReason, LocationModel? Location);
 
 	sealed record LocationModel(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 	{

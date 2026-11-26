@@ -43,7 +43,6 @@
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" IsImplicitlyDefined="true" />
-		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.CodeFixes.dll" IsImplicitlyDefined="true" />
 	</ItemGroup>
 
 	<!-- Enable interceptor source generators -->

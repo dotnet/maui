@@ -12,7 +12,6 @@
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\NuGet\\Controls.NuGet.csproj",
       "src\\Controls\\src\\SourceGen\\Controls.SourceGen.csproj",
-      "src\\Controls\\src\\SourceGen.CodeFixes\\Controls.SourceGen.CodeFixes.csproj",
       "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
       "src\\Core\\src\\HybridWebViewSourceGen\\Core.HybridWebViewSourceGen.csproj",
