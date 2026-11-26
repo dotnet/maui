@@ -16,6 +16,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class WindowsTests : BaseTestFixture
 	{
 		[Fact]
+		public void VisualDiagnosticsOverlayIsCreatedOnAccess()
+		{
+			var window = new Window();
+			var overlayField = typeof(Window).GetField("_visualDiagnosticsOverlay", BindingFlags.Instance | BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("The visual diagnostics overlay should be stored lazily.");
+
+			Assert.Null(overlayField.GetValue(window));
+			var overlay = window.VisualDiagnosticsOverlay;
+			Assert.NotNull(overlayField.GetValue(window));
+			Assert.Same(overlay, window.VisualDiagnosticsOverlay);
+		}
+
+		[Fact]
+		public void VisualDiagnosticsOverlayDoesNotAddAdornersWhenDiagnosticsAreDisabled()
+		{
+			var enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", false);
+			try
+			{
+				var overlay = new Window().VisualDiagnosticsOverlay;
+				Assert.False(overlay.Initialize());
+				Assert.False(overlay.IsPlatformViewInitialized);
+				Assert.False(overlay.AddAdorner(new ContentPage(), false));
+			}
+			finally
+			{
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
+			}
+		}
+
+		[Fact]
 		public void WindowIsStyleableWithImplicitStyle()
 		{
 			var style = new Style(typeof(Window))
@@ -135,24 +166,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void AddAndRemoveVisualDiagnosticAdorner()
 		{
-			var app = new Application();
-			var contentPage = new ContentPage();
-			var wind1 = app.LoadPage(contentPage);
-			ValidateSetup(app);
-			var visualElement = contentPage as IVisualTreeElement;
-			Assert.True(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
-			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count > 0);
-			// Can't add existing IVisualTreeElement twice.
-			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
+			var enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
+			try
+			{
+				var app = new Application();
+				var contentPage = new ContentPage();
+				var wind1 = app.LoadPage(contentPage);
+				ValidateSetup(app);
+				var visualElement = contentPage as IVisualTreeElement;
+				Assert.True(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
+				Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count > 0);
+				// Can't add existing IVisualTreeElement twice.
+				Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
 
-			var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdorner;
+				var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdorner;
 
-			// Can't add existing Adorner twice.
-			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(adorner, false));
+				// Can't add existing Adorner twice.
+				Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(adorner, false));
 
-			Assert.True(wind1.VisualDiagnosticsOverlay.RemoveAdorner(adorner));
+				Assert.True(wind1.VisualDiagnosticsOverlay.RemoveAdorner(adorner));
 
-			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
+				Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
+			}
+			finally
+			{
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
+			}
 		}
 
 		[Fact]
