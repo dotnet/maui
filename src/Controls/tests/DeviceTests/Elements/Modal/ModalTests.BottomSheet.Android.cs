@@ -35,8 +35,8 @@ namespace Microsoft.Maui.DeviceTests
 					await page.Navigation.PushModalAsync(sheet);
 					await OnLoadedAsync(sheet.Content);
 
-					ShellNavigatingEventArgs navigating = null;
-					ShellNavigatingDeferral deferral = null;
+					ShellNavigatingEventArgs? navigating = null;
+					ShellNavigatingDeferral? deferral = null;
 					shell.Navigating += (_, e) =>
 					{
 						if (deferral is null)
@@ -54,8 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 					((IWindow)window).Activated();
 					await AssertEventually(() => IsBottomSheetOnScreen(window));
 
-					navigating.Cancel();
-					deferral.Complete();
+					navigating!.Cancel();
+					deferral!.Complete();
 					await Task.Delay(500);
 
 					Assert.Same(sheet, Assert.Single(page.Navigation.ModalStack));

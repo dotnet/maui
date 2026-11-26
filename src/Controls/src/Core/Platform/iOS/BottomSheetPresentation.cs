@@ -175,7 +175,8 @@ namespace Microsoft.Maui.Controls.Platform
 			void Update()
 			{
 				controller.ModalInPresentation = !BottomSheet.GetIsDismissible(page);
-				sheet.PrefersGrabberVisible = BottomSheet.GetHasDragHandle(page);
+				// Mac Catalyst shows the page in a window sheet, while the grabber would stay behind on the presenting window.
+				sheet.PrefersGrabberVisible = !OperatingSystem.IsMacCatalyst() && BottomSheet.GetHasDragHandle(page);
 				sheet.PrefersEdgeAttachedInCompactHeight = iOSPage.GetBottomSheetPrefersEdgeAttachedInCompactHeight(page);
 				sheet.PrefersScrollingExpandsWhenScrolledToEdge = iOSPage.GetBottomSheetPrefersScrollingExpandsWhenScrolledToEdge(page);
 

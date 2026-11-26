@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls;
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 				(sheetController.ValueForKey(new NSString("selectedDetentIdentifier")) as NSString)?.ToString() == expectedIdentifier);
 
 			Assert.Equal(!dismissible, wrapper.ModalInPresentation);
-			Assert.Equal(BottomSheet.GetHasDragHandle(sheet), sheetController.PrefersGrabberVisible);
+			Assert.Equal(!OperatingSystem.IsMacCatalyst() && BottomSheet.GetHasDragHandle(sheet), sheetController.PrefersGrabberVisible);
 		}
 
 		// The user dragging the sheet to another detent: UIKit changes the selection and notifies the delegate.
