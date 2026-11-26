@@ -183,6 +183,8 @@ jobs:
             const number = Number(process.env.PR_NUMBER);
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) return;
+            if (labels.some(l => l.name === 's/autopilot-retrying'))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
             await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
 

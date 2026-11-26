@@ -194,16 +194,17 @@ jobs:
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
   autopilot_failed:
-    # PR Autopilot started this run; if it fails, stop the loop visibly instead of stalling.
+    # PR Autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
     needs: [pre_activation, activation, agent, safe_outputs, complete_request]
     if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.agent.result == 'failure' || needs.safe_outputs.result == 'failure' || needs.complete_request.result == 'failure')
     runs-on: ubuntu-slim
     permissions:
+      actions: write
       issues: write
       pull-requests: write
     timeout-minutes: 3
     steps:
-      - name: Stop PR Autopilot
+      - name: Retry or stop PR Autopilot
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
@@ -213,11 +214,20 @@ jobs:
             if (!Number.isSafeInteger(number) || number < 1) return;
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) return;
+            // One automatic retry: a single flaky run should not end an autonomous loop.
+            if (!labels.some(l => l.name === 's/autopilot-retrying')) {
+              await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
+                description: 'PR Autopilot: retrying a step that failed once' }).catch(() => {});
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              return core.info(`#${number}: retrying once.`);
+            }
             for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
               await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
-              body: `⏹️ PR Autopilot stopped: the [MAUI expert review](${url}) failed. A maintainer can comment \`/autopilot\` to retry.\n\n<!-- pr-autopilot-status -->` });
+              body: `⏹️ PR Autopilot stopped: the [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/autopilot\` to try again.\n\n<!-- pr-autopilot-status -->` });
   autopilot_next:
     # PR Autopilot loop: while it runs on this PR, let it decide the next step.
     needs: [pre_activation, activation, complete_request]
@@ -225,7 +235,8 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       actions: write
-      issues: read
+      issues: write
+      pull-requests: write
     timeout-minutes: 3
     steps:
       - name: Continue PR Autopilot
@@ -237,6 +248,8 @@ jobs:
             const number = Number(process.env.PR_NUMBER);
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) return core.info(`#${number}: PR Autopilot is not running.`);
+            if (labels.some(l => l.name === 's/autopilot-retrying'))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
             await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
             core.info(`#${number}: PR Autopilot continues.`);

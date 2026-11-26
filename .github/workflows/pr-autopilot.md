@@ -65,7 +65,9 @@ on:
           };
           const current = new Set(pr.labels.map(l => l.name));
           const setPhase = async phase => {
-            for (const name of [...current].filter(n => n.startsWith('s/autopilot-') && n !== LABEL && n !== `s/autopilot-${phase}`)) {
+            // s/autopilot-retrying is cleared by the step that succeeds, or when the loop stops.
+            const keep = n => n === LABEL || n === `s/autopilot-${phase}` || (phase && n === 's/autopilot-retrying');
+            for (const name of [...current].filter(n => n.startsWith('s/autopilot-') && !keep(n))) {
               await github.rest.issues.removeLabel({ ...repo, issue_number: number, name }).catch(() => {});
               current.delete(name);
             }
