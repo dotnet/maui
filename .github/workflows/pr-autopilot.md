@@ -267,7 +267,18 @@ permissions:
 model: gpt-6.2-sol
 models:
   allowed: ["gpt-6.2-sol", "copilot/gpt-6.2-sol", "openai/gpt-6.2-sol", "github-copilot/gpt-6.2-sol",
-            "mai-code-2", "copilot/mai-code-2", "github-copilot/mai-code-2"]
+            "mai-code-2", "copilot/mai-code-2", "github-copilot/mai-code-2", "MAI Code 2"]
+  # The sandbox catalog does not list MAI Code 2; without this entry the autopilot-mai-fixer sub-agent
+  # cannot resolve its model id. Costs mirror GPT-6.2 Sol and are used only for run accounting.
+  providers:
+    github-copilot:
+      models:
+        mai-code-2:
+          cost:
+            input: "2e-06"
+            output: "1e-05"
+            cache_read: "1e-07"
+            cache_write: "2.5e-06"
 engine:
   id: copilot
   env:
