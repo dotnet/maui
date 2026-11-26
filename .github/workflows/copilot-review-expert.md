@@ -17,6 +17,8 @@ on:
   issue_comment:
     types: [created]
   roles: [admin, maintain, write]
+  # maui-expert-autopilot dispatches the next review round with GITHUB_TOKEN.
+  bots: ["github-actions[bot]"]
   reaction: none
   status-comment: false
   permissions:
@@ -29,6 +31,10 @@ on:
         # Slash-command dispatch cannot require a manual input; intake enforces it.
         required: false
         type: number
+      requested_by:
+        description: Maintainer who started a maui-expert-autopilot loop (set by maui-expert-autopilot)
+        required: false
+        type: string
   steps:
     - name: Authorize exact expert-review command
       id: command
@@ -55,12 +61,18 @@ on:
           } else if (context.eventName === 'workflow_dispatch') {
             number = Number(context.payload.inputs.pr_number);
             actor = context.actor;
+            // maui-expert-autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+            // on behalf of the maintainer who started the loop; that maintainer's access is checked below.
+            if (actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
+              actor = String(context.payload.inputs.requested_by || '');
+            }
           } else {
             return;
           }
           if (!Number.isSafeInteger(number) || number < 1 || number > 2147483647) {
             throw new Error('Expert review requires a positive integer PR number.');
           }
+          if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(actor)) return;
           const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
             ...context.repo, username: actor
           });
@@ -181,6 +193,78 @@ jobs:
             -Stage Complete -PRNumber "$PR_NUMBER" -Repository "$GITHUB_REPOSITORY" \
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
+  autopilot_failed:
+    # maui-expert-autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
+    needs: [pre_activation, activation, agent, safe_outputs, complete_request, autopilot_next]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.agent.result == 'failure' || needs.safe_outputs.result == 'failure' || needs.complete_request.result == 'failure' || needs.autopilot_next.result == 'failure')
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
+    timeout-minutes: 3
+    steps:
+      - name: Retry or stop maui-expert-autopilot
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            if (!Number.isSafeInteger(number) || number < 1) return;
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) {
+              // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              return;
+            }
+            // One automatic retry: a single flaky run should not end an autonomous loop.
+            if (!labels.some(l => l.name === 's/autopilot-retrying')) {
+              await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
+                description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              return core.info(`#${number}: retrying once.`);
+            }
+            for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            // Only the latest maui-expert-autopilot status comment stays visible.
+            const all = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
+            for (const c of all.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
+              await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
+            await github.rest.issues.createComment({ ...context.repo, issue_number: number,
+              body: `## MAUI Autopilot — Stopped\n\n❌ The [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
+  autopilot_next:
+    # maui-expert-autopilot loop: while it runs on this PR, let it decide the next step.
+    needs: [pre_activation, activation, complete_request]
+    if: needs.complete_request.result == 'success' && !cancelled()
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
+    timeout-minutes: 3
+    steps:
+      - name: Continue maui-expert-autopilot
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) {
+              // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              return core.info(`#${number}: maui-expert-autopilot is not running.`);
+            }
+            if (labels.some(l => l.name === 's/autopilot-retrying'))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+              ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+            core.info(`#${number}: maui-expert-autopilot continues.`);
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]
@@ -503,7 +587,8 @@ the write. An invalid inline anchor fails the entire transaction: it never
 falls back to finding text in the review body.
 It publishes only actionable
 inline comments and submits one COMMENT review with a compact trusted receipt:
-`Expert Review - N findings` and a link to the reviewed commit. It also counts
+`Expert Review - N findings` (or `No findings` / `No more findings` after an
+earlier expert review) and a link to the reviewed commit. It also counts
 Behavioral Change Disclosure findings as breaking changes and lists their
 locations as links into the reviewed commit, never their text. Completed
 zero-finding reviews also post this receipt so the requester can see the run.

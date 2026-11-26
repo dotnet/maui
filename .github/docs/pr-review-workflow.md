@@ -390,7 +390,8 @@ non-retried write. This deliberately avoids the pinned generic review buffer's
 invalid-anchor fallback: a rejected anchor fails publication instead of moving
 finding text into the receipt. Deduplication requires the exact sanitized body,
 RIGHT side, path, line and reviewed commit, not a substring match.
-Its compact receipt says **Expert Review - N findings** and links the
+Its compact receipt says **Expert Review - N findings** (**No findings**, or **No more findings** after an earlier
+expert review) and links the
 reviewed commit, including when there are zero findings. The count includes
 already-reported findings; those are not duplicated inline. Behavioral Change
 Disclosure findings (dimension 32: existing apps would look or behave
