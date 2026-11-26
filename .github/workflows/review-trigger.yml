@@ -70,7 +70,7 @@ jobs:
             echo "matched=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|performance)([[:space:]]|$) ]] ||
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|performance|autopilot)([[:space:]]|$) ]] ||
              [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
@@ -95,7 +95,7 @@ jobs:
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|rerun|performance)([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|rerun|performance|autopilot)([[:space:]]|$) ]] &&
               [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
           }
 
@@ -794,7 +794,7 @@ jobs:
                 return
               fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|run-ui-tests|run-device-tests|rerun|performance)([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|run-ui-tests|run-device-tests|rerun|performance|autopilot)([[:space:]]|$) ]] &&
                 [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
             }
 
