@@ -79,6 +79,7 @@ Describe 'CI provisioning' {
 
     It 'stages an unchanged copy of <File>' -TestCases @(
       @{ File = 'src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets' }
+      @{ File = 'src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.After.targets' }
       @{ File = 'src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets' }
       @{ File = 'src/Maui.InTree.props' }
       @{ File = 'src/Maui.InTree.targets' }
