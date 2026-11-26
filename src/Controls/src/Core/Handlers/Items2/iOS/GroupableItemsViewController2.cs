@@ -230,19 +230,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void HandleScrollAnimationEnded()
 		{
-			ScrollAnimationEnded();
-
-			// Clear it first: what it does can raise Scrolled, from which the app can start a newer scroll that leaves what to
-			// do once its own animation ends.
-			var callback = _scrollAnimationEndedCallback;
+			_scrollAnimationEndedCallback?.Invoke();
 			_scrollAnimationEndedCallback = null;
-			callback?.Invoke();
-		}
-
-		internal override void ScrollingToEdge(Action animationEnded)
-		{
-			base.ScrollingToEdge(animationEnded);
-			SetScrollAnimationEndedCallback(animationEnded);
 		}
 
 
