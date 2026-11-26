@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 #if MACCATALYST
 		UIAlertController? _pickerController;
+		MacIdiomMenuButton? _macIdiomMenuButton;
 #endif
 
 #if !MACCATALYST
@@ -40,8 +41,26 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDone() => FinishSelectItem(_pickerView, PlatformView);
 #else
-		protected override MauiPicker CreatePlatformView() =>
-			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
+		protected override MauiPicker CreatePlatformView()
+		{
+			var platformPicker = new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
+
+			// In the Mac idiom UIPickerView throws when it moves to a window, so show the items in a native menu instead.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15) && MacIdiomExtensions.IsMacIdiom)
+			{
+				_macIdiomMenuButton = new MacIdiomMenuButton(this);
+				platformPicker.AddSubview(_macIdiomMenuButton);
+				NSLayoutConstraint.ActivateConstraints(
+				[
+					_macIdiomMenuButton.LeadingAnchor.ConstraintEqualTo(platformPicker.LeadingAnchor),
+					_macIdiomMenuButton.TrailingAnchor.ConstraintEqualTo(platformPicker.TrailingAnchor),
+					_macIdiomMenuButton.TopAnchor.ConstraintEqualTo(platformPicker.TopAnchor),
+					_macIdiomMenuButton.BottomAnchor.ConstraintEqualTo(platformPicker.BottomAnchor),
+				]);
+			}
+
+			return platformPicker;
+		}
 
 		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
@@ -132,6 +151,152 @@ namespace Microsoft.Maui.Handlers
  
 			return viewController;
 		}
+
+		// These run from native menu callbacks, so they use the nullable accessors and locals: raising a picker event can
+		// disconnect the handler.
+		void SelectMacIdiomMenuItem(int index, string item)
+		{
+			if (((IElementHandler)this).VirtualView is not IPicker picker || ((IElementHandler)this).PlatformView is not MauiPicker platformPicker)
+				return;
+
+			// Ignore a menu that was showing while the items changed.
+			if (index >= picker.GetCount() || picker.GetItem(index) != item)
+				return;
+
+			platformPicker.Text = item;
+			picker.SelectedIndex = index;
+			platformPicker.UpdateCharacterSpacing(picker);
+		}
+
+		void OnMacIdiomMenuDisplayed()
+		{
+			if (((IElementHandler)this).VirtualView is IPicker picker)
+				picker.IsFocused = picker.IsOpen = true;
+		}
+
+		void OnMacIdiomMenuEnded()
+		{
+			var platformPicker = ((IElementHandler)this).PlatformView as MauiPicker;
+
+			if (((IElementHandler)this).VirtualView is IPicker picker)
+				picker.IsFocused = picker.IsOpen = false;
+
+			if (platformPicker?.IsFirstResponder == true)
+				platformPicker.ResignFirstResponder();
+		}
+
+		// An invisible button over the picker field that shows the items in a native menu when the app uses the Mac idiom.
+		sealed class MacIdiomMenuButton : UIButton
+		{
+			readonly WeakReference<PickerHandler> _handler;
+			bool _isDisconnected;
+
+			public MacIdiomMenuButton(PickerHandler handler)
+			{
+				_handler = new(handler);
+				TranslatesAutoresizingMaskIntoConstraints = false;
+				// Lets VoiceOver interact with the picker field itself, which opens the menu when it gets focus.
+				IsAccessibilityElement = false;
+
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					// The Pad behavioral style keeps the Mac idiom from drawing a push button bezel over the field.
+					PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+					ShowsMenuAsPrimaryAction = true;
+					// The items are built each time the menu opens, so they reflect the current items and selection.
+					var weakButton = new WeakReference<MacIdiomMenuButton>(this);
+					Menu = UIMenu.Create([UIDeferredMenuElement.CreateUncached(completion =>
+						completion(weakButton.TryGetTarget(out var button) ? button.CreateMenuItems() : []))]);
+				}
+			}
+
+			public bool IsMenuOpen { get; private set; }
+
+			public void UpdateIsOpen(bool isOpen)
+			{
+				if (isOpen && !IsMenuOpen)
+				{
+					// Presenting a control's menu programmatically needs Mac Catalyst 17.4; earlier versions open it on click only.
+					// When it's shown, WillDisplayMenu runs before PerformPrimaryAction returns.
+					if (OperatingSystem.IsMacCatalystVersionAtLeast(17, 4) && Superview is UIControl { Enabled: true })
+						PerformPrimaryAction();
+
+					if (!IsMenuOpen)
+					{
+						// The menu couldn't be shown, so don't leave the picker focused and open. This runs after the current
+						// property change completes, so it can't be overwritten by the caller.
+						CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+						{
+							if (!IsMenuOpen)
+								Handler?.OnMacIdiomMenuEnded();
+						});
+					}
+				}
+				else if (!isOpen && IsMenuOpen)
+				{
+					// On Mac this may not close a menu that is already showing; the user closes it with a click or Escape.
+					ContextMenuInteraction?.DismissMenu();
+				}
+			}
+
+			PickerHandler? Handler => !_isDisconnected && _handler.TryGetTarget(out var handler) ? handler : null;
+
+			// A menu that is already showing can outlive the handler, so its callbacks must not reach the handler afterwards.
+			public void Disconnect()
+			{
+				_isDisconnected = true;
+				Menu = null;
+			}
+
+			UIMenuElement[] CreateMenuItems()
+			{
+				if (Handler is not PickerHandler handler || ((IElementHandler)handler).VirtualView is not IPicker picker)
+					return [];
+
+				var count = picker.GetCount();
+				var items = new UIMenuElement[count];
+
+				for (int i = 0; i < count; i++)
+				{
+					var index = i;
+					var item = picker.GetItem(i) ?? string.Empty;
+					var weakButton = new WeakReference<MacIdiomMenuButton>(this);
+					var action = UIAction.Create(item, null, null, _ =>
+					{
+						if (weakButton.TryGetTarget(out var button))
+							button.Handler?.SelectMacIdiomMenuItem(index, item);
+					});
+
+					action.State = i == picker.SelectedIndex ? UIMenuElementState.On : UIMenuElementState.Off;
+					items[i] = action;
+				}
+
+				return items;
+			}
+
+			public override UIView? HitTest(CoreGraphics.CGPoint point, UIEvent? uievent)
+			{
+				// MAUI disables the picker field (a UIControl) for IsEnabled = false, which doesn't stop its subviews receiving clicks.
+				if (Superview is UIControl { Enabled: false })
+					return null;
+
+				return base.HitTest(point, uievent);
+			}
+
+			public override void WillDisplayMenu(UIContextMenuInteraction interaction, UIContextMenuConfiguration configuration, IUIContextMenuInteractionAnimating? animator)
+			{
+				base.WillDisplayMenu(interaction, configuration, animator);
+				IsMenuOpen = true;
+				Handler?.OnMacIdiomMenuDisplayed();
+			}
+
+			public override void WillEnd(UIContextMenuInteraction interaction, UIContextMenuConfiguration configuration, IUIContextMenuInteractionAnimating? animator)
+			{
+				base.WillEnd(interaction, configuration, animator);
+				IsMenuOpen = false;
+				Handler?.OnMacIdiomMenuEnded();
+			}
+		}
 #endif
 
 		internal bool UpdateImmediately { get; set; }
@@ -153,6 +318,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				_pickerController.DismissViewController(false, null);
 				_pickerController = null;
+			}
+
+			if (_macIdiomMenuButton is not null)
+			{
+				// Not disposed: a menu that is already showing on Mac can't be closed and still calls back into the button.
+				_macIdiomMenuButton.Disconnect();
+				_macIdiomMenuButton.RemoveFromSuperview();
+				_macIdiomMenuButton = null;
 			}
 #endif
 
@@ -185,6 +358,16 @@ namespace Microsoft.Maui.Handlers
 		// This allows external code to close the picker (e.g., clicking outside, navigation)
 		internal static async void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
 		{
+			if (handler is PickerHandler { _macIdiomMenuButton: { } menuButton } macIdiomHandler)
+			{
+				if (menuButton.IsMenuOpen)
+					menuButton.UpdateIsOpen(false);
+				else
+					macIdiomHandler.OnMacIdiomMenuEnded();
+
+				return;
+			}
+
 			if (handler is PickerHandler pickerHandler && 
 				pickerHandler._pickerController is not null)
 			{
@@ -247,6 +430,13 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
+#if MACCATALYST
+			if (handler is PickerHandler { _macIdiomMenuButton: { } menuButton })
+			{
+				menuButton.UpdateIsOpen(picker.IsOpen);
+				return;
+			}
+#endif
 			handler.PlatformView?.UpdateIsOpen(picker);
 		}
 
@@ -389,6 +579,14 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is not PickerHandler handler)
 					return;
 
+				// In the Mac idiom, setting IsOpen above usually opened the menu already; this also covers IsOpen having been
+				// true before. The menu closes itself on an outside click.
+				if (handler._macIdiomMenuButton is { } menuButton)
+				{
+					menuButton.UpdateIsOpen(true);
+					return;
+				}
+
 				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
 				handler.DisplayAlert(handler.PlatformView, selectedIndex);
 #endif
@@ -398,6 +596,16 @@ namespace Microsoft.Maui.Handlers
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				Handler?.RemoveTouchDismissGesture();
+
+#if MACCATALYST
+				// In the Mac idiom the field can lose focus without a menu showing (for example on Tab).
+				if (Handler is PickerHandler { _macIdiomMenuButton.IsMenuOpen: false } && VirtualView is IPicker macIdiomPicker)
+				{
+					macIdiomPicker.IsFocused = macIdiomPicker.IsOpen = false;
+					return;
+				}
+#endif
+
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
 
