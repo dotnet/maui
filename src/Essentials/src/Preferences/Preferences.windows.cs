@@ -108,9 +108,6 @@ namespace Microsoft.Maui.Storage
 
 		public T Get<T>(string key, T defaultValue, string sharedName)
 		{
-			if (typeof(T).IsEnum)
-				return (T)Enum.ToObject(typeof(T), Get(key, Preferences.EnumToInt64(defaultValue), sharedName));
-
 			lock (locker)
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
@@ -119,6 +116,10 @@ namespace Microsoft.Maui.Storage
 					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
 					{
+						// New enum writes use Int64. The existing cast below still reads legacy underlying values.
+						if (tempValue is long enumValue && typeof(T).IsEnum)
+							return (T)Enum.ToObject(typeof(T), enumValue);
+
 						if (defaultValue is DateTime dt)
 						{
 							return (T)(object)DateTime.FromBinary((long)tempValue);

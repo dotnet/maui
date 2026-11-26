@@ -332,6 +332,29 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 #if WINDOWS
+		[Theory]
+		[InlineData(null)]
+		[InlineData(sharedNameTestData)]
+		public void Get_Enum_From_Legacy_Int_Packaged_Windows(string sharedName)
+		{
+			if (!AppInfoUtils.IsPackagedApp)
+				return;
+
+			const string key = nameof(Get_Enum_From_Legacy_Int_Packaged_Windows);
+			var preferences = Preferences.Default;
+
+			try
+			{
+				preferences.Set(key, (int)AppTheme.Dark, sharedName);
+
+				Assert.Equal(AppTheme.Dark, preferences.Get(key, AppTheme.Light, sharedName));
+			}
+			finally
+			{
+				preferences.Remove(key, sharedName);
+			}
+		}
+
 		[Fact]
 		public void DateTime_Supports_Reading_String_Compat()
 		{
