@@ -54,7 +54,8 @@ namespace Microsoft.Maui.Hosting
 						effectRegistration.AddRegistration(this);
 					}
 				}
-				HotReload.MauiHotReloadHelper.RegisterHandlers(this);
+				if (RuntimeFeature.IsHotReloadEnabled)
+					HotReload.MauiHotReloadHelper.RegisterHandlers(this);
 			}
 		}
 	}

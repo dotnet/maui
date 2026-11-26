@@ -16,7 +16,7 @@
          registry calls and runtime switch trim away. Set <EnableMauiIncrementalHotReload>false</...> to
          opt out (legacy XAML Hot Reload remains available as a fallback). Resolves to an explicit
          true/false so the value always flows to the source generator and runtime config. -->
-    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == '' and '$(Configuration)' == 'Debug'">true</EnableMauiIncrementalHotReload>
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == '' and '$(Configuration)' == 'Debug' and '$(MauiEnableHotReload)' != 'false' and '$(Optimize)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full'">true</EnableMauiIncrementalHotReload>
     <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">false</EnableMauiIncrementalHotReload>
 
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->

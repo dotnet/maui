@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Hosting.Internal
 				&& serviceDescriptor is not null
 				&& GetService(serviceType, implementationFactoryServiceProvider) is IElementHandler handler)
 			{
-				HotReload.MauiHotReloadHelper.RegisterHandlerType(serviceDescriptor, handler.GetType());
+				if (RuntimeFeature.IsHotReloadEnabled)
+					HotReload.MauiHotReloadHelper.RegisterHandlerType(serviceDescriptor, handler.GetType());
 				return handler;
 			}
 
