@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 	[QueryProperty(nameof(ID), nameof(ID))]
-	public partial class Issue33420DetailsPage : ContentPage
+	public class Issue33420DetailsPage : ContentPage
 	{
 		private readonly Label _resultLabel;
 
