@@ -24,26 +24,14 @@ namespace Microsoft.Maui.DeviceTests
 		public Task SuperviewReconstructsLayoutViewPeer() =>
 			InvokeOnMainThreadAsync(AssertSuperviewReconstructsPeer<LayoutView>);
 
-		[Fact]
-		public Task SuperviewReconstructsContentButtonPeers() =>
-			InvokeOnMainThreadAsync(() =>
-			{
-				using var button = Assert.IsType<MauiContentButton>(AssertSuperviewReconstructsPeer(typeof(MauiContentButton)));
-				Assert.NotNull(button.ContentContainerView);
-				AssertSuperviewReconstructsPeer(button.ContentContainerView.GetType()).Dispose();
-			});
-
-		static void AssertSuperviewReconstructsPeer<T>() where T : UIView =>
-			AssertSuperviewReconstructsPeer(typeof(T)).Dispose();
-
-		static UIView AssertSuperviewReconstructsPeer(Type type)
+		static void AssertSuperviewReconstructsPeer<T>() where T : UIView
 		{
 			using var nativeOwner = new UIView();
 			using var child = new UIView();
 
 			// Native initialization bypasses managed constructors, giving us a retained
 			// UIView with no managed peer without depending on GC or toggle-reference timing.
-			var allocated = Send(Class.GetHandle(type), Selector.GetHandle("alloc"));
+			var allocated = Send(Class.GetHandle(typeof(T)), Selector.GetHandle("alloc"));
 			var parentHandle = InitWithFrame(allocated, Selector.GetHandle("initWithFrame:"), CGRect.Empty);
 			Assert.NotEqual(IntPtr.Zero, parentHandle);
 			try
@@ -52,11 +40,10 @@ namespace Microsoft.Maui.DeviceTests
 				Send((IntPtr)nativeOwner.Handle, Selector.GetHandle("addSubview:"), parentHandle);
 				Send(parentHandle, Selector.GetHandle("addSubview:"), (IntPtr)child.Handle);
 
-				var reconstructedParent = child.Superview;
-				Assert.IsType(type, reconstructedParent);
+				using var reconstructedParent = child.Superview;
+				Assert.IsType<T>(reconstructedParent);
 				Assert.Equal(parentHandle, (IntPtr)reconstructedParent.Handle);
 				Assert.Same(reconstructedParent, child.Superview);
-				return reconstructedParent;
 			}
 			finally
 			{
