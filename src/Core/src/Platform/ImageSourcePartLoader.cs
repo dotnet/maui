@@ -73,12 +73,12 @@ namespace Microsoft.Maui.Platform
 				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
 					.ConfigureAwait(false);
 
-				SourceManager.CompleteLoad(result);
+				SourceManager.CompleteLoad(result, token);
 #elif ANDROID
 				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
 					.ConfigureAwait(false);
 
-				SourceManager.CompleteLoad(result);
+				SourceManager.CompleteLoad(result, token);
 #else
 				await Task.CompletedTask;
 #endif

@@ -20,12 +20,20 @@ namespace Microsoft.Maui
 {
 	internal class ImageSourceServiceResultManager
 	{
+		readonly object _loadLock = new();
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
 
-		public bool IsLoading => _sourceCancellation is not null;
-		public CancellationToken Token =>
-			_sourceCancellation?.Token ?? default;
+		public bool IsLoading
+		{
+			get
+			{
+				lock (_loadLock)
+				{
+					return _sourceCancellation is not null;
+				}
+			}
+		}
 
 		public bool IsResolutionDependent { get; private set; }
 
@@ -33,23 +41,37 @@ namespace Microsoft.Maui
 
 		public CancellationToken BeginLoad()
 		{
-			_sourceResult?.Dispose();
+			var cancellation = new CancellationTokenSource();
+			var token = cancellation.Token;
+			CancellationTokenSource? previousCancellation;
+			IDisposable? previousResult;
 
-			_sourceCancellation?.Cancel();
-			_sourceCancellation = new CancellationTokenSource();
+			lock (_loadLock)
+			{
+				previousCancellation = _sourceCancellation;
+				previousResult = _sourceResult;
+				_sourceCancellation = cancellation;
+				_sourceResult = null;
+			}
 
-			return Token;
+			// Cancellation callbacks can complete the previous load synchronously.
+			using (previousCancellation)
+			{
+				previousCancellation?.Cancel();
+			}
+
+			previousResult?.Dispose();
+			return token;
 		}
 
-		public void CompleteLoad<T>(IImageSourceServiceResult<T>? result, PlatformView uiContext)
+		public void CompleteLoad<T>(IImageSourceServiceResult<T>? result, PlatformView uiContext, CancellationToken token)
 		{
-			CompleteLoad((IDisposable?)result);
-
-			IsResolutionDependent = result?.IsResolutionDependent ?? false;
-
 #if IOS || MACCATALYST || WINDOWS
-			CurrentResolution = uiContext.GetDisplayDensity();
+			var resolution = uiContext.GetDisplayDensity();
+#else
+			const float resolution = 1.0f;
 #endif
+			CompleteLoad(result, token, result?.IsResolutionDependent ?? false, resolution);
 		}
 
 		public bool RequiresReload(PlatformView uiContext)
@@ -68,20 +90,37 @@ namespace Microsoft.Maui
 			return false;
 		}
 
-		public void CompleteLoad(IDisposable? result)
-		{
-			_sourceResult = result;
-			_sourceCancellation?.Dispose();
-			_sourceCancellation = null;
+		public void CompleteLoad(IDisposable? result, CancellationToken token) =>
+			CompleteLoad(result, token, false, 1.0f);
 
-			IsResolutionDependent = false;
-			CurrentResolution = 1.0f;
+		void CompleteLoad(IDisposable? result, CancellationToken token, bool isResolutionDependent, float resolution)
+		{
+			CancellationTokenSource? cancellation = null;
+			lock (_loadLock)
+			{
+				if (_sourceCancellation is { } current && current.Token == token)
+				{
+					cancellation = current;
+					_sourceCancellation = null;
+					_sourceResult = result;
+					IsResolutionDependent = isResolutionDependent;
+					CurrentResolution = resolution;
+				}
+			}
+
+			if (cancellation is null)
+			{
+				result?.Dispose();
+				return;
+			}
+
+			cancellation.Dispose();
 		}
 
 		public void Reset()
 		{
-			BeginLoad();
-			CompleteLoad(null);
+			var token = BeginLoad();
+			CompleteLoad(null, token);
 		}
 	}
 }
