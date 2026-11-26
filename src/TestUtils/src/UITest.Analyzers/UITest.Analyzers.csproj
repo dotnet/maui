@@ -5,12 +5,7 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!--
-      RS1038: the code fix providers need Microsoft.CodeAnalysis.Workspaces, which the command-line compiler
-      doesn't load. The analyzer types don't use Workspaces APIs, so the compiler can run them. The code fixes are
-      only loaded by IDEs, which provide Workspaces. This test-only analyzer isn't shipped.
-    -->
-    <NoWarn>$(NoWarn);RS2008;RS1038</NoWarn>
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
   </PropertyGroup>
 
   
@@ -20,7 +15,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
   </ItemGroup>
 
 </Project>
