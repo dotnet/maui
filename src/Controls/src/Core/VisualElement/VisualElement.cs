@@ -2420,7 +2420,7 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				shadow.Parent = this;
+				shadow.SetParent(this, isNonExclusive: true);
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);

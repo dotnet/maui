@@ -9,6 +9,12 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
+	[CollectionDefinition(nameof(StyleTests), DisableParallelization = true)]
+	public class StyleTestsCollection
+	{
+	}
+
+	[Collection(nameof(StyleTests))]
 	public class StyleTests : BaseTestFixture
 	{
 
@@ -48,6 +54,182 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.Style = null;
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 			Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, label.BackgroundColor);
+		}
+
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public void SharedShadowDoesNotLogChildWarning(bool useStyle, bool useDerivedShadow)
+		{
+			var shadow = useDerivedShadow ? new DerivedShadow() : new Shadow();
+			var resources = new ResourceDictionary { { "CardShadow", shadow } };
+			var style = new Style(typeof(ContentView))
+			{
+				Setters = { new Setter { Property = VisualElement.ShadowProperty, Value = resources["CardShadow"] } }
+			};
+			var first = new ContentView();
+			var second = new ContentView();
+
+			if (useStyle)
+			{
+				first.Style = style;
+				second.Style = style;
+			}
+			else
+			{
+				first.Shadow = (Shadow)resources["CardShadow"];
+				second.Shadow = (Shadow)resources["CardShadow"];
+			}
+
+			Assert.Same(shadow, first.Shadow);
+			Assert.Same(shadow, second.Shadow);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+
+			int firstChanges = 0, secondChanges = 0;
+			first.PropertyChanged += (_, e) => firstChanges += e.PropertyName == nameof(VisualElement.Shadow) ? 1 : 0;
+			second.PropertyChanged += (_, e) => secondChanges += e.PropertyName == nameof(VisualElement.Shadow) ? 1 : 0;
+			shadow.Radius = 24;
+
+			Assert.True(firstChanges > 0);
+			Assert.True(secondChanges > 0);
+			first.Shadow = null;
+			Assert.Same(second, shadow.Parent);
+			second.Shadow = null;
+			Assert.Null(shadow.Parent);
+		}
+
+		[Fact]
+		public void SharedShadowRetainsInheritedStyleResourcesAndBinding()
+		{
+			var shadow = new Shadow();
+			shadow.SetBinding(Shadow.OpacityProperty, new Binding("Opacity"));
+			var style = new Style(typeof(Shadow))
+			{
+				Setters = { new Setter { Property = Shadow.RadiusProperty, Value = new DynamicResource("ShadowRadius") } }
+			};
+			var first = new ContentView
+			{
+				BindingContext = new { Opacity = 0.3f },
+				Resources = new ResourceDictionary { { typeof(Shadow).FullName, style }, { "ShadowRadius", 12f } },
+				Shadow = shadow
+			};
+			Assert.Equal(12f, shadow.Radius);
+			Assert.Equal(0.3f, shadow.Opacity);
+
+			var second = new ContentView
+			{
+				BindingContext = new { Opacity = 0.6f },
+				Resources = new ResourceDictionary { { typeof(Shadow).FullName, style }, { "ShadowRadius", 16f } },
+				Shadow = shadow
+			};
+			Assert.Equal(16f, shadow.Radius);
+			Assert.Equal(0.6f, shadow.Opacity);
+
+			first.Resources["ShadowRadius"] = 20f;
+			Assert.Equal(16f, shadow.Radius);
+			second.Resources["ShadowRadius"] = 24f;
+			Assert.Equal(24f, shadow.Radius);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReparentingContentStillLogsChildWarning()
+		{
+			var child = new Label();
+			var first = new ContentView { Content = child };
+			var second = new ContentView { Content = child };
+
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+			Assert.Same(second, child.Parent);
+			GC.KeepAlive(first);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		[InlineData(2)]
+		public void ReparentingOwnedShadowStillLogsChildWarning(int attachmentOrder)
+		{
+			var shadow = new DerivedShadow();
+			var first = new ContentView();
+			if (attachmentOrder == 1)
+				first.Shadow = shadow;
+			first.AddLogicalChild(shadow);
+			if (attachmentOrder == 2)
+				first.Shadow = shadow;
+
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Contains(shadow, first.LogicalChildrenInternal);
+			Assert.Same(second, shadow.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ReparentingSharedShadowAsLogicalChildDoesNotLogChildWarning()
+		{
+			var shadow = new Shadow();
+			var first = new ContentView { Shadow = shadow };
+			var second = new ContentView();
+			second.AddLogicalChild(shadow);
+
+			Assert.Same(second, shadow.Parent);
+			Assert.Same(shadow, first.Shadow);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReassigningSameParentKeepsShadowShareable()
+		{
+			var shadow = new Shadow();
+			var first = new ContentView { Shadow = shadow };
+			shadow.Parent = first;
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Same(second, shadow.Parent);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReparentingShadowUsedAsGestureStillLogsChildWarning()
+		{
+			var shadow = new GestureShadow();
+			var first = new ContentView { Shadow = shadow };
+			first.GestureRecognizers.Add(shadow);
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Contains(shadow, first.GestureRecognizers);
+			Assert.Same(second, shadow.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ReparentingGestureStillLogsChildWarning()
+		{
+			var gesture = new TapGestureRecognizer();
+			var first = new ContentView();
+			var second = new ContentView();
+			first.GestureRecognizers.Add(gesture);
+			second.GestureRecognizers.Add(gesture);
+
+			Assert.Contains(gesture, first.GestureRecognizers);
+			Assert.DoesNotContain(gesture, first.LogicalChildrenInternal);
+			Assert.Same(second, gesture.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		class DerivedShadow : Shadow
+		{
+		}
+
+		class GestureShadow : Shadow, IGestureRecognizer
+		{
 		}
 
 		[Fact]
