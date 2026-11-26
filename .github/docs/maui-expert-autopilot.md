@@ -98,12 +98,12 @@ How the fixes are published:
 The top level of the PR stays quiet. It gets two comments:
 
 - a **start** comment, "maui-expert-autopilot — Started", with collapsed **Models** and **Info** (what each label means) sections,
-- a **finish** comment, "maui-expert-autopilot — Ready for maintainer review", with a table showing the clean
-  expert review commit, the test result, and the number of review threads resolved. Threads that need a decision
-  are listed by their titles.
+- a **finish** comment, "maui-expert-autopilot — Ready for maintainer review", with collapsed **Results** (the clean
+  expert review commit, the test result, review threads resolved) and, when needed, **Needs a decision** (threads
+  left unchanged, by title). This comment is never hidden.
 
-Only the latest of these status comments stays visible: when a new one is posted, the earlier ones are hidden as
-resolved, like `/review` command comments. Commits, expert reviews, and test runs show up as normal timeline events. When maui-expert-autopilot runs the tests,
+Only the latest status comment (started, stopped) stays visible: when a new one is posted, the earlier ones are hidden
+as resolved, like `/review` command comments. The finish comment is not hidden. Commits, expert reviews, and test runs show up as normal timeline events. When maui-expert-autopilot runs the tests,
 the run-tests comment leaves out its requester line.
 
 In each review thread it handled, a fix round replies with one of:

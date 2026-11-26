@@ -56,11 +56,11 @@ on:
           const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number: number });
           const hasLabel = pr.labels.some(l => l.name === LABEL);
           // Only the latest status comment stays visible: earlier ones are hidden as resolved.
-          const comment = async body => {
+          const comment = async (body, marker = 'maui-expert-autopilot-status') => {
             const all = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 });
             for (const c of all.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
               await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(e => core.warning(`Could not hide ${c.id}: ${e.message}`));
-            return github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- maui-expert-autopilot-status -->` });
+            return github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- ${marker} -->` });
           };
           // Phase labels: exactly one of these sits next to s/autopilot-running while the loop runs.
           const PHASES = {
@@ -83,11 +83,12 @@ on:
             await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [`s/autopilot-${phase}`] });
             current.add(`s/autopilot-${phase}`);
           };
+          // The final result comment stays visible; only status comments get hidden.
           const stopLoop = async (reason, phase = '') => {
             if (current.has(LABEL)) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});
             current.delete(LABEL);
             await setPhase(phase);
-            if (reason) await comment(reason);
+            if (reason) await comment(reason, phase === 'waiting-for-maintainer-review' ? 'maui-expert-autopilot-result' : undefined);
           };
           const canWrite = async login => {
             if (!USER.test(login || '')) return false;
@@ -205,12 +206,16 @@ on:
                 note = [
                   '## maui-expert-autopilot — Ready for maintainer review',
                   '',
+                  '<details><summary>Results</summary>',
+                  '',
                   '| | |',
                   '|---|---|',
-                  `| Expert review | Clean on [\`${short}\`](${pr.html_url}/commits/${head}) |`,
+                  `| Expert review | No more findings on [\`${short}\`](${pr.html_url}/commits/${head}) |`,
                   `| Tests | ${testsCell} |`,
                   `| Review threads | ${threadsCell} |`,
-                  ...(undecided.length ? ['', '**Needs a decision**: left unchanged, the reason is in each thread.', '', ...undecided.map(u => `- ${u}`)] : []),
+                  '',
+                  '</details>',
+                  ...(undecided.length ? ['', '<details><summary>Needs a decision</summary>', '', "Left unchanged; the reason is in each thread.", '', ...undecided.map(u => `- ${u}`), '', '</details>'] : []),
                 ].join('\n');
               }
             }
@@ -398,8 +403,10 @@ jobs:
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(target) } });
             core.info(`#${target}: next round requested.`);
 
+# Commands (/review autopilot, /review autopilot stop) run at once in their own group, so a stop is never queued
+# behind a fix round or dropped as a superseded pending run. Loop steps are serialized per PR.
 concurrency:
-  group: "maui-expert-autopilot-${{ github.event.issue.number || inputs.pr_number }}"
+  group: "maui-expert-autopilot-${{ github.event.issue.number || inputs.pr_number }}-${{ github.event.comment.id || 'loop' }}"
   cancel-in-progress: false
 
 permissions:
