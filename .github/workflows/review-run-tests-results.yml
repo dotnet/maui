@@ -37,6 +37,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      # Continues PR Autopilot when a run finishes.
+      actions: write
       checks: write
       # Deletes expired run-tests/* dispatch branches.
       contents: write
@@ -48,6 +50,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: .github/scripts
       - name: Update run-tests comments
+        id: update
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.check_run.head_sha || inputs.head_sha }}
@@ -56,3 +59,21 @@ jobs:
           $arguments = @{}
           if ($env:HEAD_SHA) { $arguments.HeadSha = $env:HEAD_SHA }
           ./.github/scripts/Update-RunTestsResults.ps1 @arguments
+
+      - name: Continue PR Autopilot
+        # A finished run-tests comment is PR Autopilot's cue: fix failing tests, or finish.
+        if: steps.update.outputs.finished_prs != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          FINISHED_PRS: ${{ steps.update.outputs.finished_prs }}
+        with:
+          script: |
+            for (const value of process.env.FINISHED_PRS.split(',')) {
+              const number = Number(value);
+              if (!Number.isSafeInteger(number) || number < 1) continue;
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+              if (!labels.some(l => l.name === 's/autopilot-running')) continue;
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              core.info(`#${number}: PR Autopilot continues.`);
+            }

@@ -23,6 +23,8 @@ on:
   reaction: none
   status-comment: false
   roles: [admin, maintain, write]
+  # PR Autopilot dispatches this with GITHUB_TOKEN on behalf of the maintainer who started it.
+  bots: ["github-actions[bot]"]
   permissions:
     contents: read
     issues: write
@@ -48,9 +50,16 @@ on:
           }
           core.setOutput('suite', suite);
           const { owner, repo } = context.repo;
-          const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: context.actor });
+          // PR Autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+          // on behalf of the maintainer who started it; check that maintainer's access instead.
+          let actor = context.actor;
+          if (context.eventName === 'workflow_dispatch' && actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
+            actor = String(context.payload.inputs?.requested_by || '');
+            if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(actor)) return;
+          }
+          const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });
           if (!['admin', 'maintain', 'write'].includes(data.permission)) {
-            core.info(`${context.actor} has ${data.permission} access; /review run-tests needs write.`);
+            core.info(`${actor} has ${data.permission} access; /review run-tests needs write.`);
             return;
           }
           core.setOutput('authorized', 'true');
@@ -104,6 +113,10 @@ on:
         options: [all, ui, device]
         default: all
         required: false
+      requested_by:
+        description: Maintainer who started PR Autopilot (set by PR Autopilot)
+        type: string
+        required: false
 
 if: needs.pre_activation.outputs.context_ready == 'true'
 
@@ -138,9 +151,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REQUESTED_BY: ${{ github.event.inputs.requested_by }}
         run: |
           gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
+            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 safe-outputs:
   report-failure-as-issue: false
@@ -225,9 +239,10 @@ safe-outputs:
             GH_TOKEN: ${{ github.token }}
             PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
             DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+            REQUESTED_BY: ${{ github.event.inputs.requested_by }}
           run: |
             gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-              -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
+              -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 tools:
   github:

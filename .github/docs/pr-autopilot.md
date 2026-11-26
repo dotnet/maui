@@ -5,45 +5,87 @@ themselves. The PR template has one checkbox:
 
 > - [ ] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**
 
-Nothing happens unless that box is ticked. Maintainers always decide whether a PR is merged.
+When it's ticked, **one `/autopilot` comment from a maintainer** drives the PR until the MAUI expert reviewer has
+no findings and the relevant tests pass. Maintainers still decide whether the PR is merged.
 
-## The review → fix loop
+## The loop
 
 ```mermaid
-flowchart LR
-    S["/autopilot or<br/>s/agent-changes-requested"] --> R["MAUI expert reviewer<br/>(copilot-review-expert)"]
-    R -- "findings, opted in,<br/>fewer than 3 rounds" --> F["PR Autopilot<br/>fixes findings, pushes"]
+flowchart TD
+    A["/autopilot<br/>(maintainer)"] --> R["MAUI expert review<br/>copilot-review-expert"]
+    R -- "findings" --> F["Fix round<br/>GPT-6.2 Sol vs MAI Code 2"]
     F -- "pushed" --> R
-    R -- "no findings" --> M["Maintainer review"]
-    F -- "nothing fixed" --> M
+    R -- "no findings" --> T["/review run-tests<br/>GPT-6.2 Sol + MAI Code 2 select tests"]
+    T -- "failing tests" --> F
+    T -- "pass" --> D["Done: ready for maintainer review"]
+    F -- "nothing fixable" --> S["Stopped"]
 ```
 
-1. **Start.** A maintainer comments `/autopilot`, the AI review (`/review`) adds `s/agent-changes-requested`, or a
-   maintainer runs the workflow manually.
-2. **Review.** If the PR head has no MAUI expert review yet, [`pr-autopilot`](../workflows/pr-autopilot.md)
-   dispatches [`copilot-review-expert`](../workflows/copilot-review-expert.md). That is the same expert reviewer as
-   `/review expert-review`, with its dimension workers. It posts `## Expert Review — N findings` with inline comments.
-3. **Fix.** When the PR is opted in, N > 0, and fewer than 3 autopilot rounds have run, the expert workflow's
-   `autopilot_next` job dispatches PR Autopilot. The agent fixes the critical and major findings. It also fixes
-   small, safe moderate and minor findings, maintainer feedback, the AI review findings, and failing checks.
-   Wherever it fixes a bug, it adds a regression test. It runs the unit tests it can, then publishes:
-   - **Same-repository PRs:** it pushes one commit per fix to the PR branch.
-   - **Fork PRs:** gh-aw cannot push to contributor forks, so it opens an `[autopilot]` follow-up PR. That PR keeps
-     the contributor's commits and adds the fixes. The loop continues on the follow-up PR.
+[`pr-autopilot`](../workflows/pr-autopilot.md) is the single state machine. Each time it's started, it looks at the PR
+head and does the next step:
 
-   It posts one comment per round: what it fixed, what it didn't fix and why, and what it validated.
-4. **Repeat.** After a push, `next_review` asks the expert reviewer for the next round. The loop stops when a review
-   has no findings, when nothing could be fixed, or after 3 rounds. Then maintainers take over.
+| State of the PR head | Next step |
+|---|---|
+| No `## Expert Review` | Request one from [`copilot-review-expert`](../workflows/copilot-review-expert.md), the same reviewer as `/review expert-review` |
+| Expert review has findings | **Fix round** |
+| Expert review is clean, no test run yet | Request [`/review run-tests`](../workflows/copilot-review-run-tests.md). GPT-6.2 Sol and MAI Code 2 each select the relevant UI and device tests, and the union runs in `maui-pr-uitests` / `maui-pr-devicetests` |
+| Tests running | Wait |
+| Tests failed | **Fix round** for the failures this PR causes |
+| Tests passed (or nothing to run) | Done: comment, remove the label |
+| Test run could not complete | Stop: comment, remove the label |
+
+Each step starts `pr-autopilot` again when it finishes, while the PR has `s/autopilot-running`:
+
+- the expert reviewer's `autopilot_next` job,
+- `review-run-tests-dispatch` after it queues the tests,
+- `review-run-tests-results` when the run finishes,
+- `pr-autopilot`'s own `next_round` after a fix is pushed.
+
+The loop has no round limit. It stops when:
+
+- the tests pass,
+- a fix round finds nothing it can fix,
+- a maintainer comments `/autopilot stop` or removes `s/autopilot-running`,
+- the author unticks the checkbox,
+- the PR is closed,
+- the maintainer who started the loop loses write access.
+
+### Fix rounds use two models
+
+The main agent (GPT-6.2 Sol) writes down the items to fix. Each model then fixes them independently in its own
+worktree:
+
+- GPT-6.2 Sol, in the main agent,
+- MAI Code 2, through the in-workflow `autopilot-mai-fixer` agent.
+
+The main agent compares the two candidates item by item. It considers correctness, regression tests, size, the
+repo guidance, and validation results, and keeps the better fix. It then runs the unit tests it can and commits one
+commit per item.
+
+The items come from:
+
+- the expert review: all critical and major findings, plus small and safe moderate and minor ones,
+- failing tests the PR causes: the round lists infrastructure and known-flaky failures instead of fixing them,
+- open maintainer requests.
+
+How the fixes are published:
+
+- **Same-repository PRs:** the round pushes to the PR branch.
+- **Fork PRs:** gh-aw cannot push to contributor forks, so the round opens an `[autopilot]` follow-up PR. That PR
+  keeps the contributor's commits, and the loop moves to it.
+
+Each round posts one comment. It lists every item, which model's fix was kept and why, what it didn't fix, and what
+it validated.
 
 ## Security
 
-- The agent never merges, approves, retargets, or closes PRs. It only changes files under `src/`.
+- Every step acts on behalf of the maintainer who commented `/autopilot` (`requested_by`). PR Autopilot, the expert
+  reviewer (`Review-Expert.ps1`), and run-tests (`Invoke-RunTests.ps1`) each re-check that maintainer's write
+  access. Only workflows in this repository can start a step as `github-actions[bot]`.
 - The agent job has read-only GitHub permissions. Pushes, PRs, and comments go through gh-aw safe outputs, which
-  target only the opted-in PR. Threat detection checks the patch first.
-- It acts only on feedback from the expert reviewer, maintainers (owner, member, or collaborator), and the AI
-  review. It treats the PR description, diff, and other comments as data.
+  target only the PR being driven. Threat detection checks the patch first. The agent only changes files under
+  `src/`, and it never merges, approves, retargets, or closes PRs.
 - The Copilot CLI loads `.github/` and `AGENTS.md` from the trusted base checkout, overlaid on the PR checkout and
   hidden from git. A PR cannot change the agent's instructions.
-- Every round acts on behalf of the maintainer who started the loop (`requested_by`). Each workflow re-checks that
-  maintainer's current write access before a round runs, and the expert reviewer records them as the requester.
-- Pushed commits use `GITHUB_TOKEN`, so they don't start CI by themselves. A maintainer starts CI as usual.
+- Pushed commits use `GITHUB_TOKEN`, so they don't start the full CI by themselves. The loop runs the selected tests
+  through `/review run-tests`.

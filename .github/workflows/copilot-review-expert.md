@@ -145,7 +145,6 @@ jobs:
       review_pr: ${{ steps.command.outputs.pr_number }}
       review_head: ${{ steps.context.outputs.head_sha }}
       review_base: ${{ steps.context.outputs.base_sha }}
-      review_actor: ${{ steps.command.outputs.actor }}
   agent:
     needs: [pre_activation, activation, pat_pool, publication_context]
   publication_context:
@@ -195,52 +194,27 @@ jobs:
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
   autopilot_next:
-    # Review -> fix loop: when the PR author opted in to PR Autopilot and this review found
-    # something, hand the findings to PR Autopilot. See .github/docs/pr-autopilot.md.
+    # PR Autopilot loop: while it runs on this PR, let it decide the next step.
     needs: [pre_activation, activation, complete_request]
     if: needs.complete_request.result == 'success' && !cancelled()
     runs-on: ubuntu-slim
     permissions:
       actions: write
       issues: read
-      pull-requests: read
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - name: Continue the PR Autopilot loop
+      - name: Continue PR Autopilot
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
-          HEAD_SHA: ${{ needs.pre_activation.outputs.review_head }}
-          REQUESTED_BY: ${{ needs.pre_activation.outputs.review_actor }}
         with:
           script: |
-            const MAX_ROUNDS = 3;
             const number = Number(process.env.PR_NUMBER);
-            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
-            if (pr.state !== 'open') return;
-            if (!/^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m.test(pr.body || '')) {
-              core.info(`#${number}: the author did not opt in to PR Autopilot.`);
-              return;
-            }
-            const reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number: number, per_page: 100 });
-            const review = reviews.filter(r => r.user?.login === 'github-actions[bot]' &&
-              (r.body || '').startsWith('## Expert Review') && r.commit_id === process.env.HEAD_SHA).pop();
-            const findings = Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(review?.body || '')?.[1]);
-            if (!(findings > 0)) {
-              core.info(`#${number}: no expert findings on ${process.env.HEAD_SHA}; the loop is done.`);
-              return;
-            }
-            const comments = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
-            const rounds = comments.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- pr-autopilot -->')).length;
-            if (rounds >= MAX_ROUNDS) {
-              core.info(`#${number}: PR Autopilot already ran ${rounds} rounds; leaving it to maintainers.`);
-              return;
-            }
-            await github.rest.actions.createWorkflowDispatch({
-              ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
-              ref: context.payload.repository.default_branch,
-              inputs: { pr_number: String(number), requested_by: process.env.REQUESTED_BY } });
-            core.info(`#${number}: ${findings} findings; dispatched PR Autopilot round ${rounds + 1}.`);
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) return core.info(`#${number}: PR Autopilot is not running.`);
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+            core.info(`#${number}: PR Autopilot continues.`);
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]

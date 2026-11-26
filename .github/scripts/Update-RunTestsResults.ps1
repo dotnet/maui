@@ -131,6 +131,8 @@ function Sync-RunTestsJobChecks {
     Write-Host "Published $($planned.Count) job check(s) for $($script:RunTestsPipelineName) #$($Build.id) on $HeadSha."
 }
 
+# PRs whose run-tests comment finished in this pass; PR Autopilot continues on them.
+$finishedPullRequests = [System.Collections.Generic.List[int]]::new()
 foreach ($comment in $comments) {
     # A /review run-tests comment has a section per suite, each following its own build.
     $updated = $comment.body
@@ -153,6 +155,10 @@ foreach ($comment in $comments) {
     if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
     foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
     if ($DryRun) { $updated; continue }
+    if ($comment.body -match '<!-- review-run-tests-state: running -->' -and $updated -notmatch '<!-- review-run-tests-state: running -->' -and
+        $comment.issue_url -match '/issues/(\d+)$') {
+        $finishedPullRequests.Add([int]$Matches[1])
+    }
     $payload = @{ body = $updated } | ConvertTo-Json
     $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
@@ -163,6 +169,10 @@ foreach ($comment in $comments) {
         if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
         if ($result.headSha) { Sync-RunTestsJobChecks -HeadSha $result.headSha -Build $result.build -Results $result.results }
     }
+}
+
+if ($env:GITHUB_OUTPUT) {
+    "finished_prs=$(@($finishedPullRequests | Sort-Object -Unique) -join ',')" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
 }
 
 if (-not $HeadSha) {

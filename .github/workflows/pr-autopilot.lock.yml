@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"e3ec9f6e7762c42eedf533189b2906115f867c6d669bffdae64c495cc955f9b0","body_hash":"249b7005bc17626e3d14ce35586ad975320ee486ec52dd19977457a6d861f120","compiler_version":"v0.86.2","strict":true,"agent_id":"copilot","agent_model":"gpt-6.1-sol","engine_versions":{"copilot":"1.0.79"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"9000827ccba6bdab643e8b6fd33ac0654aef8333","version":"v8.0.2"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"cf430e030ddbb5b0abf93d22962f4752f3646cd9","version":"v7.0.2"},{"repo":"github/gh-aw-actions/setup","sha":"6aab9e5b5c91c615506061f09bedd81a23babe3c","version":"v0.86.2"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44","digest":"sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44@sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44","digest":"sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44@sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44","digest":"sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44@sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.9","digest":"sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.9@sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:11c2c544876cdbaffefe0f7f1283b74838c209654b4934a78e23ed11f750490f","pinned_image":"ghcr.io/github/gh-aw-node@sha256:11c2c544876cdbaffefe0f7f1283b74838c209654b4934a78e23ed11f750490f"},{"image":"ghcr.io/github/github-mcp-server:v1.9.0","digest":"sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e","pinned_image":"ghcr.io/github/github-mcp-server:v1.9.0@sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e"}],"has_pull_request_target":true}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"8b2d524215cb43d69077b3aafcc0bfbe5efbd50af06e9bd8660dddc3805c7fc5","body_hash":"1a799a5c876349c74fd7001af5b0a8d47c0effe1fc2426241a9ac7637876f269","compiler_version":"v0.86.2","strict":true,"agent_id":"copilot","agent_model":"gpt-6.2-sol","engine_versions":{"copilot":"1.0.79"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"9000827ccba6bdab643e8b6fd33ac0654aef8333","version":"v8.0.2"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"cf430e030ddbb5b0abf93d22962f4752f3646cd9","version":"v7.0.2"},{"repo":"github/gh-aw-actions/setup","sha":"6aab9e5b5c91c615506061f09bedd81a23babe3c","version":"v0.86.2"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44","digest":"sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44@sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44","digest":"sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44@sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44","digest":"sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44@sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.9","digest":"sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.9@sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:11c2c544876cdbaffefe0f7f1283b74838c209654b4934a78e23ed11f750490f","pinned_image":"ghcr.io/github/gh-aw-node@sha256:11c2c544876cdbaffefe0f7f1283b74838c209654b4934a78e23ed11f750490f"},{"image":"ghcr.io/github/github-mcp-server:v1.9.0","digest":"sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e","pinned_image":"ghcr.io/github/github-mcp-server:v1.9.0@sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e"}]}
 # This file was automatically generated by gh-aw (v0.86.2). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,17 +23,16 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Review -> fix loop for pull requests whose author ticked "Let the MAUI agent address review
-# feedback and fix remaining issues on this PR". The MAUI expert reviewer
-# (copilot-review-expert) reviews the PR; this workflow fixes its findings plus maintainer and
-# AI review feedback, pushes, and asks the expert reviewer for the next round. The loop stops
-# when a review has no findings, nothing could be fixed, or after 3 rounds. For fork PRs,
-# which gh-aw cannot push to, it opens a follow-up PR that keeps the contributor's commits.
-# Maintainers still decide whether anything is merged.
+# One `/autopilot` command from a maintainer drives an opted-in pull request toward a mergeable
+# state: MAUI expert review -> fix -> expert review ... until the expert reviewer has no findings,
+# then `/review run-tests` -> fix -> expert review -> run-tests ... until the relevant tests pass.
+# Every fix round has GPT-6.2 Sol and MAI Code 2 each propose a fix and keeps the better one.
+# The loop runs while the PR carries `s/autopilot-running`; `/autopilot stop` (or removing the
+# label) ends it. Maintainers still decide whether anything is merged. See .github/docs/pr-autopilot.md.
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - shared/gpt-6.1-sol.md
+#     - shared/gpt-6.2-sol.md
 #     - shared/pat_pool.md
 #     - shared/threat-detection.md
 #
@@ -81,20 +80,18 @@ on:
       - edited
   # permissions: # Permissions applied to pre-activation job
   # contents: read
-  # pull-requests: read
-  pull_request_target:
-    types:
-      - labeled
+  # issues: write
+  # pull-requests: write
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintain # Roles processed as role check in pre-activation job
   # - write # Roles processed as role check in pre-activation job
   # steps: # Steps injected into pre-activation job
-  # - id: optin
-  # name: Check that the PR author opted in
+  # - id: state
+  # name: Decide the next step of the loop
   # uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
   # with:
-  # script: "core.setOutput('ready', 'false');\nif (context.eventName === 'pull_request_target' && context.payload.label?.name !== 's/agent-changes-requested') {\n  core.info(`Ignoring label ${context.payload.label?.name}.`);\n  return;\n}\nconst number = Number(\n  context.payload.pull_request?.number ??\n  context.payload.issue?.number ??\n  context.payload.inputs?.pr_number);\nif (!Number.isSafeInteger(number) || number < 1) {\n  core.info('No pull request number.');\n  return;\n}\nconst { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });\nif (pr.state !== 'open') {\n  core.info(`#${number} is not open.`);\n  return;\n}\nconst optedIn = /^\\s*[-*]\\s*\\[[xX]\\]\\s*\\**\\s*Let the MAUI agent address review feedback/m.test(pr.body || '');\nif (!optedIn) {\n  core.info(`#${number}: the author did not tick the \"Let AI finish this PR\" checkbox.`);\n  return;\n}\n// The maintainer accountable for this loop. The expert reviewer dispatches later rounds\n// as github-actions[bot] on their behalf; re-check their current write access.\nlet requester = context.actor;\nif (requester === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {\n  requester = String(context.payload.inputs?.requested_by || '');\n}\nif (context.eventName === 'pull_request_target') requester = context.payload.sender?.login || '';\nif (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(requester)) {\n  core.info('No maintainer to act on behalf of.');\n  return;\n}\nconst { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({ ...context.repo, username: requester });\nif (!['admin', 'maintain', 'write'].includes(perm.permission)) {\n  core.info(`@${requester} does not have write access.`);\n  return;\n}\ncore.setOutput('requested_by', requester);\nconst isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;\n// Without an expert review of the current head, start the loop with a review.\nconst reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number: number, per_page: 100 });\nconst reviewed = reviews.some(r => r.user?.login === 'github-actions[bot]' &&\n  (r.body || '').startsWith('## Expert Review') && r.commit_id === pr.head.sha);\ncore.setOutput('needs_review', String(!reviewed));\ncore.setOutput('head_sha', pr.head.sha);\ncore.setOutput('pr_number', String(number));\ncore.setOutput('head_ref', pr.head.ref);\ncore.setOutput('base_ref', pr.base.ref);\ncore.setOutput('is_fork', String(isFork));\ncore.setOutput('ready', 'true');\ncore.info(`#${number}: opted in (fork: ${isFork}, base: ${pr.base.ref}, needs expert review: ${!reviewed}).`);\n"
+  # script: "const LABEL = 's/autopilot-running';\nconst OPT_IN = /^\\s*[-*]\\s*\\[[xX]\\]\\s*\\**\\s*Let the MAUI agent address review feedback/m;\nconst COMMAND = /^\\s*\\/autopilot(?:\\s+(stop))?\\s*$/i;\nconst USER = /^[A-Za-z0-9][A-Za-z0-9-]*$/;\nconst repo = context.repo;\ncore.setOutput('stage', 'none');\n\nconst number = Number(context.payload.issue?.number ?? context.payload.inputs?.pr_number);\nif (!Number.isSafeInteger(number) || number < 1) return core.info('No pull request number.');\nconst { data: pr } = await github.rest.pulls.get({ ...repo, pull_number: number });\nconst hasLabel = pr.labels.some(l => l.name === LABEL);\nconst comment = body => github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\\n\\n<!-- pr-autopilot-status -->` });\nconst stopLoop = async reason => {\n  if (hasLabel) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});\n  if (reason) await comment(reason);\n};\nconst canWrite = async login => {\n  if (!USER.test(login || '')) return false;\n  try {\n    const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ ...repo, username: login });\n    return ['admin', 'maintain', 'write'].includes(data.permission);\n  } catch { return false; }\n};\n// A follow-up PR opened for a fork PR continues the original PR's loop.\nconst originOf = p => {\n  const m = /^autopilot\\/pr-(\\d+)$/.exec(p.head.ref);\n  return m && p.head.repo?.full_name === p.base.repo.full_name ? Number(m[1]) : null;\n};\nconst ownerOf = async n => {\n  const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: n, per_page: 100 });\n  const start = comments.filter(c => c.user?.type === 'User' && /^\\s*\\/autopilot\\s*$/i.test(c.body || '')).pop();\n  return start?.user.login || '';\n};\n\nlet requester;\nconst kicked = context.eventName === 'workflow_dispatch' && context.actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot';\nif (context.eventName === 'issue_comment') {\n  const command = COMMAND.exec(context.payload.comment?.body || '');\n  if (!command) return;\n  requester = context.payload.comment.user.login;\n  if (command[1]) {\n    if (pr.state === 'open') await stopLoop(`⏹️ PR Autopilot stopped by @${requester}.`);\n    return;\n  }\n} else if (kicked) {\n  if (!hasLabel) return core.info(`#${number}: the loop is not running.`);\n  requester = await ownerOf(number);\n  if (!requester && originOf(pr)) requester = await ownerOf(originOf(pr));\n} else {\n  requester = context.actor;\n}\nif (pr.state !== 'open') return core.info(`#${number} is not open.`);\nif (!(await canWrite(requester))) {\n  await stopLoop(hasLabel ? '⏹️ PR Autopilot stopped: the maintainer who started it no longer has write access.' : '');\n  return;\n}\nlet optedIn = OPT_IN.test(pr.body || '');\nif (!optedIn && originOf(pr)) {\n  const { data: origin } = await github.rest.pulls.get({ ...repo, pull_number: originOf(pr) });\n  optedIn = OPT_IN.test(origin.body || '');\n}\nif (!optedIn) {\n  await stopLoop(`PR Autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \\`/autopilot\\` again.`);\n  return;\n}\nif (!hasLabel) {\n  await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });\n  await comment(`🤖 PR Autopilot started by @${requester}. It loops **MAUI expert review → fix** until the review is clean, then **\\`/review run-tests\\` → fix** until the relevant tests pass. Each fix round compares a GPT-6.2 Sol fix with a MAI Code 2 fix and keeps the better one. Comment \\`/autopilot stop\\` to stop it.`);\n}\n\n// Where is the current head in the loop?\nconst head = pr.head.sha;\nlet stage, source = '', note = '';\nconst reviews = await github.paginate(github.rest.pulls.listReviews, { ...repo, pull_number: number, per_page: 100 });\nconst expert = reviews.filter(r => r.user?.login === 'github-actions[bot]' &&\n  (r.body || '').startsWith('## Expert Review') && r.commit_id === head).pop();\nif (!expert) {\n  stage = 'review';\n} else if (Number(/^## Expert Review\\s+\\S+\\s+(\\d+)/.exec(expert.body)?.[1]) > 0) {\n  stage = 'fix'; source = 'expert';\n} else {\n  const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 });\n  const tests = comments.filter(c => c.user?.login === 'github-actions[bot]' &&\n    (c.body || '').includes(`<!-- review-run-tests-head: ${head} -->`)).pop();\n  if (!tests) {\n    stage = 'tests';\n  } else {\n    const states = [...tests.body.matchAll(/<!-- review-run-tests-state: ([a-z-]+) -->/g)].map(m => m[1]);\n    const results = [...tests.body.matchAll(/<!-- run-tests-result: ([A-Z ]+) -->|alt=\"Result ([A-Z ]+)\"/g)].map(m => m[1] || m[2]);\n    if (states.includes('running')) stage = 'wait';\n    else if (results.includes('FAILED')) { stage = 'fix'; source = 'tests'; }\n    else if (states.includes('error') || results.includes('NOT QUEUED') || results.includes('CANCELED')) {\n      stage = 'stop'; note = `⏹️ PR Autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \\`/review run-tests\\` and comment \\`/autopilot\\` again.`;\n    } else {\n      stage = 'done';\n      note = results.includes('SELECTION ONLY')\n        ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean. Tests were [selected](${tests.html_url}) but this repository cannot run them. Ready for maintainer review.`\n        : `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean and the [relevant tests](${tests.html_url}) pass. Ready for maintainer review.`;\n    }\n  }\n}\ncore.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source})` : ''}, on behalf of @${requester}.`);\nif (stage === 'done' || stage === 'stop') { await stopLoop(note); stage = 'none'; }\n\nconst isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;\ncore.setOutput('stage', stage);\ncore.setOutput('source', source);\ncore.setOutput('requested_by', requester);\ncore.setOutput('pr_number', String(number));\ncore.setOutput('head_ref', pr.head.ref);\ncore.setOutput('base_ref', pr.base.ref);\ncore.setOutput('head_sha', head);\ncore.setOutput('is_fork', String(isFork));\n"
   workflow_dispatch:
     inputs:
       aw_context:
@@ -103,29 +100,25 @@ on:
         required: false
         type: string
       pr_number:
-        description: PR number to finish
+        description: PR to drive (a maintainer dispatching this starts the loop)
         required: false
         type: number
-      requested_by:
-        description: Maintainer who started the loop (set by the expert reviewer)
-        required: false
-        type: string
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: pr-autopilot-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+  group: pr-autopilot-${{ github.event.issue.number || inputs.pr_number }}
 
 run-name: "PR Autopilot"
 
 jobs:
   activation:
     needs:
+      - advance
       - pat_pool
       - pre_activation
-      - start_review
-    if: "needs.pre_activation.outputs.activated == 'true' && ((needs.pre_activation.outputs.autopilot_ready == 'true' && needs.pre_activation.outputs.autopilot_needs_review != 'true') && ((github.event_name == 'issue_comment') && (github.event_name == 'issue_comment' && (startsWith(github.event.comment.body, '/autopilot ') || startsWith(github.event.comment.body, '/autopilot\n') || github.event.comment.body == '/autopilot') && github.event.issue.pull_request != null) || !(github.event_name == 'issue_comment')))"
+    if: "needs.pre_activation.outputs.activated == 'true' && ((needs.pre_activation.outputs.autopilot_stage == 'fix') && ((github.event_name == 'issue_comment') && (github.event_name == 'issue_comment' && (startsWith(github.event.comment.body, '/autopilot ') || startsWith(github.event.comment.body, '/autopilot\n') || github.event.comment.body == '/autopilot') && github.event.issue.pull_request != null) || !(github.event_name == 'issue_comment')))"
     runs-on: ubuntu-slim
     permissions:
       actions: read
@@ -169,7 +162,7 @@ jobs:
         env:
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
-          GH_AW_INFO_MODEL: "gpt-6.1-sol"
+          GH_AW_INFO_MODEL: "gpt-6.2-sol"
           GH_AW_INFO_VERSION: "1.0.79"
           GH_AW_INFO_AGENT_VERSION: "1.0.79"
           GH_AW_INFO_CLI_VERSION: "v0.86.2"
@@ -184,7 +177,7 @@ jobs:
           GH_AW_INFO_FIREWALL_TYPE: "squid"
           GH_AW_INFO_AGENT_RUNTIME: ""
           GH_AW_COMPILED_STRICT: "true"
-          GH_AW_INFO_MODEL_COSTS: '{"providers":{"github-copilot":{"models":{"gpt-6.1-sol":{"cost":{"cache_read":"1e-07","cache_write":"2.5e-06","input":"2e-06","output":"1e-05"}}}}}}'
+          GH_AW_INFO_MODEL_COSTS: '{"providers":{"github-copilot":{"models":{"gpt-6.2-sol":{"cost":{"cache_read":"1e-07","cache_write":"2.5e-06","input":"2e-06","output":"1e-05"}}}}}}'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -289,7 +282,7 @@ jobs:
           GH_AW_PROMPT_CONTENT_0002: "</safe-output-tools>\n"
           GH_AW_PROMPT_CONTENT_0003: "<github-context>\nThe following GitHub context information is available for this workflow:\n{{#if github.actor}}\n- **actor**: __GH_AW_GITHUB_ACTOR__\n{{/if}}\n{{#if github.repository}}\n- **repository**: __GH_AW_GITHUB_REPOSITORY__\n{{/if}}\n{{#if github.workspace}}\n- **workspace**: __GH_AW_GITHUB_WORKSPACE__\n{{/if}}\n{{#if github.event.issue.number || (github.aw.context.item_type == 'issue' && github.aw.context.item_number)}}\n- **issue-number**: #__GH_AW_EXPR_802A9F6A__\n{{/if}}\n{{#if github.event.discussion.number || (github.aw.context.item_type == 'discussion' && github.aw.context.item_number)}}\n- **discussion-number**: #__GH_AW_EXPR_1A3A194A__\n{{/if}}\n{{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}\n- **pull-request-number**: #__GH_AW_EXPR_463A214A__\n{{/if}}\n{{#if github.event.comment.id || github.aw.context.comment_id}}\n- **comment-id**: __GH_AW_EXPR_FF1D34CE__\n{{/if}}\n{{#if github.run_id}}\n- **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__\n{{/if}}\n- **checkouts**: The following repositories have been checked out and are available in the workspace:\n  - repo `__GH_AW_GITHUB_REPOSITORY__` → `$GITHUB_WORKSPACE` (cwd) [full history, all branches available as remote-tracking refs]\n  - **Note**: If a branch you need is not in the list above and is not listed as an additional fetched ref, it has NOT been checked out. For private repositories you cannot fetch it. If the branch is required and not available, exit with an error and ask the user to add it to the `fetch:` option of the `checkout:` configuration (e.g., `fetch: [\"refs/pulls/open/*\"]` for all open PR refs, or `fetch: [\"main\", \"feature/my-branch\"]` for specific branches).\n  - **Warning: No git credentials are available to the agent.** Credentials are\n    intentionally removed after the checkout step for security. This means any git\n    operation that needs to authenticate to the remote will fail. In private repositories, that includes:\n    - `git fetch`, `git pull`, `git clone`, and `git push` (direct push, not via safe-output tools)\n    - Checking out or switching to a remote branch that is not already fetched\n    - Deepening a shallow clone (`git fetch --unshallow`)\n    - On-demand blob fetches in partial/blobless clones (operations on files not in the initial checkout)\n    Do NOT attempt to configure credentials, run `git credential fill`, or modify `.gitconfig` —\n    authentication will not succeed. If you encounter credential prompts or authentication errors,\n    stop immediately and report the limitation rather than spending turns trying to work around it.\n</github-context>\n\n"
           GH_AW_PROMPT_CONTENT_0004: "</system>\n"
-          GH_AW_PROMPT_CONTENT_0005: "{{#runtime-import .github/workflows/shared/gpt-6.1-sol.md}}\n"
+          GH_AW_PROMPT_CONTENT_0005: "{{#runtime-import .github/workflows/shared/gpt-6.2-sol.md}}\n"
           GH_AW_PROMPT_CONTENT_0006: "{{#runtime-import .github/workflows/shared/threat-detection.md}}\n"
           GH_AW_PROMPT_CONTENT_0007: "{{#runtime-import .github/workflows/pr-autopilot.md}}\n"
         with:
@@ -323,9 +316,9 @@ jobs:
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_INCLUDE_PR_CONTEXT: ${{ (github.event_name == 'issue_comment' && github.event.issue.pull_request != null) || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review' }}
           GH_AW_MCP_CLI_SERVERS_LIST: "- `github` — run `github --help` to see available tools\n- `safeoutputs` — run `safeoutputs --help` to see available tools"
+          GH_AW_NEEDS_ADVANCE_OUTPUTS_OUTPUT: ${{ needs.advance.outputs.output }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
-          GH_AW_NEEDS_START_REVIEW_OUTPUTS_OUTPUT: ${{ needs.start_review.outputs.output }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -347,9 +340,9 @@ jobs:
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
                 GH_AW_INCLUDE_PR_CONTEXT: process.env.GH_AW_INCLUDE_PR_CONTEXT,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
+                GH_AW_NEEDS_ADVANCE_OUTPUTS_OUTPUT: process.env.GH_AW_NEEDS_ADVANCE_OUTPUTS_OUTPUT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND,
-                GH_AW_NEEDS_START_REVIEW_OUTPUTS_OUTPUT: process.env.GH_AW_NEEDS_START_REVIEW_OUTPUTS_OUTPUT
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
               }
             });
       - name: Validate prompt placeholders
@@ -385,6 +378,43 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
 
+  advance:
+    needs: pre_activation
+    if: needs.pre_activation.outputs.autopilot_stage != ''
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+    timeout-minutes: 3
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Request the MAUI expert review or the relevant tests
+        if: needs.pre_activation.outputs.autopilot_stage == 'review' || needs.pre_activation.outputs.autopilot_stage == 'tests'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
+          REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
+          STAGE: ${{ needs.pre_activation.outputs.autopilot_stage }}
+        with:
+          script: |
+            const review = process.env.STAGE === 'review';
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: review ? 'copilot-review-expert.lock.yml' : 'copilot-review-run-tests.lock.yml',
+              ref: context.payload.repository.default_branch,
+              inputs: review
+                ? { pr_number: process.env.PR_NUMBER, requested_by: process.env.REQUESTED_BY }
+                : { pr_number: process.env.PR_NUMBER, suite: 'all', requested_by: process.env.REQUESTED_BY },
+            });
+            core.info(`#${process.env.PR_NUMBER}: requested ${review ? 'a MAUI expert review' : '/review run-tests'}.`);
+
   agent:
     needs:
       - activation
@@ -410,6 +440,7 @@ jobs:
       ai_credits_rate_limit_error: ${{ steps.parse-mcp-gateway.outputs.ai_credits_rate_limit_error || 'false' }}
       aic: ${{ steps.parse-mcp-gateway.outputs.aic }}
       ambient_context: ${{ steps.parse-mcp-gateway.outputs.ambient_context }}
+      checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       effective_tokens: ${{ steps.parse-mcp-gateway.outputs.effective_tokens }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
       http_400_response_error: ${{ steps.detect-agent-errors.outputs.http_400_response_error || 'false' }}
@@ -471,8 +502,9 @@ jobs:
           HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
           IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
           PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
+          SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
         name: Check out the pull request head
-        run: "set -euo pipefail\n# The workflow checkout is trusted (default or base branch). Keep its coding guidance.\nTRUSTED_SHA=\"$(git rev-parse HEAD)\"\nTRUSTED=/tmp/gh-aw/autopilot/trusted\nmkdir -p \"${TRUSTED}\"\ncp .github/copilot-instructions.md \"${TRUSTED}/\"\ncp -R .github/instructions \"${TRUSTED}/instructions\"\n\ngit fetch --no-tags origin \"+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}\"\ngit fetch --no-tags origin \"+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/pr-${PR_NUMBER}\"\nif [ \"${IS_FORK}\" = \"true\" ]; then\n  WORK_BRANCH=\"autopilot/pr-${PR_NUMBER}\"\nelse\n  WORK_BRANCH=\"${HEAD_REF}\"\n  # push_to_pull_request_branch diffs origin/<branch>..<branch>.\n  git update-ref \"refs/remotes/origin/${HEAD_REF}\" \"refs/remotes/origin/pr-${PR_NUMBER}\"\nfi\ngit checkout -B \"${WORK_BRANCH}\" \"refs/remotes/origin/pr-${PR_NUMBER}\"\n\n# The Copilot CLI loads agents, skills and instructions from the working tree. Overlay the\n# trusted .github/ and AGENTS.md so a PR cannot change the agent's instructions, and hide the\n# overlay from git so it is never committed.\ngit checkout \"${TRUSTED_SHA}\" -- .github AGENTS.md\ngit reset -q -- .github AGENTS.md\ngit ls-files -z -- .github AGENTS.md | xargs -0 -r git update-index --skip-worktree\nprintf '/.github/\\n/AGENTS.md\\n' >> .git/info/exclude\n\ngit config user.name \"github-actions[bot]\"\ngit config user.email \"41898282+github-actions[bot]@users.noreply.github.com\"\nMERGE_BASE=\"$(git merge-base \"refs/remotes/origin/${BASE_REF}\" HEAD)\"\njq -n --arg pr \"${PR_NUMBER}\" --arg head \"${HEAD_REF}\" --arg base \"${BASE_REF}\" \\\n  --arg fork \"${IS_FORK}\" --arg branch \"${WORK_BRANCH}\" --arg sha \"$(git rev-parse HEAD)\" \\\n  --arg mb \"${MERGE_BASE}\" \\\n  '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == \"true\"), work_branch: $branch, head_sha: $sha, merge_base: $mb}' \\\n  > /tmp/gh-aw/autopilot/context.json\ncat /tmp/gh-aw/autopilot/context.json\ngit status --short | head -20"
+        run: "set -euo pipefail\n# The workflow checkout is trusted (default or base branch). Keep its coding guidance.\nTRUSTED_SHA=\"$(git rev-parse HEAD)\"\nTRUSTED=/tmp/gh-aw/autopilot/trusted\nmkdir -p \"${TRUSTED}\"\ncp .github/copilot-instructions.md \"${TRUSTED}/\"\ncp -R .github/instructions \"${TRUSTED}/instructions\"\n\ngit fetch --no-tags origin \"+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}\"\ngit fetch --no-tags origin \"+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/pr-${PR_NUMBER}\"\nif [ \"${IS_FORK}\" = \"true\" ]; then\n  WORK_BRANCH=\"autopilot/pr-${PR_NUMBER}\"\nelse\n  WORK_BRANCH=\"${HEAD_REF}\"\n  # push_to_pull_request_branch diffs origin/<branch>..<branch>.\n  git update-ref \"refs/remotes/origin/${HEAD_REF}\" \"refs/remotes/origin/pr-${PR_NUMBER}\"\nfi\ngit checkout -B \"${WORK_BRANCH}\" \"refs/remotes/origin/pr-${PR_NUMBER}\"\n\n# The Copilot CLI loads agents, skills and instructions from the working tree. Overlay the\n# trusted .github/ and AGENTS.md so a PR cannot change the agent's instructions, and hide the\n# overlay from git so it is never committed.\ngit checkout \"${TRUSTED_SHA}\" -- .github AGENTS.md\ngit reset -q -- .github AGENTS.md\ngit ls-files -z -- .github AGENTS.md | xargs -0 -r git update-index --skip-worktree\nprintf '/.github/\\n/AGENTS.md\\n' >> .git/info/exclude\n\ngit config user.name \"github-actions[bot]\"\ngit config user.email \"41898282+github-actions[bot]@users.noreply.github.com\"\nMERGE_BASE=\"$(git merge-base \"refs/remotes/origin/${BASE_REF}\" HEAD)\"\njq -n --arg pr \"${PR_NUMBER}\" --arg head \"${HEAD_REF}\" --arg base \"${BASE_REF}\" \\\n  --arg fork \"${IS_FORK}\" --arg branch \"${WORK_BRANCH}\" --arg sha \"$(git rev-parse HEAD)\" \\\n  --arg mb \"${MERGE_BASE}\" --arg source \"${SOURCE}\" \\\n  '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == \"true\"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source}' \\\n  > /tmp/gh-aw/autopilot/context.json\ncat /tmp/gh-aw/autopilot/context.json\ngit status --short | head -20"
 
       - name: Configure Git credentials
         env:
@@ -480,6 +512,20 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_TOKEN: ${{ github.token }}
         run: bash "${RUNNER_TEMP}/gh-aw/actions/configure_git_credentials.sh"
+      - name: Checkout PR branch
+        id: checkout-pr
+        if: |
+          github.event.pull_request || github.event.issue.pull_request || github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.aw_context || '{}').item_type == 'pull_request'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/checkout_pr_branch.cjs');
+            await main();
       - name: Install ripgrep
         run: bash "${RUNNER_TEMP}/gh-aw/actions/install_ripgrep.sh"
       - name: Install GitHub Copilot CLI
@@ -499,6 +545,12 @@ jobs:
           script: |
             const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
+      - name: Restore agent config folders from base branch
+        if: steps.checkout-pr.outcome == 'success'
+        env:
+          GH_AW_AGENT_FOLDERS: ".agents .github"
+          GH_AW_AGENT_FILES: "AGENTS.md"
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/restore_base_github_folders.sh"
       - name: Restore inline sub-agents from activation artifact
         env:
           GH_AW_SUB_AGENT_DIR: ".github/agents"
@@ -852,8 +904,10 @@ jobs:
         # --allow-tool shell(basename)
         # --allow-tool shell(bash)
         # --allow-tool shell(cat)
+        # --allow-tool shell(cp)
         # --allow-tool shell(cut)
         # --allow-tool shell(date)
+        # --allow-tool shell(diff)
         # --allow-tool shell(dirname)
         # --allow-tool shell(dotnet:*)
         # --allow-tool shell(echo)
@@ -877,6 +931,7 @@ jobs:
         # --allow-tool shell(mkdir)
         # --allow-tool shell(printf)
         # --allow-tool shell(pwd)
+        # --allow-tool shell(rm)
         # --allow-tool shell(safeoutputs:*)
         # --allow-tool shell(sed)
         # --allow-tool shell(sh)
@@ -890,7 +945,7 @@ jobs:
         # --allow-tool shell(xargs)
         # --allow-tool shell(yq)
         # --allow-tool write
-        timeout-minutes: 90
+        timeout-minutes: 120
         run: |
           set -o pipefail
           printf '%s' "$(date +%s%3N)" > /tmp/gh-aw/agent_cli_start_ms.txt
@@ -917,7 +972,7 @@ jobs:
           export COPILOT_API_KEY="$COPILOT_DUMMY_BYOK"
           (umask 177 && touch /tmp/gh-aw/agent-stdio.log)
           # shellcheck disable=SC2016
-          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.27.44/awf-config.schema.json","network":{"allowDomains":["*.blob.core.windows.net","*.githubusercontent.com","*.vsblob.vsassets.io","api.business.githubcopilot.com","api.enterprise.githubcopilot.com","api.github.com","api.githubcopilot.com","api.individual.githubcopilot.com","api.nuget.org","api.snapcraft.io","archive.ubuntu.com","azure.archive.ubuntu.com","azuresearch-usnc.nuget.org","azuresearch-ussc.nuget.org","builds.dotnet.microsoft.com","ci.dot.net","codeload.github.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","dc.services.visualstudio.com","dev.azure.com","dist.nuget.org","docs.github.com","dot.net","dotnet.microsoft.com","dotnetcli.blob.core.windows.net","github-cloud.githubusercontent.com","github-cloud.s3.amazonaws.com","github.blog","github.com","github.githubassets.com","host.docker.internal","json-schema.org","json.schemastore.org","keyserver.ubuntu.com","lfs.github.com","nuget.org","nuget.pkg.github.com","nugetregistryv2prod.blob.core.windows.net","objects.githubusercontent.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","oneocsp.microsoft.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","patch-diff.githubusercontent.com","patchdiff.githubusercontent.com","pkgs.dev.azure.com","ppa.launchpad.net","raw.githubusercontent.com","registry.npmjs.org","s.symcb.com","s.symcd.com","security.ubuntu.com","telemetry.enterprise.githubcopilot.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com","www.microsoft.com"],"isolation":true,"topologyAttach":["awmg-mcpg"]},"apiProxy":{"enabled":true,"maxRuns":500,"maxCacheMisses":5,"providers":{"github-copilot":{"models":{"gpt-6.1-sol":{"cost":{"cache_read":"1e-07","cache_write":"2.5e-06","input":"2e-06","output":"1e-05"}}}}},"models":{"agent":["sonnet-6x","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]}},"container":{"imageTag":"0.27.44,squid=sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627,agent=sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4,api-proxy=sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7,cli-proxy=sha256:c064d15974f7c933ec7d3f7b4038f4fd203547b3154bdc821afd379144887eff"},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
+          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.27.44/awf-config.schema.json","network":{"allowDomains":["*.blob.core.windows.net","*.githubusercontent.com","*.vsblob.vsassets.io","api.business.githubcopilot.com","api.enterprise.githubcopilot.com","api.github.com","api.githubcopilot.com","api.individual.githubcopilot.com","api.nuget.org","api.snapcraft.io","archive.ubuntu.com","azure.archive.ubuntu.com","azuresearch-usnc.nuget.org","azuresearch-ussc.nuget.org","builds.dotnet.microsoft.com","ci.dot.net","codeload.github.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","dc.services.visualstudio.com","dev.azure.com","dist.nuget.org","docs.github.com","dot.net","dotnet.microsoft.com","dotnetcli.blob.core.windows.net","github-cloud.githubusercontent.com","github-cloud.s3.amazonaws.com","github.blog","github.com","github.githubassets.com","host.docker.internal","json-schema.org","json.schemastore.org","keyserver.ubuntu.com","lfs.github.com","nuget.org","nuget.pkg.github.com","nugetregistryv2prod.blob.core.windows.net","objects.githubusercontent.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","oneocsp.microsoft.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","patch-diff.githubusercontent.com","patchdiff.githubusercontent.com","pkgs.dev.azure.com","ppa.launchpad.net","raw.githubusercontent.com","registry.npmjs.org","s.symcb.com","s.symcd.com","security.ubuntu.com","telemetry.enterprise.githubcopilot.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com","www.microsoft.com"],"isolation":true,"topologyAttach":["awmg-mcpg"]},"apiProxy":{"enabled":true,"maxRuns":500,"maxCacheMisses":5,"providers":{"github-copilot":{"models":{"gpt-6.2-sol":{"cost":{"cache_read":"1e-07","cache_write":"2.5e-06","input":"2e-06","output":"1e-05"}}}}},"models":{"agent":["sonnet-6x","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]},"allowedModels":["copilot/gpt-6.2-sol","copilot/mai-code-2","github-copilot/gpt-6.2-sol","github-copilot/mai-code-2","gpt-6.2-sol","mai-code-2","openai/gpt-6.2-sol"]},"container":{"imageTag":"0.27.44,squid=sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627,agent=sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4,api-proxy=sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7,cli-proxy=sha256:c064d15974f7c933ec7d3f7b4038f4fd203547b3154bdc821afd379144887eff"},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
           cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
           export GH_AW_MODELS_JSON_PATH="/tmp/gh-aw/models.json"
           GH_AW_DOCKER_HOST=""
@@ -936,20 +991,20 @@ jobs:
           fi
           # shellcheck disable=SC1003,SC2016,SC2086
           awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" ${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"} ${GH_AW_DOCKER_HOST:+--docker-host "$GH_AW_DOCKER_HOST"} --env-all --exclude-env ACTIONS_ID_TOKEN_REQUEST_TOKEN --exclude-env ACTIONS_ID_TOKEN_REQUEST_URL --exclude-env COPILOT_GITHUB_TOKEN --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --mount /tmp/gh-aw:/tmp/gh-aw:rw --log-level info --skip-pull \
-            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; export PATH="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(awk)'\'' --allow-tool '\''shell(basename)'\'' --allow-tool '\''shell(bash)'\'' --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(cut)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(dirname)'\'' --allow-tool '\''shell(dotnet:*)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(env)'\'' --allow-tool '\''shell(exit)'\'' --allow-tool '\''shell(find)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git:*)'\'' --allow-tool '\''shell(github:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(mkdir)'\'' --allow-tool '\''shell(printf)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sh)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(tee)'\'' --allow-tool '\''shell(test)'\'' --allow-tool '\''shell(tr)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(xargs)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; export PATH="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(awk)'\'' --allow-tool '\''shell(basename)'\'' --allow-tool '\''shell(bash)'\'' --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(cp)'\'' --allow-tool '\''shell(cut)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(diff)'\'' --allow-tool '\''shell(dirname)'\'' --allow-tool '\''shell(dotnet:*)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(env)'\'' --allow-tool '\''shell(exit)'\'' --allow-tool '\''shell(find)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git:*)'\'' --allow-tool '\''shell(github:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(mkdir)'\'' --allow-tool '\''shell(printf)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(rm)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sh)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(tee)'\'' --allow-tool '\''shell(test)'\'' --allow-tool '\''shell(tr)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(xargs)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           AWF_REFLECT_ENABLED: 1
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, secrets.COPILOT_GITHUB_TOKEN) }}
-          COPILOT_MODEL: gpt-6.1-sol
+          COPILOT_MODEL: gpt-6.2-sol
           COPILOT_PROVIDER_WIRE_API: responses
           GH_AW_LLM_PROVIDER: github
           GH_AW_MAX_TURNS: ${{ vars.GH_AW_DEFAULT_MAX_TURNS || '' }}
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_TIMEOUT_MINUTES: 90
+          GH_AW_TIMEOUT_MINUTES: 120
           GH_AW_VERSION: v0.86.2
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
@@ -1124,13 +1179,13 @@ jobs:
   conclusion:
     needs:
       - activation
+      - advance
       - agent
       - detection
-      - next_review
+      - next_round
       - pat_pool
       - publication_context
       - safe_outputs
-      - start_review
     if: >
       always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true' ||
       needs.activation.outputs.oauth_token_check_failed == 'true' || needs.activation.outputs.stale_lock_file_failed == 'true')
@@ -1293,6 +1348,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "pr-autopilot"
           GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS: "168"
           GH_AW_ENGINE_ID: "copilot"
+          GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens || '' }}
           GH_AW_AI_CREDITS_RATE_LIMIT_ERROR: ${{ needs.agent.outputs.ai_credits_rate_limit_error || 'false' }}
           GH_AW_UNKNOWN_MODEL_AI_CREDITS: ${{ needs.agent.outputs.unknown_model_ai_credits || 'false' }}
@@ -1318,7 +1374,7 @@ jobs:
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
-          GH_AW_TIMEOUT_MINUTES: "90"
+          GH_AW_TIMEOUT_MINUTES: "120"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1431,7 +1487,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "PR Autopilot"
-          WORKFLOW_DESCRIPTION: "Review -> fix loop for pull requests whose author ticked \"Let the MAUI agent address review\nfeedback and fix remaining issues on this PR\". The MAUI expert reviewer\n(copilot-review-expert) reviews the PR; this workflow fixes its findings plus maintainer and\nAI review feedback, pushes, and asks the expert reviewer for the next round. The loop stops\nwhen a review has no findings, nothing could be fixed, or after 3 rounds. For fork PRs,\nwhich gh-aw cannot push to, it opens a follow-up PR that keeps the contributor's commits.\nMaintainers still decide whether anything is merged."
+          WORKFLOW_DESCRIPTION: "One `/autopilot` command from a maintainer drives an opted-in pull request toward a mergeable\nstate: MAUI expert review -> fix -> expert review ... until the expert reviewer has no findings,\nthen `/review run-tests` -> fix -> expert review -> run-tests ... until the relevant tests pass.\nEvery fix round has GPT-6.2 Sol and MAI Code 2 each propose a fix and keeps the better one.\nThe loop runs while the PR carries `s/autopilot-running`; `/autopilot stop` (or removing the\nlabel) ends it. Maintainers still decide whether anything is merged. See .github/docs/pr-autopilot.md."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
           CUSTOM_PROMPT: "Complete the full security analysis yourself, without delegating to subagents.\nDo not emit intermediate, example, or alternative detector verdicts.\nThe final verdict must have exactly these fields: prompt_injection,\nsecret_leak, malicious_patch (JSON booleans), and reasons (an array of strings).\nWrite that final JSON object to\n/tmp/gh-aw/threat-detection/detection_result.json using the file-editing tool.\nThen emit the identical object once, on one line prefixed\nTHREAT_DETECTION_RESULT:. Do not repeat it in another format.\nNever default a threat field to false because evidence or analysis is missing.\n"
@@ -1493,7 +1549,7 @@ jobs:
           export COPILOT_API_KEY="$COPILOT_DUMMY_BYOK"
           (umask 177 && touch /tmp/gh-aw/threat-detection/detection.log)
           GH_AW_MAX_AI_CREDITS="${GH_AW_MAX_AI_CREDITS:-400}"
-          printf '%s\n' "{\"\$schema\":\"https://github.com/github/gh-aw-firewall/releases/download/v0.27.44/awf-config.schema.json\",\"network\":{\"allowDomains\":[\"api.business.githubcopilot.com\",\"api.enterprise.githubcopilot.com\",\"api.github.com\",\"api.githubcopilot.com\",\"api.individual.githubcopilot.com\",\"github.com\",\"host.docker.internal\",\"registry.npmjs.org\",\"telemetry.enterprise.githubcopilot.com\"]},\"apiProxy\":{\"enabled\":true,\"enableTokenSteering\":true,\"maxRuns\":500,\"maxAiCredits\":${GH_AW_MAX_AI_CREDITS},\"maxCacheMisses\":5,\"providers\":{\"github-copilot\":{\"models\":{\"gpt-6.1-sol\":{\"cost\":{\"cache_read\":\"1e-07\",\"cache_write\":\"2.5e-06\",\"input\":\"2e-06\",\"output\":\"1e-05\"}}}}},\"models\":{\"agent\":[\"sonnet-6x\",\"gpt-5.4\",\"gpt-5.5\",\"gpt-5.6\",\"gpt-5.3\",\"gemini-pro\",\"any\"],\"antigravity\":[\"copilot/antigravity*\",\"google/antigravity*\",\"gemini/antigravity*\"],\"any\":[\"copilot/*\",\"anthropic/*\",\"openai/*\",\"google/*\",\"gemini/*\"],\"auto\":[\"copilot/auto\",\"large\"],\"claude\":[\"agent\"],\"codex\":[\"agent\"],\"coding\":[\"copilot/gpt-5*codex*\",\"openai/gpt-5*codex*\",\"gpt-5-codex\",\"kimi\"],\"computer-use\":[\"copilot/*computer-use*\",\"google/*computer-use*\",\"gemini/*computer-use*\",\"openai/*computer-use*\"],\"copilot\":[\"agent\"],\"deep-research\":[\"copilot/deep-research*\",\"copilot/o3-deep-research*\",\"copilot/o4-mini-deep-research*\",\"google/deep-research*\",\"gemini/deep-research*\",\"openai/o3-deep-research*\",\"openai/o4-mini-deep-research*\"],\"detection\":[\"small\"],\"evals\":[\"small\"],\"fable\":[\"copilot/*fable*\",\"anthropic/*fable*\"],\"gemini\":[\"agent\"],\"gemini-3-flash\":[\"copilot/gemini-3*flash*\",\"google/gemini-3*flash*\",\"gemini/gemini-3*flash*\"],\"gemini-3-pro\":[\"copilot/gemini-3*pro*\",\"google/gemini-3*pro*\",\"google/nano-banana*\",\"gemini/gemini-3*pro*\"],\"gemini-3.1-flash\":[\"copilot/gemini-3.1*flash*\",\"google/gemini-3.1*flash*\",\"gemini/gemini-3.1*flash*\"],\"gemini-3.1-pro\":[\"copilot/gemini-3.1*pro*\",\"google/gemini-3.1*pro*\",\"gemini/gemini-3.1*pro*\"],\"gemini-3.5-flash\":[\"copilot/gemini-3.5*flash*\",\"google/gemini-3.5*flash*\",\"gemini/gemini-3.5*flash*\"],\"gemini-3.6-flash\":[\"copilot/gemini-3.6*flash*\",\"google/gemini-3.6*flash*\",\"gemini/gemini-3.6*flash*\"],\"gemini-flash\":[\"copilot/gemini-*flash*\",\"google/gemini-*flash*\",\"gemini/gemini-*flash*\"],\"gemini-flash-lite\":[\"copilot/gemini-*flash*lite*\",\"google/gemini-*flash*lite*\",\"gemini/gemini-*flash*lite*\"],\"gemini-omni\":[\"copilot/gemini-omni*\",\"google/gemini-omni*\",\"gemini/gemini-omni*\"],\"gemini-pro\":[\"copilot/gemini-*pro*\",\"google/gemini-*pro*\",\"gemini/gemini-*pro*\"],\"gemma\":[\"copilot/gemma*\",\"google/gemma*\",\"gemini/gemma*\"],\"gpt-5\":[\"copilot/gpt-5*\",\"openai/gpt-5*\"],\"gpt-5-codex\":[\"copilot/gpt-5*codex*\",\"openai/gpt-5*codex*\"],\"gpt-5-mini\":[\"copilot/gpt-5*mini*\",\"openai/gpt-5*mini*\"],\"gpt-5-nano\":[\"copilot/gpt-5*nano*\",\"openai/gpt-5*nano*\"],\"gpt-5-pro\":[\"copilot/gpt-5*pro*\",\"openai/gpt-5*pro*\"],\"gpt-5.1\":[\"copilot/gpt-5.1*\",\"openai/gpt-5.1*\"],\"gpt-5.2\":[\"copilot/gpt-5.2*\",\"openai/gpt-5.2*\"],\"gpt-5.3\":[\"copilot/gpt-5.3*\",\"openai/gpt-5.3*\"],\"gpt-5.4\":[\"copilot/gpt-5.4*\",\"openai/gpt-5.4*\"],\"gpt-5.5\":[\"copilot/gpt-5.5*\",\"openai/gpt-5.5*\"],\"gpt-5.6\":[\"copilot/gpt-5.6*\",\"openai/gpt-5.6*\"],\"grok\":[\"copilot/*grok*\",\"openai/*grok*\"],\"haiku\":[\"copilot/*haiku*\",\"anthropic/*haiku*\"],\"image-generation\":[\"copilot/gpt-image*\",\"openai/gpt-image*\",\"openai/chatgpt-image*\",\"copilot/gemini-*image*\",\"google/gemini-*image*\",\"gemini/gemini-*image*\",\"google/imagen*\"],\"kimi\":[\"copilot/kimi*\",\"openai/kimi*\"],\"kiwi\":[\"copilot/kiwi*\",\"openai/kiwi*\"],\"large\":[\"sonnet\",\"gpt-5-pro\",\"gpt-5\",\"gemini-pro\"],\"lyria\":[\"google/lyria*\",\"gemini/lyria*\",\"copilot/lyria*\"],\"mai-code\":[\"copilot/MAI-Code*\",\"copilot/mai-code*\",\"openai/MAI-Code*\"],\"mai-code-1-flash-picker\":[\"copilot/MAI-Code-1-Flash-picker*\",\"copilot/mai-code-1-flash-picker*\",\"openai/MAI-Code-1-Flash-picker*\"],\"mini\":[\"haiku\",\"gpt-5-mini\",\"gpt-5-nano\",\"gemini-flash-lite\"],\"nano-banana\":[\"copilot/nano-banana*\",\"google/nano-banana*\",\"gemini/nano-banana*\"],\"opus\":[\"copilot/*opus*\",\"anthropic/*opus*\"],\"opusplan\":[\"opus?effort=high\"],\"raptor-mini\":[\"copilot/raptor*\",\"openai/raptor*\"],\"reasoning\":[\"copilot/o1*\",\"copilot/o3*\",\"copilot/o4*\",\"openai/o1*\",\"openai/o3*\",\"openai/o4*\"],\"robotics\":[\"copilot/*robotics*\",\"google/*robotics*\",\"gemini/*robotics*\"],\"small\":[\"mini\"],\"small-agent\":[\"haiku\",\"gpt-5-mini\",\"gemini-flash\"],\"sonnet\":[\"copilot/*sonnet*\",\"anthropic/*sonnet*\"],\"sonnet-6x\":[\"copilot/*sonnet-4.5*\",\"copilot/*sonnet-4.6*\",\"copilot/*sonnet-5*\",\"copilot/*sonnet-4-5-*\",\"anthropic/*sonnet-4-5-*\",\"copilot/*sonnet-4-6*\",\"anthropic/*sonnet-4-6*\",\"anthropic/*sonnet-5*\"],\"summarization\":[\"haiku\",\"gpt-5-mini\",\"gemini-flash-lite\",\"mini\"],\"veo\":[\"google/veo*\",\"gemini/veo*\"],\"vision\":[\"copilot/gemini-*image*\",\"google/gemini-*image*\",\"gemini/gemini-*image*\",\"copilot/gemini-*flash*\",\"google/gemini-*flash*\",\"gemini/gemini-*flash*\"]}},\"container\":{\"imageTag\":\"0.27.44,squid=sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627,agent=sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4,api-proxy=sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7,cli-proxy=sha256:c064d15974f7c933ec7d3f7b4038f4fd203547b3154bdc821afd379144887eff\"},\"logging\":{\"proxyLogsDir\":\"/tmp/gh-aw/sandbox/firewall/logs\",\"auditDir\":\"/tmp/gh-aw/sandbox/firewall/audit\"}}" > "${RUNNER_TEMP}/gh-aw/awf-config.json"
+          printf '%s\n' "{\"\$schema\":\"https://github.com/github/gh-aw-firewall/releases/download/v0.27.44/awf-config.schema.json\",\"network\":{\"allowDomains\":[\"api.business.githubcopilot.com\",\"api.enterprise.githubcopilot.com\",\"api.github.com\",\"api.githubcopilot.com\",\"api.individual.githubcopilot.com\",\"github.com\",\"host.docker.internal\",\"registry.npmjs.org\",\"telemetry.enterprise.githubcopilot.com\"]},\"apiProxy\":{\"enabled\":true,\"enableTokenSteering\":true,\"maxRuns\":500,\"maxAiCredits\":${GH_AW_MAX_AI_CREDITS},\"maxCacheMisses\":5,\"providers\":{\"github-copilot\":{\"models\":{\"gpt-6.2-sol\":{\"cost\":{\"cache_read\":\"1e-07\",\"cache_write\":\"2.5e-06\",\"input\":\"2e-06\",\"output\":\"1e-05\"}}}}},\"models\":{\"agent\":[\"sonnet-6x\",\"gpt-5.4\",\"gpt-5.5\",\"gpt-5.6\",\"gpt-5.3\",\"gemini-pro\",\"any\"],\"antigravity\":[\"copilot/antigravity*\",\"google/antigravity*\",\"gemini/antigravity*\"],\"any\":[\"copilot/*\",\"anthropic/*\",\"openai/*\",\"google/*\",\"gemini/*\"],\"auto\":[\"copilot/auto\",\"large\"],\"claude\":[\"agent\"],\"codex\":[\"agent\"],\"coding\":[\"copilot/gpt-5*codex*\",\"openai/gpt-5*codex*\",\"gpt-5-codex\",\"kimi\"],\"computer-use\":[\"copilot/*computer-use*\",\"google/*computer-use*\",\"gemini/*computer-use*\",\"openai/*computer-use*\"],\"copilot\":[\"agent\"],\"deep-research\":[\"copilot/deep-research*\",\"copilot/o3-deep-research*\",\"copilot/o4-mini-deep-research*\",\"google/deep-research*\",\"gemini/deep-research*\",\"openai/o3-deep-research*\",\"openai/o4-mini-deep-research*\"],\"detection\":[\"small\"],\"evals\":[\"small\"],\"fable\":[\"copilot/*fable*\",\"anthropic/*fable*\"],\"gemini\":[\"agent\"],\"gemini-3-flash\":[\"copilot/gemini-3*flash*\",\"google/gemini-3*flash*\",\"gemini/gemini-3*flash*\"],\"gemini-3-pro\":[\"copilot/gemini-3*pro*\",\"google/gemini-3*pro*\",\"google/nano-banana*\",\"gemini/gemini-3*pro*\"],\"gemini-3.1-flash\":[\"copilot/gemini-3.1*flash*\",\"google/gemini-3.1*flash*\",\"gemini/gemini-3.1*flash*\"],\"gemini-3.1-pro\":[\"copilot/gemini-3.1*pro*\",\"google/gemini-3.1*pro*\",\"gemini/gemini-3.1*pro*\"],\"gemini-3.5-flash\":[\"copilot/gemini-3.5*flash*\",\"google/gemini-3.5*flash*\",\"gemini/gemini-3.5*flash*\"],\"gemini-3.6-flash\":[\"copilot/gemini-3.6*flash*\",\"google/gemini-3.6*flash*\",\"gemini/gemini-3.6*flash*\"],\"gemini-flash\":[\"copilot/gemini-*flash*\",\"google/gemini-*flash*\",\"gemini/gemini-*flash*\"],\"gemini-flash-lite\":[\"copilot/gemini-*flash*lite*\",\"google/gemini-*flash*lite*\",\"gemini/gemini-*flash*lite*\"],\"gemini-omni\":[\"copilot/gemini-omni*\",\"google/gemini-omni*\",\"gemini/gemini-omni*\"],\"gemini-pro\":[\"copilot/gemini-*pro*\",\"google/gemini-*pro*\",\"gemini/gemini-*pro*\"],\"gemma\":[\"copilot/gemma*\",\"google/gemma*\",\"gemini/gemma*\"],\"gpt-5\":[\"copilot/gpt-5*\",\"openai/gpt-5*\"],\"gpt-5-codex\":[\"copilot/gpt-5*codex*\",\"openai/gpt-5*codex*\"],\"gpt-5-mini\":[\"copilot/gpt-5*mini*\",\"openai/gpt-5*mini*\"],\"gpt-5-nano\":[\"copilot/gpt-5*nano*\",\"openai/gpt-5*nano*\"],\"gpt-5-pro\":[\"copilot/gpt-5*pro*\",\"openai/gpt-5*pro*\"],\"gpt-5.1\":[\"copilot/gpt-5.1*\",\"openai/gpt-5.1*\"],\"gpt-5.2\":[\"copilot/gpt-5.2*\",\"openai/gpt-5.2*\"],\"gpt-5.3\":[\"copilot/gpt-5.3*\",\"openai/gpt-5.3*\"],\"gpt-5.4\":[\"copilot/gpt-5.4*\",\"openai/gpt-5.4*\"],\"gpt-5.5\":[\"copilot/gpt-5.5*\",\"openai/gpt-5.5*\"],\"gpt-5.6\":[\"copilot/gpt-5.6*\",\"openai/gpt-5.6*\"],\"grok\":[\"copilot/*grok*\",\"openai/*grok*\"],\"haiku\":[\"copilot/*haiku*\",\"anthropic/*haiku*\"],\"image-generation\":[\"copilot/gpt-image*\",\"openai/gpt-image*\",\"openai/chatgpt-image*\",\"copilot/gemini-*image*\",\"google/gemini-*image*\",\"gemini/gemini-*image*\",\"google/imagen*\"],\"kimi\":[\"copilot/kimi*\",\"openai/kimi*\"],\"kiwi\":[\"copilot/kiwi*\",\"openai/kiwi*\"],\"large\":[\"sonnet\",\"gpt-5-pro\",\"gpt-5\",\"gemini-pro\"],\"lyria\":[\"google/lyria*\",\"gemini/lyria*\",\"copilot/lyria*\"],\"mai-code\":[\"copilot/MAI-Code*\",\"copilot/mai-code*\",\"openai/MAI-Code*\"],\"mai-code-1-flash-picker\":[\"copilot/MAI-Code-1-Flash-picker*\",\"copilot/mai-code-1-flash-picker*\",\"openai/MAI-Code-1-Flash-picker*\"],\"mini\":[\"haiku\",\"gpt-5-mini\",\"gpt-5-nano\",\"gemini-flash-lite\"],\"nano-banana\":[\"copilot/nano-banana*\",\"google/nano-banana*\",\"gemini/nano-banana*\"],\"opus\":[\"copilot/*opus*\",\"anthropic/*opus*\"],\"opusplan\":[\"opus?effort=high\"],\"raptor-mini\":[\"copilot/raptor*\",\"openai/raptor*\"],\"reasoning\":[\"copilot/o1*\",\"copilot/o3*\",\"copilot/o4*\",\"openai/o1*\",\"openai/o3*\",\"openai/o4*\"],\"robotics\":[\"copilot/*robotics*\",\"google/*robotics*\",\"gemini/*robotics*\"],\"small\":[\"mini\"],\"small-agent\":[\"haiku\",\"gpt-5-mini\",\"gemini-flash\"],\"sonnet\":[\"copilot/*sonnet*\",\"anthropic/*sonnet*\"],\"sonnet-6x\":[\"copilot/*sonnet-4.5*\",\"copilot/*sonnet-4.6*\",\"copilot/*sonnet-5*\",\"copilot/*sonnet-4-5-*\",\"anthropic/*sonnet-4-5-*\",\"copilot/*sonnet-4-6*\",\"anthropic/*sonnet-4-6*\",\"anthropic/*sonnet-5*\"],\"summarization\":[\"haiku\",\"gpt-5-mini\",\"gemini-flash-lite\",\"mini\"],\"veo\":[\"google/veo*\",\"gemini/veo*\"],\"vision\":[\"copilot/gemini-*image*\",\"google/gemini-*image*\",\"gemini/gemini-*image*\",\"copilot/gemini-*flash*\",\"google/gemini-*flash*\",\"gemini/gemini-*flash*\"]}},\"container\":{\"imageTag\":\"0.27.44,squid=sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627,agent=sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4,api-proxy=sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7,cli-proxy=sha256:c064d15974f7c933ec7d3f7b4038f4fd203547b3154bdc821afd379144887eff\"},\"logging\":{\"proxyLogsDir\":\"/tmp/gh-aw/sandbox/firewall/logs\",\"auditDir\":\"/tmp/gh-aw/sandbox/firewall/audit\"}}" > "${RUNNER_TEMP}/gh-aw/awf-config.json"
           cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
           export GH_AW_MODELS_JSON_PATH="/tmp/gh-aw/models.json"
           GH_AW_DOCKER_HOST=""
@@ -1521,7 +1577,7 @@ jobs:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, secrets.COPILOT_GITHUB_TOKEN) }}
-          COPILOT_MODEL: gpt-6.1-sol
+          COPILOT_MODEL: gpt-6.2-sol
           COPILOT_PROVIDER_WIRE_API: responses
           GH_AW_LLM_PROVIDER: github
           GH_AW_MAX_AI_CREDITS: ${{ vars.GH_AW_DEFAULT_DETECTION_MAX_AI_CREDITS || '400' }}
@@ -1613,7 +1669,7 @@ jobs:
               }
             }
 
-  next_review:
+  next_round:
     needs:
       - activation
       - pre_activation
@@ -1622,7 +1678,8 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       actions: write
-      pull-requests: read
+      issues: write
+      pull-requests: write
     timeout-minutes: 3
     steps:
       - name: Configure GH_HOST for enterprise compatibility
@@ -1634,37 +1691,40 @@ jobs:
           GH_HOST="${GITHUB_SERVER_URL#https://}"
           GH_HOST="${GH_HOST#http://}"
           echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
-      - name: Request the next MAUI expert review
+      - name: Continue the loop
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           HEAD_SHA: ${{ needs.pre_activation.outputs.autopilot_head_sha }}
           IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
           PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
-          REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
         with:
           script: |
-            let target = Number(process.env.PR_NUMBER);
+            const LABEL = 's/autopilot-running';
+            const number = Number(process.env.PR_NUMBER);
+            const stop = () => github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: LABEL }).catch(() => {});
+            let target = number;
             if (process.env.IS_FORK === 'true') {
+              // The fix went to a follow-up PR; the loop moves there.
               const { data: prs } = await github.rest.pulls.list({ ...context.repo, state: 'open',
-                head: `${context.repo.owner}:autopilot/pr-${target}`, per_page: 1 });
-              if (!prs.length) { core.info('No follow-up PR was opened; the loop is done.'); return; }
+                head: `${context.repo.owner}:autopilot/pr-${number}`, per_page: 1 });
+              await stop();
+              if (!prs.length) return core.info('No follow-up PR was opened; the loop is done.');
               target = prs[0].number;
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: target, labels: [LABEL] });
             } else {
-              const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: target });
+              const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
               if (pr.state !== 'open' || pr.head.sha === process.env.HEAD_SHA) {
-                core.info('Nothing was pushed; the loop is done.');
-                return;
+                await stop();
+                return core.info('Nothing was pushed; the loop is done (see the PR Autopilot comment).');
               }
             }
-            await github.rest.actions.createWorkflowDispatch({
-              ...context.repo, workflow_id: 'copilot-review-expert.lock.yml',
-              ref: context.payload.repository.default_branch,
-              inputs: { pr_number: String(target), requested_by: process.env.REQUESTED_BY } });
-            core.info(`Requested the next MAUI expert review of #${target}.`);
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'pr-autopilot.lock.yml',
+              ref: context.payload.repository.default_branch, inputs: { pr_number: String(target) } });
+            core.info(`#${target}: next round requested.`);
 
   pat_pool:
     needs: pre_activation
-    if: ${{ needs.pre_activation.outputs.autopilot_ready == 'true' }}
+    if: ${{ needs.pre_activation.outputs.autopilot_stage == 'fix' }}
     runs-on: ubuntu-slim
     environment: copilot-pat-pool
     outputs:
@@ -1744,24 +1804,25 @@ jobs:
     environment: copilot-pat-pool
     permissions:
       contents: read
-      pull-requests: read
+      issues: write
+      pull-requests: write
     env:
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true' }}
-      autopilot_base_ref: ${{ steps.optin.outputs.base_ref }}
-      autopilot_head_ref: ${{ steps.optin.outputs.head_ref }}
-      autopilot_head_sha: ${{ steps.optin.outputs.head_sha }}
-      autopilot_is_fork: ${{ steps.optin.outputs.is_fork }}
-      autopilot_needs_review: ${{ steps.optin.outputs.needs_review }}
-      autopilot_pr: ${{ steps.optin.outputs.pr_number }}
-      autopilot_ready: ${{ steps.optin.outputs.ready }}
-      autopilot_requested_by: ${{ steps.optin.outputs.requested_by }}
+      autopilot_base_ref: ${{ steps.state.outputs.base_ref }}
+      autopilot_head_ref: ${{ steps.state.outputs.head_ref }}
+      autopilot_head_sha: ${{ steps.state.outputs.head_sha }}
+      autopilot_is_fork: ${{ steps.state.outputs.is_fork }}
+      autopilot_pr: ${{ steps.state.outputs.pr_number }}
+      autopilot_requested_by: ${{ steps.state.outputs.requested_by }}
+      autopilot_source: ${{ steps.state.outputs.source }}
+      autopilot_stage: ${{ steps.state.outputs.stage }}
       matched_command: ${{ steps.check_command_position.outputs.matched_command }}
-      optin_result: ${{ steps.optin.outcome }}
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
       setup-span-id: ${{ steps.setup.outputs.span-id }}
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
+      state_result: ${{ steps.state.outcome }}
     steps:
       - name: Setup Scripts
         id: setup
@@ -1800,64 +1861,124 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/check_membership.cjs');
             await main();
-      - name: Check that the PR author opted in
-        id: optin
+      - name: Decide the next step of the loop
+        id: state
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            core.setOutput('ready', 'false');
-            if (context.eventName === 'pull_request_target' && context.payload.label?.name !== 's/agent-changes-requested') {
-              core.info(`Ignoring label ${context.payload.label?.name}.`);
+            const LABEL = 's/autopilot-running';
+            const OPT_IN = /^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m;
+            const COMMAND = /^\s*\/autopilot(?:\s+(stop))?\s*$/i;
+            const USER = /^[A-Za-z0-9][A-Za-z0-9-]*$/;
+            const repo = context.repo;
+            core.setOutput('stage', 'none');
+
+            const number = Number(context.payload.issue?.number ?? context.payload.inputs?.pr_number);
+            if (!Number.isSafeInteger(number) || number < 1) return core.info('No pull request number.');
+            const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number: number });
+            const hasLabel = pr.labels.some(l => l.name === LABEL);
+            const comment = body => github.rest.issues.createComment({ ...repo, issue_number: number, body: `${body}\n\n<!-- pr-autopilot-status -->` });
+            const stopLoop = async reason => {
+              if (hasLabel) await github.rest.issues.removeLabel({ ...repo, issue_number: number, name: LABEL }).catch(() => {});
+              if (reason) await comment(reason);
+            };
+            const canWrite = async login => {
+              if (!USER.test(login || '')) return false;
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ ...repo, username: login });
+                return ['admin', 'maintain', 'write'].includes(data.permission);
+              } catch { return false; }
+            };
+            // A follow-up PR opened for a fork PR continues the original PR's loop.
+            const originOf = p => {
+              const m = /^autopilot\/pr-(\d+)$/.exec(p.head.ref);
+              return m && p.head.repo?.full_name === p.base.repo.full_name ? Number(m[1]) : null;
+            };
+            const ownerOf = async n => {
+              const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: n, per_page: 100 });
+              const start = comments.filter(c => c.user?.type === 'User' && /^\s*\/autopilot\s*$/i.test(c.body || '')).pop();
+              return start?.user.login || '';
+            };
+
+            let requester;
+            const kicked = context.eventName === 'workflow_dispatch' && context.actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot';
+            if (context.eventName === 'issue_comment') {
+              const command = COMMAND.exec(context.payload.comment?.body || '');
+              if (!command) return;
+              requester = context.payload.comment.user.login;
+              if (command[1]) {
+                if (pr.state === 'open') await stopLoop(`⏹️ PR Autopilot stopped by @${requester}.`);
+                return;
+              }
+            } else if (kicked) {
+              if (!hasLabel) return core.info(`#${number}: the loop is not running.`);
+              requester = await ownerOf(number);
+              if (!requester && originOf(pr)) requester = await ownerOf(originOf(pr));
+            } else {
+              requester = context.actor;
+            }
+            if (pr.state !== 'open') return core.info(`#${number} is not open.`);
+            if (!(await canWrite(requester))) {
+              await stopLoop(hasLabel ? '⏹️ PR Autopilot stopped: the maintainer who started it no longer has write access.' : '');
               return;
             }
-            const number = Number(
-              context.payload.pull_request?.number ??
-              context.payload.issue?.number ??
-              context.payload.inputs?.pr_number);
-            if (!Number.isSafeInteger(number) || number < 1) {
-              core.info('No pull request number.');
-              return;
+            let optedIn = OPT_IN.test(pr.body || '');
+            if (!optedIn && originOf(pr)) {
+              const { data: origin } = await github.rest.pulls.get({ ...repo, pull_number: originOf(pr) });
+              optedIn = OPT_IN.test(origin.body || '');
             }
-            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
-            if (pr.state !== 'open') {
-              core.info(`#${number} is not open.`);
-              return;
-            }
-            const optedIn = /^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m.test(pr.body || '');
             if (!optedIn) {
-              core.info(`#${number}: the author did not tick the "Let AI finish this PR" checkbox.`);
+              await stopLoop(`PR Autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/autopilot\` again.`);
               return;
             }
-            // The maintainer accountable for this loop. The expert reviewer dispatches later rounds
-            // as github-actions[bot] on their behalf; re-check their current write access.
-            let requester = context.actor;
-            if (requester === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
-              requester = String(context.payload.inputs?.requested_by || '');
+            if (!hasLabel) {
+              await github.rest.issues.addLabels({ ...repo, issue_number: number, labels: [LABEL] });
+              await comment(`🤖 PR Autopilot started by @${requester}. It loops **MAUI expert review → fix** until the review is clean, then **\`/review run-tests\` → fix** until the relevant tests pass. Each fix round compares a GPT-6.2 Sol fix with a MAI Code 2 fix and keeps the better one. Comment \`/autopilot stop\` to stop it.`);
             }
-            if (context.eventName === 'pull_request_target') requester = context.payload.sender?.login || '';
-            if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(requester)) {
-              core.info('No maintainer to act on behalf of.');
-              return;
+
+            // Where is the current head in the loop?
+            const head = pr.head.sha;
+            let stage, source = '', note = '';
+            const reviews = await github.paginate(github.rest.pulls.listReviews, { ...repo, pull_number: number, per_page: 100 });
+            const expert = reviews.filter(r => r.user?.login === 'github-actions[bot]' &&
+              (r.body || '').startsWith('## Expert Review') && r.commit_id === head).pop();
+            if (!expert) {
+              stage = 'review';
+            } else if (Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(expert.body)?.[1]) > 0) {
+              stage = 'fix'; source = 'expert';
+            } else {
+              const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: number, per_page: 100 });
+              const tests = comments.filter(c => c.user?.login === 'github-actions[bot]' &&
+                (c.body || '').includes(`<!-- review-run-tests-head: ${head} -->`)).pop();
+              if (!tests) {
+                stage = 'tests';
+              } else {
+                const states = [...tests.body.matchAll(/<!-- review-run-tests-state: ([a-z-]+) -->/g)].map(m => m[1]);
+                const results = [...tests.body.matchAll(/<!-- run-tests-result: ([A-Z ]+) -->|alt="Result ([A-Z ]+)"/g)].map(m => m[1] || m[2]);
+                if (states.includes('running')) stage = 'wait';
+                else if (results.includes('FAILED')) { stage = 'fix'; source = 'tests'; }
+                else if (states.includes('error') || results.includes('NOT QUEUED') || results.includes('CANCELED')) {
+                  stage = 'stop'; note = `⏹️ PR Autopilot stopped: the [test run](${tests.html_url}) could not complete. A maintainer can re-run \`/review run-tests\` and comment \`/autopilot\` again.`;
+                } else {
+                  stage = 'done';
+                  note = results.includes('SELECTION ONLY')
+                    ? `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean. Tests were [selected](${tests.html_url}) but this repository cannot run them. Ready for maintainer review.`
+                    : `✅ PR Autopilot finished: the MAUI expert review of ${head.slice(0, 7)} is clean and the [relevant tests](${tests.html_url}) pass. Ready for maintainer review.`;
+                }
+              }
             }
-            const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({ ...context.repo, username: requester });
-            if (!['admin', 'maintain', 'write'].includes(perm.permission)) {
-              core.info(`@${requester} does not have write access.`);
-              return;
-            }
-            core.setOutput('requested_by', requester);
+            core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source})` : ''}, on behalf of @${requester}.`);
+            if (stage === 'done' || stage === 'stop') { await stopLoop(note); stage = 'none'; }
+
             const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
-            // Without an expert review of the current head, start the loop with a review.
-            const reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number: number, per_page: 100 });
-            const reviewed = reviews.some(r => r.user?.login === 'github-actions[bot]' &&
-              (r.body || '').startsWith('## Expert Review') && r.commit_id === pr.head.sha);
-            core.setOutput('needs_review', String(!reviewed));
-            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('stage', stage);
+            core.setOutput('source', source);
+            core.setOutput('requested_by', requester);
             core.setOutput('pr_number', String(number));
             core.setOutput('head_ref', pr.head.ref);
             core.setOutput('base_ref', pr.base.ref);
+            core.setOutput('head_sha', head);
             core.setOutput('is_fork', String(isFork));
-            core.setOutput('ready', 'true');
-            core.info(`#${number}: opted in (fork: ${isFork}, base: ${pr.base.ref}, needs expert review: ${!reviewed}).`);
 
   publication_context:
     needs:
@@ -1878,7 +1999,7 @@ jobs:
           GH_HOST="${GITHUB_SERVER_URL#https://}"
           GH_HOST="${GH_HOST#http://}"
           echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
-      - run: echo "Autopilot publishes only to the opted-in PR."
+      - run: echo "Autopilot publishes only to the PR it is driving."
 
   safe_outputs:
     needs:
@@ -1904,8 +2025,7 @@ jobs:
       GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
       GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-6.1-sol"
-      GH_AW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      GH_AW_ENGINE_MODEL: "gpt-6.2-sol"
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🤖 *[{workflow_name}]({run_url}) · the PR author opted in. Maintainers decide whether this is merged.*\\n\\u003c!-- pr-autopilot --\\u003e\"}"
       GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
@@ -2018,34 +2138,3 @@ jobs:
             /tmp/gh-aw/safe-output-items.jsonl
             /tmp/gh-aw/temporary-id-map.json
           if-no-files-found: ignore
-
-  start_review:
-    needs: pre_activation
-    if: needs.pre_activation.outputs.autopilot_ready == 'true'
-    runs-on: ubuntu-slim
-    permissions:
-      actions: write
-    timeout-minutes: 3
-    steps:
-      - name: Configure GH_HOST for enterprise compatibility
-        id: ghes-host-config
-        shell: bash
-        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
-          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
-          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
-          GH_HOST="${GITHUB_SERVER_URL#https://}"
-          GH_HOST="${GH_HOST#http://}"
-          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
-      - name: Request a MAUI expert review
-        if: needs.pre_activation.outputs.autopilot_needs_review == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
-          REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              ...context.repo, workflow_id: 'copilot-review-expert.lock.yml',
-              ref: context.payload.repository.default_branch,
-              inputs: { pr_number: process.env.PR_NUMBER, requested_by: process.env.REQUESTED_BY } });
-            core.info(`Requested a MAUI expert review of #${process.env.PR_NUMBER}.`);
