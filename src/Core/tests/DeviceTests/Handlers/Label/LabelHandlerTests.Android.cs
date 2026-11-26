@@ -391,6 +391,140 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		const string SlantedText = "Hello, World";
+
+		[Theory(DisplayName = "Slanted Last Glyph Is Drawn Completely")]
+		[InlineData(false, GravityFlags.Start, null)]
+		[InlineData(false, GravityFlags.CenterHorizontal, null)]
+		[InlineData(false, GravityFlags.End, null)]
+		[InlineData(true, GravityFlags.Start, null)]
+		[InlineData(true, GravityFlags.CenterHorizontal, null)]
+		[InlineData(true, GravityFlags.End, null)]
+		[InlineData(false, GravityFlags.End, "Start")]
+		[InlineData(false, GravityFlags.End, "Middle")]
+		public async Task SlantedLastGlyphIsDrawnCompletely(bool material, GravityFlags gravity, string truncation)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = CreateSlantedTextView(material);
+				textView.Gravity = gravity;
+
+				var width = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+				if (truncation is not null)
+				{
+					textView.SetMaxLines(1);
+					textView.Ellipsize = truncation == "Start" ? global::Android.Text.TextUtils.TruncateAt.Start : global::Android.Text.TextUtils.TruncateAt.Middle;
+					var narrow = (int)(textView.Paint.MeasureText(SlantedText) * 0.7f);
+					width = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(narrow, MeasureSpecMode.Exactly);
+				}
+
+				textView.Measure(width, global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+				textView.Layout(0, 0, textView.MeasuredWidth, textView.MeasuredHeight);
+
+				AssertInkIsNotClipped(textView);
+			});
+		}
+
+		[Theory(DisplayName = "Slanted Text Keeps Its Line Breaks")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task SlantedTextKeepsItsLineBreaks(bool material)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				const string text = "all of the old wood fell to the floor of the hall and we all had a good look at it";
+				var textView = CreateSlantedTextView(material);
+				TextView reference = material
+					? new global::Google.Android.Material.TextView.MaterialTextView(textView.Context)
+					: new AppCompatTextView(MauiContext.Context);
+				reference.SetTextSize(global::Android.Util.ComplexUnitType.Dip, 32);
+				reference.Paint.TextSkewX = -0.25f;
+				reference.Typeface = textView.Typeface;
+				textView.Text = text;
+				reference.Text = text;
+
+				var height = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+				for (var pixels = 300; pixels <= 900; pixels += 7)
+				{
+					var width = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(pixels, MeasureSpecMode.Exactly);
+					textView.Measure(width, height);
+					reference.Measure(width, height);
+
+					Assert.Equal(GetLineStarts(reference), GetLineStarts(textView));
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Narrowed Wrapped Slanted Label Is Drawn Completely")]
+		public async Task NarrowedWrappedSlantedLabelIsDrawnCompletely()
+		{
+			var label = new LabelStub
+			{
+				Text = "Hello World Hello World Hello World",
+				HorizontalLayoutAlignment = Primitives.LayoutAlignment.Start
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(label);
+				var textView = (TextView)handler.PlatformView;
+				textView.SetTextSize(global::Android.Util.ComplexUnitType.Dip, 32);
+				textView.Paint.TextSkewX = -0.25f;
+
+				var size = handler.GetDesiredSize(200, double.PositiveInfinity);
+				handler.PlatformArrange(new Graphics.Rect(0, 0, size.Width, size.Height));
+
+				Assert.True(textView.LineCount > 1);
+				AssertInkIsNotClipped(textView);
+			});
+		}
+
+		TextView CreateSlantedTextView(bool material)
+		{
+			TextView textView = material ? new MauiMaterialTextView(MauiContext.Context) : new MauiTextView(MauiContext.Context);
+			textView.Text = SlantedText;
+			textView.SetTextSize(global::Android.Util.ComplexUnitType.Dip, 32);
+			textView.Paint.TextSkewX = -0.25f;
+			return textView;
+		}
+
+		static int[] GetLineStarts(TextView textView) =>
+			Enumerable.Range(0, textView.LineCount).Select(textView.Layout.GetLineStart).ToArray();
+
+		static void AssertInkIsNotClipped(TextView textView)
+		{
+			textView.SetTextColor(global::Android.Graphics.Color.Black);
+
+			using var drawn = global::Android.Graphics.Bitmap.CreateBitmap(textView.Width, textView.Height, global::Android.Graphics.Bitmap.Config.Argb8888);
+			using var drawnCanvas = new Canvas(drawn);
+			textView.Draw(drawnCanvas);
+
+			using var unclipped = global::Android.Graphics.Bitmap.CreateBitmap(textView.Width + 100, textView.Height, global::Android.Graphics.Bitmap.Config.Argb8888);
+			using var unclippedCanvas = new Canvas(unclipped);
+			unclippedCanvas.Translate(textView.TotalPaddingLeft, textView.TotalPaddingTop);
+			textView.Layout.Draw(unclippedCanvas);
+
+			Assert.True(GetRightmostInk(drawn) >= 0, "Nothing was drawn");
+			Assert.InRange(GetRightmostInk(drawn), GetRightmostInk(unclipped) - 1, GetRightmostInk(unclipped) + 1);
+		}
+
+		static int GetRightmostInk(global::Android.Graphics.Bitmap bitmap)
+		{
+			var pixels = new int[bitmap.Width * bitmap.Height];
+			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+
+			for (var x = bitmap.Width - 1; x >= 0; x--)
+			{
+				for (var y = 0; y < bitmap.Height; y++)
+				{
+					if (global::Android.Graphics.Color.GetAlphaComponent(pixels[y * bitmap.Width + x]) > 64)
+						return x;
+				}
+			}
+
+			return -1;
+		}
+
 		// An ILabelHandler that reuses the LabelHandler mappings without deriving from LabelHandler
 		class LabelMappingsHandler : ViewHandler<ILabel, AppCompatTextView>, ILabelHandler
 		{
