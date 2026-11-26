@@ -19,6 +19,8 @@ import microsoft.maui.R;
 import com.microsoft.maui.ImageLoaderCallback;
 import com.microsoft.maui.PlatformInterop;
 import com.microsoft.maui.PlatformLogger;
+
+import java.lang.ref.WeakReference;
 import com.microsoft.maui.glide.MauiTarget;
 
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> implements MauiTarget {
@@ -27,14 +29,17 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     @IdRes private static final int RUNNING_CALLBACKS_TAG = R.id.maui_custom_view_target_running_callbacks_tag;
     @IdRes private static final int CHANGED_TAG = R.id.maui_custom_view_target_changed_tag;
     @IdRes private static final int CURRENT_TAG = R.id.maui_custom_view_target_current_tag;
+    // Unlike View.post, also runs while the view is not attached to a window.
+    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
 
     private final ImageLoaderCallback callback;
     private final String resourceLogIdentifier;
     private boolean completed;
     // The request this target started, so that it is only cleared while it is still the view's request.
     private Request startedRequest;
-    // Set while a failed request is cleared, which must not change the image shown (for example an error image).
-    private boolean clearingQuietly;
+    // A failed request never set an image on the view, so clearing it (for example when Glide restarts it after the
+    // network reconnects) must not change the image shown instead, such as an error image.
+    private boolean failed;
 
     public MauiCustomViewTarget(@NonNull ImageView view, ImageLoaderCallback callback, Object model) {
         super(view);
@@ -70,11 +75,10 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     public static void stopUnfinishedLoad(@NonNull ImageView view) {
         onViewChanged(view);
 
-        Object current = view.getTag(CURRENT_TAG);
-        if (!(current instanceof MauiCustomViewTarget)) {
+        MauiCustomViewTarget target = getCurrent(view);
+        if (target == null) {
             return;
         }
-        MauiCustomViewTarget target = (MauiCustomViewTarget) current;
         if (target.completed) {
             forgetCurrent(view);
             return;
@@ -91,7 +95,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
             Glide.with(view).clear(target);
         }
         // Like a deferred load that is dropped; posted so that the caller is not reentered.
-        view.post(() -> target.callback.onComplete(null, null, null));
+        MAIN_HANDLER.post(() -> target.callback.onComplete(null, null, null));
     }
 
     /**
@@ -99,6 +103,13 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
      */
     public static void forgetCurrent(@NonNull ImageView view) {
         view.setTag(CURRENT_TAG, null);
+    }
+
+    @Nullable
+    private static MauiCustomViewTarget getCurrent(@NonNull ImageView view) {
+        // Weak, so that a load that Glide stopped by itself (for example cleared by other code) is not retained.
+        Object current = view.getTag(CURRENT_TAG);
+        return current instanceof WeakReference ? (MauiCustomViewTarget) ((WeakReference<?>) current).get() : null;
     }
 
     private boolean isStillViewRequest() {
@@ -153,7 +164,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         if (!deferred) {
             onViewChanged(this.view);
         }
-        this.view.setTag(CURRENT_TAG, this);
+        this.view.setTag(CURRENT_TAG, new WeakReference<>(this));
         builder.into(this);
         this.startedRequest = getRequest();
     }
@@ -162,7 +173,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     protected void onResourceCleared(@Nullable Drawable placeholder) {
         if (logger.isVerboseLoggable) logger.v("onResourceCleared: " + resourceLogIdentifier);
 
-        if (clearingQuietly)
+        if (failed)
             return;
 
 		this.view.setImageDrawable(placeholder);
@@ -174,14 +185,14 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
             return;
 
         this.completed = true;
-        if (this.view.getTag(CURRENT_TAG) == this)
+        if (getCurrent(this.view) == this)
             forgetCurrent(this.view);
 
         if (logger.isVerboseLoggable) logger.v("onLoadFailed: " + resourceLogIdentifier);
 
-        // Glide restarts failed requests when the network reconnects, which clears the view (and so an error image
-        // shown instead) first. Nothing waits for this request anymore, so stop it without changing the view.
-        this.view.post(this::forgetFailedRequest);
+        this.failed = true;
+        // Glide restarts failed requests when the network reconnects. Nothing waits for this request anymore, so stop it.
+        MAIN_HANDLER.post(this::forgetFailedRequest);
 
         try {
             setIsInvokingCallbacks(true);
@@ -197,7 +208,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         if (completed)
             return;
         this.completed = true;
-        if (this.view.getTag(CURRENT_TAG) == this)
+        if (getCurrent(this.view) == this)
             forgetCurrent(this.view);
 
         if (logger.isVerboseLoggable) logger.v("onResourceReady: " + resourceLogIdentifier);
@@ -217,13 +228,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     private void forgetFailedRequest() {
         if (!isStillViewRequest() || PlatformInterop.isContextDestroyed(this.view.getContext()))
             return;
-        clearingQuietly = true;
-        try {
-            Glide.with(this.view).clear(this);
-        }
-        finally {
-            clearingQuietly = false;
-        }
+        Glide.with(this.view).clear(this);
     }
 
     private void setIsInvokingCallbacks(boolean isInvokingCallbacks) {

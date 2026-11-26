@@ -112,8 +112,8 @@ namespace Microsoft.Maui.Platform
 					PlatformInterop.StopUnfinishedImageViewLoad(unfinishedLoadView);
 
 				// Otherwise Android clears the image as soon as the new one starts loading. Glide only does that for images
-				// it set itself, not for a kept image that the loader set.
-				if (!keepPrevious && _isLoadedImageShown)
+				// it set itself, not for an image that the loader set (a kept image, or a placeholder or error image).
+				if (!keepPrevious)
 				{
 					RemoveOwnedImageFromView();
 					ReleaseOwnedResult();

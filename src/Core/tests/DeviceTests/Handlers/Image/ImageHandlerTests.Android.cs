@@ -325,6 +325,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task StoppedUnfinishedLoadOfADetachedViewIsReportedAsCancelled()
+		{
+			var service = new FileImageSourceService();
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// The view is never attached, so Glide waits for its size and the load does not finish.
+				var imageView = new ImageView(MauiProgram.DefaultContext);
+				var load = service.LoadDrawableAsync(red, imageView);
+				PlatformInterop.StopUnfinishedImageViewLoad(imageView);
+
+				await Task.WhenAny(load, Task.Delay(5_000));
+				Assert.Equal(TaskStatus.Canceled, load.Status);
+			});
+		}
+
+		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();

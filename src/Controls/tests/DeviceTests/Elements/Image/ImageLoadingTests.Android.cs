@@ -71,5 +71,38 @@ namespace Microsoft.Maui.DeviceTests
 				await WaitFor(() => loaded == 3);
 			}, image);
 		}
+
+		[Fact]
+		public async Task ErrorImageIsClearedWhenTheNextImageStartsLoading()
+		{
+			SetupBuilder();
+			var release = new TaskCompletionSource<bool>();
+			_server.Respond(async request =>
+			{
+				if (request.RequestUri.AbsolutePath.EndsWith("slow.png", StringComparison.Ordinal))
+				{
+					await release.Task;
+					return Png(Colors.Blue);
+				}
+				return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound);
+			});
+			var image = CreateImage(new UriImageSource { Uri = RedUri });
+			image.ErrorSource = "green.png";
+
+			await RunWithImages(async () =>
+			{
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Failed);
+				await AssertColor(image, Colors.Lime);
+
+				// Like any image on Android, the error image is cleared while the next image loads.
+				image.Source = new UriImageSource { Uri = new Uri("https://images.test/slow.png") };
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loading);
+				Assert.Null(((ImageView)image.Handler.PlatformView).Drawable);
+
+				release.SetResult(true);
+				await WaitFor(() => image.LoadingState == ImageLoadingState.Loaded);
+				await AssertColor(image, Colors.Blue);
+			}, image);
+		}
 	}
 }
