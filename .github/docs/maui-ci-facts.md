@@ -183,6 +183,11 @@ comparison behavior and removed Intel macOS support. A major upgrade requires
 explicit validation of the screenshot baselines and supported runner
 architectures; patch and minor updates remain enabled.
 
+Dependabot reads `.github/dependabot.yml` from `main`. The default NuGet entry
+targets `main` and retains security update settings; the `net11` entry targets
+servicing version updates. Keep their groups and ignore rules aligned. The
+`OtherNuGet` group excludes the existing curated groups to avoid overlapping PRs.
+
 ### Pipeline definitions
 
 **Organization**: `dnceng-public` / project `public`
