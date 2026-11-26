@@ -190,7 +190,8 @@ on:
                   : results.includes('SELECTION ONLY')
                   ? `[Selected](${tests.html_url}); this repository can't run them`
                   : `[Passed](${tests.html_url})`;
-                const threadsCell = `${resolved} resolved` + (undecided.length ? `, ${undecided.length} need${undecided.length === 1 ? 's' : ''} a decision` : '');
+                const threadsCell = resolved + undecided.length === 0 ? 'None'
+                  : `${resolved} resolved` + (undecided.length ? `, ${undecided.length} need${undecided.length === 1 ? 's' : ''} a decision` : '');
                 note = [
                   '### ✅ maui-expert-autopilot: ready for maintainer review',
                   '',
@@ -223,7 +224,9 @@ on:
             await comment([
               `### maui-expert-autopilot started`,
               '',
-              `Started by @${requester}. @${pr.user.login} opted in to letting the agent finish this PR.`,
+              requester === pr.user.login
+                ? `Started by @${requester}, who opted in to letting the agent finish this PR.`
+                : `Started by @${requester}. @${pr.user.login} opted in to letting the agent finish this PR.`,
               '',
               '| Step | What happens |',
               '|---|---|',
