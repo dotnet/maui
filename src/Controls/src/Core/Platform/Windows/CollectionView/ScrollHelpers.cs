@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
 		{
-			if (point.Y > (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+			if (point.Y > scrollViewer.VerticalOffset + headerHeight
+				&& point.Y + itemSize.Height > scrollViewer.VerticalOffset + scrollViewer.ViewportHeight)
 			{
 				return AdjustToEndVertical(point, itemSize, scrollViewer);
 			}
@@ -54,7 +55,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
-			if (point.X > (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth))
+			if (point.X > scrollViewer.HorizontalOffset
+				&& point.X + itemSize.Width > scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth)
 			{
 				return AdjustToEndHorizontal(point, itemSize, scrollViewer);
 			}
