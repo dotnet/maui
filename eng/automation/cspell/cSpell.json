@@ -37,7 +37,8 @@
         "noninteractive",
         "frontmatter",
         "Vally",
-        "Markout"
+        "Markout",
+        "Emscripten"
     ],
     "ignoreWords": [],
     "patterns": [
