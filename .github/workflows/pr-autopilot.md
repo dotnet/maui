@@ -34,7 +34,8 @@ on:
   reaction: eyes
   status-comment: false
   permissions:
-    contents: read
+    # contents: write lets GITHUB_TOKEN resolve review threads (GitHub requires it for resolveReviewThread).
+    contents: write
     issues: write
     pull-requests: write
   steps:
@@ -288,6 +289,8 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       actions: write
+      # Required for GITHUB_TOKEN to resolve review threads.
+      contents: write
       issues: write
       pull-requests: write
     timeout-minutes: 3
