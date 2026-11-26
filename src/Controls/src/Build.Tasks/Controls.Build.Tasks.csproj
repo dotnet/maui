@@ -40,6 +40,7 @@
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\SourceGen.CodeFixes\Controls.SourceGen.CodeFixes.csproj" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
@@ -56,6 +57,8 @@
 		<None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.SourceGen.CodeFixes\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.CodeFixes.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.SourceGen.CodeFixes\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.CodeFixes.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Core.HybridWebViewSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Core.HybridWebViewSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
