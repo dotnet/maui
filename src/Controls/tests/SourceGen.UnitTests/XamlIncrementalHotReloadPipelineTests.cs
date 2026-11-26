@@ -2652,12 +2652,12 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var v1 = MakeFile(PageXamlV1);
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
 
-		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
-		var second = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var first = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
+		var second = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.NotNull(first);
 		Assert.NotEqual(baselineUc, first);
@@ -2673,12 +2673,12 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var v1 = MakeFile(PageXamlV1);
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
 
 		// A throwaway compilation over the same sources (e.g. a design-time request) runs first and is discarded.
-		_ = edited.RunGenerators(compilation.Clone());
-		var real = edited.RunGenerators(compilation).GetRunResult();
+		_ = edited.RunGenerators(compilation.Clone(), cancellationToken: TestContext.Current.CancellationToken);
+		var real = edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult();
 
 		var uc = FindUCSource(real, "uc.xsg");
 		Assert.NotNull(uc);
@@ -2709,16 +2709,16 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 				public Styles() => InitializeComponent();
 			}
 			""";
-		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var vRed = MakeFileAt("Styles.xaml", red);
 		var vBlue = MakeFileAt("Styles.xaml", blue);
 
-		var baseline = CreateDriver(vRed).RunGenerators(compilation);
+		var baseline = CreateDriver(vRed).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
 		var edited = baseline.ReplaceAdditionalText(vRed.Text, vBlue.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([vBlue]));
 
-		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
-		var second = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var first = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
+		var second = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.NotNull(first);
 		Assert.NotEqual(baselineUc, first);
@@ -2731,16 +2731,16 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	{
 		XamlHotReloadState.Reset();
 		var compilation = CreateCompilation();
-		var otherCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs"));
+		var otherCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs", cancellationToken: TestContext.Current.CancellationToken));
 		var v1 = MakeFile(PageXamlV1);
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
 
-		var first = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
-		_ = edited.RunGenerators(otherCompilation);
-		var again = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var first = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
+		_ = edited.RunGenerators(otherCompilation, cancellationToken: TestContext.Current.CancellationToken);
+		var again = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.Contains("\"World\"", first, StringComparison.Ordinal);
 		Assert.Equal(first, again);
@@ -2753,15 +2753,15 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// evaluates the edited XAML before the real compilation does.
 		XamlHotReloadState.Reset();
 		var compilation = CreateCompilation();
-		var throwawayCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs"));
+		var throwawayCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs", cancellationToken: TestContext.Current.CancellationToken));
 		var v1 = MakeFile(PageXamlV1);
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
 
-		var throwaway = FindUCSource(edited.RunGenerators(throwawayCompilation).GetRunResult(), "uc.xsg");
-		var real = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var throwaway = FindUCSource(edited.RunGenerators(throwawayCompilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
+		var real = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.Contains("\"World\"", real, StringComparison.Ordinal);
 		Assert.Equal(throwaway, real);
@@ -2790,10 +2790,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var throwaway = MakeFile(LabelPage("Text=\"World\" FontSize=\"30\""));
 		var real = MakeFile(LabelPage("Text=\"World\""));
 
-		var baseline = CreateDriver(applied).RunGenerators(compilation);
-		_ = baseline.ReplaceAdditionalText(applied.Text, throwaway.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([throwaway])).RunGenerators(compilation);
+		var baseline = CreateDriver(applied).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
+		_ = baseline.ReplaceAdditionalText(applied.Text, throwaway.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([throwaway])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = baseline.ReplaceAdditionalText(applied.Text, real.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([real]));
-		var uc = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+		var uc = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.NotNull(uc);
 		Assert.Equal(1, UpdateComponentText.BaselineCaseCount(uc!));
@@ -2803,9 +2803,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("\"World\"", uc!.Replace(fromThrowaway, string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
 
 		// Re-evaluating the same snapshot, or a C#-only edit, emits the same multi-baseline patch.
-		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
-		Assert.Equal(uc, FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg"));
-		Assert.Equal(uc, FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg"));
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs", cancellationToken: TestContext.Current.CancellationToken));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg"));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(csharpEdited, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg"));
 	}
 
 	[Fact]
@@ -2817,11 +2817,11 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			.Select(i => MakeFile(LabelPage($"Text=\"Text{i}\"")))
 			.ToArray();
 
-		GeneratorDriver driver = CreateDriver(files[0]).RunGenerators(compilation);
+		GeneratorDriver driver = CreateDriver(files[0]).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		string? uc = null;
 		for (var i = 1; i < files.Length; i++)
 		{
-			driver = driver.ReplaceAdditionalText(files[i - 1].Text, files[i].Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([files[i]])).RunGenerators(compilation);
+			driver = driver.ReplaceAdditionalText(files[i - 1].Text, files[i].Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([files[i]])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 			uc = FindUCSource(driver.GetRunResult(), "uc.xsg");
 			Assert.Equal(Math.Min(i, XamlHotReloadState.MaxBaselines) - 1, UpdateComponentText.BaselineCaseCount(uc!));
 		}
@@ -2837,14 +2837,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var v1 = MakeFile(PageXamlV1);
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
-		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var patch = FindUCSource(edited.GetRunResult(), "uc.xsg");
 		Assert.Contains("\"World\"", patch, StringComparison.Ordinal);
 
-		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
-		var afterCSharpEdit = FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg");
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs", cancellationToken: TestContext.Current.CancellationToken));
+		var afterCSharpEdit = FindUCSource(edited.RunGenerators(csharpEdited, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "uc.xsg");
 
 		Assert.Equal(patch, afterCSharpEdit);
 		Assert.NotEqual(GetSignalFingerprint(baselineUc), GetSignalFingerprint(patch));
@@ -2859,11 +2859,11 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 		var v1Again = MakeFile(PageXamlV1);
 
-		var driver = CreateDriver(v1).RunGenerators(compilation);
+		var driver = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var first = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
-		driver = driver.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		driver = driver.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var forward = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
-		driver = driver.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation);
+		driver = driver.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var reverted = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
 
 		Assert.Equal(string.Empty, first);
@@ -2891,12 +2891,12 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var v2 = MakeFile(PageXamlV2_PropertyChange);
 		var v1Again = MakeFile(PageXamlV1);
 
-		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var baseline = CreateDriver(v1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
-		_ = edited.RunGenerators(compilation);
-		var editedRun = edited.RunGenerators(compilation);
+		_ = edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
+		var editedRun = edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 
-		var reverted = editedRun.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation);
+		var reverted = editedRun.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var uc = FindUCSource(reverted.GetRunResult(), "uc.xsg");
 
 		Assert.NotNull(uc);
@@ -2922,14 +2922,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var other1 = MakeFileAt("OtherPage.xaml", otherV1);
 		var other2 = MakeFileAt("OtherPage.xaml", otherV2);
 
-		var driver = CreateDriver(main1, other1).RunGenerators(compilation);
-		driver = driver.ReplaceAdditionalText(main1.Text, main2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other1])).RunGenerators(compilation);
+		var driver = CreateDriver(main1, other1).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
+		driver = driver.ReplaceAdditionalText(main1.Text, main2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other1])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var mainPatch = FindUCSource(driver.GetRunResult(), "MainPage.xaml.uc.xsg");
 		Assert.Contains("\"World\"", mainPatch, StringComparison.Ordinal);
 
 		// Editing OtherPage (including a new x:Name, which changes the generated code-behind of the
 		// compilation) re-runs MainPage's generation with unchanged MainPage XAML and unchanged user C#.
-		driver = driver.ReplaceAdditionalText(other1.Text, other2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other2])).RunGenerators(compilation);
+		driver = driver.ReplaceAdditionalText(other1.Text, other2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([main2, other2])).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 
 		Assert.Equal(mainPatch, FindUCSource(driver.GetRunResult(), "MainPage.xaml.uc.xsg"));
 		Assert.Contains("\"Other2\"", FindUCSource(driver.GetRunResult(), "OtherPage.xaml.uc.xsg"), StringComparison.Ordinal);
@@ -2988,16 +2988,16 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 				public MainPage() => InitializeComponent();
 				void OnCounterClicked(object? sender, EventArgs e) => CounterBtn.Text = "Clicked";
 			}
-			"""));
+			""", cancellationToken: TestContext.Current.CancellationToken));
 		var v1 = MakeFile(TemplateMainPageXaml);
 		var v2 = MakeFile(TemplateMainPageXaml.Replace("Hello, Maui!", "Hello, World!", StringComparison.Ordinal));
 		var styles = MakeFileAt("Resources/Styles/Styles.xaml", TemplateStylesXaml);
 
-		var edited = CreateDriver(v1, styles).RunGenerators(compilation)
+		var edited = CreateDriver(v1, styles).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken)
 			.ReplaceAdditionalText(v1.Text, v2.Text)
 			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2, styles]));
-		var first = FindUCSource(edited.RunGenerators(throwawayFirst ? compilation.Clone() : compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
-		var applied = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
+		var first = FindUCSource(edited.RunGenerators(throwawayFirst ? compilation.Clone() : compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "MainPage.xaml.uc.xsg");
+		var applied = FindUCSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), "MainPage.xaml.uc.xsg");
 
 		Assert.Contains("\"Hello, World!\"", first, StringComparison.Ordinal);
 		Assert.Equal(first, applied);

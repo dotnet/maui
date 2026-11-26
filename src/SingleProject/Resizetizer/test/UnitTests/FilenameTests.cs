@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 	public sealed class WindowsFact : FactAttribute
 	{
-		public WindowsFact()
-			: base()
+		public WindowsFact([CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+			: base(sourceFilePath, sourceLineNumber)
 		{
 			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				Skip = $"Ignored unless on Windows";

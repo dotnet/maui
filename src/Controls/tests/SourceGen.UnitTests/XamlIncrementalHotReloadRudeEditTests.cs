@@ -120,12 +120,12 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		var compilation = CreateCompilation();
 		var applied = MakeFile(Applied);
 		var rude = MakeFile(RudeSyntax);
-		var driver = CreateDriver(applied).RunGenerators(compilation);
+		var driver = CreateDriver(applied).RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken);
 		var edited = driver.ReplaceAdditionalText(applied.Text, rude.Text)
 			.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(rude));
 
-		var first = GetSource(edited.RunGenerators(compilation).GetRunResult(), ".uc.xsg.cs");
-		var second = GetSource(edited.RunGenerators(compilation).GetRunResult(), ".uc.xsg.cs");
+		var first = GetSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), ".uc.xsg.cs");
+		var second = GetSource(edited.RunGenerators(compilation, cancellationToken: TestContext.Current.CancellationToken).GetRunResult(), ".uc.xsg.cs");
 
 		Assert.Equal(first, second);
 	}
@@ -194,7 +194,7 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		// Count and SaveCommand are added by the MVVM Toolkit's generator, which the XAML generator
 		// doesn't see: its generated code doesn't compile on its own, but the app's build does.
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation("TestApp")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(ObservableViewModel));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(ObservableViewModel, cancellationToken: TestContext.Current.CancellationToken));
 		const string button = "\n        <Button Text=\"Added\" Command=\"{Binding SaveCommand}\" />";
 		var runs = RunEdits(compilation,
 			Page("{Count}", "One"),
