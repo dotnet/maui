@@ -100,12 +100,91 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task RefreshStartedBeforeBeingInAWindowIsShown()
+		[Theory]
+		[InlineData(0)]
+		[InlineData(100)]
+		public async Task RefreshStartedBeforeBeingInAWindowRevealsTheIndicator(int topInset)
 		{
-			bool refreshing = false;
-			bool refreshingAfterEnd = true;
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var refreshView = new MauiRefreshView
+				{
+					Frame = new CGRect(0, 0, 300, 300)
+				};
+				using var scrollView = new UIScrollView(new CGRect(0, 0, 300, 300))
+				{
+					ContentSize = new CGSize(300, 1200),
+					ContentInset = new UIEdgeInsets(topInset, 0, 0, 0)
+				};
+				scrollView.ContentOffset = new CGPoint(0, -topInset);
 
+				refreshView.AddSubview(scrollView);
+				refreshView.UpdateIsRefreshEnabled(true);
+				refreshView.IsRefreshing = true;
+
+				await refreshView.AttachAndRun(async () =>
+				{
+					refreshView.SetNeedsLayout();
+					await Task.Delay(500);
+					Assert.True(refreshView.RefreshControl.Refreshing);
+					var refreshingOffset = scrollView.ContentOffset.Y;
+					var indicatorHeight = refreshView.RefreshControl.Frame.Height;
+
+					refreshView.IsRefreshing = false;
+					await AssertHelpers.AssertEventually(
+						() => Math.Abs(scrollView.ContentOffset.Y + scrollView.AdjustedContentInset.Top) < 1,
+						timeout: 2000,
+						message: $"ContentOffset.Y was {scrollView.ContentOffset.Y} and the top inset {scrollView.AdjustedContentInset.Top} after the refresh ended");
+
+					Assert.False(refreshView.RefreshControl.Refreshing);
+					Assert.InRange((double)(scrollView.ContentOffset.Y - refreshingOffset), (double)indicatorHeight - 1, (double)indicatorHeight + 1);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task PendingRefreshOnReattachKeepsScrollPosition()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var refreshView = new MauiRefreshView
+				{
+					Frame = new CGRect(0, 0, 300, 300)
+				};
+				using var scrollView = new UIScrollView(new CGRect(0, 0, 300, 300))
+				{
+					ContentSize = new CGSize(300, 1200)
+				};
+
+				refreshView.AddSubview(scrollView);
+				refreshView.UpdateIsRefreshEnabled(true);
+
+				await refreshView.AttachAndRun(() =>
+				{
+					scrollView.ContentOffset = new CGPoint(0, 500);
+				});
+
+				refreshView.IsRefreshing = true;
+
+				await refreshView.AttachAndRun(async () =>
+				{
+					refreshView.SetNeedsLayout();
+					await Task.Delay(500);
+					Assert.True(refreshView.RefreshControl.Refreshing);
+					Assert.InRange((double)scrollView.ContentOffset.Y, 500 - (double)refreshView.RefreshControl.Frame.Height - 1, 500);
+
+					refreshView.IsRefreshing = false;
+					await AssertHelpers.AssertEventually(
+						() => Math.Abs(scrollView.ContentOffset.Y - 500) < 1,
+						timeout: 2000,
+						message: $"ContentOffset.Y was {scrollView.ContentOffset.Y} after the refresh ended");
+				});
+			});
+		}
+
+		[Fact]
+		public async Task PendingRefreshCancelledBeforeBeingInAWindowDoesNotStart()
+		{
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				using var refreshView = new MauiRefreshView
@@ -120,21 +199,17 @@ namespace Microsoft.Maui.DeviceTests
 				refreshView.AddSubview(scrollView);
 				refreshView.UpdateIsRefreshEnabled(true);
 				refreshView.IsRefreshing = true;
+				refreshView.IsRefreshing = false;
 
 				await refreshView.AttachAndRun(async () =>
 				{
 					refreshView.SetNeedsLayout();
 					await Task.Delay(500);
-					refreshing = refreshView.RefreshControl.Refreshing && scrollView.ContentOffset.Y < 0;
 
-					refreshView.IsRefreshing = false;
-					await Task.Delay(500);
-					refreshingAfterEnd = refreshView.RefreshControl.Refreshing;
+					Assert.False(refreshView.RefreshControl.Refreshing);
+					Assert.Equal(0, (double)scrollView.ContentOffset.Y);
 				});
 			});
-
-			Assert.True(refreshing, "The refresh control must be refreshing and visible once the view is in a window.");
-			Assert.False(refreshingAfterEnd);
 		}
 
 		[Fact]
