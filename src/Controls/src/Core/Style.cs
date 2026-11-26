@@ -249,9 +249,19 @@ namespace Microsoft.Maui.Controls
 
 				_targetsAppliedDuringInitialization = new();
 				var existingSetterCount = Setters.Count;
+				var existingTriggerCount = _triggers?.Count ?? 0;
+				var existingBehaviorCount = _behaviors?.Count ?? 0;
 				try
 				{
 					isCompatible = lazyInitialization(this, bindable);
+				}
+				catch
+				{
+					// Don't leave partial content behind: the next apply runs the initializer again.
+					RemoveFrom(Setters, existingSetterCount);
+					RemoveFrom(_triggers, existingTriggerCount);
+					RemoveFrom(_behaviors, existingBehaviorCount);
+					throw;
 				}
 				finally
 				{
@@ -261,11 +271,14 @@ namespace Microsoft.Maui.Controls
 
 				if (isCompatible)
 				{
+					// XAML-declared items precede items added to the style in code, matching eager initialization.
 					// Setters replaced by Hot Reload before initialization already reflect the edited XAML.
 					if (_settersReplacedBeforeInitialization)
-						RemoveSettersFrom(existingSetterCount);
+						RemoveFrom(Setters, existingSetterCount);
 					else
-						MoveInitializedSettersBeforeExisting(existingSetterCount);
+						MoveToFront(Setters, existingSetterCount);
+					MoveToFront(_triggers, existingTriggerCount);
+					MoveToFront(_behaviors, existingBehaviorCount);
 					Volatile.Write(ref _isInitialized, true);
 				}
 			}
@@ -276,21 +289,24 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		void RemoveSettersFrom(int index)
+		static void RemoveFrom<T>(IList<T> items, int index)
 		{
-			for (var i = Setters.Count - 1; i >= index; i--)
-				Setters.RemoveAt(i);
+			if (items is null)
+				return;
+			for (var i = items.Count - 1; i >= index; i--)
+				items.RemoveAt(i);
 		}
 
-		void MoveInitializedSettersBeforeExisting(int existingSetterCount)
+		// Moves the items added from index existingCount onwards to the front, keeping their order.
+		static void MoveToFront<T>(IList<T> items, int existingCount)
 		{
-			// XAML setters precede setters added to the style in code, matching eager initialization.
-			var initializedSetterCount = Setters.Count - existingSetterCount;
-			for (var index = 0; index < initializedSetterCount; index++)
+			if (items is null)
+				return;
+			for (var index = 0; index < items.Count - existingCount; index++)
 			{
-				var setter = Setters[existingSetterCount + index];
-				Setters.Insert(index, setter);
-				Setters.RemoveAt(existingSetterCount + index + 1);
+				var item = items[existingCount + index];
+				items.RemoveAt(existingCount + index);
+				items.Insert(index, item);
 			}
 		}
 

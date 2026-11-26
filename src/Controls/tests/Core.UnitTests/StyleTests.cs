@@ -1560,6 +1560,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void LazyStyleXamlTriggersAndBehaviorsPrecedeItemsAddedInCode()
+		{
+			var xamlTrigger = new Trigger(typeof(Entry)) { Property = VisualElement.IsEnabledProperty, Value = false };
+			var xamlBehavior = new NamedBehavior("xaml");
+			var style = new Style(typeof(Entry))
+			{
+				LazyInitialization = (s, target) =>
+				{
+					if (target is not Entry)
+						return false;
+					if (s is null)
+						return true;
+					s.Triggers.Add(xamlTrigger);
+					s.Behaviors.Add(xamlBehavior);
+					return true;
+				}
+			};
+			var codeTrigger = new Trigger(typeof(Entry)) { Property = VisualElement.IsFocusedProperty, Value = true };
+			var codeBehavior = new NamedBehavior("code");
+			style.Triggers.Add(codeTrigger);
+			style.Behaviors.Add(codeBehavior);
+
+			_ = new Entry { Style = style };
+
+			Assert.Equal(new TriggerBase[] { xamlTrigger, codeTrigger }, style.Triggers);
+			Assert.Equal(new Behavior[] { xamlBehavior, codeBehavior }, style.Behaviors);
+		}
+
+		[Fact]
+		public void LazyStyleInitializerThatThrowsDoesNotLeavePartialContent()
+		{
+			var attempts = 0;
+			var style = new Style(typeof(Entry))
+			{
+				LazyInitialization = (s, target) =>
+				{
+					if (target is not Entry)
+						return false;
+					if (s is null)
+						return true;
+					attempts++;
+					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
+					s.Triggers.Add(new Trigger(typeof(Entry)) { Property = VisualElement.IsEnabledProperty, Value = false });
+					s.Behaviors.Add(new NamedBehavior("xaml"));
+					if (attempts == 1)
+						throw new InvalidOperationException("Resource not found");
+					return true;
+				}
+			};
+
+			Assert.Throws<InvalidOperationException>(() => new Entry { Style = style });
+			Assert.Empty(style.Setters);
+			Assert.Empty(style.Triggers);
+			Assert.Empty(style.Behaviors);
+
+			var entry = new Entry { Style = style };
+
+			Assert.Equal(2, attempts);
+			Assert.Single(style.Setters);
+			Assert.Single(style.Triggers);
+			Assert.Single(style.Behaviors);
+			Assert.Equal(Colors.Red, entry.TextColor);
+		}
+
+		class NamedBehavior(string name) : Behavior<Entry>
+		{
+			public override string ToString() => name;
+		}
+
+		[Fact]
 		public void LazyStyleIsNotAppliedToIncompatibleTargets()
 		{
 			var style = new Style(typeof(Entry))

@@ -264,6 +264,39 @@ public static class StyleConstants
 		Assert.Equal(1, CountOccurrences(generatedCode, "global::Test.StyleConstants.Greeting"));
 	}
 
+	[Theory]
+	[InlineData("true")]
+	[InlineData("false")]
+	public void NamedElementInStyleContentDoesNotGetAField(string trimmableStyles)
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentView>
+		<ContentView.Style>
+			<Style TargetType="ContentView">
+				<Setter Property="Content">
+					<Label x:Name="StyledLabel" />
+				</Setter>
+			</Style>
+		</ContentView.Style>
+	</ContentView>
+</ContentPage>
+""";
+
+		// Code-behind declares no field for names inside a Style, so none may be assigned.
+		var result = RunGenerator<XamlGenerator>(CreateMauiCompilation(), new AdditionalXamlFile("Test.xaml", xaml, TrimmableStyles: trimmableStyles));
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+
+		var generatedCode = GetGeneratedCode(result);
+		Assert.Contains("RegisterName(\"StyledLabel\"", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("this.StyledLabel", generatedCode, StringComparison.Ordinal);
+	}
+
 	[Fact]
 	public void InlineBasedOnStyleGetsItsOwnLazyInitializer()
 	{
