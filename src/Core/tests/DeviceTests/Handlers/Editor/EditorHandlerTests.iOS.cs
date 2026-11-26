@@ -421,6 +421,30 @@ namespace Microsoft.Maui.DeviceTests
 		TextAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
 			textAlignment;
 
+		[Theory(DisplayName = "Placeholder Is Measured Only When Auto Growth Is Allowed")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PlaceholderIsMeasuredWhenAutoGrowthIsAllowed(bool allowAutoGrowth)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = new MauiTextView
+				{
+					PlaceholderText = "A long placeholder that needs several lines to be fully visible inside a narrow editor",
+				};
+				var constraint = new CoreGraphics.CGSize(150, nfloat.MaxValue);
+				var heightWithoutGrowth = textView.SizeThatFits(constraint).Height;
+
+				textView.AllowAutoGrowth = allowAutoGrowth;
+				var height = textView.SizeThatFits(constraint).Height;
+
+				if (allowAutoGrowth)
+					Assert.True(height > heightWithoutGrowth * 2, $"Expected the placeholder to be measured, got {height} from {heightWithoutGrowth}");
+				else
+					Assert.Equal(heightWithoutGrowth, height);
+			});
+		}
+
 #if !MACCATALYST
 		[Fact(DisplayName = "Completed Event Fires")]
 		public async Task CompletedEventFiresFromTappingDone()

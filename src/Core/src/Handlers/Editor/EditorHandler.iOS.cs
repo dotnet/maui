@@ -77,6 +77,15 @@ namespace Microsoft.Maui.Handlers
 			// scrollability after rotation (#35114).
 			bool heightSubstitutedFromSizeThatFits = false;
 
+			// An auto-growing editor has to be measured with the width it will be arranged at
+			if (PlatformView.AllowAutoGrowth && VirtualView is IView view)
+			{
+				if (Primitives.Dimension.IsExplicitSet(view.Width))
+					widthConstraint = Math.Max(view.Width, Primitives.Dimension.ResolveMinimum(view.MinimumWidth));
+				else
+					widthConstraint = Math.Min(widthConstraint, view.MaximumWidth);
+			}
+
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
 			{
 				// If we drop an infinite value into base.GetDesiredSize for the Editor, we'll
@@ -167,6 +176,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdatePlaceholder(editor);
+
+			if (handler.PlatformView?.AllowAutoGrowth == true)
+				handler.PlatformView.InvalidateMeasure(editor);
+
 			handler.UpdateValue(nameof(IEditor.CharacterSpacing));
 		}
 
