@@ -34,6 +34,9 @@ class MauiTestApplication : Application
 
 			try
 			{
+#if MACCATALYST
+				ActivateCatalystApplication();
+#endif
 				var services = IPlatformApplication.Current!.Services;
 				var runner = services.GetRequiredService<HeadlessTestRunner>();
 #if WINDOWS
@@ -198,6 +201,24 @@ class MauiTestApplication : Application
 	[DllImport("user32.dll", SetLastError = true)]
 	[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 	static extern uint GetGuiResources(IntPtr process, uint flags);
+#endif
+
+#if MACCATALYST
+	// dotnet test starts the app executable directly rather than through LaunchServices, so the app is not
+	// activated and its window stays inactive. UIKit animations (for example animated scrolls) then do not
+	// complete reliably, so activate the app like 'open' (and XHarness) did.
+	static void ActivateCatalystApplication()
+	{
+		var application = IntPtr_objc_msgSend(ObjCRuntime.Class.GetHandle("NSApplication"), ObjCRuntime.Selector.GetHandle("sharedApplication"));
+		if (application != IntPtr.Zero)
+			void_objc_msgSend_bool(application, ObjCRuntime.Selector.GetHandle("activateIgnoringOtherApps:"), true);
+	}
+
+	[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, IntPtr selector);
+
+	[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+	static extern void void_objc_msgSend_bool(IntPtr receiver, IntPtr selector, [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.I1)] bool value);
 #endif
 
 #if IOS || MACCATALYST
