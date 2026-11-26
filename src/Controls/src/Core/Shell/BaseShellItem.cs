@@ -676,12 +676,11 @@ namespace Microsoft.Maui.Controls
 
 #if !NETSTANDARD
 #nullable enable
-		/// <summary>Applies query properties using generated code when available.</summary>
+		/// <summary>Applies <see cref="QueryPropertyAttribute"/> properties. Implemented by the MAUI source generator.</summary>
 		/// <param name="query">The current query parameters.</param>
 		/// <param name="previousQuery">The previously applied query parameters.</param>
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) =>
-			QueryPropertyConversion.ApplyLegacyQueryProperties(this, query, previousQuery);
+		void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 #nullable disable
 #endif
 	}

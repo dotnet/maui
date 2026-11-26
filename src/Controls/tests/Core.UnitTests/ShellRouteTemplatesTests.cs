@@ -237,8 +237,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ReceivedQuery = new Dictionary<string, object>(query);
 			}
-
-			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
 		[Fact]
