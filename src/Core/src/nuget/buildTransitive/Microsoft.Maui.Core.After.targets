@@ -35,5 +35,6 @@
     This results in the $(TargetPlatformIdentifier) condition being met - even though there are no WASK targets to run!
   -->
   <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(MicrosoftWindowsAppSDKPackageDir)' != '' " />
+  <Import Project="WinUI.ApplicationArtifacts.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(MicrosoftWindowsAppSDKPackageDir)' != '' " />
 
 </Project>

@@ -53,9 +53,6 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <ProjectReference Include="..\..\Workload\Microsoft.Maui.ApplicationArtifacts.Windows\Microsoft.Maui.ApplicationArtifacts.Windows.csproj"
-                      IncludeAssets="all"
-                      PrivateAssets="none" />
     <ProjectReference Include="..\..\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">

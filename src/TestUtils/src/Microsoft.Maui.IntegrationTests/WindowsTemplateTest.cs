@@ -1,7 +1,6 @@
 ﻿using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -51,8 +50,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, wasdkself, netself, packageType);
 		if (TestEnvironment.IsMacOS)
 		{
-			if (true)
-				return; // Skip: "This test is designed for testing a windows build."
+			if (true) return; // Skip: "This test is designed for testing a windows build."
 		}
 
 		var projectDir = TestDirectory;
@@ -86,8 +84,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, useRidGraph, packageType);
 		if (TestEnvironment.IsMacOS)
 		{
-			if (true)
-				return; // Skip: "This test is designed for testing a windows build."
+			if (true) return; // Skip: "This test is designed for testing a windows build."
 		}
 
 		var projectDir = TestDirectory;
@@ -120,8 +117,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, framework, config, usesRidGraph);
 		if (!TestEnvironment.IsWindows)
 		{
-			if (true)
-				return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 		}
 
 		var projectDir = TestDirectory;
@@ -168,8 +164,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, framework, config);
 		if (!TestEnvironment.IsWindows)
 		{
-			if (true)
-				return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 		}
 
 		var projectDir = TestDirectory;
@@ -232,8 +227,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(packageType);
 		if (!TestEnvironment.IsWindows)
 		{
-			if (true)
-				return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 		}
 
 		var projectDir = TestDirectory;
@@ -286,8 +280,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		SetTestIdentifier(nameof(ApplicationArtifactsIncludeBundleStoreUploadAndAppInstaller));
 		if (!TestEnvironment.IsWindows)
 		{
-			if (true)
-				return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 		}
 
 		const string certificatePassword = "application-artifacts-test";
@@ -327,71 +320,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var artifactLines = File.ReadAllLines(publishArtifactsFile);
 		var artifacts = artifactLines.Select(WindowsArtifact.Parse).ToArray();
 		AssertApplicationArtifacts(artifactLines, "MSIX", published: true);
-		Assert.Contains(artifacts, artifact => artifact.Role == "Bundle" && artifact.Path.EndsWith(".msixbundle", StringComparison.OrdinalIgnoreCase));
-		Assert.Contains(artifacts, artifact => artifact.Role == "StoreUpload" && artifact.Path.EndsWith(".msixupload", StringComparison.OrdinalIgnoreCase));
-		Assert.Contains(artifacts, artifact => artifact.Role == "DeploymentManifest" && artifact.Path.EndsWith(".appinstaller", StringComparison.OrdinalIgnoreCase));
-	}
-
-	[Fact]
-	public void StandaloneWindowsAppSdkApplicationCanReferenceApplicationArtifactsPackage()
-	{
-		SetTestIdentifier(nameof(StandaloneWindowsAppSdkApplicationCanReferenceApplicationArtifactsPackage));
-		if (!TestEnvironment.IsWindows)
-		{
-			if (true)
-				return; // Skip: "Running Windows templates is only supported on Windows."
-		}
-
-		var projectDir = TestDirectory;
-		var projectFile = Path.Combine(projectDir, "StandaloneWindowsApp.csproj");
-		var buildArtifactsFile = Path.Combine(projectDir, "build-application-artifacts.txt");
-		var publishArtifactsFile = Path.Combine(projectDir, "publish-application-artifacts.txt");
-		var windowsAppSdkVersion = GetWindowsAppSdkPackageVersion();
-
-		File.WriteAllText(Path.Combine(projectDir, "Program.cs"), """
-			namespace StandaloneWindowsApp;
-
-			internal static class Program
-			{
-				[STAThread]
-				static void Main()
-				{
-				}
-			}
-			""");
-		File.WriteAllText(projectFile, $"""
-			<Project Sdk="Microsoft.NET.Sdk">
-			  <PropertyGroup>
-			    <TargetFramework>{DotNetCurrent}-windows10.0.19041.0</TargetFramework>
-			    <OutputType>WinExe</OutputType>
-			    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-			    <WindowsPackageType>None</WindowsPackageType>
-			    <ApplicationId>com.example.standalonewindowsapp</ApplicationId>
-			    <ApplicationTitle>Standalone Windows App</ApplicationTitle>
-			    <ApplicationDisplayVersion>7.8.9</ApplicationDisplayVersion>
-			    <ApplicationVersion>10</ApplicationVersion>
-			  </PropertyGroup>
-			  <ItemGroup>
-			    <PackageReference Include="Microsoft.WindowsAppSDK" Version="{windowsAppSdkVersion}" />
-			    <PackageReference Include="Microsoft.Maui.ApplicationArtifacts.Windows" Version="{MauiPackageVersion}" />
-			  </ItemGroup>
-			  {GetApplicationArtifactWriters(buildArtifactsFile, publishArtifactsFile)}
-			</Project>
-			""");
-
-		Assert.True(
-			DotnetInternal.Build(projectFile, "Debug", target: "WriteBuildApplicationArtifacts", properties: BuildProps, output: _output),
-			"The standalone Windows App SDK project failed to collect build ApplicationArtifact items.");
-		AssertApplicationArtifacts(File.ReadAllLines(buildArtifactsFile), "None", published: false);
-
-		Assert.True(
-			DotnetInternal.Publish(projectFile, "Debug", properties: BuildProps, output: _output),
-			"The standalone Windows App SDK project failed to publish.");
-		AssertApplicationArtifacts(File.ReadAllLines(publishArtifactsFile), "None", published: true);
-
-		var assetsFile = File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json"));
-		Assert.DoesNotContain("Microsoft.Maui.Core/", assetsFile, StringComparison.OrdinalIgnoreCase);
-		Assert.DoesNotContain("Microsoft.Maui.Resizetizer/", assetsFile, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains(artifacts, artifact => artifact.Format == "msixbundle" && artifact.Path.EndsWith(".msixbundle", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(artifacts, artifact => artifact.Format == "msixupload" && artifact.Path.EndsWith(".msixupload", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(artifacts, artifact => artifact.Format == "appinstaller" && artifact.Path.EndsWith(".appinstaller", StringComparison.OrdinalIgnoreCase));
 	}
 
 	static void AddApplicationArtifactWriters(string projectFile, string buildArtifactsFile, string publishArtifactsFile)
@@ -409,13 +340,13 @@ public class WindowsTemplateTest : BaseTemplateTests
 		<Target Name="WriteBuildApplicationArtifacts" DependsOnTargets="GetApplicationArtifacts">
 		  <WriteLinesToFile
 		      File="{Escape(buildArtifactsFile)}"
-		      Lines="@(ApplicationArtifact->'%(FullPath)|%(ArtifactRole)|%(PackageFormat)|%(PackageType)|%(PackageVersion)|%(Signed)|%(ApplicationId)|%(ApplicationTitle)|%(ApplicationDisplayVersion)|%(ApplicationVersion)')"
+		      Lines="@(ApplicationArtifact->'%(FullPath)|%(PackageFormat)|%(IsDirectory)|%(Signed)|%(EntryPoint)|%(PlatformName)|%(ApplicationId)|%(ApplicationTitle)|%(ApplicationDisplayVersion)|%(ApplicationVersion)')"
 		      Overwrite="true" />
 		</Target>
 		<Target Name="WritePublishedApplicationArtifacts" AfterTargets="Publish">
 		  <WriteLinesToFile
 		      File="{Escape(publishArtifactsFile)}"
-		      Lines="@(ApplicationArtifact->'%(FullPath)|%(ArtifactRole)|%(PackageFormat)|%(PackageType)|%(PackageVersion)|%(Signed)|%(ApplicationId)|%(ApplicationTitle)|%(ApplicationDisplayVersion)|%(ApplicationVersion)')"
+		      Lines="@(ApplicationArtifact->'%(FullPath)|%(PackageFormat)|%(IsDirectory)|%(Signed)|%(EntryPoint)|%(PlatformName)|%(ApplicationId)|%(ApplicationTitle)|%(ApplicationDisplayVersion)|%(ApplicationVersion)')"
 		      Overwrite="true" />
 		</Target>
 		""";
@@ -429,31 +360,31 @@ public class WindowsTemplateTest : BaseTemplateTests
 			artifact.Path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
 		Assert.All(artifacts, artifact =>
 		{
-			Assert.False(string.IsNullOrWhiteSpace(artifact.Role));
 			Assert.False(string.IsNullOrWhiteSpace(artifact.Format));
-			Assert.Equal(packageType, artifact.PackageType, ignoreCase: true);
+			Assert.Equal("Windows", artifact.PlatformName);
+			Assert.False(string.IsNullOrWhiteSpace(artifact.EntryPoint));
 			Assert.False(string.IsNullOrWhiteSpace(artifact.ApplicationId));
 			Assert.False(string.IsNullOrWhiteSpace(artifact.ApplicationTitle));
 			Assert.False(string.IsNullOrWhiteSpace(artifact.ApplicationDisplayVersion));
 			Assert.False(string.IsNullOrWhiteSpace(artifact.ApplicationVersion));
 		});
 
-		var primary = Assert.Single(artifacts.Where(artifact => artifact.Role == "Primary"));
-		Assert.Equal(packageType == "None" ? "exe" : "msix", primary.Format, ignoreCase: true);
-		if (published && packageType == "None")
-			Assert.Contains($"{Path.DirectorySeparatorChar}publish{Path.DirectorySeparatorChar}", primary.Path, StringComparison.OrdinalIgnoreCase);
-
-		Assert.Contains(artifacts, artifact => artifact.Role == "PayloadDirectory");
-		if (packageType == "MSIX")
+		if (packageType == "None")
 		{
-			Assert.Equal("true", primary.Signed, ignoreCase: true);
-			Assert.False(string.IsNullOrWhiteSpace(primary.PackageVersion));
-			Assert.Contains(artifacts, artifact => artifact.Role == "Certificate");
-			Assert.Contains(artifacts, artifact => artifact.Role == "InstallScript");
+			var directory = Assert.Single(artifacts);
+			Assert.Equal("directory", directory.Format);
+			Assert.Equal("true", directory.IsDirectory, ignoreCase: true);
+			Assert.Equal("false", directory.Signed, ignoreCase: true);
+			Assert.True(File.Exists(Path.Combine(directory.Path, directory.EntryPoint)), $"Expected '{directory.EntryPoint}' in '{directory.Path}'.");
+			if (published)
+				Assert.Equal("publish", Path.GetFileName(Path.TrimEndingDirectorySeparator(directory.Path)), ignoreCase: true);
 		}
 		else
 		{
-			Assert.Equal("false", primary.Signed, ignoreCase: true);
+			var package = Assert.Single(artifacts, artifact => artifact.Format == "msix");
+			Assert.Equal("false", package.IsDirectory, ignoreCase: true);
+			Assert.Equal("true", package.Signed, ignoreCase: true);
+			Assert.All(artifacts, artifact => Assert.Contains(artifact.Format, new[] { "msix", "msixbundle", "msixupload", "appinstaller" }));
 		}
 	}
 
@@ -472,22 +403,15 @@ public class WindowsTemplateTest : BaseTemplateTests
 		File.WriteAllBytes(path, certificate.Export(X509ContentType.Pfx, password));
 	}
 
-	static string GetWindowsAppSdkPackageVersion()
-	{
-		var versionsFile = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Versions.props");
-		var versions = XDocument.Load(versionsFile);
-		return versions.Descendants("MicrosoftWindowsAppSDKPackageVersion").Single().Value;
-	}
-
 	static string Escape(string value) => SecurityElement.Escape(value) ?? string.Empty;
 
 	sealed record WindowsArtifact(
 		string Path,
-		string Role,
 		string Format,
-		string PackageType,
-		string PackageVersion,
+		string IsDirectory,
 		string Signed,
+		string EntryPoint,
+		string PlatformName,
 		string ApplicationId,
 		string ApplicationTitle,
 		string ApplicationDisplayVersion,
