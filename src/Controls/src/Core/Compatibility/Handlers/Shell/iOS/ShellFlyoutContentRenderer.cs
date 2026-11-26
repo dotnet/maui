@@ -294,7 +294,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+#pragma warning disable CA1422 // TraitCollectionDidChange is obsolete on Mac Catalyst 17+, but this override still forwards to it
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422
 
 			if (previousTraitCollection is not null &&
 				previousTraitCollection.PreferredContentSizeCategory != TraitCollection.PreferredContentSizeCategory)

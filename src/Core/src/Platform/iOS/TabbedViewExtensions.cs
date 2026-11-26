@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Platform
 			// Should apply to iOS and Catalyst
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18))
 			{
+#pragma warning disable CA1416 // Mac Catalyst 18 is iOS 18, so TraitOverrides (iOS 17+) is available
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
+#pragma warning restore CA1416
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;
 			}
 			else if (OperatingSystem.IsIOSVersionAtLeast(18, 0) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)

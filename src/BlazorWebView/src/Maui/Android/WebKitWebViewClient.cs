@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
@@ -12,7 +11,6 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	[SupportedOSPlatform("android23.0")]
 	internal class WebKitWebViewClient : WebViewClient
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
@@ -83,6 +81,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 			""";
 
+#pragma warning disable CA1416 // MatchExternal (API 28+) is only a mask bit here; older versions ignore it
 		private const ActivityFlags AllowedIntentFlags =
 			ActivityFlags.ExcludeStoppedPackages |
 			ActivityFlags.ClearTop |
@@ -93,6 +92,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			ActivityFlags.NewDocument |
 			ActivityFlags.RetainInRecents |
 			ActivityFlags.LaunchAdjacent;
+#pragma warning restore CA1416
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 		// Android does not store WebResourceResponse instances returned from ShouldInterceptRequest in Chromium's
@@ -113,9 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
-#pragma warning disable CA1416 // TODO: base.ShouldOverrideUrlLoading(,) is supported from Android 24.0
 			=> ShouldOverrideUrlLoadingCore(request) || base.ShouldOverrideUrlLoading(view, request);
-#pragma warning restore CA1416
 
 		private bool ShouldOverrideUrlLoadingCore(IWebResourceRequest? request)
 		{

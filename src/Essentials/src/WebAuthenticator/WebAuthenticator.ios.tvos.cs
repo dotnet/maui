@@ -209,7 +209,9 @@ namespace Microsoft.Maui.Authentication
 				PostNativeCompletion(request, callbackUrl, error);
 
 			if (callbackUrl.Scheme != "https")
+#pragma warning disable CA1422 // The callback-scheme constructor is obsolete on Mac Catalyst 17.4+
 				return new ASWebAuthenticationSession(nativeUrl, callbackUrl.Scheme, completionHandler);
+#pragma warning restore CA1422
 
 #if IOS
 			if (OperatingSystem.IsIOSVersionAtLeast(17, 4))

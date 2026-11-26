@@ -14,9 +14,13 @@ namespace Microsoft.Maui.Authentication;
 
 partial class PasskeysImplementation : IPasskeys
 {
-	public bool IsSupported =>
+	[System.Runtime.Versioning.SupportedOSPlatformGuard("ios16.0")]
+	[System.Runtime.Versioning.SupportedOSPlatformGuard("maccatalyst16.0")]
+	static bool IsSupportedPlatform =>
 		OperatingSystem.IsIOSVersionAtLeast(16) ||
 		OperatingSystem.IsMacCatalystVersionAtLeast(16);
+
+	public bool IsSupported => IsSupportedPlatform;
 
 	public async Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
 	{
@@ -173,6 +177,9 @@ partial class PasskeysImplementation : IPasskeys
 
 	static async Task<ASAuthorization> PerformAsync(ASAuthorizationRequest request, bool preferImmediatelyAvailable, CancellationToken cancellationToken)
 	{
+		if (!IsSupportedPlatform)
+			throw new FeatureNotSupportedException("Passkeys require iOS 16.0 or Mac Catalyst 16.0 or later.");
+
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var manager = new PasskeyAuthorizationManager(WindowStateManager.Default.GetCurrentUIWindow(true)!);
@@ -186,6 +193,10 @@ partial class PasskeysImplementation : IPasskeys
 
 		using (cancellationToken.Register(() =>
 		{
+			// Always true here; restates the guard because platform analysis doesn't flow into lambdas.
+			if (!IsSupportedPlatform)
+				return;
+
 			lock (gate)
 			{
 				if (started)

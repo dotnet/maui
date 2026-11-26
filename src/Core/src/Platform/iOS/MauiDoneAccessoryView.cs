@@ -154,7 +154,9 @@ namespace Microsoft.Maui.Platform
 			button.TouchUpInside += action;
 
 			// GlassButtonConfiguration is always available here because this path only runs on iOS 26+.
+#pragma warning disable CA1416 // Only reached when UseGlassButton (iOS 26+) is true
 			var configuration = UIButtonConfiguration.GlassButtonConfiguration;
+#pragma warning restore CA1416
 			configuration.Image = UIImage.GetSystemImage("xmark");
 			configuration.CornerStyle = UIButtonConfigurationCornerStyle.Capsule;
 			configuration.ButtonSize = UIButtonConfigurationSize.Medium;

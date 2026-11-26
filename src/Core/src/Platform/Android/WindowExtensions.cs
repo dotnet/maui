@@ -224,7 +224,9 @@ namespace Microsoft.Maui
 
 			public void RestoreStatusBarColor(Window window)
 			{
+#pragma warning disable CA1422 // Restores the color captured from the obsolete Window.StatusBarColor
 				window.SetStatusBarColor(new AColor(_statusBarColor));
+#pragma warning restore CA1422
 			}
 
 			public void RestoreNavigationBarColor(Window window)
@@ -244,7 +246,9 @@ namespace Microsoft.Maui
 					}
 				}
 
+#pragma warning disable CA1422 // Restores the color captured from the obsolete Window.NavigationBarColor
 				window.SetNavigationBarColor(restoreColor);
+#pragma warning restore CA1422
 			}
 		}
 	}

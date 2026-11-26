@@ -215,9 +215,11 @@ namespace Microsoft.Maui.Platform
 				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
 			}
 			if (SharedPool == null)
+#pragma warning disable CA1422 // WKWebViewConfiguration.ProcessPool is obsolete on Mac Catalyst 26+
 				SharedPool = config.ProcessPool;
 			else
 				config.ProcessPool = SharedPool;
+#pragma warning restore CA1422
 
 			return config;
 		}

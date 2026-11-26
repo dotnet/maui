@@ -185,7 +185,8 @@ namespace Microsoft.Maui.Handlers
 				}
 				if (_traitChangeRegistration is not null)
 				{
-					platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+						platformView.UnregisterForTraitChanges(_traitChangeRegistration);
 					_traitChangeRegistration = null;
 				}
 			}

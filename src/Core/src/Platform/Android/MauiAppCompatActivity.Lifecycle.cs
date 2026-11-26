@@ -53,7 +53,6 @@ namespace Microsoft.Maui
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestart>(del => del(this));
 		}
 
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 		{
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRequestPermissionsResult>(del => del(this, requestCode, permissions, grantResults));
@@ -148,7 +147,9 @@ namespace Microsoft.Maui
 
 				try
 				{
+#pragma warning disable CA1422 // Activity.OnBackPressed is obsolete on API 33+, but this deliberately propagates the unhandled back press
 					base.OnBackPressed();
+#pragma warning restore CA1422
 				}
 				finally
 				{
