@@ -1,6 +1,8 @@
 <Project>
 
   <PropertyGroup>
+    <MauiEnableHotReload Condition="'$(MauiEnableHotReload)' == '' and '$(Configuration)' != 'Release' and '$(Optimize)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full'">true</MauiEnableHotReload>
+    <MauiEnableHotReload Condition="'$(MauiEnableHotReload)' == ''">false</MauiEnableHotReload>
     <_MauiAspireWasExplicitlyConfigured Condition="'$(_EnableMauiAspire)' != ''">true</_MauiAspireWasExplicitlyConfigured>
     <!-- Keep Aspire environment propagation in non-optimized builds, but substitute it away from optimized apps. -->
     <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
@@ -8,6 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled"
+                                    Value="$(MauiEnableHotReload)"
+                                    Trim="true" />
     <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
                                     Value="$(_EnableMauiAspire)"
                                     Trim="true" />

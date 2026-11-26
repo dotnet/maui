@@ -17,6 +17,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		const string IncrementalHotReloadSwitch = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
 
+		[Fact]
+		public void DisabledHotReloadDoesNotTrackOrUpdateInstances()
+		{
+			const string switchName = "Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled";
+			var previous = !AppContext.TryGetSwitch(switchName, out var enabled) || enabled;
+			using var incremental = IncrementalHotReloadEnabled();
+			using var diagnostics = new DiagnosticsRecorder();
+			var registeredPage = RegisterLiveInstance<HotReloadablePage>();
+			var unregisteredPage = new HotReloadablePage();
+			try
+			{
+				AppContext.SetSwitch(switchName, false);
+
+				XamlIncrementalHotReloadHandler.Track(unregisteredPage);
+				XamlIncrementalHotReloadHandler.UpdateApplication(new[] { typeof(HotReloadablePage) });
+
+				Assert.DoesNotContain(unregisteredPage, XamlComponentRegistry.GetInstances(typeof(HotReloadablePage)));
+				Assert.Equal(0, registeredPage.UpdateComponentCalls);
+				Assert.Empty(diagnostics.Requested);
+			}
+			finally
+			{
+				AppContext.SetSwitch(switchName, previous);
+			}
+		}
+
 		readonly List<object> _registeredPages = new();
 
 		public XamlIncrementalHotReloadHandlerTests()

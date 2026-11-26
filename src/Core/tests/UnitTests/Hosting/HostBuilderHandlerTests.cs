@@ -389,6 +389,32 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void DisabledHotReloadDoesNotTrackActivatedHandlers()
+		{
+			const string switchName = "Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled";
+			var previous = !AppContext.TryGetSwitch(switchName, out var enabled) || enabled;
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => new ViewHandlerStub()))
+				.Build();
+			var handlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			MauiHotReloadHelper.RegisterHandlers(handlersFactory.GetCollection());
+			MauiHotReloadHelper.RegisterHandlerReplacement(typeof(ViewHandlerStub).FullName!, typeof(AlternateViewHandlerStub));
+
+			try
+			{
+				AppContext.SetSwitch(switchName, false);
+
+				Assert.IsType<ViewHandlerStub>(handlersFactory.GetHandler(typeof(ViewStub)));
+				Assert.IsType<ViewHandlerStub>(handlersFactory.GetHandler(typeof(ViewStub)));
+			}
+			finally
+			{
+				AppContext.SetSwitch(switchName, previous);
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
 		public void FactoryBasedHandlerRegistrationAppliesPendingHotReloadReplacement()
 		{
 			var mauiApp = MauiApp.CreateBuilder()

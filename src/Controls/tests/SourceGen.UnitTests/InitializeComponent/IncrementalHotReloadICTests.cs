@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
+using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
@@ -35,6 +37,29 @@ partial class TestPage : ContentPage
 	}
 }
 """;
+
+	[Fact]
+	public void DisabledHotReloadOmitsTrackingAndRuntimeFallbackEvenWithIncrementalAndDiagnosticsEnabled()
+	{
+		const string xaml =
+"""
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Test.TestPage">
+    <Label Text="Hello" />
+</ContentPage>
+""";
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(CodeBehind));
+		var file = new AdditionalFile(ToAdditionalText("Test.xaml", xaml), "Xaml", "Test.xaml",
+			null, "Test.TestPage.xaml", null, null, EnableIncrementalHotReload: true, EnableHotReload: false);
+		var result = RunGenerator<XamlGenerator>(compilation, file);
+		var text = string.Join("\n", result.Results.SelectMany(r => r.GeneratedSources).Select(s => s.SourceText.ToString()));
+
+		Assert.DoesNotContain("XamlComponentRegistry", text, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlIncrementalHotReloadHandler", text, StringComparison.Ordinal);
+		Assert.DoesNotContain("InitializeComponentRuntime", text, StringComparison.Ordinal);
+		Assert.DoesNotContain("ResourceProvider2", text, StringComparison.Ordinal);
+	}
 
 	[Fact]
 	public void Default_NoVersionField()

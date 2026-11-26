@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <see cref="TryDetachFromWebViewManager(WebViewManager)"/> exists for the narrower case of a handler
 	/// that keeps a manager alive and wants to stop, and possibly later restart, hot reload on it.
 	/// <para>
-	/// All members are inert when hot reload is unavailable (that is, when
+	/// All members are inert when MAUI Hot Reload is disabled with <c>MauiEnableHotReload=false</c> or
+	/// when hot reload is unavailable (that is, when
 	/// <see cref="System.Reflection.Metadata.MetadataUpdater.IsSupported"/> is <see langword="false"/>), so
 	/// handlers can call them unconditionally. Static content hot reload is a development-time feature and is
 	/// independent of Razor component hot reload, which does not require any handler participation.
@@ -55,6 +56,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public static Task? TryAttachToWebViewManager(WebViewManager webViewManager)
 		{
 			ArgumentNullException.ThrowIfNull(webViewManager);
+
+			if (!Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled || !System.Reflection.Metadata.MetadataUpdater.IsSupported)
+				return null;
 
 			return StaticContentHotReloadManager.TryAttachToWebViewManager(webViewManager);
 		}
@@ -88,6 +92,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			ArgumentNullException.ThrowIfNull(webViewManager);
 
+			if (!Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled || !System.Reflection.Metadata.MetadataUpdater.IsSupported)
+				return null;
+
 			return StaticContentHotReloadManager.TryDetachFromWebViewManager(webViewManager);
 		}
 
@@ -120,6 +127,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			ArgumentNullException.ThrowIfNull(contentRootRelativePath);
 			ArgumentNullException.ThrowIfNull(requestAbsoluteUri);
+
+			if (!Microsoft.Maui.RuntimeFeature.IsHotReloadEnabled || !System.Reflection.Metadata.MetadataUpdater.IsSupported)
+			{
+				content = null;
+				contentType = null;
+				return false;
+			}
 
 			if (StaticContentHotReloadManager.TryGetUpdatedContent(
 					contentRootRelativePath,
