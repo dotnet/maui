@@ -31,6 +31,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference
+      Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+    <ProjectReference
       Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />

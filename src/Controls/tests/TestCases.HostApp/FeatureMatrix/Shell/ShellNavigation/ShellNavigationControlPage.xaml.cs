@@ -570,6 +570,8 @@ namespace Maui.Controls.Sample
 				BackValue = val?.ToString();
 		}
 
+		void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+
 		public QuerySenderPage()
 		{
 			Title = "QuerySenderPage";
@@ -766,6 +768,8 @@ namespace Maui.Controls.Sample
 			if (query.TryGetValue("location", out var locVal))
 				_attributeLocationLabel.Text = locVal?.ToString() ?? "(null)";
 		}
+
+		void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 	}
 
 	// ── Pass Data: QueryIntermediatePage ─────────────────────────────────────
@@ -836,6 +840,8 @@ namespace Maui.Controls.Sample
 			if (query.TryGetValue("location", out var locVal))
 				_receivedLocationLabel.Text = locVal?.ToString() ?? "(null)";
 		}
+
+		void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 	}
 
 	static class ShellNavHelper
