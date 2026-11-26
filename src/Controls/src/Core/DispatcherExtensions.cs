@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
@@ -45,6 +45,19 @@ namespace Microsoft.Maui.Controls
 
 			// no dispatchers found at all
 			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+		}
+
+		/// <summary>Like <see cref="FindDispatcher"/>, but returns <see langword="null"/> instead of throwing.</summary>
+		public static IDispatcher? TryFindDispatcher(this BindableObject? bindableObject)
+		{
+			try
+			{
+				return bindableObject.FindDispatcher();
+			}
+			catch (InvalidOperationException)
+			{
+				return null;
+			}
 		}
 
 		public static void DispatchIfRequired(this IDispatcher? dispatcher, Action action)

@@ -23,7 +23,16 @@
         "devicectl",
         "xcdevice",
         "MAUIX",
-        "Parameterless"
+        "Parameterless",
+        "PKCE",
+        "unregistration",
+        "SWIX",
+        "noninteractive",
+        "frontmatter",
+        "Vally",
+        "Markout",
+        "webauthn",
+        "Passwordless"
     ],
     "ignoreWords": [],
     "patterns": [

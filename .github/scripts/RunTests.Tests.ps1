@@ -165,6 +165,61 @@ Describe 'Dispatch request' {
         $failed.output.summary | Should -Match 'Android Label'
         (New-RunTestsRunCheckUpdate -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; jobs = @(); headline = 'ok' })).conclusion | Should -Be 'success'
     }
+
+    It 'follows the build with a selected run status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
+        $running = New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $false; result = ''; headline = 'running: 1 passed, 0 failed so far' })
+        $running.context | Should -Be $script:RunTestsRunCheckName
+        $running.state | Should -Be 'pending'
+        $running.description | Should -Be '#7 running: 1 passed, 0 failed so far'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'failed'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'partiallySucceeded'; headline = 'x' })).state | Should -Be 'failure'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'canceled'; headline = 'x' })).state | Should -Be 'error'
+        (New-RunTestsRunStatus -Build $build -Results ([pscustomobject]@{ completed = $true; result = 'succeeded'; headline = 'x' })).state | Should -Be 'success'
+    }
+
+    It 'reads the latest statuses of a commit as a flat list' {
+        # @(Get-RunTestsStatuses ...) nested the list and the dispatch failed on $_.context (#40439).
+        function gh { $global:LASTEXITCODE = 0; '[{"statuses":[{"context":"maui-pr-uitests (skipped) Label","description":"x"},{"context":"other","description":"y"}]}]' }
+        try {
+            $statuses = Get-RunTestsStatuses -Repository 'dotnet/maui' -Sha ('a' * 40)
+            $statuses.Count | Should -Be 2
+            @($statuses | Where-Object { ([string]$_.context).StartsWith('maui-pr-uitests (skipped)') }).Count | Should -Be 1
+        } finally { Remove-Item function:gh }
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match '@\(Get-RunTestsStatuses'
+        $invoke | Should -Match '\$existingStatuses = Get-RunTestsStatuses'
+    }
+
+    It 'reports through commit statuses, not check runs' {
+        $invoke = Get-Content "$PSScriptRoot/Invoke-RunTests.ps1" -Raw
+        $invoke | Should -Not -Match 'repos/\$Repository/check-runs'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$check\.name'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsSelectionCheckName'
+        $invoke | Should -Match 'Publish-RunTestsStatus .*-Context \$script:RunTestsRunCheckName'
+        foreach ($workflow in 'review-run-tests-dispatch.yml', 'review-run-tests-results.yml') {
+            Get-Content "$PSScriptRoot/../workflows/$workflow" -Raw | Should -Match '(?m)^\s+statuses: write'
+        }
+    }
+
+    It 'mirrors each job of the build as a commit status on the PR' {
+        $build = [pscustomobject]@{ id = 7; _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://dev.azure.com/x/_build/results?buildId=7' } } }
+        $results = [pscustomobject]@{ completed = $false; result = ''; headline = 'running'; jobs = @(
+                [pscustomobject]@{ name = 'Android UITests Shell1'; result = 'succeeded'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=a' },
+                [pscustomobject]@{ name = 'Android UITests Shell2'; result = 'failed'; url = 'https://dev.azure.com/x/_build/results?buildId=7&j=b' },
+                [pscustomobject]@{ name = 'iOS UITests Label'; result = 'inProgress'; url = $null },
+                [pscustomobject]@{ name = 'Windows UITests Label'; result = 'canceled'; url = $null }) }
+        $statuses = New-RunTestsJobStatuses -Build $build -Results $results
+        $statuses.Count | Should -Be 4
+        $statuses[0].context | Should -Be "$($script:RunTestsCheckPrefix) (Android UITests Shell1)"
+        $statuses[0].state | Should -Be 'success'
+        $statuses[0].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7&j=a'
+        $statuses[1].state | Should -Be 'failure'
+        $statuses[2].state | Should -Be 'pending'
+        $statuses[2].target_url | Should -Be 'https://dev.azure.com/x/_build/results?buildId=7'
+        $statuses[3].state | Should -Be 'error'
+        @($statuses | Where-Object { $_.description.Length -gt 140 }).Count | Should -Be 0
+    }
 }
 
 Describe 'Get-RunTestsMergeState' {
@@ -213,8 +268,9 @@ Describe 'Pipeline support checks' {
         $contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1')
         $contextScript | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
         $contextScript | Should -Match 'ready=false'
-        # Only when the default branch cannot run it either: servicing branches use its pipeline.
-        $contextScript | Should -Match 'Test-RunTestsDispatchAt \$pr\.base\.repo\.default_branch'
+        # Only the target branch's pipeline counts: another branch's would build the PR as that branch.
+        $contextScript | Should -Match 'if \(Test-RunTestsDispatchAt \$pr\.base\.ref\) \{'
+        $contextScript | Should -Not -Match 'default_branch'
         Get-Content -Raw (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.lock.yml') | Should -Match 'Get-RunTestsContext\.ps1 .*-PostUnsupportedComment'
     }
 
@@ -231,15 +287,28 @@ Describe 'Pipeline support checks' {
         Set-RunTestsSuite device
         $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
         Set-RunTestsSuite ui
-        $invoke | Should -Match 'parents = @\(\$sourceSha\)'
+        $invoke | Should -Match 'parents = @\(\$parentSha\)'
         # A PR GitHub reports as conflicting is told so plainly.
         $invoke | Should -Match ([regex]::Escape('-not $verified.merge -and $pr.mergeable -eq $false'))
         $invoke | Should -Match 'Test-RunTestsPipelineSupportsDispatch'
     }
 
-    It "falls back to the default branch's pipeline when the target branch cannot run a dispatch" {
+    It "builds with the target branch's pipeline only, never the default branch's" {
+        # A net11 PR built with main's pipeline ran as net12 (#40621).
         $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
-        $invoke | Should -Match '@\(\$PullRequest\.base\.ref, \$PullRequest\.base\.repo\.default_branch\)'
+        $invoke | Should -Match ([regex]::Escape('git/ref/heads/$($PullRequest.base.ref)'))
+        # The default branch is used only for the workflows and parent, after the pipeline check.
+        $before = $invoke.Substring(0, $invoke.IndexOf('$defaultBranch = '))
+        $before | Should -Not -Match 'default_branch'
+    }
+
+    It "gives a release-branch dispatch the default branch's workflows and parent" {
+        # GITHUB_TOKEN may not create a branch whose workflows differ from the default branch's (403 on net11).
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match ([regex]::Escape('$defaultBranch = [string]$PullRequest.base.repo.default_branch'))
+        $invoke | Should -Match ([regex]::Escape('if ($defaultBranch -and $defaultBranch -cne $PullRequest.base.ref) {'))
+        $invoke | Should -Match ([regex]::Escape('$parentSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$defaultBranch")).object.sha'))
+        $invoke | Should -Match ([regex]::Escape("Get-RunTestsTreeEntry -TreeSha `$default.tree.sha -Path '.github/workflows'"))
     }
 }
 
@@ -565,6 +634,9 @@ Describe 'Two-model selection' {
         $gpt | Should -Match ([regex]::Escape("let suite = 'all';"))
         $gpt | Should -Match ([regex]::Escape('if (command[1]) suite = command[1].toLowerCase();'))
         $gpt | Should -Match 'options: \[all, ui, device\]'
+        # The command comment is hidden as resolved once acknowledged, like the other /review commands.
+        $gpt | Should -Match ([regex]::Escape('minimizeComment(input: { subjectId: $id, classifier: RESOLVED })'))
+        $gpt | Should -Match ([regex]::Escape('{ id: context.payload.comment.node_id }'))
         foreach ($workflow in $gpt, $mai) {
             foreach ($key in 'device_platforms', 'device_categories', 'device_full_run', 'device_summary', 'device_rationale') {
                 $workflow | Should -Match "(?m)^        $($key):"
@@ -914,6 +986,11 @@ Describe '/review run-tests (both suites)' {
         Update-RunTestsCombinedOverview $mixed | Should -Match '<img alt="Result PASSED"'
         $queued = ([regex]'<!-- run-tests-result: PASSED -->').Replace($done, '<!-- run-tests-result: NOT QUEUED -->', 1)
         Update-RunTestsCombinedOverview $queued | Should -Match '<img alt="Result NOT QUEUED"'
+    }
+
+    It 'leaves comments without an overview table alone' {
+        $legacy = "<!-- review-run-tests-all -->`n<!-- run-tests-section: ui -->`n<!-- review-run-tests-state: done -->`n  <img alt=`"Result PASSED`" src=`"x`">`n<!-- /run-tests-section: ui -->"
+        Update-RunTestsCombinedOverview $legacy | Should -BeExactly $legacy
     }
 
     It 'sends MAI Code 2 over the Responses API' {

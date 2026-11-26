@@ -3,6 +3,7 @@
 	public static class TestCategory
 	{
 		public const string Accessibility = "Accessibility";
+		public const string Animations = nameof(Animations);
 		public const string Application = "Application";
 		public const string Behavior = "Behavior";
 		public const string Border = "Border";
@@ -33,6 +34,7 @@
 		public const string Memory = nameof(Memory);
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
+		public const string PageTransitions = "PageTransitions";
 		public const string Page = "Page";
 		public const string Path = "Path";
 		public const string Picker = "Picker";

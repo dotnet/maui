@@ -9,49 +9,51 @@ Integration tests validate end-to-end functionality by creating, building, and r
 
 ## Test Framework
 
-These integration tests use **NUnit** as the test framework.
+These integration tests use **xUnit** as the test framework.
 
 ## CI Infrastructure
 
 All integration tests run on **Azure DevOps agents** via the stage template `eng/pipelines/arcade/stage-integration-tests.yml`.
 
 - **Windows tests**: Run on Windows 1ES pools
-- **macOS tests**: Run on Azure Pipelines hosted images
-  - General macOS tests: `macOS-15` (ARM64/Apple Silicon)
-  - `RunOnAndroid`: `macOS-15` (via MacOSPool)
-  - `RunOniOS_*`: Each iOS test runs in **two separate lanes**:
-    - **ARM64 lane** (`MacOSPoolArm64`): `macOS-15` with Apple Silicon
-    - **MacOSPool lane** (`MacOSPool`): For comparison testing
+- **macOS tests**: Use the configured `AcesShared` pool and
+  `AcesMacImageOverride` image.
+- **iOS tests**: Selected methods have individual ARM64-labeled jobs. The
+  optional MacOSPool comparison jobs are disabled by default; their `arch`
+  labels do not select an agent or simulator architecture.
 
 ### Test Retry
 
-Integration tests are configured with **automatic retry on failure** (`retryCountOnTaskFailure: 1`). If a test fails, Azure DevOps will automatically retry it once before reporting failure.
+The integration-test command uses the default `retryCountOnTaskFailure: 0`;
+do not assume a failed test was retried automatically.
 
-**Log Preservation**: Logs from each attempt are saved to separate folders (`attempt-1/`, `attempt-2/`, etc.) so that both the original run and retry logs are preserved for debugging. This uses the `SYSTEM_JOBATTEMPT` environment variable provided by Azure DevOps.
+**Log Preservation**: Separate job attempts use folders such as `attempt-1/`
+and `attempt-2/`, based on Azure DevOps' `SYSTEM_JOBATTEMPT` value.
 
 ### Individual iOS Test Lanes
 
-iOS tests are split into individual jobs for faster debugging and parallel execution. Each test runs on both ARM64 and MacOSPool for comparison:
+iOS tests are split into individual jobs for faster debugging and parallel
+execution. .NET 12 removed Mono for mobile, so current-framework jobs use CoreCLR
+or NativeAOT on ARM64; previous-framework (Mono) variants have their own jobs.
 
 | Test | Description | Timeout |
 |------|-------------|---------|
-| `RunOniOS_MauiDebug` | MAUI app, Debug config | 45 min |
-| `RunOniOS_MauiRelease` | MAUI app, Release config | 45 min |
-| `RunOniOS_MauiReleaseTrimFull` | MAUI app, Release, full trim | 45 min |
-| `RunOniOS_BlazorDebug` | Blazor app, Debug config | 45 min |
-| `RunOniOS_BlazorRelease` | Blazor app, Release config | 45 min |
+| `RunOniOS_MauiDebug_CoreCLR` | MAUI app, Debug config | 45 min |
+| `RunOniOS_MauiRelease_CoreCLR` | MAUI app, Release config | 45 min |
+| `RunOniOS_MauiReleaseTrimFull_CoreCLR` | MAUI app, Release, full trim | 45 min |
+| `RunOniOS_BlazorDebug_CoreCLR` | Blazor app, Debug config | 45 min |
+| `RunOniOS_BlazorRelease_CoreCLR` | Blazor app, Release config | 45 min |
 | `RunOniOS_MauiNativeAOT` | MAUI app, NativeAOT | 45 min |
+| `RunOniOS_Previous_*` | Previous framework, Mono | 45 min |
 
-**Note**: `RunOniOS_BlazorReleaseTrimFull` is temporarily disabled due to [ASP.NET Core issue #63951](https://github.com/dotnet/aspnetcore/issues/63951).
+**Note**: .NET 12 also removed the `iossimulator-x64` RID; x64 iOS coverage
+applies only to the previous framework.
 
 ### MacOSPool Lane Conditions
 
-The **MacOSPool lanes** (non-ARM64 comparison tests) only run under specific conditions:
-
-1. **Non-PR builds** on branches: `main`, `net*.0`, `release/*`, or `inflight/*`
-2. **PR builds** where the target branch is: `net*.0`, `release/*`, or `inflight/*`
-
-This ensures MacOSPool comparison tests don't run on regular PR builds targeting `main`, saving CI resources while still running them for release-related branches.
+The **MacOSPool comparison lanes** use `macOSPoolLaneCondition`, which defaults
+to `false`. A job's `arch` value only affects its display name; enabling a lane
+does not establish x64 coverage without a supported x64 agent, simulator and RID.
 
 ## Test Categories
 
@@ -76,21 +78,19 @@ Tests are organized by categories (defined in `Utilities/Categories.cs`) that ma
 ### Basic Pattern
 
 ```csharp
-[Test]
-[Category(Categories.Build)]
-[TestCase("maui", DotNetCurrent, "Debug")]
-[TestCase("maui", DotNetCurrent, "Release")]
+[Theory]
+[Trait("Category", Categories.Build)]
+[InlineData("maui", DotNetCurrent, "Debug")]
+[InlineData("maui", DotNetCurrent, "Release")]
 public void Build(string id, string framework, string config)
 {
     var projectDir = TestDirectory;
     var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-    // Create from template
-    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+    Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
         $"Unable to create template {id}.");
 
-    // Build
-    Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+    Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
         $"Project failed to build.");
 }
 ```
@@ -98,32 +98,20 @@ public void Build(string id, string framework, string config)
 ### Device Test Pattern (iOS)
 
 ```csharp
-[Test]
-[Category(Categories.RunOniOS)]
-[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-public void RunOniOS(string id, string config, string framework, RuntimeVariant rv, string? trimMode)
-{
-    // Create and build
-    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework));
-    Assert.IsTrue(DotnetInternal.Build(projectFile, config, 
-        framework: $"{framework}-ios",
-        properties: buildProps,
-        runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
-
-    // Run with XHarness (omit UDID to let XHarness control simulator lifecycle)
-    Assert.IsTrue(XHarness.RunApple(appPath, resultDir, TestSimulator.XHarnessID, completionMarker));
-}
+[Fact]
+public void RunOniOS_MauiDebug_CoreCLR() =>
+    RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 ```
+
+`AppleTemplateTests` applies the `RunOniOS` trait at class level. Its helper
+creates and builds the template, selects the requested runtime, and uses XHarness
+to run it on a simulator and verify the completion marker.
 
 ### Platform Guards
 
-```csharp
-if (!TestEnvironment.IsMacOS)
-    Assert.Ignore("Running Apple templates is only supported on macOS.");
-
-if (!TestEnvironment.IsWindows)
-    Assert.Ignore("Running Windows templates is only supported on Windows.");
-```
+Run platform-specific categories on suitable hosts. `TestEnvironment` provides
+platform detection, but a test that returns early is not evidence that its
+platform-specific scenario executed.
 
 ## Key Classes
 
@@ -153,8 +141,8 @@ if (!TestEnvironment.IsWindows)
 
 ```powershell
 # macOS examples
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "macOSTemplates" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "RunOniOS" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "macOSTemplates" -SkipBuild -SkipInstall
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "RunOniOS" -SkipBuild -SkipInstall
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "RunOnAndroid" -SkipBuild -SkipInstall
 
 # Windows examples
@@ -207,7 +195,7 @@ The skill sets these automatically, but for manual runs:
 | `MAUI_PACKAGE_VERSION` | Yes | Version of MAUI packages being tested |
 | `IOS_TEST_DEVICE` | No | iOS simulator target (e.g., `ios-simulator-64_18.5`) |
 | `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and XHarness; fixture boots/shuts it down, so never select a shared device |
-| `SKIP_XCODE_VERSION_CHECK` | No | Set to `true` to bypass Xcode version validation |
+| `SKIP_XCODE_VERSION_CHECK` | No | Diagnostic override; a build using an unsupported Xcode is not validation |
 
 ### Manual Run Commands (Fallback Only)
 
@@ -216,8 +204,6 @@ The skill sets these automatically, but for manual runs:
 ```bash
 # Set environment first
 export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
-export SKIP_XCODE_VERSION_CHECK=true
-
 # Run specific category
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
   --filter "Category=Build"
@@ -232,10 +218,10 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 | Issue | Solution |
 |-------|----------|
 | Template not found | Verify workloads installed, `MAUI_PACKAGE_VERSION` set |
-| Xcode version mismatch | Set `SKIP_XCODE_VERSION_CHECK=true` |
+| Xcode version mismatch | Install the Xcode version required by the workload |
 | Device/simulator not found | Verify `IOS_TEST_DEVICE` or emulator is running |
 | XHarness timeout on iOS | Failure: discovery/install/launch share the command timeout; timeout alone never proves startup |
-| Architecture mismatch | Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` |
+| Architecture mismatch | Verify the actual host, simulator and RID; `TestEnvironment.IOSSimulatorRuntimeIdentifier` is currently arm64 |
 
 ## Best Practices
 
@@ -260,13 +246,13 @@ application activation alone is not raised for scene-based apps.
 
 ### DO
 - Use `BuildProps` from base class for isolation
-- Apply `[Category]` at the **class level** when all tests share the same category
+- Apply `[Trait("Category", ...)]` at the **class level** when all tests share the same category
 - Check platform with `TestEnvironment.Is*` before platform-specific tests
 - Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` for iOS builds
 - Include meaningful assertion messages
 
 ### DON'T
 - Hardcode paths - use `TestDirectory`, `TestEnvironment` helpers
-- Add `[Category]` to each test method when the class has a category
+- Add a category trait to each test method when the class already has it
 - Skip platform guards for platform-specific tests
 - Hardcode iOS runtime identifiers (arm64 vs x64)

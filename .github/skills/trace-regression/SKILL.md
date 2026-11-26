@@ -227,7 +227,7 @@ the specific same-environment parent/candidate comparison that would do so.
 
 ## 4. Write the expandable report
 
-Follow the `/review tests` visual style: a visible author/issue header, exactly
+Follow the shared review visual style: a visible author/issue header, exactly
 two blue flat-square **Scope**/**Range** badges, and closed top-level sibling
 **Regression Analysis** and **Follow-up** accordions. Nest **Version boundary**
 and **Candidate changes** inside Regression Analysis. Do not use `<details open>`.

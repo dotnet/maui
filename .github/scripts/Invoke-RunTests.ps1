@@ -216,57 +216,80 @@ function Get-VerifiedPullRequest {
     }
 }
 
+function Get-RunTestsTreeEntry {
+    <#
+    .SYNOPSIS
+    The entry at a slash-separated path under a git tree, or $null.
+    #>
+    param([Parameter(Mandatory)][string]$TreeSha, [Parameter(Mandatory)][string]$Path)
+    $entry = $null
+    foreach ($segment in $Path -split '/') {
+        $entry = @((Invoke-GhJson @("repos/$Repository/git/trees/$TreeSha")).tree | Where-Object { $_.path -ceq $segment })[0]
+        if (-not $entry) { return $null }
+        $TreeSha = $entry.sha
+    }
+    return $entry
+}
+
 function New-RunTestsDispatch {
     <#
     .SYNOPSIS
     Pushes the dispatch commit for this request and returns { sha; branch } (or { error }).
     #>
     param([Parameter(Mandatory)]$PullRequest, [Parameter(Mandatory)]$MergeCommit, [Parameter(Mandatory)]$Selection)
-    # The trusted half: pipeline and workflows of the target branch, or of the default branch when the
-    # target branch's pipeline cannot take dispatches (servicing branches cut before run-tests support).
+    # The trusted half: pipeline and workflows of the PR's target branch. Never another branch's: its
+    # pipeline would build this PR's code with that branch's SDK and test lanes (a net11 PR built as net12).
     # The PR's own code still comes from its test-merge commit.
     $sourceSha = $PipelineSource
     if (-not $sourceSha) {
-        foreach ($ref in @($PullRequest.base.ref, $PullRequest.base.repo.default_branch) | Where-Object { $_ } | Select-Object -Unique) {
-            $sha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$ref")).object.sha
-            if (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sha)) { $sourceSha = $sha; break }
-            Write-Host "``$ref`` cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches; trying the default branch's pipeline."
-        }
-        if (-not $sourceSha) {
-            return @{ error = "Neither ``$($PullRequest.base.ref)`` nor the default branch can build ``/review $($script:RunTestsCommand)`` dispatches ($($script:RunTestsPipelinePath) does not build $($script:RunTestsDispatchBranchPrefix)* branches). Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite." }
-        }
-    } elseif (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
-        return @{ error = "The pipeline source $sourceSha cannot build $($script:RunTestsDispatchBranchPrefix)* dispatches." }
+        $sourceSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$($PullRequest.base.ref)")).object.sha
+    }
+    if (-not (Test-RunTestsPipelineSupportsDispatch (Get-RunTestsPipelineAt $sourceSha))) {
+        return @{ error = "``$($PullRequest.base.ref)`` can't build ``/review $($script:RunTestsCommand)`` dispatches yet ($($script:RunTestsPipelinePath) there does not build $($script:RunTestsDispatchBranchPrefix)* branches). Use ``/azp run $($script:RunTestsPipelineName)`` for the full suite." }
     }
     if ([string]$sourceSha -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not resolve the trusted pipeline commit.' }
     $source = Invoke-GhJson @("repos/$Repository/git/commits/$sourceSha")
-    $sourceRoot = Invoke-GhJson @("repos/$Repository/git/trees/$($source.tree.sha)")
-    # PR code with the trusted pipeline, workflows (and for device tests the Helix project and
-    # Windows runner that apply the selection). Taking .github from the parent also means the commit
-    # changes no workflow, which GITHUB_TOKEN may not do.
+    # PR code with the trusted pipeline and scripts (and for device tests the Helix project and
+    # Windows runner that apply the selection) of the target branch.
     $entries = foreach ($path in $script:RunTestsTrustedPaths) {
-        $parentTree = $source.tree.sha
-        $segments = $path -split '/'
-        $entry = $null
-        foreach ($segment in $segments) {
-            $entry = @((Invoke-GhJson @("repos/$Repository/git/trees/$parentTree")).tree | Where-Object { $_.path -ceq $segment })[0]
-            if (-not $entry) { break }
-            $parentTree = $entry.sha
-        }
+        $entry = Get-RunTestsTreeEntry -TreeSha $source.tree.sha -Path $path
         if (-not $entry) { throw "The trusted commit has no $path." }
         @{ path = $path; mode = $entry.mode; type = $entry.type; sha = $entry.sha }
     }
     $overlay = @{ base_tree = $MergeCommit.tree.sha; tree = @($entries) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $overlay
+    # GITHUB_TOKEN may not create a branch whose workflows differ from the default branch's, so a
+    # release-branch dispatch is refused (HTTP 403). Workflows don't build anything here; take them,
+    # and the parent, from the default branch so the commit changes no workflow from either.
+    $parentSha = $sourceSha
+    $defaultBranch = [string]$PullRequest.base.repo.default_branch
+    if ($defaultBranch -and $defaultBranch -cne $PullRequest.base.ref) {
+        $parentSha = (Invoke-GhJson @("repos/$Repository/git/ref/heads/$defaultBranch")).object.sha
+        $default = Invoke-GhJson @("repos/$Repository/git/commits/$parentSha")
+        $workflows = Get-RunTestsTreeEntry -TreeSha $default.tree.sha -Path '.github/workflows'
+        if (-not $workflows) { throw "$defaultBranch has no .github/workflows." }
+        $patch = @{ path = '.github/workflows'; mode = $workflows.mode; type = $workflows.type; sha = $workflows.sha }
+        $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson (@{ base_tree = $tree.sha; tree = @($patch) } | ConvertTo-Json -Depth 5)
+    }
     $yaml = New-RunTestsSuiteRequestYaml -Selection $Selection -Inventory $inventory -PrNumber $PrNumber -HeadSha $PullRequest.head.sha
     $request = @{ base_tree = $tree.sha; tree = @(@{ path = $script:RunTestsRequestPath; mode = '100644'; type = 'blob'; content = $yaml }) } | ConvertTo-Json -Depth 5
     $tree = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/trees") -InputJson $request
 
     $message = "/review $($script:RunTestsCommand) dispatch for #$PrNumber at $($PullRequest.head.sha.Substring(0, 8))`n`n" +
         "Test-merge $($MergeCommit.sha) with $($script:RunTestsTrustedPaths -join ', ') from $sourceSha.`nRequested in $runUrl"
-    $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($sourceSha) } | ConvertTo-Json)
+    $commit = Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/commits") -InputJson (@{ message = $message; tree = $tree.sha; parents = @($parentSha) } | ConvertTo-Json)
     $branch = Get-RunTestsDispatchBranch -PrNumber $PrNumber -RunId $DispatchRunId
-    Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
+    try {
+        Invoke-GhJson @('-X', 'POST', "repos/$Repository/git/refs") -InputJson (@{ ref = "refs/heads/$branch"; sha = $commit.sha } | ConvertTo-Json) | Out-Null
+    } catch {
+        # Say what the rejected commit changes, so a refusal (e.g. HTTP 403) can be diagnosed from the log.
+        Write-Host "Creating $branch at $($commit.sha) (parent $parentSha, trusted $sourceSha, test-merge $($MergeCommit.sha) of base $(@($MergeCommit.parents)[0].sha)) was refused."
+        try {
+            $files = @((Invoke-GhJson @("repos/$Repository/compare/$parentSha...$($commit.sha)")).files | ForEach-Object { "$($_.status) $($_.filename)" })
+            Write-Host "The dispatch commit changes $($files.Count) file(s) from its parent:`n$(($files | Select-Object -First 100) -join "`n")"
+        } catch { Write-Host 'Could not compare the dispatch commit with its parent.' }
+        throw
+    }
     Write-Host "Pushed dispatch commit $($commit.sha) to $branch."
     return @{ sha = $commit.sha; branch = $branch }
 }
@@ -380,45 +403,31 @@ function Invoke-SuiteRun {
 
     if (-not $DryRun -and -not $SkipChecks) {
         $sha = $pr.head.sha
+        # Commit statuses, not check runs: see Publish-RunTestsStatus.
         # A later run on the same commit may select something an earlier run skipped: retire those.
-        $existing = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/commits/$sha/check-runs?per_page=100&filter=latest")
-        $existingRuns = @($existing | ForEach-Object { $_.check_runs } | Where-Object {
-            $_.app.slug -eq 'github-actions' -and $_.name.StartsWith($script:RunTestsSkippedCheckPrefix) })
         $planned = @($checks | ForEach-Object { $_.name })
-        foreach ($stale in $existingRuns | Where-Object { $_.name -notin $planned }) {
-            $body = @{ conclusion = 'neutral'; output = @{ title = "Selected by a later /review $($script:RunTestsCommand)"; summary = "Superseded by [a later selection]($runUrl)." } } | ConvertTo-Json -Depth 5
-            Invoke-GhJson @('-X', 'PATCH', "repos/$Repository/check-runs/$($stale.id)") -InputJson $body | Out-Null
+        # Assign first: Get-RunTestsStatuses returns its list as one object, which @(...) would nest.
+        $existingStatuses = Get-RunTestsStatuses -Repository $Repository -Sha $sha
+        foreach ($stale in $existingStatuses | Where-Object {
+                ([string]$_.context).StartsWith($script:RunTestsSkippedCheckPrefix) -and $_.context -notin $planned -and $_.description -notlike 'Selected by a later*' }) {
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $stale.context -State success `
+                -Description "Selected by a later /review $($script:RunTestsCommand)" -TargetUrl $runUrl
         }
 
-        $now = (Get-Date).ToUniversalTime().ToString('o')
         foreach ($check in $checks) {
-            $summary = "Not selected by ``/review $($script:RunTestsCommand)`` for this commit.`n`n$selectionSummary"
-            $body = [ordered]@{
-                name = $check.name; head_sha = $sha; status = 'completed'; conclusion = 'skipped'
-                started_at = $now; completed_at = $now; details_url = $buildUrl
-                output = [ordered]@{ title = $check.title; summary = $summary }
-            } | ConvertTo-Json -Depth 5
-            Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $check.name -State success `
+                -Description "Skipped: $($check.title) by /review $($script:RunTestsCommand)" -TargetUrl $buildUrl
         }
 
-        $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
         $title = if ($queueError) { "$($script:RunTestsKind) were not queued" } elseif ($selection.mode -eq 'none') { "No $($script:RunTestsKind) selected" } elseif ($selection.mode -eq 'full') { "Full $($script:RunTestsPipelineName) suite selected" } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
-        $body = [ordered]@{
-            name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
-            started_at = $now; completed_at = $now; details_url = $buildUrl
-            output = [ordered]@{ title = $title; summary = $selectionSummary; text = $selection.rationale }
-        } | ConvertTo-Json -Depth 5
-        Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body | Out-Null
+        Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $script:RunTestsSelectionCheckName `
+            -State $(if ($queueError) { 'failure' } else { 'success' }) -Description $title -TargetUrl $(if ($build) { $buildUrl } else { $runUrl })
         if ($build -and $dispatch) {
-            # maui-pr-uitests reports its own checks on the dispatch commit; this one follows it on the PR.
-            $body = [ordered]@{
-                name = $script:RunTestsRunCheckName; head_sha = $sha; status = 'in_progress'
-                started_at = $now; details_url = $buildUrl; external_id = [string]$build.id
-                output = [ordered]@{ title = "$($script:RunTestsPipelineName) #$($build.id) is running"; summary = $selectionSummary }
-            } | ConvertTo-Json -Depth 5
-            $dispatch.checkRunId = (Invoke-GhJson @('-X', 'POST', "repos/$Repository/check-runs") -InputJson $body).id
+            # maui-pr-uitests reports its own checks on the dispatch commit; this status follows it on the PR.
+            Publish-RunTestsStatus -Repository $Repository -Sha $sha -Context $script:RunTestsRunCheckName -State pending `
+                -Description "#$($build.id) is running" -TargetUrl $buildUrl
         }
-        Write-Host "Published $($checks.Count) skipped check runs and the selection check on $sha."
+        Write-Host "Published $($checks.Count) skipped statuses and the selection status on $sha."
     }
 
     return @{ suite = $Suite; selection = $selection; inventory = $inventory; build = $build; dispatch = $dispatch; queueError = $queueError }

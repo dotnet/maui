@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 			targetObject.ClearValue(Property, specificity);
 		}
 
-		static BindableObject FindTargetByName(Element element, string name)
+		internal static BindableObject FindTargetByName(Element element, string name)
 		{
 			// Try standard lookup first (works for same or child namescopes)
 			if (element.FindByName(name) is BindableObject target)

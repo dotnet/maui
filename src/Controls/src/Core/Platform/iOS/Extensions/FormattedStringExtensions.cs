@@ -175,6 +175,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
+			// UIKit has no exact decoration thickness, only styles: use the nearer of Single (about 1) and Thick (about 2).
+			var decorationStyle = span.TextDecorationThickness >= 1.5 ? NSUnderlineStyle.Thick : NSUnderlineStyle.Single;
+
 			// CharacterSpacing with validation
 			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
 				? span.CharacterSpacing
@@ -187,8 +190,8 @@ namespace Microsoft.Maui.Controls.Platform
 				platformFont,
 				(span.TextColor ?? defaultColor)?.ToPlatform(),
 				span.BackgroundColor?.ToPlatform(),
-				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				underlineStyle: hasUnderline ? decorationStyle : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? decorationStyle : NSUnderlineStyle.None,
 				paragraphStyle: style,
 				kerning: (float)characterSpacing);
 #else
@@ -197,10 +200,29 @@ namespace Microsoft.Maui.Controls.Platform
 				platformFont,
 				(span.TextColor ?? defaultColor)?.ToPlatform(),
 				span.BackgroundColor?.ToPlatform(),
-				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				underlineStyle: hasUnderline ? decorationStyle : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? decorationStyle : NSUnderlineStyle.None,
 				paragraphStyle: style,
 				kerningAdjustment: (float)characterSpacing);
+#endif
+
+#if !MACOS
+			// A decoration color draws the underline / strikethrough in its own color instead of the text color.
+			if ((hasUnderline || hasStrikethrough) && span.TextDecorationColor is Color decorationColor && attrString.Length > 0)
+			{
+				var platformDecorationColor = decorationColor.ToPlatform();
+				var decorated = new NSMutableAttributedString(attrString);
+				var range = new NSRange(0, decorated.Length);
+				if (hasUnderline)
+				{
+					decorated.AddAttribute(UIStringAttributeKey.UnderlineColor, platformDecorationColor, range);
+				}
+				if (hasStrikethrough)
+				{
+					decorated.AddAttribute(UIStringAttributeKey.StrikethroughColor, platformDecorationColor, range);
+				}
+				return decorated;
+			}
 #endif
 
 			return attrString;

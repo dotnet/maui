@@ -47,6 +47,8 @@ if ($HeadSha) {
     # The periodic sweep only finishes builds still marked running.
     $comments = @($comments | Where-Object { $_.body -match '<!-- review-run-tests-state: running -->' })
 }
+# Oldest first: for one commit, the newest comment's build decides the job checks.
+$comments = @($comments | Sort-Object { [long]$_.id })
 Write-Host "Found $(@($comments).Count) run-tests comment(s) to refresh."
 
 function Update-RunTestsSection {
@@ -85,7 +87,42 @@ function Update-RunTestsSection {
     }
     $results = ConvertTo-RunTestsResults -Build $build -Timeline $timeline -FailedTests $failedTests
     $checkId = if ($Body -match '<!-- review-run-tests-check: (\d{1,20}) -->') { $Matches[1] } else { $null }
-    return @{ body = (Update-RunTestsComment -Body $Body -Build $build -Results $results); build = $build; results = $results; checkId = $checkId }
+    $headSha = if ($Body -match '<!-- review-run-tests-head: ([0-9a-f]{40}) -->') { $Matches[1] } else { $null }
+    return @{ body = (Update-RunTestsComment -Body $Body -Build $build -Results $results); build = $build; results = $results; checkId = $checkId; headSha = $headSha }
+}
+
+function Sync-RunTestsJobStatuses {
+    <#
+    .SYNOPSIS
+    Sets one commit status per build job on the PR head (see New-RunTestsJobStatuses), and
+    retires this suite's job statuses left by an earlier build on the same commit.
+    #>
+    param([Parameter(Mandatory)][string]$HeadSha, [Parameter(Mandatory)]$Build, [Parameter(Mandatory)]$Results)
+    $statuses = Get-RunTestsStatuses -Repository $Repository -Sha $HeadSha
+    if ($null -eq $statuses) { return }
+    # Job statuses of this suite: "<pipeline> (<job>)" linking to an Azure DevOps build.
+    $existing = @{}
+    foreach ($status in $statuses) {
+        if (-not ([string]$status.context).StartsWith("$($script:RunTestsCheckPrefix) (") -or [string]$status.target_url -notmatch 'buildId=\d+') { continue }
+        # The selection, selected run and skipped statuses are not job statuses.
+        if ($status.context -in $script:RunTestsSelectionCheckName, $script:RunTestsRunCheckName -or $status.context.StartsWith($script:RunTestsSkippedCheckPrefix)) { continue }
+        $existing[$status.context] = $status
+    }
+    $planned = @(New-RunTestsJobStatuses -Build $Build -Results $Results)
+    foreach ($status in $planned) {
+        $current = $existing[$status.context]
+        if ($current -and $current.state -eq $status.state -and $current.target_url -eq $status.target_url -and $current.description -eq $status.description) { continue }
+        $status | ConvertTo-Json -Depth 5 | & gh api -X POST "repos/$Repository/statuses/$HeadSha" --input - | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not set status '$($status.context)'." }
+    }
+    $contexts = @($planned | ForEach-Object { $_.context })
+    foreach ($stale in $existing.Values | Where-Object {
+            $_.context -notin $contexts -and $_.target_url -notmatch "buildId=$($Build.id)(\D|$)" -and $_.description -notlike 'Not in the latest*' }) {
+        $body = [ordered]@{ context = $stale.context; state = 'success'; target_url = $stale.target_url
+            description = "Not in the latest selected run ($($script:RunTestsPipelineName) #$($Build.id))" }
+        $body | ConvertTo-Json -Depth 5 | & gh api -X POST "repos/$Repository/statuses/$HeadSha" --input - | Out-Null
+    }
+    Write-Host "Published $($planned.Count) job status(es) for $($script:RunTestsPipelineName) #$($Build.id) on $HeadSha."
 }
 
 foreach ($comment in $comments) {
@@ -105,19 +142,32 @@ foreach ($comment in $comments) {
         $result.suite = $section.suite
         $refreshed += $result
     }
-    if ($updated -ceq $comment.body) { continue }
-    # The Result badge and overview table of a /review run-tests comment summarize its sections.
-    if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
-    foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
-    if ($DryRun) { $updated; continue }
-    $payload = @{ body = $updated } | ConvertTo-Json
-    $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
-    if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
-    foreach ($result in $refreshed | Where-Object { $_.checkId }) {
+    if ($updated -cne $comment.body) {
+        # The Result badge and overview table of a /review run-tests comment summarize its sections.
+        if ((Get-RunTestsCommentSuite $updated) -eq 'all') { $updated = Update-RunTestsCombinedOverview $updated }
+        foreach ($result in $refreshed) { Write-Host "Updating $($comment.html_url) ($($result.suite)): build $($result.build.id) $($result.build.status) $($result.build.result)" }
+        if ($DryRun) { $updated }
+        else {
+            $payload = @{ body = $updated } | ConvertTo-Json
+            $payload | & gh api -X PATCH "repos/$Repository/issues/comments/$($comment.id)" --input - | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update comment $($comment.id)." }
+        }
+    }
+    if ($DryRun) { continue }
+    # Checks and statuses are synced even when the comment text is unchanged: a refresh may be the first to publish them.
+    foreach ($result in $refreshed) {
         Set-RunTestsSuite $result.suite
-        $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
-        $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        if ($result.checkId) {
+            # Comments from before the switch to commit statuses follow their build with a check run.
+            $check = New-RunTestsRunCheckUpdate -Build $result.build -Results $result.results
+            $check | ConvertTo-Json -Depth 5 | & gh api -X PATCH "repos/$Repository/check-runs/$($result.checkId)" --input - | Out-Null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Could not update check run $($result.checkId)." }
+        } elseif ($result.headSha) {
+            $status = New-RunTestsRunStatus -Build $result.build -Results $result.results
+            Publish-RunTestsStatus -Repository $Repository -Sha $result.headSha -Context $status.context -State $status.state `
+                -Description $status.description -TargetUrl $status.target_url
+        }
+        if ($result.headSha) { Sync-RunTestsJobStatuses -HeadSha $result.headSha -Build $result.build -Results $result.results }
     }
 }
 

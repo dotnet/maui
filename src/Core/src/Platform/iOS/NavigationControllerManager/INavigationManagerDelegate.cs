@@ -72,5 +72,16 @@ namespace Microsoft.Maui.Platform
         /// which is required for loaded gates that check Frame validity.
         /// </summary>
         void OnViewDidLayoutSubviews(CoreGraphics.CGRect bounds);
+
+        /// <summary>
+        /// The navigation view (NavigationPage, Shell section) that owns the stack, passed to the
+        /// page-transition hooks.
+        /// </summary>
+        IView? NavigationView { get; }
+
+        /// <summary>
+        /// The page a view controller in the stack shows, or null when it isn't one of the stack's pages.
+        /// </summary>
+        IView? GetViewForViewController(UIViewController viewController);
     }
 }

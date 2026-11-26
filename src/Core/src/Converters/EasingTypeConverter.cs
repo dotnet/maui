@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using static Microsoft.Maui.Easing;
@@ -28,28 +28,32 @@ namespace Microsoft.Maui.Converters
 				return null;
 			}
 
-			var parts = strValue.Split('.');
-			if (parts.Length == 2 && Compare(parts[0], nameof(Easing)))
-				strValue = parts[1];
-
-			return strValue switch
+			var parsed = EasingSyntax.Parse(strValue);
+			return parsed.Kind switch
 			{
-				_ when Compare(strValue, nameof(Linear)) => Linear,
-				_ when Compare(strValue, nameof(SinIn)) => SinIn,
-				_ when Compare(strValue, nameof(SinOut)) => SinOut,
-				_ when Compare(strValue, nameof(SinInOut)) => SinInOut,
-				_ when Compare(strValue, nameof(CubicIn)) => CubicIn,
-				_ when Compare(strValue, nameof(CubicOut)) => CubicOut,
-				_ when Compare(strValue, nameof(CubicInOut)) => CubicInOut,
-				_ when Compare(strValue, nameof(BounceIn)) => BounceIn,
-				_ when Compare(strValue, nameof(BounceOut)) => BounceOut,
-				_ when Compare(strValue, nameof(SpringIn)) => SpringIn,
-				_ when Compare(strValue, nameof(SpringOut)) => SpringOut,
-				_ => throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}")
+				EasingSyntax.Kind.Named => FromName(parsed.Name!),
+				EasingSyntax.Kind.CubicBezier => CubicBezier(parsed.A, parsed.B, parsed.C, parsed.D),
+				EasingSyntax.Kind.Spring => Spring(parsed.A),
+				EasingSyntax.Kind.Steps => Steps((int)parsed.A, parsed.Flag),
+				_ => throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}. {parsed.Error}")
 			};
 
-			static bool Compare(string left, string right) =>
-				left.Equals(right, StringComparison.OrdinalIgnoreCase);
+			static Easing FromName(string name) => name switch
+			{
+				nameof(Linear) => Linear,
+				nameof(SinIn) => SinIn,
+				nameof(SinOut) => SinOut,
+				nameof(SinInOut) => SinInOut,
+				nameof(CubicIn) => CubicIn,
+				nameof(CubicOut) => CubicOut,
+				nameof(CubicInOut) => CubicInOut,
+				nameof(BounceIn) => BounceIn,
+				nameof(BounceOut) => BounceOut,
+				nameof(SpringIn) => SpringIn,
+				nameof(SpringOut) => SpringOut,
+				nameof(Hold) => Hold,
+				_ => throw new InvalidOperationException($"Cannot convert \"{name}\" into {typeof(Easing)}")
+			};
 		}
 
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
@@ -57,6 +61,11 @@ namespace Microsoft.Maui.Converters
 			if (value is not Easing easing)
 			{
 				throw new NotSupportedException();
+			}
+
+			if (easing.Syntax is string syntax)
+			{
+				return syntax;
 			}
 
 			return easing switch
@@ -94,7 +103,11 @@ namespace Microsoft.Maui.Converters
 			"BounceOut",
 			"BounceIn",
 			"SpringIn",
-			"SpringOut"
+			"SpringOut",
+			"Hold",
+			"CubicBezier(0.25, 0.1, 0.25, 1)",
+			"Spring(0.2)",
+			"Steps(4)"
 			});
 	}
 }

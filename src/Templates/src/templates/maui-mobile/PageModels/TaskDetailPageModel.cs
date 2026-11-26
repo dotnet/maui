@@ -52,6 +52,8 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 		LoadTaskAsync(query).FireAndForgetSafeAsync(_errorHandler);
 	}
 
+	void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+
 	private async Task LoadTaskAsync(IDictionary<string, object> query)
 	{
 		if (query.TryGetValue(ProjectQueryKey, out var project))

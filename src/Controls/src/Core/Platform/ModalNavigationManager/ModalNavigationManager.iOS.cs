@@ -95,6 +95,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (controller?.ParentViewController is ModalWrapper modalWrapper &&
 				modalWrapper.PresentingViewController is not null)
 			{
+				var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
+				animated = Animations.ModalPageTransitions.PrepareDismiss(modalWrapper, modal, presenter, animated);
+
 				if (isFinalModal &&
 					_window.Page is Shell shell &&
 					shell.Navigation.ModalStack.Count == 0 &&
@@ -140,6 +143,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_waitForModalToFinish = true;
 
 				var wrapper = new ControlsModalWrapper(modal.ToHandler(WindowMauiContext));
+
+				var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
+				animated = Animations.ModalPageTransitions.PreparePresent(wrapper, presenter, modal, animated);
 
 				if (_platformModalPages.Count > 1)
 				{

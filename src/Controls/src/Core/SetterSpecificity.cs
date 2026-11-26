@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls
 		const byte ExtrasHandler = 0xFF;
 
 		const ulong VsmMask = 0x0100000000000000UL;
+		const ulong AnimationValue = 0x0200000000000000UL;
 		const ulong ImplicitVsmMask = 0x0000000004000000UL;
 
 		public const ushort ManualTriggerBaseline = 2;
@@ -39,6 +40,11 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly SetterSpecificity DynamicResourceSetter = new SetterSpecificity(0, 0, 1, 0, 0, 0, 0, 0);
 
+		// An animation shows a value above every VSM, Style, Manual and Trigger combination (the highest of which
+		// is 0x01FFF00000FFFFFF) and below Handler. It is built from its raw value: the 8-argument constructor
+		// collapses extras to a single VSM bit. See BindableObject.Animations.cs.
+		public static readonly SetterSpecificity Animation = new SetterSpecificity(AnimationValue);
+
 		// handler always apply, but are removed when anything else comes in. see SetValueActual
 		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(0xFF, 0, 0, 0, 0, 0, 0, 0);
 
@@ -48,6 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
+		public bool IsAnimation => _value == AnimationValue;
 		public bool IsVsm => (_value & VsmMask) != 0;
 		public bool IsVsmImplicit => (_value & ImplicitVsmMask) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
@@ -201,6 +208,8 @@ namespace Microsoft.Maui.Controls
 
 		public SetterSpecificity CopyStyle(byte extras, ushort manual, byte isDynamicResource, byte isBinding)
 		{
+			// The animation rank carries no style information; rebuilding it would drop it below Binding.
+			System.Diagnostics.Debug.Assert(_value != AnimationValue, "The animation rank must never be copied.");
 			return new SetterSpecificity(
 				extras,
 				manual,

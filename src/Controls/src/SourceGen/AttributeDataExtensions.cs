@@ -11,20 +11,23 @@ static class AttributeDataExtensions
 		if (attribute.AttributeClass == null)
 			return false;
 
-		foreach (var attributeAttribute in attribute.AttributeClass.GetAttributes())
+		for (var attributeType = attribute.AttributeClass; attributeType != null; attributeType = attributeType.BaseType)
 		{
-			var @class = attributeAttribute.AttributeClass;
-			if (@class != null && @class.Name == nameof(AttributeUsageAttribute) &&
-				@class.ContainingNamespace?.Name == "System")
+			foreach (var attributeAttribute in attributeType.GetAttributes())
 			{
-				foreach (var kvp in attributeAttribute.NamedArguments)
+				var @class = attributeAttribute.AttributeClass;
+				if (@class != null && @class.Name == nameof(AttributeUsageAttribute) &&
+					@class.ContainingNamespace?.Name == "System")
 				{
-					if (kvp.Key == nameof(AttributeUsageAttribute.Inherited))
-						return (bool)kvp.Value.Value!;
-				}
+					foreach (var kvp in attributeAttribute.NamedArguments)
+					{
+						if (kvp.Key == nameof(AttributeUsageAttribute.Inherited))
+							return (bool)kvp.Value.Value!;
+					}
 
-				// Default value of Inherited is true
-				return true;
+					// Default value of Inherited is true
+					return true;
+				}
 			}
 		}
 		// An attribute without an `AttributeUsage` attribute will also default to being inherited.

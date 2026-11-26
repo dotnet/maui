@@ -548,6 +548,7 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Window was already activated");
 
 			IsActivated = true;
+			ResumeAnimations();
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
 		}
@@ -564,6 +565,7 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Stopped()
 		{
+			SuspendAnimations();
 			Stopped?.Invoke(this, EventArgs.Empty);
 			OnStopped();
 			Application?.SendSleep();
@@ -576,6 +578,7 @@ namespace Microsoft.Maui.Controls
 
 			IsDestroyed = true;
 			IsCreated = false;
+			DestroyAnimationClock();
 
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
@@ -595,6 +598,7 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Resumed()
 		{
+			ResumeAnimations();
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
 			Application?.SendResume();
