@@ -144,11 +144,13 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         // This use case is covered by `LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang` core device test.
         if (getIsInvokingCallbacks()) {
             if (logger.isVerboseLoggable) logger.v("defer load: " + resourceLogIdentifier);
-            this.view.post(() -> {
+            // Not View.post, which waits until the view is attached to a window.
+            MAIN_HANDLER.post(() -> {
                 // The view was cleared (for example its image source removed), or a newer load was started into it,
                 // before this load could start: report it as cancelled instead of replacing the newer state.
+                // (Also when its activity was destroyed in the meantime, when Glide cannot load anymore.)
                 // Deferred loads run in the order they were requested, so they do not cancel each other.
-                if (this.view.getTag(CHANGED_TAG) != changedToken) {
+                if (this.view.getTag(CHANGED_TAG) != changedToken || PlatformInterop.isContextDestroyed(this.view.getContext())) {
                     if (logger.isVerboseLoggable) logger.v("cancel deferred load: " + resourceLogIdentifier);
                     if (!completed) {
                         completed = true;

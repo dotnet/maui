@@ -343,6 +343,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DeferredLoadOfADetachedViewIsCancelledWhenStopped()
+		{
+			var streamService = new StreamImageSourceService();
+			var fileService = new FileImageSourceService();
+			var first = new StreamImageSourceStub(BaseImageSourceServiceTests.CreateBitmapStream(100, 100, Colors.Red));
+			var second = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// The view is never attached; stream images are decoded at their original size, so it loads anyway.
+				var imageView = new ImageView(MauiProgram.DefaultContext);
+				Task<IImageSourceServiceResult> deferred = null;
+				await streamService.LoadDrawableAsync(first, imageView).ContinueWith(
+					_ =>
+					{
+						// Requested while Glide reports the first load, so its start is deferred.
+						deferred = fileService.LoadDrawableAsync(second, imageView);
+						PlatformInterop.StopUnfinishedImageViewLoad(imageView);
+					},
+					TaskContinuationOptions.ExecuteSynchronously).WaitAsync(TimeSpan.FromSeconds(10));
+
+				Assert.NotNull(deferred);
+				await Task.WhenAny(deferred, Task.Delay(5_000));
+				Assert.Equal(TaskStatus.Canceled, deferred.Status);
+			});
+		}
+
+		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();
