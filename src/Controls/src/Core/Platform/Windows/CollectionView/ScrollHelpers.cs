@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (point.Y >= scrollViewer.VerticalOffset + headerHeight
-				&& point.Y < (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
+				&& point.Y <= (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
 			{
 				// The target is already in the viewport and not hidden behind the sticky header
 				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (point.X >= scrollViewer.HorizontalOffset
-				&& point.X < (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
+				&& point.X <= (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
 			{
 				// The target is already in the viewport, no reason to scroll at all
 				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
@@ -468,6 +468,10 @@ namespace Microsoft.Maui.Controls.Platform
 					offset = AdjustToEnd(offset, itemSize, scrollViewer);
 					break;
 			}
+
+			if (scrollToPosition == ScrollToPosition.MakeVisible &&
+				scrollViewer.HorizontalOffset == offset.X && scrollViewer.VerticalOffset == offset.Y)
+				return;
 
 			await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
 		}

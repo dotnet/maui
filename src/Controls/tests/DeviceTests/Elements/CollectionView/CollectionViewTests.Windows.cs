@@ -920,6 +920,83 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Repeated MakeVisible keeps an item at the viewport end")]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, true)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, false)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, true)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true)]
+		public async Task MakeVisibleKeepsItemAtViewportEnd(ItemsLayoutOrientation orientation, bool grouped, bool byObject)
+		{
+			SetupBuilder();
+
+			var items = Enumerable.Range(0, 40).Select(i => $"Item {i}").ToArray();
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 200,
+				ItemsLayout = new LinearItemsLayout(orientation),
+				IsGrouped = grouped,
+				ItemsSource = grouped ? (System.Collections.IEnumerable)new[] { items } : items,
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 40, WidthRequest = 40 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			const int targetIndex = 20;
+			void ScrollToTarget(ScrollToPosition position, bool animate)
+			{
+				if (byObject)
+					collectionView.ScrollTo(items[targetIndex], grouped ? items : null, position, animate);
+				else
+					collectionView.ScrollTo(targetIndex, grouped ? 0 : -1, position, animate);
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var list = handler.PlatformView;
+				var scrollViewer = list.GetFirstDescendant<UI.Xaml.Controls.ScrollViewer>();
+				Assert.NotNull(scrollViewer);
+				await AssertEventually(() => scrollViewer.ViewportWidth > 0 && scrollViewer.ViewportHeight > 0);
+
+				ScrollToTarget(ScrollToPosition.End, false);
+				await AssertEventually(() =>
+				{
+					if (list.ContainerFromIndex(targetIndex) is not FrameworkElement container ||
+						scrollViewer.Content is not UIElement content)
+						return false;
+
+					var point = container.TransformToVisual(content).TransformPoint(new global::Windows.Foundation.Point());
+					var distance = orientation == ItemsLayoutOrientation.Vertical
+						? point.Y + container.DesiredSize.Height - scrollViewer.VerticalOffset - scrollViewer.ViewportHeight
+						: point.X + container.DesiredSize.Width - scrollViewer.HorizontalOffset - scrollViewer.ViewportWidth;
+					return Math.Abs(distance) < 0.1;
+				}, timeout: 5000, message: "The target should be aligned with the viewport end.");
+
+				double offset = orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
+				Assert.True(offset > 0);
+
+				for (int i = 0; i < 2; i++)
+				{
+					ScrollToTarget(ScrollToPosition.MakeVisible, true);
+					await Task.Delay(1000);
+					double current = orientation == ItemsLayoutOrientation.Vertical
+						? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
+					Assert.InRange(Math.Abs(current - offset), 0, 1);
+				}
+
+				ScrollToTarget(ScrollToPosition.Start, false);
+				await AssertEventually(() => Math.Abs((orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset) - offset) > 5,
+					timeout: 5000, message: "Start should still reposition the visible item.");
+			});
+		}
+
 		[Theory(DisplayName = "Grid CollectionView Scrolled reports source item indexes after containers are recycled")]
 		[InlineData(ItemsLayoutOrientation.Vertical)]
 		[InlineData(ItemsLayoutOrientation.Horizontal)]
