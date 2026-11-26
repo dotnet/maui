@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly bool _grouped;
 		readonly int _section;
 		readonly IEnumerable _itemsSource;
+		readonly MarshalingObservableCollection _synchronizedSource;
 		bool _disposed;
 
 		public ObservableItemsSource(IEnumerable itemSource, UICollectionViewController collectionViewController, int group = -1)
@@ -23,11 +25,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_section = group < 0 ? 0 : group;
 			_grouped = group >= 0;
 
-			_itemsSource = itemSource;
+			if (BindingBase.TryGetSynchronizedCollection(itemSource, out _))
+			{
+				_synchronizedSource = new MarshalingObservableCollection(itemSource, Dispatcher.GetForCurrentThread());
+				_itemsSource = _synchronizedSource;
+			}
+			else
+			{
+				_itemsSource = itemSource;
+			}
 
 			Count = ItemsCount();
-
-			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
+			((INotifyCollectionChanged)_itemsSource).CollectionChanged += CollectionChanged;
 		}
 
 		internal event NotifyCollectionChangedEventHandler CollectionViewUpdating;
@@ -53,6 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (disposing)
 				{
 					((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
+					_synchronizedSource?.Dispose();
 				}
 
 				_disposed = true;

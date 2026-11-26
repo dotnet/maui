@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return new EmptySource();
 			}
 
+			if (itemsSource is INotifyCollectionChanged && BindingBase.TryGetSynchronizedCollection(itemsSource, out _))
+				return new ObservableItemsSource(new MarshalingObservableCollection(itemsSource, container.Dispatcher),
+					container, notifier, disposeItemsSource: true);
+
 			switch (itemsSource)
 			{
 				case IList list when itemsSource is INotifyCollectionChanged:

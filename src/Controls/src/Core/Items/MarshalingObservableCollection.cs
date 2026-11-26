@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Threading;
 using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
@@ -21,10 +22,14 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
-		readonly IList _internalCollection;
+		readonly IEnumerable _internalCollection;
 		readonly IDispatcher _dispatcher;
 		readonly WeakNotifyCollectionChangedProxy _proxy;
 		readonly NotifyCollectionChangedEventHandler _internalCollectionChanged;
+		readonly bool _coalesceChanges;
+		readonly Action _refresh;
+		int _refreshPending;
+		int _disposed;
 
 		/// <param name="list">The list parameter.</param>
 		public MarshalingObservableCollection(IList list)
@@ -43,6 +48,53 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Creates a synchronized UI-thread snapshot. Background bursts are coalesced into
+		/// resets at most once per dispatch window; the public constructor keeps per-change delivery.
+		/// </summary>
+		internal MarshalingObservableCollection(IEnumerable source, IDispatcher dispatcher)
+		{
+			if (source is not INotifyCollectionChanged observable)
+				throw new ArgumentException($"{nameof(source)} must implement {nameof(INotifyCollectionChanged)}", nameof(source));
+
+			_internalCollection = source;
+			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+			_coalesceChanges = true;
+			_internalCollectionChanged = InternalCollectionChanged;
+			_proxy = new WeakNotifyCollectionChangedProxy();
+			var weakSelf = new WeakReference<MarshalingObservableCollection>(this);
+			_refresh = () =>
+			{
+				if (weakSelf.TryGetTarget(out var collection))
+					collection.RefreshSnapshot();
+			};
+
+			AccessSource(() =>
+			{
+				foreach (var item in source)
+					Add(item);
+
+				// The snapshot and subscription share the registered synchronization scope.
+				_proxy.Subscribe(observable, _internalCollectionChanged);
+			});
+		}
+
+		~MarshalingObservableCollection()
+		{
+			if (_coalesceChanges)
+				_proxy?.Unsubscribe();
+		}
+
+		void AccessSource(Action access, bool writeAccess = false)
+		{
+			if (BindingBase.TryGetSynchronizedCollection(_internalCollection, out var synchronization))
+				synchronization.Callback(_internalCollection, synchronization.Context, access, writeAccess);
+			else
+				access();
+		}
+
+		internal void UpdateSource(Action update) => AccessSource(update, true);
+
 		class ResetNotifyCollectionChangedEventArgs : NotifyCollectionChangedEventArgs
 		{
 			public IList Items { get; }
@@ -59,18 +111,79 @@ namespace Microsoft.Maui.Controls
 
 		void InternalCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
+			if (_coalesceChanges)
+			{
+				if (Volatile.Read(ref _disposed) != 0 || Volatile.Read(ref _refreshPending) != 0)
+					return;
+
+				if (_dispatcher.IsDispatchRequired)
+				{
+					if (Interlocked.Exchange(ref _refreshPending, 1) == 0 &&
+						!_dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(16), _refresh))
+					{
+						Interlocked.Exchange(ref _refreshPending, 0);
+						throw new InvalidOperationException("Unable to dispatch synchronized collection updates.");
+					}
+					return;
+				}
+
+				if (args.Action == NotifyCollectionChangedAction.Reset ||
+					(args.Action == NotifyCollectionChangedAction.Add && args.NewStartingIndex < 0) ||
+					(args.Action == NotifyCollectionChangedAction.Remove && args.OldStartingIndex < 0) ||
+					(args.Action == NotifyCollectionChangedAction.Replace &&
+						(args.NewStartingIndex < 0 || args.NewItems.Count != args.OldItems.Count)))
+					RefreshSnapshot();
+				else
+					HandleCollectionChange(args);
+				return;
+			}
+
 			if (args.Action == NotifyCollectionChangedAction.Reset)
 			{
 				var items = new List<object>();
-				for (int n = 0; n < _internalCollection.Count; n++)
+				var list = (IList)_internalCollection;
+				for (int n = 0; n < list.Count; n++)
 				{
-					items.Add(_internalCollection[n]);
+					items.Add(list[n]);
 				}
 
 				args = new ResetNotifyCollectionChangedEventArgs(items);
 			}
 
 			_dispatcher.DispatchIfRequired(() => HandleCollectionChange(args));
+		}
+
+		void RefreshSnapshot()
+		{
+			if (Volatile.Read(ref _disposed) != 0)
+				return;
+
+			// Changes during or after capture schedule another refresh; no event args are retained.
+			Interlocked.Exchange(ref _refreshPending, 0);
+			List<object> items = null;
+			AccessSource(() =>
+			{
+				if (_internalCollection is IList list)
+				{
+					int count = list.Count;
+					items = new List<object>(count);
+					for (int index = 0; index < count; index++)
+						items.Add(list[index]);
+				}
+				else
+				{
+					items = new List<object>(Count);
+					foreach (var item in _internalCollection)
+						items.Add(item);
+				}
+			});
+
+			if (Volatile.Read(ref _disposed) == 0)
+			{
+				Clear();
+				AddRange(items);
+				OnCollectionChanged(new ResetNotifyCollectionChangedEventArgs(items));
+			}
 		}
 
 		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)
@@ -162,7 +275,9 @@ namespace Microsoft.Maui.Controls
 
 		internal void Dispose()
 		{
+			Interlocked.Exchange(ref _disposed, 1);
 			_proxy.Unsubscribe();
+			GC.SuppressFinalize(this);
 		}
 	}
 }

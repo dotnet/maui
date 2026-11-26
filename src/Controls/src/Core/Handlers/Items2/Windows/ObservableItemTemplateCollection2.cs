@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 {
 	readonly IList _itemsSource;
+	readonly IList _snapshotItems;
+	readonly MarshalingObservableCollection? _synchronizedSource;
 	readonly DataTemplate _itemTemplate;
 	readonly WeakReference<BindableObject> _container;
 	readonly IMauiContext? _mauiContext;
@@ -40,8 +42,16 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		_itemSpacing = itemSpacing ?? default;
 		_collectionChanged = InnerCollectionChanged;
 
-		PopulateInitialItems(itemsSource, itemTemplate, container);
-		SubscribeToSourceChanges(itemsSource);
+		if (BindingBase.TryGetSynchronizedCollection(itemsSource, out _))
+		{
+			_synchronizedSource = new MarshalingObservableCollection(itemsSource, container.Dispatcher);
+			_snapshotItems = _synchronizedSource;
+		}
+		else
+			_snapshotItems = itemsSource;
+
+		PopulateInitialItems(_snapshotItems, itemTemplate, container);
+		SubscribeToSourceChanges(_snapshotItems);
 	}
 
 	/// <summary>
@@ -65,6 +75,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	{
 		CollectionChanged -= TemplateCollectionChanged;
 		_proxy.Unsubscribe();
+		_synchronizedSource?.Dispose();
 	}
 
 	/// <summary>
@@ -82,6 +93,17 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	}
 
 	void TemplateCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+	{
+		if (_innerCollectionChange)
+			return;
+
+		if (_synchronizedSource is not null)
+			_synchronizedSource.UpdateSource(() => ApplyTemplateCollectionChanged(args));
+		else
+			ApplyTemplateCollectionChanged(args);
+	}
+
+	void ApplyTemplateCollectionChanged(NotifyCollectionChangedEventArgs args)
 	{
 		if (!_innerCollectionChange)
 		{
@@ -218,7 +240,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 			return;
 		}
 
-		var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+		var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _snapshotItems.IndexOf(args.NewItems[0]);
 
 		var count = args.NewItems.Count;
 
@@ -273,6 +295,14 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// </para>
 	/// </summary>
 	internal void MoveItemAndSyncSource(int oldIndex, int newIndex)
+	{
+		if (_synchronizedSource is not null)
+			_synchronizedSource.UpdateSource(() => MoveItemAndSyncSourceCore(oldIndex, newIndex));
+		else
+			MoveItemAndSyncSourceCore(oldIndex, newIndex);
+	}
+
+	void MoveItemAndSyncSourceCore(int oldIndex, int newIndex)
 	{
 		// Prevent re-entrant calls (e.g. if a CollectionChanged subscriber on the source
 		// somehow triggers another reorder while we are mid-mutation).
@@ -443,7 +473,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	void Reset()
 	{
 		Items.Clear();
-		foreach (var item in _itemsSource)
+		foreach (var item in _snapshotItems)
 		{
 			Items.Add(new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));

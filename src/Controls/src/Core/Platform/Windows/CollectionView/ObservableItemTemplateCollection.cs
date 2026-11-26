@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.Platform
 	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>, IDisposable
 	{
 		readonly IList _itemsSource;
+		readonly IList _snapshotItems;
+		readonly MarshalingObservableCollection _synchronizedSource;
 		readonly DataTemplate _itemTemplate;
 		readonly BindableObject _container;
 		readonly IMauiContext _mauiContext;
@@ -46,17 +48,23 @@ namespace Microsoft.Maui.Controls.Platform
 			if (itemSpacing.HasValue)
 				_itemSpacing = itemSpacing.Value;
 
-			for (int n = 0; n < itemsSource.Count; n++)
+			_collectionChanged = InnerCollectionChanged;
+			if (BindingBase.TryGetSynchronizedCollection(itemsSource, out _))
 			{
-				// We're using this as a source for a ListViewBase, and we need INCC to work. So ListViewBase is going
-				// to iterate over the entire source list right off the bat, no matter what we do. Creating one
-				// ItemTemplateContext per item in the collection is unavoidable. Luckily, ITC is pretty cheap.
-				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				_synchronizedSource = new MarshalingObservableCollection(itemsSource, container.Dispatcher);
+				_snapshotItems = _synchronizedSource;
+				notifyCollectionChanged = _synchronizedSource;
+			}
+			else
+				_snapshotItems = itemsSource;
+
+			for (int n = 0; n < _snapshotItems.Count; n++)
+			{
+				// ListViewBase iterates the entire source immediately, so one context per item is unavoidable.
+				Add(new ItemTemplateContext(itemTemplate, _snapshotItems[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
-			_collectionChanged = InnerCollectionChanged;
 			_proxy.Subscribe(notifyCollectionChanged, _collectionChanged);
-
 			CollectionChanged += TemplateCollectionChanged;
 		}
 
@@ -68,6 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					CollectionChanged -= TemplateCollectionChanged;
 					_proxy?.Unsubscribe();
+					_synchronizedSource?.Dispose();
 				}
 				_disposedValue = true;
 			}
@@ -80,6 +89,17 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		void TemplateCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			if (_innerCollectionChange)
+				return;
+
+			if (_synchronizedSource != null)
+				_synchronizedSource.UpdateSource(() => ApplyTemplateCollectionChanged(args));
+			else
+				ApplyTemplateCollectionChanged(args);
+		}
+
+		void ApplyTemplateCollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			if (!_innerCollectionChange)
 			{
@@ -181,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _snapshotItems.IndexOf(args.NewItems[0]);
 
 			var count = args.NewItems.Count;
 
@@ -259,9 +279,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void Reset()
 		{
 			Items.Clear();
-			for (int n = 0; n < _itemsSource.Count; n++)
+			for (int n = 0; n < _snapshotItems.Count; n++)
 			{
-				Items.Add(new ItemTemplateContext(_itemTemplate, _itemsSource[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				Items.Add(new ItemTemplateContext(_itemTemplate, _snapshotItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
 			var reset = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
