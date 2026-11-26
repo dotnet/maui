@@ -28,10 +28,13 @@ on pull requests, including acknowledgments with the standard "There may be
 pipelines that require an authorized user to comment /azp run to run" hint.
 It also collapses workflow-failure notices from `github-actions[bot]`: marked
 review failures, agent-job failures, failed workflow status messages, and
-security-scanning failure notices. Comments remain expandable; nothing is
-deleted. Substantive review reports (including Tests Failure Analysis), actual
-Azure Pipelines failures, standalone authorization warnings, and ordinary
-discussion remain visible.
+security-scanning failure notices. Marked dogfooding and Skill Validation
+results comments from `github-actions[bot]` are also collapsed as resolved.
+Their updated workflows minimize new or updated comments immediately; Skill
+Validation results no longer mention the PR author. Comments remain expandable;
+nothing is deleted. Other substantive review reports (including Tests Failure
+Analysis), actual Azure Pipelines failures, standalone authorization warnings,
+and ordinary discussion remain visible.
 
 This is independent of pipeline dispatch and does not change which pipelines run
 or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
