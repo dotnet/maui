@@ -1,27 +1,4 @@
 #nullable enable
-~Microsoft.Maui.Controls.Image.ErrorSource.get -> Microsoft.Maui.Controls.ImageSource
-~Microsoft.Maui.Controls.Image.ErrorSource.set -> void
-Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.get -> bool
-Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.set -> void
-Microsoft.Maui.Controls.Image.ImageFailed -> System.EventHandler<Microsoft.Maui.Controls.ImageFailedEventArgs>
-Microsoft.Maui.Controls.Image.ImageLoaded -> System.EventHandler
-Microsoft.Maui.Controls.Image.LoadingState.get -> Microsoft.Maui.Controls.ImageLoadingState
-~Microsoft.Maui.Controls.Image.PlaceholderSource.get -> Microsoft.Maui.Controls.ImageSource
-~Microsoft.Maui.Controls.Image.PlaceholderSource.set -> void
-Microsoft.Maui.Controls.Image.Reload() -> void
-Microsoft.Maui.Controls.ImageFailedEventArgs
-Microsoft.Maui.Controls.ImageFailedEventArgs.Exception.get -> System.Exception!
-Microsoft.Maui.Controls.ImageFailedEventArgs.ImageFailedEventArgs(System.Exception! exception) -> void
-Microsoft.Maui.Controls.ImageLoadingState
-Microsoft.Maui.Controls.ImageLoadingState.Failed = 3 -> Microsoft.Maui.Controls.ImageLoadingState
-Microsoft.Maui.Controls.ImageLoadingState.Idle = 0 -> Microsoft.Maui.Controls.ImageLoadingState
-Microsoft.Maui.Controls.ImageLoadingState.Loaded = 2 -> Microsoft.Maui.Controls.ImageLoadingState
-Microsoft.Maui.Controls.ImageLoadingState.Loading = 1 -> Microsoft.Maui.Controls.ImageLoadingState
-~override Microsoft.Maui.Controls.Image.OnPropertyChanged(string propertyName = null) -> void
-~static readonly Microsoft.Maui.Controls.Image.ErrorSourceProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoadingProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Image.LoadingStateProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Image.PlaceholderSourceProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ScrollAnchorMode
 Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
 Microsoft.Maui.Controls.ScrollAnchorMode.Start = 1 -> Microsoft.Maui.Controls.ScrollAnchorMode
@@ -395,3 +372,26 @@ static Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryPro
 Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
 Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
 ~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.Image.ImageFailed -> System.EventHandler<Microsoft.Maui.Controls.ImageFailedEventArgs>
+Microsoft.Maui.Controls.Image.ImageLoaded -> System.EventHandler
+Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.get -> bool
+Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.set -> void
+Microsoft.Maui.Controls.Image.LoadingState.get -> Microsoft.Maui.Controls.ImageLoadingState
+Microsoft.Maui.Controls.Image.Reload() -> void
+Microsoft.Maui.Controls.ImageFailedEventArgs
+Microsoft.Maui.Controls.ImageFailedEventArgs.Exception.get -> System.Exception!
+Microsoft.Maui.Controls.ImageFailedEventArgs.ImageFailedEventArgs(System.Exception! exception) -> void
+Microsoft.Maui.Controls.ImageLoadingState
+Microsoft.Maui.Controls.ImageLoadingState.Failed = 3 -> Microsoft.Maui.Controls.ImageLoadingState
+Microsoft.Maui.Controls.ImageLoadingState.Idle = 0 -> Microsoft.Maui.Controls.ImageLoadingState
+Microsoft.Maui.Controls.ImageLoadingState.Loaded = 2 -> Microsoft.Maui.Controls.ImageLoadingState
+Microsoft.Maui.Controls.ImageLoadingState.Loading = 1 -> Microsoft.Maui.Controls.ImageLoadingState
+~Microsoft.Maui.Controls.Image.ErrorSource.get -> Microsoft.Maui.Controls.ImageSource
+~Microsoft.Maui.Controls.Image.ErrorSource.set -> void
+~Microsoft.Maui.Controls.Image.PlaceholderSource.get -> Microsoft.Maui.Controls.ImageSource
+~Microsoft.Maui.Controls.Image.PlaceholderSource.set -> void
+~override Microsoft.Maui.Controls.Image.OnPropertyChanged(string propertyName = null) -> void
+~static readonly Microsoft.Maui.Controls.Image.ErrorSourceProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoadingProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Image.LoadingStateProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Image.PlaceholderSourceProperty -> Microsoft.Maui.Controls.BindableProperty

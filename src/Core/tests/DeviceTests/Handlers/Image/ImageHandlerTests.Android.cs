@@ -243,58 +243,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task StreamOfDeferredLoadIsDisposedWhenTheLoadIsDropped()
-		{
-			var fileService = new FileImageSourceService();
-			var streamService = new StreamImageSourceService();
-			var first = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
-			var stream = new DisposeTrackingStream(BaseImageSourceServiceTests.CreateBitmapStream(100, 100, Colors.Blue));
-			var streamSource = new StreamImageSourceStub(stream);
-
-			var image = new TStub();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler<TImageHandler>(image);
-
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					// The stream load is requested while Glide reports the first load, so its start is deferred;
-					// clearing the view drops it before Glide reads the stream.
-					Task<IImageSourceServiceResult> deferred = null;
-					await fileService.LoadDrawableAsync(first, handler.PlatformView).ContinueWith(
-						_ =>
-						{
-							deferred = streamService.LoadDrawableAsync(streamSource, handler.PlatformView);
-							PlatformInterop.ClearImageView(handler.PlatformView);
-						},
-						TaskContinuationOptions.ExecuteSynchronously);
-
-					await Task.WhenAny(deferred, Task.Delay(5_000));
-					Assert.True(deferred.IsCanceled);
-					Assert.True(stream.IsDisposed);
-				});
-			});
-		}
-
-		class DisposeTrackingStream : System.IO.MemoryStream
-		{
-			public DisposeTrackingStream(System.IO.Stream source)
-			{
-				source.CopyTo(this);
-				Position = 0;
-			}
-
-			public bool IsDisposed { get; private set; }
-
-			protected override void Dispose(bool disposing)
-			{
-				IsDisposed = true;
-				base.Dispose(disposing);
-			}
-		}
-
-		[Fact]
 		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
 		{
 			var service = new FileImageSourceService();

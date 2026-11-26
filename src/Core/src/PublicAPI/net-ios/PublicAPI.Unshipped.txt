@@ -1,36 +1,4 @@
 #nullable enable
-Microsoft.Maui.IImageCache
-Microsoft.Maui.IImageCache.ClearAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.Maui.IImageCache.RemoveAsync(System.Uri! uri, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.Maui.IImageSourcePartFallbacks
-Microsoft.Maui.IImageSourcePartFallbacks.ErrorSource.get -> Microsoft.Maui.IImageSource?
-Microsoft.Maui.IImageSourcePartFallbacks.KeepPreviousImageWhileLoading.get -> bool
-Microsoft.Maui.IImageSourcePartFallbacks.PlaceholderSource.get -> Microsoft.Maui.IImageSource?
-Microsoft.Maui.ImageLoadingOptions
-Microsoft.Maui.ImageLoadingOptions.CacheDirectory.get -> string?
-Microsoft.Maui.ImageLoadingOptions.CacheDirectory.set -> void
-Microsoft.Maui.ImageLoadingOptions.ConfigureHttpClient.get -> System.Action<System.Net.Http.HttpClient!>?
-Microsoft.Maui.ImageLoadingOptions.ConfigureHttpClient.set -> void
-Microsoft.Maui.ImageLoadingOptions.DiskCacheSizeLimit.get -> long
-Microsoft.Maui.ImageLoadingOptions.DiskCacheSizeLimit.set -> void
-Microsoft.Maui.ImageLoadingOptions.HttpMessageHandlerFactory.get -> System.Func<System.Net.Http.HttpMessageHandler!>?
-Microsoft.Maui.ImageLoadingOptions.HttpMessageHandlerFactory.set -> void
-Microsoft.Maui.ImageLoadingOptions.ImageLoadingOptions() -> void
-Microsoft.Maui.ImageLoadingOptions.MaxConcurrentDownloads.get -> int
-Microsoft.Maui.ImageLoadingOptions.MaxConcurrentDownloads.set -> void
-Microsoft.Maui.ImageLoadingOptions.MaxDownloadSize.get -> long?
-Microsoft.Maui.ImageLoadingOptions.MaxDownloadSize.set -> void
-Microsoft.Maui.ImageLoadingOptions.MaxRetryCount.get -> int
-Microsoft.Maui.ImageLoadingOptions.MaxRetryCount.set -> void
-Microsoft.Maui.ImageLoadingOptions.MemoryCacheSizeLimit.get -> long
-Microsoft.Maui.ImageLoadingOptions.MemoryCacheSizeLimit.set -> void
-Microsoft.Maui.ImageLoadingOptions.RequestTimeout.get -> System.TimeSpan
-Microsoft.Maui.ImageLoadingOptions.RequestTimeout.set -> void
-Microsoft.Maui.ImageLoadingOptions.RetryDelay.get -> System.TimeSpan
-Microsoft.Maui.ImageLoadingOptions.RetryDelay.set -> void
-static Microsoft.Maui.Handlers.ImageHandler.MapReload(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image, object? args) -> void
-static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageLoading(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.ImageLoadingOptions!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
-override Microsoft.Maui.Platform.MauiImageView.LayoutSubviews() -> void
 Microsoft.Maui.IContentButton
 Microsoft.Maui.Handlers.IContentButtonHandler
 Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
@@ -66,3 +34,35 @@ static Microsoft.Maui.Platform.LabelExtensions.UpdateIsTextSelectable(this Micro
 ~override Microsoft.Maui.Platform.MauiLabel.Text.set -> void
 ~override Microsoft.Maui.Platform.MauiLabel.AttributedText.get -> Foundation.NSAttributedString
 ~override Microsoft.Maui.Platform.MauiLabel.AttributedText.set -> void
+Microsoft.Maui.IImageCache
+Microsoft.Maui.IImageCache.ClearAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Maui.IImageCache.RemoveAsync(System.Uri! uri, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Maui.IImageSourcePartFallbacks
+Microsoft.Maui.IImageSourcePartFallbacks.ErrorSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.IImageSourcePartFallbacks.KeepPreviousImageWhileLoading.get -> bool
+Microsoft.Maui.IImageSourcePartFallbacks.PlaceholderSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ImageLoadingOptions
+Microsoft.Maui.ImageLoadingOptions.CacheDirectory.get -> string?
+Microsoft.Maui.ImageLoadingOptions.CacheDirectory.set -> void
+Microsoft.Maui.ImageLoadingOptions.ConfigureHttpClient.get -> System.Action<System.Net.Http.HttpClient!>?
+Microsoft.Maui.ImageLoadingOptions.ConfigureHttpClient.set -> void
+Microsoft.Maui.ImageLoadingOptions.DiskCacheSizeLimit.get -> long
+Microsoft.Maui.ImageLoadingOptions.DiskCacheSizeLimit.set -> void
+Microsoft.Maui.ImageLoadingOptions.HttpMessageHandlerFactory.get -> System.Func<System.Net.Http.HttpMessageHandler!>?
+Microsoft.Maui.ImageLoadingOptions.HttpMessageHandlerFactory.set -> void
+Microsoft.Maui.ImageLoadingOptions.ImageLoadingOptions() -> void
+Microsoft.Maui.ImageLoadingOptions.MaxConcurrentDownloads.get -> int
+Microsoft.Maui.ImageLoadingOptions.MaxConcurrentDownloads.set -> void
+Microsoft.Maui.ImageLoadingOptions.MaxDownloadSize.get -> long?
+Microsoft.Maui.ImageLoadingOptions.MaxDownloadSize.set -> void
+Microsoft.Maui.ImageLoadingOptions.MaxRetryCount.get -> int
+Microsoft.Maui.ImageLoadingOptions.MaxRetryCount.set -> void
+Microsoft.Maui.ImageLoadingOptions.MemoryCacheSizeLimit.get -> long
+Microsoft.Maui.ImageLoadingOptions.MemoryCacheSizeLimit.set -> void
+Microsoft.Maui.ImageLoadingOptions.RequestTimeout.get -> System.TimeSpan
+Microsoft.Maui.ImageLoadingOptions.RequestTimeout.set -> void
+Microsoft.Maui.ImageLoadingOptions.RetryDelay.get -> System.TimeSpan
+Microsoft.Maui.ImageLoadingOptions.RetryDelay.set -> void
+override Microsoft.Maui.Platform.MauiImageView.LayoutSubviews() -> void
+static Microsoft.Maui.Handlers.ImageHandler.MapReload(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image, object? args) -> void
+static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageLoading(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.ImageLoadingOptions!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
