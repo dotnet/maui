@@ -372,3 +372,24 @@ static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.Internals.PromptArguments.PreselectInitialValue.get -> bool
+~Microsoft.Maui.Controls.Internals.PromptArguments.PromptArguments(string title, string message, bool preselectInitialValue, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "") -> void
+~Microsoft.Maui.Controls.Page.DisplayPromptAsync(string title, string message, bool preselectInitialValue, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "") -> System.Threading.Tasks.Task<string>
+~Microsoft.Maui.Controls.Internals.PromptArguments.InitialSelection.get -> Microsoft.Maui.Controls.PromptTextSelection
+~Microsoft.Maui.Controls.Internals.PromptArguments.PromptArguments(string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Keyboard keyboard, string initialValue, Microsoft.Maui.Controls.PromptTextSelection initialSelection) -> void
+~Microsoft.Maui.Controls.Page.DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Keyboard keyboard, string initialValue, Microsoft.Maui.Controls.PromptTextSelection initialSelection) -> System.Threading.Tasks.Task<string>
+~Microsoft.Maui.Controls.Page.DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Keyboard keyboard, string initialValue, Microsoft.Maui.Controls.PromptTextSelectionPreset initialSelection) -> System.Threading.Tasks.Task<string>
+Microsoft.Maui.Controls.PromptTextSelection
+Microsoft.Maui.Controls.PromptTextSelection.Equals(Microsoft.Maui.Controls.PromptTextSelection? other) -> bool
+Microsoft.Maui.Controls.PromptTextSelection.IsAll.get -> bool
+Microsoft.Maui.Controls.PromptTextSelection.IsNone.get -> bool
+Microsoft.Maui.Controls.PromptTextSelection.Length.get -> int
+Microsoft.Maui.Controls.PromptTextSelection.PromptTextSelection(int start, int length) -> void
+Microsoft.Maui.Controls.PromptTextSelection.Start.get -> int
+Microsoft.Maui.Controls.PromptTextSelectionPreset
+Microsoft.Maui.Controls.PromptTextSelectionPreset.All = 0 -> Microsoft.Maui.Controls.PromptTextSelectionPreset
+Microsoft.Maui.Controls.PromptTextSelectionPreset.None = 1 -> Microsoft.Maui.Controls.PromptTextSelectionPreset
+override Microsoft.Maui.Controls.PromptTextSelection.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.PromptTextSelection.GetHashCode() -> int
+static Microsoft.Maui.Controls.PromptTextSelection.All.get -> Microsoft.Maui.Controls.PromptTextSelectionPreset
+static Microsoft.Maui.Controls.PromptTextSelection.None.get -> Microsoft.Maui.Controls.PromptTextSelectionPreset

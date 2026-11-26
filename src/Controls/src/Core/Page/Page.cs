@@ -451,9 +451,60 @@ namespace Microsoft.Maui.Controls
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
 		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
+		/// <remarks>On Windows, the caret initially appears at the end without selecting text. Other platforms retain their native selection behavior.</remarks>
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			=> DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, initialSelection: null);
+
+		/// <summary>
+		/// Displays a prompt dialog to the application user with the intent to capture a single string value.
+		/// </summary>
+		/// <param name="title">The title of the prompt dialog.</param>
+		/// <param name="message">The body text of the prompt dialog.</param>
+		/// <param name="accept">Text to be displayed on the 'Accept' button.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
+		/// <param name="placeholder">The placeholder text to display in the prompt. Can be <see langword="null"/> when no placeholder is desired.</param>
+		/// <param name="maxLength">The maximum length of the user response.</param>
+		/// <param name="keyboard">The keyboard type to use for the user response.</param>
+		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
+		/// <param name="initialSelection">The selection preset to apply once when the prompt is initially presented. <see cref="PromptTextSelection.None"/> places the caret at the end without selecting text.</param>
+		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="initialSelection"/> is not a defined preset.</exception>
+		/// <remarks>All arguments are required to preserve overload resolution for existing calls with null or default arguments.</remarks>
+		/// <example>
+		/// <code>
+		/// await DisplayPromptAsync("Rename", "File name:", "OK", "Cancel", null, -1, null,
+		///     "Report.pdf", initialSelection: PromptTextSelection.All);
+		/// </code>
+		/// </example>
+		public Task<string> DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int maxLength, Keyboard keyboard, string initialValue, PromptTextSelectionPreset initialSelection)
+			=> DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, PromptTextSelection.FromPreset(initialSelection));
+
+		/// <summary>Displays a prompt dialog with an optional one-time initial text selection.</summary>
+		/// <param name="title">The title of the prompt dialog.</param>
+		/// <param name="message">The body text of the prompt dialog.</param>
+		/// <param name="accept">Text to be displayed on the 'Accept' button.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
+		/// <param name="placeholder">The placeholder text, or null when no placeholder is desired.</param>
+		/// <param name="maxLength">The maximum length of the user response.</param>
+		/// <param name="keyboard">The keyboard type to use for the user response.</param>
+		/// <param name="initialValue">A pre-defined response that can be edited by the user.</param>
+		/// <param name="initialSelection">The initial range or caret position. Null preserves native selection behavior on Android, iOS, and Mac Catalyst; on Windows, it places the caret at the end.</param>
+		/// <returns>A task returning the entered text, or null if the prompt is canceled.</returns>
+		/// <remarks>
+		/// Selection uses UTF-16 offsets clamped to the displayed text and is not reapplied on refocus.
+		/// All arguments are required to preserve overload resolution for existing calls with null or default arguments.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// await DisplayPromptAsync("Rename", "File name:", "OK", "Cancel", null, -1, null,
+		///     "Report.pdf", initialSelection: new PromptTextSelection(0, 6));
+		/// await DisplayPromptAsync("Rename", "File name:", "OK", "Cancel", null, -1, null,
+		///     "Report.pdf", initialSelection: new PromptTextSelection(6, 0));
+		/// </code>
+		/// </example>
+		public Task<string> DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int maxLength, Keyboard keyboard, string initialValue, PromptTextSelection initialSelection)
 		{
-			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
+			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, initialSelection);
 
 			var window = Window;
 			if (IsPlatformEnabled)

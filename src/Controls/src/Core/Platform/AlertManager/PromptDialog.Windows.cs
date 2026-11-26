@@ -49,6 +49,9 @@ public sealed partial class PromptDialog : ContentDialog
 		set => TextBoxInput.InputScope = value;
 	}
 
+	/// <summary>Gets or sets the initial selection, or null to place the caret at the end without selecting text.</summary>
+	public PromptTextSelection InitialSelection { get; set; }
+
 	void Initialize()
 	{
 		var layout = new StackPanel();
@@ -63,5 +66,15 @@ public sealed partial class PromptDialog : ContentDialog
 		children.Add(TextBoxInput);
 
 		Content = layout;
+
+		Opened += OnOpened;
+	}
+
+	void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+	{
+		Opened -= OnOpened;
+		var selection = InitialSelection ?? PromptTextSelection.FromPreset(PromptTextSelection.None);
+		var (start, length) = selection.GetRange(TextBoxInput.Text?.Length ?? 0);
+		TextBoxInput.Select(start, length);
 	}
 }

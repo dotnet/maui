@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -122,11 +123,16 @@ namespace Microsoft.Maui.Controls.Platform
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
+				Action cleanupInitialSelection = null;
+#if MACCATALYST
+				Action onPresented = null;
+#endif
 				bool Complete(Action setResult)
 				{
 					if (Interlocked.CompareExchange(ref completed, 1, 0) != 0)
 						return false;
 
+					cleanupInitialSelection?.Invoke();
 					setResult();
 					return true;
 				}
@@ -135,6 +141,59 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					uiTextField.Placeholder = arguments.Placeholder;
 					uiTextField.Text = arguments.InitialValue;
+#if MACCATALYST
+					if (arguments.InitialSelection is PromptTextSelection selection)
+					{
+						var applyingSelection = false;
+						void ApplyInitialSelection()
+						{
+							if (applyingSelection)
+								return;
+
+							var (start, length) = selection.GetRange(uiTextField.Text?.Length ?? 0);
+							var range = uiTextField.SelectedTextRange;
+							var beginning = uiTextField.BeginningOfDocument;
+
+							if (range is null ||
+								uiTextField.GetOffsetFromPosition(beginning, range.Start) != start ||
+								uiTextField.GetOffsetFromPosition(beginning, range.End) != start + length)
+							{
+								applyingSelection = true;
+								try
+								{
+									uiTextField.SetTextRange(start, length);
+								}
+								finally
+								{
+									applyingSelection = false;
+								}
+							}
+						}
+
+						EventHandler selectionChanged = (_, _) => ApplyInitialSelection();
+						uiTextField.DidChangeSelection += selectionChanged;
+						cleanupInitialSelection = () => uiTextField.DidChangeSelection -= selectionChanged;
+						onPresented = () =>
+						{
+							cleanupInitialSelection();
+							if (!arguments.Result.Task.IsCompleted)
+								ApplyInitialSelection();
+						};
+					}
+#else
+					if (arguments.InitialSelection is PromptTextSelection selection)
+					{
+						void SelectInitialValue(object sender, EventArgs e)
+						{
+							uiTextField.EditingDidBegin -= SelectInitialValue;
+							var (start, length) = selection.GetRange(uiTextField.Text?.Length ?? 0);
+							uiTextField.SetTextRange(start, length);
+						}
+
+						uiTextField.EditingDidBegin += SelectInitialValue;
+						cleanupInitialSelection = () => uiTextField.EditingDidBegin -= SelectInitialValue;
+					}
+#endif
 					if (arguments.MaxLength > -1 && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 					{
 						uiTextField.ShouldChangeCharactersInRanges = (textField, ranges, replacementString) =>
@@ -180,6 +239,9 @@ namespace Microsoft.Maui.Controls.Platform
 					PlatformView,
 					alert,
 					logicalActions: logicalActions,
+#if MACCATALYST
+					onPresented: onPresented,
+#endif
 					completion: arguments.Result.Task);
 			}
 
@@ -281,7 +343,8 @@ namespace Microsoft.Maui.Controls.Platform
 				UIAlertController alert,
 				ActionSheetArguments arguments = null,
 				IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> logicalActions = null,
-				Task completion = null)
+				Task completion = null,
+				Action onPresented = null)
 			{
 				UIWindow presentingWindow = platformView;
 				var registration = new AlertRegistration();
@@ -346,7 +409,10 @@ namespace Microsoft.Maui.Controls.Platform
 								if (task.IsFaulted || task.IsCanceled)
 									registration.Dispose();
 								else
+								{
 									registration.Attach(sender, alert, logicalActions);
+									onPresented?.Invoke();
+								}
 							});
 						},
 						TaskScheduler.Default);

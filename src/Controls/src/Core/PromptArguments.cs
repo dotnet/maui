@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
 		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			: this(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, null)
+		{
+		}
+
+		/// <summary>Creates prompt arguments with an initial selection, or null for platform-specific default behavior.</summary>
+		public PromptArguments(string title, string message, string accept, string cancel, string placeholder, int maxLength, Keyboard keyboard, string initialValue, PromptTextSelection initialSelection)
 		{
 			Title = title;
 			Message = message;
@@ -33,6 +39,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Cancel = cancel;
 			Placeholder = placeholder;
 			InitialValue = initialValue;
+			InitialSelection = initialSelection;
 			MaxLength = maxLength;
 			Keyboard = keyboard ?? Keyboard.Default;
 			Result = new TaskCompletionSource<string>();
@@ -55,6 +62,10 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <summary>Gets the initial value for the input field.</summary>
 		public string InitialValue { get; }
+
+		/// <summary>Gets the one-time initial selection, or null for platform-specific default behavior.</summary>
+		/// <remarks>Android, iOS, and Mac Catalyst preserve native selection behavior for null; Windows places the caret at the end.</remarks>
+		public PromptTextSelection InitialSelection { get; }
 
 		/// <summary>Gets the maximum input length, or -1 for no limit.</summary>
 		public int MaxLength { get; }
