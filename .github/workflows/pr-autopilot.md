@@ -308,6 +308,7 @@ steps:
     env:
       PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
       SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
+      GH_TOKEN: ${{ github.token }}
       HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
       BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
       IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
@@ -348,6 +349,17 @@ steps:
         '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source}' \
         > /tmp/gh-aw/autopilot/context.json
       cat /tmp/gh-aw/autopilot/context.json
+
+      # Review threads, so the agent can reply in them and resolve the ones it fixed.
+      gh api graphql -F owner="${GITHUB_REPOSITORY%/*}" -F repo="${GITHUB_REPOSITORY#*/}" -F number="${PR_NUMBER}" -f query='
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) { pullRequest(number: $number) {
+            reviewThreads(first: 100) { nodes { id isResolved isOutdated path line
+              comments(first: 30) { nodes { databaseId url body createdAt authorAssociation author { login } } } } } } } }' \
+        --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | {thread_id: .id, resolved: .isResolved, outdated: .isOutdated, path, line,
+               comments: [.comments.nodes[] | {comment_id: .databaseId, url, author: .author.login, association: .authorAssociation, created_at: .createdAt, body}]}]' \
+        > /tmp/gh-aw/autopilot/threads.json
+      jq 'length' /tmp/gh-aw/autopilot/threads.json
       git status --short | head -20
 
 
@@ -384,6 +396,13 @@ safe-outputs:
   add-comment:
     target: ${{ needs.publication_context.outputs.pr_number }}
     max: 1
+  reply-to-pull-request-review-comment:
+    target: ${{ needs.publication_context.outputs.pr_number }}
+    max: 30
+    footer: false
+  resolve-pull-request-review-thread:
+    target: ${{ needs.publication_context.outputs.pr_number }}
+    max: 30
   noop:
     report-as-issue: false
   messages:
@@ -456,10 +475,25 @@ The PR head is checked out on `work_branch`.
      `- [x] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**`
      then list the fixes.
    - If there is nothing you can fix, don't publish. That ends the loop.
-7. **Comment.** Finish with exactly one `add_comment`:
+7. **Answer the review threads.** `/tmp/gh-aw/autopilot/threads.json` lists the PR's review threads.
+   For every unresolved thread you handled this round, from a trusted reviewer:
+   - Call `reply_to_pull_request_review_comment` with the thread's **first** `comment_id`.
+     - If you fixed it: say in 1–3 sentences what changed and in which commit (use its title; the push
+       may rewrite commit SHAs). Name the model whose fix was kept. For a fork PR, say the fix is in
+       the `[autopilot]` follow-up PR.
+     - If you did not fix it: say why (wrong, out of scope, would change the author's approach, could
+       not reproduce).
+   - Then call `resolve_pull_request_review_thread` with its `thread_id`, but only when you fixed it
+     **and** the thread was started by the MAUI expert reviewer (`github-actions[bot]`) or the AI
+     review (`MauiBot`/`maui-bot`).
+   - Leave maintainers' threads unresolved. Your reply tells them it's ready for them to resolve.
+   - Leave threads you did not fix unresolved.
+   - Never reply to or resolve threads you did not handle, and only do so when you publish a fix. If
+     nothing was published, reply only to explain items you rejected as wrong.
+8. **Comment.** Finish with exactly one `add_comment`:
    - first line: `Round fixed N <findings|failing tests>` (or why nothing was fixed), and that the
      loop will review again,
-   - a checklist of the items, each linking to its review comment or test result, marked with the
+   - a checklist of the items, each linking to its review thread or test result, marked with the
      model whose fix was chosen (`GPT-6.2 Sol` / `MAI Code 2`) and the one-line reason,
    - items you did not fix and why,
    - what you validated.
