@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 
 		bool _processingQueue;
 		bool _applyingNavigationRequest;
+		NavigationRequest? _pendingOffscreenNavigation;
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -174,9 +175,14 @@ namespace Microsoft.Maui.Platform
 
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
-			bool isInactiveTab = VirtualView?.Parent is ITabbedView && !NavHost.IsResumed;
-			bool popWithoutFragmentView = newPageStack.Count < fragmentNavDestinations.Count &&
-				(isInactiveTab || ChildFragmentManager?.PrimaryNavigationFragment?.View is null);
+			bool offscreenPopToRoot = newPageStack.Count == 1 && IsPopping == true &&
+				fragmentNavDestinations.Count > 1 &&
+				VirtualView?.Parent is ITabbedView && !NavHost.IsResumed;
+			if (offscreenPopToRoot)
+			{
+				IsAnimated = false;
+				_pendingOffscreenNavigation = args;
+			}
 
 			// Current BackStack has less entries then incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
@@ -211,6 +217,10 @@ namespace Microsoft.Maui.Platform
 					for (int i = newPageStack.Count; i < fragmentNavDestinations.Count; i++)
 						NavGraph.Remove(fragmentNavDestinations[i]);
 				}
+				else if (offscreenPopToRoot)
+				{
+					_pendingOffscreenNavigation = null;
+				}
 			}
 
 			// We only keep destinations around that are on the backstack
@@ -242,12 +252,6 @@ namespace Microsoft.Maui.Platform
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
 			TriggerBackButtonVisibleUpdate();
-
-			// An offscreen tab's fragment may not deliver OnFragmentViewDestroyed.
-			if (popWithoutFragmentView && ReferenceEquals(ActiveRequestedArgs, args))
-			{
-				NavigationFinished(NavigationView);
-			}
 		}
 
 		void TriggerBackButtonVisibleUpdate()
@@ -313,6 +317,7 @@ namespace Microsoft.Maui.Platform
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
+			_pendingOffscreenNavigation = null;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
 
@@ -566,7 +571,8 @@ namespace Microsoft.Maui.Platform
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
 
-			if (IsNavigating)
+			// Offscreen pops finish after the back stack transaction, even if no view is destroyed.
+			if (IsNavigating && _pendingOffscreenNavigation is null)
 			{
 				NavigationFinished(NavigationView);
 			}
@@ -667,7 +673,8 @@ namespace Microsoft.Maui.Platform
 
 		class Callbacks :
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
-			NavController.IOnDestinationChangedListener
+			NavController.IOnDestinationChangedListener,
+			FragmentManager.IOnBackStackChangedListener
 		{
 			StackNavigationManager? _stackNavigationManager;
 			NavController _navController;
@@ -681,6 +688,20 @@ namespace Microsoft.Maui.Platform
 
 				_navController.AddOnDestinationChangedListener(this);
 				_childFragmentManager?.RegisterFragmentLifecycleCallbacks(this, false);
+				_childFragmentManager?.AddOnBackStackChangedListener(this);
+			}
+
+			public void OnBackStackChanged()
+			{
+				if (_stackNavigationManager is not { } manager ||
+					manager._pendingOffscreenNavigation is not { } request ||
+					!ReferenceEquals(manager.ActiveRequestedArgs, request) ||
+					_childFragmentManager?.BackStackEntryCount != request.NavigationStack.Count - 1)
+				{
+					return;
+				}
+
+				manager.NavigationFinished(manager.NavigationView);
 			}
 
 			#region IOnDestinationChangedListener
@@ -805,6 +826,7 @@ namespace Microsoft.Maui.Platform
 					_navController.RemoveOnDestinationChangedListener(this);
 
 				_childFragmentManager?.UnregisterFragmentLifecycleCallbacks(this);
+				_childFragmentManager?.RemoveOnBackStackChangedListener(this);
 			}
 		}
 	}

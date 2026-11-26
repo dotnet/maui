@@ -377,9 +377,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (renderer == null || renderer.ViewController == null)
 				return false;
 
-			var task = GetAppearedOrDisappearedTask(page);
+			// An inactive tab will not send appearance callbacks for this pop.
+			bool isOnscreen = ViewIfLoaded?.Window is not null;
+			var task = isOnscreen ? GetAppearedOrDisappearedTask(page) : Task.FromResult(false);
 
-			var poppedControllers = PopToRootViewController(animated);
+			var poppedControllers = PopToRootViewController(animated && isOnscreen);
 
 			_ignorePopCall = false;
 			var success = !await task;
