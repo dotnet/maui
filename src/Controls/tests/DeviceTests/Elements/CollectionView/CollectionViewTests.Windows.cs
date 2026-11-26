@@ -20,6 +20,72 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact(DisplayName = "Replacing ItemsSource Releases Old Item Content")]
+		public async Task ReplacingItemsSourceReleasesOldItemContent()
+		{
+			SetupBuilder();
+
+			// https://github.com/dotnet/maui/issues/40193
+			var items = new[] { "First", "Second", "Third" };
+			var rows = new List<Grid>();
+
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 400,
+				HeightRequest = 400,
+				ItemsSource = new ObservableCollection<string>(items),
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { Shadow = CreateShadow() };
+					label.SetBinding(Label.TextProperty, ".");
+					var row = new Grid { HeightRequest = 80, Shadow = CreateShadow(), Children = { label } };
+					rows.Add(row);
+					return row;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					await AssertEventually(() => rows.Count(IsRealized) == items.Length);
+					var oldRows = rows.Where(IsRealized).ToArray();
+					var oldContents = oldRows.Select(row =>
+					{
+						var wrapper = Assert.IsType<WrapperView>(Assert.IsAssignableFrom<IViewHandler>(row.Handler).ContainerView);
+						var container = wrapper.GetParentOfType<ItemContentControl>();
+						Assert.NotNull(container);
+						Assert.Same(wrapper, container.Content);
+						return (wrapper, container);
+					}).ToArray();
+
+					var sorted = i % 2 == 0 ? items.Reverse().ToArray() : items;
+					collectionView.ItemsSource = new ObservableCollection<string>(sorted);
+					foreach (var (wrapper, container) in oldContents)
+						Assert.NotSame(wrapper, container.Content);
+
+					await AssertEventually(() => rows.Except(oldRows).Count(IsRealized) == items.Length);
+
+					foreach (var row in oldRows)
+					{
+						Assert.Null(row.Handler);
+						Assert.DoesNotContain(row, collectionView.LogicalChildrenInternal);
+					}
+				}
+			});
+
+			static bool IsRealized(Grid row) =>
+				row.Handler?.PlatformView is FrameworkElement { IsLoaded: true, ActualHeight: > 0 };
+
+			static Shadow CreateShadow() => new Shadow
+			{
+				Brush = new SolidColorBrush(Colors.Black),
+				Offset = new Point(2, 2),
+				Radius = 4,
+				Opacity = 0.5f
+			};
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
