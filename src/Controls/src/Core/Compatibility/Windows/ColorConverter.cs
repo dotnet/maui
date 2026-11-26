@@ -3,6 +3,7 @@ using System;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI;
 using Windows.UI;
+using MauiColorConverter = Microsoft.Maui.Platform.ColorConverter;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			var color = (Microsoft.Maui.Graphics.Color)value;
+			if (parameter is MauiColorConverter.ThemeResourceFallback)
+				return MauiColorConverter.ConvertWithThemeResourceFallback(color);
+
 			var defaultColorKey = (string)parameter;
 
 			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Microsoft.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
