@@ -261,6 +261,59 @@ namespace Microsoft.Maui.DeviceTests
 		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler);
 
+		[Fact]
+		public async Task NestedShellRendersAfterReturningToItsShellContent()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Content = new Label { Text = "First tab" } };
+			var secondPage = new ContentPage { Content = new Label { Text = "Second tab" } };
+			var firstTab = new Tab { Title = "First", Items = { new ShellContent { Content = firstPage } } };
+			var secondTab = new Tab { Title = "Second", Items = { new ShellContent { Content = secondPage } } };
+			var nestedShell = new Shell
+			{
+				FlyoutBehavior = FlyoutBehavior.Disabled,
+				Items = { new TabBar { Items = { firstTab, secondTab } } }
+			};
+			var mainPage = new ContentPage();
+			var shell = await CreateShellAsync(outer =>
+			{
+				outer.FlyoutBehavior = FlyoutBehavior.Disabled;
+				outer.Items.Add(new FlyoutItem
+				{
+					Route = "MainPage",
+					Items = { new ShellSection { Items = { new ShellContent { Content = mainPage } } } }
+				});
+				outer.Items.Add(new TabBar
+				{
+					Route = "Dashboard",
+					Items = { new Tab { Items = { new ShellContent { ContentTemplate = new DataTemplate(() => nestedShell) } } } }
+				});
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(mainPage);
+				for (int i = 0; i < 3; i++)
+				{
+					await shell.GoToAsync("//Dashboard");
+					await AssertEventually(() => nestedShell.CurrentPage == firstPage && IsRendered(firstPage) &&
+						(nestedShell.Handler?.PlatformView as ViewGroup)?.GetFirstChildOfType<BottomNavigationView>() is { IsAttachedToWindow: true });
+
+					nestedShell.CurrentItem.CurrentItem = secondTab;
+					await AssertEventually(() => nestedShell.CurrentPage == secondPage && IsRendered(secondPage));
+					nestedShell.CurrentItem.CurrentItem = firstTab;
+					await AssertEventually(() => nestedShell.CurrentPage == firstPage && IsRendered(firstPage));
+
+					await shell.GoToAsync("//MainPage");
+					await AssertEventually(() => IsRendered(mainPage));
+				}
+			});
+
+			static bool IsRendered(Page page) =>
+				page.Handler?.PlatformView is AView { IsAttachedToWindow: true, Width: > 0, Height: > 0 };
+		}
+
 		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
 		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
 		{
