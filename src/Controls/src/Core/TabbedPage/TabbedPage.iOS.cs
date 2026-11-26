@@ -3,11 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using TabbedPageConfiguration = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage;
@@ -15,7 +13,7 @@ using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecif
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class TabbedPage
+	public partial class TabbedPage : IPageViewControllerAppearanceObserver
 	{
 		// Instance state for tracking tab bar defaults (used by appearance mappers)
 		bool _barBackgroundColorWasSet;
@@ -30,7 +28,7 @@ namespace Microsoft.Maui.Controls
 		Brush _currentBarBackground;
 		WeakBrushChangedProxy _barBackgroundProxy;
 		EventHandler _barBackgroundChanged;
-		MoreNavigationDelegate _moreNavigationDelegate;
+		Page _selectingMorePage;
 
 		// Tracks pages from the previous MapItemsSource call so we can
 		// disconnect handlers for pages that were removed.
@@ -67,10 +65,6 @@ namespace Microsoft.Maui.Controls
 
 				if (manager is not null)
 				{
-					if (manager.MoreNavigationController.Delegate == _moreNavigationDelegate)
-						manager.MoreNavigationController.Delegate = null;
-					_moreNavigationDelegate?.Dispose();
-					_moreNavigationDelegate = null;
 					manager.ViewDidAppear -= OnManagerViewDidAppear;
 					manager.ViewDidDisappear -= OnManagerViewDidDisappear;
 					manager.TabsReordered -= OnManagerTabsReordered;
@@ -110,8 +104,6 @@ namespace Microsoft.Maui.Controls
 		{
 			var manager = new TabBarControllerManager(handler);
 			handler.SetManager(manager);
-			_moreNavigationDelegate = new MoreNavigationDelegate(this);
-			manager.MoreNavigationController.Delegate = _moreNavigationDelegate;
 
 			// Subscribe to lifecycle events from the manager
 			manager.ViewDidAppear += OnManagerViewDidAppear;
@@ -712,7 +704,7 @@ namespace Microsoft.Maui.Controls
 				tabBarController?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
 				tabBarController?.SetNeedsStatusBarAppearanceUpdate();
 
-				if (view._moreNavigationDelegate?.IsSelecting(current) != true &&
+				if (!view.IsSelectingMorePage(current) &&
 					controller != manager.SelectedViewController &&
 					!(manager.SelectedViewController == manager.MoreNavigationController &&
 						controller == manager.MoreNavigationController.TopViewController))
@@ -968,70 +960,46 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
-	}
 
-	internal sealed class MoreNavigationDelegate : UINavigationControllerDelegate
-	{
-		readonly WeakReference<TabbedPage> _tabbedPage;
-		readonly WeakReference<Page> _selectingPage = new WeakReference<Page>(null);
+		internal bool IsSelectingMorePage(Page page) => _selectingMorePage == page;
 
-		internal MoreNavigationDelegate(TabbedPage tabbedPage)
+		void IPageViewControllerAppearanceObserver.OnPageViewControllerAppeared(IElement page, UIViewController controller)
 		{
-			_tabbedPage = new WeakReference<TabbedPage>(tabbedPage);
+			if (page is Page tab && GetViewController(tab) == controller)
+				SyncMoreSelection(tab, controller);
 		}
 
-		internal bool IsSelecting(Page page) =>
-			_selectingPage.TryGetTarget(out var selectingPage) && selectingPage == page;
-
-		public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
+		internal static void OnNavigationChildAppeared(Page child, UIViewController controller)
 		{
-			if (!_tabbedPage.TryGetTarget(out var tabbedPage) ||
-				tabbedPage.Handler is not IPlatformViewHandler handler ||
-				handler.ViewController is not UITabBarController tabBarController ||
-				tabBarController.MoreNavigationController != navigationController)
-			{
+			if (child?.RealParent is NavigationPage navigationPage && navigationPage.RealParent is TabbedPage tabbedPage)
+				tabbedPage.SyncMoreSelection(navigationPage, controller);
+		}
+
+		void SyncMoreSelection(Page tab, UIViewController appeared)
+		{
+			if (CurrentPage == tab || !Children.Contains(tab) ||
+				Handler is not IPlatformViewHandler { ViewController: UITabBarController tabBar } ||
+				GetViewController(tab) is not UIViewController tabController)
 				return;
-			}
 
-			var wrappedPage = (viewController as NavigationHandlerParentingViewController)?.Child ??
-				NavigationRenderer.GetPageForViewController(viewController);
-			var navigationPage = wrappedPage?.RealParent as NavigationPage;
-			if (navigationPage?.RealParent != tabbedPage)
-			{
-				navigationPage = null;
-			}
-
-			var selectedController = tabBarController.SelectedViewController;
-			if (selectedController != navigationController &&
-				selectedController != viewController &&
-				selectedController?.NavigationController != navigationController &&
-				!(selectedController is not null &&
-					navigationPage?.Handler is IPlatformViewHandler navigationHandler &&
-					navigationHandler.ViewController == selectedController) &&
-				!(navigationPage is not null &&
-					selectedController is UINavigationController selectedNavigation &&
-					selectedNavigation.TopViewController == viewController))
-			{
+			var more = tabBar.MoreNavigationController;
+			var selected = tabBar.SelectedViewController;
+			var top = more.TopViewController;
+			// UIKit can select the tab's controller while displaying its child controller in More.
+			if ((selected != more && selected != tabController) ||
+				(top != appeared && !(top == tabController &&
+					tabController is UINavigationController stack && stack.TopViewController == appeared)))
 				return;
-			}
 
-			foreach (var page in tabbedPage.Children)
+			var previousSelection = _selectingMorePage;
+			_selectingMorePage = tab;
+			try
 			{
-				if (page == navigationPage ||
-					(page.Handler is IPlatformViewHandler pageHandler && pageHandler.ViewController == viewController))
-				{
-					// UIKit owns the pending transition; do not select the controller again from the property mapper.
-					_selectingPage.SetTarget(page);
-					try
-					{
-						tabbedPage.CurrentPage = page;
-					}
-					finally
-					{
-						_selectingPage.SetTarget(null);
-					}
-					break;
-				}
+				CurrentPage = tab;
+			}
+			finally
+			{
+				_selectingMorePage = previousSelection;
 			}
 		}
 	}

@@ -493,9 +493,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return pack;
 		}
 
-		internal static Page GetPageForViewController(UIViewController viewController) =>
-			(viewController as ParentingViewController)?.Child;
-
 		ParentingViewController GetParentingViewController()
 		{
 			if (!ViewControllers.Any())
@@ -1501,6 +1498,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidAppear(animated);
 
+				TabbedPage.OnNavigationChildAppeared(Child, this);
 				Appearing?.Invoke(this, EventArgs.Empty);
 			}
 
