@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal new static void RemapForControls()
 		{
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
 #if IOS || MACCATALYST
 			// Fill configuration record (Core → Controls bridge)
 			FlyoutViewHandler.ControlsConfiguration = new(
@@ -22,16 +22,16 @@ namespace Microsoft.Maui.Controls
 			);
 
 			// iOS-specific property mappers
-			FlyoutViewHandler.Mapper.AppendToMapping(
+			FlyoutViewHandler.Mapper.AppendToMappingForControls(
 				PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName,
 				MapApplyShadow);
-			FlyoutViewHandler.Mapper.AppendToMapping(nameof(IView.FlowDirection), MapFlowDirection);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
+			FlyoutViewHandler.Mapper.AppendToMappingForControls(nameof(IView.FlowDirection), MapFlowDirection);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
 #endif
 #if WINDOWS
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
 #endif
 		}
 
