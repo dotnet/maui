@@ -162,71 +162,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (ReferenceEquals(value, MoreNavigationController))
 				{
 					MoreNavigationController.WeakDelegate = this;
-					EnsureMoreTransitionDriver();
 				}
 
 				UpdateMoreCellsEnabled();
 			}
-		}
-
-		Microsoft.Maui.Platform.NavigationTransitionDriver _moreTransitionDriver;
-
-		// The overflow ("More") tab's navigation controller pushes the section's pages itself, with this renderer as
-		// its delegate, so page transitions are resolved here for it.
-		[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
-		[Foundation.Preserve(Conditional = true)]
-		internal IUIViewControllerAnimatedTransitioning MoreGetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
-		{
-			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
-				return null;
-
-			EnsureMoreTransitionDriver();
-			var section = (CurrentRenderer as ShellSectionRenderer)?.ShellSection;
-			var animator = _moreTransitionDriver.GetAnimationController(
-				section as IView,
-				operation,
-				MorePageForViewController(fromViewController),
-				MorePageForViewController(toViewController));
-
-			MoreNavigationRunsPageTransition = animator is not null;
-			return animator;
-		}
-
-		/// <summary>
-		/// Whether the More controller's navigation that just started runs a page transition (rather than UIKit's own
-		/// animation). Only then does its navigation task wait for the transition to finish.
-		/// </summary>
-		internal bool MoreNavigationRunsPageTransition { get; set; }
-
-		// The More controller's swipe-back follows the finger with a custom transition too.
-		[Export("navigationController:interactionControllerForAnimationController:")]
-		[Foundation.Preserve(Conditional = true)]
-		internal IUIViewControllerInteractiveTransitioning MoreGetInteractionControllerForAnimationController(UINavigationController navigationController, IUIViewControllerAnimatedTransitioning animationController)
-		{
-			if (_disposed || !ReferenceEquals(navigationController, MoreNavigationController))
-				return null;
-
-			return _moreTransitionDriver?.GetInteractionController();
-		}
-
-		void EnsureMoreTransitionDriver()
-		{
-			if (_moreTransitionDriver is not null)
-				return;
-
-			_moreTransitionDriver = new Microsoft.Maui.Platform.NavigationTransitionDriver(MoreNavigationController);
-			_moreTransitionDriver.AttachInteractivePop();
-		}
-
-		Page MorePageForViewController(UIViewController viewController)
-		{
-			foreach (var renderer in _sectionRenderers.Values)
-			{
-				if (renderer is ShellSectionRenderer section && section.PageForViewController(viewController) is { } page)
-					return page;
-			}
-
-			return null;
 		}
 
 		[Export("navigationController:didShowViewController:animated:")]
@@ -235,9 +174,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_disposed || _disconnected)
 				return;
-
-			if (ReferenceEquals(navigationController, MoreNavigationController))
-				_moreTransitionDriver?.TransitionEnded();
 
 			var renderer = RendererForViewController(this.SelectedViewController);
 			if (renderer != null)
@@ -248,9 +184,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
-		[System.Runtime.Versioning.ObsoletedOSPlatform("ios17.0")]
-		[System.Runtime.Versioning.ObsoletedOSPlatform("maccatalyst17.0")]
-		[System.Runtime.Versioning.ObsoletedOSPlatform("tvos17.0")]
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			// UITabBarController re-evaluates which tabs go into More here (on iOS 27, after a
@@ -285,19 +218,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 			RegisterTabBar();
 			UpdateTabSwitchBackground(View, _displayedPage, _tabSwitchBackground);
-
-			// PageTransitions.TabTransition. An animator a subclass already installed takes precedence and is left exactly
-			// as it is (so removing it later with -= still restores the native switch); a null animator keeps UIKit's
-			// unanimated switch.
-			if (GetAnimationControllerForTransition is null)
-			{
-				GetAnimationControllerForTransition = (tabController, fromViewController, toViewController) =>
-					Animations.TabPageTransitions.GetAnimator(
-						tabController,
-						fromViewController,
-						toViewController,
-						vc => RendererForViewController(vc)?.ShellSection)!;
-			}
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
@@ -415,9 +335,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_moreTableView = null;
 			if (ReferenceEquals(MoreNavigationController.WeakDelegate, this))
 				MoreNavigationController.WeakDelegate = null;
-
-			_moreTransitionDriver?.Detach();
-			_moreTransitionDriver = null;
 
 			if (_sectionRenderers != null)
 			{

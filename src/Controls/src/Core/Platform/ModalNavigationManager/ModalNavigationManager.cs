@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Controls.Platform
 		// request is removed from _modalPages as soon as the pop is requested, so without this the
 		// deferred reconciliation pass has nothing left to read the caller's intent from.
 		Dictionary<Page, bool> _pendingPopAnimations = new Dictionary<Page, bool>();
-		// Per-navigation page transitions of dismissals the platform runs later.
-		Dictionary<Page, Animations.PageTransition> _pendingPopTransitions = new Dictionary<Page, Animations.PageTransition>();
 
 		Page? _currentPage;
 
@@ -556,14 +554,8 @@ namespace Microsoft.Maui.Controls.Platform
 					// animates the way the caller asked.
 					_pendingPopAnimations[platformModal] = animated;
 
-					// A deferred dismissal runs with the transition it was requested with.
-					if (_pendingPopTransitions.TryGetValue(platformModal, out var popTransition))
-						Animations.PageTransitionResolver.Restage(platformModal, Animations.NavigationTransitionKind.PopModal, popTransition);
-
 					var page = await PopModalPlatformAsync(animated);
 					_pendingPopAnimations.Remove(page);
-					_pendingPopTransitions.Remove(page);
-					Animations.PageTransitionResolver.DropPending(page, Animations.NavigationTransitionKind.PopModal);
 					page.Parent?.RemoveLogicalChild(page);
 					syncAgain = true;
 				}
@@ -578,12 +570,7 @@ namespace Microsoft.Maui.Controls.Platform
 						var nextPage = nextRequest.Page;
 						bool animated = nextRequest.IsAnimated;
 
-						// A deferred presentation runs with the transition it was requested with.
-						Animations.PageTransitionResolver.Restage(nextPage, Animations.NavigationTransitionKind.PushModal, nextRequest.Transition);
-						nextRequest.Transition = null;
-
 						await PushModalPlatformAsync(nextPage, animated);
-						Animations.PageTransitionResolver.DropPending(nextPage, Animations.NavigationTransitionKind.PushModal);
 						syncAgain = true;
 					}
 				}
@@ -611,10 +598,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		/// <summary>The per-navigation transition a modal request waiting for the platform holds, for tests.</summary>
-		internal Animations.PageTransition? GetDeferredTransition(Page page)
-			=> _modalPages.TryGetValue(page, out var request) ? request.Transition : null;
-
 		Task _waitForModalToFinishTask = Task.CompletedTask;
 
 		public async Task<Page?> PopModalAsync(bool animated)
@@ -626,16 +609,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
-			// PopModalAsync(transition): attached now that the modal being dismissed is known.
-			var explicitTransition = Animations.PageTransitionResolver.ModalPopTransition;
-			Animations.PageTransitionResolver.ModalPopTransition = null;
-			var explicitToken = explicitTransition is null ? null : Animations.PageTransitionResolver.SetPending(modal, Animations.NavigationTransitionKind.PopModal, explicitTransition);
-
 			if (_window.OnModalPopping(modal))
 			{
-				if (explicitToken is not null)
-					Animations.PageTransitionResolver.ClearPending(modal, explicitToken);
-
 				_window.OnPopCanceled();
 				return null;
 			}
@@ -675,20 +650,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (isPresented)
 				_pendingPopAnimations[modal] = animated;
 
-			// A dismissal the platform runs later keeps its per-navigation transition until then, whether it was passed to
-			// PopModalAsync or comes from the GoToAsync that routed back (which ends before the dismissal runs).
-			if (isPresented && !applyNow
-				&& (Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PopModal)
-					?? Animations.PageTransitionResolver.GetShellOverride(modal)) is { } deferredTransition)
-				_pendingPopTransitions[modal] = deferredTransition;
-
 			Task popTask = applyNow ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
-
-			// Whatever the platform didn't consume (a no-op, or a platform that doesn't animate modals).
-			if (explicitToken is not null)
-				Animations.PageTransitionResolver.ClearPending(modal, explicitToken);
 
 			if (applyNow)
 				_pendingPopAnimations.Remove(modal);
@@ -715,8 +679,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.OnModalPushing(modal);
 
 			var previousPage = CurrentPage;
-			var request = new NavigationStepRequest(modal, true, animated);
-			_modalPages.Add(request);
+			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
 			_window.AddLogicalChild(modal);
 
 			if (FireLifeCycleEvents)
@@ -741,14 +704,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			bool isPlatformReady = IsModalReady;
-			if (!(isPlatformReady && !syncing))
-			{
-				// Presented later, by the sync: it keeps its per-navigation transition until then, whether it was passed to
-				// PushModalAsync or comes from the GoToAsync that routed to it (which ends before the sync runs).
-				request.Transition = Animations.PageTransitionResolver.TakePendingTransition(modal, Animations.NavigationTransitionKind.PushModal)
-					?? Animations.PageTransitionResolver.GetShellOverride(modal);
-			}
-
 			if (isPlatformReady && !syncing)
 			{
 				if (ModalStack.Count == 0)
@@ -832,7 +787,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Nothing is presented any more, so there are no deferred dismissals left to describe.
 				_pendingPopAnimations.Clear();
-				_pendingPopTransitions.Clear();
 			}
 		}
 

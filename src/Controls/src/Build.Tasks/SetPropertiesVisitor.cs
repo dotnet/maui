@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => true;
 		public bool VisitNodeOnDataTemplate => true;
-		public bool StopOnStyle => false;
 		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		public bool IsResourceDictionary(ElementNode node)
@@ -41,8 +40,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
 				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
-
-		public bool IsStyle(ElementNode node) => false;
 
 		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
