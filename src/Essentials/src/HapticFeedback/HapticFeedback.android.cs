@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Devices
 			type switch
 			{
 				HapticFeedbackType.LongPress => FeedbackConstants.LongPress,
+#pragma warning disable CA1416 // Introduced in API 23: https://developer.android.com/reference/android/view/HapticFeedbackConstants#CONTEXT_CLICK
 				_ => FeedbackConstants.ContextClick
+#pragma warning restore CA1416
 			};
 	}
 }

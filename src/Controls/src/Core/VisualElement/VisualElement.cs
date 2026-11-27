@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -2291,11 +2291,6 @@ namespace Microsoft.Maui.Controls
 			if (valueChanged && this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
 				return;
 
-			// While the animation engine applies one frame to this element, transform updates are coalesced
-			// (see VisualElement.Animations.cs). Only the engine sets this; every other write is unchanged.
-			if (valueChanged && _animationFrameDepth > 0 && DeferTransformUpdate(property))
-				return;
-
 			base.UpdateHandlerValue(property, valueChanged);
 		}
 
@@ -2655,6 +2650,8 @@ namespace Microsoft.Maui.Controls
 		/// and the initial KVO-based loaded watcher may not have fired.
 		/// </summary>
 		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+
+		internal bool HasPendingPlatformLoadedEvent => _watchingPlatformLoaded && !_isLoadedFired && IsLoaded;
 #endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);

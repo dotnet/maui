@@ -44,7 +44,8 @@ The schema and trusted publisher reject missing, fractional, out-of-range, or
 below-threshold scores; self-matches, repeated candidates, pull requests,
 unverified source excerpts, and stale evidence also fail validation.
 The publisher renders the comment and GitHub links itself, so free-form agent
-prose cannot bypass the probability requirement. Reports use the shared review style:
+prose cannot bypass the probability requirement. Reports follow the
+[`/review tests` visual layout](../skills/review-test-failures/SKILL.md):
 an issue header and two blue Scope/Issue badges, then closed sibling
 **Duplicate Analysis** and **Follow-up** sections with icons, spacing, and
 horizontal rules. Every probability remains visible in the compact summary
