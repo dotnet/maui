@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var builtIn = Microsoft.Maui.Handlers.ViewHandler.BuiltInTransformMappings[index];
 			return builtIn is not null && mapper is not null
-				&& ReferenceEquals(mapper.GetProperty(Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys[index]), builtIn);
+				&& ReferenceEquals(PropertyMapper.GetPropertyDirect(mapper, Microsoft.Maui.Handlers.ViewHandler.TransformMappingKeys[index]), builtIn);
 		}
 
 		static readonly System.Reflection.Assembly s_coreAssembly = typeof(Microsoft.Maui.Handlers.ViewHandler).Assembly;

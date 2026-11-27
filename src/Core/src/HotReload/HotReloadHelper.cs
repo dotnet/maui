@@ -213,17 +213,14 @@ namespace Microsoft.Maui.HotReload
 				}
 				else
 				{
-					var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-					var handlerType = assemblies.Select(x => x.GetType(oldHandlerType)).FirstOrDefault(x => x != null);
-
-					views = handlerType is null
-						? new List<KeyValuePair<Type, Type>>()
-						: HandlerService
-							.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
-							.Where(x => x.Value == handlerType)
-							.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
-							.Distinct()
-							.ToList();
+					// Match by name, like the replacement request itself. Looking the name up in the loaded
+					// assemblies can find a different Type when an assembly is loaded more than once.
+					views = HandlerService
+						.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
+						.Where(x => x.Value?.FullName == oldHandlerType)
+						.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
+						.Distinct()
+						.ToList();
 
 					if (views.Count > 0)
 						replacedHandlers[oldHandlerType] = views.ToList();
