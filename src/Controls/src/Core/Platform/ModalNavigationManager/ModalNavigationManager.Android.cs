@@ -117,19 +117,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-			// Page transitions: the modal's own dismissal, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
-			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PopModal, modal, presenter, animated);
-			if (resolved.IsSuppressed)
-			{
-				animated = false;
-			}
-			else if (!resolved.IsPlatformDefault && animated)
-			{
-				_dismissAnimation = resolved.Platform.CreateAnimation(false);
-				animated = _dismissAnimation is not null;
-			}
-
 			if (animated && dialogFragment.View is not null)
 			{
 				_dismissAnimation ??= AnimationUtils.LoadAnimation(WindowMauiContext.Context, Resource.Animation.nav_modal_default_exit_anim)!;
@@ -201,25 +188,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var parentView = GetModalParentView();
 
-			// Page transitions: the modal's own presentation, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
-			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PushModal, presenter, modal, animated);
-			AAnimation? enterAnimation = null;
-			if (resolved.IsSuppressed)
-			{
-				animated = false;
-			}
-			else if (!resolved.IsPlatformDefault && animated)
-			{
-				enterAnimation = resolved.Platform.CreateAnimation(true);
-				animated = enterAnimation is not null;
-			}
-
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
 				Cancelable = false,
-				IsAnimated = animated,
-				EnterAnimation = enterAnimation
+				IsAnimated = animated
 			};
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
@@ -261,9 +233,6 @@ namespace Microsoft.Maui.Controls.Platform
 			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
-
-			// A page transition's entrance, in place of the default slide-up.
-			internal AAnimation? EnterAnimation { get; set; }
 
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
@@ -442,8 +411,7 @@ namespace Microsoft.Maui.Controls.Platform
 						listener.Invalidate();
 						if (view is not null)
 						{
-							var animation = EnterAnimation ?? AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-							EnterAnimation = null;
+							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 							view.StartAnimation(animation);
 							animation.AnimationEnd += OnAnimationEnded;
 						}

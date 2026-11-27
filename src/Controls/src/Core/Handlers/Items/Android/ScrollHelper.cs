@@ -34,24 +34,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void AdjustScroll()
 		{
-			// This is the layout that makes the jumps requested before it.
-			IsJumpPending = false;
 			_pendingScrollAdjustment?.Invoke();
-		}
-
-		// Called for a newer scroll request that doesn't go through this helper (the anchor's jump to an edge), and to stop a
-		// requested scroll: the adjustment an earlier jump left for its layout no longer applies, and neither does an animated
-		// scroll waiting for the view to be laid out.
-		public void CancelPendingAdjustment()
-		{
-			_pendingScrollAdjustment = null;
 		}
 
 		public void AnimateScrollToPosition(int index, ScrollToPosition scrollToPosition)
 		{
-			// A newer request replaces an adjustment an earlier jump left for its layout.
-			_pendingScrollAdjustment = null;
-
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible matches the Android default of SnapAny, so we can just use the default
@@ -72,11 +59,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void JumpScrollToPosition(int index, ScrollToPosition scrollToPosition, bool uniformSize = false)
 		{
-			// A newer request replaces an adjustment an earlier jump left for its layout.
-			_pendingScrollAdjustment = null;
-			LayoutAfterJump();
-			IsJumpPending = true;
-
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible is the default behavior, so we don't need to do anything special
@@ -132,100 +114,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Kick off the Scroll to get the item into view; once it's in view, the pending adjustment will kick in
 			_recyclerView.ScrollToPosition(index);
-		}
-
-		// Scrolls, without animating, until the start of the first row meets the start of the viewport: the start of the
-		// content, above the header. Scrolling to the first position lines it up with the start of the viewport whenever
-		// it isn't wholly in view.
-		public void JumpScrollToStart()
-		{
-			// A newer request replaces an adjustment an earlier jump left for its layout.
-			_pendingScrollAdjustment = null;
-
-			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 })
-			{
-				LayoutAfterJump();
-				IsJumpPending = true;
-				_recyclerView.ScrollToPosition(0);
-			}
-		}
-
-		// Scrolls, without animating, until the end of the lowest row meets the end of the viewport: the end of the
-		// content, past the footer.
-		public void JumpScrollToEnd()
-		{
-			if (_recyclerView.GetLayoutManager() is not { ItemCount: > 0 } layoutManager)
-			{
-				return;
-			}
-
-			// Scrolling to the last position lays it out lined up with the end of the viewport when it's out of view, but
-			// with the start when it's in view and taller than the viewport: once it's laid out, scroll the rest of the way.
-			_pendingScrollAdjustment = AdjustScrollToEnd;
-			LayoutAfterJump();
-			IsJumpPending = true;
-			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
-		}
-
-		/// <summary>
-		/// Gets whether a jump this made (<see cref="JumpScrollToPosition"/>, <see cref="JumpScrollToStart"/>,
-		/// <see cref="JumpScrollToEnd"/>) hasn't been laid out yet: RecyclerView scrolls to the position the jump set in the next
-		/// layout, or in the one after when the jump was made during a layout.
-		/// </summary>
-		public bool IsJumpPending { get; private set; }
-
-		/// <summary>
-		/// Gets how many requests that scroll in or after the next layout have been made: a jump, which scrolls in that layout
-		/// and then applies the adjustment it leaves, or an animated scroll that starts once the view is laid out. One made while
-		/// the view lays out, as from the Scrolled event RecyclerView raises then, waits for the layout after that one (see
-		/// MauiRecyclerView.OnLayout).
-		/// </summary>
-		public int Jumps { get; private set; }
-
-		/// <summary>
-		/// Starts <paramref name="animateScroll"/> once the view is laid out, as the adjustment a jump leaves for its layout:
-		/// a newer request replaces it. RecyclerView's smooth scroller works out how far to go in the next frame's animation,
-		/// which comes before that frame lays the view out, so a change the app made to the rows with the request (a row that
-		/// grew) would move its target after it stopped. And a jump an earlier request left for that layout would land after
-		/// the animation, which stops right away when it finds its target in place.
-		/// </summary>
-		public void AnimateScrollOnceLaidOut(Action animateScroll)
-		{
-			_pendingScrollAdjustment = () =>
-			{
-				_pendingScrollAdjustment = null;
-				animateScroll();
-			};
-
-			LayoutAfterJump();
-			if (!_recyclerView.IsInLayout)
-			{
-				_recyclerView.RequestLayout();
-			}
-		}
-
-		// A jump scrolls in the layout it asks for. Asked for during a layout, as when the app scrolls from the Scrolled event
-		// RecyclerView raises as it lays out, that layout is lost: ask again once the layout is over.
-		void LayoutAfterJump()
-		{
-			Jumps++;
-			if (_recyclerView.IsInLayout)
-			{
-				_recyclerView.Post(_recyclerView.RequestLayout);
-			}
-		}
-
-		void AdjustScrollToEnd()
-		{
-			_pendingScrollAdjustment = null;
-
-			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 } layoutManager
-				&& layoutManager.FindViewByPosition(layoutManager.ItemCount - 1) is not null
-				&& OrientationHelper.CreateVerticalHelper(layoutManager) is { } helper
-				&& RecyclerViewScrollAnchor.GetDistanceToEnd(layoutManager, helper) is > 0 and var distance)
-			{
-				_recyclerView.ScrollBy(0, distance);
-			}
 		}
 
 		ARect GetViewRect(int index)

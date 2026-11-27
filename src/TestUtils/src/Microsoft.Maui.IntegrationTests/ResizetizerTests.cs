@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -204,7 +203,8 @@ public class ResizetizerTests : BaseBuildTest
 		// new lib
 		var libDir = Path.Combine(TestDirectory, "thelib");
 		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
-		CreateLibrary(libid, libDir, libFile);
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
+			$"Unable to create template {libid}. Check test output for errors.");
 
 		// add a project reference
 		FileUtilities.ReplaceInFile(appFile,
@@ -934,23 +934,9 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.NotEmpty(processedAssets);
 	}
 
-	void CreateLibrary(string libid, string libDir, string libFile)
-	{
-		// The SDK's classlib template can lag behind DotNetCurrent (the .NET 12 preview SDK only
-		// offers net11.0), so create it with the template default and retarget it.
-		var isClassLib = libid == "classlib";
-		Assert.True(DotnetInternal.New(libid, libDir, isClassLib ? "" : DotNetCurrent, output: _output),
-			$"Unable to create template {libid}. Check test output for errors.");
-		if (isClassLib)
-		{
-			File.WriteAllText(libFile, Regex.Replace(File.ReadAllText(libFile),
-				"<TargetFramework>[^<]*</TargetFramework>", $"<TargetFramework>{DotNetCurrent}</TargetFramework>"));
-		}
-	}
-
 	static bool SupportsAppleIconComposer(string platform)
 	{
-		if (!DotNetCurrent.StartsWith("net12.", StringComparison.OrdinalIgnoreCase))
+		if (!DotNetCurrent.StartsWith("net11.", StringComparison.OrdinalIgnoreCase))
 			return false;
 
 		var packsDirectory = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet", "packs");
@@ -1068,7 +1054,8 @@ public class ResizetizerTests : BaseBuildTest
 		// new lib
 		var libDir = Path.Combine(TestDirectory, "thelib");
 		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
-		CreateLibrary(libid, libDir, libFile);
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
+			$"Unable to create template {libid}. Check test output for errors.");
 
 		// add a project reference with AdditionalProperties to exclude library images
 		FileUtilities.ReplaceInFile(appFile,
@@ -1137,7 +1124,8 @@ public class ResizetizerTests : BaseBuildTest
 		// new lib
 		var libDir = Path.Combine(TestDirectory, "thelib");
 		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
-		CreateLibrary(libid, libDir, libFile);
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
+			$"Unable to create template {libid}. Check test output for errors.");
 
 		// add a project reference with AdditionalProperties to select the alternate image
 		FileUtilities.ReplaceInFile(appFile,

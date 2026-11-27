@@ -115,11 +115,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextDecorations(label);
 		}
 
-		public static void MapIsTextSelectable(ILabelHandler handler, ILabel label)
-		{
-			handler.PlatformView?.UpdateIsTextSelectable(label);
-		}
-
 		public static void MapFont(ILabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
