@@ -599,6 +599,21 @@ steps:
       jq 'length' /tmp/gh-aw/autopilot/threads.json
       git status --short | head -20
 
+  - name: Install the repository's .NET SDK
+    # Fix rounds build and run unit tests, and the runner's SDK is older than global.json. The agent
+    # container puts every tool-cache bin directory on PATH, so install there. The version comes from
+    # the trusted base branch, not the PR.
+    env:
+      BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
+    run: |
+      set -euo pipefail
+      VERSION="$(git show "refs/remotes/origin/${BASE_REF}:global.json" | jq -r '.tools.dotnet // empty')"
+      if [ -z "${VERSION}" ]; then echo "global.json pins no SDK."; exit 0; fi
+      DIR="${RUNNER_TOOL_CACHE}/maui-dotnet/x64/bin"
+      curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+      bash /tmp/dotnet-install.sh --version "${VERSION}" --install-dir "${DIR}" --no-path
+      "${DIR}/dotnet" --list-sdks
+
   - name: Collect the failing test evidence
     # The agent can't reach Azure DevOps itself; fetch the failed jobs, tasks, and error lines up front.
     if: needs.pre_activation.outputs.autopilot_source == 'tests'
@@ -654,6 +669,7 @@ network:
     - github
     - dotnet
     - dev.azure.com
+    - pkgs.dev.azure.com
     - "*.blob.core.windows.net"
 
 safe-outputs:
@@ -777,8 +793,9 @@ The PR head is checked out on `work_branch`.
    - what validation passed.
    Pick the best candidate per item. Combine them only when the parts don't overlap. Record the choice and a
    one-line reason, including the critique that decided it when there was one.
-4. **Validate** the chosen changes. Unit tests in `src/Controls/tests/Core.UnitTests` and
-   `src/Core/tests/UnitTests` build on Linux, for example
+4. **Validate** the chosen changes. The SDK pinned in `global.json` is installed. Unit tests in
+   `src/Controls/tests/Core.UnitTests`, `src/Controls/tests/Xaml.UnitTests`, `src/Controls/tests/SourceGen.UnitTests`
+   and `src/Core/tests/UnitTests` build on Linux, for example
    `dotnet test src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj --filter "FullyQualifiedName~<Test>"`.
    Device and UI tests can't run here; the loop runs them through `/review run-tests` later.
 5. **Commit** the chosen changes on `work_branch`, one commit per item, with a message naming the
