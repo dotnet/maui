@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 				registration = cancellationToken.Register(() =>
 				{
 					if (weakView.TryGetTarget(out VisualElement? v))
-						v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(name));
+						v.Dispatcher.DispatchIfRequired(() => AbortIfStillRunning(v, name, tcs.Task));
 				});
 			}
 
@@ -87,10 +87,19 @@ namespace Microsoft.Maui.Controls
 			if (cancellationToken.IsCancellationRequested)
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
-					v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(name));
+					v.Dispatcher.DispatchIfRequired(() => AbortIfStillRunning(v, name, tcs.Task));
 			}
 
 			return tcs.Task;
+		}
+
+		static void AbortIfStillRunning(VisualElement view, string name, Task<bool> animationTask)
+		{
+			// A queued cancellation must not abort a replacement that now owns the same name.
+			if (!animationTask.IsCompleted)
+			{
+				view.AbortAnimation(name);
+			}
 		}
 
 
@@ -475,7 +484,7 @@ namespace Microsoft.Maui.Controls
 				registration = cancellationToken.Register(() =>
 				{
 					if (weakView.TryGetTarget(out VisualElement? v))
-						v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(nameof(TranslateToAsync)));
+						v.Dispatcher.DispatchIfRequired(() => AbortIfStillRunning(v, nameof(TranslateToAsync), tcs.Task));
 				});
 			}
 
@@ -492,7 +501,7 @@ namespace Microsoft.Maui.Controls
 			if (cancellationToken.IsCancellationRequested)
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
-					v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(nameof(TranslateToAsync)));
+					v.Dispatcher.DispatchIfRequired(() => AbortIfStillRunning(v, nameof(TranslateToAsync), tcs.Task));
 			}
 
 			return tcs.Task;
