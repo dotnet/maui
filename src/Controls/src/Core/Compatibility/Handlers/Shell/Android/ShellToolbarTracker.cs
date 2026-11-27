@@ -474,7 +474,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
+					try
+					{
+						customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
+					}
+					catch (Exception exc)
+					{
+						// A failed icon load must not escape this async void method.
+						MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to load the Shell navigation icon");
+						customIcon = null;
+					}
 
 					// Fragment might have been disposed while we were waiting for the image drawable
 					if (_disposed ||
