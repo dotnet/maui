@@ -81,8 +81,8 @@ $BotLogins = @(
 # produced no genuine pass and must be kept OUT of the 'success' bucket — treated as
 # failures alongside 'cancelled'/'timed_out'. Gate 4 + Step 4.7 bucket (a) then
 # classify such a leg as an infra flake (annotate, no attempt burned) — never a
-# caused-by-fix advance. Cancelled/timed_out/startup_failure/stale are
-# aborted-failing checks.
+# caused-by-fix advance. Mirrors dotnet/maui's review-test-failures skill, which
+# groups cancelled/timed_out/startup_failure/stale as aborted-failing checks.
 $FailureCheckConclusions = @('failure', 'timed_out', 'cancelled', 'startup_failure', 'stale')
 $FailureStatusStates = @('failure', 'error')
 

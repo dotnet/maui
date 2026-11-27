@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -426,6 +429,109 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Opacity should be between 0 and 1 (stopped mid-flight, not reached target)
 			Assert.True(box.Opacity < 1d, "Opacity should not have reset to start value");
 			Assert.True(box.Opacity > 0d, "Opacity should not have reached target value 0");
+		}
+
+		[Theory]
+		[InlineData(false, false, false)]
+		[InlineData(true, false, false)]
+		[InlineData(false, false, true)]
+		[InlineData(true, false, true)]
+		[InlineData(false, true, false)]
+		[InlineData(true, true, false)]
+		public void CancelingOldAnimationDoesNotCancelReplacement(bool translate, bool cancelOnUiThread, bool replacementHasToken)
+		{
+			RunWithQueuedAnimationDispatcher((box, manager, posted) =>
+			{
+				using var cts = new CancellationTokenSource();
+				using var replacementCts = new CancellationTokenSource();
+				var first = StartTokenAnimation(box, translate, false, cts.Token);
+				manager.Ticker.Fire();
+				Assert.False(first.IsCompleted);
+
+				if (cancelOnUiThread)
+					cts.Cancel();
+				else
+					CancelOnWorkerThread(cts);
+
+				Assert.Equal(cancelOnUiThread ? 0 : 1, posted.Count);
+				var second = StartTokenAnimation(box, translate, true,
+					replacementHasToken ? replacementCts.Token : CancellationToken.None);
+				Assert.True(first.IsCompleted);
+				Assert.True(first.Result);
+
+				while (posted.TryDequeue(out var action))
+					action();
+
+				Assert.False(second.IsCompleted);
+				for (var frame = 0; frame < 30; frame++)
+					manager.Ticker.Fire();
+
+				Assert.True(second.IsCompleted);
+				Assert.False(second.Result);
+				Assert.Equal(translate ? 200d : 1d, translate ? box.TranslationX : box.Opacity);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void QueuedCancellationStillCancelsOriginalAnimation(bool translate)
+		{
+			RunWithQueuedAnimationDispatcher((box, manager, posted) =>
+			{
+				using var cts = new CancellationTokenSource();
+				var animation = StartTokenAnimation(box, translate, false, cts.Token);
+				manager.Ticker.Fire();
+				var value = translate ? box.TranslationX : box.Opacity;
+
+				CancelOnWorkerThread(cts);
+				Assert.False(animation.IsCompleted);
+				Assert.Single(posted);
+
+				posted.Dequeue()();
+
+				Assert.True(animation.IsCompleted);
+				Assert.True(animation.Result);
+				Assert.Equal(value, translate ? box.TranslationX : box.Opacity);
+			});
+		}
+
+		static Task<bool> StartTokenAnimation(BoxView box, bool translate, bool replacement, CancellationToken token) =>
+			translate
+				? box.TranslateToAsync(replacement ? 200 : 100, 0, replacement ? 300u : 2000u, Easing.Linear, token)
+				: box.FadeToAsync(replacement ? 1 : 0, replacement ? 300u : 2000u, Easing.Linear, token);
+
+		static void CancelOnWorkerThread(CancellationTokenSource cts)
+		{
+			// Keep dispatched work queued until the test thread starts the replacement.
+			var thread = new Thread(cts.Cancel);
+			thread.Start();
+			thread.Join();
+		}
+
+		static void RunWithQueuedAnimationDispatcher(Action<BoxView, TestAnimationManager, Queue<Action>> test)
+		{
+			var uiThreadId = Environment.CurrentManagedThreadId;
+			var posted = new Queue<Action>();
+			var previousIsInvokeRequired = DispatcherProviderStubOptions.IsInvokeRequired;
+			var previousInvokeOnMainThread = DispatcherProviderStubOptions.InvokeOnMainThread;
+			DispatcherProviderStubOptions.IsInvokeRequired = () => Environment.CurrentManagedThreadId != uiThreadId;
+			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Enqueue;
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
+			using var manager = new TestAnimationManager(new Ticker()) { AutoStartTicker = false };
+			var box = new BoxView { Opacity = 1, Handler = new AnimationReadyHandler<Ticker>(manager) };
+			try
+			{
+				test(box, manager, posted);
+			}
+			finally
+			{
+				box.CancelAnimations();
+				DispatcherProviderStubOptions.IsInvokeRequired = previousIsInvokeRequired;
+				DispatcherProviderStubOptions.InvokeOnMainThread = previousInvokeOnMainThread;
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			}
 		}
 	}
 }

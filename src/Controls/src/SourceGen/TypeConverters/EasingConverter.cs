@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -10,32 +9,35 @@ namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 class EasingConverter : ISGTypeConverter
 {
+	static readonly HashSet<string> KnownEasingNames = new(StringComparer.OrdinalIgnoreCase)
+	{
+		"Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut",
+		"BounceOut", "BounceIn", "SpringIn", "SpringOut"
+	};
+
 	public IEnumerable<string> SupportedTypes => ["Easing", "Microsoft.Maui.Easing"];
 
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
 		var xmlLineInfo = (IXmlLineInfo)node;
+		var easingName = value;
 
-		// The same grammar as the runtime converter (the file is linked), validated here so a typo such as
-		// "Sprung(0.7)" fails the build instead of the page load.
-		var parsed = EasingSyntax.Parse(value);
-		var easingType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!.ToFQDisplayString();
-
-		switch (parsed.Kind)
+		if (!string.IsNullOrWhiteSpace(easingName))
 		{
-			case EasingSyntax.Kind.Named:
-				return $"{easingType}.{parsed.Name}";
-			case EasingSyntax.Kind.CubicBezier:
-				return $"{easingType}.CubicBezier({Literal(parsed.A)}, {Literal(parsed.B)}, {Literal(parsed.C)}, {Literal(parsed.D)})";
-			case EasingSyntax.Kind.Spring:
-				return $"{easingType}.Spring({Literal(parsed.A)})";
-			case EasingSyntax.Kind.Steps:
-				return $"{easingType}.Steps({((int)parsed.A).ToString(CultureInfo.InvariantCulture)}, {(parsed.Flag ? "true" : "false")})";
+			var parts = easingName.Split(['.']);
+			if (parts.Length == 2 && parts[0].Equals("Easing", StringComparison.OrdinalIgnoreCase))
+			{
+				easingName = parts[1];
+			}
+
+			if (KnownEasingNames.Contains(easingName))
+			{
+				var easingType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!;
+				return $"{easingType.ToFQDisplayString()}.{easingName}";
+			}
 		}
 
 		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.EasingConversionFailed);
 		return "default";
 	}
-
-	static string Literal(double value) => value.ToString("R", CultureInfo.InvariantCulture) + "d";
 }
