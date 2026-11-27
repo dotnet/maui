@@ -216,7 +216,7 @@ jobs:
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) {
               // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
-              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && !['s/autopilot-waiting-for-maintainer-review', 's/autopilot-needs-maintainer-decision'].includes(l.name))) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
               return;
             }
             // One automatic retry: a single flaky run should not end an autonomous loop.
@@ -237,6 +237,9 @@ jobs:
               await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
             await github.rest.issues.createComment({ ...context.repo, issue_number: number,
               body: `## MAUI Autopilot — Stopped\n\n❌ The [MAUI expert review](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
+            await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-needs-maintainer-decision', color: 'B60205',
+              description: 'MAUI Autopilot stopped: a maintainer needs to decide how to continue' }).catch(() => {});
+            await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-needs-maintainer-decision'] });
   autopilot_next:
     # maui-expert-autopilot loop: while it runs on this PR, let it decide the next step.
     needs: [pre_activation, activation, complete_request]
@@ -258,7 +261,7 @@ jobs:
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             if (!labels.some(l => l.name === 's/autopilot-running')) {
               // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
-              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && !['s/autopilot-waiting-for-maintainer-review', 's/autopilot-needs-maintainer-decision'].includes(l.name))) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
               return core.info(`#${number}: maui-expert-autopilot is not running.`);
             }
             if (labels.some(l => l.name === 's/autopilot-retrying'))
