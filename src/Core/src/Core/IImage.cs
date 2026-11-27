@@ -29,6 +29,33 @@ namespace Microsoft.Maui
 		void UpdateIsLoading(bool isLoading);
 	}
 
+	/// <summary>
+	/// Provides images to show while the <see cref="IImageSourcePart.Source"/> of an <see cref="IImageSourcePart"/> is loading or after it failed to load.
+	/// </summary>
+	/// <remarks>These images are only displayed; they do not affect <see cref="IImageSourcePart.UpdateIsLoading(bool)"/> or <see cref="IImageSourcePartEvents"/>.</remarks>
+	public interface IImageSourcePartFallbacks
+	{
+		/// <summary>
+		/// Gets the image to show while <see cref="IImageSourcePart.Source"/> is loading, or <see langword="null"/> to show nothing.
+		/// </summary>
+		/// <remarks>The placeholder is not shown when the source is available immediately, for example from a memory cache.</remarks>
+		IImageSource? PlaceholderSource { get; }
+
+		/// <summary>
+		/// Gets the image to show when <see cref="IImageSourcePart.Source"/> fails to load, or <see langword="null"/> to show nothing.
+		/// </summary>
+		IImageSource? ErrorSource { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the image that is shown stays visible while a new <see cref="IImageSourcePart.Source"/> loads,
+		/// instead of the placeholder (or nothing).
+		/// </summary>
+		/// <remarks>
+		/// Only an image that loaded successfully is kept. When the new source fails to load, the error image (or nothing) is shown.
+		/// </remarks>
+		bool KeepPreviousImageWhileLoading { get; }
+	}
+
 	public interface IImageSourcePartEvents
 	{
 		void LoadingStarted();

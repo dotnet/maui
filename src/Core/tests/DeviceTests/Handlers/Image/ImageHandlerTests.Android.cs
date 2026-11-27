@@ -206,6 +206,245 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task LoadStartedFromLoadCallbackIsCancelledWhenTheViewIsCleared()
+		{
+			var service = new FileImageSourceService();
+			var first = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var second = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// A load started while Glide reports the first one is deferred until after the callback;
+					// clearing the view before then must cancel it rather than show its image.
+					Task<IImageSourceServiceResult> deferred = null;
+					await service.LoadDrawableAsync(first, handler.PlatformView).ContinueWith(
+						_ =>
+						{
+							deferred = service.LoadDrawableAsync(second, handler.PlatformView);
+							PlatformInterop.ClearImageView(handler.PlatformView);
+						},
+						TaskContinuationOptions.ExecuteSynchronously);
+
+					Assert.NotNull(deferred);
+					await Task.WhenAny(deferred, Task.Delay(5_000));
+					Assert.Equal(TaskStatus.Canceled, deferred.Status);
+
+					await Task.Delay(100);
+					await handler.PlatformView.AssertDoesNotContainColor(Colors.Blue, MauiContext);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task UnfinishedLoadDoesNotShowItsImageAfterTheSourceChanged()
+		{
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var blueStream = new TaskCompletionSource<System.IO.Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var blue = new StreamImageSourceStub(_ => blueStream.Task);
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// While Glide is paused (for example the app is in the background) the red load does not finish.
+					var requestManager = Bumptech.Glide.Glide.With(handler.PlatformView);
+					requestManager.OnStop();
+					try
+					{
+						image.Source = red;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						// The stream source reads its stream before it starts its own load into the view.
+						image.Source = blue;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						// Glide resumes before the stream arrives: the red load must not show its image.
+						requestManager.OnStart();
+						await Task.Delay(500);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+
+						blueStream.SetResult(BaseImageSourceServiceTests.CreateBitmapStream(100, 100, Colors.Blue));
+						await image.WaitUntilLoaded(5_000);
+						await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+						blueStream.TrySetCanceled();
+					}
+				});
+			});
+		}
+
+		[Fact]
+		public async Task StoppedUnfinishedLoadIsReportedAsCancelled()
+		{
+			var service = new FileImageSourceService();
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var requestManager = Bumptech.Glide.Glide.With(handler.PlatformView);
+					requestManager.OnStop();
+					try
+					{
+						var load = service.LoadDrawableAsync(red, handler.PlatformView);
+						PlatformInterop.StopUnfinishedImageViewLoad(handler.PlatformView);
+						requestManager.OnStart();
+
+						await Task.WhenAny(load, Task.Delay(5_000));
+						Assert.Equal(TaskStatus.Canceled, load.Status);
+
+						await Task.Delay(100);
+						await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+					}
+				});
+			});
+		}
+
+		[Fact]
+		public async Task StoppedUnfinishedLoadOfADetachedViewIsReportedAsCancelled()
+		{
+			var service = new FileImageSourceService();
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// The view is never attached, so Glide waits for its size and the load does not finish.
+				var imageView = new ImageView(MauiProgram.DefaultContext);
+				var load = service.LoadDrawableAsync(red, imageView);
+				PlatformInterop.StopUnfinishedImageViewLoad(imageView);
+
+				await Task.WhenAny(load, Task.Delay(5_000));
+				Assert.Equal(TaskStatus.Canceled, load.Status);
+			});
+		}
+
+		[Fact]
+		public async Task DeferredLoadOfADetachedViewIsCancelledWhenStopped()
+		{
+			var streamService = new StreamImageSourceService();
+			var fileService = new FileImageSourceService();
+			var first = new StreamImageSourceStub(BaseImageSourceServiceTests.CreateBitmapStream(100, 100, Colors.Red));
+			var second = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// The view is never attached; stream images are decoded at their original size, so it loads anyway.
+				var imageView = new ImageView(MauiProgram.DefaultContext);
+				Task<IImageSourceServiceResult> deferred = null;
+				await streamService.LoadDrawableAsync(first, imageView).ContinueWith(
+					_ =>
+					{
+						// Requested while Glide reports the first load, so its start is deferred.
+						deferred = fileService.LoadDrawableAsync(second, imageView);
+						PlatformInterop.StopUnfinishedImageViewLoad(imageView);
+					},
+					TaskContinuationOptions.ExecuteSynchronously).WaitAsync(TimeSpan.FromSeconds(10));
+
+				Assert.NotNull(deferred);
+				await Task.WhenAny(deferred, Task.Delay(5_000));
+				Assert.Equal(TaskStatus.Canceled, deferred.Status);
+			});
+		}
+
+		[Fact]
+		public async Task UnfinishedLoadDoesNotShowItsImageAfterTheHandlerIsDisconnected()
+		{
+			var red = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+				var platformView = handler.PlatformView;
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// While Glide is paused (for example the app is in the background) the red load does not finish.
+					var requestManager = Bumptech.Glide.Glide.With(platformView);
+					requestManager.OnStop();
+					try
+					{
+						image.Source = red;
+						handler.UpdateValue(nameof(IImage.Source));
+
+						((IElementHandler)handler).DisconnectHandler();
+
+						requestManager.OnStart();
+						await Task.Delay(500);
+						await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+					}
+					finally
+					{
+						requestManager.OnStart();
+					}
+				});
+			});
+		}
+
+		[Fact]
+		public async Task LoadStartedFromLoadCallbackDoesNotReplaceALaterLoad()
+		{
+			var service = new FileImageSourceService();
+			var first = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Red));
+			var deferredSource = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue));
+			var laterSource = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Green));
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// A load requested while Glide reports the first one is deferred until after the callback;
+					// a load started directly before then is newer, so the deferred one must not replace it.
+					Task<IImageSourceServiceResult> deferred = null;
+					var later = new TaskCompletionSource<Task<IImageSourceServiceResult>>();
+					await service.LoadDrawableAsync(first, handler.PlatformView).ContinueWith(
+						_ =>
+						{
+							deferred = service.LoadDrawableAsync(deferredSource, handler.PlatformView);
+							new global::Android.OS.Handler(global::Android.OS.Looper.MainLooper).PostAtFrontOfQueue(
+								() => later.SetResult(service.LoadDrawableAsync(laterSource, handler.PlatformView)));
+						},
+						TaskContinuationOptions.ExecuteSynchronously);
+
+					var laterLoad = await later.Task;
+					await Task.WhenAny(Task.WhenAll(laterLoad, deferred.ContinueWith(_ => { })), Task.Delay(5_000));
+					Assert.Equal(TaskStatus.Canceled, deferred.Status);
+					Assert.Equal(TaskStatus.RanToCompletion, laterLoad.Status);
+
+					await handler.PlatformView.AssertContainsColor(Colors.Green, MauiContext);
+					await handler.PlatformView.AssertDoesNotContainColor(Colors.Blue, MauiContext);
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]

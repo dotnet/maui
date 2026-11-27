@@ -10,27 +10,80 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public partial class UriImageSourceService
+	public partial class UriImageSourceService : IImageSourceServiceWithDecodeOptions
 	{
 		internal static readonly string CacheDirectory = Path.Combine(FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync(imageSource, null, cancellationToken);
+
+		Task<IImageSourceServiceResult<UIImage>?> IImageSourceServiceWithDecodeOptions.GetImageAsync(IImageSource imageSource, float scale, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			// A derived service may load images differently: use its implementation (at the image's full size).
+			if (GetType() != typeof(UriImageSourceService))
+				return options.FromCacheOnly ? Task.FromResult<IImageSourceServiceResult<UIImage>?>(null) : GetImageAsync(imageSource, scale, cancellationToken);
+
+			var uriImageSource = (IUriImageSource)imageSource;
+			if (options.FromCacheOnly)
+				return GetCachedImageAsync(uriImageSource, options, cancellationToken);
+
+			// Without the cache, the image cannot be decoded again (larger) without downloading it again, which may return
+			// another image. So only decode it smaller when the size it is shown at does not depend on the image.
+			return GetImageAsync(uriImageSource, uriImageSource.CachingEnabled || options.IsViewSizeKnown ? options : null, cancellationToken);
+		}
+
+		/// <summary>
+		/// Decodes the image again from the cache, without downloading it, or returns <see langword="null"/> when it is not cached.
+		/// </summary>
+		async Task<IImageSourceServiceResult<UIImage>?> GetCachedImageAsync(IUriImageSource imageSource, ImageDecodeOptions options, CancellationToken cancellationToken)
+		{
+			if (imageSource.IsEmpty || !imageSource.CachingEnabled || !UriImageLoader.CanLoad(imageSource))
+				return null;
+
+			var bytes = await Loader.TryLoadCachedAsync(imageSource.Uri, cancellationToken).ConfigureAwait(false);
+
+			// Only the same image (not a newer version of it): the image that is shown must not change.
+			if (bytes is null || ImageDecodeOptions.GetContentVersion(bytes) != options.ContentVersion)
+				return null;
+
+			using var cgImageSource = NSData.FromArray(bytes).GetPlatformImageSource();
+			if (cgImageSource is null)
+				return null;
+
+			var image = cgImageSource.GetPlatformImage(1, options);
+			return new ImageSourceServiceResult(image, () => image.Dispose());
+		}
+
+		async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, ImageDecodeOptions? options, CancellationToken cancellationToken)
 		{
 			if (imageSource.IsEmpty)
 				return null;
 
 			try
 			{
-				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken);
+				var bytes = await LoadBytesAsync(imageSource, cancellationToken).ConfigureAwait(false);
 
-				using var cgImageSource = imageData.GetPlatformImageSource();
-				if (cgImageSource is null)
-					throw new InvalidOperationException("Unable to load image file.");
+				UIImage image;
+				try
+				{
+					using var imageData = NSData.FromArray(bytes);
+					using var cgImageSource = imageData.GetPlatformImageSource()
+						?? throw new InvalidOperationException("Unable to load image file.");
+					image = cgImageSource.GetPlatformImage(1, options);
 
-				var image = cgImageSource.GetPlatformImage();
+					// Only cached images are decoded again, from the same data.
+					if (options?.WasDownsampled == true && imageSource.CachingEnabled)
+						options.ContentVersion = ImageDecodeOptions.GetContentVersion(bytes);
+				}
+				catch (Exception)
+				{
+					// Do not keep showing (or caching) data that cannot be decoded.
+					Loader.Invalidate(imageSource.Uri);
+					throw;
+				}
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
@@ -43,44 +96,20 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
+		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken) =>
+			NSData.FromArray(await LoadBytesAsync(imageSource, cancellationToken).ConfigureAwait(false));
+
+		Task<byte[]> LoadBytesAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
 		{
-			// TODO: use a real caching library with the URI
-
-			var filename = GetCachedFileName(imageSource);
-			var pathToImageCache = Path.Combine(CacheDirectory, filename);
-
-			NSData? imageData;
-
-			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
-			{
-				imageData = GetCachedImage(pathToImageCache);
-			}
-			else
-			{
-				imageData = await DownloadImageAsync(imageSource, cancellationToken);
-				if (imageSource.CachingEnabled)
-					CacheImage(imageData, pathToImageCache);
-			}
-
-			return imageData;
-		}
-
-		internal static async Task<NSData> DownloadImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
-		{
-			if (imageSource is not IStreamImageSource streamImageSource)
+			if (!UriImageLoader.CanLoad(imageSource))
 				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
 
-			using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
-			if (stream is null)
-				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
-
-			var imageData = NSData.FromStream(stream);
-
-			if (imageData is null)
-				throw new InvalidOperationException("Unable to load image stream data.");
-
-			return imageData;
+			return Loader.LoadAsync(
+				imageSource.Uri,
+				imageSource.CachingEnabled,
+				imageSource.CacheValidity,
+				UriImageLoader.GetCustomFetch(imageSource),
+				cancellationToken);
 		}
 
 #pragma warning disable CA1822 // Mark members as static; Disabling because these methods are public and changing them to static is potentially a breaking change

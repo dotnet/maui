@@ -17,6 +17,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
+| MauiImageDownsamplingEnabled | Microsoft.Maui.RuntimeFeature.IsImageDownsamplingEnabled | When enabled (the default), on iOS and Mac Catalyst large images shown by an `Image` are decoded at the size they are displayed at, which uses much less memory. Images are decoded again (from the cache) when their view grows. Stream images and images with caching disabled cannot be read again, so they are only decoded smaller when the `Image` has an explicit `WidthRequest` and `HeightRequest`, and keep that resolution if the size later grows. Set to `false` to always decode images at their full size, for example when they are zoomed in. (Android already decodes images at the size of the view.) |
 
 ## Runtime settings
 

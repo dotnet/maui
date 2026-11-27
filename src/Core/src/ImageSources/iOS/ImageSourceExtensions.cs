@@ -87,7 +87,13 @@ namespace Microsoft.Maui
 			return UIImage.FromBundle(bundleName) ?? UIImage.FromFile(file);
 		}
 
-		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale)
+		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale) =>
+			CGImageSource.FromUrl(NSUrl.CreateFileUrl(imageSource.GetPlatformImagePath(out scale)));
+
+		/// <summary>
+		/// Gets the path of the file that is loaded for <paramref name="imageSource"/>: the scaled image in the app package, or the file itself.
+		/// </summary>
+		internal static string GetPlatformImagePath(this IFileImageSource imageSource, out int scale)
 		{
 			ArgumentNullException.ThrowIfNull(imageSource);
 
@@ -97,10 +103,7 @@ namespace Microsoft.Maui
 			var bundle = FileSystemUtils.PlatformGetFullAppPackageFilePath(filename);
 			bundle = GetScaledFile(bundle, out scale);
 
-			var url = File.Exists(bundle)
-				? NSUrl.CreateFileUrl(bundle)
-				: NSUrl.CreateFileUrl(filename);
-			return CGImageSource.FromUrl(url);
+			return File.Exists(bundle) ? bundle : filename;
 		}
 
 		internal static string GetScaledFile(string filename, out int scale)
@@ -191,6 +194,75 @@ namespace Microsoft.Maui
 			}
 
 			return image;
+		}
+
+		/// <summary>
+		/// Creates the image like <see cref="GetPlatformImage(CGImageSource, int)"/>, but decoded at the size it is displayed at
+		/// (see <paramref name="options"/>) when that is smaller than its full size. The image keeps its size in points, so that
+		/// layout does not change; it only has fewer pixels.
+		/// </summary>
+		internal static UIImage GetPlatformImage(this CGImageSource cgImageSource, int scale, ImageDecodeOptions? options)
+		{
+			if (options is not null && RuntimeFeature.IsImageDownsamplingEnabled && TryGetDownsampledImage(cgImageSource, scale, options) is { } downsampled)
+			{
+				options.WasDownsampled = true;
+				return downsampled;
+			}
+
+			return cgImageSource.GetPlatformImage(scale);
+		}
+
+		static double? GetDownsampleRatio(CGImageSource cgImageSource, ImageDecodeOptions options, out int width, out int height)
+		{
+			width = height = 0;
+
+			// Center shows the image at its own size, so every pixel may be visible. Animations keep all their frames.
+			if (options.Aspect == Aspect.Center || options.PixelWidth <= 0 || options.PixelHeight <= 0 ||
+				cgImageSource.ImageCount != 1 || cgImageSource.IsAnimated())
+			{
+				return null;
+			}
+
+			var props = cgImageSource.GetProperties(0);
+			if (props?.PixelWidth is not int pixelWidth || props.PixelHeight is not int pixelHeight || pixelWidth <= 0 || pixelHeight <= 0)
+				return null;
+
+			// The size of the image as it is shown, after applying its orientation.
+			(width, height) = props.Orientation is CIImageOrientation.LeftTop or CIImageOrientation.RightTop or CIImageOrientation.RightBottom or CIImageOrientation.LeftBottom
+				? (pixelHeight, pixelWidth)
+				: (pixelWidth, pixelHeight);
+
+			var widthRatio = options.PixelWidth / width;
+			var heightRatio = options.PixelHeight / height;
+			var ratio = options.Aspect == Aspect.AspectFit
+				? Math.Min(widthRatio, heightRatio)
+				: Math.Max(widthRatio, heightRatio);
+
+			// Only decode smaller images, and only when it saves a meaningful amount of memory.
+			return ratio < 0.8 ? ratio : null;
+		}
+
+		static UIImage? TryGetDownsampledImage(CGImageSource cgImageSource, int scale, ImageDecodeOptions options)
+		{
+			if (GetDownsampleRatio(cgImageSource, options, out var width, out var height) is not double ratio)
+				return null;
+
+			var maxPixelSize = (int)Math.Ceiling(Math.Max(width, height) * ratio);
+			using var thumbnail = cgImageSource.CreateThumbnail(0, new CGImageThumbnailOptions
+			{
+				MaxPixelSize = maxPixelSize,
+				CreateThumbnailFromImageAlways = true,
+				CreateThumbnailWithTransform = true,
+				ShouldCacheImmediately = true,
+			});
+			if (thumbnail is null)
+				return null;
+
+			// The thumbnail is already oriented. Keep the size in points of the full image: points = pixels / scale.
+			var originalPoints = Math.Max(width, height) / (double)scale;
+			var imageScale = Math.Max(thumbnail.Width, thumbnail.Height) / originalPoints;
+
+			return new UIImage(thumbnail, (nfloat)imageScale, UIImageOrientation.Up);
 		}
 
 		static UIImageOrientation ToUIImageOrientation(CGImageSource cgImageSource)

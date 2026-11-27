@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
-	public partial class FileImageSourceService
+	public partial class FileImageSourceService : IViewSizedImageSourceService
 	{
 		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default)
 		{
@@ -48,9 +48,17 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
+			GetDrawableAsync((IFileImageSource)imageSource, context, IViewSizedImageSourceService.SizeOriginal, IViewSizedImageSourceService.SizeOriginal);
+
+		Task<IImageSourceServiceResult<Drawable>?> IViewSizedImageSourceService.GetDrawableAsync(IImageSource imageSource, Context context, int width, int height, CancellationToken cancellationToken) =>
+			// A derived service may load images differently: use its implementation (at the image's own size).
+			GetType() == typeof(FileImageSourceService)
+				? GetDrawableAsync((IFileImageSource)imageSource, context, width, height)
+				: GetDrawableAsync(imageSource, context, cancellationToken);
+
+		Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IFileImageSource fileImageSource, Context context, int width, int height)
 		{
-			var fileImageSource = (IFileImageSource)imageSource;
 			if (!fileImageSource.IsEmpty)
 			{
 				var file = fileImageSource.File;
@@ -70,7 +78,7 @@ namespace Microsoft.Maui
 
 					var callback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromFile(context, file, callback);
+					PlatformInterop.LoadImageFromFile(context, file, width, height, callback);
 
 					return callback.Result;
 				}

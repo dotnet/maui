@@ -13,7 +13,10 @@ namespace Microsoft.Maui.Platform
 			IImageSourceServiceProvider services,
 			Action<UIImage?> setImage,
 			float imageScale = 1.0f,
-			CancellationToken cancellationToken = default)
+			CancellationToken cancellationToken = default,
+			Action<Exception>? onFailed = null,
+			ImageDecodeOptions? decodeOptions = null,
+			Action<IImageSourceServiceResult>? onImageShown = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -30,7 +33,9 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.GetImageAsync(imageSource, imageScale, cancellationToken);
+				var result = decodeOptions is not null && service is IImageSourceServiceWithDecodeOptions decodingService
+					? await decodingService.GetImageAsync(imageSource, imageScale, decodeOptions, cancellationToken)
+					: await service.GetImageAsync(imageSource, imageScale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
@@ -43,7 +48,21 @@ namespace Microsoft.Maui.Platform
 						imageView.UpdateIsAnimationPlaying(image);
 				}
 
+				// Setting the image runs mappers (such as IsAnimationPlaying), which may have started a newer load.
+				applied = applied && !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+
+				// The image is shown before that is reported (which may start another load).
+				if (applied && result is not null)
+					onImageShown?.Invoke(result);
+
 				events?.LoadingCompleted(applied);
+
+				if (!applied)
+				{
+					// The image was never shown.
+					result?.Dispose();
+					return null;
+				}
 
 				return result;
 			}
@@ -58,15 +77,24 @@ namespace Microsoft.Maui.Platform
 				// image source service reported it as a failure; treat it as a cancellation
 				events?.LoadingCompleted(false);
 			}
+			catch (Exception) when (imageSource != image.Source)
+			{
+				// A newer source is loading; this failure is no longer relevant.
+				events?.LoadingCompleted(false);
+			}
 			catch (Exception ex)
 			{
-				setImage?.Invoke(null);
+				if (onFailed is not null)
+					onFailed(ex);
+				else
+					setImage?.Invoke(null);
 				events?.LoadingFailed(ex);
 			}
 			finally
 			{
-				// only mark as finished if we are still working on the same image
-				if (imageSource == image.Source)
+				// only mark as finished if we are still working on the same image (a newer load,
+				// including a reload of the same source, cancels this one and reports its own state)
+				if (imageSource == image.Source && !cancellationToken.IsCancellationRequested)
 				{
 					image.UpdateIsLoading(false);
 				}

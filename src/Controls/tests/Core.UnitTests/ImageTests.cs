@@ -378,6 +378,133 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool initialLoad = true;
 		}
 
+		[Fact]
+		public void LoadingStateFollowsLoadingEvents()
+		{
+			var image = new Image { Source = "https://example.com/image.png" };
+			var events = (IImageSourcePartEvents)image;
+			var loaded = 0;
+			ImageFailedEventArgs failed = null;
+			image.ImageLoaded += (_, _) => loaded++;
+			image.ImageFailed += (_, e) => failed = e;
+
+			Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
+
+			events.LoadingStarted();
+			Assert.Equal(ImageLoadingState.Loading, image.LoadingState);
+
+			events.LoadingCompleted(true);
+			Assert.Equal(ImageLoadingState.Loaded, image.LoadingState);
+			Assert.Equal(1, loaded);
+
+			var exception = new InvalidOperationException("boom");
+			events.LoadingStarted();
+			events.LoadingFailed(exception);
+			Assert.Equal(ImageLoadingState.Failed, image.LoadingState);
+			Assert.Same(exception, failed.Exception);
+			Assert.Equal(1, loaded);
+		}
+
+		[Fact]
+		public void CancelledLoadsDoNotChangeLoadingState()
+		{
+			var image = new Image { Source = "https://example.com/image.png" };
+			var events = (IImageSourcePartEvents)image;
+			var loaded = 0;
+			image.ImageLoaded += (_, _) => loaded++;
+
+			// The newer load started before the older one reported that it was replaced.
+			events.LoadingStarted();
+			events.LoadingStarted();
+			events.LoadingCompleted(false);
+
+			Assert.Equal(ImageLoadingState.Loading, image.LoadingState);
+			Assert.Equal(0, loaded);
+		}
+
+		[Fact]
+		public void ClearingSourceResetsLoadingState()
+		{
+			var image = new Image { Source = "https://example.com/image.png" };
+			((IImageSourcePartEvents)image).LoadingStarted();
+			((IImageSourcePartEvents)image).LoadingFailed(new InvalidOperationException());
+
+			image.Source = null;
+
+			Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
+		}
+
+		[Fact]
+		public void RemovingHandlerWhileLoadingResetsLoadingState()
+		{
+			var image = new Image { Source = "https://example.com/image.png", Handler = new SizedHandler() };
+			((IImageSourcePartEvents)image).LoadingStarted();
+
+			image.Handler = null;
+
+			Assert.Equal(ImageLoadingState.Idle, image.LoadingState);
+		}
+
+		[Fact]
+		public void ReloadLoadsTheSourceAgain()
+		{
+			var sourceMapped = 0;
+			var mapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper)
+			{
+				[nameof(IImage.Source)] = (_, _) => sourceMapped++,
+			};
+			var image = new Image { Source = "https://example.com/image.png", Handler = new SizedHandler(mapper) };
+			sourceMapped = 0;
+
+			image.Reload();
+
+			Assert.Equal(1, sourceMapped);
+		}
+
+		[Fact]
+		public void SettingErrorSourceAfterAFailureDoesNotReload()
+		{
+			var sourceMapped = 0;
+			var mapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper)
+			{
+				[nameof(IImage.Source)] = (_, _) => sourceMapped++,
+			};
+			var image = new Image { Source = "https://example.com/image.png", Handler = new SizedHandler(mapper) };
+			sourceMapped = 0;
+
+			// For example from an ImageFailed handler: must not start another download (and possibly another failure).
+			((IImageSourcePartEvents)image).LoadingFailed(new InvalidOperationException());
+			image.ErrorSource = "error.png";
+
+			Assert.Equal(0, sourceMapped);
+		}
+
+		[Fact]
+		public void FallbackSourcesInheritTheBindingContext()
+		{
+			var context = new object();
+			var image = new Image { PlaceholderSource = new FontImageSource(), ErrorSource = new FontImageSource() };
+
+			image.BindingContext = context;
+			Assert.Same(context, image.PlaceholderSource.BindingContext);
+			Assert.Same(context, image.ErrorSource.BindingContext);
+
+			image.ErrorSource = new FontImageSource();
+			Assert.Same(context, image.ErrorSource.BindingContext);
+		}
+
+		[Fact]
+		public void FallbackSourcesAreExposedToHandlers()
+		{
+			var image = new Image { PlaceholderSource = "placeholder.png", ErrorSource = "error.png", KeepPreviousImageWhileLoading = true };
+			var fallbacks = (IImageSourcePartFallbacks)image;
+
+			Assert.Same(image.PlaceholderSource, fallbacks.PlaceholderSource);
+			Assert.Same(image.ErrorSource, fallbacks.ErrorSource);
+			Assert.True(fallbacks.KeepPreviousImageWhileLoading);
+			Assert.Equal("placeholder.png", ((FileImageSource)image.PlaceholderSource).File);
+		}
+
 		class SizedHandler : ImageHandler
 		{
 			Size _size;
@@ -385,6 +512,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public SizedHandler(Size size) => _size = size;
 
 			public SizedHandler() => _size = new(100, 20);
+
+			public SizedHandler(IPropertyMapper mapper)
+				: base(mapper) => _size = new(100, 20);
 
 			protected override object CreatePlatformView() => new();
 

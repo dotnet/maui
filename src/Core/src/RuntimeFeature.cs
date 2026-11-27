@@ -31,6 +31,7 @@ namespace Microsoft.Maui
 		const bool IsiOSShellHandlerEnabledByDefault = false;
 		const bool IsIncrementalHotReloadEnabledByDefault = false;
 		const bool UseMauiAndroidSystemBarBackgroundsByDefault = false;
+		const bool IsImageDownsamplingEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -183,5 +184,13 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
+
+		/// <summary>
+		/// Whether large images shown by an <see cref="IImage"/> are decoded at the size they are displayed at (iOS and Mac Catalyst).
+		/// </summary>
+		internal static bool IsImageDownsamplingEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsImageDownsamplingEnabled)}", out bool isEnabled)
+				? isEnabled
+				: IsImageDownsamplingEnabledByDefault;
 	}
 }
