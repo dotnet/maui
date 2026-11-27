@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// Set <see cref="SemanticProperties.DescriptionProperty"/> to give the button an accessible name.
 	/// The command executes before <see cref="Clicked"/>, as with <see cref="Button"/>.
 	/// </remarks>
+	[ElementHandler(typeof(Microsoft.Maui.Handlers.ContentButtonHandler))]
 	public partial class ContentButton : ContentView, IContentButton, IButtonElement, ICommandElement,
 		IElementConfiguration<ContentButton>, ICrossPlatformLayout
 	{

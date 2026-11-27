@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IFlyoutView, IFlyoutViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
