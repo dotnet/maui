@@ -262,6 +262,30 @@ internal struct CompiledBindingMarkup
 		return true;
 	}
 
+	// Splits on '.' but not inside an indexer, so Items[he.llo] stays one part.
+	static string[] SplitBindingPath(string path)
+	{
+		var parts = new List<string>();
+		int depth = 0, start = 0;
+		for (int i = 0; i < path.Length; i++)
+		{
+			char c = path[i];
+			if (c == '[')
+				depth++;
+			else if (c == ']')
+				depth--;
+			else if (c == '.' && depth == 0)
+			{
+				if (i > start)
+					parts.Add(path.Substring(start, i - start));
+				start = i + 1;
+			}
+		}
+		if (path.Length > start)
+			parts.Add(path.Substring(start));
+		return parts.ToArray();
+	}
+
 	bool TryParsePath(
 		ITypeSymbol sourceType,
 		out ITypeSymbol? propertyType,
@@ -276,7 +300,7 @@ internal struct CompiledBindingMarkup
 
 		var isNullable = false;
 		var path = _path.Trim('.', ' ');
-		var parts = path.Split(['.'], StringSplitOptions.RemoveEmptyEntries);
+		var parts = SplitBindingPath(path);
 		var bindingPathParts = new List<IPathPart>();
 
 		var previousPartType = sourceType;
