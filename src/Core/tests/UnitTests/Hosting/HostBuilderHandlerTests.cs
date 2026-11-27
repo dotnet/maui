@@ -878,6 +878,35 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void HotReloadReinstallsRemovedAttributeHandlerReplacement(bool lookUpTypeFirst)
+		{
+			using var app = MauiApp.CreateBuilder().Build();
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+			var collection = factory.GetCollection();
+			MauiHotReloadHelper.RegisterHandlers(collection);
+			try
+			{
+				MauiHotReloadHelper.RegisterHandlerReplacement(
+					typeof(AttributedViewHandlerStub).FullName!,
+					typeof(AlternateAttributedViewHandlerStub));
+				Assert.IsType<AlternateAttributedViewHandlerStub>(factory.GetHandler(typeof(AttributedViewStub)));
+
+				collection.Clear();
+
+				if (lookUpTypeFirst)
+					Assert.Same(typeof(AlternateAttributedViewHandlerStub), factory.GetHandlerType(typeof(AttributedViewStub)));
+				Assert.IsType<AlternateAttributedViewHandlerStub>(factory.GetHandler(typeof(AttributedViewStub)));
+				Assert.Same(typeof(AlternateAttributedViewHandlerStub), factory.GetHandlerType(typeof(AttributedViewStub)));
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
 		[Fact]
 		public void HotReloadReplacesAttributeHandlerOnlyInRegisteredApp()
 		{

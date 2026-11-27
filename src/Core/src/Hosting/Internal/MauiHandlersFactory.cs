@@ -177,16 +177,14 @@ namespace Microsoft.Maui.Hosting.Internal
 			// 4. Content interface defaults
 			if (resolution.ContentInterface == typeof(IContentButton))
 			{
-				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, type, typeof(ContentButtonHandler))
-					? GetHandler(type, implementationFactoryServiceProvider)
-					: new ContentButtonHandler();
+				return CreatePendingReplacementHandler(type, typeof(ContentButtonHandler), implementationFactoryServiceProvider)
+					?? new ContentButtonHandler();
 			}
 
 			if (resolution.ContentInterface == typeof(IContentView))
 			{
-				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, type, typeof(ContentViewHandler))
-					? GetHandler(type, implementationFactoryServiceProvider)
-					: new ContentViewHandler();
+				return CreatePendingReplacementHandler(type, typeof(ContentViewHandler), implementationFactoryServiceProvider)
+					?? new ContentViewHandler();
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
@@ -241,6 +239,17 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			return null;
 		}
+
+		/// <summary>
+		/// Installs a pending Hot Reload replacement of a handler resolved without a collection descriptor and
+		/// activates it from the registration it installed, or returns <see langword="null"/> if there is none.
+		/// </summary>
+		IElementHandler? CreatePendingReplacementHandler(Type viewType, Type handlerType, IServiceProvider implementationFactoryServiceProvider) =>
+			HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, viewType, handlerType)
+				&& InternalCollection.TryGetService(viewType, out ServiceDescriptor? replacementDescriptor)
+				&& replacementDescriptor is not null
+					? GetService(viewType, implementationFactoryServiceProvider) as IElementHandler
+					: null;
 
 		/// <summary>
 		/// Returns a handler type resolved without a collection descriptor, or its pending Hot Reload replacement,
@@ -364,9 +373,9 @@ namespace Microsoft.Maui.Hosting.Internal
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
 			IServiceProvider implementationFactoryServiceProvider)
 		{
-			if (HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, viewType, handlerType))
+			if (CreatePendingReplacementHandler(viewType, handlerType, implementationFactoryServiceProvider) is IElementHandler replacementHandler)
 			{
-				return GetHandler(viewType, implementationFactoryServiceProvider);
+				return replacementHandler;
 			}
 
 			try

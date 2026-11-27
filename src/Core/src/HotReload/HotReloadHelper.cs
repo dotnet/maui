@@ -154,7 +154,9 @@ namespace Microsoft.Maui.HotReload
 		/// handler that the factory resolved without a collection descriptor, such as an <see cref="Handlers.ElementHandlerAttribute"/>
 		/// or content interface default, which <see cref="RegisterHandlerReplacement"/> cannot find in the collection.
 		/// Only the collection registered through <see cref="RegisterHandlers"/> receives replacements, so resolving
-		/// through another app's factory leaves both apps' registrations unchanged.
+		/// through another app's factory leaves both apps' registrations unchanged. The factory only resolves such a
+		/// handler when the collection has no registration for the view type, so the replacement is installed again
+		/// if its registration was removed.
 		/// </summary>
 		/// <returns><see langword="true"/> if a replacement was registered in <paramref name="collection"/>, so resolving the view again uses it.</returns>
 		[UnconditionalSuppressMessage("Trimming", "IL2026",
@@ -164,13 +166,13 @@ namespace Microsoft.Maui.HotReload
 		internal static bool TryApplyPendingHandlerReplacement(object collection, Type viewType, Type handlerType) =>
 			!pendingHandlerReplacements.IsEmpty
 				&& ReferenceEquals(collection, HandlerService)
-				&& ApplyPendingHandlerReplacement(viewType, handlerType);
+				&& ApplyPendingHandlerReplacement(viewType, handlerType, reinstall: true);
 
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 #if !NETSTANDARD
 		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
 #endif
-		static bool ApplyPendingHandlerReplacement(Type viewType, Type handlerType)
+		static bool ApplyPendingHandlerReplacement(Type viewType, Type handlerType, bool reinstall = false)
 		{
 			if (pendingHandlerReplacements.IsEmpty || HandlerService is null || handlerType.FullName is not string handlerTypeName)
 				return false;
@@ -187,10 +189,11 @@ namespace Microsoft.Maui.HotReload
 					replacedHandlers[handlerTypeName] = views;
 				}
 
-				if (views.Contains(handler))
+				if (!views.Contains(handler))
+					views.Add(handler);
+				else if (!reinstall)
 					return false;
 
-				views.Add(handler);
 				RegisterHandler(handler, newHandlerType);
 				return true;
 			}
