@@ -1,6 +1,7 @@
 #if IOS_DUO_BINDINGS
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -22,9 +23,18 @@ namespace Microsoft.Maui.Foldable
 		UIWindow _window;
 		ViewMonitor _windowMonitor;
 
+		// Hinge APIs exist only on iOS 27.1+, not on Mac Catalyst.
+		[SupportedOSPlatformGuard("ios27.1")]
+		[UnsupportedOSPlatformGuard("maccatalyst")]
+		static bool IsHingeSupported => OperatingSystem.IsIOSVersionAtLeast(27, 1) && !OperatingSystem.IsMacCatalyst();
+
 		public FoldableService()
 		{
-			_monitors = new FoldableMonitorRegistry<VisualElement, ViewMonitor>(DisposeMonitor);
+			_monitors = new FoldableMonitorRegistry<VisualElement, ViewMonitor>(monitor =>
+			{
+				if (IsHingeSupported)
+					DisposeMonitor(monitor);
+			});
 			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
 		}
 
@@ -54,7 +64,7 @@ namespace Microsoft.Maui.Foldable
 
 		public Task<int> GetHingeAngleAsync()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			if (!IsHingeSupported)
 			{
 				_hingeAngleState.SetAngle(0);
 				return Task.FromResult(0);
@@ -70,7 +80,7 @@ namespace Microsoft.Maui.Foldable
 		public Rect GetHinge(VisualElement visualElement)
 		{
 			var platformView = GetPlatformView(visualElement);
-			if (platformView?.Window == null || !OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			if (platformView?.Window == null || !IsHingeSupported)
 				return Rect.Zero;
 
 			var regions = platformView.GetReservedRegions(UIViewReservedRegionKind.CreateDivision());
@@ -131,7 +141,7 @@ namespace Microsoft.Maui.Foldable
 
 		public bool StartMonitoring(VisualElement visualElement)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			if (!IsHingeSupported)
 			{
 				_hingeAngleState.SetAngle(0);
 				return true;
@@ -149,7 +159,7 @@ namespace Microsoft.Maui.Foldable
 				if (ReferenceEquals(_windowMonitor?.View, interactionView))
 					return true;
 
-				if (_windowMonitor != null)
+				if (_windowMonitor != null && IsHingeSupported)
 					DisposeMonitor(_windowMonitor);
 
 				_windowMonitor = CreateMonitor(interactionView);
@@ -159,7 +169,7 @@ namespace Microsoft.Maui.Foldable
 			_monitors.GetOrAdd(visualElement, () =>
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
-				return CreateMonitor(interactionView);
+				return IsHingeSupported ? CreateMonitor(interactionView) : null;
 			}, monitor =>
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
@@ -172,7 +182,7 @@ namespace Microsoft.Maui.Foldable
 		{
 			if (visualElement == null)
 			{
-				if (_windowMonitor != null)
+				if (_windowMonitor != null && IsHingeSupported)
 					DisposeMonitor(_windowMonitor);
 
 				_windowMonitor = null;
@@ -187,7 +197,7 @@ namespace Microsoft.Maui.Foldable
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 			_monitors.Dispose();
 
-			if (_windowMonitor != null)
+			if (_windowMonitor != null && IsHingeSupported)
 				DisposeMonitor(_windowMonitor);
 
 			_windowMonitor = null;
@@ -205,6 +215,8 @@ namespace Microsoft.Maui.Foldable
 				_window?.RootViewController?.View;
 		}
 
+		[SupportedOSPlatform("ios27.1")]
+		[UnsupportedOSPlatform("maccatalyst")]
 		ViewMonitor CreateMonitor(UIView interactionView)
 		{
 			UIHingeInteractionUpdateHandler updateHandler = OnHingeUpdated;
@@ -213,6 +225,8 @@ namespace Microsoft.Maui.Foldable
 			return new ViewMonitor(interactionView, interaction, updateHandler);
 		}
 
+		[SupportedOSPlatform("ios27.1")]
+		[UnsupportedOSPlatform("maccatalyst")]
 		void RefreshHingeState()
 		{
 			if (_windowMonitor != null)
@@ -221,12 +235,16 @@ namespace Microsoft.Maui.Foldable
 			_monitors.ForEach(RefreshMonitor);
 		}
 
+		[SupportedOSPlatform("ios27.1")]
+		[UnsupportedOSPlatform("maccatalyst")]
 		static void RefreshMonitor(ViewMonitor monitor)
 		{
 			monitor.Interaction.Enabled = false;
 			monitor.Interaction.Enabled = true;
 		}
 
+		[SupportedOSPlatform("ios27.1")]
+		[UnsupportedOSPlatform("maccatalyst")]
 		void OnHingeUpdated(UIHingeInteraction interaction, UIHingeInteractionUpdate update)
 		{
 			var hinge = update.Hinge;
@@ -256,6 +274,8 @@ namespace Microsoft.Maui.Foldable
 				nameof(OnLayoutChanged));
 		}
 
+		[SupportedOSPlatform("ios27.1")]
+		[UnsupportedOSPlatform("maccatalyst")]
 		static void DisposeMonitor(ViewMonitor monitor)
 		{
 			monitor.Interaction.Enabled = false;
