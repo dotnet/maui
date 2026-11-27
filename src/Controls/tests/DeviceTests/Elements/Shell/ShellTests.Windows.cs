@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -281,6 +283,44 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+			});
+		}
+
+		[Fact(DisplayName = "Shell flyout does not overlap custom title bar")]
+		public async Task ShellFlyoutDoesNotOverlapCustomTitleBar()
+		{
+			SetupBuilder(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<IContentView, ContentViewHandler>()));
+
+			var backgroundColor = Color.FromArgb("#85FFFFFF");
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+				shell.FlyoutBackgroundColor = backgroundColor;
+				shell.Items.Add(new ContentPage());
+			});
+			var titleBar = new Microsoft.Maui.Controls.TitleBar { BackgroundColor = backgroundColor };
+			var window = new Microsoft.Maui.Controls.Window(shell)
+			{
+				TitleBar = titleBar
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootView = GetWindowRootView(handler);
+				var navigationView = Assert.IsAssignableFrom<RootNavigationView>(rootView.NavigationViewControl);
+
+				shell.FlyoutIsPresented = true;
+				await AssertEventually(() => navigationView.IsPaneOpen);
+				await AssertEventually(() => navigationView.RootSplitView?.Clip is WRectangleGeometry);
+
+				var flyoutBackground = Assert.IsType<Microsoft.UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background);
+				Assert.Equal(backgroundColor.ToWindowsColor(), flyoutBackground.Color);
+
+				var titleBarHeight = rootView.AppTitleBarActualHeight;
+				var clip = Assert.IsType<WRectangleGeometry>(navigationView.RootSplitView.Clip);
+				Assert.True(titleBarHeight > 0);
+				Assert.True(Math.Abs(clip.Rect.Y - titleBarHeight) < 1);
 			});
 		}
 

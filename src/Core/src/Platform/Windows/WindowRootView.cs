@@ -349,6 +349,7 @@ namespace Microsoft.Maui.Platform
 			if (newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
+				NavigationViewControl.HasCustomTitleBar = _titleBar is not null;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
 				NavigationViewControl.Toolbar = Toolbar;
@@ -362,6 +363,7 @@ namespace Microsoft.Maui.Platform
 					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
 					mnv.BackRequested -= OnNavigationViewBackRequested;
 					mnv.Toolbar = null;
+					mnv.HasCustomTitleBar = false;
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
@@ -456,6 +458,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_titleBar = titlebar;
+			if (NavigationViewControl is not null)
+				NavigationViewControl.HasCustomTitleBar = _titleBar is not null;
 
 			if (_titleBar is null || mauiContext is null)
 			{

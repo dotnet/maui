@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
 using WThickness = Microsoft.UI.Xaml.Thickness;
@@ -17,6 +18,10 @@ namespace Microsoft.Maui.Platform
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
+		bool _hasCustomTitleBar;
+		SplitView? _titleBarSplitView;
+		RectangleGeometry? _originalSplitViewClip;
+		RectangleGeometry? _titleBarClip;
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
 		public RootNavigationView()
@@ -64,6 +69,19 @@ namespace Microsoft.Maui.Platform
 		{
 			get;
 			private set;
+		}
+
+		internal bool HasCustomTitleBar
+		{
+			get => _hasCustomTitleBar;
+			set
+			{
+				if (_hasCustomTitleBar == value)
+					return;
+
+				_hasCustomTitleBar = value;
+				UpdateSplitViewClip();
+			}
 		}
 
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
@@ -200,6 +218,21 @@ namespace Microsoft.Maui.Platform
 
 		private protected override void OnApplyTemplateCore()
 		{
+			if (_titleBarSplitView is not null)
+			{
+				_titleBarSplitView.SizeChanged -= OnSplitViewSizeChanged;
+				if (_titleBarSplitView.Clip == _titleBarClip)
+					_titleBarSplitView.Clip = _originalSplitViewClip;
+			}
+
+			_titleBarSplitView = RootSplitView;
+			_originalSplitViewClip = _titleBarSplitView?.Clip;
+			if (_titleBarSplitView is not null)
+			{
+				_titleBarSplitView.SizeChanged += OnSplitViewSizeChanged;
+				UpdateSplitViewClip();
+			}
+
 			// We currently use the "PaneFooter" property to set custom content on the flyout
 			// But this content has a top margin of 4 to separate it from the bottom menu items
 			// Because we aren't using bottom menu items we just zero out the margin.
@@ -378,6 +411,37 @@ namespace Microsoft.Maui.Platform
 					PaneContentGrid.HorizontalAlignment = HorizontalAlignment.Left;
 					break;
 			}
+
+			UpdateSplitViewClip();
+		}
+
+		void OnSplitViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateSplitViewClip();
+		}
+
+		void UpdateSplitViewClip()
+		{
+			if (_titleBarSplitView is null)
+				return;
+
+			if (!_hasCustomTitleBar || AppBarTitleHeight == 0 ||
+				PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+			{
+				if (_titleBarSplitView.Clip == _titleBarClip)
+					_titleBarSplitView.Clip = _originalSplitViewClip;
+				return;
+			}
+
+			// Exclude both native and custom pane backgrounds from the title bar.
+			// The back and flyout buttons are outside the SplitView and remain visible.
+			_titleBarClip ??= new RectangleGeometry();
+			var bounds = new Rect(0, AppBarTitleHeight, _titleBarSplitView.ActualWidth,
+				Math.Max(0, _titleBarSplitView.ActualHeight - AppBarTitleHeight));
+			if (_titleBarClip.Rect != bounds)
+				_titleBarClip.Rect = bounds;
+			if (_titleBarSplitView.Clip != _titleBarClip)
+				_titleBarSplitView.Clip = _titleBarClip;
 		}
 
 		void OnPaneContentGridSizeChanged(object sender, SizeChangedEventArgs e)
