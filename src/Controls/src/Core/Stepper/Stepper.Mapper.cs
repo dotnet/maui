@@ -4,9 +4,16 @@ namespace Microsoft.Maui.Controls;
 
 public partial class Stepper
 {
-	internal static new void RemapForControls()
+	static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+	internal override void RemapForControls()
 	{
-		StepperHandler.Mapper.AppendToMapping(nameof(Stepper.Increment), MapInterval);
+		base.RemapForControls();
+		s_remappedForControls.InvokeOnce();
+	}
+
+	static void RemapForControlsOnce()
+	{
+		StepperHandler.Mapper.AppendToMappingForControls(nameof(Stepper.Increment), MapInterval);
 	}
 
 	internal static void MapInterval(IStepperHandler handler, IStepper stepper)
