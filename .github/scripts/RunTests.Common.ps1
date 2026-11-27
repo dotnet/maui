@@ -829,8 +829,6 @@ function New-RunTestsComment {
         [AllowNull()]$Build,
         [string]$QueueError,
         [string]$Requester,
-        # maui-expert-autopilot runs: the loop's own comments say who started it.
-        [switch]$OmitRequester,
         [AllowNull()]$Results,
         # The dispatch commit ({ sha; checkRunId }) maui-pr-uitests builds for this request.
         [AllowNull()]$Dispatch,
@@ -851,10 +849,8 @@ function New-RunTestsComment {
     $lines.Add('')
     $lines.Add($(if ($script:RunTestsSuite -eq 'device') { '## Selected Device Tests' } else { '## Selected UI Tests' }))
     $lines.Add('')
-    if (-not $OmitRequester) {
-        $lines.Add("> $(Get-RunTestsRequesterText $Requester) &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
-        $lines.Add('')
-    }
+    $lines.Add("> $(Get-RunTestsRequesterText $Requester) &#x2014; $(Get-RunTestsSelectedByText $Selection) for commit [``$short``](https://github.com/$repo/commit/$sha).")
+    $lines.Add('')
     $lines.Add('<p align="left">')
     $lines.Add((Get-RunTestsBadge 'Result' $status.badge $status.color))
     $lines.Add((Get-RunTestsBadge 'Platforms' (Get-RunTestsPlatformText $Selection)))
@@ -929,7 +925,6 @@ function New-RunTestsCombinedComment {
         [Parameter(Mandatory)][string]$WorkflowRunUrl,
         [string[]]$ModelNames,
         [string]$Requester,
-        [switch]$OmitRequester,
         [string[]]$Notes,
         [switch]$SelectionOnly
     )
@@ -1004,10 +999,8 @@ function New-RunTestsCombinedComment {
     $lines.Add('')
     $lines.Add('## Selected Tests')
     $lines.Add('')
-    if (-not $OmitRequester) {
-        $lines.Add("> $(Get-RunTestsRequesterText $Requester) &#x2014; AI-selected $($kinds -join ' and ')$by for commit [``$short``](https://github.com/$repo/commit/$sha).")
-        $lines.Add('')
-    }
+    $lines.Add("> $(Get-RunTestsRequesterText $Requester) &#x2014; AI-selected $($kinds -join ' and ')$by for commit [``$short``](https://github.com/$repo/commit/$sha).")
+    $lines.Add('')
     $lines.Add('<p align="left">')
     $lines.Add((Get-RunTestsBadge 'Result' 'RUNNING' '9a6700'))
     $lines.Add((Get-RunTestsBadge 'Platforms' $platformText))
