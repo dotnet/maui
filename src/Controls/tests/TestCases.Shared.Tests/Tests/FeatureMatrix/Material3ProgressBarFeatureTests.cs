@@ -34,7 +34,7 @@ public class Material3ProgressBarFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.Material3)]
 	public void Material3ProgressBar_SetProgressOutOfRange()
 	{
@@ -48,7 +48,7 @@ public class Material3ProgressBarFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(5)]
 	[Category(UITestCategories.Material3)]
 	public void Material3ProgressBar_SetProgressNegativeValue()
 	{
@@ -62,7 +62,7 @@ public class Material3ProgressBarFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(6)]
 	[Category(UITestCategories.Material3)]
 	public void Material3ProgressBar_SetProgressColorAndBackgroundColor_VerifyVisualState()
 	{
@@ -80,7 +80,7 @@ public class Material3ProgressBarFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(7)]
 	[Category(UITestCategories.Material3)]
 	public void Material3ProgressBar_ChangeFlowDirection_RTL_VerifyLabel()
 	{
@@ -92,9 +92,41 @@ public class Material3ProgressBarFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.Material3)]
-	public void Material3ProgressBar_ToggleShadow_VerifyVisualState()
+	public void Material3ProgressBar_ProgressTo_InvalidInput_DoesNotChangeProgress()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+		App.WaitForElement("ProgressEntry");
+		App.ClearText("ProgressEntry");
+		App.EnterText("ProgressEntry", "0.80");
+		App.PressEnter();
+		App.WaitForElement("ProgressToEntry");
+		App.ClearText("ProgressToEntry");
+		App.WaitForElement("ProgressToButton");
+		App.Tap("ProgressToButton");
+		Assert.That(App.FindElement("ProgressValueLabel").GetText(), Is.EqualTo("0.80"));
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.Material3)]
+	public void Material3ProgressBar_ProgressTo_Zero_VerifyLabel()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+		App.WaitForElement("ProgressToEntry");
+		App.ClearText("ProgressToEntry");
+		App.EnterText("ProgressToEntry", "0");
+		App.PressEnter();
+		App.WaitForElement("ProgressToButton");
+		App.Tap("ProgressToButton");
+		Assert.That(App.WaitForTextEqualToElement("ProgressValueLabel", "0.00", TimeSpan.FromSeconds(2)), Is.True);
+	}
+
+	[Test, Order(8)]
+	[Category(UITestCategories.Material3)]
+	public void Material3ProgressBar_ToggleShadow_On_VerifyVisualState()
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");

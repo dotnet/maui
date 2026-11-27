@@ -86,11 +86,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
-			[StructuredItemsView.AnchorModeProperty.PropertyName] = MapAnchorMode,
 		};
 	}
 
-	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>, IScrollToEdgeHandler
+	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
@@ -104,25 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			// Scrolling to an item measures the rows it brings into view, which can move the item: a grouped list that measures
-			// all its items scrolls to it again once they're measured. Not when the app made a newer request from the Scrolled
-			// event the first scroll raised, nor for an item the view doesn't have: that scrolls nowhere, and leaves what an
-			// earlier request left for later.
-			if (WillNeedScrollAdjustment(args) && !args.IsAnimated && !TryScrollTo(args))
+			if (WillNeedScrollAdjustment(args))
 			{
-				return;
-			}
-
-			if (TryScrollTo(args, out var animating) && WillNeedScrollAdjustment(args) && args.IsAnimated)
-			{
-				// An animated scroll scrolls to the item again once UIKit reports that its animation ended. UIKit doesn't animate a
-				// view that isn't in a window, nor to an item that's where the request puts it already: it scrolls the view at
-				// once and reports the end before the scroll returns, or never reports one. Scroll again now then, rather than
-				// when a later animation ends. Before iOS and Mac Catalyst 17, which don't tell, an animation runs in a window.
-				var animationEnds = OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17)
-					? animating
-					: Controller.CollectionView.Window is not null;
-				if (animationEnds)
+				if (args.IsAnimated)
 				{
 					(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
 				}
@@ -131,6 +114,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					base.ScrollToRequested(sender, args);
 				}
 			}
+
+			base.ScrollToRequested(sender, args);
 		}
 
 		public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
@@ -240,41 +225,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
-		}
-
-		/// <summary>Maps <see cref="StructuredItemsView.AnchorMode"/> to the platform view.</summary>
-		/// <param name="handler">The handler for the collection view.</param>
-		/// <param name="itemsView">The collection view.</param>
-		public static void MapAnchorMode(CollectionViewHandler2 handler, StructuredItemsView itemsView)
-		{
-			handler.Controller?.UpdateAnchorMode();
-		}
-
-		bool IScrollToEdgeHandler.ScrollToStart(bool animate) =>
-			Controller is not null && (Controller.ScrollToStart(animate) || ScrollToEdgeItem(end: false, animate));
-
-		bool IScrollToEdgeHandler.ScrollToEnd(bool animate) =>
-			Controller is not null && (Controller.ScrollToEnd(animate) || ScrollToEdgeItem(end: true, animate));
-
-		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as
-		// it gets: the first or last the view shows, which an items source that can be read only once doesn't give again.
-		bool ScrollToEdgeItem(bool end, bool animate)
-		{
-			var collectionView = Controller.CollectionView;
-			var sections = (int)collectionView.NumberOfSections();
-			for (var index = 0; index < sections; index++)
-			{
-				var section = end ? sections - 1 - index : index;
-				var count = (int)collectionView.NumberOfItemsInSection(section);
-				if (count > 0)
-				{
-					var position = end ? ScrollToPosition.End : ScrollToPosition.Start;
-					ScrollToRequested(this, new ScrollToRequestEventArgs(end ? count - 1 : 0, ItemsView.IsGrouped ? section : -1, position, animate));
-					break;
-				}
-			}
-
-			return true;
 		}
 
 		Dictionary<string, object> _layoutPropertyCache = new();
