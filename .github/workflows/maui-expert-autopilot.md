@@ -72,6 +72,7 @@ on:
             fixing: ['D93F0B', 'MAUI Autopilot: fixing review findings or failing tests (GPT-6.2 Sol, MAI Code 2, Claude Opus 5.5)'],
             testing: ['1D76DB', 'MAUI Autopilot: relevant UI/device tests are being selected or run'],
             'waiting-for-maintainer-review': ['0E8A16', 'MAUI Autopilot finished: expert review clean and tests passed; waiting for maintainer review'],
+            'needs-maintainer-decision': ['B60205', 'MAUI Autopilot stopped: a maintainer needs to decide how to continue'],
           };
           const current = new Set(pr.labels.map(l => l.name));
           const setPhase = async phase => {
@@ -135,7 +136,8 @@ on:
           }
           if (pr.state !== 'open') return core.info(`#${number} is not open.`);
           if (!(await canWrite(requester))) {
-            await stopLoop(hasLabel ? '## MAUI Autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.' : '');
+            if (hasLabel) await stopLoop('## MAUI Autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.', 'needs-maintainer-decision');
+            else await stopLoop('');
             return;
           }
           let optedIn = OPT_IN.test(pr.body || '');
@@ -278,11 +280,12 @@ on:
               '| `s/autopilot-fixing` | Fixing review findings or failing tests |',
               '| `s/autopilot-testing` | Running the relevant UI and device tests |',
               '| `s/autopilot-waiting-for-maintainer-review` | Review clean and tests passed |',
+              '| `s/autopilot-needs-maintainer-decision` | The loop stopped; a maintainer decides how to continue |',
               '',
               '</details>',
             ].join('\n'));
           }
-          if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : ''); stage = 'none'; }
+          if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : 'needs-maintainer-decision'); stage = 'none'; }
           else await setPhase({ review: 'reviewing', fix: 'fixing', opus: 'fixing', tests: 'testing', wait: 'testing' }[stage]);
 
           const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
@@ -434,7 +437,7 @@ jobs:
               const all = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
               const bot = all.filter(c => c.user?.login === 'github-actions[bot]');
               const note = bot.filter(c => (c.body || '').includes(`id: ${process.env.RUN_ID},`)).pop();
-              const reason = (note?.body || '').replace(/<!--[\s\S]*?-->/g, '').replace(/^\*\*MAUI Autopilot\*\*[^\n]*\n+/, '').trim();
+              const reason = (note?.body || '').replace(/<!--[\s\S]*?-->/g, '').replace(/^\*\*MAUI Autopilot\*\*[^\n]*\n+/, '').trim().replace(/^❌\s*/, '');
               for (const c of bot.filter(c => (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
                 await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
               const summary = failed
@@ -472,7 +475,12 @@ jobs:
               const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
               if (pr.state !== 'open' || pr.head.sha === process.env.HEAD_SHA) {
                 await stop();
-                if (pr.state === 'open') await finishNoop(failed);
+                if (pr.state === 'open') {
+                  await finishNoop(failed);
+                  await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-needs-maintainer-decision', color: 'B60205',
+                    description: 'MAUI Autopilot stopped: a maintainer needs to decide how to continue' }).catch(() => {});
+                  await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-needs-maintainer-decision'] });
+                }
                 return core.info('Nothing was pushed; the loop is done (see the maui-expert-autopilot comment).');
               }
             }
@@ -724,11 +732,17 @@ The PR head is checked out on `work_branch`.
 
 1. **Collect the items.**
    - `expert`: every `critical`/`major` finding; `moderate`/`minor` only when the fix is small and safe.
-   - `tests`: every failing test in the run-tests comment. Open its linked Azure DevOps results for
-     the error and stack trace: `/tmp/gh-aw/autopilot/test-failures.md` already has each failed job, task, and
-     its error lines. Decide for each failure whether this PR causes it: a build error or test in code the PR
-     doesn't touch, that also fails on the base branch, is not caused by it. Do not "fix"
-     failures that are unrelated (infrastructure, known flaky tests); list them in your comment.
+   - `tests`: every failing test or job in the run-tests comment. `/tmp/gh-aw/autopilot/test-failures.md` has each
+     failed job, task, and its error lines. **Triage them with three models before fixing anything:**
+     - List the failures in `/tmp/gh-aw/autopilot/failures.md`.
+     - Judge each failure yourself first, in `/tmp/gh-aw/autopilot/sol-triage.md`: `related` (this PR causes it), `unrelated` (infrastructure, a known flaky test, or already broken on the base
+     branch, for example a build error or test in code the PR doesn't touch), or `unsure`, each with the evidence.
+     - Then delegate the `autopilot-mai-fixer` agent in `triage` mode (it writes `/tmp/gh-aw/autopilot/mai-triage.md`),
+       and read Claude Opus 5.5's verdicts under `## Failure triage` in
+       `/tmp/gh-aw/autopilot/opus-candidate/CANDIDATE.md`.
+     - The verdict is the majority of the models that answered. A split, or an `unsure` with a credible argument
+       that the PR causes it, counts as `related`. Only `related` failures become items; never "fix" the others.
+     - Keep each model's verdict per failure for your comment.
    - `copilot`, and in every round: each unresolved Copilot code review thread in `threads.json`
      (author `copilot-pull-request-reviewer`) that has no maui-expert-autopilot reply. Treat a suggestion
      like a `moderate` finding: fix it when it is correct, otherwise answer why not.
@@ -800,8 +814,9 @@ The PR head is checked out on `work_branch`.
    Never reply to or resolve threads you did not handle. Only claim a fix when you publish it.
 8. **Top-level comment: only when the threads can't carry it.** Do not post a round summary. Call
    `add_comment` once only when:
-   - `source` is `tests`: list each failing test with its result link, and either the commit that fixes it
-     (with the kept model) or why it isn't caused by this PR,
+   - `source` is `tests`: a table with one row per failure: the failure with its result link, the verdict of
+     GPT-6.2 Sol, MAI Code 2 and Claude Opus 5.5 (`related`, `unrelated`, `unsure`, or `n/a`), the final verdict,
+     and either the commit that fixes it (with the kept model) or one line on why it isn't caused by this PR,
    - or you published nothing: say why in one or two sentences. That ends the loop.
    Keep it short, use the same `**MAUI Autopilot** · round <round>` first line, and no emojis other than ✅ and ❌.
 
@@ -814,7 +829,7 @@ model: mai-code-2
 ---
 
 You are one of three models (GPT-6.2 Sol, MAI Code 2, Claude Opus 5.5) fixing the same items for one
-maui-expert-autopilot round. You are called in one of two modes.
+maui-expert-autopilot round. You are called in one of three modes.
 
 - Read the items in `/tmp/gh-aw/autopilot/items.md` and the context in `/tmp/gh-aw/autopilot/context.json`.
 - Work only inside `/tmp/gh-aw/autopilot/mai`. Do not touch any other worktree, and do not commit, push, or
@@ -827,6 +842,12 @@ maui-expert-autopilot round. You are called in one of two modes.
 regression test for every bug fix, next to existing tests of the same kind. Run the unit tests that build on
 Linux. Write `/tmp/gh-aw/autopilot/mai/CANDIDATE.md`: for each item, the files you changed, why, and the
 tests you ran with their result. Then stop.
+
+**`triage` mode.** For each failure in `/tmp/gh-aw/autopilot/failures.md`, read the evidence in
+`/tmp/gh-aw/autopilot/test-failures.md` and the PR diff (`git diff <merge_base>..HEAD`, see the context file), and
+decide independently: `related` (this PR causes it), `unrelated` (infrastructure, a known flaky test, or already broken on the base
+branch, for example a build error or test in code the PR doesn't touch), or `unsure`, each with the evidence. Write one line per failure to `/tmp/gh-aw/autopilot/mai-triage.md`. Don't read the other models'
+triage files. Change no code. Then stop.
 
 **`critique` mode.** The other candidates are in `/tmp/gh-aw/autopilot/patches/*.diff`.
 - Attack the other two candidates as an adversarial reviewer: bugs, missed cases, regressions, a missing or

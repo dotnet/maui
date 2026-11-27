@@ -76,7 +76,7 @@ jobs:
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
               if (!labels.some(l => l.name === 's/autopilot-running')) {
                 // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
-                for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+                for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && !['s/autopilot-waiting-for-maintainer-review', 's/autopilot-needs-maintainer-decision'].includes(l.name))) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
                 continue;
               }
               await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',

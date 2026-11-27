@@ -66,6 +66,7 @@ the loop moves:
 | `s/autopilot-fixing` | A fix round (GPT-6.2 Sol, MAI Code 2, Claude Opus 5.5) is running |
 | `s/autopilot-testing` | `/review run-tests` is selecting or running the relevant tests |
 | `s/autopilot-waiting-for-maintainer-review` | Done: the expert review is clean and the tests passed. Waiting for a maintainer |
+| `s/autopilot-needs-maintainer-decision` | Stopped: nothing more the loop can fix, a step failed twice, or the tests couldn't run. A maintainer decides how to continue |
 | `s/autopilot-retrying` | An expert review, fix round or test selection failed once and is being retried. A second failure in a row stops the loop |
 
 Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/review autopilot` replaces
@@ -96,7 +97,10 @@ The thread reply names the model whose fix was kept, and any idea it adopted fro
 The items come from:
 
 - the expert review: all critical and major findings, plus small and safe moderate and minor ones,
-- failing tests the PR causes: the round lists infrastructure and known-flaky failures instead of fixing them,
+- failing tests the PR causes. Before fixing anything, GPT-6.2 Sol, MAI Code 2 and Claude Opus 5.5 each judge every
+  failure independently as `related`, `unrelated` (infrastructure, flaky, or already broken on the base branch) or
+  `unsure`, using the failed jobs and error lines collected from Azure DevOps. The majority decides; a split counts as
+  `related`. Only related failures are fixed, and the round's comment shows each model's verdict per failure,
 - Copilot code review suggestions that are still open: after a clean expert review, open Copilot threads
   start a fix round before the tests run. Each one is fixed or answered in its thread,
 - open maintainer requests.
