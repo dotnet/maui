@@ -8,12 +8,5 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			return PlatformImage.FromStream(stream, formatHint);
 		}
-
-#nullable enable
-		public IImage FromStream(Stream stream, ImageLoadOptions? options)
-		{
-			return PlatformImage.FromStream(stream, options);
-		}
-#nullable restore
 	}
 }

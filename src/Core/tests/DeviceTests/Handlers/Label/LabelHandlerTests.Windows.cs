@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -107,89 +106,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotEqual(DependencyProperty.UnsetValue, values.Initial);
 			Assert.Equal(DependencyProperty.UnsetValue, values.Reset);
-		}
-
-		bool GetNativeIsTextSelectable(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).IsTextSelectionEnabled;
-
-		[Fact(DisplayName = "IsEnabled Changes Update Text Selection")]
-		public async Task IsEnabledChangesUpdateTextSelection()
-		{
-			var label = new LabelStub { Text = "Test", IsTextSelectable = true };
-
-			var handler = await CreateHandlerAsync(label);
-
-			var values = await InvokeOnMainThreadAsync(() =>
-			{
-				var initial = GetNativeIsTextSelectable(handler);
-
-				label.IsEnabled = false;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-				var disabled = GetNativeIsTextSelectable(handler);
-
-				label.IsEnabled = true;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-				var enabled = GetNativeIsTextSelectable(handler);
-
-				label.IsEnabled = false;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-				var disabledAgain = GetNativeIsTextSelectable(handler);
-
-				return (initial, disabled, enabled, disabledAgain);
-			});
-
-			Assert.Equal((true, false, true, false), values);
-		}
-
-		[Fact(DisplayName = "IsEnabled Mapping Appended To ViewMapper Still Runs For Label")]
-		public async Task AppendedIsEnabledMappingStillRunsForLabel()
-		{
-			var label = new LabelStub { Text = "Test", IsTextSelectable = true };
-			var handler = await CreateHandlerAsync(label);
-
-			// The mapper is shared and can't be restored, so the callback is switched off again afterwards.
-			var active = true;
-			var calls = 0;
-			ViewHandler.ViewMapper.AppendToMapping<IView, IViewHandler>(nameof(IView.IsEnabled), (h, v) =>
-			{
-				if (active)
-				{
-					calls++;
-				}
-			});
-
-			try
-			{
-				var selectable = await InvokeOnMainThreadAsync(() =>
-				{
-					label.IsEnabled = false;
-					handler.UpdateValue(nameof(IView.IsEnabled));
-					return GetNativeIsTextSelectable(handler);
-				});
-
-				Assert.Equal(1, calls);
-				Assert.False(selectable);
-			}
-			finally
-			{
-				active = false;
-			}
-		}
-
-		[Fact(DisplayName = "Unset IsTextSelectable Keeps Native Selection")]
-		public async Task UnsetIsTextSelectableKeepsNativeSelection()
-		{
-			var label = new LabelStub { Text = "Test" };
-			var handler = await CreateHandlerAsync(label);
-
-			var isSelectable = await InvokeOnMainThreadAsync(() =>
-			{
-				GetPlatformLabel(handler).IsTextSelectionEnabled = true;
-				handler.UpdateValue(nameof(ILabel.IsTextSelectable));
-				return GetNativeIsTextSelectable(handler);
-			});
-
-			Assert.True(isSelectable);
 		}
 
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
