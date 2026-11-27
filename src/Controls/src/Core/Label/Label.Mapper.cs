@@ -20,15 +20,15 @@ namespace Microsoft.Maui.Controls
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
 
 			// these just refresh Text / FormattedText
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextType), MapTextType);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextTransform), MapTextTransform);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(TextType), MapTextType);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(TextTransform), MapTextTransform);
 
 			// these are really a single property
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Text), MapText);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(FormattedText), MapFormattedText);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(Text), MapText);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(FormattedText), MapFormattedText);
 
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
 
 #if ANDROID
 			// Turning selection off resets focusability, which the gesture manager relies on for key activation.
@@ -37,13 +37,13 @@ namespace Microsoft.Maui.Controls
 
 #if ANDROID || IOS
 			// these are for platforms that do no support view properties reaching spans
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextColor), MapTextColor);
+			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
+			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(TextColor), MapTextColor);
 
 			// these are for properties that should only apply to plain text (not spans nor html)
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextDecorations), MapTextDecorations);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(CharacterSpacing), MapCharacterSpacing);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
+			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(TextDecorations), MapTextDecorations);
+			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(CharacterSpacing), MapCharacterSpacing);
+			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
 #endif
 
 #if IOS || MACCATALYST
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 
 			// platform-specifics
 #if WINDOWS
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
+			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #endif
 		}
 
