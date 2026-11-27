@@ -42,10 +42,9 @@ public class Maui39780Tests
 		var xaml = DictionaryXaml(basedOn: true);
 		var generation = harness.Generate(xaml, xaml.Replace("Red", "Blue", StringComparison.Ordinal));
 
-		// Implicit style keys use the target's full name, so the patch does not reference the target type.
-		Assert.Contains("this.Remove(\"Microsoft.Maui.Controls.Label\");",
+		Assert.Contains("this.Remove(typeof(global::Microsoft.Maui.Controls.Label).FullName!);",
 			generation[1].UpdateComponentSource, StringComparison.Ordinal);
-		Assert.Contains("this.AddFactory(\"Microsoft.Maui.Controls.Label\"", generation[1].UpdateComponentSource,
+		Assert.Contains("this.AddFactory(typeof(global::Microsoft.Maui.Controls.Label)", generation[1].UpdateComponentSource,
 			StringComparison.Ordinal);
 		harness.Compile(generation[1]);
 	}

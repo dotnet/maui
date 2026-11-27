@@ -29,10 +29,6 @@
       PrivateAssets="all"
       ReferenceOutputAssembly="false"
       OutputItemType="Analyzer" />
-    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Analyzers.CodeFixes\UITest.Analyzers.CodeFixes.csproj"
-      PrivateAssets="all"
-      ReferenceOutputAssembly="false"
-      OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
