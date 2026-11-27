@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{
+		const string UseLegacyNavigationAnimationsSwitch = "Microsoft.Maui.Platform.Android.UseLegacyNavigationAnimations";
+
 		NavHostFragment? _navHost;
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
@@ -284,17 +286,22 @@ namespace Microsoft.Maui.Platform
 		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
 		{
 			int id;
-			if (isPopping)
+			if (AppContext.TryGetSwitch(UseLegacyNavigationAnimationsSwitch, out var useLegacyAnimations) && useLegacyAnimations)
 			{
-				id = enter
-					? Resource.Animation.nav_default_pop_enter_anim
-					: Resource.Animation.nav_default_pop_exit_anim;
+				id = isPopping
+					? (enter ? Resource.Animation.nav_default_pop_enter_anim : Resource.Animation.nav_default_pop_exit_anim)
+					: (enter ? Resource.Animation.nav_default_enter_anim : Resource.Animation.nav_default_exit_anim);
 			}
 			else
 			{
-				id = enter
-					? Resource.Animation.nav_default_enter_anim
-					: Resource.Animation.nav_default_exit_anim;
+				// AndroidX defines nav_default_* as fade-only animations. Use distinct names
+				// so Android resource merging cannot replace MAUI's slide transitions.
+				var layoutDirection = _fragmentContainerView?.LayoutDirection ?? context.Resources?.Configuration?.LayoutDirection;
+				// In RTL, reuse the opposite slide direction without changing the enter/exit fade.
+				bool usePopResources = isPopping ^ (layoutDirection == LayoutDirection.Rtl);
+				id = usePopResources
+					? (enter ? Resource.Animation.maui_nav_default_pop_enter_anim : Resource.Animation.maui_nav_default_pop_exit_anim)
+					: (enter ? Resource.Animation.maui_nav_default_enter_anim : Resource.Animation.maui_nav_default_exit_anim);
 			}
 
 			return id > 0 ? AnimationUtils.LoadAnimation(context, id) : null;

@@ -16,6 +16,26 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
+### Android navigation animation compatibility
+
+Android navigation stacks using MAUI's default transitions use `maui_nav_default_*`
+animation resources. These names avoid collisions with AndroidX Navigation's
+fade-only `nav_default_*` resources. This applies to `NavigationPage`, including
+one presented as a modal inside Shell, and Shell handlers using the same navigation
+manager. Forward and back transitions are mirrored for right-to-left layouts.
+
+Apps that override `nav_default_*` resources can move their overrides to the
+corresponding `maui_nav_default_*` names. To retain the previous resource lookup
+and animation-direction behavior instead, set this switch before creating the
+MAUI app:
+
+```csharp
+AppContext.SetSwitch("Microsoft.Maui.Platform.Android.UseLegacyNavigationAnimations", true);
+```
+
+The switch does not affect modal presentation or dismissal animations. A custom
+`StackNavigationManager.OnCreateNavigationAnimation` override remains available
+for applications that need to select their own transitions.
 
 ### Cake Commands
 
