@@ -312,7 +312,9 @@ namespace Microsoft.Maui.Controls
 		string ITextInput.Text
 		{
 			get => Text;
-			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+			// Apply the transform here so typing raises TextChanged once, with the transformed text,
+			// instead of once for the raw input and again when the platform echoes the transformed text.
+			set => SetValue(TextProperty, TextTransformUtilities.GetTransformedText(value, TextTransform), SetterSpecificity.FromHandler);
 		}
 
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
