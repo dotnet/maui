@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
 	internal sealed class RegisteredHandlerServiceTypeSet
 	{
-		private static readonly ConditionalWeakTable<IMauiHandlersCollection, RegisteredHandlerServiceTypeSet> s_instances = new();
-
-		internal static RegisteredHandlerServiceTypeSet GetInstance(IMauiHandlersCollection collection) =>
-			s_instances.GetValue(collection, static _ => new RegisteredHandlerServiceTypeSet());
-
 		private readonly HashSet<Type> _concreteHandlerServiceTypeSet = new();
 		private readonly HashSet<Type> _interfaceHandlerServiceTypeSet = new();
 

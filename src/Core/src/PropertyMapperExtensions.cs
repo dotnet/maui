@@ -16,14 +16,22 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			var previousMethod = propertyMapper.GetProperty(key);
-
-			void newMethod(TViewHandler handler, TVirtualView view)
+			ModifyMapping(propertyMapper, key, previousMethod =>
 			{
-				method(handler, view, previousMethod);
-			}
+				void NewMethod(IElementHandler handler, IElement view)
+				{
+					if (view is TVirtualView virtualView)
+					{
+						method((TViewHandler)handler, virtualView, previousMethod);
+					}
+					else
+					{
+						previousMethod?.Invoke(handler, view);
+					}
+				}
 
-			propertyMapper.Add(key, newMethod);
+				return NewMethod;
+			});
 		}
 
 		/// <summary>
@@ -38,17 +46,18 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			var previousMethod = propertyMapper.GetProperty(key);
-
-			void newMethod(IElementHandler handler, IElement view)
+			ModifyMapping(propertyMapper, key, previousMethod =>
 			{
-				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
-					method((TViewHandler)handler!, v, previousMethod);
-				else
-					previousMethod?.Invoke(handler!, view);
-			}
+				void NewMethod(IElementHandler handler, IElement view)
+				{
+					if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+						method((TViewHandler)handler!, v, previousMethod);
+					else
+						previousMethod?.Invoke(handler!, view);
+				}
 
-			propertyMapper.Add(key, newMethod);
+				return NewMethod;
+			});
 		}
 
 		/// <summary>
@@ -64,6 +73,107 @@ namespace Microsoft.Maui
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
 			propertyMapper.ModifyMapping<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
+		}
+
+		internal static void ReplaceMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod =>
+			{
+				void NewMethod(IElementHandler handler, IElement view)
+				{
+					if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+						method((TViewHandler)handler!, virtualView);
+					else
+						previousMethod?.Invoke(handler!, view);
+				}
+
+				return NewMethod;
+			});
+		}
+
+		internal static void ModifyMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod =>
+				(handler, view) => method((TViewHandler)handler, (TVirtualView)view, previousMethod));
+		}
+
+		internal static void ModifyMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod => (handler, view) =>
+			{
+				if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+					method((TViewHandler)handler!, virtualView, previousMethod);
+				else
+					previousMethod?.Invoke(handler!, view);
+			});
+		}
+
+		internal static void AppendToMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod => (handler, view) =>
+			{
+				previousMethod?.Invoke(handler, view);
+				method((TViewHandler)handler, (TVirtualView)view);
+			});
+		}
+
+		internal static void AppendToMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod => (handler, view) =>
+			{
+				previousMethod?.Invoke(handler, view);
+
+				if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+					method((TViewHandler)handler!, virtualView);
+			});
+		}
+
+		internal static void PrependToMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod => (handler, view) =>
+			{
+				method((TViewHandler)handler, (TVirtualView)view);
+				previousMethod?.Invoke(handler, view);
+			});
+		}
+
+		internal static void PrependToMappingForControls<TVirtualView, TViewHandler>(
+			this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+			string key,
+			Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			ModifyFrameworkMapping(propertyMapper, key, previousMethod => (handler, view) =>
+			{
+				if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+					method((TViewHandler)handler!, virtualView);
+
+				previousMethod?.Invoke(handler!, view);
+			});
 		}
 
 		/// <summary>
@@ -144,6 +254,36 @@ namespace Microsoft.Maui
 
 				action?.Invoke(handler!, view);
 			});
+		}
+
+		static void ModifyMapping(
+			IPropertyMapper propertyMapper,
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization)
+		{
+			if (propertyMapper is PropertyMapper concreteMapper)
+			{
+				concreteMapper.AddMappingCustomization(key, customization);
+				return;
+			}
+
+			var mapping = customization(propertyMapper.GetProperty(key));
+			((IPropertyMapper<IElement, IElementHandler>)propertyMapper).Add(key, mapping);
+		}
+
+		static void ModifyFrameworkMapping(
+			IPropertyMapper propertyMapper,
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
+		{
+			if (propertyMapper is PropertyMapper concreteMapper)
+			{
+				concreteMapper.ModifyFrameworkMapping(key, modification);
+				return;
+			}
+
+			var mapping = modification(propertyMapper.GetProperty(key));
+			((IPropertyMapper<IElement, IElementHandler>)propertyMapper).Add(key, mapping);
 		}
 	}
 }
