@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
+		IVisualDiagnosticsOverlay? _visualDiagnosticsOverlay;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -101,7 +102,22 @@ namespace Microsoft.Maui.Controls
 
 		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
-		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
+		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay
+		{
+			get
+			{
+				if (_visualDiagnosticsOverlay is null)
+				{
+#pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
+					_visualDiagnosticsOverlay = RuntimeFeature.EnableMauiDiagnostics
+						? new VisualDiagnosticsOverlay(this)
+						: new DisabledVisualDiagnosticsOverlay(this);
+#pragma warning restore CA1416
+				}
+
+				return _visualDiagnosticsOverlay;
+			}
+		}
 
 		public Window()
 		{
@@ -109,9 +125,6 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
-#pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
-			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
-#pragma warning restore CA1416
 			_menuBarTracker = new MenuBarTracker(this, "MenuBar");
 		}
 
@@ -965,6 +978,52 @@ namespace Microsoft.Maui.Controls
 			protected override Task OnPushModal(Page modal, bool animated)
 			{
 				return _owner.ModalNavigationManager.PushModalAsync(modal, animated);
+			}
+		}
+
+		sealed class DisabledVisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
+		{
+			public DisabledVisualDiagnosticsOverlay(IWindow window)
+				: base(window)
+			{
+			}
+
+			public override bool Initialize() => false;
+
+			public bool ScrollToElement { get; set; }
+
+			public bool EnableElementSelector { get; set; }
+
+			public Point Offset => default;
+
+			public IReadOnlyCollection<IScrollView> ScrollViews => Array.Empty<IScrollView>();
+
+			public bool AddAdorner(IAdorner adorner, bool scrollToElement = false) => false;
+
+			public bool AddAdorner(IVisualTreeElement visualElement, bool scrollToElement = false) => false;
+
+			public bool RemoveAdorner(IAdorner adorner) => false;
+
+			public void RemoveAdorners()
+			{
+			}
+
+			public bool RemoveAdorners(IVisualTreeElement visualElement) => false;
+
+			public void AddScrollableElementHandlers()
+			{
+			}
+
+			public void AddScrollableElementHandler(IScrollView view)
+			{
+			}
+
+			public void RemoveScrollableElementHandler()
+			{
+			}
+
+			public void ScrollToView(IVisualTreeElement element)
+			{
 			}
 		}
 	}

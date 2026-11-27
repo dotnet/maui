@@ -2,6 +2,21 @@
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.BundledVersions.targets" />
 
+  <PropertyGroup>
+    <EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == ''">$(EnableDiagnostics)</EnableMauiDiagnostics>
+    <EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == '' and '$(Optimize)' != 'true'">true</EnableMauiDiagnostics>
+    <EnableMauiDiagnostics Condition="'$(EnableMauiDiagnostics)' == ''">false</EnableMauiDiagnostics>
+  </PropertyGroup>
+
+  <Target Name="_MauiConfigureDiagnostics" BeforeTargets="_PrepareTrimConfiguration;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics"
+                                      Condition="'$(EnableMauiDiagnostics)' != ''"
+                                      Value="$(EnableMauiDiagnostics)"
+                                      Trim="true" />
+    </ItemGroup>
+  </Target>
+
   <!-- 
     Check to make sure that .NET MAUI packages are not installed as .NET Standard
     when they are installed into a .NET "Core" project. If this happens, it means

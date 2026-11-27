@@ -84,6 +84,7 @@
     </ItemGroup>
     <Copy SourceFiles="@(BuildTasksNugetFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(RepoRoot)src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets" DestinationFolder="$(MauiHelixPayloadDir)src/Core/src/nuget/buildTransitive" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.After.targets" DestinationFolder="$(MauiHelixPayloadDir)src/Core/src/nuget/buildTransitive" SkipUnchangedFiles="true" />
     
     <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
   </Target>
