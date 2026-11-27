@@ -21,11 +21,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
-		bool enableDiagnosticsInitialState;
+		bool enableMauiDiagnosticsInitialState;
 		public BindingUnitTests()
 		{
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 		}
 
 		bool _disposed;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (disposing)
 			{
-				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 			}
 
 			_disposed = true;

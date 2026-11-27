@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Xunit;
@@ -28,18 +29,18 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 #else
 	public class Tests : BaseTestFixture
 	{
-		bool enableDiagnosticsInitialState;
+		bool enableMauiDiagnosticsInitialState;
 
 		protected internal override void Setup()
 		{
 			base.Setup();
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 		}
 
 		protected internal override void TearDown()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 			base.TearDown();
 		}
 

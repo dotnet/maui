@@ -7,6 +7,7 @@ using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
 public class Maui33293Product
 {
 	public string Name { get; set; } = string.Empty;
@@ -22,18 +23,20 @@ public partial class Maui33293
 	public class Maui33293Tests : IDisposable
 	{
 		bool bindingFailureReported = false;
+		readonly bool enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
 
 		public Maui33293Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 			BindingDiagnostics.BindingFailed += BindingFailed;
 		}
 
 		public void Dispose()
 		{
 			BindingDiagnostics.BindingFailed -= BindingFailed;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 			DispatcherProvider.SetCurrent(null);
 			AppInfo.SetCurrent(null);
 		}

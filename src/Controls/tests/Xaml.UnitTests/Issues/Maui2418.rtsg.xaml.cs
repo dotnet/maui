@@ -12,17 +12,17 @@ public partial class Maui2418 : ContentPage
 	[Collection("Issue")]
 	public class Tests : IDisposable
 	{
-		bool enableDiagnosticsInitialState;
+		bool enableMauiDiagnosticsInitialState;
 
 		public Tests()
 		{
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 		}
 
 		public void Dispose()
 		{
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 		}
 
 		[Theory]
