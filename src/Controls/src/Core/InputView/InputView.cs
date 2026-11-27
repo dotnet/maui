@@ -4,9 +4,10 @@ using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
-#if ANDROID
+#if ANDROID || WINDOWS
 using Microsoft.Maui.Handlers;
-#elif IOS || MACCATALYST || WINDOWS
+#endif
+#if IOS || MACCATALYST || WINDOWS
 using Microsoft.Maui.Platform;
 #endif
 #if IOS || MACCATALYST
@@ -322,6 +323,14 @@ namespace Microsoft.Maui.Controls
 			get => Text;
 			set
 			{
+#if WINDOWS
+				if (this is SearchBar && Handler is SearchBarHandler)
+				{
+					// AutoSuggestBox ignores the mapper's programmatic echo: only the display is transformed.
+					SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+					return;
+				}
+#endif
 				// Normalize before notifying subscribers, without changing the casing of passwords.
 				var transform = TextTransform;
 				var transformedText = value;
