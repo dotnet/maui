@@ -10,10 +10,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Enable CSS support even though this project doesn't have MauiCss items, since some tests use CSS -->
     <MauiCssEnabled>true</MauiCssEnabled>
-    <!-- On CI, build universal binaries where both simulator architectures are supported. -->
+    <!-- On CI, build universal binaries for iOS/MacCatalyst to support both x64 and arm64 test agents -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
-    <RuntimeIdentifiers Condition="$(TargetFramework.StartsWith('$(_MauiDotNetTfm)-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
@@ -29,7 +28,7 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
     <!-- TODO: remove these obsolete nowarns and fix it in code -->
-    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;MAUIX2025;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618;IL2026;IL2091;IL2067;IL2072;IL2087;IL3050</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">

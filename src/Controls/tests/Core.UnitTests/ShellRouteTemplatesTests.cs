@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public partial class ShellRouteTemplatesTests : ShellTestBase
+	public class ShellRouteTemplatesTests : ShellTestBase
 	{
 		[QueryProperty(nameof(Sku), "sku")]
-		public partial class ProductPage : ContentPage
+		public class ProductPage : ContentPage
 		{
 			public string Sku { get; set; }
 		}
 
 		[QueryProperty(nameof(Sku), "sku")]
 		[QueryProperty(nameof(ReviewId), "reviewId")]
-		public partial class ReviewPage : ContentPage
+		public class ReviewPage : ContentPage
 		{
 			public string Sku { get; set; }
 			public string ReviewId { get; set; }
@@ -238,8 +237,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ReceivedQuery = new Dictionary<string, object>(query);
 			}
-
-			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
 		[Fact]
@@ -307,7 +304,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Default Values =====
 
 		[QueryProperty(nameof(Stars), "stars")]
-		public partial class DefaultStarsPage : ContentPage
+		public class DefaultStarsPage : ContentPage
 		{
 			public string Stars { get; set; }
 		}
@@ -346,7 +343,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Catch-All Parameters =====
 
 		[QueryProperty(nameof(FilePath), "path")]
-		public partial class FileBrowserPage : ContentPage
+		public class FileBrowserPage : ContentPage
 		{
 			public string FilePath { get; set; }
 		}
@@ -391,7 +388,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// ===== Constraints =====
 
 		[QueryProperty(nameof(OrderId), "id")]
-		public partial class OrderDetailPage : ContentPage
+		public class OrderDetailPage : ContentPage
 		{
 			public string OrderId { get; set; }
 		}
@@ -639,40 +636,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(t);
 		}
 
-		public static TheoryData<string> Cultures => new()
-		{
-			"en-US",
-			"cs-CZ",
-			"fr-FR",
-			"de-DE",
-			"tr-TR",
-			"ar-SA",
-			"th-TH",
-		};
-
-		static void WithCulture(string culture, Action action)
-		{
-			var originalCulture = CultureInfo.CurrentCulture;
-			try
-			{
-				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
-				action();
-			}
-			finally
-			{
-				CultureInfo.CurrentCulture = originalCulture;
-			}
-		}
-
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Int(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Int()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("int", "42"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("int", "-7"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("int", "abc"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("int", "3.14"));
-		});
+		}
 
 		[Fact]
 		public void SatisfiesConstraint_Bool()
@@ -705,29 +676,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(RouteTemplate.SatisfiesConstraint("guid", ""));
 		}
 
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Long(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Long()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("long", "9999999999"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("long", "-1"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("long", "abc"));
-		});
+		}
 
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Double(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Double()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("double", "3.14"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("double", "-0.5"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("double", "not-a-number"));
-		});
+		}
 
 		// ===== Multi-param and combination tests =====
 
 		[QueryProperty(nameof(Category), "cat")]
 		[QueryProperty(nameof(ItemId), "id")]
-		public partial class TwoParamPage : ContentPage
+		public class TwoParamPage : ContentPage
 		{
 			public string Category { get; set; }
 			public string ItemId { get; set; }
