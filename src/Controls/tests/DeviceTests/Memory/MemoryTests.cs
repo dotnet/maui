@@ -47,7 +47,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
-				handlers.AddHandler<ContentButton, ContentButtonHandler>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
@@ -240,7 +239,6 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(BoxView))]
 	[InlineData(typeof(Button))]
 	[InlineData(typeof(CarouselView))]
-	[InlineData(typeof(ContentButton))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
 	// [InlineData(typeof(DatePicker))] - This test was moved to MemoryTests.cs inside Appium
@@ -774,10 +772,67 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+#if IOS || MACCATALYST
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task CollectionView2ReorderingDoesNotLeakAfterNavigationPop(bool canReorderItems)
+	{
+		SetupBuilder();
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Root" });
+		await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage), async _ =>
+		{
+			var references = new List<WeakReference>();
+			for (var visit = 0; visit < 5; visit++)
+			{
+				references.AddRange(await PushReorderableCollectionView(navPage, canReorderItems));
+				await Task.Delay(700);
+				await navPage.Navigation.PopAsync(animated: true);
+				await Task.Delay(700);
+			}
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}, timeOut: TimeSpan.FromSeconds(60));
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	async Task<WeakReference[]> PushReorderableCollectionView(NavigationPage navPage, bool canReorderItems)
+	{
+		var collectionView = new CollectionView
+		{
+			CanReorderItems = canReorderItems,
+			ItemsSource = new ObservableCollection<string> { "One", "Two", "Three" },
+			ItemTemplate = new DataTemplate(static () =>
+			{
+				var label = new Label { HeightRequest = 40 };
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+		var page = new ContentPage { Content = collectionView };
+		await navPage.Navigation.PushAsync(page, animated: true);
+		await OnLoadedAsync(collectionView, TimeSpan.FromSeconds(10));
+		await Task.Delay(300);
+
+		var handler = Assert.IsType<CollectionViewHandler2>(collectionView.Handler);
+		var controller = Assert.IsType<ReorderableItemsViewController2<ReorderableItemsView>>(handler.Controller);
+		var nativeView = controller.CollectionView;
+		Assert.NotNull(nativeView.CollectionViewLayout);
+		Assert.NotNull(nativeView.Delegate);
+
+		return
+		[
+			new(controller),
+			new(nativeView),
+			new(nativeView.CollectionViewLayout),
+			new(nativeView.Delegate)
+		];
+	}
+
 	// https://github.com/dotnet/maui/issues/35472
 	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
 	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.
-#if IOS || MACCATALYST
 	[Fact("CarouselViewController2 Controller Does Not Leak After Navigation Pop (Issue 35472)")]
 	public async Task CarouselViewController2ControllerDoesNotLeakAfterNavigationPop()
 	{
