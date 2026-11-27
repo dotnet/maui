@@ -23,6 +23,10 @@
     <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_MauiDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
     <!-- A command-line setting would also make referenced libraries run MakeAppx. -->
     <GenerateAppxPackageOnBuild Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiTestPackaged)' == 'true'">true</GenerateAppxPackageOnBuild>
+    <!-- The WinApp build tools otherwise replace RunCommand with 'winapp run', which registers a
+         development-mode package and fails because the signed MSIX is already installed. Packaged
+         runs launch the installed package through MauiTestLauncherPath instead. -->
+    <EnableWinAppRunSupport Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiTestPackaged)' == 'true'">false</EnableWinAppRunSupport>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Xunit" />
