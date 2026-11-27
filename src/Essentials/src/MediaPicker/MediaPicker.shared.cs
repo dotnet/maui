@@ -166,8 +166,8 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <remarks>
 		/// <para>Please note that performance might be affected by the compression quality, especially on lower-end devices.</para>
-		/// <para>The output container is preserved deterministically: a PNG source is saved as PNG and any other format is saved as JPEG.</para>
-		/// <para>For JPEG output this controls the lossy compression quality directly. PNG output is lossless, so this value does not affect PNG encoding (resizing, if requested, still applies).</para>
+		/// <para>For JPEG images, this controls the lossy compression quality directly.</para>
+		/// <para>For PNG images, values below 90 will convert to JPEG format for better compression. Values 90-99 will scale down the PNG image. Value 100 preserves original PNG format and quality.</para>
 		/// </remarks>
 		public int CompressionQuality
 		{
@@ -240,8 +240,7 @@ namespace Microsoft.Maui.Media
 		/// will be copied from the original image to the processed image during operations like resizing,
 		/// compression, or rotation.</para>
 		/// <para>Setting this to false may result in smaller file sizes but will lose the image's metadata.</para>
-		/// <para>Metadata preservation is platform and format dependent. Android and Windows support JPEG;
-		/// iOS and Mac Catalyst support JPEG and PNG.</para>
+		/// <para>Currently not supported on Windows.</para>
 		/// </remarks>
 		public bool PreserveMetaData { get; set; } = true;
 

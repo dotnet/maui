@@ -464,8 +464,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(circle.IsVisible);
 		}
 
-		// MapStyle is only rendered on Android, but these tests exercise the bindable property itself.
-#pragma warning disable CA1416
 		[Fact]
 		public void MapStyleDefaultIsNull()
 		{
@@ -490,7 +488,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.MapStyle = null;
 			Assert.Null(map.MapStyle);
 		}
-#pragma warning restore CA1416
 
 		// Checks if for every item in the items source there's a corresponding pin
 		static bool IsMapWithItemsSource(IEnumerable itemsSource, Map map)
