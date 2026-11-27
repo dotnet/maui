@@ -276,23 +276,28 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Splits on '.' but not inside an indexer, so Items[he.llo] stays one part.
 		static string[] SplitPath(string path)
 		{
 			var parts = new List<string>();
-			int depth = 0, start = 0;
+			int start = 0;
+			bool hasIndexer = false;
+			char lastNonWhitespace = '\0';
+			// A ']' at the end of a part (ignoring whitespace) closes the indexer.
+			// Keep the legacy separator after it; brackets elsewhere are literal key text.
 			for (int i = 0; i < path.Length; i++)
 			{
 				char c = path[i];
 				if (c == '[')
-					depth++;
-				else if (c == ']')
-					depth--;
-				else if (c == '.' && depth == 0)
+					hasIndexer = true;
+				else if (c == '.' && (!hasIndexer || lastNonWhitespace == ']'))
 				{
 					parts.Add(path.Substring(start, i - start));
 					start = i + 1;
+					hasIndexer = false;
 				}
+
+				if (!char.IsWhiteSpace(c))
+					lastNonWhitespace = c;
 			}
 			parts.Add(path.Substring(start));
 			return parts.ToArray();

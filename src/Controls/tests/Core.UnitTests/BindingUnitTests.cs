@@ -2306,6 +2306,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Baz", label.Text);
 		}
 
+		[Theory]
+		[InlineData("a[b", "Items[a[b].Name")]
+		[InlineData("a]b", "Items[a]b].Name")]
+		[InlineData("a[b", "Items[a[b] .Name")]
+		[InlineData("a]b.c", "Items[a]b.c].Name")]
+		public void BindingReadsLiteralBracketKey(string key, string path)
+		{
+			var source = new { Items = new Dictionary<string, object> { [key] = new { Name = "found" } } };
+			var label = new Label { BindingContext = source };
+			label.SetBinding(Label.TextProperty, path);
+
+			Assert.Equal("found", label.Text);
+		}
+
 		class VM57081
 		{
 			string _foo;
