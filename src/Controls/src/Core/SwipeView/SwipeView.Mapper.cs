@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 		internal static new void RemapForControls()
 		{
 			// Adjusted the mapping to preserve SwipeView.Entry legacy behavior
-			SwipeViewHandler.Mapper.AppendToMapping<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
+			SwipeViewHandler.Mapper.AppendToMappingForControls<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
 		}
 
 		static void MapBackground(ISwipeViewHandler handler, SwipeView swipeView)
