@@ -27,3 +27,6 @@ static readonly Microsoft.Maui.Easing.Hold -> Microsoft.Maui.Easing!
 Microsoft.Maui.ILabel.IsTextSelectable.get -> bool
 static Microsoft.Maui.Handlers.LabelHandler.MapIsTextSelectable(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Platform.TextBlockExtensions.UpdateIsTextSelectable(this Microsoft.UI.Xaml.Controls.TextBlock! platformControl, Microsoft.Maui.ILabel! label) -> void
+Microsoft.Maui.ISearchBarClearButtonVisibility
+Microsoft.Maui.ISearchBarClearButtonVisibility.ClearButtonVisibility.get -> Microsoft.Maui.ClearButtonVisibility
+static Microsoft.Maui.Handlers.SearchBarHandler.MapClearButtonVisibility(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

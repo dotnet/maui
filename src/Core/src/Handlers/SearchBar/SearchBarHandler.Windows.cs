@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
@@ -136,6 +137,22 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		/// <summary>Maps the search bar's cancel and clear button visibility.</summary>
+		/// <param name="handler">The search bar handler.</param>
+		/// <param name="searchBar">The search bar.</param>
+		public static void MapClearButtonVisibility(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler.PlatformView is { IsLoaded: true } platformView)
+			{
+				var showCancelButton = searchBar is not ISearchBarClearButtonVisibility ||
+					(searchBar.AllowsCancelButton() && !string.IsNullOrEmpty(platformView.Text));
+				var wasEnabled = MauiTextBox.GetIsDeleteButtonEnabled(platformView);
+				MauiTextBox.SetIsDeleteButtonEnabled(platformView, showCancelButton);
+				if (!showCancelButton && !wasEnabled)
+					MauiTextBox.OnIsDeleteButtonEnabledPropertyChanged(platformView);
+			}
+		}
+
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateSearchIconColor(searchBar);
@@ -163,6 +180,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateIsSpellCheckEnabled(VirtualView);
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
+				UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 				PlatformView?.UpdateSearchIconColor(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
 				PlatformView?.UpdateReturnType(VirtualView);
@@ -195,10 +213,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
-			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			if (VirtualView == null || sender == null)
 				return;
 
-			if (VirtualView == null || sender == null)
+			UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+
+			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
 				return;
 
 			VirtualView.Text = sender.Text;
@@ -207,11 +227,15 @@ namespace Microsoft.Maui.Handlers
 		void OnGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			UpdateIsFocused(true);
+			if (VirtualView != null)
+				UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			UpdateIsFocused(false);
+			if (VirtualView != null)
+				UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		void OnPlatformSelectionChanged(object sender, UI.Xaml.RoutedEventArgs e)

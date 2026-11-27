@@ -19,6 +19,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+		/// <summary>Maps the search bar's cancel and clear button visibility.</summary>
+		/// <param name="handler">The search bar handler.</param>
+		/// <param name="searchBar">The search bar.</param>
+		public static void MapClearButtonVisibility(ISearchBarHandler handler, ISearchBar searchBar) { }
 		internal static void MapSearchIconColor(IViewHandler handler, ISearchBar searchBar) { }
 
 		/// <summary>

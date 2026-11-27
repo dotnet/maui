@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ISearchBarHandler handler, SearchBar searchBar)
 		{
 			Platform.SearchViewExtensions.UpdateText(handler.PlatformView, searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 
 		// Material3 specific overload for SearchBarHandler2
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 	}
 }

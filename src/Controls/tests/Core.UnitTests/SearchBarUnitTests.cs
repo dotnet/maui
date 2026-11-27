@@ -19,6 +19,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ClearButtonVisibilitySupportsBinding()
+		{
+			var source = new SearchBar();
+			var target = new SearchBar { BindingContext = source };
+			target.SetBinding(SearchBar.ClearButtonVisibilityProperty, nameof(SearchBar.ClearButtonVisibility));
+
+			Assert.Equal(ClearButtonVisibility.WhileEditing, target.ClearButtonVisibility);
+			source.ClearButtonVisibility = ClearButtonVisibility.Never;
+			Assert.Equal(ClearButtonVisibility.Never, target.ClearButtonVisibility);
+			source.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+			Assert.Equal(ClearButtonVisibility.WhileEditing, target.ClearButtonVisibility);
+		}
+
+		[Fact]
 		public void TestContentsChanged()
 		{
 			SearchBar searchBar = new SearchBar();

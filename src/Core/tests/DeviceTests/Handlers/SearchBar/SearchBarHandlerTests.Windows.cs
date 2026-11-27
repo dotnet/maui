@@ -9,6 +9,55 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Theory]
+		[InlineData(ClearButtonVisibility.WhileEditing)]
+		[InlineData(ClearButtonVisibility.Never)]
+		public async Task CancelButtonVisibilityFollowsRuntimeChanges(ClearButtonVisibility visibility)
+		{
+			var searchBar = new Controls.SearchBar { Text = "search", ClearButtonVisibility = visibility };
+
+			await AttachAndRun(searchBar, async handler =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded);
+
+				var platformView = handler.PlatformView;
+				var deleteButton = Assert.IsAssignableFrom<Button>(platformView.GetDescendantByName<Button>("DeleteButton"));
+				var grid = Assert.IsAssignableFrom<Grid>(deleteButton.Parent);
+				var column = grid.ColumnDefinitions[Grid.GetColumn(deleteButton)];
+
+				var editor = Assert.IsAssignableFrom<TextBox>(platformView.GetFirstDescendant<TextBox>());
+				editor.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+				await AssertEventually(() => searchBar.IsFocused);
+				Assert.Equal(visibility == ClearButtonVisibility.WhileEditing, deleteButton.IsEnabled);
+
+				searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+				Assert.False(deleteButton.IsEnabled);
+				Assert.Equal(0d, column.Width.Value);
+
+				editor.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+				searchBar.Text = "typed";
+				Assert.False(deleteButton.IsEnabled);
+				Assert.Equal(0d, column.Width.Value);
+
+				searchBar.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+				Assert.True(deleteButton.IsEnabled);
+				Assert.Equal(Microsoft.UI.Xaml.GridUnitType.Auto, column.Width.GridUnitType);
+
+				searchBar.Text = string.Empty;
+				Assert.False(deleteButton.IsEnabled);
+				Assert.Equal(0d, column.Width.Value);
+
+				searchBar.Text = null;
+				Assert.False(deleteButton.IsEnabled);
+				searchBar.Text = "again";
+				Assert.True(deleteButton.IsEnabled);
+
+				searchBar.Unfocus();
+				await AssertEventually(() => !searchBar.IsFocused);
+				Assert.False(deleteButton.IsEnabled);
+			});
+		}
+
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 

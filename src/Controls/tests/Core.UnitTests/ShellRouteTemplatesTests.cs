@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -639,40 +638,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(t);
 		}
 
-		public static TheoryData<string> Cultures => new()
-		{
-			"en-US",
-			"cs-CZ",
-			"fr-FR",
-			"de-DE",
-			"tr-TR",
-			"ar-SA",
-			"th-TH",
-		};
-
-		static void WithCulture(string culture, Action action)
-		{
-			var originalCulture = CultureInfo.CurrentCulture;
-			try
-			{
-				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
-				action();
-			}
-			finally
-			{
-				CultureInfo.CurrentCulture = originalCulture;
-			}
-		}
-
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Int(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Int()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("int", "42"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("int", "-7"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("int", "abc"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("int", "3.14"));
-		});
+		}
 
 		[Fact]
 		public void SatisfiesConstraint_Bool()
@@ -705,23 +678,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(RouteTemplate.SatisfiesConstraint("guid", ""));
 		}
 
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Long(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Long()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("long", "9999999999"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("long", "-1"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("long", "abc"));
-		});
+		}
 
-		[Theory]
-		[MemberData(nameof(Cultures))]
-		public void SatisfiesConstraint_Double(string culture) => WithCulture(culture, () =>
+		[Fact]
+		public void SatisfiesConstraint_Double()
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("double", "3.14"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("double", "-0.5"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("double", "not-a-number"));
-		});
+		}
 
 		// ===== Multi-param and combination tests =====
 

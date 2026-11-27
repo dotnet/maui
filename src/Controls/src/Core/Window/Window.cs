@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
+#pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
 			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
+#pragma warning restore CA1416
 			_menuBarTracker = new MenuBarTracker(this, "MenuBar");
 		}
 
