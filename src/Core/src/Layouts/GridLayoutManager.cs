@@ -213,6 +213,7 @@ namespace Microsoft.Maui.Layouts
 					for (int columnIndex = column; columnIndex < column + columnSpan; columnIndex++)
 					{
 						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].GridLength.GridUnitType);
+						_columns[columnIndex].HasContent = true;
 					}
 
 					var row = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
@@ -223,6 +224,7 @@ namespace Microsoft.Maui.Layouts
 					for (int rowIndex = row; rowIndex < row + rowSpan; rowIndex++)
 					{
 						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].GridLength.GridUnitType);
+						_rows[rowIndex].HasContent = true;
 					}
 
 					var cell = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
@@ -708,20 +710,20 @@ namespace Microsoft.Maui.Layouts
 
 				if (_rowStarCount > 0 && !double.IsInfinity(_gridHeightConstraint)
 					&& (Dimension.IsExplicitSet(_explicitGridHeight) || _grid.VerticalLayoutAlignment == LayoutAlignment.Fill)
-					&& HasEmptyStarAndOccupiedStar(_rows, isColumn: false))
+					&& HasEmptyStarAndOccupiedStar(_rows))
 				{
-					NormalizeStarMinimums(_rows);
+					NormalizeStarMinimums(_rows, isColumn: false);
 				}
 
 				if (_columnStarCount > 0 && !double.IsInfinity(_gridWidthConstraint)
 					&& (Dimension.IsExplicitSet(_explicitGridWidth) || _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill)
-					&& HasEmptyStarAndOccupiedStar(_columns, isColumn: true))
+					&& HasEmptyStarAndOccupiedStar(_columns))
 				{
-					NormalizeStarMinimums(_columns);
+					NormalizeStarMinimums(_columns, isColumn: true);
 				}
 			}
 
-			bool HasEmptyStarAndOccupiedStar(Definition[] definitions, bool isColumn)
+			static bool HasEmptyStarAndOccupiedStar(Definition[] definitions)
 			{
 				bool hasEmptyStar = false;
 				bool hasOccupiedStar = false;
@@ -733,21 +735,8 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					bool isOccupied = false;
-					for (int cellIndex = 0; cellIndex < _cells.Length; cellIndex++)
-					{
-						var cell = _cells[cellIndex];
-						int cellStart = isColumn ? cell.Column : cell.Row;
-						int cellSpan = isColumn ? cell.ColumnSpan : cell.RowSpan;
-						if (definitionIndex >= cellStart && definitionIndex < cellStart + cellSpan)
-						{
-							isOccupied = true;
-							break;
-						}
-					}
-
-					hasOccupiedStar |= isOccupied;
-					hasEmptyStar |= !isOccupied;
+					hasOccupiedStar |= definitions[definitionIndex].HasContent;
+					hasEmptyStar |= !definitions[definitionIndex].HasContent;
 
 					if (hasEmptyStar && hasOccupiedStar)
 					{
@@ -758,20 +747,45 @@ namespace Microsoft.Maui.Layouts
 				return false;
 			}
 
-			static void NormalizeStarMinimums(Definition[] definitions)
+			void NormalizeStarMinimums(Definition[] definitions, bool isColumn)
 			{
-				if (definitions.Length < 2)
-				{
-					return;
-				}
-
 				double minimumStarSize = 0;
-				for (int n = 0; n < definitions.Length; n++)
+				double spacing = isColumn ? _columnSpacing : _rowSpacing;
+				double constraint = isColumn ? _gridWidthConstraint : _gridHeightConstraint;
+
+				for (int n = 0; n < _cells.Length; n++)
 				{
-					var definition = definitions[n];
-					if (definition.IsStar && definition.GridLength.Value > 0)
+					var cell = _cells[n];
+					if (isColumn ? !cell.IsColumnSpanStar : !cell.IsRowSpanStar)
 					{
-						minimumStarSize = Math.Max(minimumStarSize, definition.MinimumSize / definition.GridLength.Value);
+						continue;
+					}
+
+					int start = isColumn ? cell.Column : cell.Row;
+					int span = isColumn ? cell.ColumnSpan : cell.RowSpan;
+					var desiredSize = _childrenToLayOut[cell.ViewIndex].DesiredSize;
+					double required = Math.Min(constraint, isColumn ? desiredSize.Width : desiredSize.Height) - spacing * (span - 1);
+					double starWeight = 0;
+					double availableStarSpace = 0;
+
+					for (int index = start; index < start + span; index++)
+					{
+						var definition = definitions[index];
+						if (definition.IsStar)
+						{
+							starWeight += definition.GridLength.Value;
+							availableStarSpace += definition.Size;
+						}
+						else
+						{
+							required -= definition.Size;
+						}
+					}
+
+					if (starWeight > 0)
+					{
+						// A spanning child's requirement is shared by the combined star weight.
+						minimumStarSize = Math.Max(minimumStarSize, Math.Min(required, availableStarSpace) / starWeight);
 					}
 				}
 
@@ -934,6 +948,7 @@ namespace Microsoft.Maui.Layouts
 					// each star row/column do not exceed the value for starSize at the arranged size 
 					// (which may be smaller than the measured size)
 					EnsureSizeLimit(definitions, starSize);
+					currentSize = SumDefinitions(definitions, spacing, minimize: true);
 				}
 
 				// Inflate the stars so that we fill up the space at this size
@@ -1280,6 +1295,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			readonly GridLength _gridLength;
 			private double _size;
+
+			public bool HasContent { get; set; }
 
 			/// <summary>
 			/// The current size of this definition

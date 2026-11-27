@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -36,44 +37,120 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var value = new Label
-			{
-				Text = "1 - Non-Emergency",
-				LineBreakMode = LineBreakMode.TailTruncation,
-				VerticalTextAlignment = TextAlignment.Center
-			};
-			var grid = new Grid
-			{
-				WidthRequest = widthRequest,
-				Padding = 10,
-				ColumnDefinitions =
-				{
-					new ColumnDefinition(new GridLength(0.6, GridUnitType.Star)),
-					new ColumnDefinition(new GridLength(0.2, GridUnitType.Star)),
-					new ColumnDefinition(new GridLength(0.6, GridUnitType.Star))
-				}
-			};
-			grid.Add(new Label { Text = "Run Monitor", VerticalTextAlignment = TextAlignment.Center });
-			grid.Add(value, 2, 0);
 			var layout = new VerticalStackLayout
 			{
 				HorizontalOptions = LayoutOptions.Center,
-				Children = { grid }
+				WidthRequest = widthRequest
 			};
 
-			await AttachAndRun(layout, (LayoutHandler handler) =>
+			await AttachAndRun(layout, async (LayoutHandler handler) =>
 			{
+				(string Title, string Value)[] items =
+				[
+					("Motion", "2 - Run Monitor"),
+					("Calls", "2 - Run Monitor"),
+					("Speed", "3 - Selector"),
+					("Lockouts", "0 - Automatic"),
+					("Automatic", "2 - No Calls"),
+					("Run Monitor", "1 - Non-Emergency"),
+					("Selector", "1 - Selector lost")
+				];
+				var grids = new Grid[items.Length];
+				var titles = new Label[items.Length];
+				var values = new Label[items.Length];
+				var layoutCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				bool rowsAdded = false;
+
+				void OnLayoutUpdated(object sender, object args)
+				{
+					if (!rowsAdded)
+						return;
+
+					for (int i = 0; i < items.Length; i++)
+					{
+						if (grids[i].Handler?.PlatformView is not FrameworkElement { IsLoaded: true, ActualWidth: > 0 } ||
+							values[i].Handler is not LabelHandler label || !label.PlatformView.IsLoaded ||
+							label.PlatformView.ActualWidth <= 0 || values[i].Width <= 0 ||
+							titles[i].Text != items[i].Title || values[i].Text != items[i].Value)
+						{
+							return;
+						}
+					}
+
+					layoutCompleted.TrySetResult();
+				}
+
+				handler.PlatformView.LayoutUpdated += OnLayoutUpdated;
+				try
+				{
+					for (int i = 0; i < items.Length; i++)
+					{
+						var title = new Label { FontSize = 16, VerticalTextAlignment = TextAlignment.Center };
+						title.SetBinding(Label.TextProperty, "Title");
+						var valueLabel = new Label
+						{
+							FontSize = 14,
+							FontAttributes = FontAttributes.Bold,
+							LineBreakMode = LineBreakMode.TailTruncation,
+							VerticalTextAlignment = TextAlignment.Center
+						};
+						valueLabel.SetBinding(Label.TextProperty, "Value");
+						var rowGrid = new Grid
+						{
+							Padding = 10,
+							BindingContext = new { items[i].Title, items[i].Value },
+							ColumnDefinitions =
+							{
+								new ColumnDefinition(new GridLength(0.6, GridUnitType.Star)),
+								new ColumnDefinition(new GridLength(0.2, GridUnitType.Star)),
+								new ColumnDefinition(new GridLength(0.6, GridUnitType.Star))
+							}
+						};
+						rowGrid.Add(title);
+						rowGrid.Add(valueLabel, 2, 0);
+						grids[i] = rowGrid;
+						titles[i] = title;
+						values[i] = valueLabel;
+						layout.Add(rowGrid);
+					}
+
+					rowsAdded = true;
+					handler.PlatformView.InvalidateMeasure();
+					handler.PlatformView.UpdateLayout();
+					await layoutCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				}
+				finally
+				{
+					handler.PlatformView.LayoutUpdated -= OnLayoutUpdated;
+				}
+
+				var grid = grids[5];
+				var value = values[5];
 				var labelHandler = Assert.IsType<LabelHandler>(value.Handler);
 				var cellWidth = (grid.Width - grid.Padding.HorizontalThickness) * 3 / 7;
 				var expectedX = grid.Padding.Left + (grid.Width - grid.Padding.HorizontalThickness) * 4 / 7;
 
+				for (int i = 0; i < items.Length; i++)
+				{
+					Assert.Equal(grid.Width, grids[i].Width, 1.0);
+					Assert.Equal(value.X, values[i].X, 1.0);
+				}
+
 				Assert.Equal(expectedX, value.X, 1.0);
 				Assert.InRange(labelHandler.PlatformView.ActualWidth, 1, cellWidth + 1);
+				Assert.InRange(labelHandler.PlatformView.ActualWidth, 1, value.Width + 1);
 				if (labelHandler.ContainerView is not null)
 					Assert.InRange(labelHandler.ContainerView.ActualWidth, 1, cellWidth + 1);
 				Assert.Equal(TextTrimming.CharacterEllipsis, labelHandler.PlatformView.TextTrimming);
 				if (widthRequest > 0)
+				{
 					Assert.True(labelHandler.PlatformView.IsTextTrimmed);
+				}
+				else
+				{
+					Assert.False(labelHandler.PlatformView.IsTextTrimmed);
+					Assert.InRange(((IView)value).DesiredSize.Width, 1, value.Width + 1);
+				}
 			});
 		}
 
