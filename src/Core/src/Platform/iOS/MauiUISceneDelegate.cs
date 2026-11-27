@@ -29,8 +29,7 @@ namespace Microsoft.Maui
 
 			try
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
-					_pendingShortcutItem = connectionOptions.ShortcutItem;
+				_pendingShortcutItem = connectionOptions.ShortcutItem;
 				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
 				if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && IPlatformApplication.Current?.Application != null)
@@ -97,17 +96,11 @@ namespace Microsoft.Maui
 			Window?.GetWindow()?.Handler?.GetServiceProvider();
 
 		// The application provider is only used for diagnostics, never to route another window's action.
-		static void LogUnavailableWindow(UIApplicationShortcutItem shortcutItem)
-		{
-			var logger = IPlatformApplication.Current?.Services?
+		static void LogUnavailableWindow(UIApplicationShortcutItem shortcutItem) =>
+			IPlatformApplication.Current?.Services?
 				.GetService<ILoggerFactory>()?
-				.CreateLogger<MauiUISceneDelegate>();
-
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
-				logger?.LogWarning("Unable to dispatch shortcut '{ShortcutType}' because its MAUI window is unavailable.", shortcutItem.Type);
-			else
-				logger?.LogWarning("Unable to dispatch shortcut because its MAUI window is unavailable.");
-		}
+				.CreateLogger<MauiUISceneDelegate>()
+				.LogWarning("Unable to dispatch shortcut '{ShortcutType}' because its MAUI window is unavailable.", shortcutItem.Type);
 
 		// A cold scene connection supplies no native completion handler.
 		static void IgnoreColdShortcutCompletion(bool _)
