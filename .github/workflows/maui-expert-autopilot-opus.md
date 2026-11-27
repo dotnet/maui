@@ -319,9 +319,12 @@ The PR head is checked out in the workspace.
    - Also include concrete changes maintainers asked for that are still open.
    Skip items that would change the approach the author chose. If a finding is wrong, don't fix it;
    explain why in `CANDIDATE.md`. Read the full PR diff with `git diff <merge_base>..HEAD`.
-2. **Fix** the items in the workspace. Make the smallest change that keeps the contributor's approach.
+2. **Triage failing tests** (only when `source` is `tests`). Judge each failure independently: `related` (this PR causes it), `unrelated` (infrastructure, a known flaky test, or already broken on the base
+   branch, for example a build error or test in code the PR doesn't touch), or `unsure`, each with the evidence. The other models judge them too; the majority decides. Only fix the failures you judge `related`.
+3. **Fix** the items in the workspace. Make the smallest change that keeps the contributor's approach.
    Add a regression test for every bug fix, next to existing tests of the same kind. Run the unit tests that
    build on Linux. Do not commit, and only change files under `src/`.
-3. **Write `/tmp/gh-aw/autopilot/CANDIDATE.md`**: for each item, the files you changed, why, and the tests you
-   ran with their result; and the items you did not change, with why.
-4. Call `noop` with a one-line summary. Never merge, approve, retarget, or close pull requests.
+4. **Write `/tmp/gh-aw/autopilot/CANDIDATE.md`**: for each item, the files you changed, why, and the tests you
+   ran with their result; and the items you did not change, with why. When `source` is `tests`, add a
+   `## Failure triage` section with one line per failure: the failure, your verdict, and the evidence.
+5. Call `noop` with a one-line summary. Never merge, approve, retarget, or close pull requests.
