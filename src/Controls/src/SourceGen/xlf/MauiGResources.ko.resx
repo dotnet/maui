@@ -152,24 +152,9 @@
   <data name="DuplicateTypeError" xml:space="preserve">
     <value>"{0}"에 대해 여러 형식이 있습니다.</value>
   </data>
-  <data name="ConflictingXmlnsTypeTitle" xml:space="preserve">
-    <value>Conflicting XAML namespace types</value>
-  </data>
-  <data name="ConflictingXmlnsTypeMessage" xml:space="preserve">
-    <value>Type "{1}" in XML namespace "{0}" is ambiguous between: {2}.</value>
-    <comment>{0} is the XML namespace, {1} is the type name, and {2} is the list of matching types and assemblies.</comment>
-  </data>
   <data name="MemberResolution" xml:space="preserve">
     <value>"{0}"에 대한 액세스 가능한 속성, BindableProperty 또는 이벤트가 없거나 값과 속성 간의 형식이 일치하지 않습니다.</value>
     <comment>{0} is a property name</comment>
-  </data>
-  <data name="ExtensionPropertyAmbiguous" xml:space="preserve">
-    <value>Ambiguous extension property "{0}" for "{2}" in {1}. Multiple declarations apply, but none has a uniquely most-specific receiver.</value>
-    <comment>{0} is a property name, {1} is the namespace or container, {2} is the target type name</comment>
-  </data>
-  <data name="ExtensionPropertyResolution" xml:space="preserve">
-    <value>Cannot resolve the extension property "{0}" on "{1}". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a receiver type matching "{2}" and an accessor for the requested operation, and it must be unambiguous.</value>
-    <comment>{0} is a property name, {1} is the extension container type name, {2} is the target type name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
     <value>"{0}"을(를) Easing으로 변환할 수 없습니다. 필요한 값은 "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" 또는 "SpringOut"입니다.</value>
@@ -261,12 +246,5 @@
   <data name="DuplicatePropertyAssignmentMessage" xml:space="preserve">
     <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
     <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
-  </data>
-  <data name="StyleTargetTypeMismatchTitle" xml:space="preserve">
-    <value>Style TargetType is not compatible with the element</value>
-  </data>
-  <data name="StyleTargetTypeMismatchMessage" xml:space="preserve">
-    <value>Style '{0}' has TargetType '{1}', which is not compatible with '{2}'. The style will not be applied.</value>
-    <comment>0 is a resource key, 1 is the style's target type, 2 is the element type</comment>
   </data>
 </root>

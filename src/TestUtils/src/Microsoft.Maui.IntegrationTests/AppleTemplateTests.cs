@@ -76,7 +76,24 @@ namespace Microsoft.Maui.IntegrationTests
 		[Fact]
 		public void RunOniOS_Previous_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
-		// DotNetCurrent test methods. .NET 12 removed Mono for mobile, so these use CoreCLR or NativeAOT.
+		// Individual test methods for each configuration to enable parallel CI runs
+		// CI uses --filter "FullyQualifiedName~TestMethodName" to run each test in a separate job
+		[Fact]
+		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
+
+		[Fact]
+		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		// CoreCLR test variants
 		[Fact]
 		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 
@@ -91,6 +108,22 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Fact]
 		public void RunOniOS_BlazorRelease_CoreCLR() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
+		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
+		// 
+		// When building maui-blazor template with TrimMode=full, the Razor source generator produces code
+		// that accesses Router.NotFoundPage via reflection, triggering IL2111:
+		//
+		//   error IL2111: Method 'Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set' with
+		//   parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection.
+		//   Trimmer can't guarantee availability of the requirements of the method.
+		//
+		// This is a known limitation - Blazor doesn't fully support TrimMode=full for application assemblies.
+		// See: https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/configure-trimmer
+		//
+		// [Test, Category(Categories.RunOniOS)]
+		// public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
 		[Fact]
 		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);
@@ -113,15 +146,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
-			if (runtimeVariant == RuntimeVariant.Mono)
-			{
-				buildProps.Add("UseMonoRuntime=true");
-				// .NET 11+ SDKs reject Mono for mobile TFMs (NETSDK1242) unless opted out. Restrict the template to iOS
-				// so the global UseMonoRuntime does not also apply to its Android target, which has no Mono runtime.
-				buildProps.Add("_DisableCheckForUnsupportedMonoMobileRuntime=true");
-				buildProps.Add($"TargetFrameworks={framework}-ios");
-			}
-			else if (runtimeVariant == RuntimeVariant.CoreCLR)
+			if (runtimeVariant == RuntimeVariant.CoreCLR)
 			{
 				buildProps.Add("UseMonoRuntime=false");
 			}
