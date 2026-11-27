@@ -178,8 +178,13 @@ namespace Microsoft.Maui.DeviceTests
 #elif IOS || MACCATALYST
 			return ((UIKit.UIView)platformView).Superview;
 #elif WINDOWS
-			// FrameworkElement.Parent is the logical parent; the visual parent reflects panel membership.
-			return Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent((Microsoft.UI.Xaml.FrameworkElement)platformView);
+			// VisualTreeHelper.GetParent returns null for elements outside the live tree, and these
+			// handlers are never added to a window. A panel child's FrameworkElement.Parent is the panel.
+			var element = (Microsoft.UI.Xaml.FrameworkElement)platformView;
+			if (element.Parent is Microsoft.Maui.Platform.MauiPanel panel)
+				return panel.CachedChildren.Contains(element) ? panel : null;
+
+			return element.Parent;
 #endif
 		}
 #endif

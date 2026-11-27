@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 33356, "Navigate should occur when an item got selected", PlatformAffected.iOS)]
-public class Issue33356 : Shell
+public partial class Issue33356 : Shell
 {
 	public Issue33356()
 	{
