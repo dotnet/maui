@@ -519,14 +519,16 @@ namespace Microsoft.Maui.Maps.Platform
 			// 0 = device screen scale; URI-downloaded images decode at scale 1.0 and would render
 			// blurry on Retina if we honored CurrentScale - the rendered icon is also cached, which
 			// would freeze the blur.
-			using var format = UIGraphicsImageRendererFormat.DefaultFormat;
-			format.Opaque = false;
-			var targetScale = scale ?? image.CurrentScale;
-			if (targetScale > 0)
-				format.Scale = targetScale;
-
-			using var renderer = new UIGraphicsImageRenderer(newSize, format);
-			return renderer.CreateImage(_ => image.Draw(new CoreGraphics.CGRect(0, 0, newSize.Width, newSize.Height)));
+			UIGraphics.BeginImageContextWithOptions(newSize, false, scale ?? image.CurrentScale);
+			try
+			{
+				image.Draw(new CoreGraphics.CGRect(0, 0, newSize.Width, newSize.Height));
+				return UIGraphics.GetImageFromCurrentImageContext();
+			}
+			finally
+			{
+				UIGraphics.EndImageContext();
+			}
 		}
 
 		internal void AddPins(IList pins)

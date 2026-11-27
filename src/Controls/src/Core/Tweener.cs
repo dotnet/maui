@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				long ms = step + _lastMilliseconds;
-				Value = Math.Min(1.0f, ms / (double)Length);
+				Value = Length == 0 ? 1.0f : Math.Min(1.0f, ms / (double)Length);
 				_lastMilliseconds = ms;
 			}
 
@@ -142,10 +142,11 @@ namespace Microsoft.Maui.Controls
 					return true;
 				}
 
+				// The finished callback may register the next iteration on this tweener.
+				_animationManagerKey = 0;
 				Finished?.Invoke(this, EventArgs.Empty);
 
 				Value = 0.0f;
-				_animationManagerKey = 0;
 				return false;
 			}
 
@@ -167,9 +168,12 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			_animationManagerKey = _animationManager.Insert(Step);
+			_animationManager.Insert(Step, out _animationManagerKey);
 
-			if (!_animationManager.Ticker.IsRunning)
+			if (_animationManagerKey != 0 && !AnimationExtensions.HasTweener(_animationManagerKey))
+				_animationManagerKey = 0;
+
+			if (_animationManagerKey != 0 && !_animationManager.Ticker.IsRunning)
 				_animationManager.Ticker.Start();
 		}
 

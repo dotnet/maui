@@ -24,10 +24,7 @@ namespace Microsoft.Maui.Foldable
 				{
 					ios.OnActivated(application =>
 					{
-						// Pre-scene fallback; scene-based apps are handled by SceneOnActivated below.
-#pragma warning disable CA1422
 						SetCurrentWindow(application.KeyWindow);
-#pragma warning restore CA1422
 					});
 
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))

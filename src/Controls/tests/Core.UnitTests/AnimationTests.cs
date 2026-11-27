@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -10,6 +11,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class AnimationTests : BaseTestFixture
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SynchronousCompletionDoesNotRetainCallback(bool useAdd)
+		{
+			var ticker = Substitute.For<ITicker>();
+			ticker.SystemEnabled.Returns(true);
+			ticker.When(t => t.Stop()).Do(_ => ticker.IsRunning.Returns(false));
+			ticker.When(t => t.Start()).Do(_ =>
+			{
+				ticker.IsRunning.Returns(true);
+				for (int frame = 0; frame < 64 && ticker.IsRunning; frame++)
+					ticker.Fire.Invoke();
+			});
+			using var manager = new TestAnimationManager(ticker);
+
+			var id = useAdd
+				? AnimationExtensions.Add(manager, _ => { })
+				: AnimationExtensions.Insert(manager, _ => false);
+
+			Assert.False(ticker.IsRunning);
+			Assert.False(AnimationExtensions.HasTweener(id));
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
