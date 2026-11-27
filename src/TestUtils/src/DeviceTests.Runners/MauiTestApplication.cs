@@ -121,35 +121,6 @@ class MauiTestApplication : Application
 		WriteWindowsProcessDump(directory);
 	}
 
-	// Each test opens and closes its own window. A closed window's managed wrapper is unrooted but holds
-	// its native XAML and GDI resources until it is collected and finalized, and one process running the
-	// whole suite (XHarness ran each Controls category in its own process) otherwise reaches the
-	// 10,000 GDI-object limit and terminates.
-	const uint GdiObjectReclaimThreshold = 3000;
-	const uint GdiObjectReclaimStep = 1000;
-	static uint _nextGdiObjectReclaim = GdiObjectReclaimThreshold;
-
-	internal static void ReclaimWindowsResourcesIfNeeded()
-	{
-		using var process = Process.GetCurrentProcess();
-		var before = GetGuiResources(process.Handle, 0);
-		if (before < _nextGdiObjectReclaim)
-			return;
-
-		var reclaim = Task.Run(() =>
-		{
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-		});
-		if (!reclaim.Wait(TimeSpan.FromSeconds(30)))
-			Console.Error.WriteLine("Native resource reclaim: finalizers did not complete within 30 seconds.");
-
-		var after = GetGuiResources(process.Handle, 0);
-		_nextGdiObjectReclaim = Math.Max(GdiObjectReclaimThreshold, after + GdiObjectReclaimStep);
-		Console.WriteLine($"Native resource reclaim: process={process.Id}, GDI objects {before} -> {after}.");
-	}
-
 	internal static void CaptureWindowsResourcePressureDump()
 	{
 		var directory = Volatile.Read(ref _windowsResourceDumpDirectory);
