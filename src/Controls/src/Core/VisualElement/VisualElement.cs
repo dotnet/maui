@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -2291,11 +2291,6 @@ namespace Microsoft.Maui.Controls
 			if (valueChanged && this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
 				return;
 
-			// While the animation engine applies one frame to this element, transform updates are coalesced
-			// (see VisualElement.Animations.cs). Only the engine sets this; every other write is unchanged.
-			if (valueChanged && _animationFrameDepth > 0 && DeferTransformUpdate(property))
-				return;
-
 			base.UpdateHandlerValue(property, valueChanged);
 		}
 
@@ -2425,7 +2420,7 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				shadow.Parent = this;
+				shadow.SetParent(this, isNonExclusive: true);
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);

@@ -238,14 +238,14 @@ static class SetPropertyHelpers
 		if (isImplicitStyle)
 		{
 			// Get TargetType from Style
-			var targetTypeKey = GetStyleTargetTypeKey(node, context);
-			if (targetTypeKey == null)
+			var targetTypeExpr = GetStyleTargetTypeExpression(node, context);
+			if (targetTypeExpr == null)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "Implicit style requires a TargetType"));
 				return;
 			}
 
-			resourceKeyExpression = targetTypeKey;
+			resourceKeyExpression = targetTypeExpr;
 		}
 		else
 		{
@@ -305,7 +305,7 @@ static class SetPropertyHelpers
 		}
 		if (factoryName is not null && emitReplacement)
 		{
-			var keyExpression = isImplicitStyle && resourceKeyExpression.StartsWith("typeof(", StringComparison.Ordinal) ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
 			// Hot reload: update a live shared style in place so consumers holding it directly refresh;
 			// otherwise replace the factory so future lookups get the new value.
 			if (replacementFactoryName is not null && updateLiveStyle)
@@ -327,41 +327,24 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// Gets the ResourceDictionary key expression for an implicit Style's TargetType.
+	/// Gets the TargetType expression for a Style node.
 	/// </summary>
-	static string? GetStyleTargetTypeKey(ElementNode node, SourceGenContext context)
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
 	{
-		var targetType = GetStyleTargetType(node, context);
-		if (targetType is null)
-			return null;
-
-		// Type.FullName uses metadata names and '+' between nested types. Constructed generic
-		// types include assembly-qualified type arguments, so retain the Type overload for them.
-		if (!targetType.IsGenericType)
-			return SymbolDisplay.FormatLiteral(targetType.GetMetadataFullName(), true);
-
-		return $"typeof({targetType.ToFQDisplayString()})";
-	}
-
-	/// <summary>
-	/// Gets a Style's TargetType when it is a type name or <c>{x:Type}</c>; returns null for runtime values such as <c>{x:Static}</c>.
-	/// </summary>
-	internal static INamedTypeSymbol? GetStyleTargetType(ElementNode node, SourceGenContext context, bool reportDiagnostics = true)
-	{
-		var reportDiagnostic = reportDiagnostics ? context.ReportDiagnostic : (Action<Diagnostic>?)null;
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;
-
-		INamedTypeSymbol? targetType = null;
 
 		// Case 1: String value - TargetType="Label"
 		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
 		{
-			targetType = typeName.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
+			var typeSymbol = typeName.GetTypeSymbol(context, node);
+			if (typeSymbol != null)
+				return $"typeof({typeSymbol.ToFQDisplayString()})";
+			return null;
 		}
 
 		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
-		else if (targetTypeNode is ElementNode elementNode &&
+		if (targetTypeNode is ElementNode elementNode &&
 			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
 		{
 			// TypeExtension can have TypeName as property or positional argument
@@ -369,23 +352,21 @@ static class SetPropertyHelpers
 				typeNameNode is ValueNode tn)
 			{
 				var typeNameStr = tn.Value as string;
-				targetType = typeNameStr?.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
 			}
 			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
 			{
 				var typeNameStr = positionalArg.Value as string;
-				targetType = typeNameStr?.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, context.TypeCache, node);
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
 			}
 		}
 
-		return targetType;
+		return null;
 	}
-
-	/// <summary>
-	/// Gets the TargetType expression for a Style node.
-	/// </summary>
-	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
-		=> GetStyleTargetType(node, context) is { } targetType ? $"typeof({targetType.ToFQDisplayString()})" : null;
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{

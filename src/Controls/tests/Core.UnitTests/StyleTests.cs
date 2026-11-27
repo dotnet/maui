@@ -9,6 +9,12 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
+	[CollectionDefinition(nameof(StyleTests), DisableParallelization = true)]
+	public class StyleTestsCollection
+	{
+	}
+
+	[Collection(nameof(StyleTests))]
 	public class StyleTests : BaseTestFixture
 	{
 
@@ -48,6 +54,182 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.Style = null;
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 			Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, label.BackgroundColor);
+		}
+
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public void SharedShadowDoesNotLogChildWarning(bool useStyle, bool useDerivedShadow)
+		{
+			var shadow = useDerivedShadow ? new DerivedShadow() : new Shadow();
+			var resources = new ResourceDictionary { { "CardShadow", shadow } };
+			var style = new Style(typeof(ContentView))
+			{
+				Setters = { new Setter { Property = VisualElement.ShadowProperty, Value = resources["CardShadow"] } }
+			};
+			var first = new ContentView();
+			var second = new ContentView();
+
+			if (useStyle)
+			{
+				first.Style = style;
+				second.Style = style;
+			}
+			else
+			{
+				first.Shadow = (Shadow)resources["CardShadow"];
+				second.Shadow = (Shadow)resources["CardShadow"];
+			}
+
+			Assert.Same(shadow, first.Shadow);
+			Assert.Same(shadow, second.Shadow);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+
+			int firstChanges = 0, secondChanges = 0;
+			first.PropertyChanged += (_, e) => firstChanges += e.PropertyName == nameof(VisualElement.Shadow) ? 1 : 0;
+			second.PropertyChanged += (_, e) => secondChanges += e.PropertyName == nameof(VisualElement.Shadow) ? 1 : 0;
+			shadow.Radius = 24;
+
+			Assert.True(firstChanges > 0);
+			Assert.True(secondChanges > 0);
+			first.Shadow = null;
+			Assert.Same(second, shadow.Parent);
+			second.Shadow = null;
+			Assert.Null(shadow.Parent);
+		}
+
+		[Fact]
+		public void SharedShadowRetainsInheritedStyleResourcesAndBinding()
+		{
+			var shadow = new Shadow();
+			shadow.SetBinding(Shadow.OpacityProperty, new Binding("Opacity"));
+			var style = new Style(typeof(Shadow))
+			{
+				Setters = { new Setter { Property = Shadow.RadiusProperty, Value = new DynamicResource("ShadowRadius") } }
+			};
+			var first = new ContentView
+			{
+				BindingContext = new { Opacity = 0.3f },
+				Resources = new ResourceDictionary { { typeof(Shadow).FullName, style }, { "ShadowRadius", 12f } },
+				Shadow = shadow
+			};
+			Assert.Equal(12f, shadow.Radius);
+			Assert.Equal(0.3f, shadow.Opacity);
+
+			var second = new ContentView
+			{
+				BindingContext = new { Opacity = 0.6f },
+				Resources = new ResourceDictionary { { typeof(Shadow).FullName, style }, { "ShadowRadius", 16f } },
+				Shadow = shadow
+			};
+			Assert.Equal(16f, shadow.Radius);
+			Assert.Equal(0.6f, shadow.Opacity);
+
+			first.Resources["ShadowRadius"] = 20f;
+			Assert.Equal(16f, shadow.Radius);
+			second.Resources["ShadowRadius"] = 24f;
+			Assert.Equal(24f, shadow.Radius);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReparentingContentStillLogsChildWarning()
+		{
+			var child = new Label();
+			var first = new ContentView { Content = child };
+			var second = new ContentView { Content = child };
+
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+			Assert.Same(second, child.Parent);
+			GC.KeepAlive(first);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		[InlineData(2)]
+		public void ReparentingOwnedShadowStillLogsChildWarning(int attachmentOrder)
+		{
+			var shadow = new DerivedShadow();
+			var first = new ContentView();
+			if (attachmentOrder == 1)
+				first.Shadow = shadow;
+			first.AddLogicalChild(shadow);
+			if (attachmentOrder == 2)
+				first.Shadow = shadow;
+
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Contains(shadow, first.LogicalChildrenInternal);
+			Assert.Same(second, shadow.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ReparentingSharedShadowAsLogicalChildDoesNotLogChildWarning()
+		{
+			var shadow = new Shadow();
+			var first = new ContentView { Shadow = shadow };
+			var second = new ContentView();
+			second.AddLogicalChild(shadow);
+
+			Assert.Same(second, shadow.Parent);
+			Assert.Same(shadow, first.Shadow);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReassigningSameParentKeepsShadowShareable()
+		{
+			var shadow = new Shadow();
+			var first = new ContentView { Shadow = shadow };
+			shadow.Parent = first;
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Same(second, shadow.Parent);
+			Assert.Empty(MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void ReparentingShadowUsedAsGestureStillLogsChildWarning()
+		{
+			var shadow = new GestureShadow();
+			var first = new ContentView { Shadow = shadow };
+			first.GestureRecognizers.Add(shadow);
+			var second = new ContentView { Shadow = shadow };
+
+			Assert.Contains(shadow, first.GestureRecognizers);
+			Assert.Same(second, shadow.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ReparentingGestureStillLogsChildWarning()
+		{
+			var gesture = new TapGestureRecognizer();
+			var first = new ContentView();
+			var second = new ContentView();
+			first.GestureRecognizers.Add(gesture);
+			second.GestureRecognizers.Add(gesture);
+
+			Assert.Contains(gesture, first.GestureRecognizers);
+			Assert.DoesNotContain(gesture, first.LogicalChildrenInternal);
+			Assert.Same(second, gesture.Parent);
+			Assert.Single(MockApplication.MockLogger.Messages);
+			Assert.Contains("already a child", MockApplication.MockLogger.Messages[0], StringComparison.Ordinal);
+		}
+
+		class DerivedShadow : Shadow
+		{
+		}
+
+		class GestureShadow : Shadow, IGestureRecognizer
+		{
 		}
 
 		[Fact]
@@ -1334,468 +1516,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var exception = Record.Exception(() => label.InvalidateStyle());
 			Assert.Null(exception);
 		}
-
-		#region Lazy/Trimmable Style Tests
-
-		[Fact]
-		public void LazyStyleIsNotInitializedUntilApplied()
-		{
-			bool initializerCalled = false;
-			var style = new Style(typeof(Label))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					initializerCalled = true;
-					if (target is not Label)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
-					return true;
-				}
-			};
-
-			Assert.False(initializerCalled);
-
-			var label = new Label { Style = style };
-
-			Assert.True(initializerCalled);
-			Assert.Equal("lazy", label.Text);
-		}
-
-		[Fact]
-		public void LazyStyleSettersAreAppliedCorrectly()
-		{
-			var style = new Style(typeof(Label))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Label)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "test" });
-					s.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Red });
-					return true;
-				}
-			};
-
-			var label = new Label { Style = style };
-
-			Assert.Equal("test", label.Text);
-			Assert.Equal(Colors.Red, label.TextColor);
-		}
-
-		[Fact]
-		public void LazyStyleCanBeAppliedToMatchingType()
-		{
-			var style = new Style(typeof(Label))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Label)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "works" });
-					return true;
-				}
-			};
-
-			var label = new Label { Style = style };
-			Assert.Equal("works", label.Text);
-		}
-
-		[Fact]
-		public void LazyStyleIsPopulatedOnlyOnce()
-		{
-			int callCount = 0;
-			var style = new Style(typeof(Label))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					if (target is not Label)
-						return false;
-					if (s is null)
-						return true;
-					callCount++;
-					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "once" });
-					return true;
-				}
-			};
-
-			var label1 = new Label { Style = style };
-			var label2 = new Label { Style = style };
-			var label3 = new Label { Style = style };
-
-			Assert.Equal(1, callCount);
-			Assert.Equal("once", label1.Text);
-			Assert.Equal("once", label2.Text);
-			Assert.Equal("once", label3.Text);
-		}
-
-		[Fact]
-		public void LazyStyleCanBeAddedToResourceDictionary()
-		{
-			var style = new Style(typeof(Label))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Label)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "from RD" });
-					return true;
-				}
-			};
-
-			var rd = new ResourceDictionary();
-			rd.Add(style);
-
-			Assert.Contains("Microsoft.Maui.Controls.Label", rd.Keys);
-		}
-
-		[Fact]
-		public void LazyStyleWithBehaviors()
-		{
-			var behavior = new MockBehavior<Entry>();
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "with behavior" });
-					s.Behaviors.Add(behavior);
-					return true;
-				}
-			};
-
-			var entry = new Entry { Style = style };
-
-			Assert.Equal("with behavior", entry.Text);
-			Assert.True(behavior.attached);
-		}
-
-		[Fact]
-		public void LazyStyleWithTriggers()
-		{
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "default" });
-					s.Triggers.Add(new Trigger(typeof(Entry))
-					{
-						Property = Entry.IsPasswordProperty,
-						Value = true,
-						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
-					});
-					return true;
-				}
-			};
-
-			var entry = new Entry { Style = style };
-
-			Assert.Equal("default", entry.Text);
-
-			entry.IsPassword = true;
-			Assert.Equal("password mode", entry.Text);
-		}
-
-		[Fact]
-		public void LazyStyleWithWrongFirstTargetInitializesForMatchingTarget()
-		{
-			var style = new Style(typeof(Button))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Button)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
-					return true;
-				}
-			};
-
-			var label = new Label { Style = style };
-			var button = new Button { Style = style };
-
-			Assert.Null(label.BackgroundColor);
-			Assert.Equal(Colors.Red, button.BackgroundColor);
-		}
-
-		[Fact]
-		public void LazyStyleXamlSettersPrecedeSettersAddedInCode()
-		{
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
-					s.Setters.Add(new Setter { Property = Entry.FontSizeProperty, Value = 20d });
-					return true;
-				}
-			};
-			var codeSetter = new Setter { Property = InputView.TextColorProperty, Value = Colors.Blue };
-			style.Setters.Add(codeSetter);
-
-			var entry = new Entry { Style = style };
-
-			Assert.Equal(20d, entry.FontSize);
-			Assert.Equal(Colors.Blue, entry.TextColor);
-			Assert.Same(codeSetter, style.Setters[2]);
-		}
-
-		[Fact]
-		public void LazyStyleXamlTriggersAndBehaviorsPrecedeItemsAddedInCode()
-		{
-			var xamlTrigger = new Trigger(typeof(Entry)) { Property = VisualElement.IsEnabledProperty, Value = false };
-			var xamlBehavior = new NamedBehavior("xaml");
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Triggers.Add(xamlTrigger);
-					s.Behaviors.Add(xamlBehavior);
-					return true;
-				}
-			};
-			var codeTrigger = new Trigger(typeof(Entry)) { Property = VisualElement.IsFocusedProperty, Value = true };
-			var codeBehavior = new NamedBehavior("code");
-			style.Triggers.Add(codeTrigger);
-			style.Behaviors.Add(codeBehavior);
-
-			_ = new Entry { Style = style };
-
-			Assert.Equal(new TriggerBase[] { xamlTrigger, codeTrigger }, style.Triggers);
-			Assert.Equal(new Behavior[] { xamlBehavior, codeBehavior }, style.Behaviors);
-		}
-
-		[Fact]
-		public void LazyStyleInitializerThatThrowsDoesNotLeavePartialContent()
-		{
-			var attempts = 0;
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					attempts++;
-					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
-					s.Triggers.Add(new Trigger(typeof(Entry)) { Property = VisualElement.IsEnabledProperty, Value = false });
-					s.Behaviors.Add(new NamedBehavior("xaml"));
-					if (attempts == 1)
-						throw new InvalidOperationException("Resource not found");
-					return true;
-				}
-			};
-
-			Assert.Throws<InvalidOperationException>(() => new Entry { Style = style });
-			Assert.Empty(style.Setters);
-			Assert.Empty(style.Triggers);
-			Assert.Empty(style.Behaviors);
-
-			var entry = new Entry { Style = style };
-
-			Assert.Equal(2, attempts);
-			Assert.Single(style.Setters);
-			Assert.Single(style.Triggers);
-			Assert.Single(style.Behaviors);
-			Assert.Equal(Colors.Red, entry.TextColor);
-		}
-
-		class NamedBehavior(string name) : Behavior<Entry>
-		{
-			public override string ToString() => name;
-		}
-
-		[Fact]
-		public void LazyStyleIsNotAppliedToIncompatibleTargets()
-		{
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = InputView.TextColorProperty, Value = Colors.Red });
-					return true;
-				}
-			};
-
-			var editorBeforeInitialization = new Editor { Style = style };
-			var entry = new Entry { Style = style };
-			var editorAfterInitialization = new Editor { Style = style };
-
-			Assert.Equal(Colors.Red, entry.TextColor);
-			Assert.Null(editorBeforeInitialization.TextColor);
-			Assert.Null(editorAfterInitialization.TextColor);
-			Assert.Equal(2, MockApplication.MockLogger.Messages.Count);
-			Assert.All(MockApplication.MockLogger.Messages, message => Assert.Equal(
-				"Style TargetType Microsoft.Maui.Controls.Entry is not compatible with element target type Microsoft.Maui.Controls.Editor. The style is not applied.",
-				message));
-		}
-
-		[Fact]
-		public void LazyStyleTargetTypeMismatchIsTracedWhenNoLoggerIsAvailable()
-		{
-			Application.ClearCurrent();
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = static (s, target) => target is Entry
-			};
-			var listener = new CapturingTraceListener();
-			System.Diagnostics.Trace.Listeners.Add(listener);
-			try
-			{
-				_ = new Editor { Style = style };
-			}
-			finally
-			{
-				System.Diagnostics.Trace.Listeners.Remove(listener);
-			}
-
-			Assert.Contains(
-				"Style TargetType Microsoft.Maui.Controls.Entry is not compatible with element target type Microsoft.Maui.Controls.Editor. The style is not applied.",
-				listener.Messages);
-		}
-
-		sealed class CapturingTraceListener : System.Diagnostics.TraceListener
-		{
-			readonly List<string> _messages = new();
-
-			public string[] Messages
-			{
-				get
-				{
-					lock (_messages)
-						return _messages.ToArray();
-				}
-			}
-
-			public override void Write(string message) => WriteLine(message);
-
-			public override void WriteLine(string message)
-			{
-				lock (_messages)
-					_messages.Add(message);
-			}
-		}
-
-		[Fact]
-		public void LazyStyleFirstAppliedToIncompatibleTargetAttachesTriggersAndBehaviorsOnlyToMatchingTargets()
-		{
-			var behavior = new MockBehavior<Entry>();
-			var style = new Style(typeof(Entry))
-			{
-				LazyInitialization = (s, target) =>
-				{
-					if (target is not Entry)
-						return false;
-					if (s is null)
-						return true;
-					s.Behaviors.Add(behavior);
-					s.Triggers.Add(new Trigger(typeof(Entry))
-					{
-						Property = Entry.IsPasswordProperty,
-						Value = true,
-						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
-					});
-					return true;
-				}
-			};
-
-			var editor = new Editor { Style = style };
-			var entry = new Entry();
-
-			Assert.Null(Record.Exception(() => entry.Style = style));
-			Assert.True(behavior.attached);
-			entry.IsPassword = true;
-			Assert.Equal("password mode", entry.Text);
-			Assert.Null(Record.Exception(() => editor.Style = null));
-		}
-
-		[Fact]
-		public void LazyStyleInitializerRunsOnceWhenStyleIsAppliedDuringInitialization()
-		{
-			var callCount = 0;
-			Label nestedLabel = null;
-			var style = new Style(typeof(Label));
-			style.LazyInitialization = (s, target) =>
-			{
-				if (target is not Label)
-					return false;
-				if (s is null)
-					return true;
-				callCount++;
-				if (nestedLabel is null)
-				{
-					nestedLabel = new Label();
-					nestedLabel.Style = s;
-				}
-				s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
-				return true;
-			};
-
-			var label = new Label { Style = style };
-
-			Assert.Equal(1, callCount);
-			Assert.Single(style.Setters);
-			Assert.Equal("lazy", label.Text);
-			Assert.Equal("lazy", nestedLabel.Text);
-		}
-
-		[Fact]
-		public void LazyStyleKeepsSettersReplacedBeforeInitialization()
-		{
-			var style = new Style(typeof(Button))
-			{
-				LazyInitialization = static (s, target) =>
-				{
-					if (target is not Button)
-						return false;
-					if (s is null)
-						return true;
-					s.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
-					s.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = Colors.Red });
-					s.Triggers.Add(new Trigger(typeof(Button)) { Property = VisualElement.IsEnabledProperty, Value = false });
-					return true;
-				}
-			};
-
-			// Hot Reload replaces the setters before the style was first applied: the TextColor setter
-			// was removed and BackgroundColor changed. The initializer's stale setters must not come back.
-			style.ReplaceSetters(new[] { new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Blue } });
-			var button = new Button { Style = style };
-
-			Assert.Single(style.Setters);
-			Assert.Equal(Colors.Blue, button.BackgroundColor);
-			Assert.Null(button.TextColor);
-			Assert.Single(style.Triggers);
-		}
-
-		#endregion
 	}
 }
