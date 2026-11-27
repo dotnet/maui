@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Adjust the mappings to preserve Controls.Slider legacy behaviors
 #if IOS
-			SliderHandler.Mapper.ReplaceMapping<Slider, ISliderHandler>(PlatformConfiguration.iOSSpecific.Slider.UpdateOnTapProperty.PropertyName, MapUpdateOnTap);
+			SliderHandler.Mapper.ReplaceMappingForControls<Slider, ISliderHandler>(PlatformConfiguration.iOSSpecific.Slider.UpdateOnTapProperty.PropertyName, MapUpdateOnTap);
 #endif
 		}
 	}
