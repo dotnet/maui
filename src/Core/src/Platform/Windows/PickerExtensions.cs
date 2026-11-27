@@ -10,11 +10,19 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
+			var sameHeader = ReferenceEquals(nativeComboBox.Header, picker);
 			nativeComboBox.Header = string.IsNullOrEmpty(picker.Title) ? null : picker;
 
 			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
 				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 
+			if (sameHeader && nativeComboBox.Header is not null &&
+				nativeComboBox.GetDescendantByName<TextBlock>("MauiPickerHeader") is TextBlock header)
+			{
+				// Reevaluate the bindings to the picker itself without replacing the header.
+				header.DataContext = null;
+				header.ClearValue(FrameworkElement.DataContextProperty);
+			}
 		}
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
@@ -132,5 +140,29 @@ namespace Microsoft.Maui.Platform
 
 			nativeComboBox.IsDropDownOpen = picker.IsOpen;
 		}
+	}
+
+	internal sealed partial class PickerHeaderConverter : UI.Xaml.Data.IValueConverter
+	{
+		static readonly ColorConverter s_colorConverter = new();
+
+		public object Convert(object value, Type targetType, object parameter, string language)
+		{
+			if (value is not IPicker picker)
+			{
+				return DependencyProperty.UnsetValue;
+			}
+
+			return parameter switch
+			{
+				nameof(IPicker.Title) => picker.Title,
+				nameof(IPicker.CharacterSpacing) => picker.CharacterSpacing.ToEm(),
+				nameof(IPicker.TitleColor) => s_colorConverter.Convert(picker.TitleColor, targetType, "DefaultTextForegroundThemeBrush", language),
+				_ => throw new ArgumentException("Unknown Picker header property.", nameof(parameter))
+			};
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+			throw new NotSupportedException();
 	}
 }

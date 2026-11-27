@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class MenuItemCommand : ICommand
+	internal partial class MenuItemCommand : ICommand
 	{
 		readonly MenuItem _menuItem;
 

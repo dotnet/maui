@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					items = new ObservableCollection<NavigationViewItemViewModel>();
+					items = new NavigationViewItemViewModelCollection();
 					view._navigationView.MenuItemsSource = items;
 				}
 

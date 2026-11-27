@@ -24,10 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
-			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
-#if ANDROID
-			[StructuredItemsView.AnchorModeProperty.PropertyName] = MapAnchorMode,
-#endif
+			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
 		};
 
 	}
