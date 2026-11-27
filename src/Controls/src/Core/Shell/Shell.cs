@@ -18,6 +18,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,8 +27,31 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[DebuggerTypeProxy(typeof(ShellDebugView))]
+#if IOS || MACCATALYST
+	[ShellHandler]
+#elif ANDROID || WINDOWS || TIZEN
+	[ElementHandler(typeof(Handlers.ShellHandler))]
+#endif
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Selects the Shell handler on Apple platforms. Only the handler selected by the
+		/// <c>UseiOSShellHandler</c> feature switch is preserved by the trimmer.
+		/// </summary>
+		internal sealed class ShellHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsiOSShellHandlerEnabled)
+					return typeof(Handlers.ShellHandler);
+
+				return typeof(Handlers.Compatibility.ShellRenderer);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// The currently presented page.
 		/// </summary>
