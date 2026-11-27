@@ -82,6 +82,9 @@ Describe 'Actual certificate ownership verification' {
         Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter {
             $LiteralPath -eq "Cert:\CurrentUser\TrustedPeople\$thumbprint" -and !$DeleteKey
         }
+        Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter {
+            $LiteralPath -eq "Cert:\LocalMachine\TrustedPeople\$thumbprint" -and !$DeleteKey
+        }
     }
 }
 
@@ -162,12 +165,12 @@ Describe 'Owned MSIX installation and activation cleanup' {
         Remove-WindowsTestPackage $path
         Should -Invoke Remove-AppxPackage -Times 0
     }
-    It 'keeps private signing material non-exportable and all trust scoped to the current user' {
+    It 'keeps private signing material non-exportable and trusts only the public certificate machine-wide' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match 'CertStoreLocation Cert:\\CurrentUser\\My'
         $content | Should -Match 'KeyExportPolicy NonExportable'
-        $content | Should -Match "'TrustedPeople', 'CurrentUser'"
-        $content | Should -Not -Match 'LocalMachine|\.pfx|Export-PfxCertificate|ConvertTo-SecureString'
+        $content | Should -Match "@\('CurrentUser', 'LocalMachine'\)"
+        $content | Should -Not -Match 'Cert:\\LocalMachine\\My|\.pfx|Export-PfxCertificate|ConvertTo-SecureString'
         $content | Should -Match '\$Certificate.RawData'
     }
     It 'rejects forged ownership before querying or touching the machine' {

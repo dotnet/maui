@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SelectionChanged -= OnFlyoutSelectionChanged;
 			ShellController.RemoveAppearanceObserver(this);
 
-			if (ItemRenderer?.PlatformView is NavigationView navigationView)
+			// The item handler may already be disconnected (its typed PlatformView then throws); this
+			// runs from Window.Closed, where an exception terminates the process.
+			if ((ItemRenderer as IElementHandler)?.PlatformView is NavigationView navigationView)
 			{
 				navigationView.SelectionChanged -= TabSelectionChanged;
 			}
