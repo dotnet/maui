@@ -92,12 +92,6 @@
 			Condition="'$(_MauiTargetsImportedAgain)' == 'True'" />
 	</Target>
 
-	<Target Name="_ValidateMauiQueryPropertyAttributeSupport" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
-		<Error Code="MAUI1004"
-			Text="The MauiQueryPropertyAttributeSupport property is no longer supported. Remove it from your project file; [QueryProperty] attributes are source-generated for partial classes."
-			Condition="'$(MauiQueryPropertyAttributeSupport)' != ''" />
-	</Target>
-
 	<!-- Validate MauiXamlHotReload values (case-insensitive) -->
 	<Target Name="_ValidateMauiXamlHotReload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
 		<PropertyGroup>
@@ -330,6 +324,7 @@
     
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
+      <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '@(MauiCss->Count())' == '0'">false</MauiCssEnabled>
@@ -344,6 +339,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
                                       Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
                                       Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
+                                      Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
+                                      Value="$(MauiQueryPropertyAttributeSupport)"
                                       Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
