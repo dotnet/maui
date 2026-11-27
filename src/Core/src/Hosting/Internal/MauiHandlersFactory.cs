@@ -24,6 +24,78 @@ namespace Microsoft.Maui.Hosting.Internal
 		internal IElementHandler? GetHandler(Type type, IMauiContext mauiContext)
 			=> GetHandler(type, new HandlerActivationServiceProvider(this, mauiContext));
 
+		internal static IElementHandler? GetHandlerWithInjection(IMauiHandlersFactory handlers, Type viewType, IMauiContext mauiContext)
+		{
+			var activationServices = handlers is MauiHandlersFactory factory
+				? new HandlerActivationServiceProvider(factory, mauiContext, useConstructorInjection: true)
+				: null;
+			try
+			{
+				if (activationServices is not null && handlers is MauiHandlersFactory handlersFactory)
+					return handlersFactory.GetHandler(viewType, activationServices);
+
+				return handlers.GetHandler(viewType, mauiContext);
+			}
+			catch (MissingMethodException) when (activationServices?.ConstructorInjectionAttempted != true)
+			{
+				return CreateTypeWithInjection(handlers, viewType, mauiContext);
+			}
+			catch (HandlerNotFoundException ex) when (ex.InnerException is MissingMethodException
+				&& activationServices?.ConstructorInjectionAttempted != true)
+			{
+				return CreateTypeWithInjection(handlers, viewType, mauiContext);
+			}
+		}
+
+		protected override object? CreateInstance(ServiceDescriptor item, IServiceProvider implementationFactoryServiceProvider)
+		{
+			if (item.ImplementationType is Type handlerType
+				&& typeof(IElementHandler).IsAssignableFrom(handlerType)
+				&& implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider)
+				return CreateHandlerInstance(handlerType, provider);
+
+			return base.CreateInstance(item, implementationFactoryServiceProvider);
+		}
+
+		static IElementHandler CreateHandlerInstance(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
+			HandlerActivationServiceProvider? activationServices)
+		{
+			if (activationServices is null)
+				return (IElementHandler)Activator.CreateInstance(handlerType)!;
+
+			if (handlerType.IsValueType || handlerType.GetConstructor(Type.EmptyTypes) is not null)
+				return (IElementHandler)Activator.CreateInstance(handlerType)!;
+
+			// A dependency failure must propagate without retrying the entire injection.
+			activationServices.ConstructorInjectionAttempted = true;
+			return CreateTypeWithInjection(handlerType, activationServices.MauiContext);
+		}
+
+		static IElementHandler? CreateTypeWithInjection(IMauiHandlersFactory handlers, Type viewType, IMauiContext mauiContext)
+		{
+			var handlerType = handlers.GetHandlerType(viewType);
+
+			if (handlerType == null)
+				return null;
+
+			return CreateTypeWithInjection(handlerType, mauiContext);
+		}
+
+		static IElementHandler CreateTypeWithInjection(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
+			IMauiContext mauiContext)
+		{
+#if ANDROID
+			if (mauiContext.Context != null)
+			{
+				return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+			}
+#endif
+
+			return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
+		}
+
 		IElementHandler? GetHandler(Type type, IServiceProvider implementationFactoryServiceProvider)
 		{
 			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
@@ -90,11 +162,16 @@ namespace Microsoft.Maui.Hosting.Internal
 			readonly MauiHandlersFactory _handlerServices;
 			readonly IMauiContext _mauiContext;
 
-			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext)
+			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext, bool useConstructorInjection = false)
 			{
 				_handlerServices = handlerServices;
 				_mauiContext = mauiContext;
+				UseConstructorInjection = useConstructorInjection;
 			}
+
+			public IMauiContext MauiContext => _mauiContext;
+			public bool UseConstructorInjection { get; }
+			public bool ConstructorInjectionAttempted { get; set; }
 
 			public object? GetService(Type serviceType)
 			{
@@ -118,6 +195,9 @@ namespace Microsoft.Maui.Hosting.Internal
 
 	static class MauiHandlersFactoryExtensions
 	{
+		internal static IElementHandler? GetHandlerWithInjection(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
+			MauiHandlersFactory.GetHandlerWithInjection(handlers, type, mauiContext);
+
 		internal static IElementHandler? GetHandler(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
 			handlers is MauiHandlersFactory handlersFactory
 				? handlersFactory.GetHandler(type, mauiContext)
