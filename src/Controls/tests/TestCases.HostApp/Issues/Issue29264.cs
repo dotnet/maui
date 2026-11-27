@@ -26,7 +26,8 @@ public class Issue29264 : ContentPage
 					VerticalOptions = LayoutOptions.Center
 				};
 				label.SetBinding(Label.TextProperty, ".");
-				label.SetBinding(Label.AutomationIdProperty, ".");
+				// Mac2 identifier queries also match label text, so keep item IDs distinct from CurrentItem's text.
+				label.SetBinding(Label.AutomationIdProperty, new Binding(".", stringFormat: "RecipeItem_{0}"));
 				return new Grid
 				{
 					WidthRequest = 340,

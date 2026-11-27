@@ -135,6 +135,114 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task SelectionFromRotationScrollRequestRestoresLatestSelection(bool loop, bool useCurrentItem)
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
+			var indicator = new IndicatorView();
+			var carousel = new CarouselView
+			{
+				Loop = loop,
+				Position = 0,
+				WidthRequest = 300,
+				HeightRequest = 200,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				ItemsSource = items,
+				IndicatorView = indicator,
+				IsScrollAnimated = true,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				var collectionView = controller.CollectionView;
+				await AssertEventually(() => controller.InitialPositionSet &&
+					carousel.Position == 0 &&
+					ReferenceEquals(carousel.CurrentItem, items[0]));
+
+				bool selectionRequestedInHook = false;
+				var requests = new List<ScrollToRequestEventArgs>();
+				carousel.ScrollToRequested += (_, args) =>
+				{
+					requests.Add(args);
+					if (selectionRequestedInHook)
+					{
+						return;
+					}
+
+					selectionRequestedInHook = true;
+					Assert.Equal(0, args.Index);
+					Assert.True(controller.IsRotatingOrResizing());
+					if (useCurrentItem)
+					{
+						carousel.CurrentItem = items[3];
+					}
+					else
+					{
+						carousel.Position = 3;
+					}
+
+					Assert.Equal(3, controller.PositionBeforeBoundsChange);
+				};
+
+				Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
+					UIDevice.OrientationDidChangeNotification,
+					UIDevice.CurrentDevice);
+				carousel.WidthRequest = 260;
+				var bounds = collectionView.Bounds;
+				collectionView.Bounds = new CGRect(bounds.X, bounds.Y, 260, bounds.Height);
+				controller.ViewWillLayoutSubviews();
+				Assert.True(controller.IsRotatingOrResizing());
+				Assert.Equal(0, controller.PositionBeforeBoundsChange);
+
+				collectionView.SetNeedsLayout();
+				collectionView.LayoutIfNeeded();
+				controller.ViewDidLayoutSubviews();
+				collectionView.CollectionViewLayout.InvalidateLayout();
+				collectionView.LayoutIfNeeded();
+
+				if (!useCurrentItem && OperatingSystem.IsIOSVersionAtLeast(26))
+				{
+					await Task.Delay(200);
+					collectionView.LayoutIfNeeded();
+				}
+
+				bool IsRequestedItemCentered()
+				{
+					var cell = collectionView.VisibleCells.OfType<TemplatedCell2>().FirstOrDefault(c =>
+						c.PlatformHandler?.VirtualView is View view && ReferenceEquals(view.BindingContext, items[3]));
+					if (cell is null || cell.Hidden || cell.Bounds.Width <= 0)
+					{
+						return false;
+					}
+
+					var frame = cell.ConvertRectToView(cell.Bounds, collectionView);
+					var visibleBounds = collectionView.Bounds;
+					return Math.Abs((double)(frame.X + frame.Width / 2 -
+						(visibleBounds.X + visibleBounds.Width / 2))) <= 1;
+				}
+
+				await AssertEventually(() => selectionRequestedInHook &&
+					!controller.IsRotatingOrResizing() &&
+					controller.PositionBeforeBoundsChange == -1 &&
+					carousel.Position == 3 &&
+					ReferenceEquals(carousel.CurrentItem, items[3]) &&
+					indicator.Position == 3 &&
+					IsRequestedItemCentered(),
+					message: "A selection made inside the restoration request hook was left deferred.");
+
+				Assert.Single(requests);
+			});
+		}
+
 		public class ScrollRequestCarouselView : CarouselView
 		{
 			public List<ScrollToRequestEventArgs> ScrollRequests { get; } = new();
@@ -158,20 +266,30 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(0, false)]
+		[InlineData(0, true)]
 		[InlineData(3, false)]
 		[InlineData(4, false)]
 		[InlineData(3, true)]
 		[InlineData(4, true)]
 		public async Task BoundsOnlyResizesPreserveIdleSelectionWithoutSelectionEvents(int position, bool loop)
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ScrollRequestCarouselView, ScrollRequestCarouselViewHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
 			var indicator = new IndicatorView();
-			var carousel = new CarouselView
+			var carousel = new ScrollRequestCarouselView
 			{
 				Loop = loop,
 				Position = position,
+				PeekAreaInsets = Thickness.Zero,
 				WidthRequest = 300,
 				HeightRequest = 200,
 				HorizontalOptions = LayoutOptions.Center,
@@ -182,7 +300,7 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
-			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			await CreateHandlerAndAddToWindow<ScrollRequestCarouselViewHandler>(carousel, async handler =>
 			{
 				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
 				var collectionView = controller.CollectionView;
@@ -217,10 +335,14 @@ namespace Microsoft.Maui.DeviceTests
 
 				int positionChanges = 0;
 				int currentItemChanges = 0;
+				var requests = new List<ScrollToRequestEventArgs>();
 				carousel.PositionChanged += (_, _) => positionChanges++;
 				carousel.CurrentItemChanged += (_, _) => currentItemChanges++;
+				carousel.ScrollToRequested += (_, args) => requests.Add(args);
+				carousel.ScrollRequests.Clear();
+				handler.ScrollRequests.Clear();
 
-				var sizes = new[] { new CGSize(240, 160), new CGSize(340, 240), new CGSize(300, 200) };
+				var sizes = new[] { new CGSize(300, 240), new CGSize(240, 160), new CGSize(340, 240), new CGSize(300, 200) };
 				foreach (var size in sizes)
 				{
 					Assert.False(controller.IsScrollInteractionActive());
@@ -247,6 +369,9 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(position, indicator.Position);
 					Assert.Equal(0, positionChanges);
 					Assert.Equal(0, currentItemChanges);
+					Assert.Empty(requests);
+					Assert.Empty(carousel.ScrollRequests);
+					Assert.Empty(handler.ScrollRequests);
 
 					var cell = Assert.IsAssignableFrom<TemplatedCell2>(GetSelectedCell());
 					var label = Assert.IsType<Label>(cell.PlatformHandler.VirtualView);
@@ -748,17 +873,19 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => carousel.Position == 0 &&
 					carousel.CurrentItem is "New First" &&
 					indicator.Position == 0 &&
-					(int)pendingScroll.GetValue(controller) == -1 &&
-					IsItemCentered("New First"),
+					(int)pendingScroll.GetValue(controller) == -1,
 					message: "The replacement source's first item was not synchronized after clearing the saved resize target.");
+				await AssertEventually(() => IsItemCentered("New First"),
+					message: "The replacement source's first item was selected but not centered.");
 				Assert.Equal(-1, controller.PositionBeforeBoundsChange);
 
 				carousel.Position = 2;
 				await AssertEventually(() => carousel.Position == 2 &&
 					carousel.CurrentItem is "New Third" &&
-					indicator.Position == 2 &&
-					IsItemCentered("New Third"),
+					indicator.Position == 2,
 					message: "A subsequent selection was blocked after replacing the source during resize restoration.");
+				await AssertEventually(() => IsItemCentered("New Third"),
+					message: "The subsequent item was selected but not centered after replacing the source.");
 			});
 		}
 

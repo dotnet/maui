@@ -168,15 +168,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var request = new ScrollToRequestEventArgs(position, -1, Controls.ScrollToPosition.Center, false);
-			_boundsRestorationRequest = request;
-			try
+			bool restoreNatively = !_isRotating;
+			if (_isRotating)
 			{
-				carousel.SendScrollToRequested(request);
+				var request = new ScrollToRequestEventArgs(position, -1, Controls.ScrollToPosition.Center, false);
+				_boundsRestorationRequest = request;
+				try
+				{
+					carousel.SendScrollToRequested(request);
+				}
+				finally
+				{
+					_boundsRestorationRequest = null;
+				}
+
+				if (_positionBeforeBoundsChange >= 0 && _positionBeforeBoundsChange != position)
+				{
+					// A request hook can change selection after the original native scroll has run.
+					position = _positionBeforeBoundsChange;
+					if (ItemsSource is null || position >= ItemsSource.ItemCount)
+					{
+						CancelBoundsChangeRestoration();
+						return;
+					}
+
+					indexPath = GetScrollToIndexPath(position);
+					if (!LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+					{
+						CancelBoundsChangeRestoration();
+						return;
+					}
+
+					restoreNatively = true;
+				}
 			}
-			finally
+
+			if (restoreNatively)
 			{
-				_boundsRestorationRequest = null;
+				// Only rotation raised ScrollToRequested before resize handling existed; keep resize-only and
+				// hook-correction restoration internal so the public event frequency does not increase.
+				var scrollPosition = IsHorizontal
+					? UICollectionViewScrollPosition.CenteredHorizontally
+					: UICollectionViewScrollPosition.CenteredVertically;
+
+#if MACCATALYST
+				var mauiCollectionView = CollectionView as Items.MauiCollectionView;
+				mauiCollectionView?.ClearPendingScrollRestore();
+#endif
+
+				CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+
+#if MACCATALYST
+				mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
+#endif
 			}
 
 			if (_positionBeforeBoundsChange == position)
@@ -221,7 +265,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// UpdateFromPosition -> ScrollToPosition(0, oldPos, ...); clear it so later
 				// programmatic Position/CurrentItem changes aren't suppressed.
 				_gotoPosition = -1;
-				ScrollToFirstLoopItemAfterSourceReset();
+				ScrollToFirstItemAfterSourceReset();
 
 				// A new items source means a fresh baseline. Reset the tracked position so the next
 				// re-attach treats a subsequent source swap as a reset (Position 0) rather than a
@@ -233,18 +277,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = false;
 		}
 
-		void ScrollToFirstLoopItemAfterSourceReset()
+		void ScrollToFirstItemAfterSourceReset()
 		{
-			// The base reset moves to offset zero, which is the leading loop placeholder. Position is
-			// already 0, so the loop correction would not move to the real first item.
-			if (LoopItemsSource?.Loop != true || ItemsSource is null || ItemsSource.ItemCount == 0)
+			if (ItemsSource is null || ItemsSource.ItemCount == 0)
 			{
 				return;
 			}
 
+			// Resetting the outer ContentOffset does not reset the horizontal carousel's orthogonal
+			// scrolling container, so layout callbacks still report the old source's offset. Arm the
+			// target first so those stale positions are suppressed by SetPosition.
+			_gotoPosition = 0;
+
+			// ReloadData must finish layout before scrolling the new source.
+			CollectionView.LayoutIfNeeded();
+
 			var indexPath = GetScrollToIndexPath(0);
 			if (!LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
 			{
+				_gotoPosition = -1;
 				return;
 			}
 
@@ -262,6 +313,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 #if MACCATALYST
 			mauiCollectionView?.SetPendingScrollRestore((int)indexPath.Section, (int)indexPath.Item, scrollPosition);
 #endif
+
+			// Scrolling to an already centered item need not produce a callback.
+			_gotoPosition = 0;
+			SetPosition(0);
+			_gotoPosition = -1;
 		}
 
 		protected override bool IsHorizontal => ItemsView?.ItemsLayout?.Orientation == ItemsLayoutOrientation.Horizontal;

@@ -81,7 +81,7 @@ public class Issue29264 : _IssuesUITest
 		App.Tap("SelectFourthRecipeButton");
 		Assert.That(App.WaitForTextToBePresentInElement("RecipePositionLabel", $"Position: {selectedPosition}"), Is.True);
 		Assert.That(App.WaitForTextToBePresentInElement("RecipeCurrentItemLabel", selectedRecipe), Is.True);
-		App.WaitForElement(selectedRecipe);
+		App.WaitForElement($"RecipeItem_{selectedRecipe}");
 		var positionChanges = App.FindElement("RecipePositionChangedLabel").GetText();
 		var orientation = App.FindElement("OrientationLabel").GetText();
 		var carouselBeforeResize = App.WaitForElement("RecipeCarousel").GetRect();
@@ -109,7 +109,7 @@ public class Issue29264 : _IssuesUITest
 			"Resizing must not emit a PositionChanged event, even if the original position is later restored.");
 
 		var carousel = App.WaitForElement("RecipeCarousel").GetRect();
-		var item = App.WaitForElement(recipe).GetRect();
+		var item = App.WaitForElement($"RecipeItem_{recipe}").GetRect();
 		Assert.That(item.CenterX(), Is.InRange(carousel.X, carousel.X + carousel.Width),
 			"The selected recipe must remain visible after resizing.");
 		Assert.That(item.CenterY(), Is.InRange(carousel.Y, carousel.Y + carousel.Height),
