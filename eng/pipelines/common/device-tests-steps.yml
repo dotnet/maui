@@ -167,6 +167,23 @@ steps:
       continueOnError: false
       useExitCodeForErrors: true
 
+# Native fail-fast crashes bypass the testing platform's .NET crash dump. Ask Windows Error Reporting
+# for a dump of the test executables; the registration is removed again after the tests.
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $folder = "$(TestResultsDirectory)\wer"
+      New-Item -ItemType Directory -Force -Path $folder | Out-Null
+      foreach ($name in @('Microsoft.Maui.Controls.DeviceTests', 'Microsoft.Maui.Core.DeviceTests', 'Microsoft.Maui.Essentials.DeviceTests', 'Microsoft.Maui.Graphics.DeviceTests', 'Microsoft.Maui.MauiBlazorWebView.DeviceTests')) {
+          $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$name.exe"
+          New-Item -Path $key -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $folder -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 5 -Force | Out-Null
+      }
+    displayName: Collect native crash dumps of the test executables
+    continueOnError: true
+
 - ${{ if and(eq(parameters.platform, 'windows'), or(ne(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'), ne(parameters.testFilter, ''))) }}:
   - template: run-dotnet-preview.yml
     parameters:
@@ -390,6 +407,15 @@ steps:
   displayName: Capture device logs and remove only job-owned devices
   condition: always()
   timeoutInMinutes: 10
+
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - powershell: |
+      foreach ($name in @('Microsoft.Maui.Controls.DeviceTests', 'Microsoft.Maui.Core.DeviceTests', 'Microsoft.Maui.Essentials.DeviceTests', 'Microsoft.Maui.Graphics.DeviceTests', 'Microsoft.Maui.MauiBlazorWebView.DeviceTests')) {
+          Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$name.exe" -Recurse -Force -ErrorAction SilentlyContinue
+      }
+      Get-ChildItem -LiteralPath "$(TestResultsDirectory)\wer" -Filter '*.dmp' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Native crash dump: $($_.FullName) ($($_.Length) bytes)" }
+    displayName: Remove native crash dump registration
+    condition: always()
 
 - ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'packaged')) }}:
   - pwsh: |

@@ -152,10 +152,11 @@ elseif ($state.Platform -eq 'ios' -and $state.Device) {
     if ($LASTEXITCODE -ne 0) { throw "Could not delete job-owned simulator $($state.Device)." }
 }
 elseif ($state.Platform -eq 'windows') {
-    $diagnostics = Join-Path $ResultsDirectory 'diagnostics'
     $ownedPids = [Collections.Generic.HashSet[int]]::new()
-    if (Test-Path -LiteralPath $diagnostics) {
-        Get-ChildItem -LiteralPath $diagnostics -Filter '*.diag' -File |
+    # Category runs each write their own diagnostics directory below the results directory.
+    $diagnostics = @(Get-ChildItem -LiteralPath $ResultsDirectory -Directory -Recurse -Filter 'diagnostics' -ErrorAction SilentlyContinue)
+    if ($diagnostics.Count) {
+        $diagnostics | Get-ChildItem -Filter '*.diag' -File |
             Select-String -Pattern "Started test host process\. PID: '([0-9]+)'" -AllMatches |
             ForEach-Object {
                 foreach ($match in $_.Matches) { $null = $ownedPids.Add([int]$match.Groups[1].Value) }
