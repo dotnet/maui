@@ -167,9 +167,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			_animationManagerKey = _animationManager.Insert(Step);
+			var key = _animationManager.Insert(Step);
+			// Commit can complete the animation before Insert returns.
+			_animationManagerKey = AnimationExtensions.HasTweener(key) ? key : 0;
 
-			if (!_animationManager.Ticker.IsRunning)
+			if (_animationManagerKey != 0 && !_animationManager.Ticker.IsRunning)
 				_animationManager.Ticker.Start();
 		}
 

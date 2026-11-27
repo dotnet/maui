@@ -76,7 +76,6 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
-			animation.Commit(animationManager);
 
 			animation.Finished += () =>
 			{
@@ -84,6 +83,7 @@ namespace Microsoft.Maui.Controls
 				animation.Finished = null;
 				animation.AnimationManagerDisposed = null;
 			};
+			animation.Commit(animationManager);
 			return id;
 		}
 
@@ -98,7 +98,6 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
-			animation.Commit(animationManager);
 
 			animation.Finished += () =>
 			{
@@ -106,6 +105,7 @@ namespace Microsoft.Maui.Controls
 				animation.Finished = null;
 				animation.AnimationManagerDisposed = null;
 			};
+			animation.Commit(animationManager);
 
 			return id;
 		}

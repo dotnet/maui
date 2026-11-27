@@ -9,6 +9,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MotionTests : BaseTestFixture
 	{
+		[Fact]
+		public void ZeroLengthTweenCompletingInsideAddDoesNotRestartTicker()
+		{
+			var ticker = Substitute.For<ITicker>();
+			ticker.SystemEnabled.Returns(true);
+			ticker.When(t => t.Stop()).Do(_ => ticker.IsRunning.Returns(false));
+			ticker.When(t => t.Start()).Do(_ =>
+			{
+				ticker.IsRunning.Returns(true);
+				ticker.Fire.Invoke();
+			});
+			using var manager = new AnimationManager(ticker) { SpeedModifier = 0 };
+			var tweener = new Tweener(0, manager);
+			var values = new List<double>();
+			int finished = 0;
+			tweener.ValueUpdated += (sender, args) => values.Add(tweener.Value);
+			tweener.Finished += (sender, args) => finished++;
+
+			tweener.Start();
+
+			Assert.Equal(new[] { 1.0 }, values);
+			Assert.Equal(1, finished);
+			Assert.False(ticker.IsRunning);
+			ticker.Received(1).Start();
+		}
+
 		[Theory]
 		[InlineData(0)]
 		[InlineData(1)]
