@@ -12,12 +12,12 @@ using Microsoft.UI.Xaml.Media;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Toolbar
 	{
-		readonly ImageConverter _imageConverter = new ImageConverter();
 		static readonly ConditionalWeakTable<AppBarButton, NativeIconBadgeState> s_nativeIconBadgeStates = new();
 
 		NavigationRootManager? NavigationRootManager =>
@@ -50,8 +50,7 @@ namespace Microsoft.Maui.Controls
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
-				var button = new AppBarButton();
-				button.SetBinding(AppBarButton.LabelProperty, "Text");
+				var button = new AppBarButton { Label = item.Text ?? string.Empty };
 				UpdateToolbarItemIcon(button, item, commandBar);
 
 				button.Command = new MenuItemCommand(item);
@@ -119,6 +118,16 @@ namespace Microsoft.Maui.Controls
 
 			if (e.PropertyName == nameof(ToolbarItem.Text))
 			{
+				if (sender is ToolbarItem item &&
+					FindToolbarItemButton(commandBar, item) is AppBarButton button)
+				{
+					button.Label = item.Text ?? string.Empty;
+					if (item.IconImageSource.IsNullOrEmpty() && item.BadgeText is not null)
+					{
+						UpdateToolbarItemIcon(button, item, commandBar);
+					}
+				}
+
 				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
@@ -130,7 +139,7 @@ namespace Microsoft.Maui.Controls
 			button.Content = null;
 
 			var source = item.IconImageSource;
-			if (source.IsNullOrEmpty())
+			if (source is null || source.IsEmpty)
 			{
 				UpdateToolbarItemBadge(button, item);
 				return;
@@ -142,8 +151,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Render registered app fonts like Image while retaining the native icon slot for the label.
 				var icon = new ImageIcon();
-				icon.SetBinding(ImageIcon.SourceProperty, "Value");
-				icon.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				LoadToolbarItemImage(source, icon, static (target, value) => target.Source = value);
 				button.Icon = icon;
 			}
 			else if (source is FontImageSource ||
@@ -154,12 +162,27 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				var image = new WImage();
-				image.SetBinding(WImage.SourceProperty, "Value");
-				image.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				LoadToolbarItemImage(source, image, static (target, value) => target.Source = value);
 				button.Content = image;
 			}
 
 			UpdateToolbarItemBadge(button, item);
+		}
+
+		void LoadToolbarItemImage<T>(ImageSource source, T target, Action<T, WImageSource?> setSource) where T : class
+		{
+			var weakTarget = new WeakReference<T>(target);
+			source.LoadImage(MauiContext, result =>
+			{
+				if (weakTarget.TryGetTarget(out var currentTarget))
+				{
+					setSource(currentTarget, result?.Value);
+				}
+				else
+				{
+					result?.Dispose();
+				}
+			});
 		}
 
 		static void UpdateToolbarItemBadge(AppBarButton button, ToolbarItem item)

@@ -24,6 +24,31 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		const string TestPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY/jPwPAfAAUAAf+mXJtdAAAAAElFTkSuQmCC";
 
+		[Fact]
+		public async Task ToolbarItemTextUpdatesNativeLabelAndBadgeWithoutBinding()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var item = new ToolbarItem { Text = "Initial", BadgeText = "1" };
+			page.ToolbarItems.Add(item);
+			var navigationPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), handler =>
+			{
+				var toolbar = (Toolbar)((IToolbarElement)navigationPage.Window).Toolbar;
+				var commandBar = ((MauiToolbar)toolbar.Handler.PlatformView).CommandBar;
+				var button = Assert.IsType<AppBarButton>(Assert.Single(commandBar.PrimaryCommands));
+
+				Assert.Null(button.GetBindingExpression(AppBarButton.LabelProperty));
+				Assert.Equal("Initial", button.Label);
+				item.Text = "Updated";
+				Assert.Equal("Updated", button.Label);
+				var badgeContent = Assert.IsType<UI.Xaml.Controls.Grid>(button.Content);
+				Assert.Equal("Updated", Assert.Single(badgeContent.Children.OfType<TextBlock>()).Text);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -172,6 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(buttonWithFileImage.Icon);
 				var streamImage = Assert.IsType<Microsoft.UI.Xaml.Controls.Image>(buttonWithFileImage.Content);
 
+				Assert.Null(streamImage.GetBindingExpression(Microsoft.UI.Xaml.Controls.Image.SourceProperty));
 				await AssertionExtensions.AssertEventually(() => streamImage.Source is not null);
 			});
 		}

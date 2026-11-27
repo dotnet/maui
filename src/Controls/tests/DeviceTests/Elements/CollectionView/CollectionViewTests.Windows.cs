@@ -14,12 +14,75 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
+using WItemsViewSelectionMode = Microsoft.UI.Xaml.Controls.ItemsViewSelectionMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact]
+		public async Task CollectionView2UpdatesNativeModeBeforeSelectionChangedAndPreservesSelection()
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new[] { "First", "Second", "Third" };
+			var collectionView = new CollectionView
+			{
+				SelectionMode = SelectionMode.Single,
+				ItemsSource = items,
+				SelectedItem = items[1],
+				SelectedItems = new List<object> { items[0], items[2] },
+				HeightRequest = 300,
+				WidthRequest = 300
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				await AssertEventually(() => Equals(items[1], platformView.SelectedItem));
+				Assert.Null(platformView.GetBindingExpression(WItemsView.SelectionModeProperty));
+
+				var modesDuringSelectionChanged = new List<WItemsViewSelectionMode>();
+				collectionView.SelectionChanged += (_, _) => modesDuringSelectionChanged.Add(platformView.SelectionMode);
+
+				collectionView.SelectionMode = SelectionMode.Multiple;
+				await AssertEventually(() => platformView.SelectedItems.Count == 2);
+				Assert.Contains(items[0], platformView.SelectedItems);
+				Assert.Contains(items[2], platformView.SelectedItems);
+
+				collectionView.SelectionMode = SelectionMode.Single;
+				await AssertEventually(() => Equals(items[1], platformView.SelectedItem));
+
+				Assert.Equal(items[1], collectionView.SelectedItem);
+				Assert.Equal(new object[] { items[0], items[2] }, collectionView.SelectedItems);
+				Assert.Equal(new[] { WItemsViewSelectionMode.Multiple, WItemsViewSelectionMode.Single }, modesDuringSelectionChanged);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionView2StopsSynchronizingSelectionModeOnDisconnect()
+		{
+			SetupBuilderCollectionView2();
+			var collectionView = new CollectionView { SelectionMode = SelectionMode.Single };
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.SelectionMode = WItemsViewSelectionMode.Multiple;
+				Assert.Equal(SelectionMode.Multiple, collectionView.SelectionMode);
+
+				((IElementHandler)handler).DisconnectHandler();
+				platformView.SelectionMode = WItemsViewSelectionMode.None;
+				Assert.Equal(SelectionMode.Multiple, collectionView.SelectionMode);
+
+				collectionView.SelectionMode = SelectionMode.Single;
+				Assert.Equal(WItemsViewSelectionMode.None, platformView.SelectionMode);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
