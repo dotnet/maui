@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[InlineData(".png", 6, 960, 1600, 2, 0, 3, 1)]
 		[InlineData(".png", 3, 1600, 960, 3, 2, 1, 0)]
 		[InlineData(".png", 8, 960, 1600, 1, 3, 0, 2)]
-		public async Task Issue38570_RotateImageAppliesExifOrientationExactlyOnce(
+		public async Task Issue38570_ProcessImageAppliesExifOrientationExactlyOnce(
 			string extension, int orientation, int expectedWidth, int expectedHeight,
 			int topLeft, int topRight, int bottomLeft, int bottomRight)
 		{
@@ -50,38 +50,60 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			await AssertPixelsAsync(sourceDecoder, (int)Width, (int)Height, 0, 1, 2, 3);
 
 			image.Seek(0);
-			using var input = image.AsStreamForRead();
-			// The filename selects the output encoder; the input is always EXIF JPEG.
-			// Orientation 1 intentionally exercises the unchanged-stream early return.
-			using var output = await ImageProcessor.RotateImageAsync(input, "Issue38570" + extension);
-			if (orientation == 1)
-				Assert.Same(input, output);
-			else
-				Assert.NotSame(input, output);
-			output.Position = 0;
-
-			using var result = new InMemoryRandomAccessStream();
-			using (var destination = result.AsStreamForWrite())
+			string outputPath = null;
+			try
 			{
-				await output.CopyToAsync(destination);
-				await destination.FlushAsync();
-				result.Seek(0);
-				var decoder = await BitmapDecoder.CreateAsync(result);
-				Assert.Equal(orientation != 1 && extension == ".png"
-					? BitmapDecoder.PngDecoderId : BitmapDecoder.JpegDecoderId,
-					decoder.DecoderInformation.CodecId);
-				Assert.Equal(decoder.PixelWidth, decoder.OrientedPixelWidth);
-				Assert.Equal(decoder.PixelHeight, decoder.OrientedPixelHeight);
+				// Same call and options as MediaPicker with RotateImage = true (metadata is
+				// preserved by default). The filename selects the output container; the
+				// input is always EXIF JPEG. Processing always writes a new file, so
+				// orientation 1 is re-encoded rather than returned unchanged.
+				using (var input = image.AsStreamForRead())
+				{
+					outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
+						input,
+						"Issue38570" + extension,
+						new ImageProcessingOptions(
+							maximumWidth: null,
+							maximumHeight: null,
+							compressionQuality: 100,
+							rotateImage: true,
+							preserveMetadata: true));
+				}
 
-				// Inspect stored pixels, not auto-oriented display pixels. The processor
-				// must bake in one rotation, including leaving orientation 1 unchanged.
-				await AssertPixelsAsync(decoder, expectedWidth, expectedHeight,
-					topLeft, topRight, bottomLeft, bottomRight);
-				var orientedData = await decoder.GetPixelDataAsync(
-					BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, new BitmapTransform(),
-					ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
-				var orientedPixels = orientedData.DetachPixelData();
-				AssertColor(orientedPixels, expectedWidth, expectedWidth / 4, expectedHeight / 4, topLeft);
+				Assert.Equal("Issue38570" + extension, Path.GetFileName(outputPath));
+
+				using var output = File.OpenRead(outputPath);
+				using var result = new InMemoryRandomAccessStream();
+				// Disposing the AsStreamForWrite adapter closes result, so decode inside this block.
+				using (var destination = result.AsStreamForWrite())
+				{
+					await output.CopyToAsync(destination);
+					await destination.FlushAsync();
+					result.Seek(0);
+					var decoder = await BitmapDecoder.CreateAsync(result);
+					Assert.Equal(extension == ".png"
+						? BitmapDecoder.PngDecoderId : BitmapDecoder.JpegDecoderId,
+						decoder.DecoderInformation.CodecId);
+					// Preserved metadata must not ask viewers to rotate the upright pixels again.
+					Assert.Equal(decoder.PixelWidth, decoder.OrientedPixelWidth);
+					Assert.Equal(decoder.PixelHeight, decoder.OrientedPixelHeight);
+
+					// Inspect stored pixels, not auto-oriented display pixels. The processor
+					// must bake in one rotation, including leaving orientation 1 unchanged.
+					await AssertPixelsAsync(decoder, expectedWidth, expectedHeight,
+						topLeft, topRight, bottomLeft, bottomRight);
+					var orientedData = await decoder.GetPixelDataAsync(
+						BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, new BitmapTransform(),
+						ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
+					var orientedPixels = orientedData.DetachPixelData();
+					AssertColor(orientedPixels, expectedWidth, expectedWidth / 4, expectedHeight / 4, topLeft);
+				}
+			}
+			finally
+			{
+				// The processor writes each result into its own cache sub-directory.
+				if (outputPath is not null)
+					Directory.Delete(Path.GetDirectoryName(outputPath), recursive: true);
 			}
 		}
 

@@ -51,7 +51,6 @@ public class QueryPropertyGeneratorTests
 					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
 					void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)
 					{
-						global::Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(this, typeof(DetailsPage));
 						object value;
 						if (query.TryGetValue("name", out value))
 							this.Name = global::Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(query, "name", value);
@@ -139,7 +138,6 @@ public class QueryPropertyGeneratorTests
 			Assert.Contains(generated, tree => tree.Contains("this.Name =", StringComparison.Ordinal));
 			Assert.Contains(generated, tree => tree.Contains("typeof(global::System.Object)", StringComparison.Ordinal));
 			Assert.Contains(generated, tree => tree.Contains("default((int X, int Y))", StringComparison.Ordinal));
-			Assert.Contains(generated, tree => tree.Contains("typeof(Inner<T>)", StringComparison.Ordinal));
 			Assert.Empty(updatedCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
 				namespace App;
 				public partial class ObservableModel { public string? Name { get; set; } }
@@ -423,14 +421,24 @@ public class QueryPropertyGeneratorTests
 			{
 				public string Value { get; set; }
 			}
+
+			public class NonPartialDerived : Supported
+			{
+			}
 			""";
 
-		var assembly = CompileAndLoad(source);
+		var (result, _) = RunGenerator(source);
 
-		foreach (var typeName in new[] { "Fallback.NotPartial", "Fallback.Outer+NestedInNonPartial", "Fallback.GenericProperty`1", "Fallback.InitOnly", "Fallback.CustomAttribute", "Fallback.Ambiguous" })
-			Assert.False(typeof(IQueryAttributable).IsAssignableFrom(assembly.GetType(typeName, throwOnError: true)), typeName);
-
-		Assert.True(typeof(IQueryAttributable).IsAssignableFrom(assembly.GetType("Fallback.Supported", throwOnError: true)));
+		var diagnostics = result.Diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
+		Assert.All(diagnostics, diagnostic =>
+		{
+			Assert.Equal("MAUI1200", diagnostic.Id);
+			Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+		});
+		Assert.Equal(
+			["Fallback.NotPartial", "Fallback.Outer.NestedInNonPartial", "Fallback.GenericProperty<T>", "Fallback.InitOnly", "Fallback.CustomAttribute", "Fallback.Ambiguous", "Fallback.NonPartialDerived"],
+			diagnostics.Select(d => d.GetMessage().Split('\'')[1]));
+		Assert.Contains("partial class Supported", Assert.Single(result.Results.Single().GeneratedSources).SourceText.ToString(), StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -540,36 +548,6 @@ public class QueryPropertyGeneratorTests
 		var derived = Activator.CreateInstance(assembly.GetType("Derived", throwOnError: true)!)!;
 		((IQueryAttributable)derived).ApplyQueryProperties(new Dictionary<string, object>(), new Dictionary<string, object>());
 		Assert.True((bool)derived.GetType().GetProperty("CustomCalled")!.GetValue(derived)!);
-	}
-
-	[Fact]
-	public void UnsupportedTypesAreReportedOnlyWhenTrimAnalyzerIsEnabled()
-	{
-		const string source = """
-			using Microsoft.Maui.Controls;
-
-			[QueryProperty(nameof(Value), "value")]
-			public class NotPartial
-			{
-				public string Value { get; set; }
-			}
-
-			[QueryProperty(nameof(Value), "value")]
-			public partial class Supported
-			{
-				public string Value { get; set; }
-			}
-			""";
-
-		var (withoutTrimming, _) = RunGenerator(source);
-		Assert.Empty(withoutTrimming.Diagnostics);
-
-		var (withTrimming, _) = RunGenerator(source, ("build_property.EnableTrimAnalyzer", "true"));
-		var diagnostic = Assert.Single(withTrimming.Diagnostics);
-		Assert.Equal("MAUI1200", diagnostic.Id);
-		Assert.Contains("NotPartial", diagnostic.GetMessage(), StringComparison.Ordinal);
-		Assert.Contains("not partial", diagnostic.GetMessage(), StringComparison.Ordinal);
-		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
 	}
 
 	static (GeneratorDriverRunResult Result, Compilation Compilation) RunGenerator(string source, params (string Key, string Value)[] globalOptions)
