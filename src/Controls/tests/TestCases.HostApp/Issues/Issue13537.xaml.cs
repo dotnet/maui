@@ -164,8 +164,6 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
-
 		// Implement INotifyPropertyChanged to support binding
 		public event PropertyChangedEventHandler PropertyChanged;
 		protected virtual void OnPropertyChanged(string propertyName)

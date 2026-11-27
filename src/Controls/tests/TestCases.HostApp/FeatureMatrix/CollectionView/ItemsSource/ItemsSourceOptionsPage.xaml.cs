@@ -20,10 +20,12 @@ public partial class ItemsSourceOptionsPage : ContentPage
 		if (ModelItem.IsChecked)
 		{
 			_viewModel.ItemsSourceStringItems = false;
+			_viewModel.ItemsSourceType = GetItemsSourceType(false);
 		}
 		else if (StringItem.IsChecked)
 		{
 			_viewModel.ItemsSourceStringItems = true;
+			_viewModel.ItemsSourceType = GetItemsSourceType(true);
 		}
 	}
 	private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
@@ -74,4 +76,43 @@ public partial class ItemsSourceOptionsPage : ContentPage
 			_viewModel.IsGrouped = true;
 		}
 	}
+
+	private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (ItemsLayoutVerticalList.IsChecked)
+		{
+			_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+		}
+		else if (ItemsLayoutHorizontalList.IsChecked)
+		{
+			_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+		}
+		else if (ItemsLayoutVerticalGrid.IsChecked)
+		{
+			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+		}
+		else if (ItemsLayoutHorizontalGrid.IsChecked)
+		{
+			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal);
+		}
+	}
+
+	private ItemsSourceType GetItemsSourceType(bool stringItems)
+	{
+		return _viewModel.ItemsSourceType switch
+		{
+			ItemsSourceType.ObservableCollectionStringT or ItemsSourceType.ObservableCollectionModelT =>
+				stringItems ? ItemsSourceType.ObservableCollectionStringT : ItemsSourceType.ObservableCollectionModelT,
+			ItemsSourceType.ListT or ItemsSourceType.ListModelT =>
+				stringItems ? ItemsSourceType.ListT : ItemsSourceType.ListModelT,
+			ItemsSourceType.GroupedListStringT or ItemsSourceType.GroupedListModelT =>
+				stringItems ? ItemsSourceType.GroupedListStringT : ItemsSourceType.GroupedListModelT,
+			ItemsSourceType.EmptyGroupedListT or ItemsSourceType.EmptyGroupedListModelT =>
+				stringItems ? ItemsSourceType.EmptyGroupedListT : ItemsSourceType.EmptyGroupedListModelT,
+			ItemsSourceType.EmptyObservableCollectionT or ItemsSourceType.EmptyObservableCollectionModelT =>
+				stringItems ? ItemsSourceType.EmptyObservableCollectionT : ItemsSourceType.EmptyObservableCollectionModelT,
+			_ => _viewModel.ItemsSourceType
+		};
+	}
+
 }
