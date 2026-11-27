@@ -25,10 +25,8 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool StopOnStyle => true;
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
-	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
@@ -42,10 +40,6 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			return;
 
 		if (IsVisualState(parentElement))
-			return;
-
-		// Code-behind declares no fields for names inside a Style (see CodeBehindCodeWriter.GetNamedFields).
-		if (IsInStyle(parentElement))
 			return;
 
 		var fieldName = (string)(node.Value);
@@ -96,14 +90,6 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 
 	static bool IsXNameProperty(ValueNode node, INode parentNode)
 		=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
-
-	bool IsInStyle(ElementNode node)
-	{
-		for (var current = node.Parent; current is not null; current = current.Parent)
-			if (current is ElementNode element && element.IsStyle(Context))
-				return true;
-		return false;
-	}
 
 	static bool IsVisualStateGroup(ElementNode node) => node?.XmlType.Name == "VisualStateGroup" && node?.Parent is IListNode;
 	static bool IsVisualState(ElementNode node) => node?.XmlType.Name == "VisualState" && node?.Parent is IListNode;
