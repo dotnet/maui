@@ -23,6 +23,44 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CarouselViewTests
 	{
 		[Theory]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, false)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, true)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true, false)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, true, false, false)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false, false)]
+		public async Task BoundPositionScrollsWithoutReverting(
+			ItemsLayoutOrientation orientation, bool isScrollAnimated, bool isSwipeEnabled, bool hasPeekArea)
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false, orientation);
+			carouselView.IsScrollAnimated = isScrollAnimated;
+			carouselView.IsSwipeEnabled = isSwipeEnabled;
+			if (hasPeekArea)
+				carouselView.PeekAreaInsets = new Thickness(40, 0);
+			var source = new PositionBindingSource();
+			carouselView.SetBinding(CarouselView.PositionProperty, new Binding(nameof(PositionBindingSource.Position), source: source));
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				foreach (var target in new[] { 1, 2, 0 })
+				{
+					source.Position = target;
+					await WaitForCenteredPositionAsync(handler, scrollViewer, target);
+					await Task.Delay(200);
+					await DrainDispatcherQueueAsync(scrollViewer);
+
+					Assert.Equal(target, source.Position);
+					Assert.Equal(target, carouselView.Position);
+					Assert.Same(items[target], carouselView.CurrentItem);
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(SnapPointsType.Mandatory)]
 		[InlineData(SnapPointsType.MandatorySingle)]
 		public async Task NativeScrollUpdatesSelectionWithoutProgrammaticFeedbackAndSettlesCentered(SnapPointsType snapPointsType)
@@ -1636,6 +1674,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		static object[] CreateItems() =>
 			[new object(), new object(), new object(), new object(), new object()];
+
+		sealed class PositionBindingSource : BindableObject
+		{
+			int _position;
+
+			public int Position
+			{
+				get => _position;
+				set
+				{
+					if (_position == value)
+						return;
+
+					_position = value;
+					OnPropertyChanged();
+				}
+			}
+		}
 
 		sealed class ResettableObservableCollection<T> : ObservableCollection<T>
 		{
