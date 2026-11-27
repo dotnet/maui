@@ -365,14 +365,21 @@ public static class UITestRetry
 			.Where(test => (string)test.Attribute("result") == "Failed" &&
 				((string)test.Attribute("runstate") == "Ignored" || (string)test.Attribute("runstate") == "Runnable") &&
 				FailureCompletedSuccessfully(test, retryReports)).ToList();
+		var originalTests = originalReports.SelectMany(report => report.Descendants("test-case")).ToList();
 		var recoveredIgnoredIds = new HashSet<string>(original.Root.Element(ns + "TestDefinitions")?.Elements(ns + "UnitTest")
 			.Where(definition =>
 			{
+				// For parameterized fixtures such as EditorFeatureTests(Windows), MTP's TRX className is only the
+				// namespace, so match by test name and class or namespace, and require exactly one NUnit case.
 				var method = definition.Element(ns + "TestMethod");
-				var fullName = (string)method?.Attribute("className") + "." + (string)definition.Attribute("name");
-				return recoveredIgnores.Count(test =>
-					(string)test.Attribute("fullname") == fullName &&
-					GetAssemblyFullName(test) == (string)method?.Attribute("codeBase")) == 1;
+				var className = (string)method?.Attribute("className");
+				var matches = originalTests.Where(test =>
+					(string)test.Attribute("name") == (string)definition.Attribute("name") &&
+					GetAssemblyFullName(test) == (string)method?.Attribute("codeBase") &&
+					((string)test.Attribute("classname") == className ||
+						((string)test.Attribute("classname"))?.StartsWith(className + ".", StringComparison.Ordinal) == true))
+					.Take(2).ToList();
+				return matches.Count == 1 && recoveredIgnores.Contains(matches[0]);
 			})
 			.Select(definition => (string)definition.Attribute("id")) ?? Enumerable.Empty<string>());
 		var unresolvedIds = new HashSet<string>(retry.Root.Element(ns + "Results")?.Elements()
