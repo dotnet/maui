@@ -381,3 +381,4 @@ Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
 Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
 ~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
+static Microsoft.Maui.Controls.FlyoutBase.ShowContextFlyout(Microsoft.Maui.Controls.VisualElement! target) -> void
