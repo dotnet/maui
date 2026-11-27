@@ -110,9 +110,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (windowManager?.DefaultDisplay is not null)
 						{
 							var realMetrics = new global::Android.Util.DisplayMetrics();
-#pragma warning disable CA1422 // Display.GetRealMetrics is obsolete on API 31+, but we need the full physical screen size
 							windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-#pragma warning restore CA1422
 							var screenHeight = realMetrics.HeightPixels;
 
 							// View does not reach the bottom safe area zone — no bottom padding needed
