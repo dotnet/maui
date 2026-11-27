@@ -3,7 +3,7 @@ parameters:
   platforms: [] # Optional shared-build platforms; Windows has its own build/artifact.
   path: '' # path to csproj
   device: '' # the xharness device to use
-  cakeArgs: [] # additional cake args, one argument per item
+  cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
@@ -12,7 +12,6 @@ parameters:
   testFilter: ''
   headless: true
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
-  coreclrArtifactName: 'ui-tests-samples-coreclr'
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
 
@@ -68,65 +67,38 @@ steps:
   
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildArguments = @(
-        '--target=uitests-apphost'
-        "--configuration=$env:UI_TEST_CONFIGURATION"
-        '--verbosity=diagnostic'
-        '--usenuget=false'
-        "--runtimevariant=$env:UI_TEST_RUNTIME_VARIANT"
-    )
+    $platformArguments = "--${{ parameters.platform }}"
+    # Selected runs build only the selected mobile platforms. The flags below are
+    # template-evaluated booleans, so no parameter text reaches this script.
     if ($env:UITEST_SHARED_PLATFORMS -eq 'True') {
-        # Selected runs build only the selected mobile platforms. The flags below are
-        # template-evaluated booleans, so no parameter text reaches this script.
         $platformArguments = @(
             if ($env:UITEST_BUILD_ANDROID -eq 'True') { '--android' }
             if ($env:UITEST_BUILD_IOS -eq 'True') { '--ios' }
             if ($env:UITEST_BUILD_CATALYST -eq 'True') { '--catalyst' }
-        )
-        if ($platformArguments.Count -eq 0) {
+        ) -join ' '
+        if (-not $platformArguments) {
             throw "A shared sample build requires at least one non-Windows platform."
         }
-        $buildArguments += $platformArguments
-    } elseif ($env:UI_TEST_PLATFORM) {
-        $buildArguments += "--$env:UI_TEST_PLATFORM"
     }
-    $extraCakeArguments = ConvertFrom-Json -InputObject $env:UI_TEST_CAKE_ARGS -NoEnumerate
-    if ($extraCakeArguments -isnot [array]) {
-        throw 'cakeArgs must be an array of individual arguments.'
-    }
-    foreach ($argument in $extraCakeArguments) {
-        if ($argument -isnot [string]) {
-            throw 'Each cakeArgs item must be a string.'
-        }
-        $buildArguments += $argument
-    }
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} $platformArguments --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
     # Add Material3 build argument if enabled
-    if (($env:UI_TEST_USE_MATERIAL3 -eq 'true') -and ($env:UI_TEST_PLATFORM -eq 'android')) {
-        $buildArguments += '--usematerial3=true'
+    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
+        $buildCommand += " --usematerial3=true"
         Write-Host "Building with Material3 enabled"
-    } elseif ($env:UI_TEST_USE_MATERIAL3 -eq 'true') {
+    } elseif ("${{ parameters.useMaterial3 }}" -eq "true") {
         Write-Host "Material3 is only supported for Android platform, ignoring useMaterial3 parameter"
     }
     
     # Add UseWindowsCV1 build argument if enabled
-    if (($env:UI_TEST_USE_WINDOWS_CV1 -eq 'true') -and ($env:UI_TEST_PLATFORM -eq 'windows')) {
-        $buildArguments += '--usewindowscv1=true'
+    if (("${{ parameters.useWindowsCV1 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "windows")) {
+        $buildCommand += " --usewindowscv1=true"
         Write-Host "Building with UseWindowsCollectionView2Handler=false (CV1)"
     }
     
-    & ./build.ps1 @buildArguments
-    if ($LASTEXITCODE -ne 0) {
-        exit $LASTEXITCODE
-    }
+    Invoke-Expression $buildCommand
   displayName: 'Build the samples'
   env:
-    UI_TEST_CONFIGURATION: ${{ parameters.configuration }}
-    UI_TEST_RUNTIME_VARIANT: ${{ parameters.runtimeVariant }}
-    UI_TEST_PLATFORM: ${{ parameters.platform }}
-    UI_TEST_CAKE_ARGS: ${{ convertToJson(parameters.cakeArgs) }}
-    UI_TEST_USE_MATERIAL3: ${{ parameters.useMaterial3 }}
-    UI_TEST_USE_WINDOWS_CV1: ${{ parameters.useWindowsCV1 }}
     UITEST_SHARED_PLATFORMS: ${{ and(gt(length(parameters.platforms), 0), lt(length(parameters.platforms), 4)) }}
     UITEST_BUILD_ANDROID: ${{ containsValue(parameters.platforms, 'android') }}
     UITEST_BUILD_IOS: ${{ containsValue(parameters.platforms, 'ios') }}
@@ -149,7 +121,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
-  artifact: ${{ parameters.coreclrArtifactName }}
+  artifact: ui-tests-samples-coreclr
 
 # Material3 artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -178,7 +150,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
-  artifact: ${{ parameters.coreclrArtifactName }}_failed_$(System.JobAttempt)
+  artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
 
 # Material3 failure artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
