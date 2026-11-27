@@ -58,6 +58,26 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task NonSecureNativeTextEditRaisesOneTransformedChange()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var textField = GetPlatformControl(handler);
+				Assert.False(textField.SecureTextEntry);
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "d");
+
+				Assert.Equal("D", textField.Text);
+				Assert.Equal("D", entry.Text);
+				Assert.Equal("D", Assert.Single(changes));
+			});
+		}
+
+		[Fact]
 		public async Task NativeSecureTextEntryPreservesCasing()
 		{
 			var entry = new Entry { TextTransform = TextTransform.Uppercase };

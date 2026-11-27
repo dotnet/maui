@@ -121,6 +121,27 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task Material3NonSecureNativeTextEditRaisesOneTransformedChange()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler2>(entry, handler =>
+			{
+				var platformEntry = handler.PlatformView.EditText;
+				Assert.NotNull(platformEntry);
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = platformEntry.EditableText;
+				text.Replace(0, text.Length(), "d");
+
+				Assert.Equal("D", platformEntry.Text);
+				Assert.Equal("D", entry.Text);
+				Assert.Equal("D", Assert.Single(changes));
+			});
+		}
+
+		[Fact]
 		public async Task Material3NativePasswordInputTypePreservesCasing()
 		{
 			const string input = "aB";
