@@ -30,6 +30,13 @@ applyTo:
 - When extending existing mappers, ensure the base mapper chain is called — do not silently replace
 - Static mapper methods should be `public static` to enable platform-specific overrides
 - Use `nameof()` for property keys — avoid magic strings
+- End built-in property and command mapper initializers with `.WithFrameworkMappingsSealed()` so later assignments are recorded as app customizations
+- Controls-layer changes to a Core handler mapper belong in the control's lazy `RemapForControls()` and use the internal `*ForControls` helpers, not the public `AppendToMapping`/`ModifyMapping`/`ReplaceMapping` app customization APIs
+
+## Registering Built-in Handlers
+- Declare a built-in control's default handler with `[ElementHandler]` on the control class, not with a DI registration; DI (`ConfigureMauiHandlers`/`AddHandler`) is for app and library overrides
+- Give attribute-resolved handlers a public parameterless constructor — direct `GetHandler()` calls do not use constructor injection
+- See [handler-registration.instructions.md](handler-registration.instructions.md) and [docs/design/HandlerResolution.md](../../docs/design/HandlerResolution.md) for feature-switch handler selection, resolution precedence, lazy remaps, and testing
 
 ## Fire-and-Forget Async
 - Use `.FireAndForget(handler)` for async operations in mapper methods — never use bare `async void`

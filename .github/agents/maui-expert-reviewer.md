@@ -69,14 +69,17 @@ Avoiding expensive operations on hot paths: measure/arrange, scrolling, binding 
 Correct usage of mapper/command-mapper, lifecycle symmetry, and chained mapper handling.
 
 - CHECK: Property updates go through `Handler.UpdateValue(nameof(Property))`, not direct mapper calls
-- CHECK: Mapper registrations use `AppendToMapping`/`PrependToMapping` for extensibility
+- CHECK: App, sample, and library mapper customizations use `AppendToMapping`/`PrependToMapping` to extend existing mappings rather than replacing them
 - CHECK: Handler properties are initialized in correct dependency order
 - CHECK: CommandMapper entries return void and use `(handler, view, args)` signature — Commands are for requests (`ScrollTo`, `Remove`), Mapper properties associate with `BindableProperty` values
 - CHECK: Platform-specific mapper overrides call base mapper when extending
 - CHECK: **ConnectHandler/DisconnectHandler symmetry** — every listener, event handler, or callback registered in `ConnectHandler` must be unregistered in `DisconnectHandler`
 - CHECK: Don't null handler references eagerly in `DisconnectHandler` — the view might be removed and re-added (e.g., Shell tab switching); clear subscriptions while keeping weak references alive
 - CHECK: On Android, assign per-view state in `AttachedToWindow`/`DetachedFromWindow` rather than constructor to avoid leaks when views are recycled
-- CHECK: Use `ModifyMapping` for Controls-layer overrides that override Core behavior, so user-registered mappings aren't silently replaced
+- CHECK: Controls-layer overrides of Core handler mappers live in the control's lazy `RemapForControls()` (call `base.RemapForControls()`, then a static `OneTimeInitializationAction.InvokeOnce()`) and use the internal `ReplaceMappingForControls`/`AppendToMappingForControls`/`PrependToMappingForControls`/`ModifyMappingForControls` helpers. Flag the public `AppendToMapping`/`ModifyMapping`/`ReplaceMapping`/indexer inside a remap: those are the app customization layer, and a lazy framework call through them reorders or overrides app customizations made at startup. Label's Apple `FlowDirection` and Android `IsTextSelectable` remaps are deliberate exceptions (they kept their pre-lazy static-constructor timing)
+- CHECK: Built-in handler property and command mapper initializers end with `.WithFrameworkMappingsSealed()`, so later assignments are recorded as app customizations
+- CHECK: A lazy remap that sets a public static factory (e.g. `PlatformViewFactory`) uses `??=`, so a factory the app set during startup survives
+- CHECK: Non-mapper setup such as `CommandProperty.DependsOn(...)` stays in control type initialization, not in the lazy remap — bindings need it before a handler attaches
 - CHECK: Mapper methods must be idempotent — they can be called at any time, not just initial setup; must fully initialize state from scratch
 - CHECK: `ConnectHandler` calls `base.ConnectHandler()` before custom setup; `DisconnectHandler` cleans up before calling `base.DisconnectHandler()` — reversed ordering can access disposed resources
 - CHECK: Centralize listener instances via static registry for per-CoordinatorLayout or per-DrawerLayout listeners to reduce allocations
@@ -239,6 +242,8 @@ Breaking changes, Xamarin.Forms migration paths, and third-party renderer impact
 - CHECK: Removed/renamed APIs go through `[Obsolete]` cycle before removal
 - CHECK: Default property value changes are evaluated for impact on existing apps
 - CHECK: Compatibility renderers maintain behavioral parity with handler equivalents
+- CHECK: Handler resolution changes keep `MauiHandlersFactory.GetHandler(Type)` and `GetHandlerType(Type)` consistent and preserve the precedence in `docs/design/HandlerResolution.md`: exact registration, direct `[ElementHandler]`, the more specific of nearest registered base class and nearest inherited attribute, registered interfaces (with Controls defaults, `IContentButton`/`IContentView` defaults compete as interface registrations), then content-interface fallbacks. `TryAddHandler` must not replace directly attributed defaults or the content-interface defaults when Controls defaults are enabled
+- CHECK: Code or docs do not rely on custom `IMauiHandlersFactory` implementations (unsupported; they cannot see attribute defaults) or on `AddMauiControlsHandlers()` registering anything (it is a compatibility no-op)
 
 ### 13. Platform-Specific Code Scoping `[moderate]`
 
@@ -318,6 +323,9 @@ Patterns that work with .NET trimmer and NativeAOT.
 - CHECK: For IL2026/IL3050, trace the complete annotation chain before recommending a fix: identify the annotated member, any generic or `DynamicallyAccessedMembers` hop, the feature guard, and the target platform/toolchain that produced the warning
 - CHECK: Do not assume either that a `FeatureGuard` silences every annotation chain or that every IL2026/IL3050 suppression is wrong. Validate that the guarded path is disabled for the affected publish configuration and that the relevant analyzer honors the guard on that platform
 - CHECK: Reject broad suppressions and expected-warning baselines that hide a reachable dynamic-code path. A `#pragma` is acceptable only when the path is proven unreachable for the affected configuration, a platform/toolchain limitation is documented, and the diagnostic scope is restored immediately after the affected call. An `UnconditionalSuppressMessage` is acceptable only with the same unreachable-path and toolchain-limitation evidence, and it must target the exact diagnostic on the narrowest applicable member
+- CHECK: Built-in Controls views declare their default handler with the internal `[ElementHandler(typeof(XHandler))]` attribute on the control class (scoped with `#if` to platforms where the handler exists), not with a DI registration in Controls hosting, which roots the handler for every app. DI registrations are for app/library overrides and interfaces. Attribute-resolved handlers need a public parameterless constructor; only `ToHandler()` falls back to constructor injection
+- CHECK: Feature-switch-dependent handler selection uses a nested `ElementHandlerAttribute` subclass whose `GetHandlerType()` branches on a `[FeatureSwitchDefinition]` `RuntimeFeature` property (Android Material3 controls, Windows `CollectionView`, Apple `Shell`), so the inactive handler stays trimmable. Flag selection that roots both handlers outside a feature-switch branch. Returning `null` from `GetHandlerType()` is valid and means no handler is declared in that configuration
+- CHECK: Platform-specific `[ElementHandler]` branches have device-test coverage that asserts both `GetHandlerType` and handler creation, because `Controls.Core.UnitTests` builds a non-platform TFM. Tests that toggle `AppContext` switches use a `DisableParallelization` collection and restore the switch
 - CHECK: Prefer a structural fix when the warning represents a real reachability path: isolate annotated registration behind a helper with matching annotations, or replace reflection/dynamic serialization with source-generated metadata. Do not present a branch-specific helper as if it exists on every target branch
 
 ### 19. CollectionView — iOS/MacCatalyst (Items2/) `[major]`

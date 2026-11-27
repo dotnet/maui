@@ -90,6 +90,12 @@ Platform-specific files use naming conventions to control compilation:
 
 **Example**: If you have both `CollectionView.ios.cs` and `CollectionView.maccatalyst.cs`, both will compile for MacCatalyst builds. The `.maccatalyst.cs` file won't compile for iOS, but the `.ios.cs` file will compile for both iOS and MacCatalyst.
 
+### Handlers and Mappers
+
+- Built-in controls declare their default handler with the internal `[ElementHandler]` attribute on the control class, not with DI registrations. `ConfigureMauiHandlers`/`AddHandler` are for app and library overrides.
+- Controls-layer mapper changes run lazily from the control's `RemapForControls()` and use the internal `*ForControls` mapper helpers, not the public `AppendToMapping`/`ModifyMapping` customization APIs.
+- When adding or changing a control's handler, its mapper remaps, or handler resolution, follow [`.github/instructions/handler-registration.instructions.md`](instructions/handler-registration.instructions.md) and [`docs/design/HandlerResolution.md`](../docs/design/HandlerResolution.md).
+
 ### Sample Projects
 
 - `src/Controls/samples/Maui.Controls.Sample` - Full gallery sample with all controls and features
