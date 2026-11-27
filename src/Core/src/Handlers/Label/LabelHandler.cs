@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			[nameof(ILabel.Background)] = MapBackground,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)
 		{
