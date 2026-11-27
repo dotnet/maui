@@ -339,7 +339,7 @@ function Get-ExpertExpectedDimensions {
     if ($start -lt 0 -or $end -le $start) { throw 'Canonical dimension routing is missing.' }
     $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
         [Text.Encoding]::UTF8.GetBytes($rulebook.Substring($start, $end - $start)))).ToLowerInvariant()
-    if ($hash -cne '215ec0b616ed9cf053a4353320ca4a389dbe920b83b712255ae4827780047a34') {
+    if ($hash -cne 'fe74b82c57f28093ec9c532efc38d7b127cc55754963a0e776d785362171c1f8') {
         throw 'Canonical routing changed; update the trusted dimension mapping before reviewing.'
     }
     $rules = @(
