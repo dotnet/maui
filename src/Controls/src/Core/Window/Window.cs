@@ -585,6 +585,10 @@ namespace Microsoft.Maui.Controls
 			Application?.RemoveWindow(this);
 
 			var mauiContext = Handler?.MauiContext as MauiContext;
+#if WINDOWS
+			// Native navigation can deliver Loaded after closure; detach it before disposing its services.
+			Page?.DisconnectHandlers();
+#endif
 			Handler?.DisconnectHandler();
 
 			// On Android, preserve window scope to enable reuse when Activity is recreated

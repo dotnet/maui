@@ -18,10 +18,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TypedBindingUnitTests : BindingBaseUnitTests
 	{
+		readonly bool _enableDiagnosticsInitialState;
 
 		public TypedBindingUnitTests()
 		{
-
+			_enableDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
@@ -29,6 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			if (disposing)
 			{
+				RuntimeFeature.EnableMauiDiagnostics = _enableDiagnosticsInitialState;
 				Application.ClearCurrent();
 			}
 
@@ -1297,7 +1300,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			slider.SetBinding(Slider.ValueProperty, new TypedBinding<ComplexMockViewModel, ComplexMockViewModel>(mvm => (mvm.Model, true), null, null));
 
 			Assert.Equal(slider.Value, Slider.ValueProperty.DefaultValue);
-			Assert.True(MockApplication.MockLogger.Messages.Count == 1, "No error logged");
+			Assert.Single(MockApplication.MockLogger.Messages);
 		}
 
 		class NullViewModel : INotifyPropertyChanged

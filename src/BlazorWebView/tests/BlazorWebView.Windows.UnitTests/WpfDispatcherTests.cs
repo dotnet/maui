@@ -42,7 +42,7 @@ public sealed class WpfDispatcherTests
 
 			Assert.False(_fixture.WpfDispatcher.CheckAccess());
 			await DispatcherTestHelpers.AssertFailure(_fixture.WpfDispatcher, workItemKind, exception);
-			await _fixture.WpfNativeDispatcher.InvokeAsync(() => { }).Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await _fixture.WpfNativeDispatcher.InvokeAsync(() => { }).Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 			Assert.Empty(unhandled);
 		}
@@ -86,7 +86,7 @@ public sealed class WpfDispatcherTests
 				_fixture.WpfDispatcher,
 				workItemKind,
 				cancellation.Token);
-			await _fixture.WpfNativeDispatcher.InvokeAsync(() => { }).Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await _fixture.WpfNativeDispatcher.InvokeAsync(() => { }).Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 			Assert.Empty(unhandled);
 		}

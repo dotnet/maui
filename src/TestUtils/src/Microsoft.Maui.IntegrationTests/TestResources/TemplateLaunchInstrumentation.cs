@@ -36,6 +36,8 @@ namespace mauitemplate
             var resultCode = currentActivity is not null ? Result.Ok : Result.Canceled;
 
 			results.PutString("return-code", resultCode.ToString("D"));		
+			if (resultCode == Result.Ok)
+				results.PutString("completion-marker", "__MAUI_APP_COMPLETION_MARKER__");
 			
             Finish(resultCode, results);
         }

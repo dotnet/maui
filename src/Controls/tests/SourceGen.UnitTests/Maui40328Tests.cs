@@ -62,7 +62,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 
 		var (result, compilation) = Generate(xaml, incrementalHotReload);
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(compilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 
 		var sources = result.Results.Single().GeneratedSources;
 		var codeBehind = sources.Single(s => s.HintName.EndsWith(".sg.cs", StringComparison.Ordinal)).SourceText.ToString();
@@ -93,10 +93,10 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 		var (_, nullableDisabled) = Generate(xaml, incrementalHotReload: true, nullableContext: NullableContextOptions.Disable);
 
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		var enabledDiagnostics = nullableEnabled.GetDiagnostics();
+		var enabledDiagnostics = nullableEnabled.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken);
 		Assert.DoesNotContain(enabledDiagnostics, d => d.Id == "CS8669" || d.Severity == DiagnosticSeverity.Error);
 		Assert.Contains(enabledDiagnostics, d => d.Id == "CS8603");
-		var disabledDiagnostics = nullableDisabled.GetDiagnostics();
+		var disabledDiagnostics = nullableDisabled.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken);
 		Assert.Contains(disabledDiagnostics, d => d.Id is "CS8632" or "CS8669");
 		Assert.DoesNotContain(disabledDiagnostics, d => d.Id == "CS8603");
 	}
@@ -117,7 +117,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 		var nullableDisabled = csharpCompilation.WithOptions(csharpCompilation.Options.WithNullableContextOptions(NullableContextOptions.Disable));
 
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.DoesNotContain(nullableDisabled.GetDiagnostics(), d => d.Id == "CS8669" || d.Severity == DiagnosticSeverity.Error);
+		Assert.DoesNotContain(nullableDisabled.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken), d => d.Id == "CS8669" || d.Severity == DiagnosticSeverity.Error);
 	}
 
 	[Theory]
@@ -195,13 +195,13 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 				<Button Clicked="OnClicked" />
 			</ContentPage>
 			""";
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(""));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText("", cancellationToken: TestContext.Current.CancellationToken));
 		var file = new AdditionalXamlFile("Maui40328.xaml", xaml, EnablePreviewFeatures: true);
 		var (_, result, updatedCompilation, _) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(
 			compilation, (driver, currentCompilation) => (driver, currentCompilation), file);
 
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(updatedCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -217,7 +217,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 		var (result, compilation) = Generate(xaml, incrementalHotReload: false);
 
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(compilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Theory]
@@ -244,15 +244,15 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 			</ContentPage>
 			""";
 		var options = new CSharpParseOptions(preprocessorSymbols: defineFirst ? ["FIRST"] : []);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(CodeBehind, options));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(CodeBehind, options, cancellationToken: TestContext.Current.CancellationToken));
 		var file = new AdditionalXamlFile("Maui40328.xaml", xaml, EnablePreviewFeatures: true);
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([new XamlGenerator().AsSourceGenerator()], parseOptions: options)
 			.AddAdditionalTexts([file.Text])
 			.WithUpdatedAnalyzerConfigOptions(CreateAnalyzerConfigOptionsProvider(file));
-		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _, cancellationToken: TestContext.Current.CancellationToken);
 
 		Assert.Empty(driver.GetRunResult().Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(updatedCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -275,7 +275,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 		var (result, compilation) = Generate(xaml, incrementalHotReload: false);
 
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(compilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
@@ -295,7 +295,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 			</ContentPage>
 			""";
 		var (_, compilation) = Generate(xaml, incrementalHotReload: false);
-		var diagnostics = compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+		var diagnostics = compilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
 
 		foreach (var (id, text) in new[] { ("CS0246", "using Alias"), ("CS0103", "MissingMethod") })
 		{
@@ -324,7 +324,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 			</ContentPage>
 			""";
 		var (_, compilation) = Generate(xaml, incrementalHotReload: false);
-		var diagnostic = Assert.Single(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var diagnostic = Assert.Single(compilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 		Assert.Equal("CS0103", diagnostic.Id);
 		var mapped = diagnostic.Location.GetMappedLineSpan();
 
@@ -349,7 +349,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 				<Button Clicked="{{handler}}" />
 			</ContentPage>
 			""";
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(CodeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(CodeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var first = new AdditionalXamlFile("Maui40328.xaml", Page("FirstHandler", false), EnableIncrementalHotReload: incrementalHotReload, EnablePreviewFeatures: true);
 		var second = new AdditionalXamlFile("Maui40328.xaml", Page("SecondHandler", leaveIncompatibleOldHandler), EnableIncrementalHotReload: incrementalHotReload, EnablePreviewFeatures: true);
 		var (initial, updated, updatedCompilation, _) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(
@@ -357,7 +357,7 @@ public class Maui40328Tests : SourceGenXamlInitializeComponentTestBase
 
 		Assert.Empty(initial.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
 		Assert.Empty(updated.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
-		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(updatedCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error));
 		var generated = updated.Results.Single().GeneratedSources.Single(s => s.HintName.EndsWith(".xsg.cs", StringComparison.Ordinal)
 			&& !s.HintName.EndsWith(".uc.xsg.cs", StringComparison.Ordinal)).SourceText.ToString();
 		Assert.Contains("SecondHandler", generated, StringComparison.Ordinal);

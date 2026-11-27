@@ -19,11 +19,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static IApplication DefaultTestApp { get; private set; }
 
-		public static MauiApp CreateMauiApp(List<Assembly> testAssemblies)
+		public static MauiApp CreateMauiApp(Assembly testAssembly)
 		{
 			return CreateMauiApp((_) => new TestOptions
 			{
-				Assemblies = testAssemblies
+				TestAssembly = testAssembly
 			});
 		}
 
@@ -55,28 +55,10 @@ namespace Microsoft.Maui.DeviceTests
 				})
 				.ConfigureTests(options);
 
-#if WINDOWS
-			if (options(null).Assemblies.Any(a => a.FullName.Contains("Controls.DeviceTests",
-				StringComparison.OrdinalIgnoreCase)))
-			{
-				appBuilder.UseControlsHeadlessRunner(new HeadlessRunnerOptions
-				{
-					RequiresUIContext = true,
-				});
-			}
-			else
-			{
-				appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
-				{
-					RequiresUIContext = true,
-				});
-			}
-#else
 			appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
 			{
 				RequiresUIContext = true,
 			});
-#endif
 
 #if IOS || MACCATALYST
 
@@ -87,8 +69,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #endif
-			appBuilder.UseVisualRunner();
-
 			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
 			{
 				ValidateOnBuild = true,

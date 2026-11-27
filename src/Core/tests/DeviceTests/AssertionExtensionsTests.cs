@@ -50,6 +50,22 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task LeakDiagnosticsDoNotInvokeTargetToString()
+		{
+			var target = new ThrowingDescription();
+			try
+			{
+				var error = await Assert.ThrowsAsync<TrueException>(() =>
+					AssertionExtensions.WaitForGC(new WeakReference(target)));
+				Assert.Contains(typeof(ThrowingDescription).FullName, error.Message, StringComparison.Ordinal);
+			}
+			finally
+			{
+				GC.KeepAlive(target);
+			}
+		}
+
+		[Fact]
 		public async Task AlreadyCollectedReferencesSucceed()
 		{
 			var references = new[] { new WeakReference(null), new WeakReference(null) };
@@ -105,6 +121,11 @@ namespace Microsoft.Maui.DeviceTests
 			public object LaterTarget;
 			public bool EarlierReferenceWasAlive;
 			public bool LaterReferenceWasAlive;
+		}
+
+		sealed class ThrowingDescription
+		{
+			public override string ToString() => throw new InvalidOperationException("Descriptions may require the UI thread.");
 		}
 
 		sealed class ReleaseOnCheckReference : WeakReference

@@ -137,7 +137,7 @@ using Microsoft.Maui.Controls;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://schemas.microsoft.com/dotnet/2021/maui")]
 """;
 		var compilation = CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
@@ -167,7 +167,7 @@ using Microsoft.Maui.Controls;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://schemas.microsoft.com/dotnet/2021/maui")]
 """;
 		var compilation = CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
@@ -218,7 +218,7 @@ public class TestControl : ContentView
 
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		if (resolvedType)
-			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
@@ -324,7 +324,7 @@ public class Helper
 
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(initialCode, path: "Helper.cs"));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(initialCode, path: "Helper.cs", cancellationToken: TestContext.Current.CancellationToken));
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		var result1 = result.result1.Results.Single();
@@ -397,7 +397,7 @@ public class Helper
 
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(initialCode, path: "Helper.cs"));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(initialCode, path: "Helper.cs", cancellationToken: TestContext.Current.CancellationToken));
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		var result1 = result.result1.Results.Single();
@@ -577,7 +577,7 @@ namespace Ns2
 """;
 
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
@@ -612,7 +612,7 @@ namespace Ns2 { public class Conflicting : Label { } }
     <shared:Conflicting{{(named ? " x:Name=\"named\"" : "")}} />
 </ContentPage>
 """;
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("Test.xaml", xaml, Inflator: inflator),
 			assertNoCompilationErrors: false,
@@ -757,7 +757,7 @@ namespace Ns2 { public class Conflicting : Label { } }
 using Microsoft.Maui.Controls;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://tests/collision")]
 """;
-		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(global));
+		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(global, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Scoped.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
 		Assert.Equal(new[] { "Conflict", "shared:Conflict", "shared:Conflict" },
@@ -877,7 +877,7 @@ namespace Second
   </shared:Widget>
 </ContentPage>
 """;
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("GenericParent.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
@@ -907,7 +907,7 @@ namespace Test
   </StackLayout>
 </ContentPage>
 """;
-		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("Hidden.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
@@ -946,7 +946,7 @@ namespace Test { [ContentProperty()] public class Holder : ContentView { } }
   <local:Holder>text</local:Holder>
 </ContentPage>
 """;
-		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("Incomplete.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
@@ -1018,7 +1018,7 @@ namespace Second
   </StackLayout>
 </ContentPage>
 """;
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("MarkupFallback.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
@@ -1104,9 +1104,9 @@ using Microsoft.Maui.Controls;
   <StackLayout><limited:Thing /><direct:Thing /></StackLayout>
 </ContentPage>
 """;
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(mappings)).AddReferences(
-			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(one)).ToMetadataReference(),
-			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(two)).ToMetadataReference());
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(mappings, cancellationToken: TestContext.Current.CancellationToken)).AddReferences(
+			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(one, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference(),
+			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(two, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference());
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Restricted.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
 		Assert.Empty(ConflictWarnings(result));
@@ -1130,9 +1130,9 @@ using Microsoft.Maui.Controls;
 </ContentPage>
 """;
 		const string type = "namespace Shared { public class Thing { } }";
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(mappings)).AddReferences(
-			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(type)).ToMetadataReference(),
-			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(type)).ToMetadataReference());
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(mappings, cancellationToken: TestContext.Current.CancellationToken)).AddReferences(
+			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(type, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference(),
+			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(type, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference());
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Identities.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
 		var warning = Assert.Single(ConflictWarnings(result));
@@ -1165,8 +1165,8 @@ namespace Shared { public class Thing : Label { } internal class Hidden : Label 
 </ContentPage>
 """;
 		var compilation = CreateMauiCompilation().AddReferences(
-			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(one)).ToMetadataReference(),
-			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(two)).ToMetadataReference());
+			CreateMauiCompilation("Library.One").AddSyntaxTrees(CSharpSyntaxTree.ParseText(one, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference(),
+			CreateMauiCompilation("Library.Two").AddSyntaxTrees(CSharpSyntaxTree.ParseText(two, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference());
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("External.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
 		var warnings = ConflictWarnings(result);
@@ -1218,7 +1218,7 @@ namespace Second
   </StackLayout>
 </ContentPage>
 """;
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Arity.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
 		Assert.Equal(new[] { "shared:Both", "shared:Bar" },
@@ -1254,8 +1254,8 @@ namespace Second { {{secondType}} }
 """;
 		}
 
-		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Types.cs");
-		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Types.cs");
+		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Types.cs", cancellationToken: TestContext.Current.CancellationToken);
+		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Types.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(before);
 		var (first, second) = RunGeneratorWithChanges<XamlGenerator>(compilation,
 			(driver, current) => (driver, current.ReplaceSyntaxTree(before, after)),
@@ -1316,10 +1316,10 @@ namespace Test
   {{value}}
 </ContentPage>
 """;
-		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Holder.cs");
-		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Holder.cs");
+		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Holder.cs", cancellationToken: TestContext.Current.CancellationToken);
+		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Holder.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation("Microsoft.Maui.Controls.Xaml.UnitTests")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(CollisionTypes), before);
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(CollisionTypes, cancellationToken: TestContext.Current.CancellationToken), before);
 		var (first, second) = RunGeneratorWithChanges<XamlGenerator>(compilation,
 			(driver, current) => (driver, current.ReplaceSyntaxTree(before, after)),
 			new AdditionalXamlFile("Metadata.xaml", xaml, Inflator: "Runtime"));
@@ -1362,7 +1362,7 @@ namespace Test
 </ContentPage>
 """;
 		var compilation = CreateMauiCompilation("Microsoft.Maui.Controls.Xaml.UnitTests")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(CollisionTypes), CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(CollisionTypes, cancellationToken: TestContext.Current.CancellationToken), CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation,
 			new AdditionalXamlFile("Constructors.xaml", xaml, Inflator: "Runtime"),
 			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
@@ -1390,8 +1390,8 @@ namespace Second { public class Outer { {{(conflicting ? "private class Inner { 
   <Label x:DataType="shared:Outer+Inner" />
 </ContentPage>
 """;
-		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Nested.cs");
-		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Nested.cs");
+		var before = CSharpSyntaxTree.ParseText(Code(removeConflict), path: "Nested.cs", cancellationToken: TestContext.Current.CancellationToken);
+		var after = CSharpSyntaxTree.ParseText(Code(!removeConflict), path: "Nested.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(before);
 		var (first, second) = RunGeneratorWithChanges<XamlGenerator>(compilation,
 			(driver, current) => (driver, current.ReplaceSyntaxTree(before, after)),
@@ -1445,7 +1445,7 @@ namespace Second { {{(conflicting ? "public class Conflict : Label { }" : "publi
 """)).ToMetadataReference();
 		var before = Reference(removeConflict);
 		var after = Reference(!removeConflict);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(app)).AddReferences(before);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(app, cancellationToken: TestContext.Current.CancellationToken)).AddReferences(before);
 		var (first, second) = RunGeneratorWithChanges<XamlGenerator>(compilation,
 			(driver, current) => (driver, current.ReplaceReference(before, after)),
 			new AdditionalXamlFile("Incremental.xaml", xaml, Inflator: "Runtime"));
@@ -1483,8 +1483,8 @@ namespace Second { {{(conflicting ? "public class Conflict : Label { }" : "publi
   <shared:Conflict />
 </ContentPage>
 """;
-		var before = CSharpSyntaxTree.ParseText(CollisionTypes + "\nnamespace Test { public class Helper { public int Get() => 1; } }", path: "Types.cs");
-		var after = CSharpSyntaxTree.ParseText(CollisionTypes + "\nnamespace Test { public class Helper { public int Get() => 2; } }", path: "Types.cs");
+		var before = CSharpSyntaxTree.ParseText(CollisionTypes + "\nnamespace Test { public class Helper { public int Get() => 1; } }", path: "Types.cs", cancellationToken: TestContext.Current.CancellationToken);
+		var after = CSharpSyntaxTree.ParseText(CollisionTypes + "\nnamespace Test { public class Helper { public int Get() => 2; } }", path: "Types.cs", cancellationToken: TestContext.Current.CancellationToken);
 		var compilation = CreateMauiCompilation().AddSyntaxTrees(before);
 		var (first, second) = RunGeneratorWithChanges<XamlGenerator>(compilation,
 			(driver, current) => (driver, current.ReplaceSyntaxTree(before, after)),
@@ -1576,11 +1576,11 @@ internal class InternalWithSuffix : Button { }
 
 
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken))
 			.AddReferences(
-				SourceGeneratorDriver.CreateMauiCompilation("external1.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalone)).ToMetadataReference(),
-				SourceGeneratorDriver.CreateMauiCompilation("external2.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externaltwo)).ToMetadataReference(),
-				SourceGeneratorDriver.CreateMauiCompilation("external3.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalthree)).ToMetadataReference());
+				SourceGeneratorDriver.CreateMauiCompilation("external1.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalone, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference(),
+				SourceGeneratorDriver.CreateMauiCompilation("external2.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externaltwo, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference(),
+				SourceGeneratorDriver.CreateMauiCompilation("external3.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalthree, cancellationToken: TestContext.Current.CancellationToken)).ToMetadataReference());
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
@@ -1644,8 +1644,8 @@ internal class InternalButVisible : Label { }
 """;
 
 
-		var externalCompilation = SourceGeneratorDriver.CreateMauiCompilation("external.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalcode));
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code)).AddReferences(externalCompilation.ToMetadataReference());
+		var externalCompilation = SourceGeneratorDriver.CreateMauiCompilation("external.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalcode, cancellationToken: TestContext.Current.CancellationToken));
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken)).AddReferences(externalCompilation.ToMetadataReference());
 
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));

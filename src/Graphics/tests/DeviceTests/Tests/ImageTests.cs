@@ -7,7 +7,9 @@ using Foundation;
 using UIKit;
 #endif
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
@@ -59,7 +61,8 @@ public class ImageTests
 	[InlineData(1f)]
 	[InlineData(2f)]
 	[InlineData(3f)]
-	public void ScaleImageUsesOneXBackingScale(float sourceScale)
+	public Task ScaleImageUsesOneXBackingScale(float sourceScale) =>
+		TestDispatcher.Current.DispatchAsync(() =>
 	{
 		var sourceSize = new CGSize(30, 20);
 		using var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
@@ -82,7 +85,7 @@ public class ImageTests
 		Assert.NotNull(scaled.CGImage);
 		Assert.Equal(10, (int)scaled.CGImage.Width);
 		Assert.Equal(5, (int)scaled.CGImage.Height);
-	}
+	});
 
 	[Theory]
 	[InlineData(0, 10)]
@@ -106,17 +109,20 @@ public class ImageTests
 	[Fact]
 	public async Task ScaleImageCanRunOnBackgroundThread()
 	{
-		var sourceSize = new CGSize(30, 20);
-		using var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
+		using var source = await TestDispatcher.Current.DispatchAsync(() =>
 		{
-			Opaque = false,
-			Scale = 2,
-		});
+			var sourceSize = new CGSize(30, 20);
+			using var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
+			{
+				Opaque = false,
+				Scale = 2,
+			});
 
-		using var source = sourceRenderer.CreateImage(context =>
-		{
-			UIColor.Red.SetFill();
-			context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
+			return sourceRenderer.CreateImage(context =>
+			{
+				UIColor.Red.SetFill();
+				context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
+			});
 		});
 
 		using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
