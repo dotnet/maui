@@ -19,7 +19,7 @@
 
     Gate is included as a section inside this unified review body — the script may
     be called by Review-PR.ps1 twice per run: once after the gate completes
-    (validation-only update) and once after the review phases finish (full update).
+    (gate-only update) and once after the review phases finish (full update).
 
     Any standalone legacy "<!-- AI Gate -->" comment from older versions of
     the script is hidden before the fresh review is posted to avoid duplicates.
@@ -199,7 +199,7 @@ function New-MissingAgentPhaseContent {
 
 The Copilot expert-review task ended before this phase was persisted, usually because the review-stage time budget expired or the CI agent encountered a transient authentication/runtime problem. Earlier completed sections remain valid, but this review is **incomplete** without this phase.
 
-**Next step:** retry the full `/review` to refresh test verification and expert analysis, and inspect its logs if this repeats.
+**Next step:** retry the local full-review command and inspect its logs if this repeats. The hosted ``/review gate`` command refreshes existing-test verification only, not expert analysis.
 "@
 }
 
@@ -234,7 +234,7 @@ The automated **test-verification gate** did not complete on this run. It was st
 - Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
 - The rest of the review below (expert analysis and findings) ran as usual.
 
-**Next step:** re-comment `/review` to retry test verification on a fresh agent.
+**Next step:** re-comment `/review gate` to retry existing-test verification on a fresh agent.
 '@
     }
 
@@ -1064,7 +1064,7 @@ The automated **test-verification gate** produced a **$verdictUpper** verdict, b
 - The trusted gate verdict above is authoritative for the review decision.
 - Any deep UI test results for this run are shown below.
 
-**Next step:** retry `/review` to obtain a fresh report and test-verification result.
+**Next step:** retry the local full review to obtain its complete report. Use ``/review gate`` only to refresh existing-test verification.
 "@
         $gateSection = @"
 <details open>
@@ -1116,7 +1116,7 @@ if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
         $reviewEvent = 'COMMENT'
         $snapshotNotice = @"
 > [!WARNING]
-> This run reviewed commit [``$commitSha7``]($commitUrl), but the PR advanced to [``$currentHeadSha7``]($currentHeadUrl) while it was running. These results are informational; comment ``/review`` for a fresh full review and test-verification result.
+> This run reviewed commit [``$commitSha7``]($commitUrl), but the PR advanced to [``$currentHeadSha7``]($currentHeadUrl) while it was running. These results are informational; re-run the local full review for the current head, or comment ``/review gate`` for existing-test verification only.
 "@
     }
 }
