@@ -80,8 +80,11 @@ namespace Microsoft.Maui.DeviceTests
 			return dialog!;
 		}
 
-		static void AssertPresentedAsBottomSheet(Page sheet) =>
+		static void AssertPresentedAsBottomSheet(Page sheet)
+		{
+			Assert.True(BottomSheet.IsSupported);
 			RequireSheetDialog(sheet);
+		}
 
 		static bool IsBottomSheetOnScreen(Window window) =>
 			GetShowingSheetDialog(window) is not null;

@@ -16,6 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void AssertPresentedAsBottomSheet(Page sheet)
 		{
+			Assert.True(BottomSheet.IsSupported);
 			var wrapper = GetSheetWrapper(sheet);
 			Assert.Equal(UIModalPresentationStyle.PageSheet, wrapper.ModalPresentationStyle);
 			Assert.NotNull(wrapper.SheetPresentationController);

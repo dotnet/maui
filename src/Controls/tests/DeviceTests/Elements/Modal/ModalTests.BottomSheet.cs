@@ -189,8 +189,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 #if WINDOWS
-		static void AssertPresentedAsBottomSheet(Page sheet) =>
+		// Windows has no native sheet, so the page is presented as a regular modal page.
+		static void AssertPresentedAsBottomSheet(Page sheet)
+		{
+			Assert.False(BottomSheet.IsSupported);
 			Assert.NotNull(sheet.Handler);
+		}
 
 		static bool IsBottomSheetOnScreen(Window window) => false;
 #endif

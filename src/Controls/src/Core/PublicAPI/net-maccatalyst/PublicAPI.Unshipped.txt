@@ -402,6 +402,7 @@ static Microsoft.Maui.Controls.BottomSheet.GetDetents(Microsoft.Maui.Controls.Bi
 static Microsoft.Maui.Controls.BottomSheet.GetHasDragHandle(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
 static Microsoft.Maui.Controls.BottomSheet.GetIsDismissible(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
 static Microsoft.Maui.Controls.BottomSheet.GetIsEnabled(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
+static Microsoft.Maui.Controls.BottomSheet.IsSupported.get -> bool
 static Microsoft.Maui.Controls.BottomSheet.GetSelectedDetent(Microsoft.Maui.Controls.BindableObject! bindable) -> Microsoft.Maui.Controls.BottomSheetDetent?
 static Microsoft.Maui.Controls.BottomSheet.SetCornerRadius(Microsoft.Maui.Controls.BindableObject! bindable, double value) -> void
 static Microsoft.Maui.Controls.BottomSheet.SetDetents(Microsoft.Maui.Controls.BindableObject! bindable, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.BottomSheetDetent!>! value) -> void

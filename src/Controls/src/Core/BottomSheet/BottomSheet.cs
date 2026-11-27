@@ -24,12 +24,31 @@ namespace Microsoft.Maui.Controls
 	/// <para>
 	/// The presentation adapts to the device like the native sheet does: on iPad and Mac Catalyst the system can show the sheet
 	/// centered rather than attached to the bottom edge, and Mac Catalyst ignores detents and the drag handle.
-	/// Windows has no native bottom sheet, so the page is shown as a regular modal page and these properties have no effect.
+	/// Windows has no native bottom sheet, so the page is shown as a regular modal page and the sheet appearance and behavior
+	/// properties have no effect. With Shell, <see cref="IsEnabledProperty"/> still presents the page modally, like on the other platforms.
+	/// Check <see cref="IsSupported"/> to choose a different presentation on such platforms.
 	/// </para>
 	/// </remarks>
 	public static class BottomSheet
 	{
 		static readonly IReadOnlyList<BottomSheetDetent> DefaultDetents = new ReadOnlyCollection<BottomSheetDetent>(new[] { BottomSheetDetent.Large });
+
+		/// <summary>
+		/// Gets whether the current platform has a native bottom sheet that pages with <see cref="IsEnabledProperty"/> set are presented in.
+		/// </summary>
+		/// <value>
+		/// <see langword="true"/> on Android, iOS and Mac Catalyst; otherwise, <see langword="false"/>.
+		/// When <see langword="false"/>, a page with <see cref="IsEnabledProperty"/> set is shown as a regular modal page.
+		/// </value>
+		/// <remarks>
+		/// A supported platform can still adapt the sheet: for example, iPad can show it as a centered card and Mac Catalyst ignores detents.
+		/// </remarks>
+		public static bool IsSupported =>
+#if ANDROID || IOS || MACCATALYST
+			true;
+#else
+			false;
+#endif
 
 		/// <summary>Bindable property for attached property <c>IsEnabled</c>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
@@ -176,14 +195,6 @@ namespace Microsoft.Maui.Controls
 
 			bindable.SetValue(CornerRadiusProperty, value);
 		}
-
-		/// <summary>Gets whether this platform presents bottom sheets natively.</summary>
-		internal static bool IsSupported =>
-#if ANDROID || IOS || MACCATALYST
-			true;
-#else
-			false;
-#endif
 
 		/// <summary>Gets whether <paramref name="page"/> is a modal page that is presented as a native bottom sheet.</summary>
 		internal static bool IsPresentedAsBottomSheet(Page page) =>
