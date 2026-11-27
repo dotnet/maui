@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
@@ -45,11 +45,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false, "AB")]
-		[InlineData(true, "aB")]
-		public async Task PasswordKeyboardPlatformEditRespectsSearchBarHandler(bool material3, string expectedText)
+		[InlineData(false, true, "aB", "AB")]
+		[InlineData(true, true, "aB", "aB")]
+		[InlineData(true, false, "d", "D")]
+		public async Task PlatformEditRespectsSearchBarHandlerAndKeyboard(bool material3, bool passwordKeyboard, string input, string expectedText)
 		{
-			var searchBar = new SearchBar { Keyboard = Keyboard.Password, TextTransform = TextTransform.Uppercase };
+			var searchBar = new SearchBar
+			{
+				Keyboard = passwordKeyboard ? Keyboard.Password : Keyboard.Default,
+				TextTransform = TextTransform.Uppercase,
+			};
 
 			if (material3)
 				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
@@ -63,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
 
 				var text = queryEditor.EditableText;
-				text.Replace(0, text.Length(), "aB");
+				text.Replace(0, text.Length(), input);
 
 				Assert.Equal(expectedText, queryEditor.Text);
 				Assert.Equal(expectedText, searchBar.Text);
