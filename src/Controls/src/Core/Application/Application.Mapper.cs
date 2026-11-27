@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			// There is also a mapper on Window for this property since this property is relevant at the window level for
 			// Android not the application level
-			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
+			ApplicationHandler.Mapper.ReplaceMappingForControls<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
 #endif
 		}
 	}
