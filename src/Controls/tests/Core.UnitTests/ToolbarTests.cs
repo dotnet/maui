@@ -83,6 +83,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		static WeakReference CreateToolbarReference(SolidColorBrush brush) =>
 			new WeakReference(new Toolbar(new ContentPage()) { BarBackground = brush });
 
+		[Fact]
+		public void RemapsControlsBeforeAttachingNonElementHandler()
+		{
+			var toolbar = new RemapCountingToolbar(new ContentPage());
+			var handler = new NonElementToolbarHandler(toolbar);
+
+			toolbar.Handler = handler;
+			handler.SetVirtualView(toolbar);
+
+			Assert.Equal(1, handler.RemapCountWhenAttached);
+		}
+
+		sealed class RemapCountingToolbar : Toolbar
+		{
+			public RemapCountingToolbar(Maui.IElement parent) : base(parent)
+			{
+			}
+
+			public int RemapForControlsCount { get; private set; }
+
+			internal override void RemapForControls()
+			{
+				RemapForControlsCount++;
+				base.RemapForControls();
+			}
+		}
+
+		sealed class NonElementToolbarHandler : IElementHandler
+		{
+			readonly RemapCountingToolbar _toolbar;
+
+			public NonElementToolbarHandler(RemapCountingToolbar toolbar) => _toolbar = toolbar;
+
+			public int RemapCountWhenAttached { get; private set; }
+			public object PlatformView => null;
+			public IElement VirtualView { get; private set; }
+			public IMauiContext MauiContext { get; private set; }
+
+			public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
+
+			public void SetVirtualView(IElement view)
+			{
+				RemapCountWhenAttached = _toolbar.RemapForControlsCount;
+				VirtualView = view;
+			}
+
+			public void UpdateValue(string property)
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void DisconnectHandler()
+			{
+			}
+		}
+
 		sealed class BackgroundTrackingHandler : ElementHandler<Toolbar, object>
 		{
 			static readonly IPropertyMapper<Toolbar, BackgroundTrackingHandler> BackgroundMapper =

@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		BackButton,
 	}
 
+#if WINDOWS || ANDROID || TIZEN
+	[ElementHandler(typeof(ToolbarHandler))]
+#endif
 	public partial class Toolbar : Maui.IToolbar, Maui.IToolbarDrawerToggleVisible, INotifyPropertyChanged
 	{
 		VisualElement _titleView;
@@ -124,6 +127,10 @@ namespace Microsoft.Maui.Controls
 				var oldHandler = _handler;
 				OnHandlerChanging(_handler, value);
 				_handler = value;
+
+				// Covers toolbar handlers that do not derive from ElementHandler, which calls this from SetVirtualView.
+				if (_handler is not null)
+					RemapForControls();
 
 				if (oldHandler?.VirtualView == this)
 					oldHandler?.DisconnectHandler();

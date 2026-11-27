@@ -1,9 +1,11 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,8 +17,27 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="IsToggled"/> property to determine or set the current state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[SwitchHandler]
+#else
+	[ElementHandler(typeof(SwitchHandler))]
+#endif
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
+#if ANDROID
+		internal sealed class SwitchHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(SwitchHandler2);
+
+				return typeof(SwitchHandler);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// The visual state name for when the switch is in the on position.
 		/// </summary>
@@ -163,6 +184,17 @@ namespace Microsoft.Maui.Controls
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool swResult))
+			{
+				IsToggled = swResult;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
