@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					if (element is not null)
 					{
+						item.ReleaseContent();
 						element.DisconnectHandlers();
 						VirtualView.RemoveLogicalChild(element);
 					}
