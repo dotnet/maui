@@ -331,11 +331,9 @@ namespace Microsoft.Maui.Controls
 			switch (constraint)
 			{
 				case "int":
-					return int.TryParse(value, System.Globalization.NumberStyles.Integer,
-						System.Globalization.CultureInfo.InvariantCulture, out _);
+					return int.TryParse(value, out _);
 				case "long":
-					return long.TryParse(value, System.Globalization.NumberStyles.Integer,
-						System.Globalization.CultureInfo.InvariantCulture, out _);
+					return long.TryParse(value, out _);
 				case "double":
 					return double.TryParse(value, System.Globalization.NumberStyles.Any,
 						System.Globalization.CultureInfo.InvariantCulture, out _);

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -24,6 +26,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tweener.Start();
 
 			Assert.True(updates >= (10));
+		}
+
+		[Fact]
+		public void ZeroLengthTweenerFinishesOnFirstFrameWithoutNaN()
+		{
+			var tweener = new Tweener(0, new ZeroFirstFrameAnimationManager());
+			var values = new List<double>();
+			var finished = false;
+
+			tweener.ValueUpdated += (sender, args) => values.Add(tweener.Value);
+			tweener.Finished += (sender, args) => finished = true;
+			tweener.Start();
+
+			Assert.Equal(new[] { 1.0 }, values);
+			Assert.True(finished);
+		}
+
+		[Theory]
+		[InlineData(nameof(VisualElement.ScaleX))]
+		[InlineData(nameof(VisualElement.ScaleY))]
+		[InlineData(nameof(VisualElement.Scale))]
+		public async Task ZeroLengthScaleAnimationNeverWritesNaN(string property)
+		{
+			var box = new BoxView();
+			box.Handler = new AnimationReadyHandler<BlockingTicker>(new ZeroFirstFrameAnimationManager());
+			Func<double> read = property switch
+			{
+				nameof(VisualElement.ScaleX) => () => box.ScaleX,
+				nameof(VisualElement.ScaleY) => () => box.ScaleY,
+				_ => () => box.Scale,
+			};
+			var written = new List<double>();
+			box.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == property)
+					written.Add(read());
+			};
+
+			var wasCanceled = await (property switch
+			{
+				nameof(VisualElement.ScaleX) => box.ScaleXToAsync(2, 0),
+				nameof(VisualElement.ScaleY) => box.ScaleYToAsync(2, 0),
+				_ => box.ScaleToAsync(2, 0),
+			});
+
+			Assert.False(wasCanceled);
+			Assert.DoesNotContain(written, double.IsNaN);
+			Assert.Equal(2d, written[^1]);
+		}
+
+		class ZeroFirstFrameAnimationManager : AnimationManager
+		{
+			bool _firstFrame = true;
+
+			public ZeroFirstFrameAnimationManager()
+				: base(new BlockingTicker())
+			{
+			}
+
+			internal override double AdjustSpeed(double elapsedMilliseconds)
+			{
+				if (_firstFrame)
+				{
+					_firstFrame = false;
+					return 0;
+				}
+
+				return 16;
+			}
 		}
 
 		[Fact]
