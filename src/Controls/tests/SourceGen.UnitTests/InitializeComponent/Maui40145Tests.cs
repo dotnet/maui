@@ -52,14 +52,14 @@ public class Maui40145Tests : SourceGenXamlInitializeComponentTestBase
 			}
 			""";
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation($"Maui40145_{Guid.NewGuid():N}")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var xamlFile = new AdditionalXamlFile(Path.Combine(Environment.CurrentDirectory, "Test.xaml"), xaml);
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile);
 
 		Assert.Empty(result.Diagnostics);
 		using var stream = new MemoryStream();
-		var emitted = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(stream);
+		var emitted = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
 		Assert.True(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
 		var assembly = Assembly.Load(stream.ToArray());
 		var page = Assert.IsAssignableFrom<ContentPage>(Activator.CreateInstance(assembly.GetType("Test.TestPage")!));

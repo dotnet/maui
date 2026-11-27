@@ -1144,7 +1144,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task SwitchBetweenWindowShouldTriggerIsActivated()
+		public Task SwitchBetweenWindowShouldTriggerIsActivated() => InvokeOnMainThreadAsync(async () =>
 		{
 			SetupBuilder();
 			var page = new ContentPage();
@@ -1174,6 +1174,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.False(window1.IsActivated);
 			Assert.False(window2.IsActivated);
-		}
+		});
 	}
 }

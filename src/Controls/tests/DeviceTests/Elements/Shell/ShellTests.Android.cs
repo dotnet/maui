@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
+using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
@@ -522,6 +524,59 @@ namespace Microsoft.Maui.DeviceTests
 				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
 
 				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ThrowingNavigationIconStreamFallsBackToDefault(bool useBackButton)
+		{
+			SetupBuilder();
+
+			var rootPage = new ContentPage();
+			var customIcon = new FontImageSource { Glyph = "\u2039" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { rootPage } };
+				shell.FlyoutBehavior = useBackButton ? FlyoutBehavior.Disabled : FlyoutBehavior.Flyout;
+				if (!useBackButton)
+					shell.FlyoutIcon = customIcon;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(rootPage);
+
+				var backButton = new BackButtonBehavior { IconOverride = customIcon };
+				if (useBackButton)
+				{
+					var detailPage = new ContentPage();
+					Shell.SetBackButtonBehavior(detailPage, backButton);
+					await shell.Navigation.PushAsync(detailPage);
+				}
+
+				// Start from a custom icon so the fallback check cannot pass on the initial default.
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() != typeof(DrawerArrowDrawable));
+
+				var streamRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var failingIcon = ImageSource.FromStream(_ =>
+				{
+					streamRequested.TrySetResult();
+					return Task.FromException<Stream>(new IOException("Simulated navigation icon load failure."));
+				});
+
+				if (useBackButton)
+					backButton.IconOverride = failingIcon;
+				else
+					shell.FlyoutIcon = failingIcon;
+
+				await AssertEventually(() => streamRequested.Task.IsCompleted,
+					message: "Shell did not request the failing icon stream.");
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() == typeof(DrawerArrowDrawable) && icon.Progress == (useBackButton ? 1f : 0f),
+					message: "Shell did not restore the default navigation icon after the stream failed.");
 			});
 		}
 

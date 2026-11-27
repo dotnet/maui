@@ -772,6 +772,23 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task CollectionWaitKeepsRootedViewsAlive(bool useGenericReference)
+	{
+		SetupBuilder();
+		var view = new Label { Text = "Intentionally rooted" };
+		await CreateHandlerAsync<LabelHandler>(view);
+
+		var alive = useGenericReference
+			? await new WeakReference<object>(view).WaitForCollect()
+			: await new WeakReference(view).WaitForCollect();
+
+		Assert.True(alive);
+		GC.KeepAlive(view);
+	}
+
 	// https://github.com/dotnet/maui/issues/35472
 	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
 	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.
@@ -822,9 +839,11 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		// Post the orientation notification to exercise the observer-removal path that was broken.
-		Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
-			UIKit.UIDevice.OrientationDidChangeNotification,
-			UIKit.UIDevice.CurrentDevice);
+		// UIKit delivers it on the main thread, and its observers read UIKit state synchronously.
+		await InvokeOnMainThreadAsync(() =>
+			Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
+				UIKit.UIDevice.OrientationDidChangeNotification,
+				UIKit.UIDevice.CurrentDevice));
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
 

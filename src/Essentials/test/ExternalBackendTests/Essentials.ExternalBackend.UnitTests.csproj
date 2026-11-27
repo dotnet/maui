@@ -7,6 +7,8 @@
     using only the public Essentials API surface.
   -->
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Microsoft.Maui.Essentials.ExternalBackend.UnitTests</AssemblyName>
@@ -19,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

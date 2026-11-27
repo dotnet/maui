@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,10 +15,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 /// </summary>
 public class XamlInflatorDataAttribute : DataAttribute
 {
-	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+	public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
 	{
-		return Enum.GetValues<XamlInflator>().Select(x => new object[] { x });
+		return new(Enum.GetValues<XamlInflator>().Select(x => (ITheoryDataRow)new TheoryDataRow<XamlInflator>(x)).ToArray());
 	}
+
+	public override bool SupportsDiscoveryEnumeration() => true;
 }
 
 /// <summary>
@@ -24,18 +29,21 @@ public class XamlInflatorDataAttribute : DataAttribute
 /// </summary>
 public class XamlInflatorPairDataAttribute : DataAttribute
 {
-	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+	public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
 	{
 		var inflators = Enum.GetValues<XamlInflator>();
-
+		var rows = new List<ITheoryDataRow>();
 		foreach (var from in inflators)
 		{
 			foreach (var rd in inflators)
 			{
-				yield return new object[] { from, rd };
+				rows.Add(new TheoryDataRow<XamlInflator, XamlInflator>(from, rd));
 			}
 		}
+		return new(rows);
 	}
+
+	public override bool SupportsDiscoveryEnumeration() => true;
 }
 
 /// <summary>

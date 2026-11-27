@@ -64,6 +64,16 @@ steps:
       project: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet-workload.binlog'
 
+  # Reusable MSBuild nodes started before the workload manifests were installed keep a stale workload
+  # resolver; tests that run nested builds (e.g. UseWorkload=true samples) would then miss the MAUI SDK.
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Shut down build servers after installing workloads
+      continueOnError: false
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: build-server
+      arguments: shutdown
+
   - pwsh: |
       Get-ChildItem artifacts -Filter 'Microsoft.Maui.Controls.*.nupkg' |  Where-Object { $_.Name -match '^Microsoft\.Maui\.Controls\.([\d\.]+.*)\.nupkg$' }
       $version = $Matches.1

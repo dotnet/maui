@@ -14,7 +14,38 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformVersion)" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
+    <AssemblyMetadata Include="MauiTestFilter" Value="$(MauiTestFilter)" />
+    <AssemblyMetadata Include="MauiTestClasses" Value="$(MauiTestClasses)" />
+    <AssemblyMetadata Include="MauiTestMethods" Value="$(MauiTestMethods)" />
+    <AssemblyMetadata Include="MauiTestResultsDirectory" Value="$(MauiTestResultsDirectory)" />
+    <AssemblyMetadata Include="MauiTestPackaged" Value="$(MauiTestPackaged)" />
+    <AssemblyMetadata Include="MauiTestPackageIdentityName" Value="$(MauiTestPackageIdentityName)" />
+    <AssemblyMetadata Include="MauiTestPackagePublisher" Value="$(MauiTestPackagePublisher)" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestUtils/src/DeviceTests.Runners/TestAssemblyInfo.cs" Link="TestRunnerAssemblyInfo.cs" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <PartialAppManifest Include="$(MSBuildThisFileDirectory)TestUtils/src/DeviceTests.Runners/TestRunnerInfo.plist" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiTestPackaged)' == 'true'">
+    <RunCommand Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</RunCommand>
+    <RunCommand Condition="'$(DOTNET_HOST_PATH)' == ''">dotnet</RunCommand>
+    <RunArguments>&quot;$(MauiTestLauncherPath)&quot; &quot;$(MauiTestPackageStatePath)&quot;</RunArguments>
+  </PropertyGroup>
+
+  <Target Name="_ValidateMauiPackagedTestLauncher" BeforeTargets="ComputeRunArguments" Condition="'$(MauiTestPackaged)' == 'true'">
+    <Error Condition="!Exists('$(MauiTestLauncherPath)') or !Exists('$(MauiTestPackageStatePath)')" Text="Packaged device tests require the built launcher and an owned installed-package state file." />
+  </Target>
+
+  <Target Name="_UseMauiOwnedPackageManifest" BeforeTargets="PrepareForBuild;MauiGeneratePackageAppxManifest;_ValidatePresenceOfAppxManifestItems;_GenerateAppxManifest"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiTestPackaged)' == 'true'">
+    <Error Condition="!Exists('$(MauiTestPackageManifestPath)')" Text="The owned Windows package manifest must be generated before building the test app." />
+    <ItemGroup>
+      <AppxManifest Remove="@(AppxManifest)" />
+      <AppxManifest Include="$(MauiTestPackageManifestPath)" Link="Platforms\Windows\Package.appxmanifest" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -380,6 +380,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal VisualElement GetVisualElement() => _visualElement;
 
+		internal void ReleaseContent()
+		{
+			Content = null;
+		}
+
 		partial class ContentLayoutPanel : Panel
 		{
 			IView _view;

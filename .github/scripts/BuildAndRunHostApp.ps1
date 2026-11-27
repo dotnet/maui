@@ -107,9 +107,30 @@ function Merge-RetryTrxResults {
         [string]$RetryTrxPath,
 
         [Parameter(Mandatory = $true)]
-        [string[]]$FailedNames
+        [string[]]$FailedNames,
+
+        [System.Xml.Linq.XDocument[]]$OriginalNUnitReports,
+        [System.Xml.Linq.XDocument[]]$RetryNUnitReports
     )
 
+    if ($OriginalNUnitReports -and $RetryNUnitReports) {
+        [UITestRetry]::ValidateArchiveDestination($OriginalTrxPath, (Split-Path $OriginalTrxPath))
+        [UITestRetry]::ValidateArchiveDestination($RetryTrxPath, (Split-Path $RetryTrxPath))
+        $original = [System.Xml.Linq.XDocument]::Load($OriginalTrxPath)
+        $retry = [System.Xml.Linq.XDocument]::Load($RetryTrxPath)
+        [UITestRetry]::MergeResults($original, $retry, $OriginalNUnitReports, $RetryNUnitReports)
+        [UITestRetry]::ValidateArchiveDestination($OriginalTrxPath, (Split-Path $OriginalTrxPath))
+        $original.Save($OriginalTrxPath)
+        $ns = [System.Xml.Linq.XNamespace]'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
+        $summary = $original.Root.Element($ns + 'ResultSummary')
+        $counters = $summary.Element($ns + 'Counters')
+        return [pscustomobject]@{
+            Total = [int]$counters.Attribute('total').Value
+            Passed = [int]$counters.Attribute('passed').Value
+            Failed = [int]$counters.Attribute('failed').Value
+            Outcome = $summary.Attribute('outcome').Value
+        }
+    }
     [xml]$origXml = Get-Content -LiteralPath $OriginalTrxPath -Raw -Encoding UTF8
     [xml]$retryXml = Get-Content -LiteralPath $RetryTrxPath -Raw -Encoding UTF8
     $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
@@ -211,6 +232,7 @@ if ($Platform -eq "maccatalyst") {
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
+. "$PSScriptRoot/shared/NUnitMtp.ps1"
 
 # Derive the .NET TFM version from the checked-out repo (Directory.Build.props) so the
 # HostApp + test assemblies build for the branch's framework (e.g. net11.0-android on the
@@ -351,6 +373,19 @@ if (-not (Test-Path $TestProject)) {
 }
 
 Write-Success "Test project: $TestProject"
+
+$testProjectName = [IO.Path]::GetFileNameWithoutExtension($TestProject)
+$attachmentRoots = @(
+    $HostAppLogsDir,
+    (Join-Path $RepoRoot "artifacts/bin/$testProjectName/$Configuration"),
+    (Join-Path (Split-Path $TestProject) "bin/$Configuration")
+)
+if ($env:BUILD_ARTIFACTSTAGINGDIRECTORY) {
+    $attachmentRoots += Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'Controls.TestCases.Shared.Tests'
+}
+if ($env:APPIUM_LOG_FILE) {
+    $attachmentRoots += [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($env:APPIUM_LOG_FILE))
+}
 
 #endregion
 
@@ -578,15 +613,7 @@ $appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
 $env:APPIUM_LOG_FILE = $appiumLogFile
 Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
 
-# ── TRX setup (mirrors CI: eng/cake/dotnet.cake `RunTestWithLocalDotNet`) ──
-# CI writes one trx per test run via:
-#   --logger "trx;LogFileName=<sanitized-name>.trx"
-#   --logger "console;verbosity=normal"
-#   --results-directory <test-results-dir>
-#   /p:VStestUseMSBuildOutput=false
-# We reproduce that here so STEP 3's renderer can parse authoritative
-# pass/fail counts from the TRX (instead of scraping console output, which is
-# fragile when many tests run and lines get interleaved or wrapped).
+# Keep TRX for publication and NUnit XML for fixture failures omitted by the MTP bridge.
 $trxResultsDir = Join-Path $HostAppLogsDir "TestResults"
 if (-not (Test-Path $trxResultsDir)) {
     New-Item -ItemType Directory -Path $trxResultsDir -Force | Out-Null
@@ -606,17 +633,10 @@ if (Test-Path $trxFilePath) { Remove-Item $trxFilePath -Force -ErrorAction Silen
 Write-Info "TRX file will be written to: $trxFilePath"
 
 try {
-    # Run dotnet test using the SAME loggers and arguments CI uses in
-    # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
     $trxRunStart = Get-Date
-    $testArgs = @($TestProject,
-        "--logger", "trx;LogFileName=$trxFileName",
-        "--logger", "console;verbosity=normal",
-        "--results-directory", $trxResultsDir,
-        "/p:VStestUseMSBuildOutput=false")
-    if ($effectiveFilter) {
-        $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
-    }
+    $nunitResultsDir = Join-Path $trxResultsDir ('n-' + [guid]::NewGuid().ToString('N'))
+    $testArgs = Get-NUnitMtpArguments -RepoRoot $RepoRoot -Project $TestProject -Configuration $Configuration `
+        -Filter $effectiveFilter -ResultsDirectory $trxResultsDir -TrxFileName $trxFileName -NUnitDirectory $nunitResultsDir
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
     # Stream each line to this script's output stream *as it is produced* (via
     # Tee-Object pass-through) while still capturing every line into $testOutput.
@@ -630,7 +650,9 @@ try {
     # progress signal, keeps $testOutput for the TRX/marker logic below, and — via
     # the success stream — still reaches gate callers that capture with `2>&1`.
     # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
-    & dotnet test @testArgs 2>&1 | Tee-Object -Variable testOutput
+    Invoke-NUnitMtpProcess -TestArguments $testArgs | Tee-Object -Variable testOutput
+    $firstAttempt = Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $trxFilePath `
+        -NUnitDirectory $nunitResultsDir -ExitCode $script:NUnitMtpExitCode -AllowedAttachmentRoots $attachmentRoots
 
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
@@ -654,7 +676,7 @@ try {
         }
     }
 
-    $testExitCode = $LASTEXITCODE
+    $testExitCode = $firstAttempt.ExitCode
     
     # ── Per-test retry for flaky failures (Android emulator instability) ──
     # Parse the TRX for failed tests and re-run them once. This catches
@@ -692,13 +714,14 @@ try {
             $retryTrx = Join-Path $trxResultsDir "retry-$trxBaseName.trx"
             Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
             
-            $retryArgs = @($TestProject, "--filter", $retryFilter,
-                "--logger", "trx;LogFileName=retry-$trxFileName",
-                "--logger", "console;verbosity=normal",
-                "--results-directory", $trxResultsDir,
-                "/p:VStestUseMSBuildOutput=false", "--no-build")
+            $retryNUnitDirectory = Join-Path $nunitResultsDir 'retry'
+            $retryArgs = Get-NUnitMtpArguments -RepoRoot $RepoRoot -Project $TestProject -Configuration $Configuration `
+                -Filter $retryFilter -ResultsDirectory $trxResultsDir -TrxFileName "retry-$trxFileName" `
+                -NUnitDirectory $retryNUnitDirectory -NoBuild
             Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
-            $retryOutput = & dotnet test @retryArgs 2>&1
+            $retryOutput = Invoke-NUnitMtpProcess -TestArguments $retryArgs
+            $retryAttempt = Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $retryTrx `
+                -NUnitDirectory $retryNUnitDirectory -ExitCode $script:NUnitMtpExitCode -AllowedAttachmentRoots $attachmentRoots
             $retryOutput | ForEach-Object { Write-Output $_ }
             
             # Parse retry TRX and count how many passed on retry
@@ -719,10 +742,11 @@ try {
                         $merged = Merge-RetryTrxResults `
                             -OriginalTrxPath $trxFilePath `
                             -RetryTrxPath $retryTrxPath `
-                            -FailedNames $failedNames
+                            -FailedNames $failedNames `
+                            -OriginalNUnitReports $firstAttempt.Reports -RetryNUnitReports $retryAttempt.Reports
 
                         Write-Info "Merged retry results into original TRX ($($merged.Total) total, $($merged.Passed) passed, $($merged.Failed) failed)"
-                        if ($merged.Failed -eq 0) {
+                        if ($merged.Failed -eq 0 -and $merged.Outcome -ne 'Failed' -and $retryAttempt.ExitCode -eq 0) {
                             Write-Success "All originally failing tests passed on retry!"
                             $testExitCode = 0
                         } else {
@@ -734,7 +758,7 @@ try {
                         # it omits first-run passes and any failures excluded from retry.
                         Write-Warn "Failed to merge retry TRX; preserving the original failing result: $_"
                     }
-                    # Remove the retry TRX to prevent double-counting by downstream aggregators
+                    # The immutable attempt TRX/XML/attachments remain in the raw directory.
                     Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
                 }
             }

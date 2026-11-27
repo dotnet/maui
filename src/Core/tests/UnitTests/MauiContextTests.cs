@@ -26,6 +26,25 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void WindowScopeDisposalIsIdempotent()
+		{
+			var collection = new ServiceCollection();
+			collection.AddScoped(_ => new ScopedDisposalCounter());
+			using var provider = collection.BuildServiceProvider();
+			using var scope = provider.CreateScope();
+			var context = new MauiContext(scope.ServiceProvider);
+			context.SetWindowScope(scope);
+			var service = context.Services.GetRequiredService<ScopedDisposalCounter>();
+			Assert.False(context.IsWindowScopeDisposed);
+
+			context.DisposeWindowScope();
+			context.DisposeWindowScope();
+
+			Assert.True(context.IsWindowScopeDisposed);
+			Assert.Equal(1, service.DisposeCount);
+		}
+
+		[Fact]
 		public void AddSpecificInstanceOverridesBase()
 		{
 			var baseObj = new TestThing();
@@ -223,6 +242,12 @@ namespace Microsoft.Maui.UnitTests
 
 		class TestThing
 		{
+		}
+
+		sealed class ScopedDisposalCounter : IDisposable
+		{
+			public int DisposeCount { get; private set; }
+			public void Dispose() => DisposeCount++;
 		}
 	}
 }

@@ -42,14 +42,14 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for property not found
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2045");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-		
+
 		var message = diagnostic.GetMessage();
 		Assert.Contains("NonExistentProperty", message, System.StringComparison.Ordinal);
 		Assert.Contains("ViewModel", message, System.StringComparison.Ordinal);
@@ -91,7 +91,7 @@ namespace Test
 ";
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
@@ -126,14 +126,14 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for indexer not closed
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2041");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-		
+
 		var message = diagnostic.GetMessage();
 		Assert.Contains("closing bracket", message, System.StringComparison.Ordinal);
 	}
@@ -167,14 +167,14 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for indexer empty
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2042");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-		
+
 		var message = diagnostic.GetMessage();
 		Assert.Contains("did not contain arguments", message, System.StringComparison.Ordinal);
 	}
@@ -203,7 +203,7 @@ public class ViewModel
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2064");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-		
+
 		var message = diagnostic.GetMessage();
 		Assert.Contains("MyLabel", message, System.StringComparison.Ordinal);
 		Assert.Contains("already exists", message, System.StringComparison.Ordinal);
@@ -242,7 +242,7 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a warning for x:DataType from outer scope
@@ -295,7 +295,7 @@ public class ItemModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// x:Reference resolves to ContentPage; BindingContext is 'object', so SelectItemCommand
@@ -346,7 +346,7 @@ public class ItemModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Path=Text resolves against Label (the x:Reference target), not ItemModel (x:DataType).
@@ -387,7 +387,7 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// AncestorType=TestPage is sealed, so no derived runtime ancestor can exist — the path is
@@ -455,7 +455,7 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("ControlsPage.xaml", xaml), assertNoCompilationErrors: false);
 
 		// ContentPage (the declared AncestorType) is unsealed and does not declare SelectedItem, but
@@ -496,7 +496,7 @@ public class ViewModel
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// AncestorType="NonExistentAncestorType" cannot be resolved to a type, so no type inference
@@ -539,7 +539,7 @@ public class User
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
 		// Should have a diagnostic for unsupported indexer type

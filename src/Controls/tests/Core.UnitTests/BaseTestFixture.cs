@@ -16,6 +16,7 @@ using Xunit;
 // (Hopefully in the future we can untangle some of the singletons and run these in parallel,
 // because it'll be a lot faster.)
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+[assembly: Xunit.v3.Parallelization(Mode = Xunit.Sdk.ParallelMode.None)]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -29,6 +30,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+			// xUnit v3 runs tests on shared thread-pool threads; never inherit another test's thread-static stub options.
+			DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+			DispatcherProviderStubOptions.IsInvokeRequired = null;
+			DispatcherProviderStubOptions.InvokeOnMainThread = null;
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
