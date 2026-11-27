@@ -20,10 +20,26 @@ internal static class CompiledBindingPath
 
 				if (indexerEndsAtLastBracket)
 				{
-					// XamlC allows literal "]." in a key, but must not consume the next indexer.
-					int nextOpen = path.IndexOf("[", close + 1, StringComparison.Ordinal);
-					int end = nextOpen < 0 ? path.Length - 1 : nextOpen - 1;
-					close = path.LastIndexOf("]", end, end - close + 1, StringComparison.Ordinal);
+					// An opening bracket can start a new indexer only after a path separator following a close.
+					bool hasSeparator = false;
+					bool afterClose = true;
+					for (int j = close + 1; j < path.Length; j++)
+					{
+						char c = path[j];
+						if (c == '[' && hasSeparator)
+							break;
+						if (c == ']')
+						{
+							close = j;
+							hasSeparator = false;
+							afterClose = true;
+						}
+						else if (afterClose && !char.IsWhiteSpace(c))
+						{
+							hasSeparator = c == '.';
+							afterClose = false;
+						}
+					}
 				}
 
 				i = path.IndexOf(".", close + 1, StringComparison.Ordinal);

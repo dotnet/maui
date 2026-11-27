@@ -7,4 +7,6 @@
 	<Label x:Name="dottedKey" Text="{Binding Items[a].b], Mode=OneWay}" />
 	<Label x:Name="dottedKeyLength" Text="{Binding Items[a].b].Length, Mode=OneWay}" />
 	<Label x:Name="chainedIndexer" Text="{Binding Nested[a].b].Items[he.llo].Length, Mode=OneWay}" />
+	<Label x:Name="mixedBracketKeyLength" Text="{Binding Items[a]b[c.d].Length, Mode=OneWay}" />
+	<Label x:Name="mixedBracketKeyAfterChainedIndexer" Text="{Binding Nested[a].b].Items[a].b]c[d.e].Length, Mode=OneWay}" />
 </VerticalStackLayout>

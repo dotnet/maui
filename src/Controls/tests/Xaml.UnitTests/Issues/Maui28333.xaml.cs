@@ -45,6 +45,8 @@ class Maui28333ViewModel
 		["a]"] = "four",
 		["a"] = "x",
 		["a].b"] = "dotted",
+		["a]b[c.d"] = "literal",
+		["a].b]c[d.e"] = "chained",
 	};
 
 	public Dictionary<string, Maui28333ViewModel> Nested => new() { ["a].b"] = this };
