@@ -118,7 +118,7 @@ parameters:
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net12.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -143,18 +143,6 @@ stages:
         runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
-      androidPrepareSteps:
-      - template: /eng/pipelines/common/provision.yml@self
-        parameters:
-          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-          skipJdk: false
-          skipAndroidCommonSdks: false
-          skipAndroidPlatformApis: false
-          onlyAndroidPlatformDefaultApis: true
-          skipAndroidEmulatorImages: true
-          skipAndroidCreateAvds: true
-          skipXcode: true
-          skipSimulatorSetup: true
       # A `/review run-device-tests` dispatch: only the selected platforms (CoreCLR only), projects and
       # categories. Only RunTestsMode 'full' keeps everything; any other value narrows to the listed
       # platforms, so an unfilled request runs nothing.
