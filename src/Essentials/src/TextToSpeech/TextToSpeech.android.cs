@@ -128,13 +128,11 @@ namespace Microsoft.Maui.Media
 
 			if (!string.IsNullOrWhiteSpace(options?.Locale?.Language))
 			{
-				var language = options.Locale.Language;
-				var country = options.Locale.Country;
-				JavaLocale locale;
-				if (OperatingSystem.IsAndroidVersionAtLeast(36))
-					locale = string.IsNullOrWhiteSpace(country) ? JavaLocale.Of(language) : JavaLocale.Of(language, country);
+				JavaLocale locale = null;
+				if (!string.IsNullOrWhiteSpace(options.Locale.Country))
+					locale = new JavaLocale(options.Locale.Language, options.Locale.Country);
 				else
-					locale = string.IsNullOrWhiteSpace(country) ? new JavaLocale(language) : new JavaLocale(language, country);
+					locale = new JavaLocale(options.Locale.Language);
 
 				tts.SetLanguage(locale);
 			}
@@ -147,7 +145,7 @@ namespace Microsoft.Maui.Media
 			{
 				var voice = tts.Voices.FirstOrDefault(v => v.Name == options.Locale.Id);
 				if (voice is not null)
-				{
+				{				
 					tts.SetVoice(voice);
 				}
 			}
@@ -202,9 +200,9 @@ namespace Microsoft.Maui.Media
 			await Initialize();
 
 			try
-			{
+			{	
 				// Attempt to use the new API to get the voices and their locales, a.Name is the voice's identifier
-				return tts.Voices.Select(a => new Locale(a.Locale.Language, a.Locale.Country, a.Locale.DisplayName, a.Name));
+				return tts.Voices.Select(a => new Locale( a.Locale.Language, a.Locale.Country, a.Locale.DisplayName, a.Name));
 			}
 			catch (Exception ex)
 			{
