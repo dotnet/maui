@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 			// Should apply to iOS and Catalyst
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18))
 			{
-				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
+				SetCompactSizeClass(tabBarController);
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;
 			}
 			else if (OperatingSystem.IsIOSVersionAtLeast(18, 0) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
@@ -25,6 +25,11 @@ namespace Microsoft.Maui.Platform
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 			}
 		}
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios17.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst17.0")]
+		static void SetCompactSizeClass(UITabBarController tabBarController) =>
+			tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]

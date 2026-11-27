@@ -274,13 +274,16 @@ namespace Microsoft.Maui.Devices.Sensors
 			return (provider, accuracyDistance);
 		}
 
+		// LocationManager.FusedProvider is annotated as API 31+, but some older devices already expose the "fused" provider.
+		const string FusedProvider = "fused";
+
 		internal static string? SelectProvider(IList<string>? enabledProviders, GeolocationAccuracy accuracy)
 		{
 			if (enabledProviders is null)
 				return null;
 
-			if (enabledProviders.Contains(LocationManager.FusedProvider))
-				return LocationManager.FusedProvider;
+			if (enabledProviders.Contains(FusedProvider))
+				return FusedProvider;
 
 			var preferredProvider = accuracy switch
 			{

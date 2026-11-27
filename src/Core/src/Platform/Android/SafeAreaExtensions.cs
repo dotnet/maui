@@ -165,7 +165,9 @@ internal static class SafeAreaExtensions
 				if (windowManager?.DefaultDisplay is not null)
 				{
 					var realMetrics = new global::Android.Util.DisplayMetrics();
+#pragma warning disable CA1422 // Display.GetRealMetrics is obsolete on API 31+, but we need the full physical screen size
 					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+#pragma warning restore CA1422
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
@@ -367,7 +369,9 @@ internal static class SafeAreaExtensions
 			context.GetSystemService(Context.WindowService)?.JavaCast<IWindowManager>()?.DefaultDisplay is { } display)
 		{
 			using var realMetrics = new global::Android.Util.DisplayMetrics();
+#pragma warning disable CA1422 // Display.GetRealMetrics is obsolete on API 31+, but we need the full physical screen size
 			display.GetRealMetrics(realMetrics);
+#pragma warning restore CA1422
 			var viewLocation = new int[2];
 			view.GetLocationOnScreen(viewLocation);
 			var margins = (GetSafeAreaView2(crossPlatformLayout) as IView)?.Margin ?? (GetSafeAreaElement(crossPlatformLayout) as IView)?.Margin ?? Thickness.Zero;

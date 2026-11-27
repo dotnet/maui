@@ -14,14 +14,19 @@ namespace Microsoft.Maui.Authentication;
 
 partial class PasskeysImplementation : IPasskeys
 {
-	public bool IsSupported =>
+	[System.Runtime.Versioning.SupportedOSPlatformGuard("ios16.0")]
+	[System.Runtime.Versioning.SupportedOSPlatformGuard("maccatalyst16.0")]
+	static bool IsSupportedPlatform =>
 		OperatingSystem.IsIOSVersionAtLeast(16) ||
 		OperatingSystem.IsMacCatalystVersionAtLeast(16);
+
+	public bool IsSupported => IsSupportedPlatform;
 
 	public async Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(options);
-		EnsureSupported();
+		if (!IsSupportedPlatform)
+			throw new FeatureNotSupportedException("Passkeys require iOS 16.0 or Mac Catalyst 16.0 or later.");
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var creation = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.CreationOptions, "creation options");
@@ -75,7 +80,8 @@ partial class PasskeysImplementation : IPasskeys
 	public async Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(options);
-		EnsureSupported();
+		if (!IsSupportedPlatform)
+			throw new FeatureNotSupportedException("Passkeys require iOS 16.0 or Mac Catalyst 16.0 or later.");
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var request = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.RequestOptions, "request options");
@@ -117,12 +123,6 @@ partial class PasskeysImplementation : IPasskeys
 		};
 
 		return new PasskeyAssertionResponse(JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.AssertionResponse));
-	}
-
-	void EnsureSupported()
-	{
-		if (!IsSupported)
-			throw new FeatureNotSupportedException("Passkeys require iOS 16.0 or Mac Catalyst 16.0 or later.");
 	}
 
 	static T Deserialize<T>(string json, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, string what)
@@ -171,6 +171,8 @@ partial class PasskeysImplementation : IPasskeys
 		return list.Count == 0 ? null : list.ToArray();
 	}
 
+	[System.Runtime.Versioning.SupportedOSPlatform("ios16.0")]
+	[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst16.0")]
 	static async Task<ASAuthorization> PerformAsync(ASAuthorizationRequest request, bool preferImmediatelyAvailable, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();

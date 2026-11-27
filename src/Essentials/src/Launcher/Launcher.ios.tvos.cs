@@ -12,7 +12,9 @@ namespace Microsoft.Maui.ApplicationModel
 	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri) =>
+#pragma warning disable CA1422 // CanOpenUrl is obsolete on Mac Catalyst 27+, but CanOpenAsync must answer without opening a URL
 			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
+#pragma warning restore CA1422
 
 		Task<bool> PlatformOpenAsync(Uri uri) =>
 			PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
@@ -24,7 +26,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
+#pragma warning disable CA1422 // CanOpenUrl is obsolete on Mac Catalyst 27+, but TryOpenAsync keeps its pre-check
 			if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
+#pragma warning restore CA1422
 				return PlatformOpenAsync(nativeUrl);
 
 			return Task.FromResult(false);

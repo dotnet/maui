@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		IIndicatorView? _indicatorView;
 
 		bool _isTemplateIndicator;
-		
+
 		static readonly IndicatorAccessibilityDelegate _accessibilityDelegate = new();
 
 		public MauiPageControl(Context? context) : base(context)
@@ -157,10 +157,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-			
+
 			// Set accessibility delegate to prevent "button" announcement
 			imageView.SetAccessibilityDelegate(_accessibilityDelegate);
-			
+
 			// Set the accessibility content description
 			UpdateIndicatorAccessibility(imageView, position, selectedPosition);
 		}
@@ -178,8 +178,8 @@ namespace Microsoft.Maui.Platform
 
 			// Use localized string resources for TalkBack announcements
 			var contentDescription = isSelected
-				? Context.GetString(Resource.String.indicator_item_accessible_description_selected, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems))
-				: Context.GetString(Resource.String.indicator_item_accessible_description, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems));
+				? Context.GetString(Resource.String.indicator_item_accessible_description_selected, Java.Lang.Integer.ValueOf(itemNumber), Java.Lang.Integer.ValueOf(totalItems))
+				: Context.GetString(Resource.String.indicator_item_accessible_description, Java.Lang.Integer.ValueOf(itemNumber), Java.Lang.Integer.ValueOf(totalItems));
 
 			imageView.ContentDescription = contentDescription;
 
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Platform
 				{
 					return;
 				}
-	
+
 				base.OnInitializeAccessibilityNodeInfo(host, info);
 
 				// Set class name to avoid "button" announcement

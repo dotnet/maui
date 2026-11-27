@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// An animation this replaced reported its end as this ran: whether one runs now is what tells.
 			return animated
-				&& (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+				&& (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
 				&& CollectionView.ScrollAnimating;
 		}
 
@@ -801,7 +801,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// MauiCollectionView.ContentOffsetListener).
 		void IContentOffsetListener.ContentOffsetChanged() => _scrollAnchor?.OffsetObserved(CollectionView);
 
-    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)

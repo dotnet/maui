@@ -13,7 +13,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public bool IsComposeSupported =>
 #if !(MACOS)
 			MFMailComposeViewController.CanSendMail ||
+#pragma warning disable CA1422 // CanOpenUrl is obsolete on Mac Catalyst 27+, but IsComposeSupported must answer without opening a URL
 			MainThread.InvokeOnMainThread(() => UIApplication.SharedApplication.CanOpenUrl(NSUrl.FromString("mailto:")));
+#pragma warning restore CA1422
 #else
 			false;
 #endif
