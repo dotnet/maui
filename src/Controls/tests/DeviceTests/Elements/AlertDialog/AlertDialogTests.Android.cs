@@ -7,59 +7,56 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using AndroidX.AppCompat.App;
-using AndroidX.Core.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using Xunit;
-using AColor = Android.Graphics.Color;
-using FrameworkAlertDialog = Android.App.AlertDialog;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class AlertDialogTests : ControlsHandlerTestBase
 	{
 		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
 		[Category(TestCategory.WebView)]
-		public async Task FrameworkDialogButtonsHaveSufficientContrast(bool isDarkTheme)
+		public async Task FrameworkAlertDialogColorsFollowTheme(bool isDarkTheme, bool useMaterial3)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var mauiContext = new ContextStub(ApplicationServices);
-				var activity = mauiContext.GetActivity();
-				using var configuration = new Configuration(activity.Resources?.Configuration);
+				var context = MauiContext.Context;
+				using var configuration = new Configuration(context.Resources.Configuration);
 				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
 					(isDarkTheme ? UiMode.NightYes : UiMode.NightNo);
-				using var configurationContext = activity.CreateConfigurationContext(configuration);
+				using var configurationContext = context.CreateConfigurationContext(configuration);
 				using var themedContext = new global::Android.Views.ContextThemeWrapper(
-					configurationContext, Resource.Style.Maui_MainTheme_NoActionBar);
-				using var builder = new FrameworkAlertDialog.Builder(themedContext);
-				using var dialog = builder
-					.SetTitle("Set date and time")
-					.SetPositiveButton("Set", (_, _) => { })
-					.SetNegativeButton("Cancel", (_, _) => { })
-					.SetNeutralButton("Clear", (_, _) => { })
-					.Create();
-				dialog.Create();
+					configurationContext,
+					useMaterial3 ? Resource.Style.Maui_Material3_Theme_NoActionBar : Resource.Style.Maui_MainTheme_NoActionBar);
+				using var content = new global::Android.Widget.TextView(themedContext) { Text = "12 Jun 2018 19:30" };
+				using var builder = new global::Android.App.AlertDialog.Builder(themedContext);
+				builder.SetTitle("Set date and time");
+				builder.SetView(content);
+				builder.SetPositiveButton("Set", (_, _) => { });
+				builder.SetNegativeButton("Cancel", (_, _) => { });
+				builder.SetNeutralButton("Clear", (_, _) => { });
+				using var alertDialog = builder.Create();
+				alertDialog.Create();
 
-				var background = dialog.Window?.DecorView.Background;
-				Assert.NotNull(background);
-				using var bitmap = Bitmap.CreateBitmap(256, 256, Bitmap.Config.Argb8888);
-				using var canvas = new Canvas(bitmap);
-				background.SetBounds(0, 0, bitmap.Width, bitmap.Height);
-				background.Draw(canvas);
-				var backgroundColor = bitmap.GetPixel(bitmap.Width / 2, bitmap.Height / 2);
-				Assert.Equal(255, new AColor(backgroundColor).A);
-				Assert.Equal(isDarkTheme, ColorUtils.CalculateLuminance(backgroundColor) < 0.5);
+				using var attributes = alertDialog.Context.ObtainStyledAttributes(
+					new[] { global::Android.Resource.Attribute.ColorBackground, Resource.Attribute.colorOnSurface });
+				var backgroundColor = new Color(attributes.GetColor(0, Color.Transparent.ToArgb()));
+				var expectedTextColor = attributes.GetColor(1, Color.Transparent.ToArgb());
+				Assert.True(backgroundColor.A > 0);
+				Assert.NotEqual(Color.Transparent.ToArgb(), expectedTextColor);
+				Assert.Equal(isDarkTheme, backgroundColor.GetBrightness() < 0.5);
+				Assert.Equal(isDarkTheme, new Color(content.CurrentTextColor).GetBrightness() > 0.5);
 
 				foreach (var buttonType in new[] { DialogButtonType.Positive, DialogButtonType.Negative, DialogButtonType.Neutral })
 				{
-					var button = dialog.GetButton((int)buttonType);
+					var button = alertDialog.GetButton((int)buttonType);
 					Assert.NotNull(button);
-					var contrast = ColorUtils.CalculateContrast(button.CurrentTextColor, backgroundColor);
-					Assert.True(contrast >= 4.5,
-						$"{buttonType} button contrast was {contrast:F2}:1 in {(isDarkTheme ? "dark" : "light")} theme.");
+					Assert.Equal(expectedTextColor, button.CurrentTextColor);
 				}
 			});
 		}

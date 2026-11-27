@@ -92,8 +92,11 @@
       <item name="colorPrimary">?attr/colorOnSurface</item>
     </style>
 
-    <!-- Used by platform android.app.AlertDialog (e.g. WebView HTML date/time pickers). Dark variant in values-night. -->
-    <style name="MauiFrameworkAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Light.Dialog.Alert.Framework" />
+    <!-- WebView input pickers use framework dialogs, not AppCompat dialogs. -->
+    <style name="MauiFrameworkAlertDialogTheme" parent="@android:style/ThemeOverlay.Material.Dialog.Alert">
+      <item name="colorPrimary">?attr/colorOnSurface</item>
+      <item name="android:colorAccent">?attr/colorOnSurface</item>
+    </style>
 
   <!-- 
     The collectionViewScrollBars style will be used as the default style for ItemsViewRenderer (the base renderer
