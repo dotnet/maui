@@ -75,13 +75,18 @@ Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new
 
 The main agent (GPT-6.2 Sol) writes down the items to fix. Then:
 
-1. **Propose.** Each model fixes the items independently in its own worktree:
-   - GPT-6.2 Sol, in the main agent,
-   - MAI Code 2, through the in-workflow `autopilot-mai-fixer` agent,
-   - Claude Opus 5.5, through the in-workflow `autopilot-opus-fixer` agent.
-2. **Cross-examine.** Each model reviews the other two candidates as an adversary (bugs, missed cases, weak
-   tests, changes beyond the item), then revises its own candidate. It fixes what the others found and adopts a
-   better idea from another candidate when there is one. There is one critique round.
+1. **Propose.** Each model fixes the items independently:
+   - Claude Opus 5.5 goes first, in its own sandboxed workflow,
+     [`maui-expert-autopilot-opus`](../workflows/maui-expert-autopilot-opus.md). The Copilot CLI uses one wire
+     API per process: Claude is served over chat completions, while GPT-6.2 Sol and MAI Code 2 need the Responses
+     API. Opus only writes a candidate patch, saved as an artifact, then continues the fix round. If it fails,
+     the round continues with two candidates.
+   - GPT-6.2 Sol, in the main agent, and MAI Code 2, through the in-workflow `autopilot-mai-fixer` agent, each in
+     their own worktree.
+2. **Cross-examine.** GPT-6.2 Sol and MAI Code 2 each review the other two candidates as an adversary (bugs,
+   missed cases, weak tests, changes beyond the item), then revise their own candidate. They fix what the others
+   found and adopt a better idea from another candidate, including Opus's, when there is one. There is one
+   critique round. Opus's candidate is critiqued but not revised.
 3. **Choose.** The main agent picks the best revised candidate per item. It considers correctness, whether
    every critique was answered, regression tests, size, the repo guidance, and validation results. It then runs
    the unit tests it can and commits one commit per item.
