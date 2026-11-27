@@ -134,5 +134,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView?.DragCompleted();
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }
