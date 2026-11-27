@@ -379,7 +379,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			dropShadow.Mask = await Child.GetAlphaMaskAsync();
+			var mask = await Child.GetAlphaMaskAsync();
+
+			// The control can be disconnected while the mask renders, which disposes this DropShadow.
+			if (!ReferenceEquals(dropShadow, _dropShadow))
+			{
+				mask?.Dispose();
+				return;
+			}
+
+			dropShadow.Mask = mask;
 		}
 	}
 }
