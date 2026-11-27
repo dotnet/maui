@@ -519,7 +519,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Enqueue;
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-			using var manager = new TestAnimationManager(new Ticker()) { AutoStartTicker = false };
+			using var manager = new TestAnimationManager(new ManualTicker()) { AutoStartTicker = false };
 			var box = new BoxView { Opacity = 1, Handler = new AnimationReadyHandler<Ticker>(manager) };
 			try
 			{
@@ -532,6 +532,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				DispatcherProviderStubOptions.InvokeOnMainThread = previousInvokeOnMainThread;
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
+		}
+
+		sealed class ManualTicker : Ticker
+		{
+			bool _isRunning;
+
+			public override bool IsRunning => _isRunning;
+
+			public override void Start() => _isRunning = true;
+
+			public override void Stop() => _isRunning = false;
 		}
 	}
 }
