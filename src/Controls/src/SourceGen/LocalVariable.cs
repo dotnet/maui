@@ -16,6 +16,7 @@ record LocalVariable(ITypeSymbol type, string name) : ILocalValue
 	public ITypeSymbol Type => type;
 	public string ValueAccessor => name;
 
+	public bool IsDirectlyConstructed { get; init; }
 	public ScopeInfo? Scope { get; internal set; }
 }
 
