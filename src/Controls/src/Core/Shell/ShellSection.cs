@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,8 +28,26 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
+#if IOS || MACCATALYST
+	[ShellSectionHandler]
+#elif ANDROID || WINDOWS || TIZEN
+	[ElementHandler(typeof(Handlers.ShellSectionHandler))]
+#endif
 	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Declares the Apple ShellSectionHandler only when the <c>UseiOSShellHandler</c> feature switch is enabled. Otherwise the
+		/// compatibility Shell renderer manages sections itself, and the handler is trimmed.
+		/// </summary>
+		internal sealed class ShellSectionHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType() =>
+				RuntimeFeature.IsiOSShellHandlerEnabled ? typeof(Handlers.ShellSectionHandler) : null;
+		}
+#endif
+
 		#region PropertyKeys
 
 		static readonly BindablePropertyKey ItemsPropertyKey =

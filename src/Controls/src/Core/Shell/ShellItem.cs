@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -64,8 +65,26 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellItemConverter))]
 	[DebuggerTypeProxy(typeof(ShellItemDebugView))]
+#if IOS || MACCATALYST
+	[ShellItemHandler]
+#elif ANDROID || WINDOWS || TIZEN
+	[ElementHandler(typeof(Handlers.ShellItemHandler))]
+#endif
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Declares the Apple ShellItemHandler only when the <c>UseiOSShellHandler</c> feature switch is enabled. Otherwise the
+		/// compatibility Shell renderer manages items itself, and the handler is trimmed.
+		/// </summary>
+		internal sealed class ShellItemHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType() =>
+				RuntimeFeature.IsiOSShellHandlerEnabled ? typeof(Handlers.ShellItemHandler) : null;
+		}
+#endif
+
 		#region PropertyKeys
 
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellSectionCollection), typeof(ShellItem), null,
