@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				long ms = step + _lastMilliseconds;
-				Value = Math.Min(1.0f, ms / (double)Length);
+				Value = Length == 0 ? 1.0f : Math.Min(1.0f, ms / (double)Length);
 				_lastMilliseconds = ms;
 			}
 
