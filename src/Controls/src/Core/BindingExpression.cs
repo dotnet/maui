@@ -711,7 +711,7 @@ namespace Microsoft.Maui.Controls
 			public BindingExpressionPart(BindingExpression expression, string content, bool isIndexer = false)
 			{
 				_expression = expression;
-				IsSelf = content == Maui.Controls.Binding.SelfPath;
+				IsSelf = !isIndexer && content == Maui.Controls.Binding.SelfPath;
 				Content = content;
 				IsIndexer = isIndexer;
 

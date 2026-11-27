@@ -2320,6 +2320,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("found", label.Text);
 		}
 
+		[Theory]
+		[InlineData("[.]")]
+		[InlineData("Items[.]")]
+		public void BindingReadsAndWritesDotOnlyIndexerKey(string path)
+		{
+			var items = new IndexedViewModel { ["."] = "initial" };
+			var label = new Label { BindingContext = path == "[.]" ? (object)items : new { Items = items } };
+			label.SetBinding(Label.TextProperty, new Binding(path, BindingMode.TwoWay));
+
+			Assert.Equal("initial", label.Text);
+			label.Text = "target";
+			Assert.Equal("target", items["."]);
+		}
+
 		class VM57081
 		{
 			string _foo;
