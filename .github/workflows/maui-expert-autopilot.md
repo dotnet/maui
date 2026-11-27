@@ -617,6 +617,17 @@ steps:
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
+      # A fork PR's fixes go to a follow-up PR whose patch replays every commit, and only src/ and
+      # PublicAPI.Unshipped.txt may change. If the contributor's commits touched other files (even ones a
+      # later commit reverted), squash them into one commit with the same net change, keeping the author.
+      if [ "${IS_FORK}" = "true" ] && git log --format= --name-only "${MERGE_BASE}..HEAD" | sort -u |
+           grep -v '^$' | grep -qvE '^src/|(^|/)PublicAPI\.Unshipped\.txt$'; then
+        AUTHOR="$(git log --reverse --format='%an <%ae>' "${MERGE_BASE}..HEAD" | head -1)"
+        git reset -q --soft "${MERGE_BASE}"
+        git commit -q --author="${AUTHOR}" -m "Changes from #${PR_NUMBER}" \
+          -m "Squashed because some of its commits touch files outside src/; the net change is the same."
+        echo "Squashed the contributor's commits for the follow-up PR."
+      fi
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
         --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" --arg loop_start "${LOOP_START}" \
