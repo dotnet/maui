@@ -195,8 +195,9 @@ jobs:
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
   autopilot_failed:
     # maui-expert-autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
+    # Any path that doesn't hand back to the loop counts, including a failed threat detection that skips publishing.
     needs: [pre_activation, activation, agent, safe_outputs, complete_request, autopilot_next]
-    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.agent.result == 'failure' || needs.safe_outputs.result == 'failure' || needs.complete_request.result == 'failure' || needs.autopilot_next.result == 'failure')
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && needs.autopilot_next.result != 'success'
     runs-on: ubuntu-slim
     permissions:
       actions: write

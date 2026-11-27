@@ -18,7 +18,7 @@ is excluded from the full `/review` trigger and from missed-command recovery.
 ```mermaid
 flowchart TD
     A["/review autopilot<br/>(maintainer)"] --> R["MAUI expert review<br/>copilot-review-expert"]
-    R -- "findings" --> F["Fix round<br/>GPT-6.2 Sol vs MAI Code 2"]
+    R -- "findings" --> F["Fix round<br/>GPT-6.2 Sol, MAI Code 2, Claude Opus 5.5"]
     F -- "pushed" --> R
     R -- "no findings" --> T["/review run-tests<br/>GPT-6.2 Sol + MAI Code 2 select tests"]
     T -- "failing tests" --> F
@@ -63,30 +63,42 @@ the loop moves:
 | Label | Meaning |
 |---|---|
 | `s/autopilot-reviewing` | The MAUI expert review is running |
-| `s/autopilot-fixing` | A fix round (GPT-6.2 Sol vs MAI Code 2) is running |
+| `s/autopilot-fixing` | A fix round (GPT-6.2 Sol, MAI Code 2, Claude Opus 5.5) is running |
 | `s/autopilot-testing` | `/review run-tests` is selecting or running the relevant tests |
 | `s/autopilot-waiting-for-maintainer-review` | Done: the expert review is clean and the tests passed. Waiting for a maintainer |
-| `s/autopilot-retrying` | An expert review or test selection failed once and is being retried. A second failure in a row stops the loop |
+| `s/autopilot-retrying` | An expert review, fix round or test selection failed once and is being retried. A second failure in a row stops the loop |
 
 Stopping the loop, for any reason, removes all `s/autopilot-*` labels, and a new `/review autopilot` replaces
 `s/autopilot-waiting-for-maintainer-review`. Missing labels are created automatically.
 
-### Fix rounds use two models
+### Fix rounds use three models
 
-The main agent (GPT-6.2 Sol) writes down the items to fix. Each model then fixes them independently in its own
-worktree:
+The main agent (GPT-6.2 Sol) writes down the items to fix. Then:
 
-- GPT-6.2 Sol, in the main agent,
-- MAI Code 2, through the in-workflow `autopilot-mai-fixer` agent.
+1. **Propose.** Each model fixes the items independently:
+   - Claude Opus 5.5 goes first, in its own sandboxed workflow,
+     [`maui-expert-autopilot-opus`](../workflows/maui-expert-autopilot-opus.md). The Copilot CLI uses one wire
+     API per process: Claude is served over chat completions, while GPT-6.2 Sol and MAI Code 2 need the Responses
+     API. Opus only writes a candidate patch, saved as an artifact, then continues the fix round. If it fails,
+     the round continues with two candidates.
+   - GPT-6.2 Sol, in the main agent, and MAI Code 2, through the in-workflow `autopilot-mai-fixer` agent, each in
+     their own worktree.
+2. **Cross-examine.** GPT-6.2 Sol and MAI Code 2 each review the other two candidates as an adversary (bugs,
+   missed cases, weak tests, changes beyond the item), then revise their own candidate. They fix what the others
+   found and adopt a better idea from another candidate, including Opus's, when there is one. There is one
+   critique round. Opus's candidate is critiqued but not revised.
+3. **Choose.** The main agent picks the best revised candidate per item. It considers correctness, whether
+   every critique was answered, regression tests, size, the repo guidance, and validation results. It then runs
+   the unit tests it can and commits one commit per item.
 
-The main agent compares the two candidates item by item. It considers correctness, regression tests, size, the
-repo guidance, and validation results, and keeps the better fix. It then runs the unit tests it can and commits one
-commit per item.
+The thread reply names the model whose fix was kept, and any idea it adopted from another model.
 
 The items come from:
 
 - the expert review: all critical and major findings, plus small and safe moderate and minor ones,
 - failing tests the PR causes: the round lists infrastructure and known-flaky failures instead of fixing them,
+- Copilot code review suggestions that are still open: after a clean expert review, open Copilot threads
+  start a fix round before the tests run. Each one is fixed or answered in its thread,
 - open maintainer requests.
 
 How the fixes are published:
