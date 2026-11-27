@@ -1498,6 +1498,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidAppear(animated);
 
+				TabbedPage.OnNavigationChildAppeared(Child, this);
 				Appearing?.Invoke(this, EventArgs.Empty);
 			}
 

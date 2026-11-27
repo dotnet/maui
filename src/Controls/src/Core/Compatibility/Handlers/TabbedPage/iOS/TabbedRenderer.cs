@@ -361,7 +361,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 				SetNeedsStatusBarAppearanceUpdate();
-				SelectedViewController = controller;
+				if (Tabbed?.IsSelectingMorePage(current) != true &&
+					SelectedViewController != controller &&
+					!(SelectedViewController == MoreNavigationController &&
+						MoreNavigationController.TopViewController == controller))
+				{
+					SelectedViewController = controller;
+				}
 			}
 			else if (e.PropertyName == nameof(TabbedPage.FlowDirection))
 				UpdateFlowDirection();

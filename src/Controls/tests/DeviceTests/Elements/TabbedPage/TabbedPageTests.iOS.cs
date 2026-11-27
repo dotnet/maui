@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using CoreAnimation;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -11,6 +13,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -20,6 +23,83 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task SelectingNativeMoreRowUpdatesCurrentPage(bool useNavigationPage)
+		{
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Phone)
+				return;
+
+			SetupBuilder();
+			var content = new ContentPage { Title = "Overflow" };
+			Page overflow = useNavigationPage ? new NavigationPage(content) { Title = "Overflow" } : content;
+			var pages = Enumerable.Range(1, 5).Select(i => (Page)new ContentPage { Title = $"Tab {i}" }).Append(overflow);
+			var tabbedPage = CreateBasicTabbedPage(pages: pages);
+			var navigatedTo = 0;
+			overflow.NavigatedTo += (_, _) => navigatedTo++;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async _ =>
+			{
+				await OnLoadedAsync(tabbedPage.Children[0]);
+				var tabBar = Assert.IsAssignableFrom<UITabBarController>(((IPlatformViewHandler)tabbedPage.Handler).ViewController);
+				var more = tabBar.MoreNavigationController;
+				tabBar.SelectedViewController = more;
+				await AssertEventually(() => more.TopViewController?.View is UITableView { Window: not null });
+				var table = Assert.IsAssignableFrom<UITableView>(more.TopViewController.View);
+
+				var selectionDelegate = Assert.IsAssignableFrom<NSObject>(table.WeakDelegate);
+				using var row = NSIndexPath.FromRowSection(1, 0);
+				SelectNativeMoreRow(selectionDelegate.Handle, Selector.GetHandle("tableView:didSelectRowAtIndexPath:"), table.Handle, row.Handle);
+
+				await AssertEventually(() => tabbedPage.CurrentPage == overflow);
+				Assert.Equal(1, navigatedTo);
+			});
+		}
+
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		static extern void SelectNativeMoreRow(NativeHandle receiver, IntPtr selector, NativeHandle table, NativeHandle row);
+
+		[Fact]
+		public async Task ReattachingTabbedPageLeavesMoreNavigationDelegatesUntouched()
+		{
+			SetupBuilder();
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var tabbedPage = CreateBasicTabbedPage();
+				var firstHandler = Assert.IsAssignableFrom<IPlatformViewHandler>(tabbedPage.ToHandler(MauiContext));
+				var firstController = Assert.IsAssignableFrom<UITabBarController>(firstHandler.ViewController);
+				var firstMore = firstController.MoreNavigationController;
+				using var firstDelegate = new UINavigationControllerDelegate();
+				firstMore.Delegate = firstDelegate;
+
+				Detach(firstHandler);
+				Assert.Same(firstDelegate, firstMore.Delegate);
+
+				var secondHandler = Assert.IsAssignableFrom<IPlatformViewHandler>(tabbedPage.ToHandler(MauiContext));
+				var secondController = Assert.IsAssignableFrom<UITabBarController>(secondHandler.ViewController);
+				var secondMore = secondController.MoreNavigationController;
+				using var secondDelegate = new UINavigationControllerDelegate();
+				try
+				{
+					secondMore.Delegate = secondDelegate;
+					Assert.Same(firstDelegate, firstMore.Delegate);
+				}
+				finally
+				{
+					Detach(secondHandler);
+				}
+				Assert.Same(secondDelegate, secondMore.Delegate);
+
+				void Detach(IPlatformViewHandler handler)
+				{
+					tabbedPage.Handler = null;
+					if (handler is TabbedRenderer renderer)
+						renderer.Dispose();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "TabbedPage BarBackground gradient persists after iOS 15 appearance update")]
 		public async Task BarBackgroundGradientPersistsAfteriOS15AppearanceUpdate()
 		{
