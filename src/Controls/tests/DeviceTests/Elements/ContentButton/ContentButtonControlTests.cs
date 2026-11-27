@@ -139,12 +139,26 @@ namespace Microsoft.Maui.DeviceTests
 				var replacement = new Label { Text = "Replacement" };
 				var original = new Label { Text = "Original" };
 				var button = new ContentButton { Content = original };
+#if WINDOWS
+				IElementHandler movedHandler = null;
+				object movedPlatformView = null;
+				string stateAfterMove = null;
+#endif
 				original.HandlerChanged += (_, _) =>
 				{
 					if (original.Handler is not null)
 					{
 						button.Content = replacement;
 						destination.Content = original;
+#if WINDOWS
+						if (movedHandler is null)
+						{
+							movedHandler = original.Handler;
+							movedPlatformView = original.Handler.PlatformView;
+							stateAfterMove = DescribePlatformParents(movedPlatformView, destinationHandler.PlatformView,
+								((Microsoft.Maui.Platform.MauiContentButton)button.Handler.PlatformView).ContentPanel);
+						}
+#endif
 					}
 				};
 
@@ -154,7 +168,25 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(original, destination.Content);
 				Assert.Same(destination, original.Parent);
 				Assert.Same(replacement.Handler.PlatformView, GetPresentedPlatformContent(buttonHandler.PlatformView));
+#if WINDOWS
+				// These views are never added to a window, and WinUI parent queries such as
+				// VisualTreeHelper.GetParent do not report parents outside the live tree. Check the
+				// panels' children directly; a WinUI element belongs to at most one parent.
+				var platformView = original.Handler.PlatformView;
+				var destinationPanel = destinationHandler.PlatformView;
+				var buttonPanel = ((Microsoft.Maui.Platform.MauiContentButton)buttonHandler.PlatformView).ContentPanel;
+				var state = $"After the move: handler={Describe(movedHandler)}, {stateAfterMove}. " +
+					$"At the end: handler={Describe(original.Handler)}, {DescribePlatformParents(platformView, destinationPanel, buttonPanel)}";
+
+				Assert.True(ReferenceEquals(movedPlatformView, platformView),
+					$"The original label's platform view changed after it moved. {state}");
+				Assert.True(HasPlatformChild(destinationPanel, platformView),
+					$"The destination ContentPanel does not contain the original label's platform view. {state}");
+				Assert.False(HasPlatformChild(buttonPanel, platformView),
+					$"The button's ContentPanel still contains the original label's platform view. {state}");
+#else
 				Assert.Same(destinationHandler.PlatformView, GetPlatformParent(original.Handler.PlatformView));
+#endif
 			});
 		}
 
@@ -171,22 +203,49 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+#if WINDOWS
+		static bool HasPlatformChild(Microsoft.Maui.Platform.MauiPanel panel, object platformView)
+		{
+			foreach (var child in panel.CachedChildren)
+			{
+				if (ReferenceEquals(child, platformView))
+					return true;
+			}
+
+			return false;
+		}
+
+		static string DescribePlatformParents(object platformView, Microsoft.Maui.Platform.ContentPanel destinationPanel,
+			Microsoft.Maui.Platform.ContentPanel buttonPanel)
+		{
+			var element = (Microsoft.UI.Xaml.FrameworkElement)platformView;
+			return $"view={Describe(element)}, Parent={Describe(element.Parent)}, " +
+				$"VisualTreeHelper.GetParent={Describe(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(element))}, " +
+				$"destination panel={DescribePanel(destinationPanel, element)}, button panel={DescribePanel(buttonPanel, element)}";
+		}
+
+		static string DescribePanel(Microsoft.Maui.Platform.ContentPanel panel, Microsoft.UI.Xaml.UIElement element)
+		{
+			var children = new System.Collections.Generic.List<string>();
+			foreach (var child in panel.CachedChildren)
+				children.Add(Describe(child));
+
+			return $"{Describe(panel)} {{ Content={Describe(panel.Content)}, Contains={panel.CachedChildren.Contains(element)}, " +
+				$"Children=[{string.Join(", ", children)}] }}";
+		}
+
+		static string Describe(object value) =>
+			value is null ? "null" : $"{value.GetType().Name}#{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value)}";
+#else
 		static object GetPlatformParent(object platformView)
 		{
 #if ANDROID
 			return ((global::Android.Views.View)platformView).Parent;
 #elif IOS || MACCATALYST
 			return ((UIKit.UIView)platformView).Superview;
-#elif WINDOWS
-			// VisualTreeHelper.GetParent returns null for elements outside the live tree, and these
-			// handlers are never added to a window. A panel child's FrameworkElement.Parent is the panel.
-			var element = (Microsoft.UI.Xaml.FrameworkElement)platformView;
-			if (element.Parent is Microsoft.Maui.Platform.MauiPanel panel)
-				return panel.CachedChildren.Contains(element) ? panel : null;
-
-			return element.Parent;
 #endif
 		}
+#endif
 #endif
 
 		[Fact]
