@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Views;
+using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
@@ -523,6 +526,157 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);
 			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ThrowingNavigationIconStreamFallsBackToDefault(bool useBackButton)
+		{
+			SetupBuilder();
+
+			var rootPage = new ContentPage();
+			var customIcon = new FontImageSource { Glyph = "\u2039" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { rootPage } };
+				shell.FlyoutBehavior = useBackButton ? FlyoutBehavior.Disabled : FlyoutBehavior.Flyout;
+				if (!useBackButton)
+					shell.FlyoutIcon = customIcon;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(rootPage);
+
+				var backButton = new BackButtonBehavior { IconOverride = customIcon };
+				if (useBackButton)
+				{
+					var detailPage = new ContentPage();
+					Shell.SetBackButtonBehavior(detailPage, backButton);
+					await shell.Navigation.PushAsync(detailPage);
+				}
+
+				// Start from a custom icon so the fallback check cannot pass on the initial default.
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() != typeof(DrawerArrowDrawable));
+
+				var streamRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var failingIcon = ImageSource.FromStream(_ =>
+				{
+					streamRequested.TrySetResult();
+					return Task.FromException<Stream>(new IOException("Simulated navigation icon load failure."));
+				});
+
+				if (useBackButton)
+					backButton.IconOverride = failingIcon;
+				else
+					shell.FlyoutIcon = failingIcon;
+
+				await AssertEventually(() => streamRequested.Task.IsCompleted,
+					message: "Shell did not request the failing icon stream.");
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() == typeof(DrawerArrowDrawable) && icon.Progress == (useBackButton ? 1f : 0f),
+					message: "Shell did not restore the default navigation icon after the stream failed.");
+			});
+		}
+
+		[Fact]
+		public async Task SupersededNavigationIconCancellationDoesNotReplaceNewIcon()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { page } };
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+
+				var firstRequestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var firstRequestCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var replacementRequestServed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var iconBytes = CreateTestIconBytes();
+				var requestCount = 0;
+				var iconSource = ImageSource.FromStream(async cancellationToken =>
+				{
+					var request = Interlocked.Increment(ref requestCount);
+					if (request == 1)
+					{
+						firstRequestStarted.TrySetResult();
+						try
+						{
+							await Task.Delay(Timeout.Infinite, cancellationToken);
+						}
+						catch (OperationCanceledException)
+						{
+							firstRequestCanceled.TrySetResult();
+							throw;
+						}
+					}
+
+					replacementRequestServed.TrySetResult();
+					return new MemoryStream(iconBytes);
+				});
+
+				shell.FlyoutIcon = iconSource;
+				await AssertEventually(() => firstRequestStarted.Task.IsCompleted,
+					message: "Shell did not start the first icon load.");
+
+				Shell.SetForegroundColor(shell, Colors.Red);
+
+				await AssertEventually(() => firstRequestCanceled.Task.IsCompleted,
+					message: "The foreground-color update did not cancel the superseded icon load.");
+				await AssertEventually(() => replacementRequestServed.Task.IsCompleted,
+					message: "Shell did not serve the replacement icon request.");
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() != typeof(DrawerArrowDrawable),
+					message: "The replacement icon was not installed after the superseded load was canceled.");
+			});
+		}
+
+		[Fact]
+		public async Task CurrentNavigationIconCancellationFallsBackToDefault()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { page } };
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+
+				var streamRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				shell.FlyoutIcon = ImageSource.FromStream(_ =>
+				{
+					streamRequested.TrySetResult();
+					return Task.FromException<Stream>(new OperationCanceledException("Simulated current icon-load cancellation."));
+				});
+
+				await AssertEventually(() => streamRequested.Task.IsCompleted,
+					message: "Shell did not request the canceled icon stream.");
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is DrawerArrowDrawable icon &&
+					icon.GetType() == typeof(DrawerArrowDrawable) && icon.Progress == 0f,
+					message: "Shell did not restore the default hamburger icon after the current load was canceled.");
+			});
+		}
+
+		static byte[] CreateTestIconBytes()
+		{
+			using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(1, 1, global::Android.Graphics.Bitmap.Config.Argb8888);
+			bitmap.EraseColor(global::Android.Graphics.Color.Red);
+			using var stream = new MemoryStream();
+			bitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+			return stream.ToArray();
 		}
 
 		static global::Android.Graphics.Rect GetDrawnBounds(global::Android.Graphics.Bitmap bitmap)
