@@ -2650,6 +2650,8 @@ namespace Microsoft.Maui.Controls
 		/// and the initial KVO-based loaded watcher may not have fired.
 		/// </summary>
 		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+
+		internal bool HasPendingPlatformLoadedEvent => _watchingPlatformLoaded && !_isLoadedFired && IsLoaded;
 #endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);

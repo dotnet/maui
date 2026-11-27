@@ -476,10 +476,10 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		void SendNavigated(Page previousPage, NavigationType navigationType)
+		void SendNavigated(Page previousPage, NavigationType navigationType, Page destinationPage = null)
 		{
-			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
+			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(destinationPage ?? CurrentPage, navigationType));
+			(destinationPage ?? CurrentPage).SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
 		void SendNavigating(NavigationType navigationType, Page navigatingFrom, Page destinationPage)
@@ -730,7 +730,7 @@ namespace Microsoft.Maui.Controls
 			bool animated,
 			Action processStackChanges,
 			Action firePostNavigatingEvents,
-			Action fireNavigatedEvents)
+			Action<Page> fireNavigatedEvents)
 		{
 			if (!_setForMaui || this.IsShimmed())
 			{
@@ -780,6 +780,18 @@ namespace Microsoft.Maui.Controls
 					// Wait for the handler to finish processing the navigation
 					// This task completes once the handler calls INavigationView.Finished
 					await currentNavRequestTaskSource.Task;
+
+#if IOS || MACCATALYST
+					if (fireNavigatedEvents is not null && Handler is NavigationViewHandler &&
+						CurrentPage is Page destinationPage && destinationPage.HasPendingPlatformLoadedEvent)
+					{
+						// A Loaded handler can start another navigation. Pin the destination and
+						// finish notifying it before allowing the next native request to run.
+						destinationPage.RefreshPlatformLoadedStatus();
+						fireNavigatedEvents(destinationPage);
+						return;
+					}
+#endif
 				}
 			}
 			finally
@@ -794,7 +806,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Send navigated event to currently visible pages and associated navigation event
-			fireNavigatedEvents?.Invoke();
+			fireNavigatedEvents?.Invoke(null);
 		}
 
 		private protected override void OnHandlerChangedCore()
@@ -834,9 +846,9 @@ namespace Microsoft.Maui.Controls
 				{
 					FireAppearing(CurrentPage);
 				},
-				deferNavigatedTo ? null : () =>
+				deferNavigatedTo ? null : destinationPage =>
 				{
-					SendNavigated(null, navigationType);
+					SendNavigated(null, navigationType, destinationPage);
 				})
 				.FireAndForget(Handler);
 			}
@@ -915,7 +927,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 					},
-					() =>
+					_ =>
 					{
 						//// If no other pending operations happen
 						//// Then update the toolbar to match
@@ -954,9 +966,9 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.FireAppearing(newCurrentPage);
 					},
-					() =>
+					destinationPage =>
 					{
-						Owner.SendNavigated(currentPage, NavigationType.Pop);
+						Owner.SendNavigated(currentPage, NavigationType.Pop, destinationPage);
 						Owner?.Popped?.Invoke(Owner, new NavigationEventArgs(currentPage));
 					});
 
@@ -991,9 +1003,9 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.FireAppearing(newPage);
 					},
-					() =>
+					destinationPage =>
 					{
-						Owner.SendNavigated(previousPage, NavigationType.PopToRoot);
+						Owner.SendNavigated(previousPage, NavigationType.PopToRoot, destinationPage);
 						Owner?.PoppedToRoot?.Invoke(Owner, new PoppedToRootEventArgs(newPage, pagesToRemove));
 					});
 			}
@@ -1020,9 +1032,9 @@ namespace Microsoft.Maui.Controls
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},
-					() =>
+					destinationPage =>
 					{
-						Owner.SendNavigated(previousPage, navigationType);
+						Owner.SendNavigated(previousPage, navigationType, destinationPage);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}
@@ -1061,7 +1073,7 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 					},
-					() =>
+					_ =>
 					{
 						//// If no other pending operations happen
 						//// Then update the toolbar to match
