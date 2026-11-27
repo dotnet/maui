@@ -193,13 +193,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(result, args.Data.Text);
 		}
 
-		[Theory]
-		[InlineData(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
-		public void DateTextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
+		[Fact]
+		public void DateTextPackageCorrectlyExtractedFromCompatibleElement()
 		{
-			var date = DateTime.Parse(result);
-			result = date.ToString();
-			TextPackageCorrectlyExtractedFromCompatibleElement(fieldType, result);
+			var datePicker = new DatePicker { Date = new DateTime(2020, 12, 12) };
+			var dragRec = new DragGestureRecognizer();
+
+			var args = dragRec.SendDragStarting(datePicker);
+
+			Assert.Equal(datePicker.Date.ToString(), args.Data.Text);
 		}
 
 		[Fact]

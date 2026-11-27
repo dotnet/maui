@@ -2621,7 +2621,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var entry = new Entry { BindingContext = vm };
 			entry.SetBinding(Entry.TextProperty, "Value", BindingMode.TwoWay);
 
-			Assert.Equal("3.14", entry.Text);
+			Assert.Equal(3.14.ToString(CultureInfo.CurrentCulture), entry.Text);
 
 			entry.SetValueFromRenderer(Entry.TextProperty, "");
 
