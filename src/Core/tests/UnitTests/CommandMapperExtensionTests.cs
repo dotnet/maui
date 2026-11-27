@@ -461,15 +461,14 @@ namespace Microsoft.Maui.UnitTests
 			var inherited = childMapper.GetCommand(nameof(IView.Focus));
 
 			Assert.Same(customized, parentMapper.GetCommand(nameof(IView.Focus)));
-			Assert.Same(inherited, childMapper.GetCommand(nameof(IView.Focus)));
+			Assert.NotNull(inherited);
+			Assert.True(ReturnsSameInstance(() => childMapper.GetCommand(nameof(IView.Focus))));
 
-			var allocated = GC.GetAllocatedBytesForCurrentThread();
-			for (var i = 0; i < 100; i++)
+			Assert.Equal(0, MinimumAllocatedBytes(() =>
 			{
 				parentMapper.GetCommand(nameof(IView.Focus));
 				childMapper.GetCommand(nameof(IView.Focus));
-			}
-			Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - allocated);
+			}));
 
 			parentMapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => { });
 			Assert.NotSame(customized, parentMapper.GetCommand(nameof(IView.Focus)));
@@ -573,6 +572,39 @@ namespace Microsoft.Maui.UnitTests
 			mapper.Invoke(handler!, view, nameof(IView.Focus), null);
 
 			Assert.Equal("previous;", log);
+		}
+
+		// An inherited mapping is cached until any mapper records a customization, which tests running in parallel
+		// may do between two reads, so a few attempts are allowed.
+		static bool ReturnsSameInstance(Func<object> lookup)
+		{
+			for (var attempt = 0; attempt < 10; attempt++)
+			{
+				if (ReferenceEquals(lookup(), lookup()))
+					return true;
+			}
+
+			return false;
+		}
+
+		// Warms the path up, then measures several attempts: the runtime can allocate on this thread while an attempt
+		// runs (for example when tiered compilation replaces code), and a customization recorded by a test running in
+		// parallel rebuilds a cached inherited mapping, but neither happens in every attempt.
+		static long MinimumAllocatedBytes(Action lookups)
+		{
+			for (var i = 0; i < 100; i++)
+				lookups();
+
+			var minimum = long.MaxValue;
+			for (var attempt = 0; attempt < 10 && minimum > 0; attempt++)
+			{
+				var allocated = GC.GetAllocatedBytesForCurrentThread();
+				for (var i = 0; i < 100; i++)
+					lookups();
+				minimum = Math.Min(minimum, GC.GetAllocatedBytesForCurrentThread() - allocated);
+			}
+
+			return minimum;
 		}
 
 		static CommandMapper<IView, IViewHandler> CreateMapper(Action command) =>

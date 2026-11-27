@@ -46,7 +46,8 @@ namespace Microsoft.Maui
 			if (!_preserveMappingCustomizations
 				&& (_mapper.ContainsKey(key) || _frameworkMappingsSealed))
 			{
-				AddMappingCustomization(key, _ => action);
+				// The action already went through this method, so an override's transformation applies once.
+				AddMappingCustomization(key, _ => action, transformed: true);
 				return;
 			}
 
@@ -55,6 +56,12 @@ namespace Microsoft.Maui
 		}
 
 		void UpdateVersion() => Volatile.Write(ref _version, Interlocked.Increment(ref s_lastVersion));
+
+		void StoreMapping(string key, Command action)
+		{
+			_mapper[key] = action;
+			UpdateVersion();
+		}
 
 		void SetCustomizedPropertyCore(string key, Command action)
 		{
@@ -69,7 +76,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal void AddMappingCustomization(string key, Func<Command?, Command> customization)
+		internal void AddMappingCustomization(string key, Func<Command?, Command> customization, bool transformed = false)
 		{
 			var sequence = MappingCustomizationSequence.Next();
 			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
@@ -79,7 +86,7 @@ namespace Microsoft.Maui
 			}
 
 			mappingCustomization.AddCustomization(sequence, customization);
-			mappingCustomization.Register();
+			mappingCustomization.Register(transformed);
 		}
 
 		/// <summary>
@@ -317,10 +324,14 @@ namespace Microsoft.Maui
 			/// Registers the command that includes every customization recorded so far; see the property mapper's
 			/// equivalent.
 			/// </summary>
-			public void Register()
+			public void Register(bool transformed = false)
 			{
 				var index = _customizations.Count;
-				_owner.SetCustomizedPropertyCore(_key, (handler, view, args) => GetMappingAt(index)?.Invoke(handler, view, args));
+				Command mapping = (handler, view, args) => GetMappingAt(index)?.Invoke(handler, view, args);
+				if (transformed)
+					_owner.StoreMapping(_key, mapping);
+				else
+					_owner.SetCustomizedPropertyCore(_key, mapping);
 
 				while (_registeredMappings.Count <= index)
 					_registeredMappings.Add(null);

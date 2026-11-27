@@ -711,15 +711,14 @@ namespace Microsoft.Maui.UnitTests
 			var inherited = childMapper.GetProperty(nameof(IView.Background));
 
 			Assert.Same(customized, parentMapper.GetProperty(nameof(IView.Background)));
-			Assert.Same(inherited, childMapper.GetProperty(nameof(IView.Background)));
+			Assert.NotNull(inherited);
+			Assert.True(ReturnsSameInstance(() => childMapper.GetProperty(nameof(IView.Background))));
 
-			var allocated = GC.GetAllocatedBytesForCurrentThread();
-			for (var i = 0; i < 100; i++)
+			Assert.Equal(0, MinimumAllocatedBytes(() =>
 			{
 				parentMapper.GetProperty(nameof(IView.Background));
 				childMapper.GetProperty(nameof(IView.Background));
-			}
-			Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - allocated);
+			}));
 
 			parentMapper.AppendToMapping(nameof(IView.Background), (_, _) => { });
 			Assert.NotSame(customized, parentMapper.GetProperty(nameof(IView.Background)));
@@ -818,6 +817,53 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal("controls;append;", log);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DirectReplacementAppliesOverriddenSetPropertyCoreTransformationOnce(bool sealMapper)
+		{
+			var log = string.Empty;
+			var mapper = new WrappingPropertyMapper(() => log += "wrap;")
+			{
+				[nameof(IView.Background)] = (_, _) => log += "core;"
+			};
+			if (sealMapper)
+				mapper.SealFrameworkMappings();
+
+			mapper[nameof(IView.Background)] = (_, _) => log += "user;";
+			mapper[nameof(IView.Opacity)] = (_, _) => log += "opacity;";
+
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Opacity));
+			Assert.Equal("wrap;user;wrap;opacity;", log);
+
+			// The direct replacement and the append are each transformed once, as when they were stored directly.
+			log = string.Empty;
+			mapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "append;");
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			Assert.Equal("wrap;wrap;user;append;", log);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TypedCustomizationMapsOtherVirtualViewsThroughCurrentChain(bool attachLater)
+		{
+			var log = string.Empty;
+			var firstParent = CreateMapper(() => log += "A;");
+			var secondParent = CreateMapper(() => log += "B;");
+			var mapper = attachLater
+				? new PropertyMapper<ILabel, IViewHandler>()
+				: new PropertyMapper<ILabel, IViewHandler>(firstParent);
+
+			mapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "label;");
+			mapper.Chained = new IPropertyMapper[] { secondParent };
+
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("B;", log);
+		}
+
 		public enum FrameworkHelper
 		{
 			Replace,
@@ -908,6 +954,39 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
+		// An inherited mapping is cached until any mapper records a customization, which tests running in parallel
+		// may do between two reads, so a few attempts are allowed.
+		static bool ReturnsSameInstance(Func<object> lookup)
+		{
+			for (var attempt = 0; attempt < 10; attempt++)
+			{
+				if (ReferenceEquals(lookup(), lookup()))
+					return true;
+			}
+
+			return false;
+		}
+
+		// Warms the path up, then measures several attempts: the runtime can allocate on this thread while an attempt
+		// runs (for example when tiered compilation replaces code), and a customization recorded by a test running in
+		// parallel rebuilds a cached inherited mapping, but neither happens in every attempt.
+		static long MinimumAllocatedBytes(Action lookups)
+		{
+			for (var i = 0; i < 100; i++)
+				lookups();
+
+			var minimum = long.MaxValue;
+			for (var attempt = 0; attempt < 10 && minimum > 0; attempt++)
+			{
+				var allocated = GC.GetAllocatedBytesForCurrentThread();
+				for (var i = 0; i < 100; i++)
+					lookups();
+				minimum = Math.Min(minimum, GC.GetAllocatedBytesForCurrentThread() - allocated);
+			}
+
+			return minimum;
+		}
+
 		static PropertyMapper<IView, IViewHandler> CreateMapper(Action mapping) =>
 			new()
 			{
@@ -934,6 +1013,20 @@ namespace Microsoft.Maui.UnitTests
 
 			public override Action<IElementHandler, IElement> GetProperty(string key) =>
 				Overriding && key == nameof(IView.Background) ? _mapping : base.GetProperty(key);
+		}
+
+		sealed class WrappingPropertyMapper : PropertyMapper<IView, IViewHandler>
+		{
+			readonly Action _wrap;
+
+			public WrappingPropertyMapper(Action wrap) => _wrap = wrap;
+
+			protected override void SetPropertyCore(string key, Action<IElementHandler, IElement> action) =>
+				base.SetPropertyCore(key, (handler, view) =>
+				{
+					_wrap();
+					action(handler, view);
+				});
 		}
 
 		sealed class GuardingPropertyMapper : PropertyMapper<IView, IViewHandler>

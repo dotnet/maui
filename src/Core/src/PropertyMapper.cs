@@ -97,12 +97,19 @@ namespace Microsoft.Maui
 			if (!_preserveMappingCustomizations
 				&& (_mapper.ContainsKey(key) || _frameworkMappingsSealed))
 			{
-				AddMappingCustomization(key, _ => action);
+				// The action already went through this method, so an override's transformation applies once.
+				AddMappingCustomization(key, _ => action, transformed: true);
 				return;
 			}
 
 			_mapper[key] = action;
 
+			ClearMergedMappers();
+		}
+
+		void StoreMapping(string key, Action<IElementHandler, IElement> action)
+		{
+			_mapper[key] = action;
 			ClearMergedMappers();
 		}
 
@@ -121,7 +128,8 @@ namespace Microsoft.Maui
 
 		internal void AddMappingCustomization(
 			string key,
-			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization)
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization,
+			bool transformed = false)
 		{
 			var sequence = MappingCustomizationSequence.Next();
 			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
@@ -134,7 +142,7 @@ namespace Microsoft.Maui
 			}
 
 			mappingCustomization.AddCustomization(sequence, customization);
-			mappingCustomization.Register();
+			mappingCustomization.Register(transformed);
 		}
 
 		/// <summary>
@@ -357,6 +365,34 @@ namespace Microsoft.Maui
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Maps <paramref name="key"/> through the current chained mappers, as a typed mapping does for a virtual view
+		/// of another type.
+		/// </summary>
+		internal void UpdateChainedProperty(string key, IElementHandler viewHandler, IElement virtualView)
+		{
+			var chainedPropertyMappers = Chained;
+			if (chainedPropertyMappers is null)
+				return;
+
+			foreach (var chain in chainedPropertyMappers)
+			{
+				// Try to leverage our internal method which uses merged mappers
+				if (chain is PropertyMapper propertyMapper)
+				{
+					if (propertyMapper.TryUpdatePropertyCore(key, viewHandler, virtualView))
+					{
+						break;
+					}
+				}
+				else if (chain.GetProperty(key) != null)
+				{
+					chain.UpdateProperty(viewHandler, virtualView, key);
+					break;
+				}
+			}
 		}
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
@@ -609,13 +645,18 @@ namespace Microsoft.Maui
 			/// <summary>
 			/// Registers the mapping that includes every customization recorded so far through the owner's
 			/// <see cref="SetPropertyCore"/>, so transformations made by an override apply, and remembers what was
-			/// registered. The registered mapping is bound to its position in the composition: it observes later
+			/// registered. A direct replacement that already went through <see cref="SetPropertyCore"/> is
+			/// <paramref name="transformed"/> and is stored as is, so the override's transformation applies once. The registered mapping is bound to its position in the composition: it observes later
 			/// framework remaps but not later app customizations, which register their own mappings.
 			/// </summary>
-			public void Register()
+			public void Register(bool transformed = false)
 			{
 				var index = _customizations.Count;
-				_owner.SetCustomizedPropertyCore(_key, (handler, view) => GetMappingAt(index)?.Invoke(handler, view));
+				Action<IElementHandler, IElement> mapping = (handler, view) => GetMappingAt(index)?.Invoke(handler, view);
+				if (transformed)
+					_owner.StoreMapping(_key, mapping);
+				else
+					_owner.SetCustomizedPropertyCore(_key, mapping);
 
 				while (_registeredMappings.Count <= index)
 					_registeredMappings.Add(null);
@@ -994,24 +1035,9 @@ namespace Microsoft.Maui
 				{
 					action?.Invoke((TViewHandler)h, vv);
 				}
-				else if (Chained != null)
+				else
 				{
-					foreach (var chain in Chained)
-					{
-						// Try to leverage our internal method which uses merged mappers
-						if (chain is PropertyMapper propertyMapper)
-						{
-							if (propertyMapper.TryUpdatePropertyCore(key, h, v))
-							{
-								break;
-							}
-						}
-						else if (chain.GetProperty(key) != null)
-						{
-							chain.UpdateProperty(h, v, key);
-							break;
-						}
-					}
+					UpdateChainedProperty(key, h, v);
 				}
 			});
 	}

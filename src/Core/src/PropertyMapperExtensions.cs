@@ -24,6 +24,11 @@ namespace Microsoft.Maui
 					{
 						method((TViewHandler)handler, virtualView, previousMethod);
 					}
+					else if (propertyMapper is PropertyMapper concreteMapper)
+					{
+						// Like a mapping added through Add, map other virtual views through the current chain.
+						concreteMapper.UpdateChainedProperty(key, handler, view);
+					}
 					else
 					{
 						previousMethod?.Invoke(handler, view);
