@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 			[nameof(IWebView.Background)] = MapBackground,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IWebView, IWebViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

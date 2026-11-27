@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 #endif
 				[nameof(ITitledElement.Title)] = MapTitle,
-			};
+			}.WithFrameworkMappingsSealed();
 
 		public static new CommandMapper<IContentView, IPageHandler> CommandMapper =
 			new(ContentViewHandler.CommandMapper);
