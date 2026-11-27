@@ -609,7 +609,7 @@ static class UpdateComponentCodeWriter
 		// rather than generate invalid code.
 		bool contentPropertyIsSettable = contentPropertyName != null
 			&& parentType!.GetAllProperties(contentPropertyName, context: null)
-				.FirstOrDefault()?.SetMethod?.IsPublic() == true;
+				.FirstOrDefault()?.SetMethod is { IsInitOnly: false } contentSetter && contentSetter.IsPublic();
 
 		// A getter-only collection content property (e.g. FormattedString.Spans) is unsupported
 		// regardless of whether this change is an add/rebuild or a pure removal — even "set to
@@ -710,7 +710,8 @@ static class UpdateComponentCodeWriter
 								codeWriter.WriteLine($"int __existing = {layoutVar}.IndexOf((global::Microsoft.Maui.IView){staleVar}!);");
 								codeWriter.WriteLine($"if (__existing >= 0) {layoutVar}.RemoveAt(__existing);");
 							}
-							EmitNewElement(codeWriter, entry.NewElement!, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, insertIndex: i);
+							if (!EmitNewElement(codeWriter, entry.NewElement!, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, insertIndex: i))
+								return false;
 						}
 					}
 				}
@@ -731,7 +732,8 @@ static class UpdateComponentCodeWriter
 						else // Added or Rebuilt
 						{
 							var newElement = entry.NewElement!;
-							EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+							if (!EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+								return false;
 						}
 					}
 				}
@@ -741,7 +743,8 @@ static class UpdateComponentCodeWriter
 		{
 			// Content property container (ContentPage, ContentView, ScrollView, Border, etc.)
 			// These have a single content property — set directly instead of using Children.Add()
-			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			if (!EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return false;
 		}
 		// else: no content property at all (e.g. ResourceDictionary) and nothing to insert (the
 		// bail-out above already covers the case where there WAS something to insert) — this is a
@@ -770,7 +773,8 @@ static class UpdateComponentCodeWriter
 	/// Emits code for a child list change on a content property container (ContentPage, ContentView, etc.).
 	/// Sets the content property to the single new child, or null if all children were removed.
 	/// </summary>
-	static void EmitContentPropertyChange(
+	/// <returns><see langword="false"/> when the new content can't be represented by an assignment.</returns>
+	static bool EmitContentPropertyChange(
 		IndentedTextWriter codeWriter,
 		ChildListChangeDiff change,
 		int changeIdx,
@@ -799,10 +803,18 @@ static class UpdateComponentCodeWriter
 		else
 			parentAccessor = $"((dynamic){parentVar}!)";
 
+		// A settable collection content property (e.g. IList<View> Rows { get; set; }) holds its children
+		// in the collection InitializeComponent adds them to. Adding or removing one needs Add/Remove
+		// support this path doesn't have, and nulling the property out on removal would replace the
+		// (possibly empty) collection a fresh instance keeps.
+		if (parentType?.GetAllProperties(contentPropertyName, context: null).FirstOrDefault()?.Type.CanAdd(context: null) == true
+			&& (change.NewChildren.Count != 1 || change.NewChildren[0].Kind == ChildChangeKind.Retained && change.RemovedNodeIds.Count > 0))
+			return false;
+
 		if (change.NewChildren.Count == 0)
 		{
 			codeWriter.WriteLine($"{parentAccessor}.{contentPropertyName} = null!;");
-			return;
+			return true;
 		}
 
 		// Content containers only have one child — use the first one
@@ -811,7 +823,7 @@ static class UpdateComponentCodeWriter
 		{
 			// Child is the same element — nothing to do for content property
 			// (the retained child is already set as content)
-			return;
+			return true;
 		}
 
 		// New child — create it and set as content
@@ -826,8 +838,15 @@ static class UpdateComponentCodeWriter
 			// Skip emission for this unresolvable change; do NOT emit `return;` — that would
 			// abort the entire UpdateComponent() and drop the remaining changes. See B5 design note in GeneratePatchBody.
 			codeWriter.WriteLine($"// Cannot resolve type '{newElement.XmlType.Name}' — content change skipped");
-			return;
+			return true;
 		}
+
+		// A settable content property whose type doesn't accept the child (e.g. a settable
+		// IList<View>, where InitializeComponent adds the child to the collection) can't be
+		// represented by an assignment.
+		if (parentType != null
+			&& (!TryGetContentPropertyPlacement(parentType, contentPropertyName, childType, rootType, compilation, out var adder) || adder != null))
+			return false;
 
 		var fqName = childType.ToFQDisplayString();
 		codeWriter.WriteLine($"var {childVar} = new {fqName}();");
@@ -838,7 +857,8 @@ static class UpdateComponentCodeWriter
 		EmitNewElementProperties(codeWriter, newElement, childVar, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Recursively create grandchildren
-		EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		if (!EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+			return false;
 
 		// Set as content. Assign the concrete child directly: a single content property (e.g.
 		// ContentPage.Content, typed View) is not IView-typed, so casting up to IView would fail
@@ -848,6 +868,7 @@ static class UpdateComponentCodeWriter
 
 		// Register the new child
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{entry.NewNodeId}\", {childVar});");
+		return true;
 	}
 
 	/// <summary>
@@ -855,7 +876,8 @@ static class UpdateComponentCodeWriter
 	/// its children, adds them, and registers everything in the component registry.
 	/// Uses the <paramref name="newIds"/> dictionary to look up IDs for each node.
 	/// </summary>
-	static void EmitNewElement(
+	/// <returns><see langword="false"/> when the element's subtree can't be represented in a patch.</returns>
+	static bool EmitNewElement(
 		IndentedTextWriter codeWriter,
 		ElementNode element,
 		string parentLayoutVar,
@@ -877,7 +899,7 @@ static class UpdateComponentCodeWriter
 		{
 			// Skip without emitting `return;` (see EmitContentPropertyChange note).
 			codeWriter.WriteLine($"// Cannot resolve type '{element.XmlType.Name}' — element creation skipped");
-			return;
+			return true;
 		}
 
 		var fqName = typeSymbol.ToFQDisplayString();
@@ -893,7 +915,8 @@ static class UpdateComponentCodeWriter
 		EmitNewElementProperties(codeWriter, element, varName, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Recursively create children
-		EmitNewElementChildren(codeWriter, element, varName, nodeId, newIds, existingNamedFields, ref addedCounter, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		if (!EmitNewElementChildren(codeWriter, element, varName, nodeId, newIds, existingNamedFields, ref addedCounter, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+			return false;
 
 		// Add to parent layout — at a specific slot when replacing a single rebuilt child
 		// in place (insertIndex given), otherwise appended in iteration order (plain add).
@@ -904,6 +927,7 @@ static class UpdateComponentCodeWriter
 
 		// Register in component registry
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {varName});");
+		return true;
 	}
 
 	static void EmitNewElementNameScope(
@@ -1249,7 +1273,8 @@ static class UpdateComponentCodeWriter
 	/// Recursively creates children for a newly created element, handling both
 	/// Layout containers (Children.Add) and Content containers (Content property).
 	/// </summary>
-	static void EmitNewElementChildren(
+	/// <returns><see langword="false"/> when a child can't be placed into its parent's content property.</returns>
+	static bool EmitNewElementChildren(
 		IndentedTextWriter codeWriter,
 		ElementNode element,
 		string varName,
@@ -1266,7 +1291,7 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		if (element.CollectionItems.Count == 0)
-			return;
+			return true;
 
 		bool hasElementChildren = false;
 		for (int i = 0; i < element.CollectionItems.Count; i++)
@@ -1276,7 +1301,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		if (!hasElementChildren)
-			return;
+			return true;
 
 		bool isLayout = InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Layout");
 		if (isLayout)
@@ -1296,19 +1321,21 @@ static class UpdateComponentCodeWriter
 						childNodeId = childId;
 					else
 						childNodeId = $"{nodeId}_{i}"; // fallback
-					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					if (!EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+						return false;
 				}
 			}
 		}
 		else
 		{
-			// Content property container — set the first element child as content
+			// Content property container — like InitializeComponent, place each element child on its
+			// own: assign it, or add it to a collection content property (see TryGetContentPropertyPlacement).
 			var contentProp = typeSymbol.GetContentPropertyName(context: null);
 			if (contentProp == null)
 			{
 				// Skip without `return;` — see EmitContentPropertyChange note.
 				codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' has no [ContentProperty] — grandchild emission skipped");
-				return;
+				return true;
 			}
 
 			for (int i = 0; i < element.CollectionItems.Count; i++)
@@ -1325,25 +1352,102 @@ static class UpdateComponentCodeWriter
 					if (!childElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var childType)
 						|| childType == null)
 					{
-						// Skip without `return;` — see EmitContentPropertyChange note.
+						// Skip only this child; its siblings still belong in a collection content property.
 						codeWriter.WriteLine($"// Cannot resolve type '{childElement.XmlType.Name}' — content child skipped");
-						return;
+						continue;
 					}
+
+					// Neither an assignment nor an Add would compile (e.g. a getter-only, non-collection
+					// content property): fail so the caller falls back to a structural reset.
+					if (!TryGetContentPropertyPlacement(typeSymbol, contentProp, childType, rootType, compilation, out var adder))
+						return false;
 
 					var childIdx = addedCounter++;
 					var childVar = $"__na_{childIdx}";
 					codeWriter.WriteLine($"var {childVar} = new {childType.ToFQDisplayString()}();");
 					EmitNewElementNameScope(codeWriter, childElement, childVar, childType, rootType, existingNamedFields, compilation, xmlnsCache, typeCache);
 					EmitNewElementProperties(codeWriter, childElement, childVar, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-					EmitNewElementChildren(codeWriter, childElement, childVar, childNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-					// Assign the concrete child directly (not cast to IView): a content property is not
-					// IView-typed, so an IView -> View cast would fail with CS0266. See EmitContentPropertyChange.
-					codeWriter.WriteLine($"{varName}.{contentProp} = {childVar};");
+					if (!EmitNewElementChildren(codeWriter, childElement, childVar, childNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+						return false;
+
+					if (adder != null)
+					{
+						var collection = $"{varName}.{contentProp}";
+						if (adder.ContainingType.TypeKind == TypeKind.Interface)
+							collection = $"(({adder.ContainingType.ToFQDisplayString()}){collection})";
+						// Cast to the chosen overload's parameter type so overload resolution can't be ambiguous.
+						codeWriter.WriteLine($"{collection}.Add(({adder.Parameters[0].Type.ToFQDisplayString()}){childVar});");
+					}
+					else
+					{
+						// Assign the concrete child directly (not cast to IView): a content property is not
+						// IView-typed, so an IView -> View cast would fail with CS0266. See EmitContentPropertyChange.
+						codeWriter.WriteLine($"{varName}.{contentProp} = {childVar};");
+					}
 					codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{childNodeId}\", {childVar});");
-					break; // content property only has one child
 				}
 			}
 		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Determines how a new child is placed into a content property, mirroring InitializeComponent:
+	/// assigned when the property is settable from <paramref name="rootType"/> and accepts the child,
+	/// otherwise added to the collection the property returns (e.g. a getter-only
+	/// <c>ObservableCollection&lt;View&gt;</c>).
+	/// </summary>
+	/// <param name="adder">The <c>Add</c> method to call, or <see langword="null"/> to assign.</param>
+	/// <returns><see langword="false"/> when neither an assignment nor an <c>Add</c> call would compile.</returns>
+	static bool TryGetContentPropertyPlacement(
+		INamedTypeSymbol ownerType,
+		string contentPropertyName,
+		ITypeSymbol childType,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		out IMethodSymbol? adder)
+	{
+		adder = null;
+		// Skip explicit interface implementations: they aren't reachable through the owner-typed local.
+		var property = ownerType.GetAllProperties(contentPropertyName, context: null)
+			.FirstOrDefault(p => !p.IsStatic && p.ContainingType.TypeKind != TypeKind.Interface);
+		if (property == null)
+			return false;
+
+		// An override may declare only one accessor and inherit the other.
+		IMethodSymbol? setter = null, getter = null;
+		for (var p = property; p != null && (setter == null || getter == null); p = p.OverriddenProperty)
+		{
+			setter ??= p.SetMethod;
+			getter ??= p.GetMethod;
+		}
+
+		if (setter is { IsInitOnly: false } && compilation.IsSymbolAccessibleWithin(setter, rootType, ownerType)
+			&& compilation.ClassifyConversion(childType, property.Type).IsImplicit)
+			return true;
+
+		if (getter == null || !compilation.IsSymbolAccessibleWithin(getter, rootType, ownerType)
+			|| !property.Type.CanAdd(context: null))
+			return false;
+
+		// Like a C# call on the property's type: an Add declared on a class hides interface Adds (often
+		// explicit implementations), which are only used through a cast when the class has none.
+		// Among those, prefer Add(T) for the collection's IEnumerable<T> item type, which is what
+		// InitializeComponent binds to.
+		property.Type.ImplementsGeneric(compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T), out var itemTypes);
+		var itemType = itemTypes.Length == 1 ? itemTypes[0] : null;
+		bool typeIsInterface = property.Type.TypeKind == TypeKind.Interface;
+		adder = property.Type.GetAllMethods("Add", context: null)
+			.Where(m => !m.IsStatic && !m.IsGenericMethod && m.Parameters.Length == 1
+				&& m.Parameters[0].RefKind is RefKind.None or RefKind.In
+				&& compilation.IsSymbolAccessibleWithin(m, rootType, property.Type)
+				&& compilation.ClassifyConversion(childType, m.Parameters[0].Type).IsImplicit)
+			.OrderBy(m => !typeIsInterface && m.ContainingType.TypeKind == TypeKind.Interface)
+			.ThenBy(m => SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, itemType) ? 0
+				: m.Parameters[0].Type.SpecialType == SpecialType.System_Object ? 2 : 1)
+			.FirstOrDefault();
+		return adder != null;
 	}
 
 	/// <summary>
