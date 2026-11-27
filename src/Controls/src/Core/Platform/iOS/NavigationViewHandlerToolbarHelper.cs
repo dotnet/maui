@@ -110,11 +110,11 @@ namespace Microsoft.Maui.Controls
             UpdateLeftBarButtonItem();
         }
 
-        public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
-            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForHomeIndicatorAutoHidden!;
+        public override UIViewController? ChildViewControllerForHomeIndicatorAutoHidden =>
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForHomeIndicatorAutoHidden;
 
-        public override UIViewController ChildViewControllerForStatusBarHidden() =>
-            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForStatusBarHidden()!;
+        public override UIViewController? ChildViewControllerForStatusBarHidden() =>
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForStatusBarHidden();
 
 #if !MACCATALYST
         public override UIViewController ChildViewControllerForStatusBarStyle() =>
