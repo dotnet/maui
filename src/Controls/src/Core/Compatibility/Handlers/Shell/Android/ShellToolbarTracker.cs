@@ -441,9 +441,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				await _drawerToggleInitializationTask;
 
 			// Fragment or page might have changed while we were awaiting initialization.
-			if (_disposed ||
-				registrationGeneration != _navigationRegistrationGeneration ||
-				!ReferenceEquals(Page, page))
+			if (!IsNavigationRequestCurrent())
 			{
 				return;
 			}
@@ -478,17 +476,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					{
 						customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
 					}
+					catch (OperationCanceledException) when (!IsNavigationRequestCurrent())
+					{
+						return;
+					}
 					catch (Exception exc)
 					{
-						// A failed icon load must not escape this async void method.
 						MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to load the Shell navigation icon");
 						customIcon = null;
 					}
 
-					// Fragment might have been disposed while we were waiting for the image drawable
-					if (_disposed ||
-						registrationGeneration != _navigationRegistrationGeneration ||
-						!ReferenceEquals(Page, page))
+					if (!IsNavigationRequestCurrent())
 					{
 						return;
 					}
@@ -593,10 +591,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateToolbarIconAccessibilityText(toolbar, _shell);
 			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.IconColor));
 			RegisterNavigationButton(
-				toolbar,
-				page,
-				command != null || CanNavigateBack,
-				registrationGeneration);
+			toolbar,
+			page,
+			command != null || CanNavigateBack,
+			registrationGeneration);
+
+			bool IsNavigationRequestCurrent() =>
+			!_disposed &&
+			registrationGeneration == _navigationRegistrationGeneration &&
+			ReferenceEquals(Page, page);
 		}
 
 		async Task InitializeDrawerToggleAsync(Context context, DrawerLayout drawerLayout)
