@@ -102,8 +102,6 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
-
 		private async void OnNavigateClicked(object sender, System.EventArgs e)
 		{
 			// Navigate to second page - pass through the same parameter for testing
@@ -115,7 +113,7 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 	[QueryProperty(nameof(TestKey), "TestKey")]
-	public partial class Issue33415SecondPage : ContentPage
+	public class Issue33415SecondPage : ContentPage
 	{
 		private readonly Label _receivedLabel;
 		private string _testKey;
