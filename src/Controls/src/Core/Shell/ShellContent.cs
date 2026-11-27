@@ -725,18 +725,10 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
+#if !NETSTANDARD
 			if (content is IQueryAttributable queryPropertyAttributable)
-			{
-#if NETSTANDARD
-				QueryPropertyConversion.ApplyLegacyQueryProperties(queryPropertyAttributable, query, oldQuery);
-#else
 				queryPropertyAttributable.ApplyQueryProperties(query, oldQuery);
 #endif
-			}
-			else if (content.GetType().IsDefined(typeof(QueryPropertyAttribute), inherit: true))
-			{
-				QueryPropertyConversion.ThrowQueryPropertySourceGenerationFailure(content.GetType());
-			}
 
 			ClearQueryIfAppliedToPage(query, content);
 

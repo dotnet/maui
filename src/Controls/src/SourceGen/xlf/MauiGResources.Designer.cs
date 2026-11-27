@@ -280,7 +280,5 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string MissingEventHandler => ResourceManager.GetString("MissingEventHandler", resourceCulture);
 		internal static string DuplicatePropertyAssignmentTitle => ResourceManager.GetString("DuplicatePropertyAssignmentTitle", resourceCulture);
 		internal static string DuplicatePropertyAssignmentMessage => ResourceManager.GetString("DuplicatePropertyAssignmentMessage", resourceCulture);
-		internal static string StyleTargetTypeMismatchTitle => ResourceManager.GetString("StyleTargetTypeMismatchTitle", resourceCulture);
-		internal static string StyleTargetTypeMismatchMessage => ResourceManager.GetString("StyleTargetTypeMismatchMessage", resourceCulture);
 	}
 }

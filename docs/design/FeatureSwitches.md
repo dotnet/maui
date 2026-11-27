@@ -102,7 +102,7 @@ When this feature is disabled, any value set to [`SearchHandler.DisplayMemberNam
 
 For `partial` classes, the Controls source generator turns `[QueryProperty(...)]` attributes into an explicit implementation of `IQueryAttributable` at build time. The generated code sets the properties and converts the values without reflection.
 
-Classes that aren't `partial`, including subclasses that inherit `[QueryProperty]` attributes, or that the generator can't handle (for example properties with `init` setters or ambiguous property names), fail when their query properties are applied. The generator also skips classes with a handwritten `IQueryAttributable` implementation: remove their `[QueryProperty]` attributes and handle the properties in the existing implementation instead. Existing implementations must also implement the new `ApplyQueryProperties` method.
+Classes that aren't `partial`, including subclasses that inherit `[QueryProperty]` attributes, or that the generator can't handle (for example properties with `init` setters or ambiguous property names), fail the build with the `MAUI1200` error. There is no runtime fallback. The generator also skips classes with a handwritten `IQueryAttributable` implementation: remove their `[QueryProperty]` attributes and handle the properties in the existing implementation instead.
 
 The `MAUI1201` analyzer warning reports classes that combine `[QueryProperty]` attributes with a handwritten `IQueryAttributable` implementation, including inherited implementations and attributes. The source generator skips these classes; handle their query properties manually or remove the interface implementation to use generated setters. Implementations emitted by the Controls source generator do not trigger this warning.
 

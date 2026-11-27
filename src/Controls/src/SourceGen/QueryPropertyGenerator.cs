@@ -27,8 +27,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// The conversions that depend on where a parameter came from use <c>QueryPropertyConversion</c>.
 /// </para>
 /// <para>
-/// Classes that can't be handled (for example classes that aren't partial) fail at runtime if their
-/// <c>[QueryProperty]</c> attributes are applied. When the trim analyzer is enabled, MAUI1200 reports them.
+/// Classes that can't be handled (for example classes that aren't partial) are reported as MAUI1200 errors.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
@@ -49,19 +48,14 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 			.Select(static (model, _) => model!)
 			.Collect();
 
-		var reportDiagnostics = context.AnalyzerConfigOptionsProvider
-			.Select(static (options, _) => options.GlobalOptions.IsTrue("build_property.EnableTrimAnalyzer"));
-
-		context.RegisterSourceOutput(types.Combine(reportDiagnostics), static (spc, input) =>
+		context.RegisterSourceOutput(types, static (spc, models) =>
 		{
-			var (models, reportDiagnostics) = input;
-
 			// Partial classes are seen once per declaration.
 			foreach (var model in models.GroupBy(static m => m.TypeName).Select(static g => g.First()))
 			{
 				if (model.Source is not null)
 					spc.AddSource(model.HintName, SourceText.From(model.Source, Encoding.UTF8));
-				else if (reportDiagnostics && model.UnsupportedReason is not null)
+				else if (model.UnsupportedReason is not null)
 					spc.ReportDiagnostic(Diagnostic.Create(Descriptors.QueryPropertyRequiresReflection, model.Location?.ToLocation(), model.DisplayName, model.UnsupportedReason));
 			}
 		});
@@ -283,7 +277,6 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		}
 		else
 		{
-			builder.AppendLine($"{indent}	{ConversionName}.ValidateGeneratedQueryProperties(this, typeof({GetTypeName(type)}));");
 			builder.AppendLine($"{indent}	object value;");
 			foreach (var line in body.Split('\n'))
 			{

@@ -32,9 +32,7 @@
         "Vally",
         "Markout",
         "webauthn",
-        "Passwordless",
-        "Emscripten",
-        "Trimmable"
+        "Passwordless"
     ],
     "ignoreWords": [],
     "patterns": [
