@@ -3358,6 +3358,180 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(smallerView, new Rect(0, 0, expectedWidth, heightConstraint));
 			AssertArranged(largerView, new Rect(expectedWidth, 0, expectedWidth, heightConstraint));
 		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(true, 170)]
+		[InlineData(true, 310)]
+		[InlineData(false, 170)]
+		[InlineData(false, 310)]
+		public void WeightedStarsFillWhenArrangedAtOrBelowMeasuredMinimum(bool columns, double arrangedSize)
+		{
+			var grid = CreateGridLayout(rowSpacing: 5, colSpacing: 5,
+				rows: columns ? "*" : ".6*,.2*,.6*",
+				columns: columns ? ".6*,.2*,.6*" : "*");
+			grid.Padding.Returns(new Thickness(10));
+
+			var first = CreateTestView(new Size(120, 120));
+			var last = CreateTestView(new Size(120, 120));
+			SubstituteChildren(grid, first, last);
+			SetLocation(grid, first);
+			SetLocation(grid, last, row: columns ? 0 : 2, col: columns ? 2 : 0);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(450, 450);
+			Assert.Equal(310, columns ? measured.Width : measured.Height, 6);
+			manager.ArrangeChildren(new Rect(0, 0, arrangedSize, arrangedSize));
+
+			var firstBounds = GetArrangedRect(first);
+			var lastBounds = GetArrangedRect(last);
+			var starSpace = arrangedSize - 30;
+			Assert.Equal(starSpace * 3 / 7, columns ? firstBounds.Width : firstBounds.Height, 6);
+			Assert.Equal(20 + starSpace * 4 / 7, columns ? lastBounds.X : lastBounds.Y, 6);
+			Assert.Equal(starSpace * 3 / 7, columns ? lastBounds.Width : lastBounds.Height, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Fill, 310)]
+		[InlineData(LayoutAlignment.Start, 270)]
+		public void StarMinimumsIncludeEmptyColumnsOnlyWhenFilling(LayoutAlignment alignment, double expectedWidth)
+		{
+			var grid = CreateGridLayout(columns: ".6*,.2*,.6*", colSpacing: 5);
+			grid.HorizontalLayoutAlignment.Returns(alignment);
+			grid.Padding.Returns(new Thickness(10));
+
+			var first = CreateTestView(new Size(120, 20));
+			var last = CreateTestView(new Size(120, 20));
+			SubstituteChildren(grid, first, last);
+			SetLocation(grid, first);
+			SetLocation(grid, last, col: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(450, double.PositiveInfinity);
+			Assert.Equal(expectedWidth, measured.Width, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			Assert.Equal(120, GetArrangedRect(first).Width, 6);
+			Assert.Equal(120, GetArrangedRect(last).Width, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Fill, 310)]
+		[InlineData(LayoutAlignment.Start, 270)]
+		public void StarMinimumsIncludeEmptyRowsOnlyWhenFilling(LayoutAlignment alignment, double expectedHeight)
+		{
+			var grid = CreateGridLayout(rows: ".6*,.2*,.6*", rowSpacing: 5);
+			grid.VerticalLayoutAlignment.Returns(alignment);
+			grid.Padding.Returns(new Thickness(10));
+
+			var first = CreateTestView(new Size(20, 120));
+			var last = CreateTestView(new Size(20, 120));
+			SubstituteChildren(grid, first, last);
+			SetLocation(grid, first);
+			SetLocation(grid, last, row: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(double.PositiveInfinity, 450);
+			Assert.Equal(expectedHeight, measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			Assert.Equal(120, GetArrangedRect(first).Height, 6);
+			Assert.Equal(120, GetArrangedRect(last).Height, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(true, 0, 500, 100, 80)]
+		[InlineData(false, 0, 500, 100, 80)]
+		[InlineData(true, 5, 500, 103.75, 80)]
+		[InlineData(false, 5, 500, 103.75, 80)]
+		[InlineData(true, 0, 80, 80, 64)]
+		[InlineData(false, 0, 80, 80, 64)]
+		public void WeightedStarSpanWithEmptyStarUsesSpanWeights(bool columns, int spacing, double constraint,
+			double expectedSize, double expectedSpanSize)
+		{
+			var grid = CreateGridLayout(rowSpacing: columns ? 0 : spacing, colSpacing: columns ? spacing : 0,
+				rows: columns ? "*" : "*,3*,*",
+				columns: columns ? "*,3*,*" : "*");
+			var view = CreateTestView(new Size(80, 80));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view, rowSpan: columns ? 1 : 2, colSpan: columns ? 2 : 1);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(constraint, constraint);
+			Assert.Equal(expectedSize, columns ? measured.Width : measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			var bounds = GetArrangedRect(view);
+			Assert.Equal(expectedSpanSize, columns ? bounds.Width : bounds.Height, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void StarSpanAccountsForFixedDefinitionsAndSpacing(bool columns)
+		{
+			var grid = CreateGridLayout(rowSpacing: columns ? 0 : 5, colSpacing: columns ? 5 : 0,
+				rows: columns ? "*" : "20,*,3*,*",
+				columns: columns ? "20,*,3*,*" : "*");
+			var view = CreateTestView(new Size(110, 110));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view, rowSpan: columns ? 1 : 3, colSpan: columns ? 3 : 1);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(500, 500);
+			Assert.Equal(135, columns ? measured.Width : measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			var bounds = GetArrangedRect(view);
+			Assert.Equal(110, columns ? bounds.Width : bounds.Height, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void MultipleEmptyStarsPreserveProportions(bool columns)
+		{
+			var grid = CreateGridLayout(rowSpacing: columns ? 0 : 5, colSpacing: columns ? 5 : 0,
+				rows: columns ? "*" : ".6*,.1*,.2*,.6*",
+				columns: columns ? ".6*,.1*,.2*,.6*" : "*");
+			grid.Padding.Returns(new Thickness(10));
+			var first = CreateTestView(new Size(120, 120));
+			var last = CreateTestView(new Size(120, 120));
+			SubstituteChildren(grid, first, last);
+			SetLocation(grid, first);
+			SetLocation(grid, last, row: columns ? 0 : 3, col: columns ? 3 : 0);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(450, 450);
+			Assert.Equal(335, columns ? measured.Width : measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			Assert.Equal(120, columns ? GetArrangedRect(first).Width : GetArrangedRect(first).Height, 6);
+			Assert.Equal(120, columns ? GetArrangedRect(last).Width : GetArrangedRect(last).Height, 6);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void FullyOccupiedStarsFillWhenArrangedAtMeasuredSize(bool columns)
+		{
+			var grid = CreateGridLayout(rows: columns ? "*" : "*,*,*",
+				columns: columns ? "*,*,*" : "*");
+			var first = CreateTestView(new Size(90, 90));
+			var middle = CreateTestView(new Size(30, 30));
+			var last = CreateTestView(new Size(90, 90));
+			SubstituteChildren(grid, first, middle, last);
+			SetLocation(grid, first);
+			SetLocation(grid, middle, row: columns ? 0 : 1, col: columns ? 1 : 0);
+			SetLocation(grid, last, row: columns ? 0 : 2, col: columns ? 2 : 0);
+
+			var manager = new GridLayoutManager(grid);
+			var measured = manager.Measure(450, 450);
+			Assert.Equal(210, columns ? measured.Width : measured.Height, 6);
+
+			manager.ArrangeChildren(new Rect(0, 0, measured.Width, measured.Height));
+			Assert.Equal(70, columns ? GetArrangedRect(middle).Width : GetArrangedRect(middle).Height, 6);
+			Assert.Equal(140, columns ? GetArrangedRect(last).X : GetArrangedRect(last).Y, 6);
+		}
 [Fact]
 public void SpannedCellMeasurementIncludesColumnSpacingIssue26633()
 {
