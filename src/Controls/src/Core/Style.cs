@@ -1,8 +1,12 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -28,6 +32,12 @@ namespace Microsoft.Maui.Controls
 
 		IList<TriggerBase> _triggers;
 
+		// Fields for lazy/trimmable styles
+		readonly object _initializerLock = new();
+		List<(BindableObject Target, SetterSpecificity Specificity)> _targetsAppliedDuringInitialization;
+		bool _isInitialized;
+		bool _settersReplacedBeforeInitialization;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Style"/> class.
 		/// </summary>
@@ -37,6 +47,20 @@ namespace Microsoft.Maui.Controls
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
+
+		/// <summary>
+		/// Sets the initializer that populates the style's Setters, Behaviors, and Triggers.
+		/// This property is intended for source generator use only.
+		/// </summary>
+		/// <remarks>
+		/// The initializer runs every time the style is applied and receives the style and the target
+		/// element. It returns whether the target is an instance of the style's target type; the style is
+		/// not applied to targets for which it returns <see langword="false"/>. The style argument is
+		/// non-null until the first compatible target is seen; the initializer then populates the
+		/// collections. Afterwards it is <see langword="null"/> and the initializer only checks the target.
+		/// </remarks>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Func<Style, BindableObject, bool> LazyInitialization { internal get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
@@ -89,6 +113,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the collection of <see cref="Behavior"/> objects attached to this style.
 		/// </summary>
+		/// <remarks>
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
+		/// </remarks>
 		public IList<Behavior> Behaviors => _behaviors ??= new AttachedCollection<Behavior>();
 
 		/// <summary>
@@ -104,15 +136,50 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the collection of <see cref="Setter"/> objects that define the property values for this style.
 		/// </summary>
+		/// <remarks>
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
+		/// </remarks>
 		public IList<Setter> Setters { get; }
 
 		/// <summary>
 		/// Gets the collection of <see cref="TriggerBase"/> objects attached to this style.
 		/// </summary>
+		/// <remarks>
+		/// When the <c>MauiXamlTrimmableStyles</c> MSBuild property is <c>true</c> (the default when
+		/// <c>PublishAot</c> is <c>true</c>), styles declared in XAML and compiled by the XAML source generator
+		/// are initialized lazily: the setters, behaviors and triggers declared in XAML are added the first
+		/// time the style is applied to an instance of <see cref="TargetType"/> (or a derived type). Until
+		/// then, this collection only contains items added from code. Such a style is never applied to
+		/// elements that are not instances of <see cref="TargetType"/>; a warning is logged instead.
+		/// </remarks>
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();
+
+		/// <summary>
+		/// Gets whether this style only applies to instances of its target type, as checked by the
+		/// source-generated <see cref="LazyInitialization"/>.
+		/// </summary>
+		internal bool ChecksTargetType => LazyInitialization is not null;
+
+		/// <summary>
+		/// Populates a lazily initialized style for <paramref name="target"/> without applying it.
+		/// </summary>
+		internal void EnsureInitializedFor(BindableObject target)
+		{
+			var lazyInitialization = LazyInitialization;
+			if (lazyInitialization is not null && !Volatile.Read(ref _isInitialized))
+				TryInitialize(lazyInitialization, target, default, out _);
+		}
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
+			if (!CanApplyTo(bindable, specificity))
+				return;
+
 			lock (_targets)
 			{
 #if NETSTANDARD2_0
@@ -128,6 +195,121 @@ namespace Microsoft.Maui.Controls
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable), specificity);
 		}
 
+		bool CanApplyTo(BindableObject bindable, SetterSpecificity specificity)
+		{
+			var lazyInitialization = LazyInitialization;
+			if (lazyInitialization is null)
+				return true;
+
+			bool isCompatible;
+			if (Volatile.Read(ref _isInitialized))
+				isCompatible = lazyInitialization(null, bindable);
+			else if (!TryInitialize(lazyInitialization, bindable, specificity, out isCompatible))
+				return false;
+
+			if (!isCompatible)
+				LogTargetTypeMismatch(bindable);
+
+			return isCompatible;
+		}
+
+		void LogTargetTypeMismatch(BindableObject bindable)
+		{
+			var message = $"Style TargetType {TargetType.FullName} is not compatible with element target type {bindable.GetType()}. The style is not applied.";
+			var logger = bindable is Element element
+				? element.CreateLogger<Style>()
+				: Application.Current?.FindMauiContext()?.CreateLogger<Style>();
+
+			// Elements are often styled before the app has a MauiContext; don't drop the warning then.
+			if (logger is null)
+				Trace.WriteLine(message);
+			else if (logger.IsEnabled(LogLevel.Warning))
+				logger.Log(LogLevel.Warning, message);
+		}
+
+		// Runs the initializer for the first compatible target. Returns false when the style is applied again
+		// from inside its own initializer; that target is applied once initialization completes.
+		bool TryInitialize(Func<Style, BindableObject, bool> lazyInitialization, BindableObject bindable, SetterSpecificity specificity, out bool isCompatible)
+		{
+			List<(BindableObject Target, SetterSpecificity Specificity)> deferredTargets;
+			lock (_initializerLock)
+			{
+				if (_isInitialized)
+				{
+					isCompatible = lazyInitialization(null, bindable);
+					return true;
+				}
+
+				if (_targetsAppliedDuringInitialization is not null)
+				{
+					_targetsAppliedDuringInitialization.Add((bindable, specificity));
+					isCompatible = false;
+					return false;
+				}
+
+				_targetsAppliedDuringInitialization = new();
+				var existingSetterCount = Setters.Count;
+				var existingTriggerCount = _triggers?.Count ?? 0;
+				var existingBehaviorCount = _behaviors?.Count ?? 0;
+				try
+				{
+					isCompatible = lazyInitialization(this, bindable);
+				}
+				catch
+				{
+					// Don't leave partial content behind: the next apply runs the initializer again.
+					RemoveFrom(Setters, existingSetterCount);
+					RemoveFrom(_triggers, existingTriggerCount);
+					RemoveFrom(_behaviors, existingBehaviorCount);
+					throw;
+				}
+				finally
+				{
+					deferredTargets = _targetsAppliedDuringInitialization;
+					_targetsAppliedDuringInitialization = null;
+				}
+
+				if (isCompatible)
+				{
+					// XAML-declared items precede items added to the style in code, matching eager initialization.
+					// Setters replaced by Hot Reload before initialization already reflect the edited XAML.
+					if (_settersReplacedBeforeInitialization)
+						RemoveFrom(Setters, existingSetterCount);
+					else
+						MoveToFront(Setters, existingSetterCount);
+					MoveToFront(_triggers, existingTriggerCount);
+					MoveToFront(_behaviors, existingBehaviorCount);
+					Volatile.Write(ref _isInitialized, true);
+				}
+			}
+
+			foreach (var (target, targetSpecificity) in deferredTargets)
+				((IStyle)this).Apply(target, targetSpecificity);
+
+			return true;
+		}
+
+		static void RemoveFrom<T>(IList<T> items, int index)
+		{
+			if (items is null)
+				return;
+			for (var i = items.Count - 1; i >= index; i--)
+				items.RemoveAt(i);
+		}
+
+		// Moves the items added from index existingCount onwards to the front, keeping their order.
+		static void MoveToFront<T>(IList<T> items, int existingCount)
+		{
+			if (items is null)
+				return;
+			for (var index = 0; index < items.Count - existingCount; index++)
+			{
+				var item = items[existingCount + index];
+				items.RemoveAt(existingCount + index);
+				items.Insert(index, item);
+			}
+		}
+
 		/// <summary>
 		/// Gets the type to which this style applies.
 		/// </summary>
@@ -135,6 +317,13 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.UnApply(BindableObject bindable)
 		{
+			lock (_targets)
+			{
+				// Nothing was applied to targets this style rejected.
+				if (!_targets.TryGetValue(bindable, out _))
+					return;
+			}
+
 			UnApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));
 			bindable.RemoveDynamicResource(_basedOnResourceProperty);
 			lock (_targets)
@@ -246,6 +435,15 @@ namespace Microsoft.Maui.Controls
 			Setters.Clear();
 			foreach (var setter in newSetters)
 				Setters.Add(setter);
+
+			if (LazyInitialization is not null)
+			{
+				lock (_initializerLock)
+				{
+					if (!_isInitialized)
+						_settersReplacedBeforeInitialization = true;
+				}
+			}
 
 			foreach (var (target, specificity) in targets)
 			{

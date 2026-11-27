@@ -10,6 +10,8 @@
          XC0619 uses raw LogError (not warning-promotion), so WarningsNotAsErrors is defensive only. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619;XC0022;XC0023;XC0025;XC0045;XC0067;MAUIG2045;MAUID1000;MAUIX2005;MAUIX2017</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
+    <!-- Exercise trimmable (lazy) styles for SourceGen; they are otherwise only on by default with PublishAot. -->
+    <MauiXamlTrimmableStyles>true</MauiXamlTrimmableStyles>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
@@ -95,6 +97,9 @@
 
     <!-- LazyRD feature test -->
     <MauiXaml Update="Issues\LazyResourceDictionary.sgen.xaml" LazyRD="true" />
+
+    <!-- Trimmable styles opt-out -->
+    <MauiXaml Update="Issues\TrimmableStylesDisabled.sgen.xaml" TrimmableStyles="false" />
 
     <!-- Benchmark comparison: with and without LazyRD -->
     <MauiXaml Update="Benchmark.xaml" LazyRD="true" />

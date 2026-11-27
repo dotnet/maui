@@ -373,6 +373,7 @@ static Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryPro
 Microsoft.Maui.Controls.Label.IsTextSelectable.get -> bool
 Microsoft.Maui.Controls.Label.IsTextSelectable.set -> void
 ~static readonly Microsoft.Maui.Controls.Label.IsTextSelectableProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
 Microsoft.Maui.Controls.Image.ImageFailed -> System.EventHandler<Microsoft.Maui.Controls.ImageFailedEventArgs>
 Microsoft.Maui.Controls.Image.ImageLoaded -> System.EventHandler
 Microsoft.Maui.Controls.Image.KeepPreviousImageWhileLoading.get -> bool
