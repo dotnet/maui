@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		internal const string CannotConvertTypeErrorMessage = "'{0}' cannot be converted to type '{1}'";
 		internal const string ParseIndexErrorMessage = "'{0}' could not be parsed as an index for a '{1}'";
 		internal const string ApplyingRelativeSourceBindingErrorMessage = "Applying relative source binding ('{0}') failed due to {1}";
+		static readonly char[] ExpressionSplit = new[] { '.' };
 
 		readonly List<BindingExpressionPart> _parts = new List<BindingExpressionPart>();
 
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls
 				p = p.Substring(1);
 			}
 
-			string[] pathParts = SplitPath(p);
+			string[] pathParts = p.Split(ExpressionSplit);
 			for (var i = 0; i < pathParts.Length; i++)
 			{
 				string part = pathParts[i].Trim();
@@ -274,28 +275,6 @@ namespace Microsoft.Maui.Controls
 					last = indexer;
 				}
 			}
-		}
-
-		// Splits on '.' but not inside an indexer, so Items[he.llo] stays one part.
-		static string[] SplitPath(string path)
-		{
-			var parts = new List<string>();
-			int depth = 0, start = 0;
-			for (int i = 0; i < path.Length; i++)
-			{
-				char c = path[i];
-				if (c == '[')
-					depth++;
-				else if (c == ']')
-					depth--;
-				else if (c == '.' && depth == 0)
-				{
-					parts.Add(path.Substring(start, i - start));
-					start = i + 1;
-				}
-			}
-			parts.Add(path.Substring(start));
-			return parts.ToArray();
 		}
 
 		PropertyInfo GetIndexer(TypeInfo sourceType, string indexerName, string content)
