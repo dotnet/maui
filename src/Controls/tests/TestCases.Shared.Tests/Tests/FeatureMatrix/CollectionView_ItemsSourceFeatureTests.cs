@@ -14,15 +14,29 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	public const string ItemsSourceObservableCollection = "ItemsSourceObservableCollection";
 	public const string ItemsSourceList = "ItemsSourceList";
 	public const string ItemsSourceGroupedList = "ItemsSourceGroupedList";
+	public const string CollectionViewItemsSource = "CollectionViewItemsSource";
 	public const string EmptyGroupedListT = "EmptyGroupedList";
 	public const string EmptyObservableCollectionT = "EmptyObservableCollection";
 	public const string IsGroupedTrue = "IsGroupedTrue";
+	public const string ItemsLayoutVerticalList = "ItemsLayoutVerticalList";
+	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
+	public const string ItemsLayoutVerticalGrid = "ItemsLayoutVerticalGrid";
+	public const string ItemsLayoutHorizontalGrid = "ItemsLayoutHorizontalGrid";
 	public const string AddItems = "AddItems";
 	public const string RemoveItems = "RemoveItems";
+	public const string ReplaceItemsSource = "ReplaceItemsSource";
 	public const string IndexEntry = "IndexEntry";
 	public const string CurrentSelectionTextLabel = "CurrentSelectionTextLabel";
+	public const string SelectedItemsCount = "SelectedItemsCount";
 	public const string MultipleModePreselection = "MultipleModePreselection";
 	public const string SingleModePreselection = "SingleModePreselection";
+	public const string ReplaceSelectedItems = "ReplaceSelectedItems";
+	public const string ClearOldSelectedItems = "ClearOldSelectedItems";
+	public const string MutateNewSelectedItems = "MutateNewSelectedItems";
+	public const string SetSelectedItemsNull = "SetSelectedItemsNull";
+
+	private const string InitialStringItemsOrder = "Apple|Banana|Carrot|Broccoli";
+	private const string InitialGroupedStringItemsOrder = "Apple|Banana|Orange|Carrot|Broccoli|Spinach";
 
 	public override string GalleryPageName => ItemsSourceFeatureMatrix;
 	protected override string GallerySubPageButton => "ItemsSourceButton";
@@ -32,151 +46,156 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	{
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
-	public void VerifyStringItemsObservableCollectionWhenAddItems()
+	private void ConfigureItemsSource(string itemsSource, string itemsLayout, bool modelItems = false, bool grouped = false)
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
+
+		if (modelItems)
+		{
+			App.WaitForElement(ModelItem);
+			App.Tap(ModelItem);
+		}
+
+		if (grouped)
+		{
+			App.WaitForElement(IsGroupedTrue);
+			App.Tap(IsGroupedTrue);
+		}
+
+		App.WaitForElement(itemsSource);
+		App.Tap(itemsSource);
+		App.WaitForElement(itemsLayout);
+		App.Tap(itemsLayout);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForElement("Kiwi");
-	}
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyStringItemsObservableCollectionWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Broccoli");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Broccoli");
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyStringItemsListWhenAddItems()
+	private void WaitForItemInItemsLayout(string item, string itemsLayout, bool scrollLeft = false)
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceList);
-		App.Tap(ItemsSourceList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("Kiwi");
+		for (int attempt = 0; attempt < 4; attempt++)
+		{
+			if (App.FindElements(item).Any())
+				return;
+
+			if (itemsLayout is ItemsLayoutVerticalList or ItemsLayoutVerticalGrid)
+			{
+				App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+			}
+			else if (itemsLayout is ItemsLayoutHorizontalList or ItemsLayoutHorizontalGrid)
+			{
+				if (scrollLeft)
+					App.ScrollLeft(CollectionViewItemsSource, ScrollStrategy.Programmatically, swipePercentage: 0.9);
+				else
+					App.ScrollRight(CollectionViewItemsSource, ScrollStrategy.Programmatically, swipePercentage: 0.9);
+			}
+		}
+
+		App.WaitForElement(item);
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyStringItemsListWhenRemoveItems()
+	private void VerifyItemsSourceState(int expectedCount, string expectedOrder)
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceList);
-		App.Tap(ItemsSourceList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Broccoli");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForElement("Broccoli");
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", expectedCount.ToString());
+		App.WaitForTextToBePresentInElement("ItemsSourceItemOrder", expectedOrder);
+		Assert.That(App.FindElement("ItemsSourceItemCount").GetText(), Is.EqualTo(expectedCount.ToString()));
+		Assert.That(App.FindElement("ItemsSourceItemOrder").GetText(), Is.EqualTo(expectedOrder));
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void VerifyStringItemsEmptyGroupedListWhenAddItems()
+	private void AssertCollectionItemsAreNotRendered(params string[] itemCaptions)
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(EmptyGroupedListT);
-		App.Tap(EmptyGroupedListT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("Kiwi");
+		foreach (var itemCaption in itemCaptions)
+			App.WaitForNoElement(
+				AppiumQuery.ById(itemCaption),
+				$"CollectionView should not render '{itemCaption}'.");
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
-	public void VerifyStringItemsEmptyGroupedListWhenRemoveItems()
+	private void WaitForCollectionItem(string itemCaption)
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(EmptyGroupedListT);
-		App.Tap(EmptyGroupedListT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Broccoli");
+		App.WaitForElement(AppiumQuery.ById(itemCaption));
 	}
 
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
-	public void VerifyStringItemsEmptyObservableCollectionWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(EmptyObservableCollectionT);
-		App.Tap(EmptyObservableCollectionT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("Kiwi");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
-	public void VerifyStringItemsEmptyObservableCollectionWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(EmptyObservableCollectionT);
-		App.Tap(EmptyObservableCollectionT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Broccoli");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyStringItemsItemsSourceNoneWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("Kiwi");
-	}
-
+	// ItemsSource replacement scenarios
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
-	public void VerifyStringItemsItemsSourceNoneWhenRemoveItems()
+	public void VerifyModelItemsGroupedListWhenItemsSourceIsReplaced()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Broccoli");
+		App.WaitForElement("dotnet_bot.png");
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Group A");
+		App.WaitForElement("Updated calculator.png");
+		App.WaitForNoElement("dotnet_bot.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringItemsGroupedListWhenItemsSourceIsReplaced()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Banana");
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Fruits");
+		App.WaitForElement("Updated Vegetables");
+		App.WaitForElement("Updated Item 1");
+		App.WaitForNoElement("Fruits");
+		App.WaitForNoElement("Vegetables");
+		App.WaitForNoElement("Banana");
+	}
+
+	// Source configuration scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyChangingItemTypeAfterSelectingList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("dotnet_bot.png");
+		App.WaitForNoElement("Banana");
+	}
+
+	// Flat source mutation scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelItemsObservableCollectionWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("oasis.jpg");
 	}
 
 	[Test]
@@ -193,213 +212,9 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", "4");
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyModelItemsObservableCollectionWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("avatar.png");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("avatar.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyModelItemsListWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(ItemsSourceList);
-		App.Tap(ItemsSourceList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
-	public void VerifyModelItemsListWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(ItemsSourceList);
-		App.Tap(ItemsSourceList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("calculator.png");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForElement("calculator.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyModelItemsEmptyGroupedListWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(EmptyGroupedListT);
-		App.Tap(EmptyGroupedListT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void VerifyModelItemsEmptyGroupedListWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(EmptyGroupedListT);
-		App.Tap(EmptyGroupedListT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("calculator.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyModelItemsEmptyObservableCollectionWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(EmptyObservableCollectionT);
-		App.Tap(EmptyObservableCollectionT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
-	public void VerifyModelItemsEmptyObservableCollectionWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(EmptyObservableCollectionT);
-		App.Tap(EmptyObservableCollectionT);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("calculator.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void VerifyModelItemsItemsSourceNoneWhenAddItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(AddItems);
-		App.Tap(AddItems);
-		App.WaitForNoElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
-	public void VerifyModelItemsItemsSourceNoneWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("calculator.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
-	public void VerifyStringItemsObservableCollectionWhenAddIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "2");
-		App.Tap(AddItems);
-		App.WaitForElement("Chikoo");
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "0");
-		App.Tap(AddItems);
-		App.WaitForElement("Kiwi");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
-	public void VerifyStringItemsObservableCollectionWhenRemoveIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Carrot");
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "2");
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Carrot");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void VerifyModelItemsObservableCollectionWhenAddIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "2");
-		App.Tap(AddItems);
-		App.WaitForElement("oasis.jpg");
 	}
 
 	[Test]
@@ -422,42 +237,603 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
-	public void VerifyStringItemsGroupedListWhenAddItems()
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelItemsObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("avatar.png");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("avatar.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyStringItemsObservableCollectionWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
 		App.Tap(AddItems);
-		App.WaitForElement("Fruits");
-		App.WaitForElement("Vegetables");
+		App.WaitForElement("Chikoo");
+		Assert.That(App.FindElementsByText("Chikoo").Count, Is.EqualTo(1));
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.Tap(AddItems);
 		App.WaitForElement("Kiwi");
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
-	public void VerifyStringItemsGroupedListWhenRemoveItems()
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsObservableCollectionWhenAddIndexIsAtEnd()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "4");
+		App.Tap(AddItems);
+		App.WaitForElement("Papaya");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyStringItemsObservableCollectionWhenAddItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyStringItemsObservableCollectionWhenIndexIsInvalid()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "99");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "99");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyStringItemsObservableCollectionWhenRemoveIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Carrot");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Carrot");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyStringItemsObservableCollectionWhenRemoveItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Broccoli");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Broccoli");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyModelItemsListWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "1");
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("groceries.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyModelItemsListWhenAddItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("green.png");
+
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelItemsListWhenRemoveIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("dotnet_bot.png");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("dotnet_bot.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyModelItemsListWhenRemoveItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("calculator.png");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("calculator.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyStringItemsListWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(AddItems);
+		App.WaitForElement("Chikoo");
+		Assert.That(App.FindElementsByText("Chikoo").Count, Is.EqualTo(1));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringItemsListWhenAddItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsListWhenRemoveIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Carrot");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Carrot");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringItemsListWhenRemoveItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Broccoli");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Broccoli");
+	}
+
+#if TEST_FAILS_ON_WINDOWS //ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringObservableCollectionReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringObservableCollectionReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringObservableCollectionReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringObservableCollectionReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringObservableCollectionReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceObservableCollection, "Banana", "Updated Item 1", expectedInitialCount: 4);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringListReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringListReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringListReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringListReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringListReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceList, "Banana", "Updated Item 1", expectedInitialCount: 4);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringGroupedListReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringGroupedListReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringGroupedListReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringGroupedListReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringGroupedListReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceGroupedList, "Banana", "Updated Item 1", expectedInitialCount: 6, grouped: true);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelObservableCollectionReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyModelObservableCollectionReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyModelObservableCollectionReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyModelObservableCollectionReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelObservableCollectionReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceObservableCollection, "dotnet_bot.png", "Updated calculator.png", expectedInitialCount: 3, modelItems: true);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelListReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyModelListReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyModelListReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyModelListReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelListReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceList, "dotnet_bot.png", "Updated calculator.png", expectedInitialCount: 2, modelItems: true);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelGroupedListReplacement_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyModelGroupedListReplacement_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyModelGroupedListReplacement_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyModelGroupedListReplacement_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelGroupedListReplacement(string itemsLayout)
+	{
+		VerifyItemsSourceReplacement(itemsLayout, ItemsSourceGroupedList, "dotnet_bot.png", "Updated calculator.png", expectedInitialCount: 2, modelItems: true, grouped: true);
+	}
+
+	private void VerifyItemsSourceReplacement(
+		string itemsLayout,
+		string itemsSource,
+		string oldItem,
+		string newItem,
+		int expectedInitialCount,
+		bool modelItems = false,
+		bool grouped = false)
+	{
+		ConfigureItemsSource(itemsSource, itemsLayout, modelItems, grouped);
+		App.WaitForElement(oldItem);
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", expectedInitialCount.ToString());
+		Assert.That(App.FindElement("ItemsSourceItemCount").GetText(), Is.EqualTo(expectedInitialCount.ToString()));
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement(newItem);
+		App.WaitForNoElement(oldItem);
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", "4");
+		Assert.That(App.FindElement("ItemsSourceItemCount").GetText(), Is.EqualTo("4"));
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelItemsListMutation_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyModelItemsListMutation_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyModelItemsListMutation_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyModelItemsListMutation_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyModelItemsListWhenMutatingAcrossItemsLayouts(string itemsLayout)
+	{
+		ConfigureItemsSource(ItemsSourceList, itemsLayout, modelItems: true);
+		App.WaitForElement("calculator.png");
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("green.png", itemsLayout);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("green.png");
+		WaitForItemInItemsLayout("calculator.png", itemsLayout, scrollLeft: true);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsListMutation_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsListMutation_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsListMutation_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsListMutation_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsListWhenMutatingAcrossItemsLayouts(string itemsLayout)
+	{
+		ConfigureItemsSource(ItemsSourceList, itemsLayout);
+		App.WaitForElement("Broccoli");
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		WaitForItemInItemsLayout("Broccoli", itemsLayout, scrollLeft: true);
+	}
+
+#endif
+
+	// Empty and no-source scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelItemsEmptyGroupedListWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(EmptyGroupedListT);
+		App.Tap(EmptyGroupedListT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("green.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelItemsEmptyGroupedListWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(EmptyGroupedListT);
+		App.Tap(EmptyGroupedListT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("calculator.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelItemsEmptyObservableCollectionWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(EmptyObservableCollectionT);
+		App.Tap(EmptyObservableCollectionT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("green.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyModelItemsEmptyObservableCollectionWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(EmptyObservableCollectionT);
+		App.Tap(EmptyObservableCollectionT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("calculator.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyStringItemsEmptyGroupedListWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(EmptyGroupedListT);
+		App.Tap(EmptyGroupedListT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsEmptyGroupedListWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(EmptyGroupedListT);
+		App.Tap(EmptyGroupedListT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Broccoli");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyStringItemsEmptyObservableCollectionWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(EmptyObservableCollectionT);
+		App.Tap(EmptyObservableCollectionT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsEmptyObservableCollectionWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(EmptyObservableCollectionT);
+		App.Tap(EmptyObservableCollectionT);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Broccoli");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelItemsItemsSourceNoneWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("green.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyModelItemsItemsSourceNoneWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("calculator.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyStringItemsItemsSourceNoneWhenAddItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		App.WaitForNoElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyStringItemsItemsSourceNoneWhenRemoveItemsDoesNotCrash()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Broccoli");
+	}
+
+	// Grouped source mutation scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyModelItemsGroupedListWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
 		App.WaitForElement(IsGroupedTrue);
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(ItemsSourceGroupedList);
 		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("Fruits");
-		App.WaitForElement("Vegetables");
-		App.WaitForElement("Orange");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Orange");
+		App.WaitForElement("Group A");
+		App.WaitForElement("Group B");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "1");
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("groceries.png");
 	}
 
 	[Test]
@@ -478,92 +854,8 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement("Group B");
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("green.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyModelItemsGroupedListWhenRemoveItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("dotnet_bot.png");
-		App.WaitForElement("Group A");
-		App.WaitForElement("Group B");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("dotnet_bot.png");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
-	public void VerifyStringItemsGroupedListWhenAddIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Fruits");
-		App.WaitForElement("Vegetables");
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "2");
-		App.Tap(AddItems);
-		App.WaitForElement("Chikoo");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyStringItemsGroupedListWhenRemoveIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Fruits");
-		App.WaitForElement("Vegetables");
-		App.WaitForElement("Orange");
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "2");
-		App.Tap(RemoveItems);
-		App.WaitForNoElement("Orange");
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyModelItemsGroupedListWhenAddIndexAtItems()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Group A");
-		App.WaitForElement("Group B");
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "1");
-		App.Tap(AddItems);
-		App.WaitForElement("groceries.png");
 	}
 
 	[Test]
@@ -590,60 +882,414 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
-	public void VerifyStringItemsObservableCollectionWhenSingleModePreSelection()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(SingleModePreselection);
-		App.Tap(SingleModePreselection);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple"));
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "0");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void VerifyStringItemsObservableCollectionWhenMultipleModePreSelection()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceObservableCollection);
-		App.Tap(ItemsSourceObservableCollection);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(MultipleModePreselection);
-		App.Tap(MultipleModePreselection);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple, Carrot"));
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "0");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
-	public void VerifyModelItemsObservableCollectionWhenSingleModePreSelection()
+	public void VerifyModelItemsGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ModelItem);
 		App.Tap(ModelItem);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("dotnet_bot.png");
+		App.WaitForElement("Group A");
+		App.WaitForElement("Group B");
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("avatar.png");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("avatar.png");
+		App.WaitForElement("dotnet_bot.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyStringItemsGroupedListWhenAddIndexAtFlattenedEnd()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "6");
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("Strawberry");
+		Assert.That(App.FindElementsByText("Strawberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Carrot|Broccoli|Spinach|Strawberry");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyStringItemsGroupedListWhenAddIndexAtGroupBoundary()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		App.WaitForElement("Raseberry");
+		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Raseberry|Carrot|Broccoli|Spinach");
+		var insertedItemY = App.WaitForElement("Raseberry").GetRect().Y;
+		Assert.That(insertedItemY, Is.GreaterThan(App.WaitForElement("Vegetables").GetRect().Y));
+		Assert.That(insertedItemY, Is.LessThan(App.WaitForElement("Carrot").GetRect().Y));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyStringItemsGroupedListWhenAddIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(AddItems);
+		App.WaitForElement("Chikoo");
+		Assert.That(App.FindElementsByText("Chikoo").Count, Is.EqualTo(1));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyStringItemsGroupedListWhenIndexIsOutOfRange()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		App.EnterText(IndexEntry, "99");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		App.EnterText(IndexEntry, "99");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+		App.WaitForElement("Apple");
+		App.WaitForElement("Vegetables");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyStringItemsGroupedListWhenMutatingSecondGroupByIndex()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		App.WaitForElement("Raseberry");
+		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Raseberry|Carrot|Broccoli|Spinach");
+		Assert.That(App.WaitForElement("Raseberry").GetRect().Y,
+			Is.GreaterThan(App.WaitForElement("Vegetables").GetRect().Y));
+		App.EnterText(IndexEntry, "3");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Raseberry");
+		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(0));
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyStringItemsGroupedListWhenRemoveIndexAtItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		App.WaitForElement("Orange");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "2");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Orange");
+	}
+
+#if TEST_FAILS_ON_WINDOWS // ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
+	// Grouped source layout scenarios
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithVerticalListItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithHorizontalListItemsLayout")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithVerticalGridItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithHorizontalGridItemsLayout")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyStringItemsGroupedListWhenAddItemsWithItemsLayout(string itemsLayout)
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(itemsLayout);
+		App.Tap(itemsLayout);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		App.WaitForElement(AddItems);
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenRemoveItemsWithVerticalListItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsGroupedListWhenRemoveItemsWithHorizontalListItemsLayout")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsGroupedListWhenRemoveItemsWithVerticalGridItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsGroupedListWhenRemoveItemsWithHorizontalGridItemsLayout")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringItemsGroupedListWhenRemoveItemsWithItemsLayout(string itemsLayout)
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(itemsLayout);
+		App.Tap(itemsLayout);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		WaitForItemInItemsLayout("Orange", itemsLayout);
+		WaitForItemInItemsLayout("Spinach", itemsLayout);
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", "5");
+		App.WaitForNoElement("Spinach");
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsObservableCollectionWhenMutatingWithVerticalListItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsObservableCollectionWhenMutatingWithHorizontalListItemsLayout")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsObservableCollectionWhenMutatingWithVerticalGridItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsObservableCollectionWhenMutatingWithHorizontalGridItemsLayout")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyStringItemsObservableCollectionWhenMutatingWithItemsLayout(string itemsLayout)
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
 		App.WaitForElement(ItemsSourceObservableCollection);
 		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(itemsLayout);
+		App.Tap(itemsLayout);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Apple");
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenMutatingByIndexWithVerticalListItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsGroupedListWhenMutatingByIndexWithHorizontalListItemsLayout")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsGroupedListWhenMutatingByIndexWithVerticalGridItemsLayout")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsGroupedListWhenMutatingByIndexWithHorizontalGridItemsLayout")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyStringItemsGroupedListWhenMutatingByIndexWithItemsLayout(string itemsLayout)
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(itemsLayout);
+		App.Tap(itemsLayout);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Apple");
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+		App.EnterText(IndexEntry, "0");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		App.WaitForElement("Apple");
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelItemsGroupedListMutation_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyModelItemsGroupedListMutation_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyModelItemsGroupedListMutation_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyModelItemsGroupedListMutation_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyModelItemsGroupedListWhenMutatingAcrossItemsLayouts(string itemsLayout)
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, itemsLayout, modelItems: true, grouped: true);
+		App.WaitForElement("dotnet_bot.png");
+		VerifyItemsSourceState(2, "dotnet_bot.png|avatar.png");
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("green.png", itemsLayout);
+		VerifyItemsSourceState(3, "dotnet_bot.png|green.png|avatar.png");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(2, "dotnet_bot.png|green.png");
+		App.WaitForNoElement("avatar.png");
+		WaitForItemInItemsLayout("green.png", itemsLayout, scrollLeft: true);
+	}
+
+	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListMutation_WithVerticalList")]
+	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsGroupedListMutation_WithHorizontalList")]
+	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringItemsGroupedListMutation_WithVerticalGrid")]
+	[TestCase(ItemsLayoutHorizontalGrid, TestName = "VerifyStringItemsGroupedListMutation_WithHorizontalGrid")]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyStringItemsGroupedListWhenMutatingAcrossItemsLayouts(string itemsLayout)
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, itemsLayout, grouped: true);
+		App.WaitForElement("Apple");
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+		App.Tap(AddItems);
+		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Kiwi|Carrot|Broccoli|Spinach");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, "Apple|Banana|Orange|Kiwi|Carrot|Broccoli");
+		App.WaitForNoElement("Spinach");
+		WaitForItemInItemsLayout("Kiwi", itemsLayout, scrollLeft: true);
+	}
+
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/28826
+	// Source configuration and selection scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyFlatItemsSourceAllowsIndependentIsGroupedSelection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(AddItems);
+		App.WaitForElement("Banana");
+	}
+#endif
+
+	// Selection and preselection scenarios
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyListSelectionIsClearedWhenItemsSourceIsReplaced()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceList);
+		App.Tap(ItemsSourceList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(SingleModePreselection);
 		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple"));
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyModelItemsGroupedListWhenMultipleModePreSelection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Group A");
+		App.WaitForElement("Group B");
+		App.WaitForElement(MultipleModePreselection);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyModelItemsGroupedListWhenSingleModePreSelection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Group A");
+		App.WaitForElement("Group B");
+		App.WaitForElement(SingleModePreselection);
+		App.Tap(SingleModePreselection);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("dotnet_bot.png"));
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
@@ -666,6 +1312,148 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(MultipleModePreselection);
 		App.Tap(MultipleModePreselection);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("avatar.png"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyModelItemsObservableCollectionWhenSingleModePreSelection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ModelItem);
+		App.Tap(ModelItem);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(SingleModePreselection);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png"));
+		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "0");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyMultipleSelectionIsClearedWhenItemsSourceIsReplaced()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MultipleModePreselection);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple, Carrot"));
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyMultipleSelectionWorksAfterItemsSourceReplacement()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Updated Item 1, Updated Item 2"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifySelectionIsClearedWhenItemsSourceIsReplaced()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(SingleModePreselection);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple"));
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifySelectionIsClearedWhenItemsSourceOptionsAreReset()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(SingleModePreselection);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple"));
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+		App.WaitForNoElement("Banana");
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifySingleSelectionWorksAfterItemsSourceReplacement()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ReplaceItemsSource);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Updated Item 1"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyStringItemsGroupedListWhenMultipleModePreSelection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		App.WaitForElement(MultipleModePreselection);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple, Carrot"));
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
@@ -698,19 +1486,15 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-	public void VerifyStringItemsGroupedListWhenMultipleModePreSelection()
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyStringItemsObservableCollectionWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("Fruits");
-		App.WaitForElement("Vegetables");
 		App.WaitForElement(MultipleModePreselection);
 		App.Tap(MultipleModePreselection);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple, Carrot"));
@@ -718,58 +1502,246 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
-	public void VerifyModelItemsGroupedListWhenSingleModePreSelection()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Group A");
-		App.WaitForElement("Group B");
-		App.WaitForElement(SingleModePreselection);
-		App.Tap(SingleModePreselection);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png"));
-		App.WaitForElement(IndexEntry);
-		App.EnterText(IndexEntry, "0");
-		App.WaitForElement(RemoveItems);
-		App.Tap(RemoveItems);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Carrot"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
-	public void VerifyModelItemsGroupedListWhenMultipleModePreSelection()
+	public void VerifyStringItemsObservableCollectionWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(ModelItem);
-		App.Tap(ModelItem);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(ItemsSourceObservableCollection);
+		App.Tap(ItemsSourceObservableCollection);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("Group A");
-		App.WaitForElement("Group B");
-		App.WaitForElement(MultipleModePreselection);
-		App.Tap(MultipleModePreselection);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("dotnet_bot.png, avatar.png"));
+		App.WaitForElement(SingleModePreselection);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Apple"));
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
+		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyObservableItemsSourceMutationsAfterReplacement()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+		VerifyItemsSourceState(5, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4|Kiwi");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		VerifyItemsSourceState(4, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyGroupedItemsSourceMutationsAfterReplacement()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+		VerifyItemsSourceState(5, "Updated Item 1|Updated Item 2|Kiwi|Updated Item 3|Updated Item 4");
+		App.EnterText(IndexEntry, "2");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		VerifyItemsSourceState(4, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyObservableItemsSourceCanRemoveAllRemoveAgainAndAddBack()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		for (var i = 0; i < 4; i++)
+		{
+			App.EnterText(IndexEntry, "0");
+			App.Tap(RemoveItems);
+		}
+
+		VerifyItemsSourceState(0, string.Empty);
+		AssertCollectionItemsAreNotRendered("Banana", "Carrot", "Broccoli");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(AddItems);
+		VerifyItemsSourceState(1, "Kiwi");
+		WaitForCollectionItem("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyGroupedItemsSourceCanRemoveAllRemoveAgainAndAddBack()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		for (var i = 0; i < 6; i++)
+			App.Tap(RemoveItems);
+
+		VerifyItemsSourceState(0, string.Empty);
+		AssertCollectionItemsAreNotRendered("Banana", "Orange", "Carrot", "Broccoli", "Spinach");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(AddItems);
+		VerifyItemsSourceState(1, "Kiwi");
+		WaitForCollectionItem("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyGroupedItemsSourceHandlesEmptyGroupAndBoundaryRemoval()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		for (var i = 0; i < 3; i++)
+		{
+			App.EnterText(IndexEntry, "0");
+			App.Tap(RemoveItems);
+		}
+
+		VerifyItemsSourceState(3, "Carrot|Broccoli|Spinach");
+		App.WaitForElement("Vegetables");
+
+		App.EnterText(IndexEntry, "0");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(2, "Broccoli|Spinach");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelListCountAndCountMinusOneBoundaries()
+	{
+		ConfigureItemsSource(ItemsSourceList, ItemsLayoutVerticalList, modelItems: true);
+		VerifyItemsSourceState(2, "dotnet_bot.png|calculator.png");
+
+		App.EnterText(IndexEntry, "1");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(3, "dotnet_bot.png|groceries.png|calculator.png");
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+		App.EnterText(IndexEntry, "4");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(5, "dotnet_bot.png|groceries.png|calculator.png|seth.png|test.jpg");
+
+		App.EnterText(IndexEntry, "4");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+		App.EnterText(IndexEntry, "4");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyStringListCountAndCountMinusOneBoundaries()
+	{
+		ConfigureItemsSource(ItemsSourceList, ItemsLayoutVerticalList);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+		App.EnterText(IndexEntry, "5");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(6, "Apple|Banana|Carrot|Raseberry|Broccoli|Pineapple");
+
+		App.EnterText(IndexEntry, "5");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+		App.EnterText(IndexEntry, "5");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyInvalidTextFallsBackToSequentialAddAndLastRemoval()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+
+		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap("CollectionViewItemsSource");
+		App.WaitForElement("AddItems");
+		App.Tap(AddItems);
+		App.EnterText(IndexEntry, "   ");
+		App.Tap(AddItems);
+		App.EnterText(IndexEntry, "999999999999999999999999");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(7, "Apple|Banana|Carrot|Broccoli|Kiwi|Guava|Chikoo");
+
+		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap("CollectionViewItemsSource");
+		App.WaitForElement(RemoveItems);
+		App.Tap(RemoveItems);
+		App.EnterText(IndexEntry, "   ");
+		App.Tap(RemoveItems);
+		App.EnterText(IndexEntry, "999999999999999999999999");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifySelectedItemsReplacementKeepsCurrentSelectionAfterOldCollectionChanges()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+
+		App.Tap(ReplaceSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
+		App.Tap(ClearOldSelectedItems);
+		Assert.That(App.WaitForElement(ClearOldSelectedItems).GetText(), Is.EqualTo("Old collection notifications: 0"));
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
+		App.Tap(MutateNewSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple, Banana"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifySelectedItemsNullIsNormalizedAndNewCollectionRemainsObservable()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+		App.Tap(SetSelectedItemsNull);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("0"));
+		App.Tap(MutateNewSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifySelectionDiagnosticsRefreshWhenSelectionModeChanges()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "1"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple"), Is.True);
+
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "2"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple, Carrot"), Is.True);
+
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "1"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple"), Is.True);
 	}
 }
