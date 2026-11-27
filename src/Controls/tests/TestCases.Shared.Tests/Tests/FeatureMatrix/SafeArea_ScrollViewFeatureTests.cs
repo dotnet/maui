@@ -170,8 +170,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			ScrollToTop();
 		}
 
-#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36863
-
 		[Test, Order(3)]
 		[Description("ScrollView content avoids system bars/notch but can extend under keyboard area")]
 		public void Validate_ScrollView_SafeAreaEdges_Container()
@@ -200,7 +198,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Scroll back to top for next test
 			ScrollToTop();
 		}
-#endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36770
 
@@ -234,8 +231,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36863
-
 		[Test, Order(5)]
 		[Description("ScrollView Default applies safe area insets on all edges (behaves like Container)")]
 		public void Validate_ScrollView_SafeAreaEdges_Default()
@@ -265,7 +260,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Scroll back to top for next test
 			ScrollToTop();
 		}
-#endif
 		// ──────────────────────────────────────────────
 		// Per-Edge Configuration (via Options)
 		// ──────────────────────────────────────────────
