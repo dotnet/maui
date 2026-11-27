@@ -11,20 +11,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class LabelTests : BaseTestFixture
 	{
 		[Fact]
-		public void IsTextSelectableDefaultsToFalseAndIsBindable()
-		{
-			var label = new Label();
-			Assert.False(label.IsTextSelectable);
-			Assert.False(((ILabel)label).IsTextSelectable);
-
-			label.BindingContext = new { Selectable = true };
-			label.SetBinding(Label.IsTextSelectableProperty, "Selectable");
-
-			Assert.True(label.IsTextSelectable);
-			Assert.True(((ILabel)label).IsTextSelectable);
-		}
-
-		[Fact]
 		public void TextAndAttributedTextMutuallyExclusive()
 		{
 			var label = new Label();

@@ -920,6 +920,127 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "MakeVisible aligns bottom-clipped items and keeps them at the viewport end")]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, true, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, true, 20)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true, 20)]
+		public async Task MakeVisibleKeepsItemAtViewportEnd(ItemsLayoutOrientation orientation, bool grouped, bool byObject, double clippedLength)
+		{
+			SetupBuilder();
+
+			var items = Enumerable.Range(0, 40).Select(i => $"Item {i}").ToArray();
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 200,
+				ItemsLayout = new LinearItemsLayout(orientation),
+				IsGrouped = grouped,
+				ItemsSource = grouped ? (System.Collections.IEnumerable)new[] { items } : items,
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 40, WidthRequest = 40 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			const int targetIndex = 6;
+			void ScrollToTarget(ScrollToPosition position, bool animate)
+			{
+				if (byObject)
+					collectionView.ScrollTo(items[targetIndex], grouped ? items : null, position, animate);
+				else
+					collectionView.ScrollTo(targetIndex, grouped ? 0 : -1, position, animate);
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var list = handler.PlatformView;
+				var scrollViewer = list.GetFirstDescendant<UI.Xaml.Controls.ScrollViewer>();
+				Assert.NotNull(scrollViewer);
+				await AssertEventually(() => list.IsLoaded && scrollViewer.ViewportWidth > 0 && scrollViewer.ViewportHeight > 0);
+
+				double GetOffset() => orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
+				double GetViewportLength() => orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+				bool TryGetBounds(out global::Windows.Foundation.Rect bounds)
+				{
+					if (list.ContainerFromIndex(targetIndex) is not FrameworkElement container ||
+						!container.IsLoaded || container.ActualWidth <= 0 || container.ActualHeight <= 0)
+					{
+						bounds = default;
+						return false;
+					}
+
+					bounds = container.TransformToVisual(scrollViewer).TransformBounds(
+						new global::Windows.Foundation.Rect(0, 0, container.ActualWidth, container.ActualHeight));
+					return true;
+				}
+				double GetLeading(global::Windows.Foundation.Rect bounds) =>
+					orientation == ItemsLayoutOrientation.Vertical ? bounds.Top : bounds.Left;
+				double GetTrailing(global::Windows.Foundation.Rect bounds) =>
+					orientation == ItemsLayoutOrientation.Vertical ? bounds.Bottom : bounds.Right;
+
+				bool ChangeOffset(double offset) => scrollViewer.ChangeView(
+					orientation == ItemsLayoutOrientation.Horizontal ? offset : null,
+					orientation == ItemsLayoutOrientation.Vertical ? offset : null,
+					null, true);
+
+				// Keep the target near the initial viewport to avoid a large virtualized jump.
+				Assert.True(ChangeOffset(160), "The initial scroll should be accepted.");
+				var targetVisible = await Wait(() => TryGetBounds(out var bounds) &&
+					GetLeading(bounds) < GetViewportLength() && GetTrailing(bounds) > 0,
+					timeout: 5000);
+				var hasBounds = TryGetBounds(out var visibleBounds);
+				Assert.True(targetVisible, $"The target container should be realized and visible. " +
+					$"Has bounds: {hasBounds}, bounds: {visibleBounds}, offset: {GetOffset()}, viewport: {GetViewportLength()}.");
+
+				// WinUI can revise virtualized item offsets during a scroll, so position from
+				// the current viewport bounds rather than a previously calculated content offset.
+				for (int attempt = 0; attempt < 10; attempt++)
+				{
+					Assert.True(TryGetBounds(out var bounds), "The target container should remain realized.");
+					var adjustment = GetTrailing(bounds) - GetViewportLength() - clippedLength;
+					if (Math.Abs(adjustment) < 1)
+						break;
+
+					Assert.True(ChangeOffset(GetOffset() + adjustment), "The target positioning scroll should be accepted.");
+					await Task.Delay(100);
+				}
+
+				Assert.True(TryGetBounds(out var initialBounds), "The target container should remain realized.");
+				Assert.InRange(Math.Abs(GetTrailing(initialBounds) - GetViewportLength() - clippedLength), 0, 1);
+				Assert.True(GetLeading(initialBounds) >= 0, "The target's leading edge should be visible.");
+
+				for (int i = 0; i < 2; i++)
+				{
+					ScrollToTarget(ScrollToPosition.MakeVisible, true);
+					await AssertEventually(() => TryGetBounds(out var bounds) &&
+						Math.Abs(GetTrailing(bounds) - GetViewportLength()) < 1,
+						timeout: 5000, message: "MakeVisible should align the target with the viewport end.");
+					await Task.Delay(1000);
+					Assert.True(TryGetBounds(out var bounds), "The target container should remain realized.");
+					Assert.InRange(Math.Abs(GetTrailing(bounds) - GetViewportLength()), 0, 1);
+				}
+
+				Assert.True(TryGetBounds(out var beforeStartBounds), "The target container should remain realized.");
+				ScrollToTarget(ScrollToPosition.Start, false);
+				await AssertEventually(() => TryGetBounds(out var bounds) &&
+					GetLeading(bounds) < GetLeading(beforeStartBounds) - 5,
+					timeout: 5000, message: "Start should still reposition the visible item.");
+			});
+		}
+
 		[Theory(DisplayName = "Grid CollectionView Scrolled reports source item indexes after containers are recycled")]
 		[InlineData(ItemsLayoutOrientation.Vertical)]
 		[InlineData(ItemsLayoutOrientation.Horizontal)]
