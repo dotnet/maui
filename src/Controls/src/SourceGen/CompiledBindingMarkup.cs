@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.BindingSourceGen;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -702,17 +703,17 @@ internal struct CompiledBindingMarkup
 			// Make binding react for PropertyChanged events on indexer itself
 			if (part is IndexAccess indexAccess)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(indexAccess.DefaultMemberName, quote: true)}),");
 			}
 			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(innerIndexAccess.DefaultMemberName, quote: true)}),");
 			}
 
 			// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
 			if (part.PropertyName is string propertyName)
 			{
-				code.WriteLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
+				code.WriteLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(propertyName, quote: true)}),");
 			}
 		}
 

@@ -303,6 +303,63 @@ public class TestViewModel
 	}
 
 	[Fact]
+	public void BindingToWritableDictionaryKeyEscapesGeneratedLiterals()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestViewModel">
+	<VerticalStackLayout>
+		<Entry>
+			<Entry.Text>
+				<Binding Path="Items[he&quot;\.llo]" Mode="TwoWay" />
+			</Entry.Text>
+		</Entry>
+		<Label>
+			<Label.Text>
+				<Binding Path="Items[he&quot;\.llo].Length" Mode="OneWay" />
+			</Label.Text>
+		</Label>
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage() => InitializeComponent();
+}
+
+public class TestViewModel
+{
+	public Dictionary<string, string?> Items { get; } = new();
+}
+""";
+
+		var (_, generated) = RunGenerator(xaml, code);
+
+		Assert.NotNull(generated);
+		Assert.Contains("""getter: source => (source.Items?["he\"\\.llo"], true),""", generated, StringComparison.Ordinal);
+		Assert.Contains("""getter: source => (source.Items?["he\"\\.llo"]?.Length ?? default, true),""", generated, StringComparison.Ordinal);
+		Assert.Contains("""["he\"\\.llo"] = value;""", generated, StringComparison.Ordinal);
+		Assert.Contains("""new(static source => source.Items, "Item[he\"\\.llo]"),""", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void BindingToArrayElement()
 	{
 		// Test binding to array element - arrays don't have named indexers
