@@ -38,6 +38,10 @@ on:
         description: Maintainer who started the loop
         required: true
         type: string
+      loop_start:
+        description: When the current /review autopilot started; earlier replies don't count
+        required: false
+        type: string
   roles: [admin, maintain, write]
   bots: ["github-actions[bot]"]
   status-comment: false
@@ -62,6 +66,7 @@ on:
           core.setOutput('source', inputs.source);
           core.setOutput('round', String(Number(inputs.round) || 1));
           core.setOutput('requested_by', inputs.requested_by || '');
+          core.setOutput('loop_start', inputs.loop_start || '');
           core.setOutput('pr_number', String(number));
           core.setOutput('head_ref', pr.head.ref);
           core.setOutput('base_ref', pr.base.ref);
@@ -82,6 +87,7 @@ jobs:
       autopilot_head_sha: ${{ steps.state.outputs.head_sha }}
       autopilot_is_fork: ${{ steps.state.outputs.is_fork }}
       autopilot_requested_by: ${{ steps.state.outputs.requested_by }}
+      autopilot_loop_start: ${{ steps.state.outputs.loop_start }}
   agent:
     needs: [pre_activation, activation, pat_pool]
   continue_round:
@@ -155,6 +161,7 @@ steps:
       PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
       SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
       ROUND: ${{ needs.pre_activation.outputs.autopilot_round }}
+      LOOP_START: ${{ needs.pre_activation.outputs.autopilot_loop_start }}
       GH_TOKEN: ${{ github.token }}
       HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
       BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
@@ -192,8 +199,8 @@ steps:
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
-        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" \
-        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber)}' \
+        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" --arg loop_start "${LOOP_START}" \
+        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber), loop_start: $loop_start}' \
         > /tmp/gh-aw/autopilot/context.json
       cat /tmp/gh-aw/autopilot/context.json
 
@@ -330,8 +337,9 @@ The PR head is checked out in the workspace.
      doesn't touch, that also fails on the base branch, is not caused by it. Do not "fix"
      failures that are unrelated (infrastructure, known flaky tests); list them in `CANDIDATE.md`.
    - **Every earlier suggestion:** each unresolved thread in `threads.json` from a trusted reviewer (maintainers,
-     earlier MAUI expert reviews, MauiBot, Copilot code review) that has no maui-expert-autopilot reply, whatever head
-     it was left on and whether or not it is outdated. Fix the ones that are still valid against the current code;
+     earlier MAUI expert reviews, MauiBot, Copilot code review) with no maui-expert-autopilot reply since `loop_start`
+     in the context file (replies from an earlier run don't count), whatever head it was left on and whether or not
+     it is outdated. Fix the ones that are still valid against the current code;
      list in `CANDIDATE.md` the ones already addressed, no longer applicable, or that need a maintainer's decision.
    Skip items that would change the approach the author chose. If a finding is wrong, don't fix it;
    explain why in `CANDIDATE.md`. Read the full PR diff with `git diff <merge_base>..HEAD`.

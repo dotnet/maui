@@ -105,7 +105,8 @@ The items come from:
   code review, on any head, outdated or not. Each one is checked against the current code: it's fixed, answered
   "✅ Already addressed" or "✅ No longer applies" and resolved, or answered "❌ Not changed" with why and left
   open for a maintainer. Unanswered threads start a fix round before the tests run, and a round that pushes nothing
-  but answers every thread moves the loop on,
+  but answers every thread moves the loop on. **Each `/review autopilot` starts fresh**: replies from an earlier run don't
+  count, so every open thread is reconsidered and answered again,
 - open maintainer requests.
 
 How the fixes are published:

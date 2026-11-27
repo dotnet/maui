@@ -109,15 +109,20 @@ on:
           const ownerOf = async n => {
             const comments = await github.paginate(github.rest.issues.listComments, { ...repo, issue_number: n, per_page: 100 });
             const start = comments.filter(c => c.user?.type === 'User' && /^\s*\/review\s+autopilot\s*$/i.test(c.body || '')).pop();
-            return start?.user.login || '';
+            // A loop started by dispatch has no command comment, but always posts "Started".
+            const started = comments.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').startsWith('## MAUI Autopilot — Started')).pop();
+            const at = [start?.created_at || '', started?.created_at || ''].sort().pop();
+            return { login: start?.user.login || '', at };
           };
 
-          let requester;
+          // Each /review autopilot starts fresh: only replies posted since it count as answered.
+          let requester, loopStart = new Date().toISOString();
           const kicked = context.eventName === 'workflow_dispatch' && context.actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot';
           if (context.eventName === 'issue_comment') {
             const command = COMMAND.exec(context.payload.comment?.body || '');
             if (!command) return;
             requester = context.payload.comment.user.login;
+            loopStart = context.payload.comment.created_at;
             // Hide the command as resolved, like the other /review commands.
             await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }',
               { id: context.payload.comment.node_id }).catch(e => core.warning(`Could not hide the command: ${e.message}`));
@@ -128,8 +133,11 @@ on:
             }
           } else if (kicked) {
             if (!hasLabel) { await stopLoop(''); return core.info(`#${number}: the loop is not running.`); }
-            requester = await ownerOf(number);
-            if (!requester && originOf(pr)) requester = await ownerOf(originOf(pr));
+            let owner = await ownerOf(number);
+            if (!owner.login && originOf(pr)) owner = await ownerOf(originOf(pr));
+            requester = owner.login;
+            // Never "now" here: that would discard this loop's own replies and repeat fix rounds forever.
+            loopStart = owner.at;
           } else {
             requester = context.actor;
           }
@@ -149,13 +157,15 @@ on:
                 isResolved comments(first: 30) { nodes { body createdAt authorAssociation author { login } } } } } } } }`, { ...repo, number });
             const threads = repository.pullRequest.reviewThreads.nodes;
             const isAutopilot = c => ['github-actions', 'github-actions[bot]'].includes(c.author?.login) && /MAUI Autopilot/.test(c.body || '');
+            // Replies from an earlier run don't count: a new /review autopilot reconsiders every open thread.
+            const answered = c => isAutopilot(c) && (c.createdAt || '') >= loopStart;
             const open = threads.filter(t => {
               const first = t.comments.nodes[0];
               if (t.isResolved || !first || isAutopilot(first)) return false;
               const trusted = TRUSTED_BOTS.includes(first.author?.login) || ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(first.authorAssociation);
-              return trusted && !t.comments.nodes.slice(1).some(isAutopilot);
+              return trusted && !t.comments.nodes.slice(1).some(answered);
             }).length;
-            const lastReply = threads.flatMap(t => t.comments.nodes.slice(1).filter(isAutopilot).map(c => c.createdAt)).sort().pop() || '';
+            const lastReply = threads.flatMap(t => t.comments.nodes.slice(1).filter(answered).map(c => c.createdAt)).sort().pop() || '';
             return { open, lastReply };
           };
 
@@ -294,6 +304,7 @@ on:
           core.setOutput('stage', stage);
           core.setOutput('source', source);
           core.setOutput('requested_by', requester);
+          core.setOutput('loop_start', loopStart);
           core.setOutput('pr_number', String(number));
           core.setOutput('head_ref', pr.head.ref);
           core.setOutput('base_ref', pr.base.ref);
@@ -314,6 +325,7 @@ jobs:
       autopilot_head_sha: ${{ steps.state.outputs.head_sha }}
       autopilot_is_fork: ${{ steps.state.outputs.is_fork }}
       autopilot_requested_by: ${{ steps.state.outputs.requested_by }}
+      autopilot_loop_start: ${{ steps.state.outputs.loop_start }}
       autopilot_opus_run: ${{ steps.state.outputs.opus_run }}
   advance:
     # Starts the expert review or the test run. gh-aw makes activation wait for this job, so it
@@ -353,12 +365,13 @@ jobs:
           SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
           ROUND: ${{ needs.pre_activation.outputs.autopilot_round }}
           REQUESTED_BY: ${{ needs.pre_activation.outputs.autopilot_requested_by }}
+          LOOP_START: ${{ needs.pre_activation.outputs.autopilot_loop_start }}
         with:
           script: |
             await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot-opus.lock.yml',
               ref: context.payload.repository.default_branch,
               inputs: { pr_number: process.env.PR_NUMBER, head_sha: process.env.HEAD_SHA, source: process.env.SOURCE,
-                round: process.env.ROUND, requested_by: process.env.REQUESTED_BY } });
+                round: process.env.ROUND, requested_by: process.env.REQUESTED_BY, loop_start: process.env.LOOP_START } });
             core.info(`#${process.env.PR_NUMBER}: requested the Claude Opus 5.5 candidate.`);
   agent:
     needs: [pre_activation, activation, pat_pool]
@@ -423,6 +436,7 @@ jobs:
           AGENT_RESULT: ${{ needs.agent.result }}
           SAFE_OUTPUTS_RESULT: ${{ needs.safe_outputs.result }}
           OPUS_RUN: ${{ needs.pre_activation.outputs.autopilot_opus_run }}
+          LOOP_START: ${{ needs.pre_activation.outputs.autopilot_loop_start }}
         with:
           script: |
             const LABEL = 's/autopilot-running';
@@ -467,14 +481,15 @@ jobs:
             const unansweredThreads = async () => {
               const { repository } = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
                 repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes {
-                  isResolved comments(first: 30) { nodes { body authorAssociation author { login } } } } } } } }`, { ...context.repo, number });
+                  isResolved comments(first: 30) { nodes { body createdAt authorAssociation author { login } } } } } } } }`, { ...context.repo, number });
               const bots = ['github-actions', 'github-actions[bot]', 'copilot-pull-request-reviewer', 'MauiBot', 'maui-bot'];
               const isAutopilot = c => ['github-actions', 'github-actions[bot]'].includes(c.author?.login) && /MAUI Autopilot/.test(c.body || '');
+              const answered = c => isAutopilot(c) && (c.createdAt || '') >= (process.env.LOOP_START || '');
               return repository.pullRequest.reviewThreads.nodes.filter(t => {
                 const first = t.comments.nodes[0];
                 if (t.isResolved || !first || isAutopilot(first)) return false;
                 return (bots.includes(first.author?.login) || ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(first.authorAssociation)) &&
-                  !t.comments.nodes.slice(1).some(isAutopilot);
+                  !t.comments.nodes.slice(1).some(answered);
               }).length;
             };
             let target = number;
@@ -566,6 +581,7 @@ steps:
       PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
       SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
       ROUND: ${{ needs.pre_activation.outputs.autopilot_round }}
+      LOOP_START: ${{ needs.pre_activation.outputs.autopilot_loop_start }}
       GH_TOKEN: ${{ github.token }}
       HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
       BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
@@ -603,8 +619,8 @@ steps:
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
-        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" \
-        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber)}' \
+        --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" --arg loop_start "${LOOP_START}" \
+        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber), loop_start: $loop_start}' \
         > /tmp/gh-aw/autopilot/context.json
       cat /tmp/gh-aw/autopilot/context.json
 
@@ -780,8 +796,10 @@ The PR head is checked out on `work_branch`.
        that the PR causes it, counts as `related`. Only `related` failures become items; never "fix" the others.
      - Keep each model's verdict per failure for your comment.
    - **In every round, every earlier suggestion:** each unresolved thread in `threads.json` from a trusted
-     reviewer that has no maui-expert-autopilot reply, whatever head it was left on and whether or not GitHub
-     marks it outdated. This includes maintainer comments, earlier MAUI expert reviews, MauiBot, and Copilot code
+     reviewer that this run hasn't answered: no maui-expert-autopilot reply since `loop_start` in the context file,
+     whatever head it was left on and whether or not GitHub marks it outdated. **Each `/review autopilot` starts
+     fresh:** a reply from an earlier run doesn't count, so reconsider and answer again every open thread, including
+     ones an earlier run answered `❌ Not changed`. This includes maintainer comments, earlier MAUI expert reviews, MauiBot, and Copilot code
      review. Read each one against the **current** code and decide:
      - already addressed by the current code: answer `✅ Already addressed` with where, and resolve it,
      - no longer applies (the code it refers to is gone or was rewritten): answer `✅ No longer applies` with why,
