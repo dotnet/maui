@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -9,7 +8,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage
 	{
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			PageHandler.Mapper.ReplaceMappingForControls<ContentPage, IPageHandler>(nameof(ContentPage.HideSoftInputOnTapped), MapHideSoftInputOnTapped);
 #if IOS

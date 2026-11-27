@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -9,12 +8,15 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		static Label() => RemapForControls();
-
-		private new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
 		{
-			VisualElement.RemapIfNeeded();
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings

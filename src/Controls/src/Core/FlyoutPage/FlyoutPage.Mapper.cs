@@ -9,7 +9,14 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	public partial class FlyoutPage
 	{
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
 #if IOS || MACCATALYST

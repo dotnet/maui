@@ -11,7 +11,14 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			RadioButtonHandler.Mapper.ReplaceMappingForControls<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
 #if ANDROID || WINDOWS
@@ -19,7 +26,9 @@ namespace Microsoft.Maui.Controls
 			RadioButtonHandler.Mapper.ReplaceMappingForControls<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
 #endif
 #if ANDROID
-			RadioButtonHandler.PlatformViewFactory = CreatePlatformView;
+			// This runs lazily on first attachment; keep a factory the app installed during startup, which would
+			// have replaced the Controls factory when it was installed eagerly.
+			RadioButtonHandler.PlatformViewFactory ??= CreatePlatformView;
 #endif
 		}
 	}

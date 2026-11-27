@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -11,8 +10,14 @@ namespace Microsoft.Maui.Controls
 	public partial class Button
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
-		internal new static void RemapForControls()
+		static void RemapForControlsOnce()
 		{
 			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
 #if IOS
