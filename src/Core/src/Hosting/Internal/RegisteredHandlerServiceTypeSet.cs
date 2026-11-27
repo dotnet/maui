@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
 	internal sealed class RegisteredHandlerServiceTypeSet
 	{
-		private static readonly ConditionalWeakTable<IMauiHandlersCollection, RegisteredHandlerServiceTypeSet> s_instances = new();
-
-		internal static RegisteredHandlerServiceTypeSet GetInstance(IMauiHandlersCollection collection) =>
-			s_instances.GetValue(collection, static _ => new RegisteredHandlerServiceTypeSet());
-
 		private readonly HashSet<Type> _concreteHandlerServiceTypeSet = new();
 		private readonly HashSet<Type> _interfaceHandlerServiceTypeSet = new();
 
@@ -27,25 +21,60 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 		}
 
-		public Type? ResolveVirtualViewToRegisteredHandlerServiceType(Type type)
+		public Type? ResolveVirtualViewToRegisteredHandlerServiceType(Type type) =>
+			ResolveConcreteHandlerServiceType(type) ?? ResolveInterfaceHandlerServiceType(type);
+
+		/// <summary>
+		/// Returns the most specific registered non-interface service type assignable from <paramref name="type"/>.
+		/// </summary>
+		public Type? ResolveConcreteHandlerServiceType(Type type)
 		{
 			Debug.Assert(typeof(IElement).IsAssignableFrom(type));
 
-			if (_concreteHandlerServiceTypeSet.Contains(type)
-				|| _interfaceHandlerServiceTypeSet.Contains(type))
-			{
+			if (_concreteHandlerServiceTypeSet.Contains(type))
 				return type;
-			}
 
-			return ResolveVirtualViewFromTypeSet(type, _concreteHandlerServiceTypeSet)
-				?? ResolveVirtualViewFromTypeSet(type, _interfaceHandlerServiceTypeSet);
+			return ResolveVirtualViewFromTypeSet(type, _concreteHandlerServiceTypeSet);
 		}
 
-		private static Type? ResolveVirtualViewFromTypeSet(Type type, HashSet<Type> set)
+		/// <summary>
+		/// Returns the most specific registered interface service type assignable from <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type">The requested virtual view type.</param>
+		/// <param name="defaultInterface">
+		/// An unregistered interface that competes with the registered interfaces as if it had been registered,
+		/// representing a built-in interface default.
+		/// </param>
+		public Type? ResolveInterfaceHandlerServiceType(Type type, Type? defaultInterface = null)
+		{
+			Debug.Assert(typeof(IElement).IsAssignableFrom(type));
+
+			if (_interfaceHandlerServiceTypeSet.Contains(type) || type == defaultInterface)
+				return type;
+
+			return ResolveVirtualViewFromTypeSet(type, _interfaceHandlerServiceTypeSet, defaultInterface);
+		}
+
+		public bool Contains(Type serviceType) =>
+			_concreteHandlerServiceTypeSet.Contains(serviceType) || _interfaceHandlerServiceTypeSet.Contains(serviceType);
+
+		private static Type? ResolveVirtualViewFromTypeSet(Type type, HashSet<Type> set, Type? additionalCandidate = null)
 		{
 			Type? bestVirtualViewHandlerServiceType = null;
 
 			foreach (Type registeredViewHandlerServiceType in set)
+			{
+				Consider(registeredViewHandlerServiceType);
+			}
+
+			if (additionalCandidate is not null)
+			{
+				Consider(additionalCandidate);
+			}
+
+			return bestVirtualViewHandlerServiceType;
+
+			void Consider(Type registeredViewHandlerServiceType)
 			{
 				if (registeredViewHandlerServiceType.IsAssignableFrom(type))
 				{
@@ -70,8 +99,6 @@ namespace Microsoft.Maui.Hosting.Internal
 					}
 				}
 			}
-
-			return bestVirtualViewHandlerServiceType;
 		}
 	}
 }

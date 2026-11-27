@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	[ElementHandler(typeof(MenuBarHandler))]
 	public partial class MenuBar : Element, IMenuBar
 	{
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
