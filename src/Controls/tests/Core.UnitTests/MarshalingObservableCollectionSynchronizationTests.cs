@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void UIThreadChangesQueueOneRefreshAfterNonRecursiveWriteLockIsReleased()
+		public void UIThreadResetQueuesRefreshAfterNonRecursiveWriteLockIsReleased()
 		{
 			var source = new ObservableCollection<int> { 1, 2, 3, 4 };
 			var gate = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
@@ -170,20 +170,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					source.Move(2, 0);
 					source.Add(5);
+					Assert.Equal(new object[] { 3, 1, 2, 4, 5 }, snapshot);
 					source.Clear();
 					source.Add(6);
-					Assert.Equal(new object[] { 1, 2, 3, 4 }, snapshot);
+					Assert.Equal(new object[] { 3, 1, 2, 4, 5 }, snapshot);
 				}
 				finally
 				{
 					gate.ExitWriteLock();
 				}
 
-				Assert.Equal(0, changes);
+				Assert.Equal(2, changes);
 				Assert.Single(queued);
 				queued.Dequeue()();
 				Assert.Equal(new object[] { 6 }, snapshot);
-				Assert.Equal(1, changes);
+				Assert.Equal(3, changes);
 				Assert.Empty(queued);
 			}
 			finally
@@ -191,6 +192,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				snapshot?.Dispose();
 				BindingBase.DisableCollectionSynchronization(source);
 				gate.Dispose();
+			}
+		}
+
+		[Fact]
+		public void UIThreadReorderUpdatesSnapshotBeforeReturning()
+		{
+			var source = new ObservableCollection<string> { "A", "B", "C" };
+			var queued = new Queue<Action>();
+			var dispatcher = CreateDispatcher(queued);
+			dispatcher.IsDispatchRequired.Returns(false);
+			var gate = new object();
+			BindingBase.EnableCollectionSynchronization(source, gate, (_, _, access, _) =>
+			{
+				lock (gate)
+					access();
+			});
+			MarshalingObservableCollection snapshot = null;
+			try
+			{
+				snapshot = new MarshalingObservableCollection(source, dispatcher);
+				var actions = new List<NotifyCollectionChangedAction>();
+				snapshot.CollectionChanged += (_, args) => actions.Add(args.Action);
+				lock (gate)
+				{
+					var item = source[1];
+					source.RemoveAt(1);
+					Assert.Equal(new object[] { "A", "C" }, snapshot);
+					source.Insert(2, item);
+				}
+				Assert.Equal(new object[] { "A", "C", "B" }, snapshot);
+				Assert.Equal(new[] { NotifyCollectionChangedAction.Remove, NotifyCollectionChangedAction.Add }, actions);
+				Assert.Empty(queued);
+			}
+			finally
+			{
+				snapshot?.Dispose();
+				BindingBase.DisableCollectionSynchronization(source);
 			}
 		}
 

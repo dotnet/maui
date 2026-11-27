@@ -400,14 +400,22 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	{
 		if (itemsSource is IEnumerable enumerable)
 		{
-			foreach (var item in enumerable)
+			bool grouped = false;
+			void CheckFirstItem()
 			{
-				if (item is IEnumerable && item is not string)
+				foreach (var item in enumerable)
 				{
-					return true;
+					grouped = item is IEnumerable && item is not string;
+					break;
 				}
-				break;
 			}
+
+			if (BindingBase.TryGetSynchronizedCollection(enumerable, out var synchronization))
+				synchronization.Callback(enumerable, synchronization.Context, CheckFirstItem, false);
+			else
+				CheckFirstItem();
+
+			return grouped;
 		}
 		return false;
 	}

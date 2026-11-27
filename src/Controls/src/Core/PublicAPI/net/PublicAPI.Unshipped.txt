@@ -1,2 +1,3 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Controls.MarshalingObservableCollection.~MarshalingObservableCollection() -> void
 ~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
