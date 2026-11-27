@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Platform
 			_shadowCanvas = null;
 		}
 
-		async Task CreateShadowAsync()
+		internal async Task CreateShadowAsync(Task<CompositionBrush?>? maskTask = null)
 		{
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 			{
@@ -291,13 +291,18 @@ namespace Microsoft.Maui.Platform
 			var hostVisual = ElementCompositionPreview.GetElementVisual(_shadowCanvas);
 			var compositor = hostVisual.Compositor;
 
-			_dropShadow = compositor.CreateDropShadow();
-			await SetShadowPropertiesAsync(_dropShadow, Shadow);
+			var dropShadow = _dropShadow = compositor.CreateDropShadow();
+			await SetShadowPropertiesAsync(dropShadow, Shadow, maskTask);
+
+			if (!ReferenceEquals(dropShadow, _dropShadow))
+			{
+				return;
+			}
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
 
-			_shadowVisual.Shadow = _dropShadow;
+			_shadowVisual.Shadow = dropShadow;
 
 			ElementCompositionPreview.SetElementChildVisual(_shadowHost, _shadowVisual);
 		}
@@ -310,11 +315,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task UpdateShadowAsync()
+		internal async Task UpdateShadowAsync(Task<CompositionBrush?>? maskTask = null)
 		{
-			if (_dropShadow != null)
+			if (_dropShadow is { } dropShadow)
 			{
-				await SetShadowPropertiesAsync(_dropShadow, Shadow);
+				await SetShadowPropertiesAsync(dropShadow, Shadow, maskTask);
+
+				if (!ReferenceEquals(dropShadow, _dropShadow))
+				{
+					return;
+				}
 			}
 
 			UpdateShadowSize();
@@ -355,7 +365,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task SetShadowPropertiesAsync(DropShadow dropShadow, IShadow? mauiShadow)
+		async Task SetShadowPropertiesAsync(DropShadow dropShadow, IShadow? mauiShadow, Task<CompositionBrush?>? maskTask)
 		{
 			float blurRadius = 10f;
 			float opacity = 1f;
@@ -379,7 +389,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			dropShadow.Mask = await Child.GetAlphaMaskAsync();
+			var mask = await (maskTask ?? Child.GetAlphaMaskAsync());
+
+			// The control can be disconnected while the mask renders, which disposes this DropShadow.
+			if (!ReferenceEquals(dropShadow, _dropShadow))
+			{
+				mask?.Dispose();
+				return;
+			}
+
+			dropShadow.Mask = mask;
 		}
 	}
 }
