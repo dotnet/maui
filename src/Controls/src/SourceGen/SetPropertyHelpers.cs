@@ -394,8 +394,10 @@ static class SetPropertyHelpers
 		if (HasDoubleImplicitConversion(localVar.Type, property.Type, context, out _))
 			return true;
 
-		if (HasExplicitConversion(localVar.Type, property.Type, context))
+		if (HasExplicitConversion(localVar, property.Type, context))
+		{
 			return true;
+		}
 
 		//TODO could we replace this by a runimt check (generating a if/else) ?            
 		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
@@ -548,8 +550,10 @@ static class SetPropertyHelpers
 			if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
 				return true;
 
-			if (HasExplicitConversion(localVar.Type, bpTypeAndConverter?.type, context))
+			if (HasExplicitConversion(localVar, bpTypeAndConverter?.type, context))
+			{
 				return true;
+			}
 
 			if (localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context))
 				return true;
@@ -605,7 +609,7 @@ static class SetPropertyHelpers
 					{
 						cast = "(" + conv!.ReturnType.ToFQDisplayString() + ")";
 					}
-					else if (pType != null && !context.Compilation.HasImplicitConversion(localVar.Type, pType) && HasExplicitConversion(localVar.Type, pType, context))
+					else if (pType != null && HasExplicitConversion(localVar, pType, context))
 					{
 						// Only add cast if the source type is not object (object can be cast to anything at runtime)
 						if (!localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
@@ -678,8 +682,9 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	static bool HasExplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context)
+	static bool HasExplicitConversion(ILocalValue fromValue, ITypeSymbol? toType, SourceGenContext context)
 	{
+		var fromType = fromValue.Type;
 		if (fromType == null || toType == null)
 			return false;
 
@@ -704,6 +709,13 @@ static class SetPropertyHelpers
 			}
 		}
 
+		// A constructed object's runtime type is known; it cannot gain interfaces from a subtype.
+		// Do not mistake a lone collection child (such as a Layout) for the collection itself.
+		if (fromValue is LocalVariable { IsDirectlyConstructed: true })
+		{
+			return false;
+		}
+
 		// Check for valid reference type casts (inheritance or interface)
 		// Only allow if both are collections or both are non-collections
 		if (fromType.IsReferenceType && toType.IsReferenceType)
@@ -714,7 +726,7 @@ static class SetPropertyHelpers
 			// Both must be collections, or both must be non-collections
 			if (fromIsCollection == toIsCollection)
 			{
-				// Same inheritance chain or one is an interface
+				// Same inheritance chain, or the source is an interface
 				if (fromType.InheritsFrom(toType, context) ||
 					toType.InheritsFrom(fromType, context) ||
 					toType.TypeKind == TypeKind.Interface ||
@@ -1827,7 +1839,7 @@ static class SetPropertyHelpers
 			|| propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
 			|| context.Compilation.HasImplicitConversion(localVar.Type, propertyType)
 			|| HasDoubleImplicitConversion(localVar.Type, propertyType, context, out _)
-			|| HasExplicitConversion(localVar.Type, propertyType, context)
+			|| HasExplicitConversion(localVar, propertyType, context)
 			//a value typed as object is cast at runtime, exactly like an ordinary property assignment
 			|| localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default);
 	}

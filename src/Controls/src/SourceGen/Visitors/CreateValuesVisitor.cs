@@ -350,7 +350,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			}
 			else
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
-			variables[node] = new LocalVariable(type, variableName);
+			variables[node] = new LocalVariable(type, variableName) { IsDirectlyConstructed = true };
 			node.RegisterSourceInfo(Context, writer);
 
 			return;
