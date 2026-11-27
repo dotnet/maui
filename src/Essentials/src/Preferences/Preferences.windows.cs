@@ -72,6 +72,12 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			if (typeof(T).IsEnum)
+			{
+				Set(key, Preferences.EnumToInt64(value), sharedName);
+				return;
+			}
+
 			Preferences.CheckIsSupportedType<T>();
 
 			lock (locker)
@@ -110,6 +116,10 @@ namespace Microsoft.Maui.Storage
 					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
 					{
+						// New enum writes use Int64. The existing cast below still reads legacy underlying values.
+						if (tempValue is long enumValue && typeof(T).IsEnum)
+							return (T)Enum.ToObject(typeof(T), enumValue);
+
 						if (defaultValue is DateTime dt)
 						{
 							return (T)(object)DateTime.FromBinary((long)tempValue);
@@ -188,6 +198,12 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName = null)
 		{
+			if (typeof(T).IsEnum)
+			{
+				Set(key, Preferences.EnumToInt64(value), sharedName);
+				return;
+			}
+
 			Preferences.CheckIsSupportedType<T>();
 
 			var prefs = _preferences.GetOrAdd(CleanSharedName(sharedName), _ => new ShareNameDictionary());
@@ -206,6 +222,9 @@ namespace Microsoft.Maui.Storage
 
 		public T Get<T>(string key, T defaultValue, string sharedName = null)
 		{
+			if (typeof(T).IsEnum)
+				return (T)Enum.ToObject(typeof(T), Get(key, Preferences.EnumToInt64(defaultValue), sharedName));
+
 			if (_preferences.TryGetValue(CleanSharedName(sharedName), out var inner))
 			{
 				if (inner.TryGetValue(key, out var value) && value is not null)
