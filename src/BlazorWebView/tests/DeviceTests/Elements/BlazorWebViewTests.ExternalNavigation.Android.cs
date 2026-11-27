@@ -93,16 +93,6 @@ public partial class BlazorWebViewTests
 		Assert.False(intent.Flags.HasFlag(ActivityFlags.ClearTask));
 	}
 
-	[Fact]
-	public void StructuredIntentUriAllowsMatchExternalOnlyWhenSupported()
-	{
-		const int matchExternal = 0x00000800;
-		using var intent = WebKitWebViewClient.CreateIntentForExternalUri(
-			new Uri($"intent:#Intent;launchFlags=0x{matchExternal:x8};end"));
-
-		Assert.Equal(OperatingSystem.IsAndroidVersionAtLeast(28), ((int)intent.Flags & matchExternal) != 0);
-	}
-
 	[Theory]
 	[InlineData("intent")]
 	[InlineData("android-app")]

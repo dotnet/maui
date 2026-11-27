@@ -85,7 +85,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return shellSection;
 		}
 
-#pragma warning disable MAUI1201 // This fixture intentionally exercises handwritten handling with attributes.
 		[QueryProperty("DoubleQueryParameter", "DoubleQueryParameter")]
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
@@ -139,31 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				else
 					AppliedQueryAttributes.Add(new Dictionary<string, object>(query));
 			}
-
-			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
-			{
-				if (query.TryGetValue(nameof(DoubleQueryParameter), out var number))
-					DoubleQueryParameter = number is null ? 0 : (double)Convert.ChangeType(number, typeof(double), QueryPropertyConversion.GetFormatProvider(query, nameof(DoubleQueryParameter)));
-				else if (previousQuery.ContainsKey(nameof(DoubleQueryParameter)))
-					DoubleQueryParameter = 0;
-
-				if (query.TryGetValue(nameof(SomeQueryParameter), out var text))
-					SomeQueryParameter = QueryPropertyConversion.ConvertToString(query, nameof(SomeQueryParameter), text);
-				else if (previousQuery.ContainsKey(nameof(SomeQueryParameter)))
-					SomeQueryParameter = null;
-
-				if (query.TryGetValue(nameof(CancelNavigationOnBackButtonPressed), out var cancel))
-					CancelNavigationOnBackButtonPressed = QueryPropertyConversion.ConvertToString(query, nameof(CancelNavigationOnBackButtonPressed), cancel);
-				else if (previousQuery.ContainsKey(nameof(CancelNavigationOnBackButtonPressed)))
-					CancelNavigationOnBackButtonPressed = null;
-
-				if (query.TryGetValue(nameof(ComplexObject), out var value))
-					ComplexObject = value is null ? null : Convert.ChangeType(value, typeof(object), QueryPropertyConversion.GetFormatProvider(query, nameof(ComplexObject)));
-				else if (previousQuery.ContainsKey(nameof(ComplexObject)))
-					ComplexObject = null;
-			}
 		}
-#pragma warning restore MAUI1201
 
 		protected ShellItem CreateShellItem(
 			TemplatedPage page = null,

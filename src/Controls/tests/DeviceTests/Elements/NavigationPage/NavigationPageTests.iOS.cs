@@ -26,6 +26,71 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		[Theory]
+		[InlineData("Push", false)]
+		[InlineData("Push", true)]
+		[InlineData("Pop", false)]
+		[InlineData("Pop", true)]
+		[InlineData("PopToRoot", false)]
+		[InlineData("PopToRoot", true)]
+		public async Task PageLoadsBeforeNavigatedTo(string operation, bool animated)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var navPage = new NavigationPage(operation == "PopToRoot" ? page : new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async _ =>
+			{
+				await OnNavigatedToAsync(navPage.CurrentPage);
+
+				if (operation == "Pop")
+					await navPage.PushAsync(page, false);
+
+				if (operation != "Push")
+				{
+					var unloaded = new TaskCompletionSource();
+					page.Unloaded += (_, _) => unloaded.TrySetResult();
+					await navPage.PushAsync(new ContentPage(), false);
+					await unloaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+					if (operation == "PopToRoot")
+						await navPage.PushAsync(new ContentPage(), false);
+				}
+
+				var events = new List<string>();
+				var loaded = new TaskCompletionSource();
+				var navigatedTo = new TaskCompletionSource();
+				page.Loaded += (_, _) =>
+				{
+					events.Add("Loaded");
+					loaded.TrySetResult();
+				};
+				page.NavigatedTo += (_, _) =>
+				{
+					events.Add("NavigatedTo");
+					navigatedTo.TrySetResult();
+				};
+
+				switch (operation)
+				{
+					case "Push":
+						await navPage.PushAsync(page, animated);
+						break;
+					case "Pop":
+						await navPage.PopAsync(animated);
+						break;
+					case "PopToRoot":
+						await navPage.PopToRootAsync(animated);
+						break;
+				}
+
+				await Task.WhenAll(loaded.Task, navigatedTo.Task).WaitAsync(TimeSpan.FromSeconds(5));
+				// Allow the queued platform loaded check to run as well.
+				await Task.Delay(100);
+				Assert.Equal(new[] { "Loaded", "NavigatedTo" }, events);
+			});
+		}
+
+		[Theory]
 		[InlineData(-1)]
 		[InlineData(24)]
 		[InlineData(56)]
