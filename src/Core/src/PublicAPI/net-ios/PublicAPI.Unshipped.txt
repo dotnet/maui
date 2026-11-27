@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.IContentButton
 Microsoft.Maui.Handlers.IContentButtonHandler
 Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
@@ -20,6 +20,7 @@ static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+override Microsoft.Maui.Platform.PageViewController.ViewDidAppear(bool animated) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
 static Microsoft.Maui.Easing.CubicBezier(double x1, double y1, double x2, double y2) -> Microsoft.Maui.Easing!
 static Microsoft.Maui.Easing.Spring(double bounce = 0.2) -> Microsoft.Maui.Easing!

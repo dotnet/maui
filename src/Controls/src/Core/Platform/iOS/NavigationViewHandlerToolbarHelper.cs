@@ -218,6 +218,12 @@ namespace Microsoft.Maui.Controls
             base.ViewWillAppear(animated);
         }
 
+        public override void ViewDidAppear(bool animated)
+        {
+            base.ViewDidAppear(animated);
+            TabbedPage.OnNavigationChildAppeared(Child, this);
+        }
+
         public override void ViewWillLayoutSubviews()
         {
             base.ViewWillLayoutSubviews();
