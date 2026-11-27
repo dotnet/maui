@@ -60,43 +60,63 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		private static Type? ResolveVirtualViewFromTypeSet(Type type, HashSet<Type> set, Type? additionalCandidate = null)
 		{
+			// If a single most specific candidate exists, every candidate is assignable from it, so moving to
+			// each more specific candidate in turn ends there regardless of the order of the candidates.
 			Type? bestVirtualViewHandlerServiceType = null;
 
 			foreach (Type registeredViewHandlerServiceType in set)
 			{
-				Consider(registeredViewHandlerServiceType);
+				ConsiderMoreSpecific(registeredViewHandlerServiceType);
 			}
 
 			if (additionalCandidate is not null)
 			{
-				Consider(additionalCandidate);
+				ConsiderMoreSpecific(additionalCandidate);
+			}
+
+			if (bestVirtualViewHandlerServiceType is null)
+			{
+				return null;
+			}
+
+			foreach (Type registeredViewHandlerServiceType in set)
+			{
+				EnsureNotAmbiguous(registeredViewHandlerServiceType);
+			}
+
+			if (additionalCandidate is not null)
+			{
+				EnsureNotAmbiguous(additionalCandidate);
 			}
 
 			return bestVirtualViewHandlerServiceType;
 
-			void Consider(Type registeredViewHandlerServiceType)
+			void ConsiderMoreSpecific(Type registeredViewHandlerServiceType)
 			{
-				if (registeredViewHandlerServiceType.IsAssignableFrom(type))
+				if (registeredViewHandlerServiceType.IsAssignableFrom(type)
+					&& (bestVirtualViewHandlerServiceType is null || bestVirtualViewHandlerServiceType.IsAssignableFrom(registeredViewHandlerServiceType)))
 				{
-					if (bestVirtualViewHandlerServiceType is null || bestVirtualViewHandlerServiceType.IsAssignableFrom(registeredViewHandlerServiceType))
-					{
-						bestVirtualViewHandlerServiceType = registeredViewHandlerServiceType;
-					}
-					else if (!registeredViewHandlerServiceType.IsAssignableFrom(bestVirtualViewHandlerServiceType))
-					{
-						// This exception can be thrown when the Element implements two interfaces that aren't derived from each other
-						// which both have a registered image source service to them.
-						// For example, consider this setup:
-						//	class MyElement : ILargeElement, IVisibleElement { ... }
-						//
-						//	handlersCollection.AddHandler<ILargeElement, LargeElementHandler>();
-						//  handlersCollection.AddHandler<IVisibleElement, VisibleElementHandler>();
-						//
-						// 	  var handler = Handler.GetHandler(typeof(MyElement));
-						//	ambiguous match: both LargeElementHandler and VisibleElementHandler are registered for MyImageSource
+					bestVirtualViewHandlerServiceType = registeredViewHandlerServiceType;
+				}
+			}
 
-						throw new InvalidOperationException($"Unable to find a single {nameof(IElementHandler)} corresponding to {type}. There is an ambiguous match between {bestVirtualViewHandlerServiceType} and {registeredViewHandlerServiceType}.");
-					}
+			void EnsureNotAmbiguous(Type registeredViewHandlerServiceType)
+			{
+				if (registeredViewHandlerServiceType.IsAssignableFrom(type)
+					&& !registeredViewHandlerServiceType.IsAssignableFrom(bestVirtualViewHandlerServiceType))
+				{
+					// This exception can be thrown when the Element implements two interfaces that aren't derived from each other
+					// which both have a registered image source service to them.
+					// For example, consider this setup:
+					//	class MyElement : ILargeElement, IVisibleElement { ... }
+					//
+					//	handlersCollection.AddHandler<ILargeElement, LargeElementHandler>();
+					//  handlersCollection.AddHandler<IVisibleElement, VisibleElementHandler>();
+					//
+					// 	  var handler = Handler.GetHandler(typeof(MyElement));
+					//	ambiguous match: both LargeElementHandler and VisibleElementHandler are registered for MyImageSource
+
+					throw new InvalidOperationException($"Unable to find a single {nameof(IElementHandler)} corresponding to {type}. There is an ambiguous match between {bestVirtualViewHandlerServiceType} and {registeredViewHandlerServiceType}.");
 				}
 			}
 		}

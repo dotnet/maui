@@ -346,6 +346,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ContentButtonDefaultOutranksBroaderInterfaceRegistrationsForConcreteImplementation()
+		{
+			// A concrete, unattributed IContentButton implementation is resolved through the interface scan.
+			var contentButtonType = NSubstitute.Substitute.For<IContentButton>().GetType();
+			using var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<IButton>(static _ => new ButtonHandlerStub());
+					handlers.AddHandler<IContentView>(static _ => new ButtonHandlerStub());
+				})
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<ContentButtonHandler>(handlers.GetHandler(contentButtonType));
+			Assert.Same(typeof(ContentButtonHandler), handlers.GetHandlerType(contentButtonType));
+		}
+
+		[Fact]
 		public void ContentViewRegistrationOverridesContentViewDefault()
 		{
 			using var mauiApp = MauiApp.CreateBuilder()

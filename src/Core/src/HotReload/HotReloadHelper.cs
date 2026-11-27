@@ -139,16 +139,37 @@ namespace Microsoft.Maui.HotReload
 		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
 		{
 			activatedHandlerTypes.GetValue(descriptor, static _ => new()).Type = handlerType;
+			ApplyPendingHandlerReplacement(descriptor.ServiceType, handlerType);
+		}
 
-			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
-				return;
+		/// <summary>
+		/// Applies a pending Hot Reload replacement of <paramref name="handlerType"/> to <paramref name="viewType"/> for a
+		/// handler that the factory resolved without a collection descriptor, such as an <see cref="Handlers.ElementHandlerAttribute"/>
+		/// or content interface default, which <see cref="RegisterHandlerReplacement"/> cannot find in the collection.
+		/// </summary>
+		/// <returns><see langword="true"/> if a replacement was registered, so resolving the view again uses it.</returns>
+		[UnconditionalSuppressMessage("Trimming", "IL2026",
+			Justification = "Pending replacements are only populated by the trim-incompatible Hot Reload path.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050",
+			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
+		internal static bool TryApplyPendingHandlerReplacement(Type viewType, Type handlerType) =>
+			ApplyPendingHandlerReplacement(viewType, handlerType);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
+		static bool ApplyPendingHandlerReplacement(Type viewType, Type handlerType)
+		{
+			if (pendingHandlerReplacements.IsEmpty || HandlerService is null || handlerType.FullName is not string handlerTypeName)
+				return false;
 
 			lock (handlerReplacementLock)
 			{
 				if (!pendingHandlerReplacements.TryGetValue(handlerTypeName, out var newHandlerType))
-					return;
+					return false;
 
-				var handler = new KeyValuePair<Type, Type>(descriptor.ServiceType, handlerType);
+				var handler = new KeyValuePair<Type, Type>(viewType, handlerType);
 				if (!replacedHandlers.TryGetValue(handlerTypeName, out var views))
 				{
 					views = new List<KeyValuePair<Type, Type>>();
@@ -156,10 +177,11 @@ namespace Microsoft.Maui.HotReload
 				}
 
 				if (views.Contains(handler))
-					return;
+					return false;
 
 				views.Add(handler);
 				RegisterHandler(handler, newHandlerType);
+				return true;
 			}
 		}
 

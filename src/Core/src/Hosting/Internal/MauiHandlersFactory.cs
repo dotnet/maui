@@ -177,12 +177,16 @@ namespace Microsoft.Maui.Hosting.Internal
 			// 4. Content interface defaults
 			if (resolution.ContentInterface == typeof(IContentButton))
 			{
-				return new ContentButtonHandler();
+				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(type, typeof(ContentButtonHandler))
+					? GetHandler(type, implementationFactoryServiceProvider)
+					: new ContentButtonHandler();
 			}
 
 			if (resolution.ContentInterface == typeof(IContentView))
 			{
-				return new ContentViewHandler();
+				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(type, typeof(ContentViewHandler))
+					? GetHandler(type, implementationFactoryServiceProvider)
+					: new ContentViewHandler();
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
@@ -205,7 +209,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			if (TryGetDirectElementHandlerAttribute(cache, iview, out var directElementHandlerAttribute)
 				&& GetValidatedHandlerType(iview, directElementHandlerAttribute) is Type directHandlerType)
 			{
-				return directHandlerType;
+				return GetDefaultHandlerType(iview, directHandlerType);
 			}
 
 			var resolution = GetAssignableResolution(cache, iview);
@@ -213,7 +217,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			{
 				if (GetValidatedHandlerType(iview, inheritedElementHandlerAttribute) is Type inheritedHandlerType)
 				{
-					return inheritedHandlerType;
+					return GetDefaultHandlerType(iview, inheritedHandlerType);
 				}
 
 				resolution = ResolveRegistrations(iview, cache);
@@ -226,17 +230,29 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			if (resolution.ContentInterface == typeof(IContentButton))
 			{
-				return typeof(ContentButtonHandler);
+				return GetDefaultHandlerType(iview, typeof(ContentButtonHandler));
 			}
 
 			// ContentViewHandler is the default/fallback handler for any IContentView
 			if (resolution.ContentInterface == typeof(IContentView))
 			{
-				return typeof(ContentViewHandler);
+				return GetDefaultHandlerType(iview, typeof(ContentViewHandler));
 			}
 
 			return null;
 		}
+
+		/// <summary>
+		/// Returns a handler type resolved without a collection descriptor, or its pending Hot Reload replacement,
+		/// which is registered for the view type when found.
+		/// </summary>
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		Type? GetDefaultHandlerType(
+			Type viewType,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType) =>
+			HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(viewType, handlerType)
+				? GetHandlerType(viewType)
+				: handlerType;
 
 		static AssignableResolution GetAssignableResolution(HandlerCache cache, Type viewType) =>
 			cache.AssignableResolutions.GetOrAdd(viewType, cache.AssignableResolutionFactory).Value;
@@ -348,6 +364,11 @@ namespace Microsoft.Maui.Hosting.Internal
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
 			IServiceProvider implementationFactoryServiceProvider)
 		{
+			if (HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(viewType, handlerType))
+			{
+				return GetHandler(viewType, implementationFactoryServiceProvider);
+			}
+
 			try
 			{
 				var activationServices = implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider

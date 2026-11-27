@@ -849,6 +849,93 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Theory]
+		[InlineData(typeof(AttributedViewStub), false)]
+		[InlineData(typeof(AttributedViewStub), true)]
+		[InlineData(typeof(DerivedAttributedViewStub), false)]
+		[InlineData(typeof(DerivedAttributedViewStub), true)]
+		public void HotReloadReplacesAttributeHandler(Type viewType, bool replaceBeforeFirstActivation)
+		{
+			using var app = MauiApp.CreateBuilder().Build();
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+			MauiHotReloadHelper.RegisterHandlers(factory.GetCollection());
+			try
+			{
+				if (!replaceBeforeFirstActivation)
+					Assert.IsType<AttributedViewHandlerStub>(factory.GetHandler(viewType));
+
+				MauiHotReloadHelper.RegisterHandlerReplacement(
+					typeof(AttributedViewHandlerStub).FullName!,
+					typeof(AlternateAttributedViewHandlerStub));
+
+				Assert.IsType<AlternateAttributedViewHandlerStub>(factory.GetHandler(viewType));
+				Assert.IsType<AlternateAttributedViewHandlerStub>(factory.GetHandler(viewType));
+				Assert.Same(typeof(AlternateAttributedViewHandlerStub), factory.GetHandlerType(viewType));
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
+		public void HotReloadReplacesContentViewDefaultHandler()
+		{
+			var contentViewType = Substitute.For<IContentView>().GetType();
+			using var app = MauiApp.CreateBuilder().Build();
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+			MauiHotReloadHelper.RegisterHandlers(factory.GetCollection());
+			try
+			{
+				Assert.IsType<ContentViewHandler>(factory.GetHandler(contentViewType));
+
+				MauiHotReloadHelper.RegisterHandlerReplacement(typeof(ContentViewHandler).FullName!, typeof(AlternateContentViewHandler));
+
+				Assert.Same(typeof(AlternateContentViewHandler), factory.GetHandlerType(contentViewType));
+				Assert.IsType<AlternateContentViewHandler>(factory.GetHandler(contentViewType));
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		class AlternateContentViewHandler : ContentViewHandler { }
+
+		[Fact]
+		public void MoreSpecificInterfaceRegistrationResolvesEarlierAmbiguity()
+		{
+			var contentButtonType = Substitute.For<IContentButton>().GetType();
+			using var app = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<IButton, ButtonHandlerStub>();
+					handlers.AddHandler<IContentView, ViewHandlerStub>();
+					handlers.AddHandler<IContentButton, AlternateViewHandlerStub>();
+				})
+				.Build();
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<AlternateViewHandlerStub>(factory.GetHandler(contentButtonType));
+			Assert.Same(typeof(AlternateViewHandlerStub), factory.GetHandlerType(contentButtonType));
+		}
+
+		[Fact]
+		public void UnrelatedInterfaceRegistrationsRemainAmbiguous()
+		{
+			var contentButtonType = Substitute.For<IContentButton>().GetType();
+			using var app = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<IButton, ButtonHandlerStub>();
+					handlers.AddHandler<IContentView, ViewHandlerStub>();
+				})
+				.Build();
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.Throws<InvalidOperationException>(() => factory.GetHandlerType(contentButtonType));
+		}
+
 		[Fact]
 		public void WrappedMissingConstructorFromInjectedDependencyIsNotRetried()
 		{
