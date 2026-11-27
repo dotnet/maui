@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,8 +15,26 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[TypeConverter(typeof(ShellContentConverter))]
+#if IOS || MACCATALYST
+	[ShellContentHandler]
+#elif WINDOWS
+	[ElementHandler(typeof(Handlers.ShellContentHandler))]
+#endif
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Declares the Apple ShellContentHandler only when the <c>UseiOSShellHandler</c> feature switch is enabled. Otherwise the
+		/// compatibility Shell renderer manages content itself, and the handler is trimmed.
+		/// </summary>
+		internal sealed class ShellContentHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType() =>
+				RuntimeFeature.IsiOSShellHandlerEnabled ? typeof(Handlers.ShellContentHandler) : null;
+		}
+#endif
+
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
 				defaultValueCreator: bo => new MenuItemCollection());
