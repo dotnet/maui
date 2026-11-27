@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Animations;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -7,6 +9,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MotionTests : BaseTestFixture
 	{
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		[InlineData(16)]
+		public void ZeroLengthTweenCompletesOnFirstFrame(double elapsedMilliseconds)
+		{
+			var animations = Substitute.For<IAnimationManager>();
+			var ticker = Substitute.For<ITicker>();
+			animations.Ticker.Returns(ticker);
+			ticker.SystemEnabled.Returns(true);
+
+			Microsoft.Maui.Animations.Animation animation = null;
+			animations.When(manager => manager.Add(Arg.Any<Microsoft.Maui.Animations.Animation>()))
+				.Do(call => animation = call.Arg<Microsoft.Maui.Animations.Animation>());
+			ticker.When(t => t.Start()).Do(_ => animation.Tick(elapsedMilliseconds));
+
+			var tweener = new Tweener(0, animations);
+			var values = new List<double>();
+			bool finished = false;
+			tweener.ValueUpdated += (sender, args) => values.Add(tweener.Value);
+			tweener.Finished += (sender, args) => finished = true;
+
+			tweener.Start();
+
+			Assert.Equal(new[] { 1.0 }, values);
+			Assert.True(finished);
+			Assert.True(animation.HasFinished);
+		}
+
 		[Fact]
 		public void TestLinearTween()
 		{
