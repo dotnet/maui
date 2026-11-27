@@ -102,6 +102,19 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("ItemsSourceItemOrder").GetText(), Is.EqualTo(expectedOrder));
 	}
 
+	private void AssertCollectionItemsAreNotRendered(params string[] itemCaptions)
+	{
+		foreach (var itemCaption in itemCaptions)
+			App.WaitForNoElement(
+				AppiumQuery.ById(itemCaption),
+				$"CollectionView should not render '{itemCaption}'.");
+	}
+
+	private void WaitForCollectionItem(string itemCaption)
+	{
+		App.WaitForElement(AppiumQuery.ById(itemCaption));
+	}
+
 	// ItemsSource replacement scenarios
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
@@ -1559,11 +1572,12 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		}
 
 		VerifyItemsSourceState(0, string.Empty);
+		AssertCollectionItemsAreNotRendered("Banana", "Carrot", "Broccoli");
 		App.Tap(RemoveItems);
 		VerifyItemsSourceState(0, string.Empty);
 		App.Tap(AddItems);
 		VerifyItemsSourceState(1, "Kiwi");
-		App.WaitForElement("Kiwi");
+		WaitForCollectionItem("Kiwi");
 	}
 
 	[Test]
@@ -1577,11 +1591,12 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 			App.Tap(RemoveItems);
 
 		VerifyItemsSourceState(0, string.Empty);
+		AssertCollectionItemsAreNotRendered("Banana", "Orange", "Carrot", "Broccoli", "Spinach");
 		App.Tap(RemoveItems);
 		VerifyItemsSourceState(0, string.Empty);
 		App.Tap(AddItems);
 		VerifyItemsSourceState(1, "Kiwi");
-		App.WaitForElement("Kiwi");
+		WaitForCollectionItem("Kiwi");
 	}
 
 	[Test]
@@ -1710,5 +1725,23 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("0"));
 		App.Tap(MutateNewSelectedItems);
 		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifySelectionDiagnosticsRefreshWhenSelectionModeChanges()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "1"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple"), Is.True);
+
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "2"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple, Carrot"), Is.True);
+
+		App.Tap(SingleModePreselection);
+		Assert.That(App.WaitForTextToBePresentInElement(SelectedItemsCount, "1"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("SelectedItemText", "Apple"), Is.True);
 	}
 }

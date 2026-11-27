@@ -148,11 +148,13 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 
 		if (button.AutomationId == "SingleModePreselection")
 		{
+			_viewModel.SelectedItems.Clear();
 			_viewModel.SelectionMode = SelectionMode.Single;
 			_viewModel.SelectedItem = itemsToSelect.FirstOrDefault();
 		}
 		else if (button.AutomationId == "MultipleModePreselection")
 		{
+			_viewModel.SelectedItem = null;
 			_viewModel.SelectionMode = SelectionMode.Multiple;
 			_viewModel.SelectedItems = new ObservableCollection<object>(itemsToSelect);
 		}

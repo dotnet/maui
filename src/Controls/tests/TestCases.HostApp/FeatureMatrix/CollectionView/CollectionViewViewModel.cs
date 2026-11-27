@@ -466,6 +466,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			{
 				_selectionMode = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(SelectedItemsCount));
+				OnPropertyChanged(nameof(SelectedItemText));
 			}
 		}
 	}
