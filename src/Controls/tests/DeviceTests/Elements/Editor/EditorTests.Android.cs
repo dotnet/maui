@@ -98,6 +98,24 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, editor.Text);
 		}
 
+		[Fact]
+		public async Task PasswordKeyboardPlatformTextPreservesCasing()
+		{
+			var editor = new Editor { Keyboard = Keyboard.Password, TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EditorHandler>(editor, handler =>
+			{
+				var changes = 0;
+				editor.TextChanged += (_, _) => changes++;
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal("aB", editor.Text);
+				Assert.Equal("aB", GetPlatformControl(handler).Text);
+				Assert.Equal(1, changes);
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]

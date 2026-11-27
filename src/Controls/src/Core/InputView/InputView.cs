@@ -314,7 +314,23 @@ namespace Microsoft.Maui.Controls
 			get => Text;
 			// Apply the transform here so typing raises TextChanged once, with the transformed text,
 			// instead of once for the raw input and again when the platform echoes the transformed text.
-			set => SetValue(TextProperty, TextTransformUtilities.GetTransformedText(value, TextTransform), SetterSpecificity.FromHandler);
+			set => SetValue(TextProperty, IsPasswordInput ? value : TextTransformUtilities.GetTransformedText(value, TextTransform), SetterSpecificity.FromHandler);
+		}
+
+		bool IsPasswordInput
+		{
+			get
+			{
+				if (this is Entry entry)
+					return entry.IsPassword;
+
+#if ANDROID
+				// These handlers use the Android EditText mapper's password-keyboard exemption.
+				return Keyboard == Keyboard.Password && (this is Editor || Handler is Microsoft.Maui.Handlers.SearchBarHandler2);
+#else
+				return false;
+#endif
+			}
 		}
 
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
