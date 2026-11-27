@@ -14,7 +14,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, IItemsUpdateObserver, IContentOffsetListener
+	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -47,23 +47,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
 		CGSize _previousContentSize;
-		CollectionViewScrollAnchor _scrollAnchor;
-
-		// The number of items when a scroll to the end of a view that doesn't follow its end still goes the rest of the way
-		// after the next layout (see FinishScrollToEnd), or null when no scroll does.
-		nint? _finishingScrollToEnd;
-		int _forcedLayouts;
-
-		// Counts the scroll requests (see StartScrollRequest).
-		int _scrollRequests;
-
-		// Counts the scroll animations UIKit reported ending (see ScrollAnimationEnded).
-		int _scrollAnimationsEnded;
-
-		// Whether UIKit is scrolling to an item for a ScrollTo, and the ScrollToStart or ScrollToEnd the app requested meanwhile,
-		// which scrolls once it's done (see ScrollToItem).
-		bool _scrollingToItem;
-		(int Request, bool ToEnd, bool Animate)? _scrollToEdgeAfterScrollingToItem;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -116,12 +99,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ItemsSource?.Dispose();
 
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
-#if MACCATALYST
-				if (CollectionView is Items.MauiCollectionView mauiCollectionView)
-				{
-					mauiCollectionView.ContentOffsetListener = null;
-				}
-#endif
 
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
@@ -260,8 +237,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
-			_scrollAnchor?.LayoutStarting();
-
 			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
 			{
 				InvalidateLayoutIfItemsMeasureChanged();
@@ -287,456 +262,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.ViewDidLayoutSubviews();
 
 			InvalidateMeasureIfContentSizeChanged(afterLayout: true);
-
-			_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
-			FinishScrollToEnd();
-		}
-
-		internal CollectionViewScrollAnchor ScrollAnchor => _scrollAnchor;
-
-		/// <summary>
-		/// Starts a scroll request: a <c>ScrollTo</c>, a <c>ScrollToStart</c> or <c>ScrollToEnd</c>, or a new
-		/// <see cref="StructuredItemsView.AnchorMode"/> or set of items, which scroll to the edge they select.
-		/// </summary>
-		/// <returns>The request, for <see cref="IsLatestScrollRequest"/>.</returns>
-		internal int StartScrollRequest() => ++_scrollRequests;
-
-		/// <summary>
-		/// Gets whether <paramref name="request"/> is the latest scroll request. The app can make a newer one from what a
-		/// request's scroll raises (its <c>Scrolled</c> event): the newer one wins, and the older one doesn't do what it would
-		/// once its scroll returns (scroll again, keep the item in view, go the rest of the way once its animation ends).
-		/// </summary>
-		internal bool IsLatestScrollRequest(int request) => request == _scrollRequests;
-
-		/// <summary>
-		/// Scrolls to an item for a <c>ScrollTo</c> request. UIKit can put the item back where this put it as it measures rows
-		/// in a later layout, unless the view scrolled after this returned: a scroll the app requests from the <c>Scrolled</c>
-		/// event this raises happens before, and UIKit undoes it. So a <c>ScrollToStart</c> or <c>ScrollToEnd</c> requested
-		/// from there scrolls once this returns (see <see cref="ScrolledToItem"/>).
-		/// </summary>
-		/// <returns>
-		/// Whether UIKit animates the scroll once this returns, and reports when the animation ends. It doesn't animate when the
-		/// item is where the request puts it already, and never reports an end then, nor for a view that isn't in a window, which
-		/// it scrolls at once. Before iOS and Mac Catalyst 17, which don't tell, this returns <see langword="false"/>.
-		/// </returns>
-		internal bool ScrollToItem(NSIndexPath indexPath, UICollectionViewScrollPosition scrollPosition, bool animated)
-		{
-			var scrollingToItem = _scrollingToItem;
-			_scrollingToItem = true;
-			try
-			{
-				CollectionView.ScrollToItem(indexPath, scrollPosition, animated);
-			}
-			finally
-			{
-				_scrollingToItem = scrollingToItem;
-			}
-
-			// An animation this replaced reported its end as this ran: whether one runs now is what tells.
-			return animated
-				&& (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
-				&& CollectionView.ScrollAnimating;
-		}
-
-		/// <summary>
-		/// Called once a <c>ScrollTo</c> request's scroll returned and the request isn't the latest: scrolls to the edge the app
-		/// requested meanwhile, if that's still the latest request.
-		/// </summary>
-		internal void ScrolledToItem()
-		{
-			if (_scrollingToItem || _scrollToEdgeAfterScrollingToItem is not { } scroll)
-			{
-				return;
-			}
-
-			_scrollToEdgeAfterScrollingToItem = null;
-			if (!IsLatestScrollRequest(scroll.Request))
-			{
-				return;
-			}
-
-			if (scroll.ToEnd)
-			{
-				ScrollToEnd(scroll.Animate);
-			}
-			else
-			{
-				ScrollToStart(scroll.Animate);
-			}
-		}
-
-		// Called as ScrollToStart or ScrollToEnd starts: while UIKit scrolls to an item, the scroll waits until it's done (see
-		// ScrollToItem). Returns whether it waits. It's the latest request until the app makes another one.
-		bool ScrollToEdgeAfterScrollingToItem(bool toEnd, bool animate)
-		{
-			if (!_scrollingToItem || ScrollDirection != UICollectionViewScrollDirection.Vertical)
-			{
-				return false;
-			}
-
-			_scrollToEdgeAfterScrollingToItem = (StartScrollRequest(), toEnd, animate);
-			return true;
-		}
-
-		// UIKit lays the view out for a change in the items as the items source has it update the view, and can move the
-		// content offset before it updates the content size: that's UIKit laying out, not a scroll.
-		void IItemsUpdateObserver.ItemsUpdating() => _scrollAnchor?.LayoutStarting();
-
-		void IItemsUpdateObserver.ItemsUpdated() =>
-			_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
-
-		internal void UpdateAnchorMode()
-		{
-			var mode = ItemsView is StructuredItemsView structuredItemsView
-				? structuredItemsView.AnchorMode & (ScrollAnchorMode.Start | ScrollAnchorMode.End)
-				: ScrollAnchorMode.None;
-
-			if (mode == ScrollAnchorMode.None)
-			{
-				// Turning anchoring off only stops following. It isn't a scroll: a scroll the app requested carries on to where
-				// it was going. An edge the view starts to follow is a scroll to that edge, and stops it (below).
-				// An animated ScrollToStart or ScrollToEnd the anchor followed on its way to the edge goes the rest of the way
-				// once its animation ends, as for a view that doesn't follow that edge: UIKit measures the rows it brings into
-				// view as it goes, which moves the edge past where it stops.
-				var edgeAnimation = _scrollAnchor?.EdgeAnimation;
-				var request = _scrollRequests;
-				DetachScrollAnchor();
-
-				// Not when the app requested a scroll as it heard the view no longer follows an edge: that one wins.
-				if (edgeAnimation is { } animation && IsLatestScrollRequest(request))
-				{
-					var target = animation.Target;
-					double contentHeight = CollectionView.ContentSize.Height;
-					ScrollingToEdge(animation.Edge == ScrollAnchorMode.End
-						? () => ScrollToEndAnimationEnded(target)
-						: () => CollectionViewScrollAnchor.ScrollToStartOnceEnded(CollectionView, contentHeight));
-				}
-
-				return;
-			}
-
-			if (_scrollAnchor?.Edges == mode)
-			{
-				return;
-			}
-
-			// A layout that doesn't scroll vertically isn't anchored (see CollectionViewScrollAnchor): the mode has no effect on
-			// it, and a scroll the app requested carries on to where it was going.
-			var isVertical = ScrollDirection == UICollectionViewScrollDirection.Vertical;
-			if (isVertical)
-			{
-				// It scrolls to the edge it selects: it's newer than any scroll requested before.
-				StartScrollRequest();
-
-#if MACCATALYST
-				// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
-				(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
-#endif
-				// So would what an earlier scroll left for when its animation ends, or for the next layout.
-				ScrollingToEdge(null);
-			}
-
-			if (_scrollAnchor is null)
-			{
-				_scrollAnchor = new CollectionViewScrollAnchor(mode);
-#if MACCATALYST
-				// The controller hears of every change of the content offset only while it anchors (see
-				// IContentOffsetListener.ContentOffsetChanged): on every scroll tick of a view that doesn't, that's for nothing.
-				if (CollectionView is Items.MauiCollectionView mauiCollectionView)
-				{
-					mauiCollectionView.ContentOffsetListener = this;
-				}
-#endif
-				CollectionView.SetNeedsLayout();
-			}
-			else
-			{
-				_scrollAnchor.UpdateMode(CollectionView, mode);
-			}
-
-			// And an animated scroll would carry on to where it was going, also when the view is at the edge it follows now and
-			// nothing scrolls it there: stop it where it is. A drag or a deceleration is the user's, and carries on.
-			if (isVertical && !CollectionView.Dragging && !CollectionView.Decelerating)
-			{
-				CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
-			}
-		}
-
-		internal void DetachScrollAnchor()
-		{
-			_scrollAnchor?.Detach(CollectionView, ItemsView as StructuredItemsView);
-			_scrollAnchor = null;
-#if MACCATALYST
-			if (CollectionView is Items.MauiCollectionView mauiCollectionView)
-			{
-				mauiCollectionView.ContentOffsetListener = null;
-			}
-#endif
-		}
-
-		internal bool ScrollToStart(bool animate)
-		{
-			if (ScrollToEdgeAfterScrollingToItem(toEnd: false, animate))
-			{
-				return true;
-			}
-
-			if (!PrepareScrollToEdge(out var request))
-			{
-				return false;
-			}
-
-			// The app can request another scroll from the Scrolled event laying the view out raised: that one wins.
-			if (!IsLatestScrollRequest(request))
-			{
-				return true;
-			}
-
-			var scrollAnchor = _scrollAnchor;
-			if (scrollAnchor is not null && scrollAnchor.CanFollow(ScrollAnchorMode.Start))
-			{
-				scrollAnchor.ScrollToStart(CollectionView, ItemsView as StructuredItemsView, animate);
-				return true;
-			}
-
-			// A scroll the app requests: an anchor that follows the end judges where it lands.
-			var animating = false;
-			var animationsEnded = _scrollAnimationsEnded;
-			double contentHeight = CollectionView.ContentSize.Height;
-			scrollAnchor?.ScrollRequesting();
-			try
-			{
-				// UIKit doesn't animate a view that isn't in a window: it scrolls the view to the start, and reports that the
-				// animation ended before this returns. Nothing is left to do then.
-				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate) && animationsEnded == _scrollAnimationsEnded;
-			}
-			finally
-			{
-				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request), animating);
-			}
-
-			if (animating && IsLatestScrollRequest(request))
-			{
-				var collectionView = CollectionView;
-				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToStartOnceEnded(collectionView, contentHeight));
-			}
-
-			return true;
-		}
-
-		internal bool ScrollToEnd(bool animate)
-		{
-			if (ScrollToEdgeAfterScrollingToItem(toEnd: true, animate))
-			{
-				return true;
-			}
-
-			if (!PrepareScrollToEdge(out var request))
-			{
-				return false;
-			}
-
-			// The app can request another scroll from the Scrolled event laying the view out raised: that one wins.
-			if (!IsLatestScrollRequest(request))
-			{
-				return true;
-			}
-
-			var scrollAnchor = _scrollAnchor;
-			if (scrollAnchor is not null && scrollAnchor.CanFollow(ScrollAnchorMode.End))
-			{
-				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
-				return true;
-			}
-
-			// A scroll the app requests: an anchor that follows the start judges where it lands.
-			double? target = null;
-			var animationsEnded = _scrollAnimationsEnded;
-			scrollAnchor?.ScrollRequesting();
-			try
-			{
-				if (animate)
-				{
-					// UIKit doesn't animate a view that isn't in a window: it scrolls the view to the end as laid out, and
-					// reports that the animation ended before this returns. It goes the rest of the way as from the end as laid
-					// out (below).
-					target = CollectionViewScrollAnchor.AnimateToEndOnce(CollectionView);
-					if (animationsEnded != _scrollAnimationsEnded)
-					{
-						target = null;
-					}
-				}
-				else
-				{
-					// Scroll to the end as laid out in the next layout, and the rest of the way in the ones after, once the rows
-					// there are measured (see FinishScrollToEnd). The app can request another scroll from the Scrolled event either
-					// raises: that one wins.
-					FinishingScrollToEnd();
-					_forcedLayouts++;
-					try
-					{
-						CollectionView.LayoutIfNeeded();
-						CollectionView.LayoutIfNeeded();
-					}
-					finally
-					{
-						_forcedLayouts--;
-					}
-
-					// UIKit can measure the rows there in a layout pass of its own, after the ones forced here: finish in one.
-					if (_finishingScrollToEnd is not null)
-					{
-						CollectionView.SetNeedsLayout();
-					}
-				}
-			}
-			finally
-			{
-				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request), target is not null);
-			}
-
-			// The app can request another scroll from the Scrolled event this one raised: that one wins.
-			if (!IsLatestScrollRequest(request))
-			{
-				return true;
-			}
-
-			if (target is double end)
-			{
-				ScrollingToEdge(() => ScrollToEndAnimationEnded(end));
-			}
-			else if (animate)
-			{
-				// At the end as laid out, or scrolled there without animating: it still goes the rest of the way if measuring
-				// the rows there moves the end.
-				FinishingScrollToEnd();
-			}
-
-			return true;
-		}
-
-		// Called when the animated scroll to the end of a view that doesn't follow its end has stopped. UIKit measures the
-		// rows the animation brought into view as it lays them out, which moves the end past where the animation stopped:
-		// go the rest of the way once it has. Measuring rows only moves the view and its end further on, so a view that is
-		// back before where the animation stopped was scrolled away, as a tap on the status bar scrolls to the top.
-		void ScrollToEndAnimationEnded(double target)
-		{
-			if (CollectionView.ContentOffset.Y >= target - 0.5)
-			{
-				FinishingScrollToEnd();
-			}
-		}
-
-		void FinishingScrollToEnd()
-		{
-			_finishingScrollToEnd = CountItems();
-			CollectionView.SetNeedsLayout();
-		}
-
-		// Called once the view is laid out. A scroll to the end goes the rest of the way to the end, which the layout moves as
-		// it measures the rows the scroll brought into view, until a layout UIKit runs on its own leaves the end where it is: a
-		// layout forced right after the scroll may not have measured them yet. It doesn't follow items added or removed
-		// meanwhile: those aren't the rows it scrolled to. It stops for a newer scroll request, which the app can make from the
-		// Scrolled event its own scroll raises (see ScrollingToEdge).
-		void FinishScrollToEnd()
-		{
-			if (_finishingScrollToEnd is not nint count)
-			{
-				return;
-			}
-
-			_finishingScrollToEnd = null;
-			if (ScrollDirection != UICollectionViewScrollDirection.Vertical || count != CountItems())
-			{
-				return;
-			}
-
-			// The scroll brings rows into view: look again once the layout it causes has measured them.
-			_finishingScrollToEnd = count;
-			if (CollectionViewScrollAnchor.SetOffsetToEnd(CollectionView, animated: false) is null)
-			{
-				if (_forcedLayouts == 0)
-				{
-					_finishingScrollToEnd = null;
-				}
-			}
-			else if (_finishingScrollToEnd is not null)
-			{
-				CollectionView.SetNeedsLayout();
-			}
-		}
-
-		nint CountItems()
-		{
-			nint count = 0;
-			var sections = CollectionView.NumberOfSections();
-			for (nint section = 0; section < sections; section++)
-			{
-				count += CollectionView.NumberOfItemsInSection(section);
-			}
-
-			return count;
-		}
-
-		// Starts a scroll to an edge of the content, which the view makes in a vertical layout: returns whether it does, and
-		// the request it starts, which the caller checks is still the latest.
-		bool PrepareScrollToEdge(out int request)
-		{
-			request = 0;
-			if (ScrollDirection != UICollectionViewScrollDirection.Vertical)
-			{
-				return false;
-			}
-
-			// It's newer than any scroll requested before.
-			request = StartScrollRequest();
-
-#if MACCATALYST
-			// A new scroll request: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
-			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
-#endif
-
-			// So would a correction an earlier animated ScrollTo, ScrollToStart or ScrollToEnd left for when its animation ends.
-			ScrollingToEdge(null);
-
-			// And the animation itself would carry on to where that scroll was going, even when the view is at the edge
-			// already and this one doesn't move it: stop it where it is.
-			CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
-
-			// It scrolls to the edge as laid out: lay the view out now. That can raise Scrolled, from which the app can request
-			// another scroll, which wins (see IsLatestScrollRequest).
-			CollectionView.LayoutIfNeeded();
-			return true;
-		}
-
-		/// <summary>
-		/// Called as <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> starts, and again once either started an
-		/// animated scroll to an edge the view doesn't follow, with what to do when that animation ends. It's also called
-		/// with <see langword="null"/> when the user starts dragging or the app requests another scroll: those stop an
-		/// earlier scroll to the end from going the rest of the way, and an animated scroll a request started from scrolling
-		/// as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>). A controller told when a scroll
-		/// animation ends replaces what it does then: nothing, or <paramref name="animationEnded"/>.
-		/// </summary>
-		internal virtual void ScrollingToEdge(Action animationEnded)
-		{
-			_finishingScrollToEnd = null;
-			if (animationEnded is null)
-			{
-				_scrollAnchor?.RequestedScrollEnded(CollectionView);
-			}
-		}
-
-		/// <summary>
-		/// Called when UIKit reports that a scroll animation ended: one that got where it was going, one a scroll stopped, or
-		/// one UIKit didn't run, as for a view that isn't in a window, which it reports as it scrolls the view. An animated
-		/// scroll a request started no longer scrolls as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>),
-		/// and one to the edge the view follows that a scroll stopped short is judged by where it stopped (see
-		/// <see cref="CollectionViewScrollAnchor.ScrollAnimationEnded"/>).
-		/// </summary>
-		internal void ScrollAnimationEnded()
-		{
-			_scrollAnimationsEnded++;
-			_scrollAnchor?.ScrollAnimationEnded(CollectionView);
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
@@ -796,12 +321,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
-		// Mac Catalyst can move the content offset without telling the scroll view delegate or laying the view out, as it can
-		// when the window changes: the anchor looks again. Only Mac Catalyst observes the content offset (see
-		// MauiCollectionView.ContentOffsetListener).
-		void IContentOffsetListener.ContentOffsetChanged() => _scrollAnchor?.OffsetObserved(CollectionView);
-
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
@@ -857,25 +377,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
 
-			// UIKit lays the view out for the new layout, and can move the content offset before it updates the content size.
-			_scrollAnchor?.LayoutStarting();
-			try
-			{
-				var contentOffset = CollectionView.ContentOffset;
+			var contentOffset = CollectionView.ContentOffset;
 
-				CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
+			CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
 
-				// UIKit already preserves scrolled content when replacing the layout.
-				// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
-				if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
-				{
-					(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
-					CollectionView.ContentOffset = contentOffset;
-				}
-			}
-			finally
+			// UIKit already preserves scrolled content when replacing the layout.
+			// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
+			if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
 			{
-				_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
+				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
+				CollectionView.ContentOffset = contentOffset;
 			}
 
 			UpdateEmptyView();
@@ -893,11 +404,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateItemsSource()
 		{
-			// What an earlier ScrollTo, ScrollToStart or ScrollToEnd left for later was for the old items: the new items are
-			// newer, also than a scroll that raised the Scrolled event the app replaced the items from.
-			StartScrollRequest();
-			ScrollingToEdge(null);
-
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
 
@@ -907,10 +413,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// UIKit can defer data-source callbacks while the collection has zero bounds.
 			// Refresh emptiness before measuring so a collapsed collection can grow again.
 			CheckForEmptySource();
-
-			// New items start at their end, as the view did when it first appeared. Start over before resetting the offset:
-			// the app can request a scroll from the Scrolled event that raises, which is newer.
-			_scrollAnchor?.Reset(CollectionView);
 
 			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
 			// ResetScrollTracking must run before the assignment so the UIKit-triggered

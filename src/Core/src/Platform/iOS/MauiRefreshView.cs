@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		bool _originalAlwaysBounceVertical;
 		bool _hasStoredAlwaysBounceVertical;
 		bool _restoreScrollPosition;
+		bool _startRefreshingOnLayout;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -40,16 +41,18 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_isRefreshing = value;
+				_startRefreshingOnLayout = false;
 
 				if (_isRefreshing != _refreshControl.Refreshing)
 				{
 					if (_isRefreshing)
 					{
-						// Store the current scroll position when refresh starts
-						StoreCurrentScrollPosition();
-						_restoreScrollPosition = true;
-						TryOffsetRefresh(this, IsRefreshing);
-						_refreshControl.BeginRefreshing();
+						// UIKit drops a refresh that begins before the view is in a window,
+						// so in that case it starts once, on the first layout pass inside one
+						if (Window is not null)
+							StartRefreshing(positionIsFinal: true);
+						else
+							_startRefreshingOnLayout = true;
 					}
 					else
 					{
@@ -65,6 +68,48 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 			}
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+
+			if (Window is not null && _startRefreshingOnLayout)
+				SetNeedsLayout();
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (_startRefreshingOnLayout && Window is not null && _refreshControl.Superview is not null)
+			{
+				_startRefreshingOnLayout = false;
+
+				if (!_refreshControl.Refreshing)
+					StartRefreshing(positionIsFinal: false);
+			}
+		}
+
+		void StartRefreshing(bool positionIsFinal)
+		{
+			// Store the current scroll position when refresh starts
+			StoreCurrentScrollPosition();
+
+			// On the first layout an unscrolled position isn't final yet, so UIKit settles the scroll view itself when it ends
+			_restoreScrollPosition = positionIsFinal || _originalY > 0;
+
+			var scrollView = _refreshControlParent as UIScrollView;
+			var topInset = scrollView?.AdjustedContentInset.Top ?? 0;
+			var restsAtInsetTop = !positionIsFinal && scrollView is not null && topInset > 0 && scrollView.ContentOffset.Y <= -topInset + 0.5;
+
+			// Offsetting before beginning doubles the offset when this runs on the first layout
+			_refreshControl.BeginRefreshing();
+
+			if (restsAtInsetTop)
+				scrollView!.SetContentOffset(new CGPoint(scrollView.ContentOffset.X, -topInset - _refreshControlHeight), true);
+			else
+				TryOffsetRefresh(this, true);
 		}
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)

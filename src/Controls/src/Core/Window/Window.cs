@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
+#pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
 			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
+#pragma warning restore CA1416
 			_menuBarTracker = new MenuBarTracker(this, "MenuBar");
 		}
 
@@ -546,7 +548,6 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Window was already activated");
 
 			IsActivated = true;
-			ResumeAnimations();
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
 		}
@@ -563,7 +564,6 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Stopped()
 		{
-			SuspendAnimations();
 			Stopped?.Invoke(this, EventArgs.Empty);
 			OnStopped();
 			Application?.SendSleep();
@@ -576,7 +576,6 @@ namespace Microsoft.Maui.Controls
 
 			IsDestroyed = true;
 			IsCreated = false;
-			DestroyAnimationClock();
 
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
@@ -596,7 +595,6 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Resumed()
 		{
-			ResumeAnimations();
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
 			Application?.SendResume();
