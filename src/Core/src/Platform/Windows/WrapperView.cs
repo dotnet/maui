@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Platform
 			_shadowCanvas = null;
 		}
 
-		async Task CreateShadowAsync()
+		internal async Task CreateShadowAsync(Task<CompositionBrush?>? maskTask = null)
 		{
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 			{
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Platform
 			var compositor = hostVisual.Compositor;
 
 			var dropShadow = _dropShadow = compositor.CreateDropShadow();
-			await SetShadowPropertiesAsync(dropShadow, Shadow);
+			await SetShadowPropertiesAsync(dropShadow, Shadow, maskTask);
 
 			if (!ReferenceEquals(dropShadow, _dropShadow))
 			{
@@ -315,11 +315,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task UpdateShadowAsync()
+		internal async Task UpdateShadowAsync(Task<CompositionBrush?>? maskTask = null)
 		{
 			if (_dropShadow is { } dropShadow)
 			{
-				await SetShadowPropertiesAsync(dropShadow, Shadow);
+				await SetShadowPropertiesAsync(dropShadow, Shadow, maskTask);
 
 				if (!ReferenceEquals(dropShadow, _dropShadow))
 				{
@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task SetShadowPropertiesAsync(DropShadow dropShadow, IShadow? mauiShadow)
+		async Task SetShadowPropertiesAsync(DropShadow dropShadow, IShadow? mauiShadow, Task<CompositionBrush?>? maskTask)
 		{
 			float blurRadius = 10f;
 			float opacity = 1f;
@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			var mask = await Child.GetAlphaMaskAsync();
+			var mask = await (maskTask ?? Child.GetAlphaMaskAsync());
 
 			// The control can be disconnected while the mask renders, which disposes this DropShadow.
 			if (!ReferenceEquals(dropShadow, _dropShadow))
