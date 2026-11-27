@@ -324,8 +324,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Transparent title bar restores the Shell flyout clip")]
-		public async Task TransparentTitleBarRestoresShellFlyoutClip()
+		[Theory(DisplayName = "Transparent title bar restores the Shell flyout clip")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TransparentTitleBarRestoresShellFlyoutClip(bool useDefaultBackground)
 		{
 			SetupBuilder(builder => builder.ConfigureMauiHandlers(handlers =>
 				handlers.AddHandler<IContentView, ContentViewHandler>()));
@@ -338,7 +340,9 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutBackgroundColor = translucentColor;
 				shell.Items.Add(new ContentPage());
 			});
-			var titleBar = new Microsoft.Maui.Controls.TitleBar { BackgroundColor = transparentColor };
+			var titleBar = new Microsoft.Maui.Controls.TitleBar();
+			if (!useDefaultBackground)
+				titleBar.BackgroundColor = transparentColor;
 			var window = new Microsoft.Maui.Controls.Window(shell);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
@@ -380,6 +384,8 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => ReferenceEquals(originalClip, splitView.Clip));
 				titleBar.Background = null;
 				await AssertEventually(() => ReferenceEquals(titleBarClip, splitView.Clip));
+				titleBar.BackgroundColor = null;
+				await AssertEventually(() => ReferenceEquals(originalClip, splitView.Clip));
 			});
 		}
 

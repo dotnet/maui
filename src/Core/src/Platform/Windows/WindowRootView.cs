@@ -529,9 +529,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (NavigationViewControl is not null)
 			{
-				// A fully transparent solid background can show the flyout underneath.
-				NavigationViewControl.ClipSplitViewForTitleBar = _titleBar is not null &&
-					_titleBar.Background is not SolidPaint { Color: { Alpha: 0 } };
+				// An unset or fully transparent solid background can show the flyout underneath.
+				NavigationViewControl.ClipSplitViewForTitleBar = _titleBar?.Background is { } background &&
+					background is not SolidPaint { Color: { Alpha: 0 } };
 			}
 		}
 
