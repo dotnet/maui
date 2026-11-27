@@ -287,12 +287,11 @@ public static partial class AppHostBuilderExtensions
 		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();
+		Animations.ControlsNavigationTransitionHooks.Install();
 
 #if WINDOWS
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
-
-		builder.RemapForControls();
 
 		return builder;
 	}
@@ -327,46 +326,6 @@ public static partial class AppHostBuilderExtensions
 			services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 			services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
 		});
-
-		return builder;
-	}
-
-	internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
-	{
-		// Update the mappings for IView/View to work specifically for Controls
-		Element.RemapIfNeeded();
-		Application.RemapForControls();
-		VisualElement.RemapIfNeeded();
-		Button.RemapForControls();
-		ContentButton.RemapForControls();
-		DatePicker.RemapForControls();
-		RadioButton.RemapForControls();
-		FlyoutPage.RemapForControls();
-		Toolbar.RemapForControls();
-		Window.RemapForControls();
-		Editor.RemapForControls();
-		Entry.RemapForControls();
-		SwipeView.RemapForControls();
-		Picker.RemapForControls();
-		SearchBar.RemapForControls();
-		Stepper.RemapForControls();
-		TabbedPage.RemapForControls();
-		TimePicker.RemapForControls();
-		Layout.RemapForControls();
-		ScrollView.RemapForControls();
-		RefreshView.RemapForControls();
-		Shape.RemapForControls();
-		WebView.RemapForControls();
-		ContentPage.RemapForControls();
-		ImageButton.RemapForControls();
-
-		Slider.RemapForControls();
-
-#if IOS || MACCATALYST
-		NavigationPage.RemapForControls();
-#endif
-
-		Animations.ControlsNavigationTransitionHooks.Install();
 
 		return builder;
 	}

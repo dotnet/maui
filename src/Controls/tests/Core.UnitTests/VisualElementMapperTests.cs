@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BackgroundKeyIsMappedBeforeControlsBackgroundColorAndImageSourceKeys()
 		{
+			// Controls remaps ViewMapper lazily, when the first VisualElement is attached to a handler.
+			new VisualElement().RemapForControls();
 			var keys = ViewHandler.ViewMapper.GetKeys().ToList();
 
 			var backgroundIndex = keys.IndexOf(nameof(IView.Background));
@@ -50,6 +52,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SemanticsKeyIsMappedBeforeControlsSemanticPropertiesKeys()
 		{
+			// Controls remaps ViewMapper lazily, when the first VisualElement is attached to a handler.
+			new VisualElement().RemapForControls();
 			var keys = ViewHandler.ViewMapper.GetKeys().ToList();
 
 			var semanticsIndex = keys.IndexOf(nameof(IView.Semantics));
@@ -637,6 +641,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void RealDerivedHandlerMappers_MapCanonicalKeysBeforeTheControlsRedirectKeys()
 		{
+			// Controls remaps ViewMapper lazily, when the first VisualElement is attached to a handler.
+			new VisualElement().RemapForControls();
 			var mappers = new (string Name, IPropertyMapper Mapper)[]
 			{
 				(nameof(ButtonHandler), ButtonHandler.Mapper),
