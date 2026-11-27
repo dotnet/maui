@@ -10,17 +10,25 @@ namespace Microsoft.Maui
 		readonly Dictionary<string, Command> _mapper = new(StringComparer.Ordinal);
 		readonly Dictionary<string, MappingCustomization> _mappingCustomizations = new(StringComparer.Ordinal);
 		Dictionary<string, FrameworkCell>? _frameworkCells;
+		Dictionary<string, InheritedCapture>? _inheritedCaptures;
 		bool _frameworkMappingsSealed;
 		bool _preserveMappingCustomizations;
 
 		CommandMapper? _chained;
 		long _version;
 
+		// Every change stamps the changed mapper with the next value of this counter, which is shared by all
+		// command mappers.
+		static long s_lastVersion;
+
+		// Nonzero while the mapper resolves commands to invoke or compose them; see the property mapper's equivalent.
+		[ThreadStatic]
+		static int t_directResolution;
+
 		/// <summary>
-		/// Changes whenever this mapper or a chained mapper changes. Versions only increase, so the sum
-		/// identifies a state of the whole chain.
+		/// Identifies a state of this mapper and its chain; see the property mapper's equivalent.
 		/// </summary>
-		internal long ChainVersion => Volatile.Read(ref _version) + (Chained?.ChainVersion ?? 0);
+		internal long ChainVersion => Math.Max(Volatile.Read(ref _version), Chained?.ChainVersion ?? 0);
 
 		public CommandMapper()
 		{
@@ -43,8 +51,10 @@ namespace Microsoft.Maui
 			}
 
 			_mapper[key] = action;
-			Interlocked.Increment(ref _version);
+			UpdateVersion();
 		}
+
+		void UpdateVersion() => Volatile.Write(ref _version, Interlocked.Increment(ref s_lastVersion));
 
 		void SetCustomizedPropertyCore(string key, Command action)
 		{
@@ -69,7 +79,7 @@ namespace Microsoft.Maui
 			}
 
 			mappingCustomization.AddCustomization(sequence, customization);
-			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+			mappingCustomization.Register();
 		}
 
 		/// <summary>
@@ -89,7 +99,7 @@ namespace Microsoft.Maui
 				_mapper[key] = cell.Mapping;
 			}
 
-			Interlocked.Increment(ref _version);
+			UpdateVersion();
 		}
 
 		internal void ModifyFrameworkMapping(string key, Func<Command?, Command> modification)
@@ -97,18 +107,20 @@ namespace Microsoft.Maui
 			if (_frameworkCells is not null && _frameworkCells.TryGetValue(key, out var cell))
 			{
 				cell.Modify(modification);
-				Interlocked.Increment(ref _version);
+				UpdateVersion();
 				return;
 			}
 
 			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
 			{
-				mappingCustomization = new MappingCustomization(this, key, MappingCustomizationSequence.Framework);
+				// A remap of a key without a framework cell builds on the chained command as it is now, like the
+				// remaps that captured the previous command when they ran at startup.
+				mappingCustomization = new MappingCustomization(this, key, MappingCustomizationSequence.Current);
 				_mappingCustomizations[key] = mappingCustomization;
 			}
 
 			mappingCustomization.ModifyFrameworkMapping(modification);
-			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+			mappingCustomization.Register();
 		}
 
 		/// <summary>
@@ -118,14 +130,69 @@ namespace Microsoft.Maui
 		internal Command? GetCommandAsOf(string key, long sequence)
 		{
 			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
-				return mappingCustomization.GetMappingAsOf(sequence);
+			{
+				return mappingCustomization.TryGetMappingAsOf(sequence, out var mapping)
+					? mapping
+					: mappingCustomization.Chained?.GetCommandAsOf(key, sequence);
+			}
 
 			// Honor GetCommand overrides; only an inherited chained command has an earlier state.
-			var command = GetCommand(key);
-			if (command is not null && !_mapper.ContainsKey(key) && ReferenceEquals(command, Chained?.GetCommand(key)))
+			var command = GetCommandDirect(key);
+			if (command is not null && !_mapper.ContainsKey(key) && ReferenceEquals(command, GetChainedCommandDirect(key)))
 				return Chained!.GetCommandAsOf(key, sequence);
 
 			return command;
+		}
+
+		Command? GetInheritedCommandAsOf(string key, long sequence, CommandMapper? chained)
+		{
+			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization)
+				&& mappingCustomization.TryGetMappingAsOf(sequence, out var mapping))
+			{
+				return mapping;
+			}
+
+			return chained?.GetCommandAsOf(key, sequence);
+		}
+
+		Command? GetCommandDirect(string key)
+		{
+			t_directResolution++;
+			try
+			{
+				return GetCommand(key);
+			}
+			finally
+			{
+				t_directResolution--;
+			}
+		}
+
+		Command? GetChainedCommandDirect(string key) => Chained?.GetCommandDirect(key);
+
+		internal bool HasLocalCommand(string key) => _mapper.ContainsKey(key);
+
+		/// <summary>
+		/// Gets a command for an inherited key that is bound to this mapper; see the property mapper's equivalent.
+		/// </summary>
+		Command CaptureInheritedCommand(string key)
+		{
+			var sequence = MappingCustomizationSequence.Current;
+			var chained = Chained;
+			lock (_mappingCustomizations)
+			{
+				_inheritedCaptures ??= new(StringComparer.Ordinal);
+				if (_inheritedCaptures.TryGetValue(key, out var capture)
+					&& capture.Sequence == sequence
+					&& ReferenceEquals(capture.Chained, chained))
+				{
+					return capture.Mapping;
+				}
+
+				capture = new InheritedCapture(this, key, sequence, chained);
+				_inheritedCaptures[key] = capture;
+				return capture.Mapping;
+			}
 		}
 
 		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
@@ -133,21 +200,24 @@ namespace Microsoft.Maui
 			if (!viewHandler.CanInvokeMappers())
 				return;
 
-			var action = GetCommand(key);
+			var action = GetCommandDirect(key);
 			action?.Invoke(viewHandler, virtualView, args);
 		}
 
 		public virtual Command? GetCommand(string key)
 		{
-			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
-				return mappingCustomization.GetCurrentMapping();
-
+			// A customized key holds the registration that includes the app customizations recorded so far.
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
-			else if (Chained is not null)
-				return Chained.GetCommand(key);
-			else
+
+			if (Chained is null)
 				return null;
+
+			if (!_frameworkMappingsSealed || t_directResolution > 0)
+				return Chained.GetCommand(key);
+
+			// See the property mapper: a wrapped inherited command still observes later remaps of the key here.
+			return GetChainedCommandDirect(key) is null ? null : CaptureInheritedCommand(key);
 		}
 
 		public void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
@@ -164,7 +234,7 @@ namespace Microsoft.Maui
 			set
 			{
 				_chained = value;
-				Interlocked.Increment(ref _version);
+				UpdateVersion();
 			}
 		}
 
@@ -192,8 +262,8 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <remarks>
 		/// See the property mapper's equivalent for the ordering rules: framework remaps compose underneath
-		/// recorded customizations, and a chained command only reflects chained app customizations recorded
-		/// before this key was first customized.
+		/// recorded customizations, and an inherited command is resolved from the chained mapper the owner had when
+		/// the record was created, only reflecting its app customizations recorded before then.
 		/// </remarks>
 		sealed class MappingCustomization
 		{
@@ -201,131 +271,159 @@ namespace Microsoft.Maui
 			readonly string _key;
 			readonly Command? _localMapping;
 			readonly bool _hasLocalMapping;
+			readonly long _chainedMappingSequence;
 			readonly List<Func<Command?, Command>> _frameworkModifications = new();
 			readonly List<long> _sequences = new();
 			readonly List<Func<Command?, Command>> _customizations = new();
-			long _chainedMappingSequence;
+			readonly List<Command?> _registeredMappings = new();
 			volatile Compositions? _compositions;
-			volatile Snapshot? _snapshot;
+			int _revision;
 
 			public MappingCustomization(CommandMapper owner, string key, long chainedMappingSequence)
 			{
 				_owner = owner;
 				_key = key;
 				// Start from the command GetCommand reports, which honors overrides. Only an inherited command is
-				// resolved through the chained mapper, at the sequence of the customization.
-				var command = owner.GetCommand(key);
+				// resolved through the chained mapper, at the sequence of the record.
+				var command = owner.GetCommandDirect(key);
 				_hasLocalMapping = owner._mapper.ContainsKey(key)
-					|| (command is not null && !ReferenceEquals(command, owner.Chained?.GetCommand(key)));
+					|| (command is not null && !ReferenceEquals(command, owner.GetChainedCommandDirect(key)));
 				_localMapping = _hasLocalMapping ? command : null;
-
+				Chained = owner.Chained;
 				_chainedMappingSequence = chainedMappingSequence;
-				Mapping = (handler, view, args) =>
-				{
-					var mappings = GetCompositions().Mappings;
-					mappings[mappings.Length - 1]?.Invoke(handler, view, args);
-				};
 			}
 
 			/// <summary>
-			/// The complete command, stored in the mapper so the key stays registered. It always dispatches to the
-			/// latest composition and is never returned to callers.
+			/// The chained mapper an inherited command is resolved from.
 			/// </summary>
-			public Command Mapping { get; }
-
-			/// <summary>
-			/// Gets the command including the app customizations recorded so far; see the property mapper's equivalent.
-			/// </summary>
-			public Command GetCurrentMapping()
-			{
-				var sequence = MappingCustomizationSequence.Current;
-				var snapshot = _snapshot;
-				if (snapshot is not null && snapshot.Sequence == sequence)
-					return snapshot.Mapping;
-
-				snapshot = new Snapshot(sequence, (handler, view, args) => GetMappingAsOf(sequence)?.Invoke(handler, view, args));
-				_snapshot = snapshot;
-				return snapshot.Mapping;
-			}
+			public CommandMapper? Chained { get; }
 
 			public void AddCustomization(long sequence, Func<Command?, Command> customization)
 			{
 				_sequences.Add(sequence);
 				_customizations.Add(customization);
+				Interlocked.Increment(ref _revision);
 				_compositions = null;
 			}
 
 			public void ModifyFrameworkMapping(Func<Command?, Command> modification)
 			{
-				_chainedMappingSequence = MappingCustomizationSequence.Framework;
 				_frameworkModifications.Add(modification);
+				Interlocked.Increment(ref _revision);
 				_compositions = null;
 			}
 
-			public Command? GetMappingAsOf(long sequence)
+			/// <summary>
+			/// Registers the command that includes every customization recorded so far; see the property mapper's
+			/// equivalent.
+			/// </summary>
+			public void Register()
+			{
+				var index = _customizations.Count;
+				_owner.SetCustomizedPropertyCore(_key, (handler, view, args) => GetMappingAt(index)?.Invoke(handler, view, args));
+
+				while (_registeredMappings.Count <= index)
+					_registeredMappings.Add(null);
+
+				_registeredMappings[index] = _owner._mapper.TryGetValue(_key, out var registered) ? registered : null;
+			}
+
+			public bool TryGetMappingAsOf(long sequence, out Command? mapping)
 			{
 				var count = 0;
 				while (count < _sequences.Count && _sequences[count] <= sequence)
 					count++;
 
-				// Before this key's first customization, an inherited command is the chained one at that time.
 				if (count == 0 && _frameworkModifications.Count == 0 && !_hasLocalMapping)
-					return _owner.Chained?.GetCommandAsOf(_key, sequence);
+				{
+					mapping = null;
+					return false;
+				}
 
-				return GetCompositions().Mappings[count];
+				mapping = (count < _registeredMappings.Count ? _registeredMappings[count] : null)
+					?? GetMappingAt(count);
+				return true;
+			}
+
+			Command? GetMappingAt(int index)
+			{
+				var mappings = GetCompositions().Mappings;
+				return index < mappings.Length ? mappings[index] : null;
 			}
 
 			Compositions GetCompositions()
 			{
 				var compositions = _compositions;
-				var version = _owner.ChainVersion;
-				if (compositions is not null && compositions.Version == version)
+				var revision = Volatile.Read(ref _revision);
+				var version = Chained?.ChainVersion ?? 0;
+				if (compositions is not null && compositions.Version == version && compositions.Revision == revision)
 					return compositions;
 
-				var mappings = new Command?[_customizations.Count + 1];
-				var mapping = _hasLocalMapping ? _localMapping : _owner.Chained?.GetCommandAsOf(_key, _chainedMappingSequence);
-				foreach (var modification in _frameworkModifications)
+				// Read the counts once: another thread may record a customization while this one composes, and
+				// the revision then makes the next caller compose again.
+				var modificationCount = _frameworkModifications.Count;
+				var customizationCount = _customizations.Count;
+				var mappings = new Command?[customizationCount + 1];
+				var mapping = _hasLocalMapping ? _localMapping : Chained?.GetCommandAsOf(_key, _chainedMappingSequence);
+				for (var i = 0; i < modificationCount; i++)
 				{
-					mapping = modification(mapping);
+					mapping = _frameworkModifications[i](mapping);
 				}
 
 				mappings[0] = mapping;
-				for (var i = 0; i < _customizations.Count; i++)
+				for (var i = 0; i < customizationCount; i++)
 				{
 					mapping = _customizations[i](mapping);
 					mappings[i + 1] = mapping;
 				}
 
-				compositions = new Compositions(mappings, version);
+				compositions = new Compositions(mappings, version, revision);
 				_compositions = compositions;
 				return compositions;
 			}
 
-			sealed class Snapshot
-			{
-				public Snapshot(long sequence, Command mapping)
-				{
-					Sequence = sequence;
-					Mapping = mapping;
-				}
-
-				public long Sequence { get; }
-
-				public Command Mapping { get; }
-			}
-
 			sealed class Compositions
 			{
-				public Compositions(Command?[] mappings, long version)
+				public Compositions(Command?[] mappings, long version, int revision)
 				{
 					Mappings = mappings;
 					Version = version;
+					Revision = revision;
 				}
 
 				public Command?[] Mappings { get; }
 
 				public long Version { get; }
+
+				public int Revision { get; }
 			}
+		}
+
+		/// <summary>
+		/// An inherited command of a sealed mapper handed to a caller, bound to the state it was read in.
+		/// </summary>
+		sealed class InheritedCapture
+		{
+			readonly CommandMapper _owner;
+			readonly string _key;
+
+			public InheritedCapture(CommandMapper owner, string key, long sequence, CommandMapper? chained)
+			{
+				_owner = owner;
+				_key = key;
+				Sequence = sequence;
+				Chained = chained;
+				Mapping = Invoke;
+			}
+
+			public long Sequence { get; }
+
+			public CommandMapper? Chained { get; }
+
+			public Command Mapping { get; }
+
+			void Invoke(IElementHandler handler, IElement view, object? args) =>
+				_owner.GetInheritedCommandAsOf(_key, Sequence, Chained)?.Invoke(handler, view, args);
 		}
 	}
 
@@ -368,9 +466,13 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				_ = GetCommand(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				var command = GetCommand(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
 
-				// See the property mapper indexer: resolve on invocation so lazy framework remaps are included.
+				// See the property mapper indexer: an inherited command is used as GetCommand reports it, and a local
+				// one resolves on invocation so lazy framework remaps are included.
+				if (!HasLocalCommand(key))
+					return new Action<TViewHandler, TVirtualView, object?>((h, v, o) => command(h, v, o));
+
 				var sequence = MappingCustomizationSequence.Current;
 				return new Action<TViewHandler, TVirtualView, object?>((h, v, o) => GetCommandAsOf(key, sequence)?.Invoke(h, v, o));
 			}

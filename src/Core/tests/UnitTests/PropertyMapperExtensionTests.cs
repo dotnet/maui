@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -415,19 +416,19 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void ChildFrameworkMappingIgnoresParentAppCustomizations()
+		public void ChildFrameworkMappingIncludesEarlierParentAppCustomizations()
 		{
 			var log = string.Empty;
 			var parentMapper = CreateMapper(() => log += "core;").WithFrameworkMappingsSealed();
 			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
 
-			// A framework remap of the child would have run at startup, before any app customization of the parent.
 			parentMapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "parent;");
 			childMapper.AppendToMappingForControls<IView, IViewHandler>(nameof(IView.Background), (_, _) => log += "controls;");
+			parentMapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "later;");
 
 			childMapper.UpdateProperties(null, new Button());
 
-			Assert.Equal("core;controls;", log);
+			Assert.Equal("core;parent;controls;", log);
 		}
 
 		[Fact]
@@ -636,6 +637,277 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal(2, mapper.SetPropertyCallCount);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void WrapperOfInheritedMappingCallsParentMapping(bool useIndexer)
+		{
+			var log = string.Empty;
+			var parentMapper = CreateMapper(() => log += "core;");
+			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper);
+
+			Action<IElementHandler, IElement> previous;
+			if (useIndexer)
+			{
+				var indexed = childMapper[nameof(IView.Background)];
+				previous = (handler, view) => indexed((IViewHandler)handler, (IView)view);
+			}
+			else
+			{
+				previous = childMapper.GetProperty(nameof(IView.Background))!;
+			}
+
+			childMapper[nameof(IView.Background)] = (handler, view) =>
+			{
+				previous(handler, view);
+				log += "wrapper;";
+			};
+
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("core;wrapper;", log);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void WrapperOfInheritedMappingOfSealedMapperIncludesLaterFrameworkRemap(bool useIndexer)
+		{
+			var log = string.Empty;
+			var parentMapper = CreateMapper(() => log += "core;").WithFrameworkMappingsSealed();
+			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+
+			Action<IElementHandler, IElement> previous;
+			if (useIndexer)
+			{
+				var indexed = childMapper[nameof(IView.Background)];
+				previous = (handler, view) => indexed((IViewHandler)handler, (IView)view);
+			}
+			else
+			{
+				previous = childMapper.GetProperty(nameof(IView.Background))!;
+			}
+
+			childMapper[nameof(IView.Background)] = (handler, view) =>
+			{
+				previous(handler, view);
+				log += "wrapper;";
+			};
+			childMapper.AppendToMappingForControls<IView, IViewHandler>(nameof(IView.Background), (_, _) => log += "controls;");
+
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("core;controls;wrapper;", log);
+		}
+
+		[Fact]
+		public void GetPropertyOfCustomizedOrInheritedKeyReturnsSameMappingUntilCustomizedAgain()
+		{
+			var parentMapper = CreateMapper(() => { }).WithFrameworkMappingsSealed();
+			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+			parentMapper.AppendToMapping(nameof(IView.Background), (_, _) => { });
+
+			var customized = parentMapper.GetProperty(nameof(IView.Background));
+			var inherited = childMapper.GetProperty(nameof(IView.Background));
+
+			Assert.Same(customized, parentMapper.GetProperty(nameof(IView.Background)));
+			Assert.Same(inherited, childMapper.GetProperty(nameof(IView.Background)));
+
+			var allocated = GC.GetAllocatedBytesForCurrentThread();
+			for (var i = 0; i < 100; i++)
+			{
+				parentMapper.GetProperty(nameof(IView.Background));
+				childMapper.GetProperty(nameof(IView.Background));
+			}
+			Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - allocated);
+
+			parentMapper.AppendToMapping(nameof(IView.Background), (_, _) => { });
+			Assert.NotSame(customized, parentMapper.GetProperty(nameof(IView.Background)));
+		}
+
+		[Fact]
+		public void DirectLookupOfInheritedMappingOfSealedMapperReturnsChainedMapping()
+		{
+			var parentMapper = CreateMapper(() => { }).WithFrameworkMappingsSealed();
+			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+
+			Assert.Same(
+				parentMapper.GetProperty(nameof(IView.Background)),
+				PropertyMapper.GetPropertyDirect(childMapper, nameof(IView.Background)));
+		}
+
+		[Fact]
+		public void ReplacingChainedMapperWithLessChangedMapperRefreshesMergedMappings()
+		{
+			var log = string.Empty;
+			var firstParent = CreateMapper(() => log += "A;");
+			firstParent[nameof(IView.Opacity)] = (_, _) => { };
+			var secondParent = CreateMapper(() => log += "B;");
+			var childMapper = new PropertyMapper<IView, IViewHandler>(firstParent);
+			var grandchildMapper = new PropertyMapper<IView, IViewHandler>(childMapper);
+
+			grandchildMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			childMapper.Chained = new IPropertyMapper[] { secondParent };
+			log = string.Empty;
+
+			grandchildMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("B;B;", log);
+		}
+
+		[Fact]
+		public void ReplacingGrandparentRefreshesChildCustomization()
+		{
+			var log = string.Empty;
+			var firstGrandparent = CreateMapper(() => log += "A;");
+			firstGrandparent[nameof(IView.Opacity)] = (_, _) => { };
+			var secondGrandparent = CreateMapper(() => log += "B;");
+			var parentMapper = new PropertyMapper<IView, IViewHandler>(firstGrandparent);
+			var childMapper = new PropertyMapper<IView, IViewHandler>(parentMapper);
+
+			childMapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "C;");
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			parentMapper.Chained = new IPropertyMapper[] { secondGrandparent };
+			log = string.Empty;
+
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("B;C;", log);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CustomizationKeepsChainedMapperAfterChainIsReplacedOrCleared(bool clear)
+		{
+			var log = string.Empty;
+			var firstParent = CreateMapper(() => log += "A;");
+			var secondParent = CreateMapper(() => log += "B;");
+			var childMapper = new PropertyMapper<IView, IViewHandler>(firstParent);
+			childMapper[nameof(IView.Opacity)] = (_, _) => log += "opacity;";
+
+			childMapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "C;");
+			childMapper.Chained = clear ? null : new IPropertyMapper[] { secondParent };
+
+			childMapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("A;C;", log);
+		}
+
+		[Fact]
+		public void CustomizationsPreserveOverriddenSetPropertyCoreTransformations()
+		{
+			var log = string.Empty;
+			var mapper = new GuardingPropertyMapper
+			{
+				[nameof(IView.Background)] = (_, _) => log += "core;"
+			};
+
+			mapper.AppendToMapping(nameof(IView.Background), (_, _) => log += "append;");
+			mapper.ReplaceMappingForControls<IView, IViewHandler>(nameof(IView.Background), (_, _) => log += "controls;");
+			mapper.Enabled = false;
+
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			mapper.UpdateProperties(null, new Button());
+			mapper.GetProperty(nameof(IView.Background))!(null!, new Button());
+			Assert.Equal(string.Empty, log);
+
+			mapper.Enabled = true;
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+			Assert.Equal("controls;append;", log);
+		}
+
+		public enum FrameworkHelper
+		{
+			Replace,
+			Modify,
+			Append,
+			Prepend,
+		}
+
+		[Theory]
+		[InlineData(FrameworkHelper.Replace)]
+		[InlineData(FrameworkHelper.Modify)]
+		[InlineData(FrameworkHelper.Append)]
+		[InlineData(FrameworkHelper.Prepend)]
+		public void TypedFrameworkMappingFallsThroughToChainedMappingForOtherVirtualViews(FrameworkHelper helper)
+		{
+			var log = string.Empty;
+			var parentMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (_, view) => log += $"parent:{view.GetType().Name};"
+			};
+			var mapper = new PropertyMapper<ILabel, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+			ApplyFrameworkHelper<ILabel, IViewHandler>(mapper, helper, () => log += "controls;");
+
+			mapper.UpdateProperty(null, new Button(), nameof(IView.Background));
+
+			Assert.Equal("parent:Button;", log);
+		}
+
+		[Theory]
+		[InlineData(FrameworkHelper.Replace)]
+		[InlineData(FrameworkHelper.Modify)]
+		[InlineData(FrameworkHelper.Append)]
+		[InlineData(FrameworkHelper.Prepend)]
+		public void TypedFrameworkMappingFallsThroughForIncompatibleHandler(FrameworkHelper helper)
+		{
+			var log = string.Empty;
+			var handler = Substitute.For<IViewHandler>();
+			var parentMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, view) => log += $"parent:{ReferenceEquals(h, handler)}:{view.GetType().Name};"
+			};
+			var mapper = new PropertyMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+			ApplyFrameworkHelper<ILabel, Microsoft.Maui.Handlers.ILabelHandler>(mapper, helper, () => log += "controls;");
+
+			mapper.UpdateProperty(handler, new Label(), nameof(IView.Background));
+
+			Assert.Equal("parent:True:Label;", log);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TypedPublicModifyMappingFallsThroughForIncompatibleHandlerOrView(bool incompatibleHandler)
+		{
+			var log = string.Empty;
+			var handler = Substitute.For<IViewHandler>();
+			IPropertyMapper<IElement, IElementHandler> mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (_, view) => log += $"previous:{view.GetType().Name};"
+			};
+			mapper.ModifyMapping<ILabel, Microsoft.Maui.Handlers.ILabelHandler>(nameof(IView.Background), (_, _, _) => log += "user;");
+
+			if (incompatibleHandler)
+				mapper.UpdateProperty(handler, new Label(), nameof(IView.Background));
+			else
+				mapper.UpdateProperty(null!, new Button(), nameof(IView.Background));
+
+			Assert.Equal(incompatibleHandler ? "previous:Label;" : "previous:Button;", log);
+		}
+
+		static void ApplyFrameworkHelper<TVirtualView, TViewHandler>(IPropertyMapper<IElement, IElementHandler> mapper, FrameworkHelper helper, Action log)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			switch (helper)
+			{
+				case FrameworkHelper.Replace:
+					mapper.ReplaceMappingForControls<TVirtualView, TViewHandler>(nameof(IView.Background), (_, _) => log());
+					break;
+				case FrameworkHelper.Modify:
+					mapper.ModifyMappingForControls<TVirtualView, TViewHandler>(nameof(IView.Background), (_, _, _) => log());
+					break;
+				case FrameworkHelper.Append:
+					mapper.AppendToMappingForControls<TVirtualView, TViewHandler>(nameof(IView.Background), (_, _) => log());
+					break;
+				case FrameworkHelper.Prepend:
+					mapper.PrependToMappingForControls<TVirtualView, TViewHandler>(nameof(IView.Background), (_, _) => log());
+					break;
+			}
+		}
+
 		static PropertyMapper<IView, IViewHandler> CreateMapper(Action mapping) =>
 			new()
 			{
@@ -662,6 +934,18 @@ namespace Microsoft.Maui.UnitTests
 
 			public override Action<IElementHandler, IElement> GetProperty(string key) =>
 				Overriding && key == nameof(IView.Background) ? _mapping : base.GetProperty(key);
+		}
+
+		sealed class GuardingPropertyMapper : PropertyMapper<IView, IViewHandler>
+		{
+			public bool Enabled { get; set; } = true;
+
+			protected override void SetPropertyCore(string key, Action<IElementHandler, IElement> action) =>
+				base.SetPropertyCore(key, (handler, view) =>
+				{
+					if (Enabled)
+						action(handler, view);
+				});
 		}
 
 		sealed class TrackingPropertyMapper : PropertyMapper<IView, IViewHandler>

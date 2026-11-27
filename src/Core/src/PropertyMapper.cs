@@ -23,9 +23,19 @@ namespace Microsoft.Maui
 		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 		readonly Dictionary<string, MappingCustomization> _mappingCustomizations = new(StringComparer.Ordinal);
 		Dictionary<string, FrameworkCell>? _frameworkCells;
+		Dictionary<string, InheritedCapture>? _inheritedCaptures;
 		bool _frameworkMappingsSealed;
 		bool _preserveMappingCustomizations;
 		IPropertyMapper[]? _chained;
+
+		// Every change stamps the changed mapper with the next value of this counter, which is shared by all
+		// property mappers.
+		static long s_lastVersion;
+
+		// Nonzero while the mapper resolves mappings to invoke or compose them rather than to hand them to a caller;
+		// see GetPropertyDirect.
+		[ThreadStatic]
+		static int t_directResolution;
 
 		// The merged view of this mapper (and its chain) is published as a single reference so that
 		// everything derived from one merge - the keys, the mappings, and the key->mapping cache - is
@@ -50,26 +60,25 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Changes whenever this mapper or a chained property mapper changes. Versions only increase, so the
-		/// sum identifies a state of the whole chain.
+		/// Identifies a state of this mapper and its chain. Each change stamps the changed mapper with a value larger
+		/// than every earlier stamp of any property mapper, so the largest stamp in the chain changes whenever
+		/// anything in it changes, including when a chained mapper is replaced by one that changed less often.
 		/// </summary>
-		internal long ChainVersion
-		{
-			get
-			{
-				var version = Volatile.Read(ref _version);
-				var chainedPropertyMappers = Chained;
-				if (chainedPropertyMappers is not null)
-				{
-					foreach (var chained in chainedPropertyMappers)
-					{
-						if (chained is PropertyMapper propertyMapper)
-							version += propertyMapper.ChainVersion;
-					}
-				}
+		internal long ChainVersion => Math.Max(Volatile.Read(ref _version), GetChainVersion(Chained));
 
-				return version;
+		static long GetChainVersion(IPropertyMapper[]? chained)
+		{
+			long version = 0;
+			if (chained is not null)
+			{
+				foreach (var mapper in chained)
+				{
+					if (mapper is PropertyMapper propertyMapper)
+						version = Math.Max(version, propertyMapper.ChainVersion);
+				}
 			}
+
+			return version;
 		}
 
 		public PropertyMapper()
@@ -125,7 +134,7 @@ namespace Microsoft.Maui
 			}
 
 			mappingCustomization.AddCustomization(sequence, customization);
-			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+			mappingCustomization.Register();
 		}
 
 		/// <summary>
@@ -164,12 +173,14 @@ namespace Microsoft.Maui
 
 			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
 			{
-				mappingCustomization = new MappingCustomization(this, key, MappingCustomizationSequence.Framework);
+				// A remap of a key without a framework cell builds on the chained mappings as they are now, like the
+				// remaps that captured the previous mapping when they ran at startup.
+				mappingCustomization = new MappingCustomization(this, key, MappingCustomizationSequence.Current);
 				_mappingCustomizations[key] = mappingCustomization;
 			}
 
 			mappingCustomization.ModifyFrameworkMapping(modification);
-			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+			mappingCustomization.Register();
 		}
 
 		/// <summary>
@@ -179,22 +190,36 @@ namespace Microsoft.Maui
 		internal Action<IElementHandler, IElement>? GetPropertyAsOf(string key, long sequence)
 		{
 			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
-				return mappingCustomization.GetMappingAsOf(sequence);
+			{
+				return mappingCustomization.TryGetMappingAsOf(sequence, out var mapping)
+					? mapping
+					: GetChainedPropertyAsOf(mappingCustomization.Chained, key, sequence);
+			}
 
 			// Honor GetProperty overrides; only an inherited chained mapping has an earlier state.
-			var mapping = GetProperty(key);
-			if (mapping is not null && !_mapper.ContainsKey(key) && ReferenceEquals(mapping, GetChainedProperty(key)))
-				return GetChainedPropertyAsOf(key, sequence);
+			var current = GetPropertyDirect(key);
+			if (current is not null && !_mapper.ContainsKey(key) && ReferenceEquals(current, GetChainedPropertyDirect(key)))
+				return GetChainedPropertyAsOf(Chained, key, sequence);
 
-			return mapping;
+			return current;
 		}
 
-		Action<IElementHandler, IElement>? GetChainedPropertyAsOf(string key, long sequence)
+		Action<IElementHandler, IElement>? GetInheritedPropertyAsOf(string key, long sequence, IPropertyMapper[]? chained)
 		{
-			var chainedPropertyMappers = Chained;
-			if (chainedPropertyMappers is not null)
+			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization)
+				&& mappingCustomization.TryGetMappingAsOf(sequence, out var mapping))
 			{
-				foreach (var ch in chainedPropertyMappers)
+				return mapping;
+			}
+
+			return GetChainedPropertyAsOf(chained, key, sequence);
+		}
+
+		static Action<IElementHandler, IElement>? GetChainedPropertyAsOf(IPropertyMapper[]? chained, string key, long sequence)
+		{
+			if (chained is not null)
+			{
+				foreach (var ch in chained)
 				{
 					var returnValue = ch is PropertyMapper propertyMapper
 						? propertyMapper.GetPropertyAsOf(key, sequence)
@@ -207,6 +232,65 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// Gets the mapping <see cref="GetProperty"/> reports, honoring overrides, but resolves inherited mappings of
+		/// sealed mappers to the chained mapping itself instead of a mapping bound to this mapper. Use it to invoke or
+		/// compose the current mapping, or to compare it by reference.
+		/// </summary>
+		internal static Action<IElementHandler, IElement>? GetPropertyDirect(IPropertyMapper mapper, string key) =>
+			mapper is PropertyMapper propertyMapper ? propertyMapper.GetPropertyDirect(key) : mapper.GetProperty(key);
+
+		Action<IElementHandler, IElement>? GetPropertyDirect(string key)
+		{
+			t_directResolution++;
+			try
+			{
+				return GetProperty(key);
+			}
+			finally
+			{
+				t_directResolution--;
+			}
+		}
+
+		Action<IElementHandler, IElement>? GetChainedPropertyDirect(string key)
+		{
+			t_directResolution++;
+			try
+			{
+				return GetChainedProperty(key);
+			}
+			finally
+			{
+				t_directResolution--;
+			}
+		}
+
+		/// <summary>
+		/// Gets a mapping for an inherited key that is bound to this mapper: it resolves on invocation to the mapping
+		/// as it was after the app customizations recorded so far, including framework remaps of the key on this
+		/// mapper that run later.
+		/// </summary>
+		Action<IElementHandler, IElement> CaptureInheritedProperty(string key)
+		{
+			var sequence = MappingCustomizationSequence.Current;
+			var chained = Chained;
+			lock (_mappingCustomizations)
+			{
+				_inheritedCaptures ??= new(StringComparer.Ordinal);
+				if (_inheritedCaptures.TryGetValue(key, out var capture)
+					&& capture.Sequence == sequence
+					&& ReferenceEquals(capture.Chained, chained))
+				{
+					return capture.Mapping;
+				}
+
+				capture = new InheritedCapture(this, key, sequence, chained);
+				_inheritedCaptures[key] = capture;
+				return capture.Mapping;
+			}
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
@@ -249,7 +333,7 @@ namespace Microsoft.Maui
 
 			// CachedMappers initially contains only the UpdateProperties keys which may not contain the key we are looking for.
 			// This should never happen, but there's a chance someone may have customized `GetKeys` to return a subset of the actual registered mapper keys.
-			var mapper = GetProperty(key);
+			var mapper = GetPropertyDirect(key);
 			cachedMappers[key] = mapper;
 
 			if (mapper is not null)
@@ -277,17 +361,21 @@ namespace Microsoft.Maui
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
-			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
-			{
-				return mappingCustomization.GetCurrentMapping();
-			}
-
+			// A customized key holds the registration that includes the app customizations recorded so far. Later
+			// customizations register new mappings, so a caller can wrap the returned one without recursion.
 			if (_mapper.TryGetValue(key, out var action))
 			{
 				return action;
 			}
 
-			return GetChainedProperty(key);
+			if (!_frameworkMappingsSealed || t_directResolution > 0)
+			{
+				return GetChainedProperty(key);
+			}
+
+			// A caller that wraps an inherited mapping of a built-in mapper must still observe a later framework
+			// remap of the key on this mapper, as it would have when the remaps ran at startup.
+			return GetChainedPropertyDirect(key) is null ? null : CaptureInheritedProperty(key);
 		}
 
 		Action<IElementHandler, IElement>? GetChainedProperty(string key)
@@ -387,7 +475,7 @@ namespace Microsoft.Maui
 		void ClearMergedMappers()
 		{
 			_merged = null;
-			Interlocked.Increment(ref _version);
+			Volatile.Write(ref _version, Interlocked.Increment(ref s_lastVersion));
 		}
 
 		public virtual IEnumerable<string> GetKeys()
@@ -424,7 +512,7 @@ namespace Microsoft.Maui
 
 			foreach (var key in keys)
 			{
-				var mapper = GetProperty(key)!;
+				var mapper = GetPropertyDirect(key)!;
 				mappers.Add(mapper);
 				cachedMappers[key] = mapper;
 			}
@@ -460,11 +548,11 @@ namespace Microsoft.Maui
 		/// <remarks>
 		/// Framework remaps may run lazily, after app customizations were registered. They therefore modify the
 		/// framework layer underneath the recorded customizations, as if they had run first. When the key is not
-		/// local, the framework layer is the chained mapping. App customizations of the chained mappers are only
-		/// included when they were recorded before the first customization of this key, which preserves the
-		/// previously captured mapping semantics; a framework modification of this key places it before all of
-		/// them. The composition is rebuilt when the chained mappers change, so later framework remaps of them,
-		/// including newly added keys, are observed.
+		/// local, the framework layer is the mapping of the chained mappers the owner had when the record was created.
+		/// App customizations of those mappers are only included when they were recorded before the record was
+		/// created, which preserves the previously captured mapping semantics. Framework remaps of the chained
+		/// mappers, including newly added keys, are always observed because the composition is rebuilt when they
+		/// change.
 		/// </remarks>
 		sealed class MappingCustomization
 		{
@@ -472,54 +560,33 @@ namespace Microsoft.Maui
 			readonly string _key;
 			readonly Action<IElementHandler, IElement>? _localMapping;
 			readonly bool _hasLocalMapping;
+			readonly long _chainedMappingSequence;
 			readonly List<Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>>> _frameworkModifications = new();
 			readonly List<long> _sequences = new();
 			readonly List<Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>>> _customizations = new();
-			long _chainedMappingSequence;
+			readonly List<Action<IElementHandler, IElement>?> _registeredMappings = new();
 			volatile Compositions? _compositions;
-			volatile Snapshot? _snapshot;
+			int _revision;
 
 			public MappingCustomization(PropertyMapper owner, string key, long chainedMappingSequence)
 			{
 				_owner = owner;
 				_key = key;
 				// Start from the mapping GetProperty reports, which honors overrides. Only an inherited mapping is
-				// resolved through the chained mappers, at the sequence of the customization.
-				var mapping = owner.GetProperty(key);
+				// resolved through the chained mappers, at the sequence of the record.
+				var mapping = owner.GetPropertyDirect(key);
 				_hasLocalMapping = owner._mapper.ContainsKey(key)
-					|| (mapping is not null && !ReferenceEquals(mapping, owner.GetChainedProperty(key)));
+					|| (mapping is not null && !ReferenceEquals(mapping, owner.GetChainedPropertyDirect(key)));
 				_localMapping = _hasLocalMapping ? mapping : null;
-
+				Chained = owner.Chained;
 				_chainedMappingSequence = chainedMappingSequence;
-				Mapping = (handler, view) =>
-				{
-					var mappings = GetCompositions().Mappings;
-					mappings[mappings.Length - 1]?.Invoke(handler, view);
-				};
 			}
 
 			/// <summary>
-			/// The complete mapping, stored in the mapper so the key stays registered. It always dispatches to the
-			/// latest composition and is never returned to callers.
+			/// The chained mappers an inherited mapping is resolved from. Replacing the owner's chain later does not
+			/// change the mapping the recorded customizations build on.
 			/// </summary>
-			public Action<IElementHandler, IElement> Mapping { get; }
-
-			/// <summary>
-			/// Gets the mapping including the app customizations recorded so far. Later framework remaps are still
-			/// observed, but later app customizations are not, so a caller can wrap the returned mapping in a
-			/// replacement without invoking its own replacement recursively.
-			/// </summary>
-			public Action<IElementHandler, IElement> GetCurrentMapping()
-			{
-				var sequence = MappingCustomizationSequence.Current;
-				var snapshot = _snapshot;
-				if (snapshot is not null && snapshot.Sequence == sequence)
-					return snapshot.Mapping;
-
-				snapshot = new Snapshot(sequence, (handler, view) => GetMappingAsOf(sequence)?.Invoke(handler, view));
-				_snapshot = snapshot;
-				return snapshot.Mapping;
-			}
+			public IPropertyMapper[]? Chained { get; }
 
 			public void AddCustomization(
 				long sequence,
@@ -527,75 +594,100 @@ namespace Microsoft.Maui
 			{
 				_sequences.Add(sequence);
 				_customizations.Add(customization);
+				Interlocked.Increment(ref _revision);
 				_compositions = null;
 			}
 
 			public void ModifyFrameworkMapping(
 				Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
 			{
-				_chainedMappingSequence = MappingCustomizationSequence.Framework;
 				_frameworkModifications.Add(modification);
+				Interlocked.Increment(ref _revision);
 				_compositions = null;
 			}
 
-			public Action<IElementHandler, IElement>? GetMappingAsOf(long sequence)
+			/// <summary>
+			/// Registers the mapping that includes every customization recorded so far through the owner's
+			/// <see cref="SetPropertyCore"/>, so transformations made by an override apply, and remembers what was
+			/// registered. The registered mapping is bound to its position in the composition: it observes later
+			/// framework remaps but not later app customizations, which register their own mappings.
+			/// </summary>
+			public void Register()
+			{
+				var index = _customizations.Count;
+				_owner.SetCustomizedPropertyCore(_key, (handler, view) => GetMappingAt(index)?.Invoke(handler, view));
+
+				while (_registeredMappings.Count <= index)
+					_registeredMappings.Add(null);
+
+				_registeredMappings[index] = _owner._mapper.TryGetValue(_key, out var registered) ? registered : null;
+			}
+
+			/// <summary>
+			/// Gets the mapping as it was after the app customizations recorded up to <paramref name="sequence"/>.
+			/// Returns <see langword="false"/> when the key was still inherited unchanged at that point.
+			/// </summary>
+			public bool TryGetMappingAsOf(long sequence, out Action<IElementHandler, IElement>? mapping)
 			{
 				var count = 0;
 				while (count < _sequences.Count && _sequences[count] <= sequence)
 					count++;
 
-				// Before this key's first customization, an inherited mapping is the chained one at that time.
 				if (count == 0 && _frameworkModifications.Count == 0 && !_hasLocalMapping)
-					return _owner.GetChainedPropertyAsOf(_key, sequence);
+				{
+					mapping = null;
+					return false;
+				}
 
-				return GetCompositions().Mappings[count];
+				mapping = (count < _registeredMappings.Count ? _registeredMappings[count] : null)
+					?? GetMappingAt(count);
+				return true;
+			}
+
+			Action<IElementHandler, IElement>? GetMappingAt(int index)
+			{
+				var mappings = GetCompositions().Mappings;
+				return index < mappings.Length ? mappings[index] : null;
 			}
 
 			Compositions GetCompositions()
 			{
 				var compositions = _compositions;
-				var version = _owner.ChainVersion;
-				if (compositions is not null && compositions.Version == version)
+				var revision = Volatile.Read(ref _revision);
+				var version = GetChainVersion(Chained);
+				if (compositions is not null && compositions.Version == version && compositions.Revision == revision)
 					return compositions;
 
-				var mappings = new Action<IElementHandler, IElement>?[_customizations.Count + 1];
-				var mapping = _hasLocalMapping ? _localMapping : _owner.GetChainedPropertyAsOf(_key, _chainedMappingSequence);
-				foreach (var modification in _frameworkModifications)
+				// Read the counts once: another thread may record a customization while this one composes, and
+				// the revision then makes the next caller compose again.
+				var modificationCount = _frameworkModifications.Count;
+				var customizationCount = _customizations.Count;
+				var mappings = new Action<IElementHandler, IElement>?[customizationCount + 1];
+				var mapping = _hasLocalMapping ? _localMapping : GetChainedPropertyAsOf(Chained, _key, _chainedMappingSequence);
+				for (var i = 0; i < modificationCount; i++)
 				{
-					mapping = modification(mapping);
+					mapping = _frameworkModifications[i](mapping);
 				}
 
 				mappings[0] = mapping;
-				for (var i = 0; i < _customizations.Count; i++)
+				for (var i = 0; i < customizationCount; i++)
 				{
 					mapping = _customizations[i](mapping);
 					mappings[i + 1] = mapping;
 				}
 
-				compositions = new Compositions(mappings, version);
+				compositions = new Compositions(mappings, version, revision);
 				_compositions = compositions;
 				return compositions;
 			}
 
-			sealed class Snapshot
-			{
-				public Snapshot(long sequence, Action<IElementHandler, IElement> mapping)
-				{
-					Sequence = sequence;
-					Mapping = mapping;
-				}
-
-				public long Sequence { get; }
-
-				public Action<IElementHandler, IElement> Mapping { get; }
-			}
-
 			sealed class Compositions
 			{
-				public Compositions(Action<IElementHandler, IElement>?[] mappings, long version)
+				public Compositions(Action<IElementHandler, IElement>?[] mappings, long version, int revision)
 				{
 					Mappings = mappings;
 					Version = version;
+					Revision = revision;
 				}
 
 				/// <summary>
@@ -604,7 +696,36 @@ namespace Microsoft.Maui
 				public Action<IElementHandler, IElement>?[] Mappings { get; }
 
 				public long Version { get; }
+
+				public int Revision { get; }
 			}
+		}
+
+		/// <summary>
+		/// An inherited mapping of a sealed mapper handed to a caller, bound to the state it was read in.
+		/// </summary>
+		sealed class InheritedCapture
+		{
+			readonly PropertyMapper _owner;
+			readonly string _key;
+
+			public InheritedCapture(PropertyMapper owner, string key, long sequence, IPropertyMapper[]? chained)
+			{
+				_owner = owner;
+				_key = key;
+				Sequence = sequence;
+				Chained = chained;
+				Mapping = Invoke;
+			}
+
+			public long Sequence { get; }
+
+			public IPropertyMapper[]? Chained { get; }
+
+			public Action<IElementHandler, IElement> Mapping { get; }
+
+			void Invoke(IElementHandler handler, IElement view) =>
+				_owner.GetInheritedPropertyAsOf(_key, Sequence, Chained)?.Invoke(handler, view);
 		}
 
 		/// <summary>
@@ -850,9 +971,14 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				_ = GetProperty(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				var mapping = GetProperty(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
 
-				// Resolve the mapping on invocation, as it was after the app customizations recorded so far. A
+				// An inherited mapping is used as GetProperty reports it: bound to this mapper when it is sealed, or the
+				// chained mapping itself, which a replacement of the key on this mapper never changes.
+				if (!_mapper.ContainsKey(key))
+					return new Action<TViewHandler, TVirtualView>((h, v) => mapping(h, v));
+
+				// Resolve a local mapping on invocation, as it was after the app customizations recorded so far. A
 				// replacement that wraps the returned mapping then still includes framework remaps that run lazily
 				// later, as they would have when the remaps ran at startup.
 				var sequence = MappingCustomizationSequence.Current;
