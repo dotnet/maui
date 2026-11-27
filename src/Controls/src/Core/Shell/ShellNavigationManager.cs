@@ -127,10 +127,6 @@ namespace Microsoft.Maui.Controls
 
 			Routing.RegisterImplicitPageRoutes(_shell);
 
-			// The navigation's own page transition, installed now that it runs (after any deferral) and removed when
-			// it ends, however it ends.
-			using var transitionScope = new Animations.ShellTransitionScope(_shell, shellNavigationParameters.PageTransition);
-
 			_accumulateNavigatedEvents = true;
 
 			var uri = navigationRequest.Request.FullUri;
@@ -290,12 +286,8 @@ namespace Microsoft.Maui.Controls
 				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					// The request's transition scope crosses the dispatch explicitly: a dispatcher that posts a bare callback
-					// (Android) doesn't flow the execution context.
-					var shellFlow = Animations.PageTransitionResolver.CaptureShellFlow();
 					await _shell.Dispatcher.DispatchAsync(() =>
 					{
-						using var restored = Animations.PageTransitionResolver.RestoreShellFlow(shellFlow);
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
 				}
@@ -304,12 +296,8 @@ namespace Microsoft.Maui.Controls
 					nextActiveSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					// The request's transition scope crosses the dispatch explicitly: a dispatcher that posts a bare callback
-					// (Android) doesn't flow the execution context.
-					var shellFlow = Animations.PageTransitionResolver.CaptureShellFlow();
 					await _shell.Dispatcher.DispatchAsync(() =>
 					{
-						using var restored = Animations.PageTransitionResolver.RestoreShellFlow(shellFlow);
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
 				}

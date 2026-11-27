@@ -43,14 +43,14 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 #endif
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
-				{
-					UIApplication.SharedApplication.RequestSceneSessionActivation(
-						null,
-						userActivity,
-						null,
-						errorAction);
-				}
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			{
+				UIApplication.SharedApplication.RequestSceneSessionActivation(
+					null,
+					userActivity,
+					null,
+					errorAction);
+			}
 		}
 
 		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary? launchOptions)
@@ -117,9 +117,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
 				? new UIWindow(windowScene)
 #pragma warning restore CA1416
-#pragma warning disable CA1422 // UIWindow() is obsolete on Mac Catalyst 26+; only used when no window scene is available
 				: new UIWindow();
-#pragma warning restore CA1422
 
 			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
