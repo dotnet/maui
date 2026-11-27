@@ -167,7 +167,7 @@ steps:
       continueOnError: false
       useExitCodeForErrors: true
 
-- ${{ if eq(parameters.platform, 'windows') }}:
+- ${{ if and(eq(parameters.platform, 'windows'), or(ne(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'), ne(parameters.testFilter, ''))) }}:
   - template: run-dotnet-preview.yml
     parameters:
       displayName: Run Windows ${{ parameters.device }} tests directly
@@ -193,6 +193,72 @@ steps:
         ${{ iif(eq(parameters.device, 'packaged'), '--no-build', '') }}
       continueOnError: false
       useExitCodeForErrors: true
+
+# Like the former cake runner, run each Controls category in its own test host: in one
+# process WinUI state accumulated across ~350-600 tests terminates the host (0xDEAD) in tests that
+# pass in isolation. The final shard runs every test outside the listed categories.
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'), eq(parameters.testFilter, '')) }}:
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $env:DOTNET_ROOT = "$(Build.SourcesDirectory)\.dotnet"
+      $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+      $env:MSBuildEnableWorkloadResolver = 'true'
+      $env:PATH = "$($env:DOTNET_ROOT);$env:PATH"
+      $dotnet = Join-Path $env:DOTNET_ROOT 'dotnet.exe'
+      $env:DOTNET_PATH = $dotnet
+      $env:DOTNET_HOST_PATH = $dotnet
+
+      $categoryFile = "$(Build.SourcesDirectory)\src\Controls\tests\DeviceTests\TestCategory.cs"
+      $categories = @(Select-String -LiteralPath $categoryFile -Pattern 'public const string \w+\s*=\s*(?:"([^"]+)"|nameof\((\w+)\))' |
+          ForEach-Object { $groups = $_.Matches[0].Groups; if ($groups[1].Success) { $groups[1].Value } else { $groups[2].Value } } |
+          Sort-Object -Unique)
+      if ($categories.Count -lt 10) { throw "Expected the Controls test categories in '$categoryFile', found $($categories.Count)." }
+      $shards = @()
+      foreach ($category in $categories) { $shards += New-Object psobject -Property @{ Name = $category; Filter = @('--filter-trait', "Category=$category") } }
+      $exclude = @()
+      foreach ($category in $categories) { $exclude += @('--filter-not-trait', "Category=$category") }
+      $shards += New-Object psobject -Property @{ Name = 'Uncategorized'; Filter = $exclude }
+
+      $resultsRoot = "$(TestResultsDirectory)"
+      $noBuild = '${{ parameters.device }}' -eq 'packaged'
+      $failed = @()
+      foreach ($shard in $shards) {
+          $output = Join-Path $resultsRoot "categories\$($shard.Name)"
+          $before = @(Get-ChildItem -LiteralPath $resultsRoot -Filter '*.trx' -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object FullName)
+          $testArguments = @('test', '--project', '${{ parameters.path }}',
+              '--configuration', '${{ parameters.deviceTestConfiguration }}',
+              '--framework', '${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0',
+              '--report-trx', '--report-trx-filename', "Controls-$($shard.Name).trx",
+              '--results-directory', $output,
+              '--diagnostic', '--diagnostic-synchronous-write', '--diagnostic-output-directory', (Join-Path $output 'diagnostics'),
+              '--crashdump', '--crashdump-type', 'Mini',
+              '-p:RuntimeIdentifier=win-x64', '-p:RuntimeIdentifierOverride=win-x64', '-p:IsRidAgnostic=false',
+              "-p:MauiTestResultsDirectory=$resultsRoot")
+          if ($noBuild) { $testArguments += '--no-build' } else { $testArguments += "-bl:$resultsRoot\test.binlog" }
+          Write-Host "##[group]Category $($shard.Name)"
+          & $dotnet @testArguments $(DeviceTestArguments) @($shard.Filter)
+          $exitCode = $LASTEXITCODE
+          Write-Host '##[endgroup]'
+          $noBuild = $true
+          $produced = @(Get-ChildItem -LiteralPath $resultsRoot -Filter '*.trx' -Recurse -File -ErrorAction SilentlyContinue |
+              Where-Object { $before -notcontains $_.FullName })
+          if ($exitCode -eq 8) {
+              # Zero tests matched: this category has no Windows tests.
+              $produced | Remove-Item -Force
+              Write-Host "Category $($shard.Name): no tests on Windows."
+          }
+          elseif ($exitCode -ne 0) {
+              $failed += "$($shard.Name) (exit $exitCode)"
+              Write-Host "##vso[task.logissue type=error]Category $($shard.Name) failed with exit code $exitCode."
+          }
+          else { Write-Host "Category $($shard.Name): passed." }
+      }
+      if ($failed.Count) {
+          Write-Host "##vso[task.logissue type=error]Test suite had $($failed.Count) failing categories: $($failed -join ', ')"
+          exit 1
+      }
+    displayName: Run Windows ${{ parameters.device }} tests directly (one host per category)
+    timeoutInMinutes: 110
 
 - ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
   - template: run-dotnet-preview.yml
