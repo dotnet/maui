@@ -15,6 +15,7 @@
         <item name="materialButtonStyle">@style/MauiMaterialButton</item>
         <item name="checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
+        <item name="android:alertDialogTheme">@style/MauiFrameworkAlertDialogTheme</item>
         <item name="alertDialogTheme">@style/MauiAlertDialogTheme</item>
         <item name="materialAlertDialogTheme">@style/MauiAlertDialogTheme</item>
     </style>
@@ -89,6 +90,12 @@
 
     <style name="MauiAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
       <item name="colorPrimary">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- WebView input pickers use framework dialogs, not AppCompat dialogs. -->
+    <style name="MauiFrameworkAlertDialogTheme" parent="@android:style/ThemeOverlay.Material.Dialog.Alert">
+      <item name="colorPrimary">?attr/colorOnSurface</item>
+      <item name="android:colorAccent">?attr/colorOnSurface</item>
     </style>
 
   <!-- 

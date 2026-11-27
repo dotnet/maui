@@ -83,29 +83,19 @@ namespace Microsoft.Maui.Platform
 		/// Computes and applies per-cell safe area insets for a CollectionView cell.
 		/// Called from TemplatedCell/TemplatedCell2 LayoutSubviews before Arrange.
 		/// </summary>
-		/// <summary>
-		/// Finds the <see cref="MauiView"/> that applies a cell safe-area override for a cell's platform view,
-		/// looking through a <see cref="WrapperView"/> and a ContentButton's owned content container.
-		/// </summary>
-		internal static MauiView? GetCellSafeAreaView(UIView? platformView)
-		{
-			if (platformView is WrapperView wrapperView)
-			{
-				var subviews = wrapperView.Subviews;
-				platformView = subviews.Length > 0 ? subviews[0] : null;
-			}
-
-			return platformView switch
-			{
-				MauiView mauiView => mauiView,
-				MauiContentButton contentButton => contentButton.ContentContainerView,
-				_ => null,
-			};
-		}
-
 		internal static void ApplyCellSafeAreaOverride(UIView cell, IView virtualView, UIView platformView)
 		{
-			var mauiView = GetCellSafeAreaView(platformView);
+			var mauiView = platformView as MauiView;
+
+			if (mauiView is null && platformView is WrapperView wrapperView)
+			{
+				var subviews = wrapperView.Subviews;
+
+				if (subviews.Length > 0 && subviews[0] is MauiView wrappedMauiView)
+				{
+					mauiView = wrappedMauiView;
+				}
+			}
 
 			if (virtualView.UsesSafeAreaEdges() && mauiView is not null)
 			{
@@ -670,11 +660,8 @@ namespace Microsoft.Maui.Platform
 				bounds = CellSafeAreaOverride.InsetRect(bounds);
 			}
 
-			ArrangeAdjustedBounds(bounds);
-		}
-
-		internal virtual void ArrangeAdjustedBounds(CGRect bounds) =>
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
+		}
 
 		/// <summary>
 		/// iOS method called to determine the size that fits within the given constraints.

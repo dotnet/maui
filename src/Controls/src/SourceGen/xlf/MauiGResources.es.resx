@@ -152,24 +152,9 @@
   <data name="DuplicateTypeError" xml:space="preserve">
     <value>Se encontraron varios tipos para "{0}".</value>
   </data>
-  <data name="ConflictingXmlnsTypeTitle" xml:space="preserve">
-    <value>Conflicting XAML namespace types</value>
-  </data>
-  <data name="ConflictingXmlnsTypeMessage" xml:space="preserve">
-    <value>Type "{1}" in XML namespace "{0}" is ambiguous between: {2}.</value>
-    <comment>{0} is the XML namespace, {1} is the type name, and {2} is the list of matching types and assemblies.</comment>
-  </data>
   <data name="MemberResolution" xml:space="preserve">
     <value>No se encontró ninguna propiedad accesible, BindableProperty o evento para "{0}" o un tipo que no coincide entre el valor y la propiedad.</value>
     <comment>{0} is a property name</comment>
-  </data>
-  <data name="ExtensionPropertyAmbiguous" xml:space="preserve">
-    <value>Ambiguous extension property "{0}" for "{2}" in {1}. Multiple declarations apply, but none has a uniquely most-specific receiver.</value>
-    <comment>{0} is a property name, {1} is the namespace or container, {2} is the target type name</comment>
-  </data>
-  <data name="ExtensionPropertyResolution" xml:space="preserve">
-    <value>Cannot resolve the extension property "{0}" on "{1}". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a receiver type matching "{2}" and an accessor for the requested operation, and it must be unambiguous.</value>
-    <comment>{0} is a property name, {1} is the extension container type name, {2} is the target type name</comment>
   </data>
   <data name="EasingConversionFailed" xml:space="preserve">
     <value>No se puede convertir "{0}" en Easing; el valor esperado es "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" o "SpringOut".</value>
@@ -261,19 +246,5 @@
   <data name="DuplicatePropertyAssignmentMessage" xml:space="preserve">
     <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
     <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
-  </data>
-  <data name="ObsoleteFontSizeTitle" xml:space="preserve">
-    <value>Obsolete FontSize value</value>
-  </data>
-  <data name="ObsoleteFontSizeMessage" xml:space="preserve">
-    <value>"{0}" is obsolete: Named font sizes are obsolete; use a numeric FontSize value instead.</value>
-    <comment>0 is the NamedSize member name (e.g., "NamedSize.Large")</comment>
-  </data>
-  <data name="StyleTargetTypeMismatchTitle" xml:space="preserve">
-    <value>Style TargetType is not compatible with the element</value>
-  </data>
-  <data name="StyleTargetTypeMismatchMessage" xml:space="preserve">
-    <value>Style '{0}' has TargetType '{1}', which is not compatible with '{2}'. The style will not be applied.</value>
-    <comment>0 is a resource key, 1 is the style's target type, 2 is the element type</comment>
   </data>
 </root>
