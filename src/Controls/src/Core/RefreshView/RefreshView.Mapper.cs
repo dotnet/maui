@@ -13,11 +13,18 @@ namespace Microsoft.Maui.Controls
 			CommandProperty.DependsOn(CommandParameterProperty);
 		}
 
-		internal static new void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
 #if WINDOWS
-			RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
+			RefreshViewHandler.Mapper.ReplaceMappingForControls<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
 #endif
 		}
 	}

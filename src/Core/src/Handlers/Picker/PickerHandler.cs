@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.Items)] = MapItems,
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
