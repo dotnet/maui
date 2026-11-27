@@ -678,6 +678,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void WrappedMissingConstructorFromInjectedDependencyIsNotRetried()
+		{
+			var calls = 0;
+			var exception = new HandlerNotFoundException("Wrapped.", new MissingMethodException());
+			var builder = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ViewStub, HandlerWithoutDefaultConstructorStub>());
+			builder.Services.AddTransient<ConstructorDependency>(_ =>
+			{
+				calls++;
+				throw exception;
+			});
+			using var app = builder.Build();
+
+			Assert.Same(exception, Assert.Throws<HandlerNotFoundException>(() =>
+				new ViewStub().ToHandler(new MauiContext(app.Services))));
+			Assert.Equal(1, calls);
+		}
+
+		[Fact]
 		public void SingletonRegistrationRequiringInjectionCreatesHandlerPerActivation()
 		{
 			using var app = MauiApp.CreateBuilder()
