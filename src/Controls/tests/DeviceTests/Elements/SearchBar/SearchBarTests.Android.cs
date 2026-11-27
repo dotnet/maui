@@ -85,6 +85,39 @@ namespace Microsoft.Maui.DeviceTests
 					: UpdateFormsText(original, transform);
 		}
 
+		[Theory]
+		[InlineData(false, "AB")]
+		[InlineData(true, "aB")]
+		public async Task NativeEditUsesInterfaceTextTransformOnlyForMaterial3(bool material3, string expected)
+		{
+			var searchBar = new InterfaceTransformSearchBar { TextTransform = TextTransform.Uppercase };
+			((ITextElement)searchBar).TextTransform = TextTransform.None;
+
+			if (material3)
+				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertNativeEdit(handler.QueryEditor));
+			else
+				await AttachAndRun<SearchBarHandler>(searchBar, handler => AssertNativeEdit(handler.QueryEditor));
+
+			void AssertNativeEdit(EditText queryEditor)
+			{
+				Assert.NotNull(queryEditor);
+				var changes = new List<string>();
+				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = queryEditor.EditableText;
+				text.Replace(0, text.Length(), "aB");
+
+				Assert.Equal(expected, queryEditor.Text);
+				Assert.Equal(expected, searchBar.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			}
+		}
+
+		sealed class InterfaceTransformSearchBar : SearchBar, ITextElement
+		{
+			TextTransform ITextElement.TextTransform { get; set; }
+		}
+
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
 		public async Task ScaleXConsistent()

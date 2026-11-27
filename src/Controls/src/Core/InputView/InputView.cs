@@ -332,10 +332,21 @@ namespace Microsoft.Maui.Controls
 				}
 #endif
 				// Normalize before notifying subscribers, without changing the casing of passwords.
-				var transform = TextTransform;
 				var transformedText = value;
-				if ((value is null || transform is TextTransform.Lowercase or TextTransform.Uppercase) && !IsPasswordInput)
-					transformedText = NormalizeHandlerText(value, transform);
+				if (!IsPasswordInput)
+				{
+					if (value is null)
+						transformedText = string.Empty;
+					else
+					{
+						var textElement = GetHandlerTextElement();
+						var transform = textElement?.TextTransform ?? TextTransform;
+						if (transform is TextTransform.Lowercase or TextTransform.Uppercase)
+							transformedText = textElement is not null
+								? textElement.UpdateFormsText(value, transform)
+								: TextTransformUtilities.GetTransformedText(value, transform);
+					}
+				}
 
 				if (value != transformedText && Text == transformedText)
 				{
@@ -348,20 +359,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		string NormalizeHandlerText(string text, TextTransform transform)
+		ITextElement GetHandlerTextElement()
 		{
-			if (text is null)
-				return string.Empty;
-
 			// Match the native mappers that dispatch through ITextElement.
 #if ANDROID
 			if (this is Entry or Editor || (this is SearchBar && Handler is SearchBarHandler2))
-				return ((ITextElement)this).UpdateFormsText(text, transform);
+				return this;
 #elif IOS || MACCATALYST
 			if (this is Entry or Editor)
-				return ((ITextElement)this).UpdateFormsText(text, transform);
+				return this;
 #endif
-			return TextTransformUtilities.GetTransformedText(text, transform);
+			return null;
 		}
 
 		bool IsPasswordInput

@@ -57,6 +57,35 @@ namespace Microsoft.Maui.DeviceTests
 					: UpdateFormsText(original, transform);
 		}
 
+		[Theory]
+		[InlineData(TextTransform.Uppercase, TextTransform.None, "aB")]
+		[InlineData(TextTransform.None, TextTransform.Uppercase, "AB")]
+		public async Task NativeEditUsesInterfaceTextTransform(TextTransform concreteTransform, TextTransform interfaceTransform, string expected)
+		{
+			var entry = new InterfaceTransformEntry { TextTransform = concreteTransform };
+			((ITextElement)entry).TextTransform = interfaceTransform;
+			var source = new Entry();
+			entry.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: source));
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal(expected, GetPlatformControl(handler).Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(expected, source.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			});
+		}
+
+		sealed class InterfaceTransformEntry : Entry, ITextElement
+		{
+			TextTransform ITextElement.TextTransform { get; set; }
+		}
+
 		[Fact]
 		public async Task NonSecureNativeTextEditRaisesOneTransformedChange()
 		{
