@@ -4,6 +4,14 @@ using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+#if ANDROID
+using Microsoft.Maui.Handlers;
+#elif IOS || MACCATALYST || WINDOWS
+using Microsoft.Maui.Platform;
+#endif
+#if IOS || MACCATALYST
+using UIKit;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
@@ -315,7 +323,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				// Normalize before notifying subscribers, without changing the casing of passwords.
-				var transformedText = IsPasswordInput ? value : TextTransformUtilities.GetTransformedText(value, TextTransform);
+				var transform = TextTransform;
+				var transformedText = value;
+				if ((value is null || transform is TextTransform.Lowercase or TextTransform.Uppercase) && !IsPasswordInput)
+					transformedText = TextTransformUtilities.GetTransformedText(value, transform);
 
 				if (value != transformedText && Text == transformedText)
 				{
@@ -332,15 +343,25 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (this is Entry entry)
-					return entry.IsPassword;
-
 #if ANDROID
-				// These handlers use the Android EditText mapper's password-keyboard exemption.
-				return Keyboard == Keyboard.Password && (this is Editor || Handler is Microsoft.Maui.Handlers.SearchBarHandler2);
-#else
-				return false;
+				if (this is SearchBar && Handler is SearchBarHandler2 searchBarHandler)
+					return Platform.EditTextExtensions.IsPasswordInput(searchBarHandler.QueryEditor, this);
+
+				if (this is Entry or Editor)
+				{
+					var editText = Handler is EntryHandler2 entryHandler
+						? entryHandler.PlatformView?.EditText
+						: Handler?.PlatformView as global::Android.Widget.EditText;
+					return Platform.EditTextExtensions.IsPasswordInput(editText, this);
+				}
+#elif IOS || MACCATALYST
+				if ((this is Entry or Editor) && Handler?.PlatformView is IUITextInput textInput && textInput.GetSecureTextEntry())
+					return true;
+#elif WINDOWS
+				if (this is Entry && Handler?.PlatformView is MauiPasswordTextBox { IsPassword: true })
+					return true;
 #endif
+				return this is Entry entry && entry.IsPassword;
 			}
 		}
 

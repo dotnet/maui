@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -27,6 +28,29 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).Text = text;
+
+		[Fact]
+		public async Task NativeSecureTextEntryPreservesCasing()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+			var bindingSource = new Entry();
+			entry.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: bindingSource));
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var textField = GetPlatformControl(handler);
+				textField.SecureTextEntry = true;
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal("aB", textField.Text);
+				Assert.Equal("aB", entry.Text);
+				Assert.Equal("aB", bindingSource.Text);
+				Assert.Equal("aB", Assert.Single(changes));
+			});
+		}
 
 		static int GetPlatformCursorPosition(EntryHandler entryHandler)
 		{

@@ -1,4 +1,6 @@
 ﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -36,6 +38,33 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).Text = text;
+
+		[Fact]
+		public async Task NativePasswordTextBoxPreservesCasing()
+		{
+			const string input = "aB";
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, async handler =>
+			{
+				var passwordBox = Assert.IsType<MauiPasswordTextBox>(GetPlatformControl(handler));
+				passwordBox.IsPassword = true;
+				var changes = new List<string>();
+				var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				entry.TextChanged += (_, args) =>
+				{
+					changes.Add(args.NewTextValue);
+					changed.TrySetResult();
+				};
+
+				passwordBox.Password = input;
+				await changed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Equal(input, passwordBox.Password);
+				Assert.Equal(input, entry.Text);
+				Assert.Equal(input, Assert.Single(changes));
+			});
+		}
 
 		static int GetPlatformCursorPosition(EntryHandler entryHandler) =>
 			GetPlatformControl(entryHandler).SelectionStart;
