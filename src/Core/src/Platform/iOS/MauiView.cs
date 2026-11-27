@@ -79,6 +79,9 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal SafeAreaPadding CellSafeAreaOverride { get; set; } = SafeAreaPadding.Empty;
 
+		// The insets CrossPlatformArrange takes off this view's bounds before arranging its children
+		internal SafeAreaPadding ArrangeSafeArea => _appliesSafeAreaAdjustments ? _safeArea : CellSafeAreaOverride;
+
 		/// <summary>
 		/// Computes and applies per-cell safe area insets for a CollectionView cell.
 		/// Called from TemplatedCell/TemplatedCell2 LayoutSubviews before Arrange.

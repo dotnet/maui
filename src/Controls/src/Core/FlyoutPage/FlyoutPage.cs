@@ -328,11 +328,15 @@ namespace Microsoft.Maui.Controls
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
+			_displayInfoChanged = OnMainDisplayInfoChanged;
 			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
 			this.SizeChanged += OnSizeChanged;
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
+		readonly WeakDisplayInfoChangedProxy _displayInfoProxy = new();
+		// The proxy holds the handler weakly, so the page keeps it alive.
+		readonly EventHandler<DisplayInfoChangedEventArgs> _displayInfoChanged;
 
 		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, FlyoutPage> On<T>() where T : IConfigPlatform
@@ -355,11 +359,11 @@ namespace Microsoft.Maui.Controls
 			{
 				SizeChanged -= OnSizeChanged;
 				SizeChanged += OnSizeChanged;
-				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+				_displayInfoProxy.Unsubscribe();
 			}
 			else
 			{
-				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+				_displayInfoProxy.Subscribe(DeviceDisplay.Current, _displayInfoChanged);
 			}
 		}
 

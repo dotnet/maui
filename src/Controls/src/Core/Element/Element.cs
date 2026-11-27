@@ -330,6 +330,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		bool _parentIsNonExclusive;
 		Element TryGetRealParent(bool logWarningIfParentHasBeenCollected = true)
 		{
 			var realParent = _realParent;
@@ -387,12 +388,21 @@ namespace Microsoft.Maui.Controls
 			set => SetParent(value);
 		}
 
-		void SetParent(Element value)
+		// A collection can claim an element already attached to the same parent for inheritance.
+		Element IElementDefinition.Parent
+		{
+			get => Parent;
+			set => SetParent(value, promoteToExclusive: true);
+		}
+
+		internal void SetParent(Element value, bool isNonExclusive = false, bool promoteToExclusive = false)
 		{
 			Element realParent = TryGetRealParent(false);
 
 			if (realParent == value)
 			{
+				if (value != null && promoteToExclusive)
+					_parentIsNonExclusive = false;
 				return;
 			}
 
@@ -407,13 +417,14 @@ namespace Microsoft.Maui.Controls
 			{
 				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
 
-				if (value != null && (element is Layout || element is IControlTemplated))
+				if (value != null && !_parentIsNonExclusive && (element is Layout || element is IControlTemplated))
 				{
 					MauiLogger<Element>.Log(LogLevel.Warning, $"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
 			RealParent = value;
+			_parentIsNonExclusive = value != null && isNonExclusive;
 			if (RealParent != null)
 			{
 				OnParentResourcesChangedKeys(RealParent.GetMergedResourceKeys());
@@ -654,7 +665,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="child">The element that's been added as a child.</param>
 		protected virtual void OnChildAdded(Element child)
 		{
-			child.SetParent(this);
+			child.SetParent(this, promoteToExclusive: true);
 
 			ChildAdded?.Invoke(this, new ElementEventArgs(child));
 

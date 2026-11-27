@@ -1,2 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiTextView.ContentSize.get -> CoreGraphics.CGSize
+override Microsoft.Maui.Platform.MauiTextView.ContentSize.set -> void
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
+override Microsoft.Maui.Platform.MauiTextView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize

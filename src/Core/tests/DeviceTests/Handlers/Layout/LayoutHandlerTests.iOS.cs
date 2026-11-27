@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -150,6 +152,51 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
+		}
+
+		[Theory, Category(TestCategory.FlowDirection)]
+		[InlineData(0, 84, 0)] // Side status bar on the right edge (iPhone Duo)
+		[InlineData(84, 0, 0)]
+		[InlineData(0, 0, 40)] // No safe area: the layout's own Padding mirrors as before
+		[InlineData(0, 84, 40)]
+		[InlineData(0, 84, 0, true)] // CollectionView cell: no native safe-area adjustments, insets come from the cell override
+		public async Task RtlChildrenMirrorWithinTheSafeArea(double safeLeft, double safeRight, double paddingLeft, bool cellOverride = false)
+		{
+			var layout = new VerticalStackLayoutStub { Padding = new Thickness(paddingLeft, 0, 0, 0) };
+			var label = new LabelStub { Text = "Test" };
+			layout.Add(label);
+
+			var frame = await InvokeOnMainThreadAsync(async () =>
+			{
+				var labelView = CreateHandler<LabelHandler>(label).PlatformView;
+				var parent = new SafeAreaLayoutView
+				{
+					Insets = cellOverride ? UIEdgeInsets.Zero : new UIEdgeInsets(0, (nfloat)safeLeft, 0, (nfloat)safeRight),
+					CellSafeAreaOverride = cellOverride ? new SafeAreaPadding(safeLeft, safeRight, 0, 0) : SafeAreaPadding.Empty,
+					Frame = new CGRect(0, 0, 400, 200),
+					SemanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft,
+					View = layout,
+					CrossPlatformLayout = layout,
+				};
+				parent.AddSubview(labelView);
+
+				return await parent.AttachAndRun(() =>
+				{
+					parent.SetNeedsLayout();
+					parent.LayoutIfNeeded();
+					return labelView.Frame;
+				});
+			});
+
+			// Safe area insets stay on their physical edge; Padding.Left becomes the trailing (right) gap
+			Assert.Equal(safeLeft, (double)frame.Left, 1);
+			Assert.Equal(400 - safeRight - paddingLeft, (double)frame.Right, 1);
+		}
+
+		class SafeAreaLayoutView : LayoutView
+		{
+			public UIEdgeInsets Insets { get; set; }
+			public override UIEdgeInsets SafeAreaInsets => Insets;
 		}
 	}
 }

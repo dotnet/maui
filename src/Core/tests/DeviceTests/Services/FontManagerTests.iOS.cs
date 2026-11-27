@@ -43,4 +43,35 @@ public partial class FontManagerTests : TestBase
 		Assert.True(measuredSize.Height > 0);
 	}
 
+#nullable enable
+	[Fact]
+	public async System.Threading.Tasks.Task CanLoadBundledFontRegisteredByTheApp()
+	{
+		var bundledFont = await InvokeOnMainThreadAsync(() => UIFont.FromName("Dokdo", 10));
+		Assert.NotNull(bundledFont);
+
+		var loader = new TrackingEmbeddedFontLoader();
+		var registrar = new FontRegistrar(loader);
+		registrar.Register("dokdo_regular.ttf", "bundled-dokdo");
+		var manager = new FontManager(registrar);
+
+		var font = await InvokeOnMainThreadAsync(() =>
+			manager.GetFont(Font.OfSize("bundled-dokdo", manager.DefaultFontSize)));
+
+		Assert.Equal("Dokdo", font.FamilyName);
+		Assert.Equal(0, loader.RegistrationAttempts);
+	}
+
+	sealed class TrackingEmbeddedFontLoader : EmbeddedFontLoader
+	{
+		public int RegistrationAttempts { get; private set; }
+
+		internal override NSError? RegisterFont(NSUrl fontUrl)
+		{
+			RegistrationAttempts++;
+			return null;
+		}
+	}
+#nullable restore
+
 }

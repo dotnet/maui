@@ -919,4 +919,177 @@ public class XamlIncrementalHotReloadE2ETests
 			Assert.Equal(Microsoft.Maui.Graphics.Colors.Red, page.Resources["AccentColor"]);
 		});
 	}
+
+	sealed class SwitchScope : IDisposable
+	{
+		readonly string _name;
+		readonly bool _hadValue;
+		readonly bool _previous;
+
+		public SwitchScope(string name)
+		{
+			_name = name;
+			_hadValue = AppContext.TryGetSwitch(name, out _previous);
+			AppContext.SetSwitch(name, true);
+		}
+
+		public void Dispose() => AppContext.SetSwitch(_name, _hadValue && _previous);
+	}
+
+	static SwitchScope EnableMauiDiagnostics() => new("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics");
+
+	static string StackPage(string children) => $$"""
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestE2EApp.MainPage">
+		    <VerticalStackLayout>
+		{{children}}
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	/// <summary>
+	/// https://github.com/dotnet/maui/issues/40605: an edit that shifts lines must refresh the
+	/// <c>VisualDiagnostics</c> source info of the live objects it moved, and register source info on
+	/// the objects the patch creates, so tools mapping live objects back to XAML stay correct.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void InsertedElement_UpdatesSourceInfoOfMovedAndAddedElements()
+	{
+		var xamlV1 = StackPage("""
+			        <Label Text="First" />
+			        <Label Text="Second" />
+			""");
+		var xamlV2 = StackPage("""
+			        <Label Text="First" />
+			        <Button Text="Added" />
+			        <Label Text="Second" />
+			""");
+
+		using var diagnostics = EnableMauiDiagnostics();
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsAssignableFrom<Layout>(page.Content);
+			var first = Assert.IsType<Label>(layout.Children[0]);
+			var second = Assert.IsType<Label>(layout.Children[1]);
+			var firstInfo = VisualDiagnostics.GetSourceInfo(first);
+			Assert.NotNull(firstInfo);
+			Assert.Equal(6, firstInfo!.LineNumber);
+			Assert.Equal(7, VisualDiagnostics.GetSourceInfo(second)!.LineNumber);
+
+			live.ApplyUpdate<ContentPage>(1);
+
+			Assert.Same(second, layout.Children[2]);
+			var added = Assert.IsType<Button>(layout.Children[1]);
+			var addedInfo = VisualDiagnostics.GetSourceInfo(added);
+			Assert.NotNull(addedInfo);
+			Assert.Equal(firstInfo.SourceUri, addedInfo!.SourceUri);
+			Assert.Equal((7, firstInfo.LinePosition), (addedInfo.LineNumber, addedInfo.LinePosition));
+			Assert.Equal(8, VisualDiagnostics.GetSourceInfo(second)!.LineNumber);
+			Assert.Same(firstInfo, VisualDiagnostics.GetSourceInfo(first));
+		});
+	}
+
+	/// <summary>
+	/// https://github.com/dotnet/maui/issues/40605: a pure line shift (here, a comment line) has no
+	/// semantic change, but must still produce a patch, recognized by the runtime as a XAML change, that
+	/// moves the source info of the elements below it.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void LineShiftOnlyEdit_ProducesPatchThatUpdatesSourceInfo()
+	{
+		var xamlV1 = StackPage("""
+			        <Label Text="First" />
+			        <Label Text="Second" />
+			""");
+		var xamlV2 = StackPage("""
+			        <Label Text="First" />
+			        <!-- a comment -->
+			        <Label Text="Second" />
+			""");
+
+		using var diagnostics = EnableMauiDiagnostics();
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+		Assert.NotEqual(generation[0].UpdateComponentSource, generation[1].UpdateComponentSource);
+		Assert.Contains("RegisterSourceInfo", UpdateComponentText.DefaultPatch(generation[1].UpdateComponentSource!), StringComparison.Ordinal);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsAssignableFrom<Layout>(page.Content);
+			var second = Assert.IsType<Label>(layout.Children[1]);
+			Assert.Equal(7, VisualDiagnostics.GetSourceInfo(second)!.LineNumber);
+
+			live.ApplyUpdate<ContentPage>(1);
+
+			Assert.Equal(8, VisualDiagnostics.GetSourceInfo(second)!.LineNumber);
+			Assert.Equal(6, VisualDiagnostics.GetSourceInfo(layout.Children[0])!.LineNumber);
+		});
+	}
+
+	/// <summary>
+	/// https://github.com/dotnet/maui/issues/40605: when an edit can't be applied to live instances
+	/// (a structural change), the runtime reports the type in <c>ReloadRequiredTypes</c>, so tools know
+	/// the live instances (and their source info) still reflect the previous XAML.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void StructuralChange_IsReportedInReloadRequiredTypes()
+	{
+		// x:FieldModifier changes the generated field, which a patch can't do: a structural change.
+		static string Page(string fieldModifier, string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label x:Name="label" x:FieldModifier="{{fieldModifier}}" Text="{{text}}" />
+			</ContentPage>
+			""";
+
+		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
+		using var hotReload = new SwitchScope(switchName);
+		using var harness = CreateHarness();
+		var generation = harness.Generate(Page("private", "Hello"), Page("internal", "Hello"), Page("internal", "World"));
+		Assert.Contains("RequiresReload() => true", generation[1].UpdateComponentSource!, StringComparison.Ordinal);
+		Assert.Contains("RequiresReload() => false", generation[2].UpdateComponentSource!, StringComparison.Ordinal);
+
+		HotReloadSkippedEventArgs? skipped = null;
+		EventHandler<HotReloadSkippedEventArgs> capture = (_, e) => skipped = e;
+		HotReloadDiagnostics.UpdateSkipped += capture;
+		try
+		{
+			harness.RunLive(generation, live =>
+			{
+				var page = live.GetInstance<ContentPage>();
+				var pageType = page.GetType();
+				var signalType = pageType.GetNestedType(UpdateComponentCodeWriter.SignalTypeName, BindingFlags.NonPublic);
+				Assert.NotNull(signalType);
+
+				live.ApplyUpdate<ContentPage>(1);
+				// No live instance: the batch is skipped, which reports it synchronously.
+				XamlComponentRegistry.Unregister(page);
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType, signalType!]);
+				Assert.NotNull(skipped);
+				Assert.Empty(skipped!.HandledTypes);
+				Assert.Equal([pageType], skipped.ReloadRequiredTypes);
+
+				skipped = null;
+				live.ApplyUpdate<ContentPage>(2);
+				XamlComponentRegistry.Unregister(page);
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType, signalType!]);
+				Assert.NotNull(skipped);
+				Assert.Equal([pageType], skipped!.HandledTypes);
+				Assert.Empty(skipped.ReloadRequiredTypes);
+			});
+		}
+		finally
+		{
+			HotReloadDiagnostics.UpdateSkipped -= capture;
+		}
+	}
 }

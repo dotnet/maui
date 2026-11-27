@@ -53,12 +53,23 @@ namespace Microsoft.Maui.Platform
 					else
 					{
 						result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
-						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+						// The drawable service can finish after the handler cancels the load.
+						applied = !cancellationToken.IsCancellationRequested;
+						if (!applied)
+						{
+							result?.Dispose();
+							result = null;
+						}
+						else if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+						{
 							setImage.Invoke(drawableResult.Value);
+						}
 					}
 
-					if (result is null)
+					if (applied && result is null)
+					{
 						throw new InvalidOperationException("Glide failed to load image");
+					}
 				}
 
 				events?.LoadingCompleted(applied);

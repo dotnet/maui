@@ -65,7 +65,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
 			platformView.CrossPlatformLayout = null;
-			platformView.RemoveAllViews();
+			if (!platformView.IsDisposed())
+			{
+				platformView.RemoveAllViews();
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 	}

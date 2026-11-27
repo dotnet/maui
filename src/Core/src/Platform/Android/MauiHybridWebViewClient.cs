@@ -286,6 +286,12 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
+			if (request.RequestHeaders?.TryGetValue(HybridWebViewHandler.InvokeDotNetBodyEncodingHeaderName, out var bodyEncoding) == true &&
+				string.Equals(bodyEncoding, HybridWebViewHandler.InvokeDotNetBodyUriEncoding, StringComparison.Ordinal))
+			{
+				body = Uri.UnescapeDataString(body);
+			}
+
 			errorResponse = null;
 			return true;
 		}

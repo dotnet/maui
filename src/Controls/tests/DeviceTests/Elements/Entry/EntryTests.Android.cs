@@ -6,6 +6,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AndroidEntry = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Entry;
+using ImeAction = Android.Views.InputMethods.ImeAction;
+using ImeFlags = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImeFlags;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -141,6 +144,98 @@ namespace Microsoft.Maui.DeviceTests
 
 				entry.IsReadOnly = false;
 				Assert.Equal(TextInputLayout.EndIconClearText, handler.PlatformView.EndIconMode);
+			});
+		}
+
+		[Fact]
+		public Task ImeOptionsTakesPrecedenceOverReturnType()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var entry = new Entry { ReturnType = ReturnType.Search };
+				var platformEntry = GetPlatformControl(CreateHandler<EntryHandler>(entry));
+				Assert.Equal(ImeAction.Search, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ReturnType = ReturnType.Go;
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ClearValue(AndroidEntry.ImeOptionsProperty);
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+			});
+		}
+
+		[Fact]
+		public Task ReturnTypePreservesPreviouslyRegisteredMapping()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				const string key = nameof(IEntry.ReturnType);
+				var mapper = new PropertyMapper<IEntry, IEntryHandler>();
+				var callbackCount = 0;
+				mapper.AppendToMapping(key, (_, _) => callbackCount++);
+
+				Entry.RemapReturnTypeForAndroid(mapper);
+				var mapping = mapper.GetProperty(key);
+				Assert.NotNull(mapping);
+				Entry.RemapReturnTypeForAndroid(mapper);
+				Assert.Same(mapping, mapper.GetProperty(key));
+
+				var entry = new Entry();
+				var handler = new EntryHandler(mapper);
+				mapping(handler, entry);
+				Assert.Equal(1, callbackCount);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+				mapping(handler, entry);
+				Assert.Equal(1, callbackCount);
+
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+				mapping(handler, entry);
+				Assert.Equal(2, callbackCount);
+			});
+		}
+
+		[Fact]
+		public Task ImeOptionsTakesPrecedenceWhenEntryAttachesToWindow()
+		{
+			SetupBuilder();
+			var entry = new Entry { ReturnType = ReturnType.Search };
+			AndroidEntry.SetImeOptions(entry, ImeFlags.Send);
+
+			return CreateHandlerAndAddToWindow<EntryHandler>(entry, handler =>
+			{
+				var platformEntry = GetPlatformControl(handler);
+				Assert.True(platformEntry.IsAttachedToWindow);
+				Assert.Equal(ImeAction.Send, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public Task DefaultImeOptionsDoesNotOverrideReturnType(bool setBeforeAttach)
+		{
+			SetupBuilder();
+			var entry = new Entry { ReturnType = ReturnType.Search };
+			if (setBeforeAttach)
+				AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+
+			return CreateHandlerAndAddToWindow<EntryHandler>(entry, handler =>
+			{
+				var platformEntry = GetPlatformControl(handler);
+				if (!setBeforeAttach)
+					AndroidEntry.SetImeOptions(entry, ImeFlags.Default);
+
+				Assert.Equal(ImeAction.Search, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ReturnType = ReturnType.Go;
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
+
+				entry.ClearValue(AndroidEntry.ImeOptionsProperty);
+				Assert.Equal(ImeAction.Go, platformEntry.ImeOptions & ImeAction.ImeMaskAction);
 			});
 		}
 

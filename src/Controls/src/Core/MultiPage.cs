@@ -94,6 +94,13 @@ namespace Microsoft.Maui.Controls
 				
 				_current = value;
 
+#if ANDROID
+				if (this is TabbedPage)
+				{
+					(this.Window as Window)?.NotifyNavigationStateChanged();
+				}
+#endif
+
 				previousPage?.SendDisappearing();
 
 				OnPropertyChanged();

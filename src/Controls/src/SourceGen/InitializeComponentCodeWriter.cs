@@ -317,7 +317,8 @@ $$"""
 	/// </param>
 	/// <param name="emptyDiff">
 	/// Set to <see langword="true"/> when the new XAML parsed cleanly but produced no semantic
-	/// diff (e.g., a formatting / comment-only edit, or a revert to the previous state). The caller
+	/// diff (e.g., a formatting / comment-only edit that, when diagnostics are enabled, moves no element;
+	/// or a revert to the previous state). The caller
 	/// refreshes the cached XAML text and parsed tree only, and emits a present-but-empty
 	/// UpdateComponent() so the method never disappears between generations.
 	/// </param>
@@ -440,7 +441,7 @@ $$"""
 			newIds = transferredIds;
 		}
 
-		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds);
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds, trackSourceInfo: projectItem.EnableDiagnostics);
 		if (diff is null)
 			return null;
 		idsMatchCurrent = currentIdsCompatible && effectiveNewIds is not null && effectiveNewIds.Count == newIds.Count;

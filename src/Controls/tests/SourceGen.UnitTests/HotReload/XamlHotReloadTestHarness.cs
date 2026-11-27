@@ -806,16 +806,21 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			}
 
 			// Like Roslyn, only list the companion signal type when its content changed.
-			var previousSignal = GetSignalFingerprint(previousType);
-			var nextSignal = GetSignalFingerprint(nextType);
-			if (previousSignal is not null && nextSignal is not null
-				&& !string.Equals(
-					previousSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
-					nextSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
-					StringComparison.Ordinal))
+			foreach (var signalMethodName in new[] { "Fingerprint", UpdateComponentCodeWriter.RequiresReloadMethodName })
 			{
-				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousSignal, nextSignal));
-				affectedTypes.Add($"{nextRoot.TypeName}+{nextSignal.ContainingType.Name}");
+				var previousSignal = GetSignalMethod(previousType, signalMethodName);
+				var nextSignal = GetSignalMethod(nextType, signalMethodName);
+				if (previousSignal is not null && nextSignal is not null
+					&& !string.Equals(
+						previousSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+						nextSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+						StringComparison.Ordinal))
+				{
+					edits.Add(new SemanticEdit(SemanticEditKind.Update, previousSignal, nextSignal));
+					var signalTypeName = $"{nextRoot.TypeName}+{nextSignal.ContainingType.Name}";
+					if (!affectedTypes.Contains(signalTypeName))
+						affectedTypes.Add(signalTypeName);
+				}
 			}
 
 			foreach (var nextField in nextType.GetMembers().OfType<IFieldSymbol>())
@@ -863,10 +868,10 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			affectedTypes.ToImmutable());
 	}
 
-	static IMethodSymbol? GetSignalFingerprint(INamedTypeSymbol rootType) =>
+	static IMethodSymbol? GetSignalMethod(INamedTypeSymbol rootType, string methodName) =>
 		rootType.GetTypeMembers(UpdateComponentCodeWriter.SignalTypeName)
 			.SingleOrDefault()
-			?.GetMembers("Fingerprint")
+			?.GetMembers(methodName)
 			.OfType<IMethodSymbol>()
 			.SingleOrDefault();
 

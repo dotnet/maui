@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -24,6 +25,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if MACCATALYST
+		static readonly ConditionalWeakTable<PlatformView, MauiUIContextMenuInteraction> s_contextMenuInteractions = new();
+
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
@@ -31,22 +34,25 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is PlatformView uiView)
 			{
-				MauiUIContextMenuInteraction? currentInteraction = null;
-
-				foreach (var interaction in uiView.Interactions)
+				if (s_contextMenuInteractions.TryGetValue(uiView, out var currentInteraction) && currentInteraction.View != uiView)
 				{
-					if (interaction is MauiUIContextMenuInteraction menuInteraction)
-						currentInteraction = menuInteraction;
+					s_contextMenuInteractions.Remove(uiView);
+					currentInteraction = null;
 				}
 
 				if (contextFlyoutContainer.ContextFlyout != null)
 				{
 					if (currentInteraction == null)
-						uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+					{
+						var interaction = new MauiUIContextMenuInteraction(handler);
+						uiView.AddInteraction(interaction);
+						s_contextMenuInteractions.AddOrUpdate(uiView, interaction);
+					}
 				}
 				else if (currentInteraction != null)
 				{
 					uiView.RemoveInteraction(currentInteraction);
+					s_contextMenuInteractions.Remove(uiView);
 				}
 			}
 		}

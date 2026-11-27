@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Handlers
 		const int IconDrawableSlot = 1;
 
 		Drawable? _appliedIconTintDrawable;
+		Drawable? _defaultBackground;
+		bool _hasAppliedBackground;
 
 		protected override void ConnectHandler(AView platformView)
 		{
@@ -32,6 +34,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			_appliedIconTintDrawable = null;
+			_defaultBackground = null;
+			_hasAppliedBackground = false;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -76,12 +80,69 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.PlatformView.UpdateBackground(view.Background);
+			if (handler is SwipeItemMenuItemHandler platformHandler)
+			{
+				platformHandler.UpdateBackground(view.Background);
+			}
+			else
+			{
+				handler.PlatformView.UpdateBackground(view.Background);
+			}
 
 			if (handler.PlatformView is TextView textView)
+			{
 				textView.TextAlignment = ATextAlignment.Center;
+			}
 
 			UpdateBackgroundColorDependencies(handler);
+		}
+
+		void UpdateBackground(Paint? background)
+		{
+			var platformView = PlatformView;
+			if (background.IsNullOrEmpty())
+			{
+				if (_hasAppliedBackground)
+				{
+					// Restoring the native background can replace the padding that centers the text.
+					int paddingLeft = platformView.PaddingLeft;
+					int paddingTop = platformView.PaddingTop;
+					int paddingRight = platformView.PaddingRight;
+					int paddingBottom = platformView.PaddingBottom;
+
+					platformView.Background = _defaultBackground;
+					platformView.SetPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+					_defaultBackground = null;
+					_hasAppliedBackground = false;
+				}
+			}
+			else
+			{
+				// Capture after ConnectHandler so subclasses can supply their own native default.
+				if (!_hasAppliedBackground)
+				{
+					var nativeBackground = platformView.Background;
+					if (nativeBackground is ColorDrawable && background is SolidPaint { Color: Color color })
+					{
+						// SetBackgroundColor would recolor the drawable we need to restore.
+						platformView.Background = new ColorDrawable(color.ToPlatform());
+					}
+					else
+					{
+						platformView.UpdateBackground(background);
+					}
+
+					if (background is SolidPaint || !ReferenceEquals(platformView.Background, nativeBackground))
+					{
+						_defaultBackground = nativeBackground;
+						_hasAppliedBackground = true;
+					}
+				}
+				else
+				{
+					platformView.UpdateBackground(background);
+				}
+			}
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)

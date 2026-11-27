@@ -70,6 +70,50 @@ public class XamlNodeDiffTests
 		Assert.True(diff.IsEmpty);
 	}
 
+	// Source info tracking (https://github.com/dotnet/maui/issues/40605)
+
+	static XamlTreeDiff? DiffTrackingSourceInfo(SGRootNode old, SGRootNode @new)
+		=> XamlNodeDiff.ComputeDiff(old, @new, NodeIdHelper.AssignIds(old), NodeIdHelper.AssignIds(@new, 100, out _), out _, trackSourceInfo: true);
+
+	[Fact]
+	public void LocationOnlyChange_IsEmptyWithoutTracking_AndReportsMovedNodesWithTracking()
+	{
+		var old = Parse(Page("\n<StackLayout>\n<Label Text=\"A\" />\n<Label Text=\"B\" /></StackLayout>"));
+		var @new = Parse(Page("\n<StackLayout>\n<Label Text=\"A\" />\n\n<Label Text=\"B\" /></StackLayout>"));
+
+		Assert.True(XamlNodeDiff.ComputeDiff(old, @new)!.IsEmpty);
+
+		var diff = DiffTrackingSourceInfo(old, @new);
+		Assert.NotNull(diff);
+		Assert.False(diff!.IsEmpty);
+		Assert.Empty(diff.NodeChanges);
+		Assert.Empty(diff.ChildListChanges);
+		var change = Assert.Single(diff.SourceInfoChanges);
+		Assert.Equal("B", ((ValueNode)change.Node.Properties[new XmlName("", "Text")]).Value);
+		Assert.Equal(5, change.Node.LineNumber);
+	}
+
+	[Fact]
+	public void IdenticalTrees_WithTracking_AreEmpty()
+	{
+		var xaml = Page("<StackLayout><Label Text=\"A\" /></StackLayout>");
+
+		Assert.True(DiffTrackingSourceInfo(Parse(xaml), Parse(xaml))!.IsEmpty);
+	}
+
+	[Fact]
+	public void AddedSubtree_WithTracking_ReportsEveryCreatedNode()
+	{
+		var old = Parse(Page("<StackLayout><Label Text=\"A\" /></StackLayout>"));
+		var @new = Parse(Page("<StackLayout><Label Text=\"A\" /><Border><Label Text=\"B\" /></Border></StackLayout>"));
+
+		var diff = DiffTrackingSourceInfo(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(new[] { "Border", "Label" }, diff!.SourceInfoChanges.Select(change => change.Node.XmlType.Name));
+		Assert.All(diff.SourceInfoChanges, change => Assert.True(int.Parse(change.NodeId) >= 100));
+	}
+
 	// Property changes → correct diffs
 
 	[Fact]
