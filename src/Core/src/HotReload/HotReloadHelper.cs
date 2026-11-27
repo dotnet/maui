@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -14,6 +15,9 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
+		static long handlerCacheGeneration;
+		internal static long HandlerCacheGeneration => Interlocked.Read(ref handlerCacheGeneration);
+
 		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
@@ -23,6 +27,7 @@ namespace Microsoft.Maui.HotReload
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
 		public static void Reset()
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			replacedViews.Clear();
 			activatedHandlerTypes = new();
 
@@ -134,16 +139,37 @@ namespace Microsoft.Maui.HotReload
 		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
 		{
 			activatedHandlerTypes.GetValue(descriptor, static _ => new()).Type = handlerType;
+			ApplyPendingHandlerReplacement(descriptor.ServiceType, handlerType);
+		}
 
-			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
-				return;
+		/// <summary>
+		/// Applies a pending Hot Reload replacement of <paramref name="handlerType"/> to <paramref name="viewType"/> for a
+		/// handler that the factory resolved without a collection descriptor, such as an <see cref="Handlers.ElementHandlerAttribute"/>
+		/// or content interface default, which <see cref="RegisterHandlerReplacement"/> cannot find in the collection.
+		/// </summary>
+		/// <returns><see langword="true"/> if a replacement was registered, so resolving the view again uses it.</returns>
+		[UnconditionalSuppressMessage("Trimming", "IL2026",
+			Justification = "Pending replacements are only populated by the trim-incompatible Hot Reload path.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050",
+			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
+		internal static bool TryApplyPendingHandlerReplacement(Type viewType, Type handlerType) =>
+			ApplyPendingHandlerReplacement(viewType, handlerType);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
+		static bool ApplyPendingHandlerReplacement(Type viewType, Type handlerType)
+		{
+			if (pendingHandlerReplacements.IsEmpty || HandlerService is null || handlerType.FullName is not string handlerTypeName)
+				return false;
 
 			lock (handlerReplacementLock)
 			{
 				if (!pendingHandlerReplacements.TryGetValue(handlerTypeName, out var newHandlerType))
-					return;
+					return false;
 
-				var handler = new KeyValuePair<Type, Type>(descriptor.ServiceType, handlerType);
+				var handler = new KeyValuePair<Type, Type>(viewType, handlerType);
 				if (!replacedHandlers.TryGetValue(handlerTypeName, out var views))
 				{
 					views = new List<KeyValuePair<Type, Type>>();
@@ -151,10 +177,11 @@ namespace Microsoft.Maui.HotReload
 				}
 
 				if (views.Contains(handler))
-					return;
+					return false;
 
 				views.Add(handler);
 				RegisterHandler(handler, newHandlerType);
+				return true;
 			}
 		}
 
@@ -170,6 +197,8 @@ namespace Microsoft.Maui.HotReload
 
 			if (!IsEnabled)
 				return;
+
+			Interlocked.Increment(ref handlerCacheGeneration);
 
 			Action<MethodInfo> executeStaticMethod = (method) =>
 			{
@@ -213,17 +242,14 @@ namespace Microsoft.Maui.HotReload
 				}
 				else
 				{
-					var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-					var handlerType = assemblies.Select(x => x.GetType(oldHandlerType)).FirstOrDefault(x => x != null);
-
-					views = handlerType is null
-						? new List<KeyValuePair<Type, Type>>()
-						: HandlerService
-							.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
-							.Where(x => x.Value == handlerType)
-							.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
-							.Distinct()
-							.ToList();
+					// Match by name, like the replacement request itself. Looking the name up in the loaded
+					// assemblies can find a different Type when an assembly is loaded more than once.
+					views = HandlerService
+						.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
+						.Where(x => x.Value?.FullName == oldHandlerType)
+						.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
+						.Distinct()
+						.ToList();
 
 					if (views.Count > 0)
 						replacedHandlers[oldHandlerType] = views.ToList();
@@ -284,11 +310,16 @@ namespace Microsoft.Maui.HotReload
 #endif
 		public static void UpdateApplication(Type[] types)
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			IsEnabled = true;
 			foreach (var t in types)
 				RegisterReplacedView(t.FullName ?? "", t);
 		}
-		public static void ClearCache(Type[] types) => TriggerReload();
+		public static void ClearCache(Type[] types)
+		{
+			Interlocked.Increment(ref handlerCacheGeneration);
+			TriggerReload();
+		}
 		#endregion
 	}
 }
