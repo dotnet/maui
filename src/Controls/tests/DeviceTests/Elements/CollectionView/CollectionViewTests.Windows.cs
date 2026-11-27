@@ -920,14 +920,20 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "Repeated MakeVisible keeps an item at the viewport end")]
-		[InlineData(ItemsLayoutOrientation.Vertical, false, false)]
-		[InlineData(ItemsLayoutOrientation.Vertical, false, true)]
-		[InlineData(ItemsLayoutOrientation.Vertical, true, false)]
-		[InlineData(ItemsLayoutOrientation.Vertical, true, true)]
-		[InlineData(ItemsLayoutOrientation.Horizontal, false, false)]
-		[InlineData(ItemsLayoutOrientation.Horizontal, false, true)]
-		public async Task MakeVisibleKeepsItemAtViewportEnd(ItemsLayoutOrientation orientation, bool grouped, bool byObject)
+		[Theory(DisplayName = "MakeVisible aligns bottom-clipped items and keeps them at the viewport end")]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, 0)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, false, true, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Vertical, true, true, 20)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, false, 20)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, false, true, 20)]
+		public async Task MakeVisibleKeepsItemAtViewportEnd(ItemsLayoutOrientation orientation, bool grouped, bool byObject, double clippedLength)
 		{
 			SetupBuilder();
 
@@ -947,7 +953,7 @@ namespace Microsoft.Maui.DeviceTests
 				})
 			};
 
-			const int targetIndex = 20;
+			const int targetIndex = 6;
 			void ScrollToTarget(ScrollToPosition position, bool animate)
 			{
 				if (byObject)
@@ -961,38 +967,76 @@ namespace Microsoft.Maui.DeviceTests
 				var list = handler.PlatformView;
 				var scrollViewer = list.GetFirstDescendant<UI.Xaml.Controls.ScrollViewer>();
 				Assert.NotNull(scrollViewer);
-				await AssertEventually(() => scrollViewer.ViewportWidth > 0 && scrollViewer.ViewportHeight > 0);
+				await AssertEventually(() => list.IsLoaded && scrollViewer.ViewportWidth > 0 && scrollViewer.ViewportHeight > 0);
 
-				ScrollToTarget(ScrollToPosition.End, false);
-				await AssertEventually(() =>
+				double GetOffset() => orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
+				double GetViewportLength() => orientation == ItemsLayoutOrientation.Vertical
+					? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+				bool TryGetBounds(out global::Windows.Foundation.Rect bounds)
 				{
 					if (list.ContainerFromIndex(targetIndex) is not FrameworkElement container ||
-						scrollViewer.Content is not UIElement content)
+						!container.IsLoaded || container.ActualWidth <= 0 || container.ActualHeight <= 0)
+					{
+						bounds = default;
 						return false;
+					}
 
-					var point = container.TransformToVisual(content).TransformPoint(new global::Windows.Foundation.Point());
-					var distance = orientation == ItemsLayoutOrientation.Vertical
-						? point.Y + container.DesiredSize.Height - scrollViewer.VerticalOffset - scrollViewer.ViewportHeight
-						: point.X + container.DesiredSize.Width - scrollViewer.HorizontalOffset - scrollViewer.ViewportWidth;
-					return Math.Abs(distance) < 0.1;
-				}, timeout: 5000, message: "The target should be aligned with the viewport end.");
+					bounds = container.TransformToVisual(scrollViewer).TransformBounds(
+						new global::Windows.Foundation.Rect(0, 0, container.ActualWidth, container.ActualHeight));
+					return true;
+				}
+				double GetLeading(global::Windows.Foundation.Rect bounds) =>
+					orientation == ItemsLayoutOrientation.Vertical ? bounds.Top : bounds.Left;
+				double GetTrailing(global::Windows.Foundation.Rect bounds) =>
+					orientation == ItemsLayoutOrientation.Vertical ? bounds.Bottom : bounds.Right;
 
-				double offset = orientation == ItemsLayoutOrientation.Vertical
-					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
-				Assert.True(offset > 0);
+				bool ChangeOffset(double offset) => scrollViewer.ChangeView(
+					orientation == ItemsLayoutOrientation.Horizontal ? offset : null,
+					orientation == ItemsLayoutOrientation.Vertical ? offset : null,
+					null, true);
+
+				// Keep the target near the initial viewport to avoid a large virtualized jump.
+				Assert.True(ChangeOffset(160), "The initial scroll should be accepted.");
+				var targetVisible = await Wait(() => TryGetBounds(out var bounds) &&
+					GetLeading(bounds) < GetViewportLength() && GetTrailing(bounds) > 0,
+					timeout: 5000);
+				var hasBounds = TryGetBounds(out var visibleBounds);
+				Assert.True(targetVisible, $"The target container should be realized and visible. " +
+					$"Has bounds: {hasBounds}, bounds: {visibleBounds}, offset: {GetOffset()}, viewport: {GetViewportLength()}.");
+
+				// WinUI can revise virtualized item offsets during a scroll, so position from
+				// the current viewport bounds rather than a previously calculated content offset.
+				for (int attempt = 0; attempt < 10; attempt++)
+				{
+					Assert.True(TryGetBounds(out var bounds), "The target container should remain realized.");
+					var adjustment = GetTrailing(bounds) - GetViewportLength() - clippedLength;
+					if (Math.Abs(adjustment) < 1)
+						break;
+
+					Assert.True(ChangeOffset(GetOffset() + adjustment), "The target positioning scroll should be accepted.");
+					await Task.Delay(100);
+				}
+
+				Assert.True(TryGetBounds(out var initialBounds), "The target container should remain realized.");
+				Assert.InRange(Math.Abs(GetTrailing(initialBounds) - GetViewportLength() - clippedLength), 0, 1);
+				Assert.True(GetLeading(initialBounds) >= 0, "The target's leading edge should be visible.");
 
 				for (int i = 0; i < 2; i++)
 				{
 					ScrollToTarget(ScrollToPosition.MakeVisible, true);
+					await AssertEventually(() => TryGetBounds(out var bounds) &&
+						Math.Abs(GetTrailing(bounds) - GetViewportLength()) < 1,
+						timeout: 5000, message: "MakeVisible should align the target with the viewport end.");
 					await Task.Delay(1000);
-					double current = orientation == ItemsLayoutOrientation.Vertical
-						? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset;
-					Assert.InRange(Math.Abs(current - offset), 0, 1);
+					Assert.True(TryGetBounds(out var bounds), "The target container should remain realized.");
+					Assert.InRange(Math.Abs(GetTrailing(bounds) - GetViewportLength()), 0, 1);
 				}
 
+				Assert.True(TryGetBounds(out var beforeStartBounds), "The target container should remain realized.");
 				ScrollToTarget(ScrollToPosition.Start, false);
-				await AssertEventually(() => Math.Abs((orientation == ItemsLayoutOrientation.Vertical
-					? scrollViewer.VerticalOffset : scrollViewer.HorizontalOffset) - offset) > 5,
+				await AssertEventually(() => TryGetBounds(out var bounds) &&
+					GetLeading(bounds) < GetLeading(beforeStartBounds) - 5,
 					timeout: 5000, message: "Start should still reposition the visible item.");
 			});
 		}
