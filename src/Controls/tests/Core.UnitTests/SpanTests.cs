@@ -233,6 +233,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingLabelResourcesPreservesOuterSpanClassStyle()
+		{
+			var span = new Span { StyleClass = new[] { "accent" } };
+			var label = new Label
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Label))
+					{
+						Class = "accent",
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Green } }
+					}
+				},
+				FormattedText = new FormattedString { Spans = { span } }
+			};
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { CreateClassStyle("accent", Colors.Blue) },
+				Content = label
+			};
+
+			Assert.Equal(Colors.Blue, span.TextColor);
+
+			label.Resources = new ResourceDictionary
+			{
+				new Style(typeof(Label))
+				{
+					Class = "accent",
+					Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Yellow } }
+				}
+			};
+
+			Assert.Equal(Colors.Blue, span.TextColor);
+		}
+
+		[Fact]
 		public void ClassesApplyIndependentlyAndCompose()
 		{
 			var accent = new Span { StyleClass = new[] { "accent" } };

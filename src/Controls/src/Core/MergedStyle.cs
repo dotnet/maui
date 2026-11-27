@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> _styleClass;
 
+		bool _isSettingStyleClass;
+
 		public MergedStyle(Type targetType, BindableObject target)
 		{
 			Target = target;
@@ -60,36 +62,53 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_styleClass == value)
-					return;
-
-				if (_styleClass != null && _classStyleProperties != null)
-					foreach (var classStyleProperty in _classStyleProperties)
-						Target.RemoveDynamicResource(classStyleProperty);
-
-				_styleClass = value;
-				_classStyleProperties = new List<BindableProperty>();
-				var previousClassStyles = ClassStyles;
-
-				if (_styleClass != null)
 				{
-					foreach (var styleClass in _styleClass)
-					{
-						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
-							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
-						_classStyleProperties.Add(classStyleProperty);
-						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
-					}
+					return;
 				}
 
-				// Only recalculate if resource registration did not already notify.
-				if (ClassStyles == previousClassStyles)
+				_isSettingStyleClass = true;
+				try
 				{
-					OnClassStyleChanged();
+					if (_styleClass != null && _classStyleProperties != null)
+					{
+						foreach (var classStyleProperty in _classStyleProperties)
+						{
+							Target.RemoveDynamicResource(classStyleProperty);
+						}
+					}
+
+					_styleClass = value;
+					_classStyleProperties = new List<BindableProperty>();
+					var previousClassStyles = ClassStyles;
+
+					if (_styleClass != null)
+					{
+						foreach (var styleClass in _styleClass)
+						{
+							var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+								propertyChanged: (bindable, oldvalue, newvalue) =>
+									OnClassStyleChanged(!_isSettingStyleClass && oldvalue != null && !ReferenceEquals(oldvalue, newvalue)));
+							_classStyleProperties.Add(classStyleProperty);
+							Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+						}
+					}
+
+					// Only recalculate if resource registration did not already notify.
+					if (ClassStyles == previousClassStyles)
+					{
+						OnClassStyleChanged();
+					}
+				}
+				finally
+				{
+					_isSettingStyleClass = false;
 				}
 
 				//reapply the css stylesheets
 				if (_styleClass != null && Target is Element targetelement)
+				{
 					targetelement.ApplyStyleSheets();
+				}
 			}
 		}
 
@@ -147,13 +166,13 @@ namespace Microsoft.Maui.Controls
 				|| (ClassStyles?.Any(s => s?.ContainsStyle(style, Target) == true) ?? false)
 				|| (_style as Style)?.ContainsStyle(style, Target) == true;
 
-		void OnClassStyleChanged()
+		void OnClassStyleChanged(bool forceReapply = false)
 		{
 			var classStyles = _classStyleProperties
 				.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType)))
 				.Where(style => style != null)
 				.ToList();
-			if (!classStyles.SequenceEqual(ClassStyles ?? Array.Empty<Style>()))
+			if (forceReapply || !classStyles.SequenceEqual(ClassStyles ?? Array.Empty<Style>()))
 			{
 				ClassStyles = classStyles;
 			}

@@ -940,6 +940,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingBaseResourceRefreshesReusedClassStyle()
+		{
+			var classStyle = new Style(typeof(Label))
+			{
+				Class = "accent",
+				BaseResourceKey = "base"
+			};
+			var label = new Label { StyleClass = new[] { "accent" } };
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary
+				{
+					{ "base", new Style(typeof(Label))
+						{
+							Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Blue } }
+						}
+					},
+					classStyle
+				},
+				Content = label
+			};
+
+			Assert.Equal(Colors.Blue, label.TextColor);
+
+			parent.Resources = new ResourceDictionary
+			{
+				{ "base", new Style(typeof(Label))
+					{
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Red } }
+					}
+				},
+				classStyle
+			};
+
+			Assert.Equal(Colors.Red, label.TextColor);
+		}
+
+		[Fact]
 		public void SettingStyleToNullUnappliesActiveTriggerOnce()
 		{
 			var enterAction = new CountingTriggerAction();
