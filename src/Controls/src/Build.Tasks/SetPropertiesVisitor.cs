@@ -901,7 +901,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return true;
 
 			path = path.Trim(' ', '.'); //trim leading or trailing dots
-			var parts = CompiledBindingPath.Split(path);
+			var parts = CompiledBindingPath.Split(path, indexerEndsAtLastBracket: true);
 			var properties = new List<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)>();
 
 			var previousPartTypeRef = tSourceRef;
