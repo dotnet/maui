@@ -254,6 +254,53 @@ public class TestViewModel
 		Assert.Contains("source.Data?[\"key1\"]", generated, StringComparison.Ordinal);
 	}
 
+	[Theory]
+	[InlineData("Items[he.llo]", "string?", "source.Items?[\"he.llo\"]")]
+	[InlineData("Items[he.llo].Length", "int", "source.Items?[\"he.llo\"]?.Length")]
+	public void BindingToLiteralDictionaryKey(string path, string valueType, string getter)
+	{
+		var xaml =
+$$"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestViewModel">
+	<Label Text="{Binding {{path}}, Mode=OneWay}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage() => InitializeComponent();
+}
+
+public class TestViewModel
+{
+	public Dictionary<string, string> Items { get; } = new();
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+		Assert.Contains($"TypedBinding<global::Test.TestViewModel, {valueType}>", generated, StringComparison.Ordinal);
+		Assert.Contains($"static source => {getter}", generated, StringComparison.Ordinal);
+	}
+
 	[Fact]
 	public void BindingToArrayElement()
 	{
