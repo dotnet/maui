@@ -46,6 +46,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("Foo[]")]
 		[InlineData("Foo.Bar[]")]
 		[InlineData("Foo[1")]
+		[InlineData("Foo[he.llo")]
+		[InlineData("Foo[he.llo].")]
+		[InlineData("Foo[he.llo]..Bar")]
 		[Theory]
 		public void InvalidPaths(string path)
 		{

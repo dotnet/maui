@@ -2334,6 +2334,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("target", items["."]);
 		}
 
+		[Theory]
+		[InlineData("[he.llo]")]
+		[InlineData("Items[he.llo]")]
+		public void BindingReadsWritesAndObservesDottedIndexerKey(string path)
+		{
+			var items = new IndexedViewModel { ["he.llo"] = "initial" };
+			var label = new Label { BindingContext = path == "[he.llo]" ? (object)items : new { Items = items } };
+			label.SetBinding(Label.TextProperty, new Binding(path, BindingMode.TwoWay));
+
+			Assert.Equal("initial", label.Text);
+			label.Text = "target";
+			Assert.Equal("target", items["he.llo"]);
+			items["he.llo"] = "source";
+			Assert.Equal("source", label.Text);
+		}
+
+		[Theory]
+		[InlineData("he.llo", "Items[he.llo].Name")]
+		[InlineData(".", "Items[.].Name")]
+		public void BindingObservesChainedIndexerKey(string key, string path)
+		{
+			var items = new IndexedViewModel { [key] = new { Name = "initial" } };
+			var label = new Label { BindingContext = new { Items = items } };
+			label.SetBinding(Label.TextProperty, path);
+
+			Assert.Equal("initial", label.Text);
+			items[key] = new { Name = "source" };
+			Assert.Equal("source", label.Text);
+		}
+
 		class VM57081
 		{
 			string _foo;
