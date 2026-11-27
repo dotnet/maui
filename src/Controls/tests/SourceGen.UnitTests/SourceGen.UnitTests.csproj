@@ -6,7 +6,7 @@
     <AssemblyName>Microsoft.Maui.Controls.SourceGen.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;MAUIX2025;XC0022;XC0023</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
