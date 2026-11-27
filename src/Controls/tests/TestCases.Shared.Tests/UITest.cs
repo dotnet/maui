@@ -425,13 +425,94 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
+				IImageEditor? androidImageEditor = null;
+
+				int androidStatusBarHeight = 0;
+				int androidNavigationBarHeight = 0;
+				int androidNavigationBarLeft = 0;
+				int androidNavigationBarRight = 0;
+				if (_testDevice == TestDevice.Android && (cropTop <= 0 || cropBottom <= 0 || cropLeft <= 0 || cropRight <= 0))
+				{
+					var systemBars = App.GetSystemBars();
+					if (cropTop <= 0)
+					{
+						androidStatusBarHeight = GetSystemBarValue("statusBar", "height");
+					}
+
+					if (cropBottom <= 0 || cropLeft <= 0 || cropRight <= 0)
+					{
+						if (!systemBars.TryGetValue("navigationBar", out var barObject) ||
+							barObject is not IDictionary<string, object> navigationBar ||
+							!navigationBar.TryGetValue("visible", out var visibleObject) ||
+							visibleObject is not bool visible)
+						{
+							throw new InvalidOperationException("Unable to read Android navigationBar visibility from GetSystemBars().");
+						}
+
+						androidNavigationBarHeight = GetAndroidGestureNavigationCrop(environmentName, visible);
+						if (visible)
+						{
+							androidImageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+							(int width, int height) = androidImageEditor.GetSize();
+
+							int x = GetSystemBarValue("navigationBar", "x");
+							int y = GetSystemBarValue("navigationBar", "y");
+							int barWidth = GetSystemBarValue("navigationBar", "width");
+							int barHeight = GetSystemBarValue("navigationBar", "height");
+							if (x > width - barWidth || y > height - barHeight)
+							{
+								throw new InvalidOperationException($"GetSystemBars() returned Android navigationBar bounds outside the {width}x{height} screenshot.");
+							}
+
+							if (barWidth > 0 && barHeight > 0)
+							{
+								// Crop the bar's thickness at its reported edge, not its full landscape height.
+								if (barWidth >= barHeight && y + barHeight == height)
+								{
+									androidNavigationBarHeight = barHeight;
+								}
+								else if (barHeight > barWidth && x == 0)
+								{
+									androidNavigationBarLeft = barWidth;
+								}
+								else if (barHeight > barWidth && x + barWidth == width)
+								{
+									androidNavigationBarRight = barWidth;
+								}
+								else
+								{
+									throw new InvalidOperationException("GetSystemBars() returned Android navigationBar bounds that do not occupy the bottom, left, or right screenshot edge.");
+								}
+							}
+						}
+					}
+
+					int GetSystemBarValue(string barName, string key)
+					{
+						if (!systemBars.TryGetValue(barName, out var barObject) ||
+							barObject is not IDictionary<string, object> bar ||
+							!bar.TryGetValue(key, out var value) ||
+							value is null)
+						{
+							throw new InvalidOperationException($"Unable to read Android {barName}.{key} from GetSystemBars(). Screenshot cropping requires this value.");
+						}
+
+						int result = Convert.ToInt32(value);
+						if (result < 0)
+						{
+							throw new InvalidOperationException($"GetSystemBars() returned an invalid Android {barName}.{key}: {result}.");
+						}
+
+						return result;
+					}
+				}
 
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
+					TestDevice.Android => androidStatusBarHeight,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -445,21 +526,17 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 #endif
 
-				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For Android, crop the navigation bar here only when it occupies the bottom.
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
+					TestDevice.Android => androidNavigationBarHeight,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
 
-				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
-				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
-				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
-				int cropFromLeft = 0;
-				int cropFromRight = 0;
+				int cropFromLeft = androidNavigationBarLeft;
+				int cropFromRight = androidNavigationBarRight;
 
 				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
 				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
@@ -468,8 +545,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
 				{
-					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+					IImageEditor imageEditor = androidImageEditor ?? _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
+
+					if (_testDevice == TestDevice.Android &&
+						(cropFromLeft >= width - cropFromRight || cropFromTop >= height - cropFromBottom))
+					{
+						throw new InvalidOperationException($"Screenshot crops must leave a positive image size within the {width}x{height} screenshot.");
+					}
 
 					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
 
@@ -499,6 +582,12 @@ namespace Microsoft.Maui.TestCases.Tests
 					}
 				}
 			}
+		}
+
+		internal static int GetAndroidGestureNavigationCrop(string environmentName, bool navigationBarVisible)
+		{
+			// Appium reports gesture navigation as hidden with zero bounds on the API 36 test emulator.
+			return !navigationBarVisible && environmentName == "android-notch-36" ? 52 : 0;
 		}
 
 		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
