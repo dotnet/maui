@@ -1,7 +1,7 @@
 ---
 name: "maui-expert-autopilot"
 description: |
-  One `/review autopilot` command from a maintainer drives an opted-in pull request toward a mergeable
+  One `/review autopilot` command from a maintainer drives a pull request toward a mergeable
   state: MAUI expert review -> fix -> expert review ... until the expert reviewer has no findings,
   then `/review run-tests` -> fix -> expert review -> run-tests ... until the relevant tests pass.
   Every fix round has GPT-6.2 Sol, MAI Code 2 and Claude Opus 5.5 (in maui-expert-autopilot-opus) each propose a
@@ -49,7 +49,6 @@ on:
       with:
         script: |
           const LABEL = 's/autopilot-running';
-          const OPT_IN = /^\s*[-*]\s*\[[xX]\]\s*\**\s*Let the MAUI agent address review feedback/m;
           const COMMAND = /^\s*\/review\s+autopilot\s*$/i;
           const USER = /^[A-Za-z0-9][A-Za-z0-9-]*$/;
           const repo = context.repo;
@@ -138,15 +137,6 @@ on:
           if (!(await canWrite(requester))) {
             if (hasLabel) await stopLoop('## MAUI Autopilot — Stopped\n\n❌ The maintainer who started it no longer has write access.', 'needs-maintainer-decision');
             else await stopLoop('');
-            return;
-          }
-          let optedIn = OPT_IN.test(pr.body || '');
-          if (!optedIn && originOf(pr)) {
-            const { data: origin } = await github.rest.pulls.get({ ...repo, pull_number: originOf(pr) });
-            optedIn = OPT_IN.test(origin.body || '');
-          }
-          if (!optedIn) {
-            await stopLoop(`MAUI Autopilot needs the PR author's consent first: @${pr.user.login}, tick **Let the MAUI agent address review feedback and fix remaining issues on this PR** in the description, then a maintainer can comment \`/review autopilot\` again.`);
             return;
           }
 
@@ -716,8 +706,7 @@ safe-outputs:
 
 # maui-expert-autopilot — fix round
 
-A maintainer started maui-expert-autopilot on the pull request in `/tmp/gh-aw/autopilot/context.json`, and
-its author ticked **"Let the MAUI agent address review feedback and fix remaining issues on this PR."**
+A maintainer started maui-expert-autopilot on the pull request in `/tmp/gh-aw/autopilot/context.json`.
 The loop is: MAUI expert review → fix → expert review … until the review is clean, then
 `/review run-tests` → fix → expert review → run-tests … until the relevant tests pass. **This run is
 one fix round.** After you publish, the loop reviews the new head again. A maintainer still decides

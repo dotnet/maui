@@ -294,8 +294,7 @@ safe-outputs:
 
 # maui-expert-autopilot — Claude Opus 5.5 candidate
 
-A maintainer started maui-expert-autopilot on the pull request in `/tmp/gh-aw/autopilot/context.json`, and
-its author ticked **"Let the MAUI agent address review feedback and fix remaining issues on this PR."**
+A maintainer started maui-expert-autopilot on the pull request in `/tmp/gh-aw/autopilot/context.json`.
 Three models (GPT-6.2 Sol, MAI Code 2 and you, Claude Opus 5.5) each fix the same round independently.
 **You produce one candidate.** You do not commit, push, comment, or reply: the fix round compares your
 candidate against the others, has them critique it, and publishes the best fix per item.
