@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -2289,11 +2289,6 @@ namespace Microsoft.Maui.Controls
 			// during an arrange pass, which indicates the actual width and height of the platform element.
 			// Changes to WidthRequestProperty and HeightRequestProperty will propagate to the handler via the `OnRequestChanged` method.
 			if (valueChanged && this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
-				return;
-
-			// While the animation engine applies one frame to this element, transform updates are coalesced
-			// (see VisualElement.Animations.cs). Only the engine sets this; every other write is unchanged.
-			if (valueChanged && _animationFrameDepth > 0 && DeferTransformUpdate(property))
 				return;
 
 			base.UpdateHandlerValue(property, valueChanged);

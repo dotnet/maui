@@ -523,6 +523,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is View mauiView)
 				{
 					mauiView.DisconnectHandlers();
+					if (mauiView.Handler is null && wrapper.Content is not null)
+					{
+						wrapper.UnwireContentSizeObserver();
+						wrapper.Content = null;
+					}
 					VirtualView.RemoveLogicalChild(mauiView);
 				}
 			}
@@ -1748,31 +1753,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			platformView.Loaded += OnPlatformViewLoaded;
 		}
 
-	}
-
-	// Scrolls to the first or last item the view shows, for StructuredItemsView.ScrollToStart and ScrollToEnd: from the view's
-	// own list, which an items source that can be read only once doesn't give again, and whose groups needn't be lists.
-	internal bool ScrollToEdgeItem(bool end, bool animate)
-	{
-		if (_collectionViewSource?.View is not { } view)
-		{
-			return true;
-		}
-
-		var count = view.Count;
-		for (var step = 0; step < count; step++)
-		{
-			var index = end ? count - 1 - step : step;
-			if (view[index] is not ItemTemplateContext2 { IsHeader: true } and not ItemTemplateContext2 { IsFooter: true })
-			{
-				// A position in no group is an index into the view's own list, group headers and footers included.
-				var position = end ? ScrollToPosition.End : ScrollToPosition.Start;
-				ScrollToRequested(this, new ScrollToRequestEventArgs(index, -1, position, animate));
-				break;
-			}
-		}
-
-		return true;
 	}
 
 	void PerformScrollTo(WItemsView platformView, int index, double offset, bool animated)
