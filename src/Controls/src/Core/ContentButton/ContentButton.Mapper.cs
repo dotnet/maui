@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Controls
 		internal static new void RemapForControls()
 		{
 #if ANDROID
-			ContentButtonHandler.Mapper.ReplaceMapping<ContentButton, IContentButtonHandler>(
+			ContentButtonHandler.Mapper.ReplaceMappingForControls<ContentButton, IContentButtonHandler>(
 				PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty.PropertyName,
 				MapRippleColor);
-			ContentButtonHandler.Mapper.AppendToMapping<ContentButton, IContentButtonHandler>(
+			ContentButtonHandler.Mapper.AppendToMappingForControls<ContentButton, IContentButtonHandler>(
 				nameof(Background),
 				(handler, _) => handler.UpdateValue(PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty.PropertyName));
 #endif

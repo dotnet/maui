@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Maui.Storage
@@ -276,12 +275,6 @@ namespace Microsoft.Maui.Storage
 
 		internal static IPreferences GetDefault(Func<IPreferences> implementationFactory) =>
 			EssentialsImplementation.GetOrCreate(ref defaultImplementation, implementationFactory);
-
-		// Store ulong-backed enums as the same 64 bits in a signed long for the platform stores.
-		internal static long EnumToInt64<T>(T value) =>
-			Enum.GetUnderlyingType(typeof(T)) == typeof(ulong)
-				? unchecked((long)Convert.ToUInt64(value, CultureInfo.InvariantCulture))
-				: Convert.ToInt64(value, CultureInfo.InvariantCulture);
 
 		internal static Type[] SupportedTypes = new Type[]
 		{
