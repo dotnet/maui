@@ -714,10 +714,12 @@ static class SetPropertyHelpers
 			// Both must be collections, or both must be non-collections
 			if (fromIsCollection == toIsCollection)
 			{
-				// Same inheritance chain or one is an interface
+				// Same inheritance chain or one is an interface. A collection class that doesn't
+				// implement the target collection interface (e.g. a Layout for an IList<View>)
+				// is an item to add, not a value to cast.
 				if (fromType.InheritsFrom(toType, context) ||
 					toType.InheritsFrom(fromType, context) ||
-					toType.TypeKind == TypeKind.Interface ||
+					(toType.TypeKind == TypeKind.Interface && !(fromIsCollection && fromType.TypeKind == TypeKind.Class)) ||
 					fromType.TypeKind == TypeKind.Interface)
 				{
 					return true;
