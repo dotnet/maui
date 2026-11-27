@@ -1,0 +1,33 @@
+name: Sync candidate into inflight
+
+on:
+  schedule:
+    - cron: '15 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Serialize with release rollover so lane preparation and daily merges cannot race.
+concurrency:
+  group: release-tracking-prs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Merge the active candidate into the active inflight branch
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/scripts/Sync-CandidateIntoInflight.ps1

@@ -36,10 +36,12 @@ namespace Microsoft.Maui.ApplicationModel
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 
 			if (options.PreferredToolbarColor != null)
+#pragma warning disable CA1422 // Toolbar tint colors are obsolete on Mac Catalyst 26+, but remain the public options' behavior
 				sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
 
 			if (options.PreferredControlColor != null)
 				sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
+#pragma warning restore CA1422
 
 			if (sfViewController.PopoverPresentationController != null)
 				sfViewController.PopoverPresentationController.SourceView = vc.View!;

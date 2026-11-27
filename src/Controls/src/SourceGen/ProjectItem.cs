@@ -115,6 +115,23 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		}
 	}
 
+	/// <summary>
+	/// When true, styles with a compile-time TargetType are populated lazily so that NativeAOT can remove
+	/// their setters when the target type is never instantiated. MSBuild defaults <c>MauiXamlTrimmableStyles</c>
+	/// to <c>$(PublishAot)</c>; otherwise styles are created eagerly.
+	/// </summary>
+	public bool TrimmableStyles
+	{
+		get
+		{
+			if (Options.IsTrue("build_metadata.additionalfiles.TrimmableStyles"))
+				return true;
+			if (Options.IsFalse("build_metadata.additionalfiles.TrimmableStyles"))
+				return false;
+			return Options.IsTrue("build_property.MauiXamlTrimmableStyles");
+		}
+	}
+
 	public string? RelativePath
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 

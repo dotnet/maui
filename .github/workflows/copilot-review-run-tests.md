@@ -23,6 +23,8 @@ on:
   reaction: none
   status-comment: false
   roles: [admin, maintain, write]
+  # maui-expert-autopilot dispatches this with GITHUB_TOKEN on behalf of the maintainer who started it.
+  bots: ["github-actions[bot]"]
   permissions:
     contents: read
     issues: write
@@ -48,9 +50,16 @@ on:
           }
           core.setOutput('suite', suite);
           const { owner, repo } = context.repo;
-          const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: context.actor });
+          // maui-expert-autopilot dispatches as github-actions[bot] (only workflows in this repository can)
+          // on behalf of the maintainer who started it; check that maintainer's access instead.
+          let actor = context.actor;
+          if (context.eventName === 'workflow_dispatch' && actor === 'github-actions[bot]' && context.payload.sender?.type === 'Bot') {
+            actor = String(context.payload.inputs?.requested_by || '');
+            if (!/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(actor)) return;
+          }
+          const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });
           if (!['admin', 'maintain', 'write'].includes(data.permission)) {
-            core.info(`${context.actor} has ${data.permission} access; /review run-tests needs write.`);
+            core.info(`${actor} has ${data.permission} access; /review run-tests needs write.`);
             return;
           }
           core.setOutput('authorized', 'true');
@@ -104,6 +113,10 @@ on:
         options: [all, ui, device]
         default: all
         required: false
+      requested_by:
+        description: Maintainer who started maui-expert-autopilot (set by maui-expert-autopilot)
+        type: string
+        required: false
 
 if: needs.pre_activation.outputs.context_ready == 'true'
 
@@ -122,6 +135,49 @@ jobs:
   pre-activation:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
+  autopilot_failed:
+    # maui-expert-autopilot started this run; if it fails, retry once, then stop the loop visibly instead of stalling.
+    needs: [pre_activation, activation]
+    if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.requested_by != '' && (needs.pre_activation.result == 'failure' || needs.pre_activation.outputs.context_ready != 'true')
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
+    timeout-minutes: 3
+    steps:
+      - name: Retry or stop maui-expert-autopilot
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            if (!Number.isSafeInteger(number) || number < 1) return;
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) {
+              // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && l.name !== 's/autopilot-waiting-for-maintainer-review')) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              return;
+            }
+            // One automatic retry: a single flaky run should not end an autonomous loop.
+            if (!labels.some(l => l.name === 's/autopilot-retrying')) {
+              await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
+                description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              return core.info(`#${number}: retrying once.`);
+            }
+            for (const l of labels.filter(l => l.name.startsWith('s/autopilot-')))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            // Only the latest maui-expert-autopilot status comment stays visible.
+            const all = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: number, per_page: 100 });
+            for (const c of all.filter(c => c.user?.login === 'github-actions[bot]' && (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
+              await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
+            await github.rest.issues.createComment({ ...context.repo, issue_number: number,
+              body: `## MAUI Autopilot — Stopped\n\n❌ The [test selection](${url}) failed. It failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.\n\n<!-- maui-expert-autopilot-status -->` });
   # If this model fails, MAI Code 2 still selects. An agent can emit its proposal and then
   # exit non-zero; the proposal is still handed over in that case, so only hand over without one
   # when nothing was dispatched.
@@ -138,9 +194,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REQUESTED_BY: ${{ github.event.inputs.requested_by }}
         run: |
           gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
+            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 safe-outputs:
   report-failure-as-issue: false
@@ -225,9 +282,10 @@ safe-outputs:
             GH_TOKEN: ${{ github.token }}
             PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
             DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+            REQUESTED_BY: ${{ github.event.inputs.requested_by }}
           run: |
             gh workflow run copilot-review-run-tests-mai.lock.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-              -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
+              -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 tools:
   github:

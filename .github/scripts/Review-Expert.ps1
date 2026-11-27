@@ -200,6 +200,11 @@ function Get-ExpertRequest {
     } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
         if ([string]$event.inputs.pr_number -cne [string]$PRNumber) { throw 'Dispatch target does not match the request.' }
         $login = $env:GITHUB_ACTOR
+        # maui-expert-autopilot rounds are dispatched by github-actions[bot] (only workflows in this
+        # repository can) on behalf of the maintainer who started the loop.
+        if ($login -ceq 'github-actions[bot]' -and $event.sender.type -ceq 'Bot') {
+            $login = [string]$event.inputs.requested_by
+        }
     } else {
         throw 'Unsupported expert-review event.'
     }
@@ -748,6 +753,13 @@ function Invoke-ExpertPrepare {
         }
         $noun = if ($findingCount -eq 1) { 'finding' } else { 'findings' }
         $body = "## Expert Review $([char]0x2014) $findingCount $noun"
+        if ($findingCount -eq 0) {
+            # A clean re-review (for example in a maui-expert-autopilot loop) says so in words.
+            $earlier = @($feedback.reviews | Where-Object {
+                $_.user.login -ceq 'github-actions[bot]' -and ([string]$_.body).StartsWith('## Expert Review')
+            })
+            $body = if ($earlier.Count) { "## Expert Review $([char]0x2014) No more findings" } else { "## Expert Review $([char]0x2014) No findings" }
+        }
         if ($breakingCount) {
             $breakingNoun = if ($breakingCount -eq 1) { 'breaking change' } else { 'breaking changes' }
             $body += " $([char]0x00B7) $([char]0x26A0)$([char]0xFE0F) $breakingCount $breakingNoun"

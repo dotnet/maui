@@ -25,6 +25,10 @@ on:
         description: The copilot-review-run-tests run whose context this model selects from
         type: string
         required: true
+      requested_by:
+        description: Maintainer who started maui-expert-autopilot (forwarded from copilot-review-run-tests)
+        type: string
+        required: false
   # The dispatching token is the run-tests workflow's own; the source run is verified below.
   roles: all
   status-comment: false
@@ -106,9 +110,10 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REQUESTED_BY: ${{ inputs.requested_by }}
         run: |
           gh workflow run review-run-tests-dispatch.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-            -f pr_number="$PR_NUMBER" -f source_run_id="$SOURCE_RUN_ID" -f second_run_id="$GITHUB_RUN_ID"
+            -f pr_number="$PR_NUMBER" -f source_run_id="$SOURCE_RUN_ID" -f second_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 safe-outputs:
   report-failure-as-issue: false
@@ -196,9 +201,10 @@ safe-outputs:
             PR_NUMBER: ${{ github.event.inputs.pr_number }}
             SOURCE_RUN_ID: ${{ github.event.inputs.source_run_id }}
             DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+            REQUESTED_BY: ${{ github.event.inputs.requested_by }}
           run: |
             gh workflow run review-run-tests-dispatch.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
-              -f pr_number="$PR_NUMBER" -f source_run_id="$SOURCE_RUN_ID" -f second_run_id="$GITHUB_RUN_ID"
+              -f pr_number="$PR_NUMBER" -f source_run_id="$SOURCE_RUN_ID" -f second_run_id="$GITHUB_RUN_ID" -f requested_by="$REQUESTED_BY"
 
 tools:
   github:

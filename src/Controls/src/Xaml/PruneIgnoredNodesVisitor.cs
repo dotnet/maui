@@ -12,9 +12,11 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool StopOnDataTemplate => false;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => true;
+		public bool StopOnStyle => false;
 		public bool UseDesignProperties { get; }
 		public bool SkipChildren(INode node, INode parentNode) => false;
 		public bool IsResourceDictionary(ElementNode node) => false;
+		public bool IsStyle(ElementNode node) => false;
 
 		public static void RemoveCodeDirectives(RootNode root)
 		{

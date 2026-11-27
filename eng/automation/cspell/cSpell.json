@@ -38,7 +38,8 @@
         "frontmatter",
         "Vally",
         "Markout",
-        "Emscripten"
+        "Emscripten",
+        "Trimmable"
     ],
     "ignoreWords": [],
     "patterns": [

@@ -5,9 +5,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-#if ANDROID
-	[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
-#endif
 	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
 		bool _enableElementSelector;
@@ -219,8 +216,8 @@ namespace Microsoft.Maui
 
 			RemoveAdorners();
 
-			if (e.VisualTreeElements.Any())
-				AddAdorner(e.VisualTreeElements.First());
+			if (e.VisualTreeElements.Count > 0)
+				AddAdorner(e.VisualTreeElements[0]);
 		}
 	}
 }

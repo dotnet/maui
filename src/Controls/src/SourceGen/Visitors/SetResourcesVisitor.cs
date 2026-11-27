@@ -13,8 +13,10 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
+	public bool StopOnStyle => true;
 
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
+	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
 	{

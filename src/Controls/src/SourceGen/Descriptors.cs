@@ -390,10 +390,26 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor StyleTargetTypeMismatch = new DiagnosticDescriptor(
+			id: "MAUIX2024",
+			title: new LocalizableResourceString(nameof(MauiGResources.StyleTargetTypeMismatchTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.StyleTargetTypeMismatchMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
 			id: "MAUIX2017",
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ObsoleteFontSize = new DiagnosticDescriptor(
+			id: "MAUIX2025",
+			title: new LocalizableResourceString(nameof(MauiGResources.ObsoleteFontSizeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ObsoleteFontSizeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);

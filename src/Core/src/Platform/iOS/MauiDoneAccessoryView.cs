@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 		{
 			AccessibilityIdentifier = DoneAccessoryIdentifier;
 
-			if (_useGlassButton)
+			if (_useGlassButton && OperatingSystem.IsIOSVersionAtLeast(26))
 				InitializeGlassButton(doneClicked);
 			else
 				InitializeToolbar(doneClicked);
@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Platform
 		// Default iOS 26+ path: a floating Liquid Glass close button pinned to the trailing layout margin
 		// and lifted above the keyboard. Keep the original accessory height so UIKit continues scrolling
 		// focused input above the keyboard.
+		[System.Runtime.Versioning.SupportedOSPlatform("ios26.0")]
 		void InitializeGlassButton(EventHandler doneClicked)
 		{
 			ClipsToBounds = false;
@@ -145,6 +146,7 @@ namespace Microsoft.Maui.Platform
 			});
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios26.0")]
 		static UIButton CreateGlassButton(EventHandler action)
 		{
 			var button = UIButton.FromType(UIButtonType.System);
@@ -153,7 +155,6 @@ namespace Microsoft.Maui.Platform
 			button.AccessibilityLabel = DoneAccessibilityLabel;
 			button.TouchUpInside += action;
 
-			// GlassButtonConfiguration is always available here because this path only runs on iOS 26+.
 			var configuration = UIButtonConfiguration.GlassButtonConfiguration;
 			configuration.Image = UIImage.GetSystemImage("xmark");
 			configuration.CornerStyle = UIButtonConfigurationCornerStyle.Capsule;

@@ -30,6 +30,10 @@ individual fixes directly into `net11`; agents must not retarget or merge.
 
 Fixes #
 
+### Let AI finish this PR
+
+- [ ] **Let the MAUI agent address review feedback and fix remaining issues on this PR.** Maintainers still decide whether it is merged. For PRs from forks, the agent opens a follow-up PR that keeps your commits.
+
 <!--
 Verify the target branch follows the release workflow in docs/ReleaseBranchWorkflow.md.
 Infrastructure and documentation changes should target the branch where they apply.

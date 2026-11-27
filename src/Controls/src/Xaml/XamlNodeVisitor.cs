@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		bool StopOnDataTemplate { get; }
 		bool VisitNodeOnDataTemplate { get; }
 		bool StopOnResourceDictionary { get; }
+		bool StopOnStyle { get; }
 
 		void Visit(ValueNode node, INode parentNode);
 		void Visit(MarkupNode node, INode parentNode);
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		void Visit(ListNode node, INode parentNode);
 		bool SkipChildren(INode node, INode parentNode);
 		bool IsResourceDictionary(ElementNode node);
+		bool IsStyle(ElementNode node);
 	}
 
 	enum TreeVisitingMode
@@ -41,6 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool StopOnDataTemplate { get; }
 		public bool StopOnResourceDictionary { get; }
 		public bool VisitNodeOnDataTemplate { get; }
+		public bool StopOnStyle { get; }
 
 		public void Visit(ValueNode node, INode parentNode) => action(node, parentNode);
 		public void Visit(MarkupNode node, INode parentNode) => action(node, parentNode);
@@ -49,5 +52,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ListNode node, INode parentNode) => action(node, parentNode);
 		public bool SkipChildren(INode node, INode parentNode) => false;
 		public bool IsResourceDictionary(ElementNode node) => false;
+		public bool IsStyle(ElementNode node) => false;
 	}
 }

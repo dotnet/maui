@@ -2,7 +2,6 @@
 using System;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using System.Runtime.Versioning;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -165,9 +164,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Check for stylus secondary button on API 23+
 			if (OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
-#pragma warning disable CA1416 // Validate platform compatibility
 				if (CheckStylusSecondaryButton(buttonState))
-#pragma warning restore CA1416 // Validate platform compatibility
 				{
 					return ButtonsMask.Secondary;
 				}
@@ -177,7 +174,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return ButtonsMask.Primary;
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		bool CheckStylusSecondaryButton(MotionEventButtonState buttonState)
 		{
 			return (buttonState & MotionEventButtonState.StylusSecondary) == MotionEventButtonState.StylusSecondary;

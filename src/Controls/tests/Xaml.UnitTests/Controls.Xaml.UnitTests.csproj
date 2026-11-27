@@ -10,8 +10,10 @@
     <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618;CA2252;MAUIANIM0001</NoWarn>
     <!-- XC0618/XC0619 suppressed: test projects exercise deprecated APIs intentionally.
          XC0619 uses raw LogError (not warning-promotion), so WarningsNotAsErrors is defensive only. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619;XC0022;XC0023;XC0025;XC0045;XC0067;MAUIG2045;MAUID1000;MAUIX2005;MAUIX2017</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619;XC0022;XC0023;XC0025;XC0045;XC0067;MAUIG2045;MAUID1000;MAUIX2005;MAUIX2017;MAUIX2025</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
+    <!-- Exercise trimmable (lazy) styles for SourceGen; they are otherwise only on by default with PublishAot. -->
+    <MauiXamlTrimmableStyles>true</MauiXamlTrimmableStyles>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
@@ -83,9 +85,9 @@
 
     <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
     <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
-    <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
-    <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
-    <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
+    <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612;0618" />
+    <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612;0618" />
+    <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612;0618" />
     <MauiXaml Update="XmlnsCollision.rt.xaml" NoWarn="2020" />
     
     <!-- Suppress XC0067/MAUIX2017 (property set multiple times) for test files that intentionally test this scenario -->
@@ -97,6 +99,9 @@
 
     <!-- LazyRD feature test -->
     <MauiXaml Update="Issues\LazyResourceDictionary.sgen.xaml" LazyRD="true" />
+
+    <!-- Trimmable styles opt-out -->
+    <MauiXaml Update="Issues\TrimmableStylesDisabled.sgen.xaml" TrimmableStyles="false" />
 
     <!-- Benchmark comparison: with and without LazyRD -->
     <MauiXaml Update="Benchmark.xaml" LazyRD="true" />

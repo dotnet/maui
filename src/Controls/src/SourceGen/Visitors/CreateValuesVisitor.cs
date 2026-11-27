@@ -21,8 +21,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
+	public bool StopOnStyle => true;
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
+	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
@@ -48,6 +50,12 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			var defaultValue = type.IsReferenceType ? "default!" : "default";
 			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {defaultValue};");
 			variables[node] = new LocalVariable(type, variableName);
+			return;
+		}
+
+		// Handle Style with trimmable constructor
+		if (Context.ProjectItem.TrimmableStyles && node.IsStyle(Context) && TryCreateTrimmableStyle(node, writer, variables, compilation, xmlnsCache, Context))
+		{
 			return;
 		}
 
@@ -297,12 +305,12 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				// This element can be fully inlined without property assignments or variable creation.
 				// Skip setting all simple value properties since they'll be handled
 				// by inline initialization in TryProvideValue.
-				// 
+				//
 				// This eliminates the dead code that creates:
 				// 1. Empty variable instantiation (var setter = new Setter();)
-				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider, 
+				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider,
 				//    XmlNamespaceResolver, XamlTypeResolver) for property assignments
-				// 
+				//
 				// These are not AOT-compatible and were completely dead code.
 				//
 				// Register a placeholder variable entry so TryProvideValue can replace it
@@ -318,7 +326,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				//   <Setter Property="...">10,10,20,20</Setter>
 				// where the value is a collection item instead of a property.
 				// Without skipping this, SetPropertiesVisitor would try to process the
-				// collection item and generate invalid code like ".Value = ..." 
+				// collection item and generate invalid code like ".Value = ..."
 				// (with an empty variable name).
 				if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
 				{
@@ -391,6 +399,61 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
 
 		node.RegisterSourceInfo(Context, Writer);
+	}
+
+	/// <summary>
+	/// Creates a Style whose TargetType is known at compile time. Content marked by
+	/// <see cref="MarkDeferredStyleContentVisitor"/> is emitted later in the style's lazy initializer, so
+	/// the trimmer can remove it when the target type is never instantiated. <c>typeof</c> only keeps the
+	/// target type's identity. Returns false for a runtime Type value (e.g. {x:Static}), which is created
+	/// eagerly by the regular code path.
+	/// </summary>
+	static bool TryCreateTrimmableStyle(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext context)
+	{
+		var styleType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
+		if (styleType is null)
+			return false;
+
+		var targetTypeXmlName = new XmlName("", "TargetType");
+		if (!node.Properties.TryGetValue(targetTypeXmlName, out var targetTypeNode))
+			return CreateInvalidStyle(node, writer, variables, styleType, targetTypeXmlName, context);
+
+		INamedTypeSymbol? targetType;
+		if (targetTypeNode is ValueNode targetTypeValueNode && targetTypeValueNode.Value is string targetTypeString)
+			targetType = XmlTypeExtensions.GetTypeSymbol(targetTypeString, context, targetTypeValueNode);
+		else if (targetTypeNode is ElementNode targetTypeElementNode && MarkDeferredStyleContentVisitor.IsTypeExtension(targetTypeElementNode))
+			targetType = context.Types.TryGetValue(targetTypeElementNode, out var resolvedType) ? resolvedType as INamedTypeSymbol : null;
+		else
+			return false;
+
+		if (targetType is null)
+			return CreateInvalidStyle(node, writer, variables, styleType, targetTypeXmlName, context);
+
+		context.Types[node] = targetType;
+		if (!node.SkipProperties.Contains(targetTypeXmlName))
+			node.SkipProperties.Add(targetTypeXmlName);
+
+		var variableName = NamingHelpers.CreateUniqueVariableName(context, styleType);
+		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(typeof({targetType.ToFQDisplayString()}));");
+		variables[node] = new LocalVariable(styleType, variableName);
+		node.RegisterSourceInfo(context, writer);
+		return true;
+	}
+
+	static bool CreateInvalidStyle(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, ITypeSymbol styleType, XmlName targetTypeXmlName, SourceGenContext context)
+	{
+		context.ReportDiagnostic(Diagnostic.Create(
+			Descriptors.XamlParserError,
+			LocationCreate(context.ProjectItem.RelativePath!, node, "TargetType"),
+			"Style TargetType could not be resolved"));
+
+		var variableName = NamingHelpers.CreateUniqueVariableName(context, styleType);
+		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(typeof(object));");
+		variables[node] = new LocalVariable(styleType, variableName);
+		if (!node.SkipProperties.Contains(targetTypeXmlName))
+			node.SkipProperties.Add(targetTypeXmlName);
+		node.RegisterSourceInfo(context, writer);
+		return true;
 	}
 
 	internal static bool IsXaml2009LanguagePrimitive(ElementNode node)

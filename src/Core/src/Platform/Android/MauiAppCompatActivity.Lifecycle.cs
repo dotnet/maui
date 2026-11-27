@@ -53,7 +53,6 @@ namespace Microsoft.Maui
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestart>(del => del(this));
 		}
 
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 		{
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRequestPermissionsResult>(del => del(this, requestCode, permissions, grantResults));
@@ -139,7 +138,7 @@ namespace Microsoft.Maui
 
 			if (!preventBackPropagation)
 			{
-				// Disable the callback before dispatching base.OnBackPressed() to prevent re-entry
+				// Disable the callback before dispatching to prevent re-entry
 				// through OnBackPressedDispatcher, which would re-invoke this same enabled callback.
 				if (_mauiOnBackPressedCallback is not null)
 				{
@@ -148,7 +147,7 @@ namespace Microsoft.Maui
 
 				try
 				{
-					base.OnBackPressed();
+					OnBackPressedDispatcher.OnBackPressed();
 				}
 				finally
 				{
