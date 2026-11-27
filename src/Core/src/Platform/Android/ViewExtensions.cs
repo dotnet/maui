@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
-using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -49,8 +48,7 @@ namespace Microsoft.Maui.Platform
 				// Apply transform properties to the wrapper
 				wrapperView.TranslationX = wrapperView.ToPixels(view.TranslationX);
 				wrapperView.TranslationY = wrapperView.ToPixels(view.TranslationY);
-				wrapperView.ScaleX = (float)(view.Scale * view.ScaleX);
-				wrapperView.ScaleY = (float)(view.Scale * view.ScaleY);
+				wrapperView.UpdateScale(view);
 				wrapperView.Rotation = (float)view.Rotation;
 				wrapperView.RotationX = (float)view.RotationX;
 				wrapperView.RotationY = (float)view.RotationY;
@@ -69,11 +67,14 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				var scaleX = (float)(view.Scale * view.ScaleX);
+				var scaleY = (float)(view.Scale * view.ScaleY);
+
 				// NOTE: use named arguments for clarity
 				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: platformView.ToPixels(view.TranslationX),
 					translationY: platformView.ToPixels(view.TranslationY),
-					scaleX: (float)(view.Scale * view.ScaleX),
-					scaleY: (float)(view.Scale * view.ScaleY),
+					scaleX: float.IsFinite(scaleX) ? scaleX : platformView.ScaleX,
+					scaleY: float.IsFinite(scaleY) ? scaleY : platformView.ScaleY,
 					rotation: (float)view.Rotation,
 					rotationX: (float)view.RotationX,
 					rotationY: (float)view.RotationY,
@@ -821,8 +822,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool HideSoftInput(this AView inputView)
 		{
-			// The input method service is shared by the context and must not be disposed.
-			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService)?.JavaCast<InputMethodManager>();
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 			var windowToken = inputView.WindowToken;
 
 			if (windowToken is not null && inputMethodManager is not null)
@@ -835,7 +835,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool ShowSoftInput(this TextView inputView)
 		{
-			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService)?.JavaCast<InputMethodManager>();
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 
 			// The zero value for the second parameter comes from 
 			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)

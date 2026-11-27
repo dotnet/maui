@@ -81,7 +81,6 @@
       "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\TestUtils\\src\\TestUtils\\TestUtils.csproj",
       "src\\TestUtils\\src\\UITest.Analyzers\\UITest.Analyzers.csproj",
-      "src\\TestUtils\\src\\UITest.Analyzers.CodeFixes\\UITest.Analyzers.CodeFixes.csproj",
       "src\\TestUtils\\src\\UITest.Appium\\UITest.Appium.csproj",
       "src\\TestUtils\\src\\UITest.Core\\UITest.Core.csproj",
       "src\\TestUtils\\src\\UITest.NUnit\\UITest.NUnit.csproj",

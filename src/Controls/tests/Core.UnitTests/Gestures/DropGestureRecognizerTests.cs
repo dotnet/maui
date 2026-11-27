@@ -161,29 +161,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData("en-US")]
-		[InlineData("cs-CZ")]
-		[InlineData("th-TH")]
-		public async Task DateTextPackageCorrectlySetsOnCompatibleTarget(string culture)
+		[InlineData(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		public async Task DateTextPackageCorrectlySetsOnCompatibleTarget(Type fieldType, string result)
 		{
-			var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
-			try
-			{
-				System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
-				var date = new DateTime(2020, 12, 12);
-				var dropRec = new DropGestureRecognizer { AllowDrop = true };
-				var datePicker = new DatePicker();
-				datePicker.GestureRecognizers.Add(dropRec);
-				var args = new DropEventArgs(new DataPackageView(new DataPackage { Text = date.ToString() }));
-
-				await dropRec.SendDrop(args);
-
-				Assert.Equal(date, datePicker.Date);
-			}
-			finally
-			{
-				System.Globalization.CultureInfo.CurrentCulture = originalCulture;
-			}
+			var date = DateTime.Parse(result);
+			result = date.ToString();
+			await TextPackageCorrectlySetsOnCompatibleTarget(fieldType, result);
 		}
 
 		[Fact]

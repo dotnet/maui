@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 17521, "Shell.SearchHandler visible in details page on Windows 11", PlatformAffected.UWP)]
-public partial class Issue17521 : Shell
+public class Issue17521 : Shell
 {
 	public Issue17521()
 	{
@@ -216,7 +216,7 @@ public partial class Issue17521 : Shell
 	}
 
 	[QueryProperty(nameof(Name), "name")]
-	public partial class _17521CatDetailsPage : ContentPage
+	public class _17521CatDetailsPage : ContentPage
 	{
 		public string Name
 		{

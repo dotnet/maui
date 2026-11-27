@@ -22,22 +22,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateScaleX(this AView platformView, IView view)
 		{
-			var scale = view.Scale;
+			var scaleX = (float)(view.Scale * view.ScaleX);
 
-			if (double.IsNaN(scale))
+			if (!float.IsFinite(scaleX))
 				return;
 
-			platformView.ScaleX = (float)(scale * view.ScaleX);
+			platformView.ScaleX = scaleX;
 		}
 
 		public static void UpdateScaleY(this AView platformView, IView view)
 		{
-			var scale = view.Scale;
+			var scaleY = (float)(view.Scale * view.ScaleY);
 
-			if (double.IsNaN(scale))
+			if (!float.IsFinite(scaleY))
 				return;
 
-			platformView.ScaleY = (float)(scale * view.ScaleY);
+			platformView.ScaleY = scaleY;
 		}
 
 		public static void UpdateRotation(this AView platformView, IView view)

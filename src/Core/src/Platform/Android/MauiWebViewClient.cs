@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPageFinished(view, url);
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnReceivedError(WebView? view, IWebResourceRequest? request, WebResourceError? error)
 		{
 			if (request != null && _handler.TryGetTarget(out var handler) && request.Url?.ToString() == handler?.PlatformView.Url)
