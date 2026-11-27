@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -93,7 +92,6 @@ namespace Microsoft.Maui.Media
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
 		}
 
-		[SupportedOSPlatform("android26.0")]
 		static async Task<Bitmap?> RenderUsingPixelCopyAsync(View view, Window? window)
 		{
 			if (view.Width <= 0 || view.Height <= 0 || !view.IsAttachedToWindow)

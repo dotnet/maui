@@ -14,14 +14,18 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		static UWPPoint Zero = new UWPPoint(0, 0);
 
-		static bool IsVertical(ScrollViewer scrollViewer)
+		static bool IsVertical(ListViewBase list, ScrollViewer scrollViewer)
 		{
+			// Scroll modes can both be disabled when carousel swiping is turned off.
+			if (list.ItemsPanelRoot is ItemsStackPanel panel)
+				return panel.Orientation == Orientation.Vertical;
+
 			return scrollViewer.HorizontalScrollMode == Microsoft.UI.Xaml.Controls.ScrollMode.Disabled;
 		}
 
-		static UWPPoint AdjustToMakeVisible(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
+		static UWPPoint AdjustToMakeVisible(UWPPoint point, UWPSize itemSize, ListViewBase list, ScrollViewer scrollViewer, double headerHeight)
 		{
-			if (IsVertical(scrollViewer))
+			if (IsVertical(list, scrollViewer))
 			{
 				return AdjustToMakeVisibleVertical(point, itemSize, scrollViewer, headerHeight);
 			}
@@ -69,9 +73,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return point;
 		}
 
-		static UWPPoint AdjustToEnd(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
+		static UWPPoint AdjustToEnd(UWPPoint point, UWPSize itemSize, ListViewBase list, ScrollViewer scrollViewer)
 		{
-			if (IsVertical(scrollViewer))
+			if (IsVertical(list, scrollViewer))
 			{
 				return AdjustToEndVertical(point, itemSize, scrollViewer);
 			}
@@ -98,13 +102,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
 				return;
 
-			point = AdjustToEnd(point, targetContainer.DesiredSize, scrollViewer);
+			point = AdjustToEnd(point, targetContainer.DesiredSize, list, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
 		}
 
-		static UWPPoint AdjustToCenter(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
+		static UWPPoint AdjustToCenter(UWPPoint point, UWPSize itemSize, ListViewBase list, ScrollViewer scrollViewer)
 		{
-			if (IsVertical(scrollViewer))
+			if (IsVertical(list, scrollViewer))
 			{
 				return AdjustToCenterVertical(point, itemSize, scrollViewer);
 			}
@@ -131,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
 				return;
 
-			point = AdjustToCenter(point, targetContainer.DesiredSize, scrollViewer);
+			point = AdjustToCenter(point, targetContainer.DesiredSize, list, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
 		}
 
@@ -242,22 +246,23 @@ namespace Microsoft.Maui.Controls.Platform
 				&& targetContainer.RenderSize.Height > 0)
 			{
 				var position = targetContainer.TransformToVisual(scrollViewer).TransformPoint(Zero);
-				var leadingEdge = IsVertical(scrollViewer) ? position.Y : position.X;
-				var itemLength = IsVertical(scrollViewer) ? targetContainer.RenderSize.Height : targetContainer.RenderSize.Width;
-				var viewportLength = IsVertical(scrollViewer) ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+				var isVertical = IsVertical(list, scrollViewer);
+				var leadingEdge = isVertical ? position.Y : position.X;
+				var itemLength = isVertical ? targetContainer.RenderSize.Height : targetContainer.RenderSize.Width;
+				var viewportLength = isVertical ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
 
 				// Visible items can be adjusted without relying on ScrollIntoView to raise ViewChanged.
 				if (leadingEdge < viewportLength && leadingEdge + itemLength > 0)
 				{
 					var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
-					if (IsVertical(scrollViewer))
+					if (isVertical)
 						point.Y += position.Y;
 					else
 						point.X += position.X;
 
 					var offset = scrollToPosition == ScrollToPosition.Center
-						? AdjustToCenter(point, targetContainer.RenderSize, scrollViewer)
-						: AdjustToEnd(point, targetContainer.RenderSize, scrollViewer);
+						? AdjustToCenter(point, targetContainer.RenderSize, list, scrollViewer)
+						: AdjustToEnd(point, targetContainer.RenderSize, list, scrollViewer);
 					await JumpToOffsetAsync(scrollViewer, offset.X, offset.Y);
 					return;
 				}
@@ -329,7 +334,7 @@ namespace Microsoft.Maui.Controls.Platform
 					height = GetHeaderHeight(list, targetContainer);
 				}
 
-				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
+				await ScrollToTargetContainerAsync(list, targetContainer, scrollViewer, scrollToPosition, height);
 				return true;
 			}
 
@@ -435,7 +440,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
+		static async Task ScrollToTargetContainerAsync(ListViewBase list, UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
 		{
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 			var position = transform?.TransformPoint(Zero);
@@ -459,13 +464,13 @@ namespace Microsoft.Maui.Controls.Platform
 					offset = AdjustToStart(offset, height);
 					break;
 				case ScrollToPosition.MakeVisible:
-					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer, height);
+					offset = AdjustToMakeVisible(offset, itemSize, list, scrollViewer, height);
 					break;
 				case ScrollToPosition.Center:
-					offset = AdjustToCenter(offset, itemSize, scrollViewer);
+					offset = AdjustToCenter(offset, itemSize, list, scrollViewer);
 					break;
 				case ScrollToPosition.End:
-					offset = AdjustToEnd(offset, itemSize, scrollViewer);
+					offset = AdjustToEnd(offset, itemSize, list, scrollViewer);
 					break;
 			}
 

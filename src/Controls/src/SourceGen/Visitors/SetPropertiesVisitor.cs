@@ -39,9 +39,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	// Skip children of lazy resources (they'll be created inside lambda), but the lazy resource node itself
 	// gets visited (to emit AddFactory). VisitChildrenOfLazyResource handles this distinction.
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
-	public bool StopOnStyle => true;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
-	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
 
 	// Track properties that have been set to detect duplicates
 	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
@@ -69,7 +67,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		{
 			var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
 			var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
 		}
 	}
 
@@ -89,14 +87,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	{
 		bool attached = false;
 		var localName = lookupName.LocalName;
-		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, Context, lineInfo);
+		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, context, lineInfo);
 		ITypeSymbol? propertyType = null;
 
-		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, Context, out propertyType))
-			|| SetPropertyHelpers.CanGet(parentVar, localName, Context, out propertyType, out _);
+		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+			|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
 
 		bool isObject = propertyType != null && propertyType.SpecialType == SpecialType.System_Object;
-		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(Context))
+		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
 			CheckForDuplicateProperty(parentNode, trackingName, lineInfo);
 	}
 
@@ -115,7 +113,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
 			parentVar = Context.Variables[(ElementNode)parentNode];
-			if ((contentProperty = parentVar.Type.GetContentPropertyName(Context)) != null)
+			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
 			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
 				isImplicitContentProperty = true;
@@ -177,7 +175,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	{
 		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) =>
 		{
-			if (!Context.Variables.TryGetValue(n, out var val))
+			if (!context.Variables.TryGetValue(n, out var val))
 			{
 				var nodeName = n is ElementNode en ? en.XmlType.Name : n?.GetType().Name ?? "null";
 				var nodeKey = n is ElementNode en2 && en2.Properties.TryGetValue(XmlName.xKey, out var kn) && kn is ValueNode vn ? vn.Value?.ToString() : "(none)";
@@ -321,9 +319,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.ReportDiagnostic)
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
 				{
-					ParentContext = Context,
+					ParentContext = context,
 				};
 
 				//inflate the template
@@ -338,18 +336,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		}
 
 		//IMarkupExtension or IValueProvider => ProvideValue()
-		// For Setters, only inline-initialized instances should call TryProvideValue; otherwise
-		// the normal property assignments should remain intact.
-		var isInlineInitializedSetter = IsInlineInitializedSetter(node, out var isSetter);
-		if (!isSetter || isInlineInitializedSetter)
-			node.TryProvideValue(Writer, Context, getNodeValue);
-
-		// Handle Style content - generate the initializer lambda BEFORE setting the Style property
-		// This ensures the Initializer is set before the Style is applied to any element
-		if (node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
-		{
-			GenerateStyleInitializer(node);
-		}
+		node.TryProvideValue(Writer, context, getNodeValue);
 
 		if (propertyName != XmlName.Empty)
 		{
@@ -376,7 +363,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 			if (SetPropertyHelpers.CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context, getNodeValue))
 				SetPropertyHelpers.AddToResourceDictionary(Writer, parentVar, node, Context, getNodeValue);
-			else if ((contentProperty = parentVar.Type.GetContentPropertyName(Context)) != null)
+			else if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
 			{
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
@@ -391,7 +378,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
-			else if (parentVar.Type.CanAdd(Context))
+			else if (parentVar.Type.CanAdd(context))
 			{
 				// Skip if the node was removed from Variables (e.g., Setter with no value due to OnPlatform)
 				if (Context.Variables.TryGetValue(node, out var nodeVar))
@@ -400,7 +387,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			else
 			{
 				var location = LocationCreate(Context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ((ElementNode)parentNode).XmlType.Name);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"Cannot set the content of {((ElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"Cannot set the content of {((ElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute"));
 			}
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ListNode parentList)
@@ -418,9 +405,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				return;
 			var elementType = parentVar.Type;
 			var localName = parentList.XmlName.LocalName;
-			var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out System.Boolean attached, Context, node as IXmlLineInfo);
-			var propertySymbol = parentVar.Type.GetAllProperties(localName, Context).FirstOrDefault();
-			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(Context);
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);
+			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
+			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
 			var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 			if (propertyType == null)
@@ -431,11 +418,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				return;
 			}
 
-			if (!Context.VariablesProperties.TryGetValue((parentVar, bpFieldSymbol, propertySymbol), out var variable))
+			if (!context.VariablesProperties.TryGetValue((parentVar, bpFieldSymbol, propertySymbol), out var variable))
 			{
 				variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType));
 				Writer.WriteLine($"var {variable.ValueAccessor} = {SetPropertyHelpers.GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context)};");
-				Context.VariablesProperties[(parentVar, bpFieldSymbol, propertySymbol)] = variable;
+				context.VariablesProperties[(parentVar, bpFieldSymbol, propertySymbol)] = variable;
 			}
 			//TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
 
@@ -446,7 +433,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				return;
 			}
 
-			if (propertyType.CanAdd(Context))
+			if (propertyType.CanAdd(context))
 			{
 				// Skip if the node was removed from Variables (e.g., Setter with no value due to OnPlatform)
 				if (Context.Variables.TryGetValue(node, out var nodeVar))
@@ -460,98 +447,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 			}
 		}
-	}
-
-	void GenerateStyleInitializer(ElementNode styleNode)
-	{
-		if (!Context.Variables.TryGetValue(styleNode, out var styleVariable))
-			return;
-
-		// Get the target type that was stored in CreateValuesVisitor
-		if (!Context.Types.TryGetValue(styleNode, out var targetType))
-			return;
-
-		// Only the deferred content is emitted here; the style's other properties were set in the enclosing scope.
-		styleNode.Properties.Remove(XmlName._StyleContent);
-		var contentNodes = new List<INode>();
-		foreach (var property in styleNode.Properties)
-		{
-			if (!MarkDeferredStyleContentVisitor.IsContentProperty(property.Key))
-				continue;
-			styleNode.SkipProperties.Remove(property.Key);
-			contentNodes.Add(property.Value);
-		}
-		contentNodes.AddRange(styleNode.CollectionItems);
-
-		var styleTypeName = styleVariable.Type.ToFQDisplayString();
-		var initializerName = NamingHelpers.CreateUniqueTypeName(Context, "lazyInitialization");
-		Writer.WriteLine($"bool {initializerName}({styleTypeName} __style, global::Microsoft.Maui.Controls.BindableObject __target)");
-		using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
-		{
-			Writer.WriteLine($"if (__target is {targetType.ToFQDisplayString()} target)");
-			using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
-			{
-				// After initialization the style is null and the initializer only checks the target type.
-				Writer.WriteLine("if (__style is null)");
-				using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
-					Writer.WriteLine("return true;");
-
-				var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.ReportDiagnostic)
-				{
-					ParentContext = Context,
-				};
-				styleContext.Variables[styleNode] = new LocalVariable(styleVariable.Type, "__style");
-				styleContext.Scopes[styleNode] = (SetNamescopesAndRegisterNamesVisitor.CreateNamescope(Writer, styleContext), new Dictionary<string, ILocalValue>());
-
-				// Run the same visitor sequence as _CreateContent over the deferred content only.
-				AcceptAll(contentNodes, new CreateValuesVisitor(styleContext), styleNode);
-				AcceptAll(contentNodes, new SetNamescopesAndRegisterNamesVisitor(styleContext), styleNode);
-				AcceptAll(contentNodes, new SetResourcesVisitor(styleContext), styleNode);
-				AcceptAll(contentNodes, new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true), styleNode);
-				Writer.WriteLine("return true;");
-			}
-			Writer.WriteLine("return false;");
-		}
-		// A local function with an explicit delegate, unlike a lambda, adds no cached-delegate field,
-		// which Hot Reload cannot add to a closure class created by an earlier metadata update.
-		Writer.WriteLine($"{styleVariable.ValueAccessor}.LazyInitialization = new global::System.Func<{styleTypeName}, global::Microsoft.Maui.Controls.BindableObject, bool>({initializerName});");
-
-		static void AcceptAll(List<INode> nodes, IXamlNodeVisitor visitor, ElementNode parentNode)
-		{
-			foreach (var node in nodes)
-				node.Accept(visitor, parentNode);
-		}
-	}
-
-	/// <summary>
-	/// Checks if a Setter node had its properties skipped for inline initialization.
-	/// This happens when CanProvideValue() returned true in CreateValuesVisitor.
-	/// For Setters, this only happens when Value is a simple ValueNode.
-	/// When Value is an ElementNode, CanProvideValue() returns false, so properties are NOT skipped.
-	/// </summary>
-	bool IsInlineInitializedSetter(ElementNode node, out bool isSetter)
-	{
-		// Check if this is a Setter
-		var setterType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter");
-		if (setterType == null || !Context.Variables.TryGetValue(node, out var variable))
-		{
-			isSetter = false;
-			return false;
-		}
-
-		if (!variable.Type.Equals(setterType, SymbolEqualityComparer.Default))
-		{
-			isSetter = false;
-			return false;
-		}
-
-		isSetter = true;
-
-		// Check if Property was skipped (marked for inline initialization)
-		// When CanProvideValue() returns true, both Property and Value are skipped
-		var propertyXmlName = new XmlName("", "Property");
-
-		return node.SkipProperties.Contains(propertyXmlName);
 	}
 
 	public void Visit(RootNode node, INode parentNode)
