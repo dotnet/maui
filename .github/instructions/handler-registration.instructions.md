@@ -8,12 +8,14 @@ applyTo:
   - "src/Core/src/Handlers/Element/**"
   - "src/Core/src/PropertyMapper*.cs"
   - "src/Core/src/CommandMapper*.cs"
+  - "src/Core/src/MappingCustomizationSequence.cs"
   - "src/Core/src/Platform/ElementExtensions.cs"
   - "src/Core/src/HotReload/**"
   - "src/Controls/tests/DeviceTests/*HandlerResolution*"
   - "src/Controls/tests/Core.UnitTests/HostBuilderHandlerTests.cs"
   - "src/Core/tests/UnitTests/Hosting/HostBuilderHandlerTests.cs"
-  - "src/Core/tests/UnitTests/*MapperExtensionTests.cs"
+  - "src/Core/tests/UnitTests/*Mapper*Tests.cs"
+  - "src/Controls/tests/DeviceTests/MapperTests.cs"
   - "src/Controls/tests/Core.UnitTests/*Mapper*Tests.cs"
   - "docs/design/HandlerResolution.md"
 ---
@@ -25,7 +27,7 @@ Built-in handlers are trimmable: each control declares its default handler with 
 - Declare a built-in control's default handler with the internal `[ElementHandler(typeof(XHandler))]` attribute on the control class (see `Button`, `Label`, `Shell`, `CollectionView`).
 - Scope the attribute with `#if` to the platforms where the handler type exists. Do not add a platform (e.g. `TIZEN`) unless the handler is implemented there.
 - Do NOT add built-in defaults as DI registrations. The eager Controls registration table is gone, and `AddMauiControlsHandlers()` is a compatibility no-op that must stay a no-op. `ConfigureMauiHandlers`/`AddHandler` registrations are for app and library overrides, interface registrations, and the rare handler that must not be statically rooted (HybridWebView stays a deferred DI factory registration in `SetupDefaults`).
-- Give attribute-resolved handlers a public parameterless constructor. `ToHandler()` falls back to constructor injection from the current `IMauiContext` (including its Android `Context`), but direct `IMauiHandlersFactory.GetHandler()` calls do not. When a handler needs constructor arguments, register an `AddHandler<TType>(Func<IServiceProvider, IElementHandler>)` factory; its service provider is scoped to the current `IMauiContext`. Do not add constructor-activation caches; the factory checks constructors per activation.
+- Give attribute-resolved handlers a public parameterless constructor. `ToHandler()` falls back to constructor injection from the current `IMauiContext` (including its Android `Context`), but direct `IMauiHandlersFactory.GetHandler()` calls do not. When a handler needs constructor arguments, register an `AddHandler<TType>(Func<IServiceProvider, IElementHandler>)` factory. Its provider resolves the current `IMauiContext` (and the Android `Context`) only on context-taking activation paths such as `ToHandler()`; the public `GetHandler(Type)` passes the handler factory itself, so a factory that requires the context must tolerate or avoid direct `GetHandler` calls. Do not add constructor-activation caches; the factory checks constructors per activation.
 - Custom `IMauiHandlersFactory` implementations are unsupported because they cannot see attribute defaults. Do not add code or docs that rely on replacing the factory; customize through `ConfigureMauiHandlers`.
 
 ## Feature-Switch-Dependent Handlers

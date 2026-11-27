@@ -524,6 +524,8 @@ Map each changed file against this table to determine which dimensions to activa
 |---|---|---|
 | `src/Core/src/Layouts/**` | Layout Measure-Arrange, Performance-Critical Path, Logic and Correctness | all |
 | `src/Core/src/Handlers/**` | Handler Mapper and Property Patterns, Public API Surface, Architectural Layer | all |
+| `src/Core/src/PropertyMapper*.cs`, `src/Core/src/CommandMapper*.cs`, `src/Core/src/MappingCustomizationSequence.cs` | Handler Mapper and Property Patterns | all |
+| `src/{Core,Controls}/tests/**/*Mapper*Tests.cs` | Handler Mapper and Property Patterns | all |
 | `src/Core/src/Platform/Android/**` | Memory Leak Prevention, Async and Threading, Android Platform | android |
 | `src/Core/src/Platform/iOS/**` | Safe Area, Performance-Critical Path, Memory Leak, iOS/MacCatalyst Platform | ios+maccatalyst |
 | `src/Core/src/Platform/Windows/**` | Native Defaults Preservation, Async and Threading, Windows Platform | windows |
@@ -544,6 +546,7 @@ Map each changed file against this table to determine which dimensions to activa
 | Path Pattern | Dimensions | Platform |
 |---|---|---|
 | `src/Controls/src/Core/Handlers/**` (non-Items) | Handler Mapper, Null Safety, Cross-Platform Consistency | all |
+| `src/Controls/src/Core/**/*.Mapper.cs` | Handler Mapper and Property Patterns | all |
 | `src/Controls/src/Core/Shell/**`, `src/Controls/src/Core/Handlers/Shell/**` | Navigation & Shell, Logic and Correctness, Regression Prevention | all |
 | `src/Controls/src/Core/{View,Page,Layout,VisualElement,Element}/**` | Public API Surface, Architectural Layer, Backward Compatibility | all |
 | `src/Controls/src/Core/*Gesture*/**` | Gestures, Logic and Correctness | all |

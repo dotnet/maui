@@ -339,12 +339,14 @@ function Get-ExpertExpectedDimensions {
     if ($start -lt 0 -or $end -le $start) { throw 'Canonical dimension routing is missing.' }
     $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
         [Text.Encoding]::UTF8.GetBytes($rulebook.Substring($start, $end - $start)))).ToLowerInvariant()
-    if ($hash -cne 'f565395e12e0814f60273f6dbfa05e9051949972f6eb2630721f8078570688b6') {
+    if ($hash -cne '215ec0b616ed9cf053a4353320ca4a389dbe920b83b712255ae4827780047a34') {
         throw 'Canonical routing changed; update the trusted dimension mapping before reviewing.'
     }
     $rules = @(
         @{ pattern = '^src/Core/src/Layouts/'; ids = @(1, 2, 5) }
         @{ pattern = '^src/Core/src/Handlers/'; ids = @(3, 7, 4) }
+        @{ pattern = '^src/Core/src/(PropertyMapper|CommandMapper)[^/]*\.cs$|^src/Core/src/MappingCustomizationSequence\.cs$'; ids = @(3) }
+        @{ pattern = '^src/(Core|Controls)/tests/(.+/)?[^/]*Mapper[^/]*Tests\.cs$'; ids = @(3) }
         @{ pattern = '^src/Core/src/Platform/Android/'; ids = @(11, 8, 22) }
         @{ pattern = '^src/Core/src/Platform/iOS/'; ids = @(15, 2, 11, 23) }
         @{ pattern = '^src/Core/src/Platform/Windows/'; ids = @(14, 8, 24) }
@@ -354,6 +356,7 @@ function Get-ExpertExpectedDimensions {
         @{ pattern = '^src/Controls/src/Core/Handlers/Items/(iOS/|[^/]+\.iOS\.cs$)'; ids = @(19) }
         @{ pattern = '^src/Controls/src/Core/Items/[^/]+\.cs$'; ids = @(21, 12, 6) }
         @{ pattern = '^src/Controls/src/Core/Handlers/(?!Items(?:2)?/)'; ids = @(3, 9, 10) }
+        @{ pattern = '^src/Controls/src/Core/(.+/)?[^/]+\.Mapper\.cs$'; ids = @(3) }
         @{ pattern = '^src/Controls/src/Core/(Handlers/)?Shell/'; ids = @(25, 5, 6) }
         @{ pattern = '^src/Controls/src/Core/(View|Page|Layout|VisualElement|Element)/'; ids = @(7, 4, 12) }
         @{ pattern = '^src/Controls/src/Core/[^/]*Gesture[^/]*/'; ids = @(28, 5) }
