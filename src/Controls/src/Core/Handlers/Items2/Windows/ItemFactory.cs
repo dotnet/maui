@@ -348,6 +348,7 @@ internal partial class ElementWrapper : ContentControl
 
 	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
 	SizeChangedEventHandler? _contentSizeChangedHandler;
+	RoutedEventHandler? _contentUnloadedHandler;
 	FrameworkElement? _observedContent;
 	WAccessibilityView? _defaultAccessibilityView;
 	bool _semanticsRefreshAttached;
@@ -369,17 +370,27 @@ internal partial class ElementWrapper : ContentControl
 	}
 
 	/// <summary>
-	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.
+	/// Unsubscribes the first-item SizeChanged and Unloaded observers wired during MeasureOverride.
 	/// Must be called from RecycleElement so a recycled wrapper cannot poison the global size cache.
 	/// </summary>
 	internal void UnwireContentSizeObserver()
 	{
-		if (_observedContent != null && _contentSizeChangedHandler != null)
+		if (_observedContent is not null)
 		{
-			_observedContent.SizeChanged -= _contentSizeChangedHandler;
-			_contentSizeChangedHandler = null;
-			_observedContent = null;
+			if (_contentSizeChangedHandler is not null)
+			{
+				_observedContent.SizeChanged -= _contentSizeChangedHandler;
+			}
+
+			if (_contentUnloadedHandler is not null)
+			{
+				_observedContent.Unloaded -= _contentUnloadedHandler;
+			}
 		}
+
+		_contentSizeChangedHandler = null;
+		_contentUnloadedHandler = null;
+		_observedContent = null;
 	}
 
 	public ElementWrapper(IMauiContext context)
@@ -518,11 +529,19 @@ internal partial class ElementWrapper : ContentControl
 							element.SizeChanged -= OnContentSizeChanged;
 							element.Unloaded -= OnContentUnloaded;
 						}
-						_contentSizeChangedHandler = null;
-						_observedContent = null;
+
+						// A late unload from replaced content must not clear the current observer.
+						if (ReferenceEquals(_observedContent, sender))
+						{
+							_contentSizeChangedHandler = null;
+							_contentUnloadedHandler = null;
+							_observedContent = null;
+						}
 					}
-					// Store delegate and content so RecycleElement can unsubscribe directly.
+					UnwireContentSizeObserver();
+					// Store delegates and content so RecycleElement can unsubscribe directly.
 					_contentSizeChangedHandler = OnContentSizeChanged;
+					_contentUnloadedHandler = OnContentUnloaded;
 					_observedContent = content;
 					content.SizeChanged += OnContentSizeChanged;
 					content.Unloaded += OnContentUnloaded;
