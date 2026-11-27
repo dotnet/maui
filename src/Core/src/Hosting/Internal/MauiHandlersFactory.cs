@@ -51,7 +51,11 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			if (item.ImplementationType is Type handlerType
 				&& typeof(IElementHandler).IsAssignableFrom(handlerType)
-				&& implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider)
+				&& implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider
+				// MauiFactory retains singleton instances, so a handler built from one context's dependencies would be
+				// shared by every element and context. Such registrations keep the base activation; when it throws
+				// MissingMethodException, GetHandlerWithInjection injects a new handler on each request.
+				&& item.Lifetime != ServiceLifetime.Singleton)
 				return CreateHandlerInstance(handlerType, provider);
 
 			return base.CreateInstance(item, implementationFactoryServiceProvider);

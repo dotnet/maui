@@ -677,6 +677,71 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Fact]
+		public void SingletonRegistrationRequiringInjectionCreatesHandlerPerActivation()
+		{
+			using var app = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ViewStub, HandlerWithoutDefaultConstructorStub>();
+					handlers.Add(ServiceDescriptor.Singleton(typeof(ViewStub), typeof(HandlerWithoutDefaultConstructorStub)));
+				})
+				.Build();
+			var firstContext = new MauiContext(app.Services);
+			var secondContext = new MauiContext(app.Services);
+			var firstDependency = new ConstructorDependency();
+			var secondDependency = new ConstructorDependency();
+			firstContext.AddSpecific(firstDependency);
+			secondContext.AddSpecific(secondDependency);
+
+			var firstView = new ViewStub();
+			var secondView = new ViewStub();
+			var first = Assert.IsType<HandlerWithoutDefaultConstructorStub>(firstView.ToHandler(firstContext));
+			var second = Assert.IsType<HandlerWithoutDefaultConstructorStub>(secondView.ToHandler(firstContext));
+			var other = Assert.IsType<HandlerWithoutDefaultConstructorStub>(new ViewStub().ToHandler(secondContext));
+
+			Assert.NotSame(first, second);
+			Assert.Same(firstView, first.VirtualView);
+			Assert.Same(secondView, second.VirtualView);
+			Assert.Same(firstDependency, first.Dependency);
+			Assert.Same(firstDependency, second.Dependency);
+			Assert.Same(secondDependency, other.Dependency);
+		}
+
+		[Fact]
+		public void CustomHandlersFactoryWrappedMissingConstructorFallsBackToInjection()
+		{
+			var handlers = Substitute.For<IMauiHandlersFactory>();
+			handlers.GetHandler(typeof(ViewStub)).Returns(_ =>
+				throw new HandlerNotFoundException("Wrapped.", new MissingMethodException()));
+			handlers.GetHandlerType(typeof(ViewStub)).Returns(typeof(HandlerWithoutDefaultConstructorStub));
+			var dependency = new ConstructorDependency();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton(handlers);
+			builder.Services.AddSingleton(dependency);
+			using var app = builder.Build();
+
+			var handler = Assert.IsType<HandlerWithoutDefaultConstructorStub>(
+				new ViewStub().ToHandler(new MauiContext(app.Services)));
+
+			Assert.Same(dependency, handler.Dependency);
+		}
+
+		[Fact]
+		public void CustomHandlersFactoryWrappedUnrelatedExceptionPropagates()
+		{
+			var handlers = Substitute.For<IMauiHandlersFactory>();
+			var exception = new HandlerNotFoundException("Wrapped.", new InvalidOperationException());
+			handlers.GetHandler(typeof(ViewStub)).Returns(_ => throw exception);
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton(handlers);
+			using var app = builder.Build();
+
+			Assert.Same(exception, Assert.Throws<HandlerNotFoundException>(() =>
+				new ViewStub().ToHandler(new MauiContext(app.Services))));
+			handlers.DidNotReceive().GetHandlerType(Arg.Any<Type>());
+		}
+
 		class HandlerWithoutDefaultConstructorStub : ViewHandlerStub
 		{
 			public HandlerWithoutDefaultConstructorStub(ConstructorDependency dependency)
