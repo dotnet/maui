@@ -35,6 +35,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ticker.Received(1).Start();
 		}
 
+		[Fact]
+		public void AbortZeroLengthRepeatImmediatelyStopsTicker()
+		{
+			var ticker = Substitute.For<ITicker>();
+			ticker.SystemEnabled.Returns(true);
+			ticker.When(t => t.Stop()).Do(_ => ticker.IsRunning.Returns(false));
+			ticker.When(t => t.Start()).Do(_ =>
+			{
+				ticker.IsRunning.Returns(true);
+				ticker.Fire.Invoke();
+			});
+			using var manager = new AnimationManager(ticker) { SpeedModifier = 0 };
+			var view = new BoxView { Handler = new AnimationReadyHandler<Ticker>(manager) };
+			var completions = new List<bool>();
+			const string name = "repeat";
+
+			view.Animate(name, static _ => { }, length: 0,
+				finished: (_, canceled) => completions.Add(canceled),
+				repeat: () => completions.Count == 0);
+
+			Assert.Equal(new[] { false }, completions);
+			Assert.True(ticker.IsRunning);
+
+			Assert.True(view.AbortAnimation(name));
+			Assert.Equal(new[] { false, true }, completions);
+			Assert.False(ticker.IsRunning);
+		}
+
 		[Theory]
 		[InlineData(0)]
 		[InlineData(1)]

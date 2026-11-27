@@ -89,9 +89,14 @@ namespace Microsoft.Maui.Controls
 
 		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
+			animationManager.Insert(step, out var key);
+			return key;
+		}
+
+		internal static void Insert(this IAnimationManager animationManager, Func<long, bool> step, out int key)
+		{
 			var id = Interlocked.Increment(ref s_currentTweener);
-			Animation animation = null;
-			animation = new TweenerAnimation(step)
+			var animation = new TweenerAnimation(step)
 			{
 				Name = $"{id}",
 				Easing = Easing.Linear,
@@ -105,9 +110,10 @@ namespace Microsoft.Maui.Controls
 				animation.Finished = null;
 				animation.AnimationManagerDisposed = null;
 			};
-			animation.Commit(animationManager);
 
-			return id;
+			// Commit can tick synchronously and start another iteration before it returns.
+			key = id;
+			animation.Commit(animationManager);
 		}
 
 		public static void Remove(this IAnimationManager animationManager, int tickerId)
