@@ -125,6 +125,10 @@ namespace Microsoft.Maui.Controls
 				OnHandlerChanging(_handler, value);
 				_handler = value;
 
+				// Covers toolbar handlers that do not derive from ElementHandler, which calls this from SetVirtualView.
+				if (_handler is not null)
+					RemapForControls();
+
 				if (oldHandler?.VirtualView == this)
 					oldHandler?.DisconnectHandler();
 			}
