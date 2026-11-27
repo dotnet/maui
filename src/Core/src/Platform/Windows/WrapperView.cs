@@ -291,13 +291,18 @@ namespace Microsoft.Maui.Platform
 			var hostVisual = ElementCompositionPreview.GetElementVisual(_shadowCanvas);
 			var compositor = hostVisual.Compositor;
 
-			_dropShadow = compositor.CreateDropShadow();
-			await SetShadowPropertiesAsync(_dropShadow, Shadow);
+			var dropShadow = _dropShadow = compositor.CreateDropShadow();
+			await SetShadowPropertiesAsync(dropShadow, Shadow);
+
+			if (!ReferenceEquals(dropShadow, _dropShadow))
+			{
+				return;
+			}
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
 
-			_shadowVisual.Shadow = _dropShadow;
+			_shadowVisual.Shadow = dropShadow;
 
 			ElementCompositionPreview.SetElementChildVisual(_shadowHost, _shadowVisual);
 		}
@@ -312,9 +317,14 @@ namespace Microsoft.Maui.Platform
 
 		async Task UpdateShadowAsync()
 		{
-			if (_dropShadow != null)
+			if (_dropShadow is { } dropShadow)
 			{
-				await SetShadowPropertiesAsync(_dropShadow, Shadow);
+				await SetShadowPropertiesAsync(dropShadow, Shadow);
+
+				if (!ReferenceEquals(dropShadow, _dropShadow))
+				{
+					return;
+				}
 			}
 
 			UpdateShadowSize();
