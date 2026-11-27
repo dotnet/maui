@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40681">
+    <VerticalStackLayout>
+        <VerticalStackLayout x:Name="attachedLayoutHost">
+            <local:Maui40681Holder.Items>
+                <VerticalStackLayout x:Name="attachedLayoutChild">
+                    <Label Text="one" />
+                </VerticalStackLayout>
+            </local:Maui40681Holder.Items>
+        </VerticalStackLayout>
+        <VerticalStackLayout x:Name="attachedLabelHost">
+            <local:Maui40681Holder.Items>
+                <Label x:Name="attachedLabelChild" Text="one" />
+            </local:Maui40681Holder.Items>
+        </VerticalStackLayout>
+        <VerticalStackLayout x:Name="attachedTwoLayoutsHost">
+            <local:Maui40681Holder.Items>
+                <Grid x:Name="attachedFirstGrid" />
+                <Grid x:Name="attachedSecondGrid" />
+            </local:Maui40681Holder.Items>
+        </VerticalStackLayout>
+        <local:Maui40681View x:Name="clrLayoutHost">
+            <local:Maui40681View.Items>
+                <Grid x:Name="clrLayoutChild" />
+            </local:Maui40681View.Items>
+        </local:Maui40681View>
+    </VerticalStackLayout>
+</ContentPage>
