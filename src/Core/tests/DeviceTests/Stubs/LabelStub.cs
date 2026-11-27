@@ -23,7 +23,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public TextDecorations TextDecorations { get; set; }
 
 		public double LineHeight { get; set; } = -1;
-
-		public bool IsTextSelectable { get; set; }
 	}
 }

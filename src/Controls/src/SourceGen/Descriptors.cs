@@ -390,35 +390,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor StyleTargetTypeMismatch = new DiagnosticDescriptor(
-			id: "MAUIX2024",
-			title: new LocalizableResourceString(nameof(MauiGResources.StyleTargetTypeMismatchTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.StyleTargetTypeMismatchMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
-
 		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
 			id: "MAUIX2017",
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
-
-		public static DiagnosticDescriptor QueryPropertyConflictsWithIQueryAttributable = new DiagnosticDescriptor(
-			id: "MAUI1201",
-			title: "Use a single query parameter handling mechanism",
-			messageFormat: "'{0}' implements IQueryAttributable and uses [QueryProperty] attributes. The source generator skips this type; handle the properties manually or remove the interface implementation.",
-			category: "QueryProperty",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			isEnabledByDefault: true);
-
-		public static DiagnosticDescriptor QueryPropertyRequiresReflection = new DiagnosticDescriptor(
-			id: "MAUI1200",
-			title: "QueryProperty attributes cannot be source generated",
-			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). Applying them will fail at runtime. Make the type partial or replace the attributes with an IQueryAttributable implementation.",
-			category: "QueryProperty",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
