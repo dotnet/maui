@@ -5,7 +5,8 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);RS2008</NoWarn>
+    <!-- RS1038: the code fix providers need Workspaces, which the command-line compiler doesn't provide; it never loads them. -->
+    <NoWarn>$(NoWarn);RS2008;RS1038</NoWarn>
   </PropertyGroup>
 
   
