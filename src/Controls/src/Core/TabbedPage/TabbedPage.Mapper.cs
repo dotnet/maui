@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility;
 
@@ -8,7 +7,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class TabbedPage
 	{
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(BarBackground), MapBarBackground);
 			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(BarBackgroundColor), MapBarBackgroundColor);
@@ -29,7 +35,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if PLATFORM
-			TabbedViewHandler.PlatformViewFactory = OnCreatePlatformView;
+			InstallPlatformViewFactory();
 #endif
 
 #if IOS || MACCATALYST
@@ -40,5 +46,12 @@ namespace Microsoft.Maui.Controls
 			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.TabbedPage.TranslucencyModeProperty.PropertyName, MapTranslucencyMode);
 #endif
 		}
+
+#if PLATFORM
+		// This runs lazily on first attachment; keep a factory the app installed during startup, which would
+		// have replaced the Controls factory when it was installed eagerly.
+		internal static void InstallPlatformViewFactory() =>
+			TabbedViewHandler.PlatformViewFactory ??= OnCreatePlatformView;
+#endif
 	}
 }

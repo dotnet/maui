@@ -7,7 +7,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Window
 	{
-		internal static new void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 #if ANDROID
 			// This property is also on the Application Mapper since that's where the attached property exists

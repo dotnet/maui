@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -10,10 +9,19 @@ namespace Microsoft.Maui.Controls
 {
 
 	public partial class Toolbar
+		: IControlsMapperRemappable
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		internal static void RemapForControls()
+		void IControlsMapperRemappable.RemapForControls() => RemapForControls();
+
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal virtual void RemapForControls()
+		{
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 #if ANDROID || WINDOWS
 			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(nameof(IToolbar.IsVisible), MapIsVisible);

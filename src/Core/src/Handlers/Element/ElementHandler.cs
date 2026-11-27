@@ -59,6 +59,12 @@ namespace Microsoft.Maui.Handlers
 			bool setupPlatformView = oldVirtualView == null;
 
 			VirtualView = view;
+
+			if (VirtualView is IControlsMapperRemappable remappable)
+			{
+				remappable.RemapForControls();
+			}
+
 			if (PlatformView is null)
 			{
 				_handlerState = ElementHandlerState.Connecting;

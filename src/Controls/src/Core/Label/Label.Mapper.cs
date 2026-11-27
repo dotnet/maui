@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -9,12 +8,37 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		static Label() => RemapForControls();
+#if ANDROID || IOS || MACCATALYST
+		static Label() => AppendControlsMappings();
 
-		private new static void RemapForControls()
+		// These are public appends, recorded as application customizations. They are registered when the
+		// Label type is initialized, as they were before Controls remapped lazily, so an app customization
+		// added after the first Label is created keeps running after them.
+		static void AppendControlsMappings()
 		{
-			VisualElement.RemapIfNeeded();
+#if ANDROID
+			// Turning selection off resets focusability, which the gesture manager relies on for key activation.
+			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IsTextSelectable), MapIsTextSelectableFocusable);
+#else
+			// On iOS/MacCatalyst the effective flow direction is baked into the attributed
+			// string's paragraph style (BaseWritingDirection / Start-End alignment). The core
+			// FlowDirection mapper only updates the native semantic direction and
+			// HorizontalTextAlignment, so a later FlowDirection change would leave a formatted
+			// label carrying its stale paragraph style. Rebuild FormattedText for spanned labels.
+			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IView.FlowDirection), MapFlowDirection);
+#endif
+		}
+#endif
 
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
+		{
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
@@ -30,11 +54,6 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
 			LabelHandler.Mapper.ReplaceMappingForControls<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
 
-#if ANDROID
-			// Turning selection off resets focusability, which the gesture manager relies on for key activation.
-			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IsTextSelectable), MapIsTextSelectableFocusable);
-#endif
-
 #if ANDROID || IOS
 			// these are for platforms that do no support view properties reaching spans
 			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
@@ -44,15 +63,6 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(TextDecorations), MapTextDecorations);
 			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(CharacterSpacing), MapCharacterSpacing);
 			LabelHandler.Mapper.ModifyMappingForControls<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
-#endif
-
-#if IOS || MACCATALYST
-			// On iOS/MacCatalyst the effective flow direction is baked into the attributed
-			// string's paragraph style (BaseWritingDirection / Start-End alignment). The core
-			// FlowDirection mapper only updates the native semantic direction and
-			// HorizontalTextAlignment, so a later FlowDirection change would leave a formatted
-			// label carrying its stale paragraph style. Rebuild FormattedText for spanned labels.
-			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IView.FlowDirection), MapFlowDirection);
 #endif
 
 			// platform-specifics
