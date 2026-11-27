@@ -213,6 +213,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task PendingRefreshStartsOnlyOnce()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var refreshView = new MauiRefreshView
+				{
+					Frame = new CGRect(0, 0, 300, 300)
+				};
+				using var scrollView = new UIScrollView(new CGRect(0, 0, 300, 300))
+				{
+					ContentSize = new CGSize(300, 1200)
+				};
+
+				refreshView.AddSubview(scrollView);
+				refreshView.UpdateIsRefreshEnabled(true);
+				refreshView.IsRefreshing = true;
+
+				await refreshView.AttachAndRun(async () =>
+				{
+					refreshView.SetNeedsLayout();
+					await Task.Delay(500);
+					Assert.True(refreshView.RefreshControl.Refreshing);
+
+					refreshView.RefreshControl.EndRefreshing();
+					refreshView.SetNeedsLayout();
+					refreshView.LayoutIfNeeded();
+
+					Assert.False(refreshView.RefreshControl.Refreshing);
+					Assert.True(refreshView.IsRefreshing);
+				});
+			});
+		}
+
+		[Fact]
 		public async Task DisablingRefreshPreservesNewAlwaysBounceVerticalValue()
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(

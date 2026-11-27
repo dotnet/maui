@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		bool _originalAlwaysBounceVertical;
 		bool _hasStoredAlwaysBounceVertical;
 		bool _restoreScrollPosition;
+		bool _startRefreshingOnLayout;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -40,15 +41,18 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_isRefreshing = value;
+				_startRefreshingOnLayout = false;
 
 				if (_isRefreshing != _refreshControl.Refreshing)
 				{
 					if (_isRefreshing)
 					{
 						// UIKit drops a refresh that begins before the view is in a window,
-						// so in that case it starts on the first layout pass inside one
+						// so in that case it starts once, on the first layout pass inside one
 						if (Window is not null)
 							StartRefreshing(positionIsFinal: true);
+						else
+							_startRefreshingOnLayout = true;
 					}
 					else
 					{
@@ -70,7 +74,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 
-			if (Window is not null && IsRefreshing)
+			if (Window is not null && _startRefreshingOnLayout)
 				SetNeedsLayout();
 		}
 
@@ -78,8 +82,13 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			if (IsRefreshing && Window is not null && _refreshControl.Superview is not null && !_refreshControl.Refreshing)
-				StartRefreshing(positionIsFinal: false);
+			if (_startRefreshingOnLayout && Window is not null && _refreshControl.Superview is not null)
+			{
+				_startRefreshingOnLayout = false;
+
+				if (!_refreshControl.Refreshing)
+					StartRefreshing(positionIsFinal: false);
+			}
 		}
 
 		void StartRefreshing(bool positionIsFinal)
