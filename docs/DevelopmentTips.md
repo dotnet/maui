@@ -16,6 +16,26 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
+### Android navigation animation compatibility
+
+Android navigation stacks using MAUI's default transitions use `maui_nav_default_*`
+animation resources. These names avoid collisions with AndroidX Navigation's
+fade-only `nav_default_*` resources. This applies to `NavigationPage`, including
+one presented as a modal inside Shell, and Shell handlers using the same navigation
+manager. Forward and back transitions are mirrored for right-to-left layouts.
+
+Apps that override `nav_default_*` resources can move their overrides to the
+corresponding `maui_nav_default_*` names. To retain the previous resource lookup
+and animation-direction behavior instead, set this switch before creating the
+MAUI app:
+
+```csharp
+AppContext.SetSwitch("Microsoft.Maui.Platform.Android.UseLegacyNavigationAnimations", true);
+```
+
+The switch does not affect modal presentation or dismissal animations. A custom
+`StackNavigationManager.OnCreateNavigationAnimation` override remains available
+for applications that need to select their own transitions.
 
 ### Cake Commands
 
@@ -106,22 +126,11 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Public CI Apple toolchains
 
-The macOS template `Build` and `AOT` categories separate current- and
-previous-framework cases. Previous-framework iOS-only jobs select Xcode 27.0,
-matching the .NET 11 iOS compatibility SDK. Template `Build` cases can target
-multiple platforms and use the default compilation pool: the .NET 11
-MacCatalyst compatibility SDK recommends Xcode 27.1, as does the .NET 12 iOS
-SDK. The pool must provide the Xcode 27.1 SDK for .NET 12 iOS builds; Xcode 27.0
-is not sufficient. Apple SDK version validation is currently bypassed in the
-integration tests. Compound test filters use single-quoted arguments in the
-shared PowerShell runner.
-
-Internal jobs that install the pinned Xcode Universal Package select that exact
-application and verify its build version before compiling.
-
-The iOS simulator x64 NativeAOT cases target .NET 11 because the .NET 12 Apple
-workload no longer provides an x64 simulator runtime pack. They do not provide
-.NET 12 x64 simulator coverage.
+The macOS template `Build` category uses separate toolchains without removing
+coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
+with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
+retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
+filters use single-quoted arguments in the shared PowerShell runner.
 
 macOS jobs, public and internal, select the agent image's Xcode that matches
 `XCODE` in `eng/pipelines/common/variables.yml`, because the iOS SDK requires that

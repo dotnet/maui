@@ -214,13 +214,10 @@ namespace Microsoft.Maui.Platform
 				config.AllowsInlineMediaPlayback = true;
 				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
 			}
-			if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
-			{
-				if (SharedPool == null)
-					SharedPool = config.ProcessPool;
-				else
-					config.ProcessPool = SharedPool;
-			}
+			if (SharedPool == null)
+				SharedPool = config.ProcessPool;
+			else
+				config.ProcessPool = SharedPool;
 
 			return config;
 		}

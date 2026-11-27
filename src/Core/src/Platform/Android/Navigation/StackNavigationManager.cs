@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{
+		const string UseLegacyNavigationAnimationsSwitch = "Microsoft.Maui.Platform.Android.UseLegacyNavigationAnimations";
+
 		NavHostFragment? _navHost;
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
@@ -34,13 +36,6 @@ namespace Microsoft.Maui.Platform
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
-
-		// The navigation's resolved transition (see NavigationTransitionHooks), until the navigation finishes.
-		object? _preparedTransition;
-
-		// The incoming page's transition animation: the navigation isn't finished until it has run.
-		Animation? _enteringAnimation;
-		int _navigationGeneration;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = [];
@@ -179,16 +174,6 @@ namespace Microsoft.Maui.Platform
 
 			IsAnimated = animated;
 
-			// Resolve the transition once for the whole navigation; both fragments' animations come from it.
-			_preparedTransition = IsPopping is null || NavigationTransitionHooks.Current is not { } hooks
-				? null
-				: hooks.PrepareNavigation(
-					NavigationView as IView,
-					previousNavigationStack[previousNavigationStackCount - 1],
-					newPageStack[newPageStack.Count - 1],
-					IsPopping.Value,
-					animated);
-
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
 
@@ -300,33 +285,23 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The animation to use, or null to skip animation.</returns>
 		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
 		{
-			// Page transitions and navigation-transition providers. An override of this method that doesn't
-			// call the base keeps precedence over both.
-			if (_preparedTransition is { } prepared
-				&& NavigationTransitionHooks.Current is { } hooks
-				&& hooks.TryCreateAnimation(prepared, context, enter, out var transition))
-			{
-				// The navigation completes when the outgoing fragment goes, which can be before a longer entrance ends.
-				if (enter)
-				{
-					_enteringAnimation = transition;
-				}
-
-				return transition;
-			}
-
 			int id;
-			if (isPopping)
+			if (AppContext.TryGetSwitch(UseLegacyNavigationAnimationsSwitch, out var useLegacyAnimations) && useLegacyAnimations)
 			{
-				id = enter
-					? Resource.Animation.nav_default_pop_enter_anim
-					: Resource.Animation.nav_default_pop_exit_anim;
+				id = isPopping
+					? (enter ? Resource.Animation.nav_default_pop_enter_anim : Resource.Animation.nav_default_pop_exit_anim)
+					: (enter ? Resource.Animation.nav_default_enter_anim : Resource.Animation.nav_default_exit_anim);
 			}
 			else
 			{
-				id = enter
-					? Resource.Animation.nav_default_enter_anim
-					: Resource.Animation.nav_default_exit_anim;
+				// AndroidX defines nav_default_* as fade-only animations. Use distinct names
+				// so Android resource merging cannot replace MAUI's slide transitions.
+				var layoutDirection = _fragmentContainerView?.LayoutDirection ?? context.Resources?.Configuration?.LayoutDirection;
+				// In RTL, reuse the opposite slide direction without changing the enter/exit fade.
+				bool usePopResources = isPopping ^ (layoutDirection == LayoutDirection.Rtl);
+				id = usePopResources
+					? (enter ? Resource.Animation.maui_nav_default_pop_enter_anim : Resource.Animation.maui_nav_default_pop_exit_anim)
+					: (enter ? Resource.Animation.maui_nav_default_enter_anim : Resource.Animation.maui_nav_default_exit_anim);
 			}
 
 			return id > 0 ? AnimationUtils.LoadAnimation(context, id) : null;
@@ -336,9 +311,6 @@ namespace Microsoft.Maui.Platform
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
-			_preparedTransition = null;
-			_enteringAnimation = null;
-			_navigationGeneration++;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
 
@@ -594,40 +566,8 @@ namespace Microsoft.Maui.Platform
 
 			if (IsNavigating)
 			{
-				// A transition's entrance can outlast the outgoing page: finish when it has run, not before.
-				var remaining = RemainingEntranceMilliseconds();
-				if (remaining > 0 && _navHost?.View is { } host)
-				{
-					var generation = _navigationGeneration;
-					host.PostDelayed(() =>
-					{
-						if (generation == _navigationGeneration && IsNavigating)
-						{
-							NavigationFinished(NavigationView);
-						}
-					}, remaining);
-					return;
-				}
-
 				NavigationFinished(NavigationView);
 			}
-		}
-
-		long RemainingEntranceMilliseconds()
-		{
-			if (_enteringAnimation is not { } entrance)
-			{
-				return 0;
-			}
-
-			var length = entrance.ComputeDurationHint();
-			var started = entrance.StartTime;
-			var remaining = started <= 0
-				? length
-				: started + length - AnimationUtils.CurrentAnimationTimeMillis();
-
-			// Within a frame of the end is the end.
-			return remaining > 16 ? remaining : 0;
 		}
 
 		protected virtual void OnNavigationViewFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)
