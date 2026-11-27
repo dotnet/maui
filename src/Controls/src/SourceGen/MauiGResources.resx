@@ -262,13 +262,6 @@
     <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
     <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
   </data>
-  <data name="ObsoleteFontSizeTitle" xml:space="preserve">
-    <value>Obsolete FontSize value</value>
-  </data>
-  <data name="ObsoleteFontSizeMessage" xml:space="preserve">
-    <value>"{0}" is obsolete: Named font sizes are obsolete; use a numeric FontSize value instead.</value>
-    <comment>0 is the NamedSize member name (e.g., "NamedSize.Large")</comment>
-  </data>
   <data name="StyleTargetTypeMismatchTitle" xml:space="preserve">
     <value>Style TargetType is not compatible with the element</value>
   </data>

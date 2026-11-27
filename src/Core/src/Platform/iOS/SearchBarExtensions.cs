@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Platform
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
-		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
+		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			if (OperatingSystem.IsMacCatalyst())
 			{
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Platform
 
 				if (clearButton != null)
 				{
-					var shouldHide = !hasText;
+					var shouldHide = !searchBar.AllowsCancelButton() || string.IsNullOrEmpty(searchBar.Text);
 
 					if (clearButton.Hidden != shouldHide)
 					{
@@ -151,15 +151,30 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static bool ShouldShowCancelButton(this ISearchBar searchBar) =>
-			!string.IsNullOrEmpty(searchBar.Text);
+			searchBar.AllowsCancelButton() && !string.IsNullOrEmpty(searchBar.Text);
 
 		// Tag used to identify the cancel button color overlay view added on iOS 26+.
 		// Value 0x53424343 encodes "SBCC" (SearchBarCancelColor) to avoid collisions with system-assigned tags.
 		const nint CancelButtonColorOverlayTag = unchecked((nint)0x53424343);
 
+		internal static void UpdateCancelButtonVisibility(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var showCancelButton = searchBar.ShouldShowCancelButton();
+			if (uiSearchBar.ShowsCancelButton != showCancelButton)
+				uiSearchBar.ShowsCancelButton = showCancelButton;
+
+			if (!uiSearchBar.ShowsCancelButton && OperatingSystem.IsIOSVersionAtLeast(26))
+				RemoveCancelButtonOverlay(uiSearchBar);
+		}
+
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
-			uiSearchBar.ShowsCancelButton = searchBar.ShouldShowCancelButton();
+			uiSearchBar.UpdateCancelButtonVisibility(searchBar);
+
+			if (!uiSearchBar.ShowsCancelButton)
+			{
+				return;
+			}
 
 			// We can't cache the cancel button reference because iOS drops it when it's not displayed
 			// and creates a brand new one when necessary, so we have to look for it each time.
@@ -246,7 +261,8 @@ namespace Microsoft.Maui.Platform
 			var weakSB = new WeakReference<UISearchBar>(uiSearchBar);
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 			{
-				if (!weakSB.TryGetTarget(out var sb)) return;
+				if (!weakSB.TryGetTarget(out var sb))
+					return;
 				var btn = sb.FindDescendantView<UIButton>(
 					b => b.FindParent(v => v is UITextField) == null);
 				if (btn != null)
@@ -256,6 +272,9 @@ namespace Microsoft.Maui.Platform
 
 		static void ApplyCancelButtonOverlay(UISearchBar uiSearchBar, UIButton cancelButton, UIColor color, int retryCount = 0)
 		{
+			if (!uiSearchBar.ShowsCancelButton)
+				return;
+
 			var parentView = cancelButton.Superview;
 			if (parentView == null)
 			{

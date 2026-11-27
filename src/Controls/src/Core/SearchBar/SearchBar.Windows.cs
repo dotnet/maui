@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ISearchBarHandler handler, SearchBar searchBar)
 		{
 			Platform.AutoSuggestBoxExtensions.UpdateText(handler.PlatformView, searchBar);
+			handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
 		}
 	}
 }

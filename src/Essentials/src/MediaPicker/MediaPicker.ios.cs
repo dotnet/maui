@@ -10,10 +10,10 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
+using MobileCoreServices;
 using Photos;
 using PhotosUI;
 using UIKit;
-using UniformTypeIdentifiers;
 
 namespace Microsoft.Maui.Media
 {
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Media
 
 			PHPickerFileResult.CleanupTemporaryFiles();
 
-			if (pickExisting)
+			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
 				var config = new PHPickerConfiguration
 				{
@@ -110,9 +110,11 @@ namespace Microsoft.Maui.Media
 					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
 				}
 
-				var sourceType = UIImagePickerControllerSourceType.Camera;
+				var sourceType = pickExisting
+					? UIImagePickerControllerSourceType.PhotoLibrary
+					: UIImagePickerControllerSourceType.Camera;
 
-				var mediaType = photo ? UTTypes.Image.Identifier : UTTypes.Movie.Identifier;
+				var mediaType = photo ? UTType.Image : UTType.Movie;
 
 				if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				{
@@ -403,22 +405,18 @@ namespace Microsoft.Maui.Media
 						return docResult;
 					}
 
-#pragma warning disable CA1422 // Legacy UIImagePickerController asset lookup, kept for compatibility
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
-#pragma warning restore CA1422
 				}
 			}
 
 #if !MACCATALYST
 			if (phAsset is null)
 			{
-#pragma warning disable CA1422 // Legacy UIImagePickerController asset lookup, kept for compatibility
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
 
 				if (assetUrl is not null)
 				{
 					phAsset = PHAsset.FetchAssets([assetUrl], null)?.LastObject as PHAsset;
-#pragma warning restore CA1422
 				}
 			}
 #endif
@@ -447,15 +445,7 @@ namespace Microsoft.Maui.Media
 				return null;
 			}
 
-			var resource = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault();
-			string originalFilename = null;
-			if (resource is not null)
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(27) || OperatingSystem.IsMacCatalystVersionAtLeast(27))
-					originalFilename = resource.Filename;
-				else
-					originalFilename = resource.OriginalFilename;
-			}
+			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
 			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 
 			// Apply rotation if needed and this is a photo
@@ -518,7 +508,7 @@ namespace Microsoft.Maui.Media
 				return original;
 			}
 		}
-
+		
 		/// <summary>
 		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
 		/// </summary>
@@ -681,11 +671,9 @@ namespace Microsoft.Maui.Media
 			_provider = provider;
 			var identifiers = provider?.RegisteredTypeIdentifiers;
 
-			var livePhoto = UTTypes.LivePhoto.Identifier;
-			var jpeg = UTTypes.Jpeg.Identifier;
-			_identifier = (identifiers?.Any(i => i.StartsWith(livePhoto)) ?? false)
-				&& (identifiers?.Contains(jpeg) ?? false)
-				? identifiers?.FirstOrDefault(i => i == jpeg)
+			_identifier = (identifiers?.Any(i => i.StartsWith(UTType.LivePhoto)) ?? false)
+				&& (identifiers?.Contains(UTType.JPEG) ?? false)
+				? identifiers?.FirstOrDefault(i => i == UTType.JPEG)
 				: identifiers?.FirstOrDefault();
 
 			if (string.IsNullOrWhiteSpace(_identifier))
@@ -988,7 +976,7 @@ namespace Microsoft.Maui.Media
 
 		static string GetFileExtension(string identifier)
 		{
-			var extension = UTType.CreateFromIdentifier(identifier)?.PreferredFilenameExtension;
+			var extension = GetTag(identifier, UTType.TagClassFilenameExtension);
 
 			return NormalizeExtension(extension);
 		}
@@ -1006,6 +994,9 @@ namespace Microsoft.Maui.Media
 
 			return fileName;
 		}
+
+		protected internal static string GetTag(string identifier, string tagClass)
+			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
 
 		public void Dispose()
 		{

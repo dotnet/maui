@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiSearchView : SearchView
 	{
 		internal EditText? _queryEditor;
+		bool _showCancelButton = true;
 
 		public MauiSearchView(Context context) : base(context)
 		{
@@ -46,6 +48,30 @@ namespace Microsoft.Maui.Platform
 				var image = FindViewById<ImageView>(searchCloseButtonIdentifier);
 
 				image?.SetMinimumWidth((int?)Context?.ToPixels(44) ?? 0);
+			}
+		}
+
+		internal void UpdateCancelButtonVisibility(bool showCancelButton)
+		{
+			_showCancelButton = showCancelButton;
+
+			if (this.GetCancelButton() is not ImageView cancelButton)
+				return;
+
+			if (!showCancelButton)
+				cancelButton.Visibility = ViewStates.Gone;
+			else
+				cancelButton.Visibility = string.IsNullOrEmpty(Query) ? ViewStates.Gone : ViewStates.Visible;
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			if (!_showCancelButton && this.GetCancelButton() is ImageView cancelButton &&
+				cancelButton.Visibility != ViewStates.Gone)
+			{
+				cancelButton.Visibility = ViewStates.Gone;
 			}
 		}
 	}

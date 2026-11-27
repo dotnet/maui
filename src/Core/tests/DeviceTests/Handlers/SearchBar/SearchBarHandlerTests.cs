@@ -301,7 +301,16 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, Colors.Yellow);
 			});
 #else
-			await ValidateHasColor(searchBar, Colors.Yellow);
+			await AttachAndRun(searchBar, async handler =>
+			{
+#if IOS || MACCATALYST
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
+#elif ANDROID
+				Assert.True(handler.QueryEditor.RequestFocus());
+#endif
+				await AssertEventually(() => searchBar.IsFocused);
+				await handler.PlatformView.AssertContainsColor(Colors.Yellow, MauiContext);
+			});
 #endif
 		}
 
