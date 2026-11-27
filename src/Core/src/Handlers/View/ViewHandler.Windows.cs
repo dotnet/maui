@@ -195,6 +195,45 @@ public partial class ViewHandler
 		}
 	}
 
+	internal static void ShowContextFlyoutWindows(IViewHandler handler, IView view)
+	{
+		if (handler.VirtualView != view || handler.PlatformView is not PlatformView target)
+		{
+			throw new InvalidOperationException("The context-flyout target must have a connected handler.");
+		}
+
+		if (!target.DispatcherQueue.HasThreadAccess)
+		{
+			throw new InvalidOperationException("Context flyouts must be presented on the target's UI thread.");
+		}
+
+		if (!target.IsLoaded || target.XamlRoot is null ||
+			target.Visibility != Microsoft.UI.Xaml.Visibility.Visible || !target.IsHitTestVisible ||
+			target is Microsoft.UI.Xaml.Controls.Control { IsEnabled: false } ||
+			!view.IsEnabled || view.InputTransparent || view.Visibility != Visibility.Visible)
+		{
+			throw new InvalidOperationException("The context-flyout target must be loaded, visible, enabled, and accept input.");
+		}
+
+		if (view is not IContextFlyoutElement { ContextFlyout: IMenuFlyout { Count: > 0 } flyout })
+		{
+			throw new InvalidOperationException("A nonempty menu flyout must be attached to the target.");
+		}
+
+		if (target.ContextFlyout is not Microsoft.UI.Xaml.Controls.MenuFlyout { Items.Count: > 0 } platformFlyout ||
+			!ReferenceEquals(flyout.Handler?.PlatformView, platformFlyout))
+		{
+			throw new InvalidOperationException("The target must have its menu flyout attached to the native view.");
+		}
+
+		if (platformFlyout.IsOpen)
+		{
+			return;
+		}
+
+		platformFlyout.ShowAt(target);
+	}
+
 	internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 	{
 		_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");

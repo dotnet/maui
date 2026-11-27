@@ -1,12 +1,48 @@
-﻿using UIKit;
+﻿using System;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuFlyoutSubItemHandler
 	{
+		string? _contextText;
+		IImageSource? _contextSource;
+		bool _contextMenu;
+		bool _refreshingContextMenu;
+		bool _refreshContextSource;
+
+		internal void RefreshContextMetadata()
+		{
+			UpdateValue(nameof(IMenuElement.Text));
+			_refreshContextSource = VirtualView.Source is not null;
+			try
+			{
+				UpdateValue(nameof(IMenuElement.Source));
+			}
+			finally
+			{
+				_refreshContextSource = false;
+			}
+		}
+
 		protected override UIMenu CreatePlatformElement()
 		{
+			IElement? parent = VirtualView.Parent;
+			while (parent is not null && parent is not IMenuFlyout)
+				parent = parent.Parent;
+
+			_contextMenu = parent is IMenuFlyout;
+			if (_contextMenu)
+			{
+				_contextText = VirtualView.Text;
+				_contextSource = VirtualView.Source;
+				using var contents = VirtualView.ToPlatformMenu(MauiContext!);
+				return UIMenu.Create(VirtualView.Text,
+					VirtualView.Source.GetPlatformMenuImage(MauiContext!),
+					UIMenuIdentifier.None, UIMenuOptions.SingleSelection, contents.Children);
+			}
+
 			var menuBar = VirtualView.FindParentOfType<IMenuBar>();
 
 			IUIMenuBuilder? uIMenuBuilder = null;
@@ -23,6 +59,30 @@ namespace Microsoft.Maui.Handlers
 					uIMenuBuilder);
 
 			return menu;
+		}
+
+		internal static void MapContextMetadata(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			if (handler is MenuFlyoutSubItemHandler menuHandler && menuHandler._contextMenu &&
+				(menuHandler._refreshContextSource ||
+				 !string.Equals(menuHandler._contextText, view.Text, StringComparison.Ordinal) ||
+				 menuHandler._contextSource != view.Source))
+			{
+				menuHandler._refreshContextSource = false;
+				// Reconnect the same handler to replace the immutable UIMenu and replay its mappings.
+				var previous = menuHandler.PlatformView;
+				menuHandler._refreshingContextMenu = true;
+				try
+				{
+					((IElementHandler)menuHandler).DisconnectHandler();
+					menuHandler.SetVirtualView(view);
+				}
+				finally
+				{
+					menuHandler._refreshingContextMenu = false;
+				}
+				previous.Dispose();
+			}
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)

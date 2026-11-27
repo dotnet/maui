@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
+#else
+			if (handler.PlatformView is PlatformView uiView && OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				MauiContextFlyoutPopover.Remove(uiView);
+			}
 #endif
 		}
 
@@ -31,6 +36,11 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is PlatformView uiView)
 			{
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					MauiContextFlyoutPopover.Remove(uiView);
+				}
+
 				MauiUIContextMenuInteraction? currentInteraction = null;
 
 				foreach (var interaction in uiView.Interactions)
@@ -51,6 +61,17 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 #endif
+
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static",
+			Justification = "Implements the instance handler lifecycle hook.")]
+		partial void DisconnectingHandler(PlatformView platformView)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(15) ||
+				OperatingSystem.IsMacCatalystVersionAtLeast(15))
+			{
+				MauiContextFlyoutPopover.Remove(platformView);
+			}
+		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{

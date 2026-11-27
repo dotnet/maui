@@ -22,6 +22,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutSubItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
 			[nameof(IMenuFlyoutSubItem.Source)] = MapSource,
 #endif
+#if MACCATALYST || IOS
+			[nameof(IMenuFlyoutSubItem.Text)] = MapContextMetadata,
+			[nameof(IMenuFlyoutSubItem.Source)] = MapContextMetadata,
+#endif
 #if MACCATALYST || IOS || WINDOWS
 			[nameof(IMenuFlyoutSubItem.IsEnabled)] = MapIsEnabled,
 #endif
@@ -93,6 +97,10 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
+#if IOS || MACCATALYST
+			if (_refreshingContextMenu)
+				return;
+#endif
 			foreach (var item in VirtualView)
 				item?.Handler?.DisconnectHandler();
 		}

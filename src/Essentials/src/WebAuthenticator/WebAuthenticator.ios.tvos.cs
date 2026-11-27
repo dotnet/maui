@@ -208,20 +208,18 @@ namespace Microsoft.Maui.Authentication
 			ASWebAuthenticationSessionCompletionHandler completionHandler = (callbackUrl, error) =>
 				PostNativeCompletion(request, callbackUrl, error);
 
+			if (callbackUrl.Scheme != "https")
+				return new ASWebAuthenticationSession(nativeUrl, callbackUrl.Scheme, completionHandler);
+
 #if IOS
 			if (OperatingSystem.IsIOSVersionAtLeast(17, 4))
 #elif MACCATALYST
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
 #endif
 			{
-				var callback = callbackUrl.Scheme == "https"
-					? ASWebAuthenticationSessionCallback.Create(callbackUrl.Host, callbackUrl.AbsolutePath)
-					: ASWebAuthenticationSessionCallback.Create(callbackUrl.Scheme);
+				var callback = ASWebAuthenticationSessionCallback.Create(callbackUrl.Host, callbackUrl.AbsolutePath);
 				return new ASWebAuthenticationSession(nativeUrl, callback, completionHandler);
 			}
-
-			if (callbackUrl.Scheme != "https")
-				return new ASWebAuthenticationSession(nativeUrl, callbackUrl.Scheme, completionHandler);
 
 			throw new FeatureNotSupportedException("HTTPS WebAuthenticator callbacks require iOS or Mac Catalyst 17.4 or later.");
 		}

@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class MenuFlyoutItemHandler
 	{
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
-
 		bool IsInContextFlyout()
 		{
 			IElement? current = VirtualView;
@@ -30,12 +29,18 @@ namespace Microsoft.Maui.Handlers
 			if (IsInContextFlyout())
 			{
 				UIImage? contextUiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
+				var owner = new WeakReference<MenuFlyoutItemHandler>(this);
 
 				var uiAction = UIAction.Create(
 					title: VirtualView.Text,
 					image: contextUiImage,
 					identifier: null,
-					handler: (_) => VirtualView?.Clicked());
+					handler: (_) =>
+					{
+						if (owner.TryGetTarget(out var handler) &&
+							((IElementHandler)handler).VirtualView is IMenuFlyoutItem item)
+							item.Clicked();
+					});
 
 				return uiAction;
 			}
@@ -48,9 +53,20 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsEnabled(view);
 		}
 
-		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		internal static void MapContextText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			handler.PlatformView?.UpdateImageSource(view, handler.MauiContext);
+			if (handler.PlatformView is UIAction action)
+				action.Title = view.Text;
+		}
+
+		internal static void MapContextSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			var image = view.Source.GetPlatformMenuImage(handler.MauiContext
+				?? throw new InvalidOperationException("The menu item handler must have a MauiContext."));
+			if (handler.PlatformView is UIAction action)
+				action.Image = image;
+			else if (handler.PlatformView is UICommand command)
+				command.Image = image;
 		}
 
 		internal static void Execute(UICommand uICommand)
