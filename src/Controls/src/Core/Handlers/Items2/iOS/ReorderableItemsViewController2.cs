@@ -232,7 +232,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return new UILongPressGestureRecognizer(gesture =>
 			{
 				if (weakController.TryGetTarget(out var target))
+				{
 					target.HandleLongPress(gesture);
+				}
 			});
 		}
 
