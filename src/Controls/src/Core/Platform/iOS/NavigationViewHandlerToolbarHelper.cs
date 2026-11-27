@@ -111,10 +111,10 @@ namespace Microsoft.Maui.Controls
         }
 
         public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
-            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForHomeIndicatorAutoHidden!;
 
         public override UIViewController ChildViewControllerForStatusBarHidden() =>
-            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForStatusBarHidden()!;
 
 #if !MACCATALYST
         public override UIViewController ChildViewControllerForStatusBarStyle() =>
