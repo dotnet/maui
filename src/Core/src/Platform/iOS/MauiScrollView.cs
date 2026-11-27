@@ -155,6 +155,10 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		public override void AdjustedContentInsetDidChange()
 		{
+			var scrollView = View as IScrollView;
+			var horizontalOffset = scrollView?.HorizontalOffset ?? 0;
+			var verticalOffset = scrollView?.VerticalOffset ?? 0;
+
 			base.AdjustedContentInsetDidChange();
 			_safeAreaInvalidated = true;
 
@@ -163,6 +167,19 @@ namespace Microsoft.Maui.Platform
 			{
 				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 				this.InvalidateAncestorsMeasures();
+			}
+
+			if (scrollView is not null)
+			{
+				var adjustedContentInset = AdjustedContentInset;
+				var contentOffset = new CGPoint(
+				 horizontalOffset - (double)adjustedContentInset.Left,
+				 verticalOffset - (double)adjustedContentInset.Top);
+
+				if (ContentOffset != contentOffset)
+				{
+					ContentOffset = contentOffset;
+				}
 			}
 
 			// UIKit does not raise Scrolled when the inset changes while the offset stays put
