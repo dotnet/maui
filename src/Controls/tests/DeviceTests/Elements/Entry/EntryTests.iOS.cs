@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -28,6 +29,33 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).Text = text;
+
+		[Fact]
+		public async Task NativeTextEditUsesCustomTextTransform()
+		{
+			const string expected = "\u0130";
+			var entry = new TurkishEntry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "i");
+
+				Assert.Equal(expected, GetPlatformControl(handler).Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			});
+		}
+
+		sealed class TurkishEntry : Entry, ITextElement
+		{
+			string ITextElement.UpdateFormsText(string original, TextTransform transform) =>
+				transform == TextTransform.Uppercase
+					? (original ?? string.Empty).ToUpper(CultureInfo.GetCultureInfo("tr-TR"))
+					: UpdateFormsText(original, transform);
+		}
 
 		[Fact]
 		public async Task NativeSecureTextEntryPreservesCasing()

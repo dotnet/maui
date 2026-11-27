@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
@@ -45,16 +46,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false, true, "aB", "AB")]
-		[InlineData(true, true, "aB", "aB")]
-		[InlineData(true, false, "d", "D")]
-		public async Task PlatformEditRespectsSearchBarHandlerAndKeyboard(bool material3, bool passwordKeyboard, string input, string expectedText)
+		[InlineData(false, true, false, "aB", "AB")]
+		[InlineData(true, true, false, "aB", "aB")]
+		[InlineData(true, false, false, "d", "D")]
+		[InlineData(false, false, true, "i", "I")]
+		[InlineData(true, false, true, "i", "\u0130")]
+		public async Task PlatformEditRespectsSearchBarHandlerAndKeyboard(bool material3, bool passwordKeyboard, bool customTransform, string input, string expectedText)
 		{
-			var searchBar = new SearchBar
-			{
-				Keyboard = passwordKeyboard ? Keyboard.Password : Keyboard.Default,
-				TextTransform = TextTransform.Uppercase,
-			};
+			SearchBar searchBar = customTransform ? new TurkishSearchBar() : new SearchBar();
+			searchBar.Keyboard = passwordKeyboard ? Keyboard.Password : Keyboard.Default;
+			searchBar.TextTransform = TextTransform.Uppercase;
 
 			if (material3)
 				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
@@ -74,6 +75,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedText, searchBar.Text);
 				Assert.Equal(expectedText, Assert.Single(changes));
 			}
+		}
+
+		sealed class TurkishSearchBar : SearchBar, ITextElement
+		{
+			string ITextElement.UpdateFormsText(string original, TextTransform transform) =>
+				transform == TextTransform.Uppercase
+					? (original ?? string.Empty).ToUpper(CultureInfo.GetCultureInfo("tr-TR"))
+					: UpdateFormsText(original, transform);
 		}
 
 		[Fact]

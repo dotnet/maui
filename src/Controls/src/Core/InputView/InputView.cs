@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls
 				var transform = TextTransform;
 				var transformedText = value;
 				if ((value is null || transform is TextTransform.Lowercase or TextTransform.Uppercase) && !IsPasswordInput)
-					transformedText = TextTransformUtilities.GetTransformedText(value, transform);
+					transformedText = NormalizeHandlerText(value, transform);
 
 				if (value != transformedText && Text == transformedText)
 				{
@@ -337,6 +337,22 @@ namespace Microsoft.Maui.Controls
 
 				SetValue(TextProperty, transformedText, SetterSpecificity.FromHandler);
 			}
+		}
+
+		string NormalizeHandlerText(string text, TextTransform transform)
+		{
+			if (text is null)
+				return string.Empty;
+
+			// Match the native mappers that dispatch through ITextElement.
+#if ANDROID
+			if (this is Entry or Editor || (this is SearchBar && Handler is SearchBarHandler2))
+				return ((ITextElement)this).UpdateFormsText(text, transform);
+#elif IOS || MACCATALYST
+			if (this is Entry or Editor)
+				return ((ITextElement)this).UpdateFormsText(text, transform);
+#endif
+			return TextTransformUtilities.GetTransformedText(text, transform);
 		}
 
 		bool IsPasswordInput
