@@ -117,19 +117,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-			// Page transitions: the modal's own dismissal, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : _window.Page;
-			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PopModal, modal, presenter, animated);
-			if (resolved.IsSuppressed)
-			{
-				animated = false;
-			}
-			else if (!resolved.IsPlatformDefault && animated)
-			{
-				_dismissAnimation = resolved.Platform.CreateAnimation(false);
-				animated = _dismissAnimation is not null;
-			}
-
 			if (animated && dialogFragment.View is not null)
 			{
 				_dismissAnimation ??= AnimationUtils.LoadAnimation(WindowMauiContext.Context, Resource.Animation.nav_modal_default_exit_anim)!;
@@ -201,25 +188,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var parentView = GetModalParentView();
 
-			// Page transitions: the modal's own presentation, or a per-navigation one.
-			var presenter = _platformModalPages.Count > 1 ? _platformModalPages[_platformModalPages.Count - 2] : _window.Page;
-			var resolved = Animations.PageTransitionResolver.Resolve(Animations.NavigationTransitionKind.PushModal, presenter, modal, animated);
-			AAnimation? enterAnimation = null;
-			if (resolved.IsSuppressed)
-			{
-				animated = false;
-			}
-			else if (!resolved.IsPlatformDefault && animated)
-			{
-				enterAnimation = resolved.Platform.CreateAnimation(true);
-				animated = enterAnimation is not null;
-			}
-
-			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
+			var dialogFragment = new ModalFragment(WindowMauiContext, _window, modal)
 			{
 				Cancelable = false,
-				IsAnimated = animated,
-				EnterAnimation = enterAnimation
+				IsAnimated = animated
 			};
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
@@ -250,6 +222,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal class ModalFragment : DialogFragment
 		{
+			readonly Window _window;
+			Page? _windowPage;
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
@@ -262,11 +236,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public bool IsAnimated { get; internal set; }
 
-			// A page transition's entrance, in place of the default slide-up.
-			internal AAnimation? EnterAnimation { get; set; }
-
-			public ModalFragment(IMauiContext mauiContext, Page modal)
+			public ModalFragment(IMauiContext mauiContext, Window window, Page modal)
 			{
+				_window = window;
 				_modal = modal;
 				_modal.Loaded += OnModalLoaded;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
@@ -442,8 +414,7 @@ namespace Microsoft.Maui.Controls.Platform
 						listener.Invalidate();
 						if (view is not null)
 						{
-							var animation = EnterAnimation ?? AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-							EnterAnimation = null;
+							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 							view.StartAnimation(animation);
 							animation.AnimationEnd += OnAnimationEnded;
 						}
@@ -451,6 +422,44 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				return rootView;
 			}
+
+			public override void OnViewCreated(AView view, Bundle? savedInstanceState)
+			{
+				base.OnViewCreated(view, savedInstanceState);
+				UpdateLayoutDirection(view);
+				_window.PropertyChanged += OnFlowDirectionChanged;
+				// IWindow.FlowDirection can come from the root page when the window uses MatchParent.
+				_windowPage = _window.Page;
+				if (_windowPage is not null)
+					_windowPage.PropertyChanged += OnFlowDirectionChanged;
+			}
+
+			public override void OnDestroyView()
+			{
+				_window.PropertyChanged -= OnFlowDirectionChanged;
+				if (_windowPage is not null)
+					_windowPage.PropertyChanged -= OnFlowDirectionChanged;
+				_windowPage = null;
+				base.OnDestroyView();
+			}
+
+			void OnFlowDirectionChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Window.FlowDirection) && View is { } view)
+					UpdateLayoutDirection(view);
+			}
+
+			void UpdateLayoutDirection(AView view)
+			{
+				// The dialog has a separate native root, so its content cannot inherit from the activity's view tree.
+				view.LayoutDirection = ((IWindow)_window).FlowDirection switch
+				{
+					FlowDirection.LeftToRight => LayoutDirection.Ltr,
+					FlowDirection.RightToLeft => LayoutDirection.Rtl,
+					_ => LayoutDirection.Inherit,
+				};
+			}
+
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
 				if (sender is not AAnimation animation)
