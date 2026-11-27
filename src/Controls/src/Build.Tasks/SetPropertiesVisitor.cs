@@ -893,30 +893,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		// Splits on '.' but not inside an indexer, so Items[he.llo] stays one part.
-		static string[] SplitBindingPath(string path)
-		{
-			var parts = new List<string>();
-			int depth = 0, start = 0;
-			for (int i = 0; i < path.Length; i++)
-			{
-				char c = path[i];
-				if (c == '[')
-					depth++;
-				else if (c == ']')
-					depth--;
-				else if (c == '.' && depth == 0)
-				{
-					if (i > start)
-						parts.Add(path.Substring(start, i - start));
-					start = i + 1;
-				}
-			}
-			if (path.Length > start)
-				parts.Add(path.Substring(start));
-			return parts.ToArray();
-		}
-
 		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties, bool suppressPropertyNotFoundError = false)
 		{
 			pathProperties = null;
@@ -925,7 +901,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return true;
 
 			path = path.Trim(' ', '.'); //trim leading or trailing dots
-			var parts = SplitBindingPath(path);
+			var parts = CompiledBindingPath.Split(path);
 			var properties = new List<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)>();
 
 			var previousPartTypeRef = tSourceRef;

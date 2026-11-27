@@ -6,4 +6,6 @@
                      x:DataType="local:Maui28333ViewModel">
 	<Label x:Name="dottedKey" Text="{Binding Items[he.llo], Mode=OneWay}" />
 	<Label x:Name="dottedKeyLength" Text="{Binding Items[he.llo].Length, Mode=OneWay}" />
+	<Label x:Name="openBracketKeyLength" Text="{Binding Items[a[b].Length, Mode=OneWay}" />
+	<Label x:Name="closeBracketKeyLength" Text="{Binding Items[a]].Length, Mode=OneWay}" />
 </VerticalStackLayout>

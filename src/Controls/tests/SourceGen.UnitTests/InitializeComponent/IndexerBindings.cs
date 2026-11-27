@@ -257,6 +257,7 @@ public class TestViewModel
 	[Theory]
 	[InlineData("Items[he.llo]", "string?", "source.Items?[\"he.llo\"]")]
 	[InlineData("Items[he.llo].Length", "int", "source.Items?[\"he.llo\"]?.Length")]
+	[InlineData("Items[a[b].Length", "int", "source.Items?[\"a[b\"]?.Length")]
 	public void BindingToLiteralDictionaryKey(string path, string valueType, string getter)
 	{
 		var xaml =

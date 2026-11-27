@@ -22,6 +22,17 @@ public partial class Maui28333 : VerticalStackLayout
 			Assert.Equal("hello", view.dottedKey.Text);
 			Assert.Equal("5", view.dottedKeyLength.Text);
 		}
+
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void CompiledBindingPreservesPropertyAfterLiteralBracket(XamlInflator inflator)
+		{
+			var view = new Maui28333(inflator) { BindingContext = new Maui28333ViewModel() };
+			Assert.Equal("4", view.openBracketKeyLength.Text);
+			// XamlC takes the last closing bracket in a part; SourceGen takes the first.
+			Assert.Equal(inflator == XamlInflator.XamlC ? "4" : "1", view.closeBracketKeyLength.Text);
+		}
 	}
 }
 
@@ -30,5 +41,8 @@ class Maui28333ViewModel
 	public Dictionary<string, string> Items { get; } = new()
 	{
 		["he.llo"] = "hello",
+		["a[b"] = "word",
+		["a]"] = "four",
+		["a"] = "x",
 	};
 }
