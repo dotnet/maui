@@ -30,11 +30,6 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
 
-#if ANDROID
-			// Turning selection off resets focusability, which the gesture manager relies on for key activation.
-			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IsTextSelectable), MapIsTextSelectableFocusable);
-#endif
-
 #if ANDROID || IOS
 			// these are for platforms that do no support view properties reaching spans
 			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
