@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || IOS || MACCATALYST
 				[nameof(ISafeAreaElement.SafeAreaEdges)] = MapSafeAreaEdges
 #endif
-			};
+			}.WithFrameworkMappingsSealed();
 
 		// MAUI's own transform mappings, captured right after ViewMapper is built and before app code can append to or
 		// replace them (ViewMapper is mutable). The animation engine coalesces one frame's transform updates into one
@@ -106,14 +106,14 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <remarks>The concept or a command mapper is very similar to the property mapper with
 		/// the addition that you can provide extra data in the form of arguments with the command mapper.</remarks>
-		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
+		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new CommandMapper<IView, IViewHandler>()
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
 			[nameof(IView.ZIndex)] = MapZIndex,
 			[nameof(IView.Focus)] = MapFocus,
 			[nameof(IView.Unfocus)] = MapUnfocus,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		bool _hasContainer;
 

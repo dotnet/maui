@@ -223,5 +223,197 @@ namespace Microsoft.Maui.UnitTests
 				Assert.DoesNotContain(msg2, log, StringComparison.Ordinal);
 			}
 		}
+
+		[Fact]
+		public void FrameworkPrependRunsBeforeEarlierUserAppend()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "user;");
+			mapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("controls;core;user;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierUserModification()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper.ModifyMapping(nameof(IView.Focus), (handler, view, args, previous) =>
+			{
+				log += "user-before;";
+				previous!(handler, view, args);
+				log += "user-after;";
+			});
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user-before;controls;user-after;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierDirectReplacement()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper[nameof(IView.Focus)] = (_, _, _) => log += "user;";
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierDirectReplacementOfChainedCommand()
+		{
+			var log = string.Empty;
+			var parentMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+			var mapper = new CommandMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+
+			mapper[nameof(IView.Focus)] = (_, _, _) => log += "user;";
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user;", log);
+		}
+
+		[Fact]
+		public void FrameworkMappingDoesNotReplacePostSealAssignmentOfAbsentKey()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>().WithFrameworkMappingsSealed();
+
+			mapper[nameof(IView.Focus)] = (_, _, _) => log += "user;";
+			mapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user;", log);
+		}
+
+		[Fact]
+		public void ChildCustomizationOfInitiallyMissingParentKeyObservesLaterFrameworkMapping()
+		{
+			var log = string.Empty;
+			var parentMapper = new CommandMapper<IView, IViewHandler>().WithFrameworkMappingsSealed();
+			var childMapper = new CommandMapper<IView, IViewHandler>(parentMapper);
+
+			childMapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "append;");
+			parentMapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			childMapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("controls;append;", log);
+		}
+
+		[Fact]
+		public void ChildCustomizationKeepsParentMappingFromWhenItWasRecorded()
+		{
+			var log = string.Empty;
+			var parentMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "A;"
+			};
+			var childMapper = new CommandMapper<IView, IViewHandler>(parentMapper);
+
+			childMapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "C;");
+			parentMapper[nameof(IView.Focus)] = (_, _, _) => log += "B;";
+
+			childMapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+			Assert.Equal("A;C;", log);
+
+			log = string.Empty;
+			parentMapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+			Assert.Equal("B;", log);
+		}
+
+		[Fact]
+		public void IndexerWrapperOfCustomizedKeyCallsPreviousMapping()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			}.WithFrameworkMappingsSealed();
+
+			mapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "append;");
+			var previous = mapper[nameof(IView.Focus)];
+			mapper[nameof(IView.Focus)] = (handler, view, args) =>
+			{
+				previous(handler, view, args);
+				log += "wrapper;";
+			};
+			mapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("controls;core;append;wrapper;", log);
+		}
+
+		[Fact]
+		public void GetCommandWrapperOfFrameworkMappingIncludesLaterFrameworkRemap()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			}.WithFrameworkMappingsSealed();
+
+			var previous = mapper.GetCommand(nameof(IView.Focus));
+			mapper[nameof(IView.Focus)] = (handler, view, args) =>
+			{
+				previous!(handler, view, args);
+				log += "wrapper;";
+			};
+			mapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("controls;core;wrapper;", log);
+		}
+
+		[Fact]
+		public void CustomizationOfOverriddenGetCommandKeepsOverriddenCommand()
+		{
+			var log = string.Empty;
+			var mapper = new OverriddenGetCommandMapper((_, _, _) => log += "A;");
+
+			mapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "C;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("A;C;", log);
+		}
+
+		sealed class OverriddenGetCommandMapper : CommandMapper<IView, IViewHandler>
+		{
+			readonly Action<IElementHandler, IElement, object> _command;
+
+			public OverriddenGetCommandMapper(Action<IElementHandler, IElement, object> command) => _command = command;
+
+			public override Action<IElementHandler, IElement, object> GetCommand(string key) =>
+				base.GetCommand(key) ?? (key == nameof(IView.Focus) ? _command : null);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 #if HANDLER_INSTRUMENTATION
 using Microsoft.Maui.Diagnostics;
 #endif
@@ -20,6 +21,10 @@ namespace Microsoft.Maui
 	public abstract class PropertyMapper : IPropertyMapper
 	{
 		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
+		readonly Dictionary<string, MappingCustomization> _mappingCustomizations = new(StringComparer.Ordinal);
+		Dictionary<string, FrameworkCell>? _frameworkCells;
+		bool _frameworkMappingsSealed;
+		bool _preserveMappingCustomizations;
 		IPropertyMapper[]? _chained;
 
 		// The merged view of this mapper (and its chain) is published as a single reference so that
@@ -30,7 +35,42 @@ namespace Microsoft.Maui
 		// is fully built.
 		volatile MergedMappers? _merged;
 
-		MergedMappers Merged => _merged ?? SnapshotMappers();
+		long _version;
+
+		// A merged view also contains mappings from chained mappers, so it is rebuilt when they change.
+		MergedMappers Merged
+		{
+			get
+			{
+				var merged = _merged;
+				return merged is not null && merged.Version == ChainVersion
+					? merged
+					: SnapshotMappers();
+			}
+		}
+
+		/// <summary>
+		/// Changes whenever this mapper or a chained property mapper changes. Versions only increase, so the
+		/// sum identifies a state of the whole chain.
+		/// </summary>
+		internal long ChainVersion
+		{
+			get
+			{
+				var version = Volatile.Read(ref _version);
+				var chainedPropertyMappers = Chained;
+				if (chainedPropertyMappers is not null)
+				{
+					foreach (var chained in chainedPropertyMappers)
+					{
+						if (chained is PropertyMapper propertyMapper)
+							version += propertyMapper.ChainVersion;
+					}
+				}
+
+				return version;
+			}
+		}
 
 		public PropertyMapper()
 		{
@@ -43,9 +83,130 @@ namespace Microsoft.Maui
 
 		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
+			// Replacing an existing mapping, or assigning any key after the built-in mappings are sealed, is
+			// an app customization. Record it so a later (lazy) framework remap composes underneath it.
+			if (!_preserveMappingCustomizations
+				&& (_mapper.ContainsKey(key) || _frameworkMappingsSealed))
+			{
+				AddMappingCustomization(key, _ => action);
+				return;
+			}
+
 			_mapper[key] = action;
 
 			ClearMergedMappers();
+		}
+
+		void SetCustomizedPropertyCore(string key, Action<IElementHandler, IElement> action)
+		{
+			_preserveMappingCustomizations = true;
+			try
+			{
+				SetPropertyCore(key, action);
+			}
+			finally
+			{
+				_preserveMappingCustomizations = false;
+			}
+		}
+
+		internal void AddMappingCustomization(
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization)
+		{
+			var sequence = MappingCustomizationSequence.Next();
+			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+			{
+				// An app customization of a chained key builds on the chained mappings as they are now,
+				// matching the historical capture of the previous mapping, while framework remaps of
+				// those chained mappings remain visible.
+				mappingCustomization = new MappingCustomization(this, key, sequence);
+				_mappingCustomizations[key] = mappingCustomization;
+			}
+
+			mappingCustomization.AddCustomization(sequence, customization);
+			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+		}
+
+		/// <summary>
+		/// Marks the mappings added so far as the built-in framework mappings. Each one is placed in a cell whose
+		/// delegate stays the same when a framework remap later changes it, so delegates the app obtained earlier,
+		/// for example to wrap them in a replacement, include the remap as if it had run at startup.
+		/// </summary>
+		internal void SealFrameworkMappings()
+		{
+			_frameworkMappingsSealed = true;
+			_frameworkCells ??= new(StringComparer.Ordinal);
+			foreach (var key in _mapper.Keys.ToList())
+			{
+				if (_frameworkCells.ContainsKey(key) || _mappingCustomizations.ContainsKey(key))
+					continue;
+
+				var cell = new FrameworkCell(_mapper[key]);
+				_frameworkCells[key] = cell;
+				_mapper[key] = cell.Mapping;
+			}
+
+			ClearMergedMappers();
+		}
+
+		internal void ModifyFrameworkMapping(
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
+		{
+			if (_frameworkCells is not null && _frameworkCells.TryGetValue(key, out var cell))
+			{
+				// Everything built on the cell, including recorded app customizations, observes the change.
+				cell.Modify(modification);
+				ClearMergedMappers();
+				return;
+			}
+
+			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+			{
+				mappingCustomization = new MappingCustomization(this, key, MappingCustomizationSequence.Framework);
+				_mappingCustomizations[key] = mappingCustomization;
+			}
+
+			mappingCustomization.ModifyFrameworkMapping(modification);
+			SetCustomizedPropertyCore(key, mappingCustomization.Mapping);
+		}
+
+		/// <summary>
+		/// Gets the mapping for <paramref name="key"/> as it was after the app customizations recorded up to
+		/// <paramref name="sequence"/>, including all framework mappings and remaps.
+		/// </summary>
+		internal Action<IElementHandler, IElement>? GetPropertyAsOf(string key, long sequence)
+		{
+			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+				return mappingCustomization.GetMappingAsOf(sequence);
+
+			// Honor GetProperty overrides; only an inherited chained mapping has an earlier state.
+			var mapping = GetProperty(key);
+			if (mapping is not null && !_mapper.ContainsKey(key) && ReferenceEquals(mapping, GetChainedProperty(key)))
+				return GetChainedPropertyAsOf(key, sequence);
+
+			return mapping;
+		}
+
+		Action<IElementHandler, IElement>? GetChainedPropertyAsOf(string key, long sequence)
+		{
+			var chainedPropertyMappers = Chained;
+			if (chainedPropertyMappers is not null)
+			{
+				foreach (var ch in chainedPropertyMappers)
+				{
+					var returnValue = ch is PropertyMapper propertyMapper
+						? propertyMapper.GetPropertyAsOf(key, sequence)
+						: ch.GetProperty(key);
+					if (returnValue != null)
+					{
+						return returnValue;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
@@ -116,11 +277,21 @@ namespace Microsoft.Maui
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
+			if (_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+			{
+				return mappingCustomization.GetCurrentMapping();
+			}
+
 			if (_mapper.TryGetValue(key, out var action))
 			{
 				return action;
 			}
 
+			return GetChainedProperty(key);
+		}
+
+		Action<IElementHandler, IElement>? GetChainedProperty(string key)
+		{
 			var chainedPropertyMappers = Chained;
 			if (chainedPropertyMappers is not null)
 			{
@@ -213,7 +384,11 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void ClearMergedMappers() => _merged = null;
+		void ClearMergedMappers()
+		{
+			_merged = null;
+			Interlocked.Increment(ref _version);
+		}
 
 		public virtual IEnumerable<string> GetKeys()
 		{
@@ -242,6 +417,7 @@ namespace Microsoft.Maui
 
 		MergedMappers SnapshotMappers()
 		{
+			var version = ChainVersion;
 			var keys = GetKeys().Distinct().ToList();
 			var mappers = new List<Action<IElementHandler, IElement>>(keys.Count);
 			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(keys.Count);
@@ -253,10 +429,182 @@ namespace Microsoft.Maui
 				cachedMappers[key] = mapper;
 			}
 
-			var merged = new MergedMappers(keys, mappers, cachedMappers);
+			var merged = new MergedMappers(keys, mappers, cachedMappers, version);
 			_merged = merged;
 
 			return merged;
+		}
+
+		/// <summary>
+		/// A built-in framework mapping of a sealed mapper, changed in place by lazy framework remaps.
+		/// </summary>
+		sealed class FrameworkCell
+		{
+			volatile Action<IElementHandler, IElement> _current;
+
+			public FrameworkCell(Action<IElementHandler, IElement> mapping)
+			{
+				_current = mapping;
+				Mapping = (handler, view) => _current(handler, view);
+			}
+
+			public Action<IElementHandler, IElement> Mapping { get; }
+
+			public void Modify(Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification) =>
+				_current = modification(_current);
+		}
+
+		/// <summary>
+		/// The framework mapping of one key and the app customizations composed on top of it.
+		/// </summary>
+		/// <remarks>
+		/// Framework remaps may run lazily, after app customizations were registered. They therefore modify the
+		/// framework layer underneath the recorded customizations, as if they had run first. When the key is not
+		/// local, the framework layer is the chained mapping. App customizations of the chained mappers are only
+		/// included when they were recorded before the first customization of this key, which preserves the
+		/// previously captured mapping semantics; a framework modification of this key places it before all of
+		/// them. The composition is rebuilt when the chained mappers change, so later framework remaps of them,
+		/// including newly added keys, are observed.
+		/// </remarks>
+		sealed class MappingCustomization
+		{
+			readonly PropertyMapper _owner;
+			readonly string _key;
+			readonly Action<IElementHandler, IElement>? _localMapping;
+			readonly bool _hasLocalMapping;
+			readonly List<Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>>> _frameworkModifications = new();
+			readonly List<long> _sequences = new();
+			readonly List<Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>>> _customizations = new();
+			long _chainedMappingSequence;
+			volatile Compositions? _compositions;
+			volatile Snapshot? _snapshot;
+
+			public MappingCustomization(PropertyMapper owner, string key, long chainedMappingSequence)
+			{
+				_owner = owner;
+				_key = key;
+				// Start from the mapping GetProperty reports, which honors overrides. Only an inherited mapping is
+				// resolved through the chained mappers, at the sequence of the customization.
+				var mapping = owner.GetProperty(key);
+				_hasLocalMapping = owner._mapper.ContainsKey(key)
+					|| (mapping is not null && !ReferenceEquals(mapping, owner.GetChainedProperty(key)));
+				_localMapping = _hasLocalMapping ? mapping : null;
+
+				_chainedMappingSequence = chainedMappingSequence;
+				Mapping = (handler, view) =>
+				{
+					var mappings = GetCompositions().Mappings;
+					mappings[mappings.Length - 1]?.Invoke(handler, view);
+				};
+			}
+
+			/// <summary>
+			/// The complete mapping, stored in the mapper so the key stays registered. It always dispatches to the
+			/// latest composition and is never returned to callers.
+			/// </summary>
+			public Action<IElementHandler, IElement> Mapping { get; }
+
+			/// <summary>
+			/// Gets the mapping including the app customizations recorded so far. Later framework remaps are still
+			/// observed, but later app customizations are not, so a caller can wrap the returned mapping in a
+			/// replacement without invoking its own replacement recursively.
+			/// </summary>
+			public Action<IElementHandler, IElement> GetCurrentMapping()
+			{
+				var sequence = MappingCustomizationSequence.Current;
+				var snapshot = _snapshot;
+				if (snapshot is not null && snapshot.Sequence == sequence)
+					return snapshot.Mapping;
+
+				snapshot = new Snapshot(sequence, (handler, view) => GetMappingAsOf(sequence)?.Invoke(handler, view));
+				_snapshot = snapshot;
+				return snapshot.Mapping;
+			}
+
+			public void AddCustomization(
+				long sequence,
+				Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization)
+			{
+				_sequences.Add(sequence);
+				_customizations.Add(customization);
+				_compositions = null;
+			}
+
+			public void ModifyFrameworkMapping(
+				Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
+			{
+				_chainedMappingSequence = MappingCustomizationSequence.Framework;
+				_frameworkModifications.Add(modification);
+				_compositions = null;
+			}
+
+			public Action<IElementHandler, IElement>? GetMappingAsOf(long sequence)
+			{
+				var count = 0;
+				while (count < _sequences.Count && _sequences[count] <= sequence)
+					count++;
+
+				// Before this key's first customization, an inherited mapping is the chained one at that time.
+				if (count == 0 && _frameworkModifications.Count == 0 && !_hasLocalMapping)
+					return _owner.GetChainedPropertyAsOf(_key, sequence);
+
+				return GetCompositions().Mappings[count];
+			}
+
+			Compositions GetCompositions()
+			{
+				var compositions = _compositions;
+				var version = _owner.ChainVersion;
+				if (compositions is not null && compositions.Version == version)
+					return compositions;
+
+				var mappings = new Action<IElementHandler, IElement>?[_customizations.Count + 1];
+				var mapping = _hasLocalMapping ? _localMapping : _owner.GetChainedPropertyAsOf(_key, _chainedMappingSequence);
+				foreach (var modification in _frameworkModifications)
+				{
+					mapping = modification(mapping);
+				}
+
+				mappings[0] = mapping;
+				for (var i = 0; i < _customizations.Count; i++)
+				{
+					mapping = _customizations[i](mapping);
+					mappings[i + 1] = mapping;
+				}
+
+				compositions = new Compositions(mappings, version);
+				_compositions = compositions;
+				return compositions;
+			}
+
+			sealed class Snapshot
+			{
+				public Snapshot(long sequence, Action<IElementHandler, IElement> mapping)
+				{
+					Sequence = sequence;
+					Mapping = mapping;
+				}
+
+				public long Sequence { get; }
+
+				public Action<IElementHandler, IElement> Mapping { get; }
+			}
+
+			sealed class Compositions
+			{
+				public Compositions(Action<IElementHandler, IElement>?[] mappings, long version)
+				{
+					Mappings = mappings;
+					Version = version;
+				}
+
+				/// <summary>
+				/// The framework mapping followed by the mapping after each recorded customization.
+				/// </summary>
+				public Action<IElementHandler, IElement>?[] Mappings { get; }
+
+				public long Version { get; }
+			}
 		}
 
 		/// <summary>
@@ -275,14 +623,21 @@ namespace Microsoft.Maui
 			/// </summary>
 			public readonly Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers;
 
+			/// <summary>
+			/// The <see cref="ChainVersion"/> this view was merged at.
+			/// </summary>
+			public readonly long Version;
+
 			public MergedMappers(
 				List<string> keys,
 				List<Action<IElementHandler, IElement>> mappers,
-				Dictionary<string, Action<IElementHandler, IElement>?> cachedMappers)
+				Dictionary<string, Action<IElementHandler, IElement>?> cachedMappers,
+				long version)
 			{
 				Keys = keys;
 				Mappers = mappers;
 				CachedMappers = cachedMappers;
+				Version = version;
 			}
 		}
 	}
@@ -485,12 +840,23 @@ namespace Microsoft.Maui
 		{
 		}
 
+		internal PropertyMapper<TVirtualView, TViewHandler> WithFrameworkMappingsSealed()
+		{
+			SealFrameworkMappings();
+			return this;
+		}
+
 		public Action<TViewHandler, TVirtualView> this[string key]
 		{
 			get
 			{
-				var action = GetProperty(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
-				return new Action<TViewHandler, TVirtualView>((h, v) => action.Invoke(h, v));
+				_ = GetProperty(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+
+				// Resolve the mapping on invocation, as it was after the app customizations recorded so far. A
+				// replacement that wraps the returned mapping then still includes framework remaps that run lazily
+				// later, as they would have when the remaps ran at startup.
+				var sequence = MappingCustomizationSequence.Current;
+				return new Action<TViewHandler, TVirtualView>((h, v) => GetPropertyAsOf(key, sequence)?.Invoke(h, v));
 			}
 			set => Add(key, value);
 		}

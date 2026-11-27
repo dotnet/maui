@@ -1229,7 +1229,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			}
 			finally
 			{
+				// Undo the global customization, including its record and every merged view derived from it.
+				var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+				var customizations = (System.Collections.IDictionary)typeof(PropertyMapper).GetField("_mappingCustomizations", flags).GetValue(Microsoft.Maui.Handlers.ViewHandler.ViewMapper);
+				customizations.Remove(nameof(IView.Scale));
 				entries[nameof(IView.Scale)] = original;
+				typeof(PropertyMapper).GetMethod("ClearMergedMappers", flags).Invoke(Microsoft.Maui.Handlers.ViewHandler.ViewMapper, null);
 			}
 		}
 
