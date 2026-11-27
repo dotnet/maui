@@ -105,6 +105,24 @@ public class MtpCompatibilityTests
 		Assert.That((string)first.Trx.Root.Element(Trx + "ResultSummary").Attribute("outcome"), Is.EqualTo("Failed"));
 	}
 
+	[Test]
+	public void FixtureRecoveryReconcilesIgnoredTestsInParameterizedFixtures()
+	{
+		const string where = "cat == 'MtpParameterizedProbe'";
+		var first = RunProbe("setup", null, where);
+		var retry = RunProbe("pass", null, where);
+		Assert.That(first.ExitCode, Is.Not.Zero, first.Output);
+		Assert.That(retry.ExitCode, Is.Zero, retry.Output);
+		UITestRetry.ApplyNUnitFailures(first.Trx, new[] { first.NUnit });
+		UITestRetry.MergeResults(first.Trx, retry.Trx, new[] { first.NUnit }, new[] { retry.NUnit });
+		var outcomes = first.Trx.Descendants(Trx + "UnitTestResult")
+			.ToDictionary(row => (string)row.Attribute("testName"), row => (string)row.Attribute("outcome"));
+		Assert.That(outcomes[nameof(MtpParameterizedProbeFixture.PassingTest)], Is.EqualTo("Passed"), first.Trx.ToString());
+		Assert.That(outcomes[nameof(MtpParameterizedProbeFixture.IgnoredTest)], Is.EqualTo("NotExecuted"), first.Trx.ToString());
+		Assert.That((string)first.Trx.Root.Element(Trx + "ResultSummary").Attribute("outcome"), Is.Not.EqualTo("Failed"),
+			first.Trx.ToString());
+	}
+
 	static ProbeResult RunProbe(string mode, string filter, string where = null)
 	{
 		var directory = Path.Combine(AppContext.BaseDirectory, "validation", Guid.NewGuid().ToString("N"));
@@ -192,4 +210,24 @@ public class MtpProbeFixture
 
 	[Test, Ignore("Existing ignored coverage must stay ignored after fixture recovery.")]
 	public void IgnoredSibling() { }
+}
+
+// UI test fixtures take the device as a fixture argument, which changes how MTP names them in TRX.
+[TestFixture("Windows"), Explicit("Executed in a child MTP host by MtpCompatibilityTests."), Category("MtpParameterizedProbe")]
+public class MtpParameterizedProbeFixture
+{
+	public MtpParameterizedProbeFixture(string device) { }
+
+	[OneTimeSetUp]
+	public void SetUp()
+	{
+		if (Environment.GetEnvironmentVariable("NUNIT_MTP_PROBE") == "setup")
+			throw new InvalidOperationException("Appium fixture setup failed before any test body ran.");
+	}
+
+	[Test]
+	public void PassingTest() { }
+
+	[Test, Ignore("Existing ignored coverage must stay ignored after fixture recovery.")]
+	public void IgnoredTest() { }
 }
