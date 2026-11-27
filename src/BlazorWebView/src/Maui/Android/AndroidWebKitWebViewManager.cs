@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Android WebKit WebView browser control
 	/// to render web content.
 	/// </summary>
+	[SupportedOSPlatform("android23.0")]
 	internal class AndroidWebKitWebViewManager : WebViewManager
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,

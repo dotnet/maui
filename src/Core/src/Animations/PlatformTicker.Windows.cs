@@ -23,11 +23,7 @@ namespace Microsoft.Maui.Animations
 		{
 			_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 			SystemEnabled = _uiSettings.AnimationsEnabled;
-
-			if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
-			{
-				_uiSettings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
-			}
+			_uiSettings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
 		}
 
 		/// <inheritdoc/>
@@ -67,11 +63,7 @@ namespace Microsoft.Maui.Animations
 			if (disposing)
 			{
 				Stop();
-
-				if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
-				{
-					_uiSettings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
-				}
+				_uiSettings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
 			}
 		}
 
