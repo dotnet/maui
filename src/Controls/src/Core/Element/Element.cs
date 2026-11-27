@@ -702,8 +702,14 @@ namespace Microsoft.Maui.Controls
 				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			}
 
-			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
-			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
+			try
+			{
+				base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+			}
+			finally
+			{
+				_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
+			}
 			UpdateHandlerValue(property.PropertyName, changed);
 
 		}

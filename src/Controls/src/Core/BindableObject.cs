@@ -701,22 +701,27 @@ namespace Microsoft.Maui.Controls
 			{
 				var silent = (privateAttributes & SetValuePrivateFlags.Silent) != 0;
 				context.Attributes |= BindableContextAttributes.IsBeingSet;
-				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent);
-
-				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
-				if (delayQueue != null)
+				try
 				{
-					while (delayQueue.Count > 0)
+					SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent);
+
+					Queue<SetValueArgs> delayQueue = context.DelayedSetters;
+					if (delayQueue != null)
 					{
-						SetValueArgs s = delayQueue.Dequeue();
-						if (s != null)
-							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
+						while (delayQueue.Count > 0)
+						{
+							SetValueArgs s = delayQueue.Dequeue();
+							if (s != null)
+								SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
+						}
 					}
-
-					context.DelayedSetters = null;
 				}
-
-				context.Attributes &= ~BindableContextAttributes.IsBeingSet;
+				finally
+				{
+					// Discard queued writes after a failure rather than applying them on a later write.
+					context.DelayedSetters = null;
+					context.Attributes &= ~BindableContextAttributes.IsBeingSet;
+				}
 			}
 		}
 
@@ -780,8 +785,14 @@ namespace Microsoft.Maui.Controls
 				if (binding != null && !currentlyApplying)
 				{
 					_applying = true;
-					binding.Apply(true);
-					_applying = false;
+					try
+					{
+						binding.Apply(true);
+					}
+					finally
+					{
+						_applying = false;
+					}
 				}
 
 				OnBindablePropertySet(property, original, value, !sameValue, true);
