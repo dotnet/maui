@@ -392,6 +392,9 @@
                                       Condition="'$(MauiAndroidSystemBarsUseMauiChrome)' != ''"
                                       Value="$(MauiAndroidSystemBarsUseMauiChrome)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImageDownsamplingEnabled"
+                                      Condition="'$(MauiImageDownsamplingEnabled)' != ''"
+                                      Value="$(MauiImageDownsamplingEnabled)" />
     </ItemGroup>
   </Target>
 
