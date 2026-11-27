@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
@@ -41,6 +42,33 @@ namespace Microsoft.Maui.DeviceTests
 				var nativeView = GetPlatformControl(searchBarHandler);
 				return nativeView.Alpha;
 			});
+		}
+
+		[Theory]
+		[InlineData(false, "AB")]
+		[InlineData(true, "aB")]
+		public async Task PasswordKeyboardPlatformEditRespectsSearchBarHandler(bool material3, string expectedText)
+		{
+			var searchBar = new SearchBar { Keyboard = Keyboard.Password, TextTransform = TextTransform.Uppercase };
+
+			if (material3)
+				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
+			else
+				await AttachAndRun<SearchBarHandler>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
+
+			void AssertPlatformEdit(EditText queryEditor)
+			{
+				Assert.NotNull(queryEditor);
+				var changes = new List<string>();
+				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = queryEditor.EditableText;
+				text.Replace(0, text.Length(), "aB");
+
+				Assert.Equal(expectedText, queryEditor.Text);
+				Assert.Equal(expectedText, searchBar.Text);
+				Assert.Equal(expectedText, Assert.Single(changes));
+			}
 		}
 
 		[Fact]
