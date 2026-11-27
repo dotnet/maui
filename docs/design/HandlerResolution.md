@@ -48,6 +48,12 @@ DI registration should only be used to override an existing `[ElementHandler]` d
 
 `UseMauiApp()` enables this policy before the handler-registration callbacks execute, regardless of where those callbacks were added in the builder chain. `AddMauiControlsHandlers()` is retained as a non-obsolete compatibility no-op: existing calls can remain without warnings. It returns the same collection without changing registrations, enabling the defaults policy, or triggering mapper remapping. Calling it without `UseMauiApp()` does not opt a standalone handler collection into Controls defaults.
 
+Because the Controls defaults are no longer registrations added by a `UseMauiApp()` callback, registration order no longer affects them:
+
+- An `AddHandler` registration for a Controls type wins even when its callback runs before `UseMauiApp()`. Previously, the defaults registered later replaced it.
+- `AddMauiControlsHandlers()` no longer restores a built-in handler that an earlier `AddHandler` replaced. Remove the custom registration instead.
+- `RemoveAll(typeof(Button))` followed by `TryAddHandler<Button, ...>()` no longer installs the custom handler, because there is no default registration to remove and `TryAddHandler` does not replace a handler declared directly on the type. Use `AddHandler` to replace a built-in handler.
+
 ## Resolution Order
 
 Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerType(Type)` follow the same resolution order:

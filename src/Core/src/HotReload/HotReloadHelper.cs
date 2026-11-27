@@ -22,7 +22,14 @@ namespace Microsoft.Maui.HotReload
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
 		{
-			HandlerService = handlerService;
+			lock (handlerReplacementLock)
+			{
+				// Replacements already applied to a previous collection still need to be applied to this one.
+				if (!ReferenceEquals(HandlerService, handlerService))
+					replacedHandlers.Clear();
+
+				HandlerService = handlerService;
+			}
 		}
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
 		public static void Reset()
@@ -146,14 +153,18 @@ namespace Microsoft.Maui.HotReload
 		/// Applies a pending Hot Reload replacement of <paramref name="handlerType"/> to <paramref name="viewType"/> for a
 		/// handler that the factory resolved without a collection descriptor, such as an <see cref="Handlers.ElementHandlerAttribute"/>
 		/// or content interface default, which <see cref="RegisterHandlerReplacement"/> cannot find in the collection.
+		/// Only the collection registered through <see cref="RegisterHandlers"/> receives replacements, so resolving
+		/// through another app's factory leaves both apps' registrations unchanged.
 		/// </summary>
-		/// <returns><see langword="true"/> if a replacement was registered, so resolving the view again uses it.</returns>
+		/// <returns><see langword="true"/> if a replacement was registered in <paramref name="collection"/>, so resolving the view again uses it.</returns>
 		[UnconditionalSuppressMessage("Trimming", "IL2026",
 			Justification = "Pending replacements are only populated by the trim-incompatible Hot Reload path.")]
 		[UnconditionalSuppressMessage("AOT", "IL3050",
 			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
-		internal static bool TryApplyPendingHandlerReplacement(Type viewType, Type handlerType) =>
-			ApplyPendingHandlerReplacement(viewType, handlerType);
+		internal static bool TryApplyPendingHandlerReplacement(object collection, Type viewType, Type handlerType) =>
+			!pendingHandlerReplacements.IsEmpty
+				&& ReferenceEquals(collection, HandlerService)
+				&& ApplyPendingHandlerReplacement(viewType, handlerType);
 
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 #if !NETSTANDARD

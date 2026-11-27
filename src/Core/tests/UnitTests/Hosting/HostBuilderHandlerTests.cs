@@ -879,6 +879,36 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void HotReloadReplacesAttributeHandlerOnlyInRegisteredApp()
+		{
+			using var registeredApp = MauiApp.CreateBuilder().Build();
+			using var otherApp = MauiApp.CreateBuilder().Build();
+			var registeredFactory = registeredApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var otherFactory = otherApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			MauiHotReloadHelper.RegisterHandlers(registeredFactory.GetCollection());
+			try
+			{
+				MauiHotReloadHelper.RegisterHandlerReplacement(
+					typeof(AttributedViewHandlerStub).FullName!,
+					typeof(AlternateAttributedViewHandlerStub));
+
+				Assert.IsType<AttributedViewHandlerStub>(otherFactory.GetHandler(typeof(AttributedViewStub)));
+				Assert.False(registeredFactory.GetCollection().TryGetService(typeof(AttributedViewStub), out _));
+
+				Assert.IsType<AlternateAttributedViewHandlerStub>(registeredFactory.GetHandler(typeof(AttributedViewStub)));
+				Assert.IsType<AttributedViewHandlerStub>(otherFactory.GetHandler(typeof(AttributedViewStub)));
+
+				// A newly registered collection receives replacements already applied to the previous one.
+				MauiHotReloadHelper.RegisterHandlers(otherFactory.GetCollection());
+				Assert.IsType<AlternateAttributedViewHandlerStub>(otherFactory.GetHandler(typeof(AttributedViewStub)));
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
 		public void HotReloadReplacesContentViewDefaultHandler()
 		{
 			var contentViewType = Substitute.For<IContentView>().GetType();

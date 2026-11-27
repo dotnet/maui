@@ -177,14 +177,14 @@ namespace Microsoft.Maui.Hosting.Internal
 			// 4. Content interface defaults
 			if (resolution.ContentInterface == typeof(IContentButton))
 			{
-				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(type, typeof(ContentButtonHandler))
+				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, type, typeof(ContentButtonHandler))
 					? GetHandler(type, implementationFactoryServiceProvider)
 					: new ContentButtonHandler();
 			}
 
 			if (resolution.ContentInterface == typeof(IContentView))
 			{
-				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(type, typeof(ContentViewHandler))
+				return HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, type, typeof(ContentViewHandler))
 					? GetHandler(type, implementationFactoryServiceProvider)
 					: new ContentViewHandler();
 			}
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		Type? GetDefaultHandlerType(
 			Type viewType,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType) =>
-			HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(viewType, handlerType)
+			HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, viewType, handlerType)
 				? GetHandlerType(viewType)
 				: handlerType;
 
@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
 			IServiceProvider implementationFactoryServiceProvider)
 		{
-			if (HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(viewType, handlerType))
+			if (HotReload.MauiHotReloadHelper.TryApplyPendingHandlerReplacement(InternalCollection, viewType, handlerType))
 			{
 				return GetHandler(viewType, implementationFactoryServiceProvider);
 			}
