@@ -125,11 +125,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static PopupMenu GetProgrammaticPopup(AView target)
+		[Fact]
+		public async Task ProgrammaticPopupReopensAfterNativeDismissal()
+		{
+			SetupBuilder();
+			var label = CreateContextFlyoutTarget();
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				try
+				{
+					FlyoutBase.ShowContextFlyout(label);
+					var popup = GetProgrammaticPopup(handler.PlatformView);
+					await AssertEventually(() => IsPopupShowing(popup));
+
+					popup.Dismiss();
+					var registry = GetProgrammaticPopupRegistry();
+					await AssertEventually(() => !registry.TryGetValue(handler.PlatformView, out _),
+						message: "Native dismissal must remove the presenter without calling Remove.");
+
+					FlyoutBase.ShowContextFlyout(label);
+					var reopenedPopup = GetProgrammaticPopup(handler.PlatformView);
+					Assert.NotSame(popup, reopenedPopup);
+					await AssertEventually(() => IsPopupShowing(reopenedPopup),
+						message: "The native Android popup must be visible after reopening.");
+				}
+				finally
+				{
+					MauiContextMenu.Remove(handler.PlatformView);
+				}
+			});
+		}
+
+		static ConditionalWeakTable<AView, MauiContextMenu> GetProgrammaticPopupRegistry()
 		{
 			var registryField = typeof(MauiContextMenu).GetField("s_menus", BindingFlags.Static | BindingFlags.NonPublic);
 			Assert.NotNull(registryField);
-			var registry = Assert.IsType<ConditionalWeakTable<AView, MauiContextMenu>>(registryField.GetValue(null));
+			return Assert.IsType<ConditionalWeakTable<AView, MauiContextMenu>>(registryField.GetValue(null));
+		}
+
+		static PopupMenu GetProgrammaticPopup(AView target)
+		{
+			var registry = GetProgrammaticPopupRegistry();
 			Assert.True(registry.TryGetValue(target, out var presenter));
 			var popupField = typeof(MauiContextMenu).GetField("_popup", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(popupField);

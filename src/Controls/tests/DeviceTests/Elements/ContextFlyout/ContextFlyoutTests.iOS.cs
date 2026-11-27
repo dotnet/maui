@@ -70,8 +70,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task ProgrammaticNativeMenuHonorsItemMapperCustomizations()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ProgrammaticNativeMenuHonorsItemMapperCustomizations(bool initializationKey)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(17, 4) && !OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
 				return;
@@ -80,13 +82,14 @@ namespace Microsoft.Maui.DeviceTests
 			var clicks = 0;
 			var mappings = 0;
 			var mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(originalMapper);
-			mapper.AppendToMapping(nameof(IMenuElement.Text), (handler, _) =>
+			mapper.AppendToMapping(initializationKey ? "CustomTitle" : nameof(IMenuElement.Text), (handler, _) =>
 			{
 				var action = Assert.IsType<UIAction>(handler.PlatformView);
 				action.Title = "Customized action";
-				action.Attributes |= UIMenuElementAttributes.Disabled;
 				mappings++;
 			});
+			mapper.AppendToMapping(nameof(IMenuElement.IsEnabled), (handler, _) =>
+				Assert.IsType<UIAction>(handler.PlatformView).Attributes |= UIMenuElementAttributes.Disabled);
 			MenuFlyoutItemHandler.Mapper = mapper;
 			try
 			{
@@ -112,7 +115,8 @@ namespace Microsoft.Maui.DeviceTests
 						ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
 						await AssertEventually(() => !handler.PlatformView.Subviews.OfType<UIButton>().Any());
 						var originalHandler = item.Handler;
-						item.Text = "Changed action";
+						if (!initializationKey)
+							item.Text = "Changed action";
 						item.IconImageSource = "blue.png";
 						FlyoutBase.ShowContextFlyout(label);
 						button = Assert.Single(handler.PlatformView.Subviews.OfType<UIButton>());
@@ -402,8 +406,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				["FallbackCustomization"] = (handler, view) =>
 				{
+					var action = Assert.IsType<UIAction>(handler.PlatformView);
 					if (view.Text == "Mapper disabled")
-						Assert.IsType<UIAction>(handler.PlatformView).Attributes |= UIMenuElementAttributes.Disabled;
+						action.Attributes |= UIMenuElementAttributes.Disabled;
+					else if (view.Text == "Mapper hidden")
+						action.Attributes |= UIMenuElementAttributes.Hidden;
+					else
+						action.Title = "Custom enabled title";
 				}
 			};
 			try
@@ -413,19 +422,39 @@ namespace Microsoft.Maui.DeviceTests
 				var commands = 0;
 				var enabled = new MenuFlyoutItem { Text = "Enabled", Command = new Command(() => commands++) };
 				var disabled = new MenuFlyoutItem { Text = "Mapper disabled" };
+				var hidden = new MenuFlyoutItem { Text = "Mapper hidden" };
 				enabled.Clicked += (_, _) => clicks++;
 				disabled.Clicked += (_, _) => clicks++;
+				hidden.Clicked += (_, _) => clicks++;
 				var label = CreateContextFlyoutTarget();
-				FlyoutBase.SetContextFlyout(label, new MenuFlyout { enabled, disabled });
+				FlyoutBase.SetContextFlyout(label, new MenuFlyout
+				{
+					hidden, new MenuFlyoutSeparator(), enabled, disabled
+				});
 				await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
 				{
 					var controller = GetContextFlyoutPresentingController(handler.PlatformView);
 					try
 					{
-						FlyoutBase.ShowContextFlyout(label);
-						await AssertEventually(() => controller.PresentedViewController is UINavigationController);
-						var navigation = Assert.IsType<UINavigationController>(controller.PresentedViewController);
-						var page = Assert.IsAssignableFrom<UITableViewController>(navigation.TopViewController);
+						UITableViewController page = null;
+						for (int opening = 0; opening < 2; opening++)
+						{
+							FlyoutBase.ShowContextFlyout(label);
+							await AssertEventually(() => controller.PresentedViewController is UINavigationController);
+							var navigation = Assert.IsType<UINavigationController>(controller.PresentedViewController);
+							page = Assert.IsAssignableFrom<UITableViewController>(navigation.TopViewController);
+							Assert.Equal((nint)1, page.NumberOfSections(page.TableView));
+							Assert.Equal((nint)2, page.RowsInSection(page.TableView, 0));
+							using var titlePath = NSIndexPath.FromRowSection(0, 0);
+							using var cell = page.GetCell(page.TableView, titlePath);
+							Assert.Equal("Custom enabled title", cell.AccessibilityLabel);
+							if (opening == 0)
+							{
+								ProgrammaticContextFlyoutPresenter.Remove(handler.PlatformView);
+								await AssertEventually(() => controller.PresentedViewController is null);
+							}
+						}
+						Assert.NotNull(page);
 						using var disabledPath = NSIndexPath.FromRowSection(1, 0);
 						using var disabledCell = page.GetCell(page.TableView, disabledPath);
 						Assert.False(disabledCell.UserInteractionEnabled);

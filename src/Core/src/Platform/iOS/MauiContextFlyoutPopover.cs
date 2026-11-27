@@ -311,24 +311,23 @@ namespace Microsoft.Maui.Platform
 					continue;
 				}
 
+				var itemHandler = element.ToHandler(context);
+				if (itemHandler is MenuFlyoutSubItemHandler subItem)
+					subItem.RefreshContextMetadata();
+				else
+					itemHandler.UpdateValue(nameof(IMenuElement.Source));
+
+				var mappedElement = itemHandler.PlatformView;
+				if (mappedElement is UIAction { Attributes: var attributes } &&
+					(attributes & UIMenuElementAttributes.Hidden) != 0)
+					continue;
+
 				if (section is null)
 				{
 					section = new List<MenuEntry>();
 					sections.Add(section);
 				}
 
-				var itemHandler = element.ToHandler(context);
-				if (itemHandler is MenuFlyoutItemHandler item)
-					item.RefreshContextMetadata();
-				else if (itemHandler is MenuFlyoutSubItemHandler subItem)
-					subItem.RefreshContextMetadata();
-				else
-				{
-					itemHandler.UpdateValue(nameof(IMenuElement.Text));
-					itemHandler.UpdateValue(nameof(IMenuElement.Source));
-				}
-
-				var mappedElement = itemHandler.PlatformView;
 				if (element is IMenuFlyoutSubItem submenu)
 				{
 					if (mappedElement is not UIMenu mappedMenu)
