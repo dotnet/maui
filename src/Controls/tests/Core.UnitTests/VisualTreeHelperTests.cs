@@ -8,18 +8,26 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class VisualTreeHelperTests : BaseTestFixture, IDisposable
+	public class VisualTreeHelperTests : BaseTestFixture
 	{
 		readonly List<(Element? Parent, VisualTreeChangeEventArgs Args)> _treeEvents = new();
+		readonly bool _enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
 
 		public VisualTreeHelperTests()
 		{
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 			VisualDiagnostics.VisualTreeChanged += OnVisualTreeChanged;
 		}
 
-		public void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			VisualDiagnostics.VisualTreeChanged -= OnVisualTreeChanged;
+			if (disposing)
+			{
+				VisualDiagnostics.VisualTreeChanged -= OnVisualTreeChanged;
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", _enableMauiDiagnosticsInitialState);
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public Action<Element?, VisualTreeChangeEventArgs>? VisualTreeChanged { get; set; }
@@ -29,6 +37,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(e.ChildIndex >= 0, $"Visual Tree inaccurate when OnVisualTreeChanged called. ChildIndex: {e.ChildIndex}");
 			_treeEvents.Add((sender as Element, e));
 			VisualTreeChanged?.Invoke(sender as Element, e);
+		}
+
+		[Fact]
+		public void SourceInfoEnvironmentVariableDoesNotEnableDisabledDiagnostics()
+		{
+			const string environmentVariable = "ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO";
+			var initialValue = Environment.GetEnvironmentVariable(environmentVariable);
+			try
+			{
+				Environment.SetEnvironmentVariable(environmentVariable, "1");
+
+				var layout = new StackLayout();
+				var child = new Label();
+				layout.Children.Add(child);
+				layout.Children.Remove(child);
+				Assert.Collection(_treeEvents,
+					added => Assert.Equal(VisualTreeChangeType.Add, added.Args.ChangeType),
+					removed => Assert.Equal(VisualTreeChangeType.Remove, removed.Args.ChangeType));
+				_treeEvents.Clear();
+
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", false);
+
+				var target = new object();
+				VisualDiagnostics.RegisterSourceInfo(target, new Uri("file:///test.xaml"), 1, 1);
+				Assert.Null(VisualDiagnostics.GetSourceInfo(target));
+
+				layout.Children.Add(child);
+				layout.Children.Remove(child);
+
+				Assert.Empty(_treeEvents);
+			}
+			finally
+			{
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
+				Environment.SetEnvironmentVariable(environmentVariable, initialValue);
+			}
 		}
 
 		[Theory]

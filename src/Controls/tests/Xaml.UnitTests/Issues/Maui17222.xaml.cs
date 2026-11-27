@@ -27,8 +27,8 @@ public partial class Maui17222 : ContentPage
 		internal void GetsourceInfo(XamlInflator inflator)
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
-			bool enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableMauiDiagnostics = true;
+			bool enableMauiDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", true);
 
 			try
 			{
@@ -72,7 +72,7 @@ public partial class Maui17222 : ContentPage
 			}
 			finally
 			{
-				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics", enableMauiDiagnosticsInitialState);
 				AppInfo.SetCurrent(null);
 			}
 		}

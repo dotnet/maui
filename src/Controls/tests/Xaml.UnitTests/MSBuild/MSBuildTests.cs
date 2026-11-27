@@ -347,6 +347,17 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
 		}
 
+		void AddCoreAfterTargetsImport(XElement project)
+		{
+			var source = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Core", "src", "nuget", "buildTransitive", "Microsoft.Maui.Core.After.targets"));
+			var targetsDirectory = IOPath.Combine(tempDirectory, "core-targets");
+			Directory.CreateDirectory(targetsDirectory);
+			var targetsPath = IOPath.Combine(targetsDirectory, "Microsoft.Maui.Core.After.targets");
+			File.Copy(source, targetsPath);
+			File.WriteAllText(IOPath.Combine(targetsDirectory, "Microsoft.Maui.Core.BundledVersions.targets"), "<Project />");
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+		}
+
 		void AddMauiReferences(XElement project)
 		{
 			var itemGroup = NewElement("ItemGroup");
@@ -463,6 +474,60 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			Assert.Contains($"MauiAspireFeatureSwitch={expected};", log, StringComparison.Ordinal);
 			Assert.Contains($"Microsoft.Maui.RuntimeFeature.EnableMauiAspire={expected},Trim=true", log, StringComparison.Ordinal);
+		}
+
+		[Theory]
+		[InlineData(false, false, false, null, null, null, "true", null)]
+		[InlineData(false, true, false, null, null, null, "false", null)]
+		[InlineData(false, true, false, "true", null, null, "true", null)]
+		[InlineData(false, false, false, "false", null, null, "false", null)]
+		[InlineData(false, true, false, null, "true", null, "true", null)]
+		[InlineData(false, false, false, null, "false", null, "false", null)]
+		[InlineData(false, true, true, null, "true", null, "true", null)]
+		[InlineData(true, false, false, null, null, null, "true", "true")]
+		[InlineData(true, true, false, null, null, null, "false", "false")]
+		[InlineData(true, true, false, "true", "false", null, "true", "true")]
+		[InlineData(true, false, false, "false", "true", "true", "false", "true")]
+		[InlineData(true, true, true, "true", null, null, "true", "true")]
+		public void MauiDiagnosticsFeatureSwitch(bool controls, bool optimize, bool lateProperties, string explicitValue, string generalValue, string xamlValue, string expected, string expectedXaml)
+		{
+			SetUp();
+			var project = NewElement("Project");
+			var properties = NewElement("PropertyGroup");
+			properties.Add(NewElement("Optimize").WithValue(optimize.ToString().ToLowerInvariant()));
+			project.Add(properties);
+
+			AddCoreBeforeTargetsImport(project);
+			if (lateProperties)
+			{
+				properties = NewElement("PropertyGroup");
+				project.Add(properties);
+			}
+			if (explicitValue is not null)
+				properties.Add(NewElement("EnableMauiDiagnostics").WithValue(explicitValue));
+			if (generalValue is not null)
+				properties.Add(NewElement("EnableDiagnostics").WithValue(generalValue));
+			if (xamlValue is not null)
+				properties.Add(NewElement("EnableMauiXamlDiagnostics").WithValue(xamlValue));
+			AddCoreAfterTargetsImport(project);
+			if (controls)
+				AddControlsTargetsImport(project);
+
+			var target = NewElement("Target").WithAttribute("Name", "ReportMauiDiagnostics");
+			target.WithAttribute("DependsOnTargets", controls ? "_MauiConfigureDiagnostics;_MauiPrepareForILLink" : "_MauiConfigureDiagnostics");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "MauiDiagnostics=$(EnableMauiDiagnostics);XamlDiagnostics=$(EnableMauiXamlDiagnostics);@(RuntimeHostConfigurationOption->'%(Identity)=%(Value),Trim=%(Trim)')")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.proj");
+			project.Save(projectFile);
+			var log = Build(projectFile, target: "ReportMauiDiagnostics", verbosity: "minimal", command: "msbuild");
+
+			Assert.Contains($"MauiDiagnostics={expected};XamlDiagnostics={expectedXaml};", log, StringComparison.Ordinal);
+			const string switchName = "Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics=";
+			Assert.Equal(1, log.Split(switchName, StringSplitOptions.None).Length - 1);
+			Assert.Contains($"{switchName}{expected},Trim=true", log, StringComparison.Ordinal);
 		}
 
 		[Theory]

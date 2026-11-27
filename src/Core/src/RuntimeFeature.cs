@@ -109,21 +109,10 @@ namespace Microsoft.Maui
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}")]
 #endif
-		public static bool EnableMauiDiagnostics
-		{
-			get
-			{
-				return AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", out bool isEnabled)
+		public static bool EnableMauiDiagnostics =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", out bool isEnabled)
 				? isEnabled
 				: EnableDiagnostics;
-			}
-			internal set
-			{
-				// This property is internal settable to allow tests to enable diagnostics.
-				// It should not be set in production code.
-				AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", value);
-			}
-		}
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableMauiAspire)}")]
