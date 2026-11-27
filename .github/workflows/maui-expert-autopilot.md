@@ -370,7 +370,7 @@ jobs:
     # After a fix is published, continue the loop with an expert review of the new head. Runs even
     # when a reply or resolution failed: whether the head moved decides if the loop continues.
     needs: [pre_activation, activation, agent, safe_outputs]
-    if: always() && !cancelled() && needs.safe_outputs.result != 'skipped'
+    if: always() && !cancelled() && needs.agent.result != 'skipped'
     runs-on: ubuntu-slim
     permissions:
       actions: write
@@ -416,6 +416,7 @@ jobs:
           IS_FORK: ${{ needs.pre_activation.outputs.autopilot_is_fork }}
           RUN_ID: ${{ github.run_id }}
           AGENT_RESULT: ${{ needs.agent.result }}
+          SAFE_OUTPUTS_RESULT: ${{ needs.safe_outputs.result }}
           OPUS_RUN: ${{ needs.pre_activation.outputs.autopilot_opus_run }}
         with:
           script: |
@@ -445,7 +446,8 @@ jobs:
             };
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
             const retrying = labels.some(l => l.name === 's/autopilot-retrying');
-            const failed = process.env.AGENT_RESULT === 'failure';
+            // A failed threat detection skips publishing; count that like a failed agent.
+            const failed = process.env.AGENT_RESULT === 'failure' || ['failure', 'skipped'].includes(process.env.SAFE_OUTPUTS_RESULT);
             // One automatic retry: a single flaky fix run should not end an autonomous loop.
             if (failed && !retrying && labels.some(l => l.name === LABEL)) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
