@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// Holds its owner and source event subscriptions weakly so a long-lived group
 /// or WinUI projection cannot retain a removed CollectionView.
 /// </summary>
-internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
+/// <remarks>Declared partial for C#/WinRT NativeAOT projection.</remarks>
+internal partial class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 {
 	readonly IEnumerable _itemsSource;
 	readonly DataTemplate _itemTemplate;

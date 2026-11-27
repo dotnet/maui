@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// synchronized with the underlying data and supporting drag/drop reordering.
 /// The owner is weakly referenced because WinUI may retain this source after removal.
 /// </summary>
-internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
+/// <remarks>Declared partial for C#/WinRT NativeAOT projection.</remarks>
+internal partial class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 {
 	readonly IList _itemsSource;
 	readonly DataTemplate _itemTemplate;
