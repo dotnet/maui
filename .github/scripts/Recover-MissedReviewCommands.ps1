@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Recovers authorized /review comments missed by GitHub Actions webhooks.
+    Recovers authorized /review and /review gate comments missed by GitHub Actions webhooks.
 
 .DESCRIPTION
     Polls recent repository issue comments, finds unprocessed review commands,
@@ -211,6 +211,7 @@ function Select-ReviewCommandCandidates {
             CreatedAt     = $createdAt
             Platform      = [string]$parsed.Platform
             PipelineRef   = [string]$parsed.PipelineRef
+            GateOnly      = [bool]$parsed.GateOnly
         })
     }
 
@@ -285,6 +286,7 @@ function Invoke-ReviewWorkflowDispatch {
         [Parameter(Mandatory = $true)][int]$PRNumber,
         [string]$Platform,
         [string]$PipelineRef,
+        [switch]$GateOnly,
         [Parameter(Mandatory = $true)][Int64]$CommentId,
         [Parameter(Mandatory = $true)][string]$CommentNodeId
     )
@@ -300,6 +302,9 @@ function Invoke-ReviewWorkflowDispatch {
                 source_comment_id = [string]$CommentId
                 source_comment_node_id = $CommentNodeId
             }
+        }
+        if ($GateOnly) {
+            $payload.inputs.gate_only = 'true'
         }
         $payload |
             ConvertTo-Json -Depth 5 |
@@ -386,6 +391,7 @@ function Invoke-MissedReviewCommandRecovery {
                     -PRNumber $candidate.PRNumber `
                     -Platform $candidate.Platform `
                     -PipelineRef $candidate.PipelineRef `
+                    -GateOnly:$candidate.GateOnly `
                     -CommentId $candidate.CommentId `
                     -CommentNodeId $candidate.CommentNodeId
 
@@ -397,6 +403,7 @@ function Invoke-MissedReviewCommandRecovery {
                 PRNumber = $candidate.PRNumber
                 Platform = $candidate.Platform
                 PipelineRef = $candidate.PipelineRef
+                GateOnly = $candidate.GateOnly
                 AcknowledgementPending = $acknowledgementPending
                 DryRun = [bool]$DryRun
             })
