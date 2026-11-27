@@ -324,6 +324,96 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Transparent title bar restores the Shell flyout clip")]
+		public async Task TransparentTitleBarRestoresShellFlyoutClip()
+		{
+			SetupBuilder(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<IContentView, ContentViewHandler>()));
+
+			var transparentColor = Color.FromArgb("#00FFFFFF");
+			var translucentColor = Color.FromArgb("#85FFFFFF");
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+				shell.FlyoutBackgroundColor = translucentColor;
+				shell.Items.Add(new ContentPage());
+			});
+			var titleBar = new Microsoft.Maui.Controls.TitleBar { BackgroundColor = transparentColor };
+			var window = new Microsoft.Maui.Controls.Window(shell);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootView = GetWindowRootView(handler);
+				var navigationView = Assert.IsAssignableFrom<RootNavigationView>(rootView.NavigationViewControl);
+				shell.FlyoutIsPresented = true;
+				await AssertEventually(() => navigationView.IsPaneOpen &&
+					navigationView.RootSplitView is { ActualHeight: > 0 });
+
+				var splitView = Assert.IsAssignableFrom<SplitView>(navigationView.RootSplitView);
+				var originalClip = splitView.Clip;
+				window.TitleBar = titleBar;
+				await AssertEventually(() => ReferenceEquals(rootView.TitleBar, titleBar) &&
+					rootView.AppTitleBarActualHeight > 0);
+				Assert.Same(originalClip, splitView.Clip);
+
+				titleBar.BackgroundColor = translucentColor;
+				await AssertEventually(() => splitView.Clip is WRectangleGeometry clip &&
+					!ReferenceEquals(clip, originalClip) &&
+					Math.Abs(clip.Rect.Y - rootView.AppTitleBarActualHeight) < 1);
+				var titleBarClip = splitView.Clip;
+
+				titleBar.BackgroundColor = transparentColor;
+				await AssertEventually(() => ReferenceEquals(originalClip, splitView.Clip));
+				titleBar.BackgroundColor = translucentColor;
+				await AssertEventually(() => ReferenceEquals(titleBarClip, splitView.Clip));
+
+				var brush = new SolidColorBrush(transparentColor);
+				titleBar.Background = brush;
+				await AssertEventually(() => ReferenceEquals(originalClip, splitView.Clip));
+				Assert.Equal(transparentColor.ToWindowsColor(),
+					Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.ButtonHolderGrid!.Background).Color);
+				brush.Color = translucentColor;
+				await AssertEventually(() => ReferenceEquals(titleBarClip, splitView.Clip));
+				Assert.Equal(translucentColor.ToWindowsColor(),
+					Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.ButtonHolderGrid!.Background).Color);
+				brush.Color = transparentColor;
+				await AssertEventually(() => ReferenceEquals(originalClip, splitView.Clip));
+				titleBar.Background = null;
+				await AssertEventually(() => ReferenceEquals(titleBarClip, splitView.Clip));
+			});
+		}
+
+		[Fact(DisplayName = "Custom title bar clip updates after replacing the page while hidden")]
+		public async Task CustomTitleBarClipUpdatesAfterPageReplacement()
+		{
+			SetupBuilder(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<IContentView, ContentViewHandler>()));
+
+			var shell = await CreateShellAsync(shell => shell.Items.Add(new ContentPage()));
+			var replacementShell = await CreateShellAsync(shell => shell.Items.Add(new ContentPage()));
+			var titleBar = new Microsoft.Maui.Controls.TitleBar { BackgroundColor = Color.FromArgb("#85FFFFFF") };
+			var window = new Microsoft.Maui.Controls.Window(shell) { TitleBar = titleBar };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootView = GetWindowRootView(handler);
+				var originalNavigationView = Assert.IsAssignableFrom<RootNavigationView>(rootView.NavigationViewControl);
+				await AssertEventually(() => originalNavigationView.RootSplitView?.Clip is WRectangleGeometry);
+
+				titleBar.IsVisible = false;
+				await AssertEventually(() => rootView.AppTitleBarContentControl?.Visibility == Microsoft.UI.Xaml.Visibility.Collapsed);
+				window.Page = replacementShell;
+				await AssertEventually(() => rootView.NavigationViewControl is not null &&
+					!ReferenceEquals(rootView.NavigationViewControl, originalNavigationView));
+
+				var replacementNavigationView = Assert.IsAssignableFrom<RootNavigationView>(rootView.NavigationViewControl);
+				titleBar.IsVisible = true;
+				await AssertEventually(() => rootView.AppTitleBarActualHeight > 0 &&
+					replacementNavigationView.RootSplitView?.Clip is WRectangleGeometry clip &&
+					Math.Abs(clip.Rect.Y - rootView.AppTitleBarActualHeight) < 1);
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]

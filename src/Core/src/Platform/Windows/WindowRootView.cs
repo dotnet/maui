@@ -271,11 +271,12 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateRootNavigationViewMargins(double margin)
 		{
-			if (_appTitleBarHeight == margin)
-				return;
-
+			bool heightChanged = _appTitleBarHeight != margin;
 			_appTitleBarHeight = margin;
-			NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
+			NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight, _useCustomAppTitleBar);
+
+			if (!heightChanged)
+				return;
 
 			var contentMargin = new WThickness(0, _appTitleBarHeight, 0, 0);
 			this.SetApplicationResource("NavigationViewContentMargin", contentMargin);
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.Platform
 			if (newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
-				NavigationViewControl.HasCustomTitleBar = _titleBar is not null;
+				UpdateNavigationViewTitleBarClip();
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
 				NavigationViewControl.Toolbar = Toolbar;
@@ -363,17 +364,14 @@ namespace Microsoft.Maui.Platform
 					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
 					mnv.BackRequested -= OnNavigationViewBackRequested;
 					mnv.Toolbar = null;
-					mnv.HasCustomTitleBar = false;
+					mnv.ClipSplitViewForTitleBar = false;
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
 					NavigationViewControl = null;
 				});
 
-				if (_appTitleBarHeight > 0)
-				{
-					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight, _useCustomAppTitleBar);
-				}
+				NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight, _useCustomAppTitleBar);
 			}
 
 			ContentChanged?.Invoke(this, EventArgs.Empty);
@@ -458,8 +456,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_titleBar = titlebar;
-			if (NavigationViewControl is not null)
-				NavigationViewControl.HasCustomTitleBar = _titleBar is not null;
+			UpdateNavigationViewTitleBarClip();
 
 			if (_titleBar is null || mauiContext is null)
 			{
@@ -528,14 +525,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		void UpdateNavigationViewTitleBarClip()
+		{
+			if (NavigationViewControl is not null)
+			{
+				// A fully transparent solid background can show the flyout underneath.
+				NavigationViewControl.ClipSplitViewForTitleBar = _titleBar is not null &&
+					_titleBar.Background is not SolidPaint { Color: { Alpha: 0 } };
+			}
+		}
+
 		private void TitlebarPropChanged_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_titleBar is not null && _titleBar.Handler?.MauiContext is not null)
 			{
 				SetTitleBarInputElements();
 
-				if (e.PropertyName == "BackgroundColor")
+				if (string.IsNullOrEmpty(e.PropertyName) ||
+					e.PropertyName == "BackgroundColor" ||
+					e.PropertyName == nameof(IView.Background))
 				{
+					UpdateNavigationViewTitleBarClip();
 					UpdateBackgroundColorForButtons();
 				}
 			}

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
-		bool _hasCustomTitleBar;
+		bool _clipSplitViewForTitleBar;
 		SplitView? _titleBarSplitView;
 		RectangleGeometry? _originalSplitViewClip;
 		RectangleGeometry? _titleBarClip;
@@ -71,15 +71,15 @@ namespace Microsoft.Maui.Platform
 			private set;
 		}
 
-		internal bool HasCustomTitleBar
+		internal bool ClipSplitViewForTitleBar
 		{
-			get => _hasCustomTitleBar;
+			get => _clipSplitViewForTitleBar;
 			set
 			{
-				if (_hasCustomTitleBar == value)
+				if (_clipSplitViewForTitleBar == value)
 					return;
 
-				_hasCustomTitleBar = value;
+				_clipSplitViewForTitleBar = value;
 				UpdateSplitViewClip();
 			}
 		}
@@ -284,11 +284,6 @@ namespace Microsoft.Maui.Platform
 			UpdatePaneContentGridMargin();
 		}
 
-		internal void UpdateAppTitleBar(double appTitleBarHeight)
-		{
-			UpdateAppTitleBar(appTitleBarHeight, _useCustomAppTitleBar);
-		}
-
 		internal void UpdateAppTitleBar(double appTitleBarHeight, bool useCustomAppTitleBar)
 		{
 			if (_useCustomAppTitleBar == useCustomAppTitleBar && appTitleBarHeight == _appBarTitleHeight)
@@ -425,7 +420,7 @@ namespace Microsoft.Maui.Platform
 			if (_titleBarSplitView is null)
 				return;
 
-			if (!_hasCustomTitleBar || AppBarTitleHeight == 0 ||
+			if (!_clipSplitViewForTitleBar || AppBarTitleHeight == 0 ||
 				PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
 			{
 				if (_titleBarSplitView.Clip == _titleBarClip)
