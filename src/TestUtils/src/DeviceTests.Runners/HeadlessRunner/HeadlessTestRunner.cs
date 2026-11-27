@@ -116,6 +116,7 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 				{
 					Console.WriteLine($"TEST_START: {node.DisplayName}");
 #if WINDOWS
+					MauiTestApplication.ReclaimWindowsResourcesIfNeeded();
 					MauiTestApplication.CaptureWindowsResourcePressureDump();
 #endif
 				}
