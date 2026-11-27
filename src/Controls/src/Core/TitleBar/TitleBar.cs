@@ -522,6 +522,8 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 			};
 
+#if !WINDOWS
+			// The Windows handler already paints the background on the TitleBar itself.
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
 				static (TitleBar tb) => tb.BackgroundColor,
@@ -531,6 +533,7 @@ namespace Microsoft.Maui.Controls
 				BackgroundProperty,
 				static (TitleBar tb) => tb.Background,
 				source: RelativeBindingSource.TemplatedParent);
+#endif
 
 			contentGrid.SetBinding(
 				OpacityProperty,
