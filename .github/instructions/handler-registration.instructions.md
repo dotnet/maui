@@ -14,6 +14,7 @@ applyTo:
   - "src/Controls/tests/Core.UnitTests/HostBuilderHandlerTests.cs"
   - "src/Core/tests/UnitTests/Hosting/HostBuilderHandlerTests.cs"
   - "src/Core/tests/UnitTests/*MapperExtensionTests.cs"
+  - "src/Controls/tests/Core.UnitTests/*Mapper*Tests.cs"
   - "docs/design/HandlerResolution.md"
 ---
 # Handler Registration, Resolution, and Controls Remaps
@@ -24,7 +25,7 @@ Built-in handlers are trimmable: each control declares its default handler with 
 - Declare a built-in control's default handler with the internal `[ElementHandler(typeof(XHandler))]` attribute on the control class (see `Button`, `Label`, `Shell`, `CollectionView`).
 - Scope the attribute with `#if` to the platforms where the handler type exists. Do not add a platform (e.g. `TIZEN`) unless the handler is implemented there.
 - Do NOT add built-in defaults as DI registrations. The eager Controls registration table is gone, and `AddMauiControlsHandlers()` is a compatibility no-op that must stay a no-op. `ConfigureMauiHandlers`/`AddHandler` registrations are for app and library overrides, interface registrations, and the rare handler that must not be statically rooted (HybridWebView stays a deferred DI factory registration in `SetupDefaults`).
-- Give attribute-resolved handlers a public parameterless constructor. `ToHandler()` falls back to constructor injection from the current `IMauiContext`, but direct `IMauiHandlersFactory.GetHandler()` calls do not. Do not add constructor-activation caches; the factory checks constructors per activation.
+- Give attribute-resolved handlers a public parameterless constructor. `ToHandler()` falls back to constructor injection from the current `IMauiContext` (including its Android `Context`), but direct `IMauiHandlersFactory.GetHandler()` calls do not. When a handler needs constructor arguments, register an `AddHandler<TType>(Func<IServiceProvider, IElementHandler>)` factory; its service provider is scoped to the current `IMauiContext`. Do not add constructor-activation caches; the factory checks constructors per activation.
 - Custom `IMauiHandlersFactory` implementations are unsupported because they cannot see attribute defaults. Do not add code or docs that rely on replacing the factory; customize through `ConfigureMauiHandlers`.
 
 ## Feature-Switch-Dependent Handlers
@@ -45,7 +46,7 @@ Built-in handlers are trimmable: each control declares its default handler with 
 - Cache only per-type attribute lookups and assignable candidates, invalidated by collection version and Hot Reload generation. Do not cache the full resolution result; exact registrations must stay live.
 
 ## Lazy Controls Mapper Remaps
-Each remappable control owns a one-time remap that runs before its first handler attaches:
+Remaps run lazily, the first time an instance of each remappable type is attached to a handler, not at `UseMauiApp`. `Element`'s handler setter and `ElementHandler.SetVirtualView()` (through `IControlsMapperRemappable`, which also covers non-elements such as `Toolbar`) invoke the hook before properties are first mapped. Each remappable type owns a one-time remap and calls its base first, so attaching a `Label` applies the `Element`, `VisualElement` and `Label` remaps in that order:
 
 ```csharp
 static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
@@ -62,13 +63,15 @@ static void RemapForControlsOnce()
 ```
 
 - Inside a remap, use the internal framework helpers: `ReplaceMappingForControls`, `AppendToMappingForControls`, `PrependToMappingForControls`, `ModifyMappingForControls` (property mappers), and `ModifyMappingForControls`/`PrependToMappingForControls` (command mappers). They compose underneath app customizations, as if the remap had run at startup.
-- Do NOT use the public `AppendToMapping`, `PrependToMapping`, `ModifyMapping`, `ReplaceMapping`, or the mapper indexer inside a remap. Those are the app customization layer; a lazy framework call through them would reorder or override app customizations. The only exceptions are Label's Apple `FlowDirection` and Android `IsTextSelectable` remaps. Label's remaps already ran lazily from its static constructor, so they keep the public `AppendToMapping` timing.
+- Do NOT use the public `AppendToMapping`, `PrependToMapping`, `ModifyMapping`, `ReplaceMapping`, or the mapper indexer inside a remap. Those are the app customization layer; a lazy framework call through them would reorder or override app customizations. The only exceptions are Label's Apple `FlowDirection` and Android `IsTextSelectable` additions: they deliberately keep the public `AppendToMapping`, so they are recorded as app customizations when the first `Label` attaches and keep their timing-dependent order relative to app customizations of those keys. Do not copy this pattern.
 - When a lazy remap sets a public static factory such as `PlatformViewFactory`, use `??=`. A factory the app sets during startup must win (`RadioButton.Mapper.cs`, `TabbedPage.Mapper.cs`).
 - Keep non-mapper setup, such as `CommandProperty.DependsOn(...)`, in control type initialization (a static constructor). Bindings need it before any handler attaches.
-- Built-in handler property and command mappers end their initializer with `.WithFrameworkMappingsSealed()`, so later assignments are recorded as app customizations. New handler mappers must do the same.
+- A Core handler property or command mapper that Controls remaps must end its initializer with `.WithFrameworkMappingsSealed()`. Every later assignment is then recorded as an app customization, including keys the mapper does not define yet, and composes on top of the lazy remap. `SwitchHandler.Mapper`, `ButtonHandler.TextButtonMapper` and `ButtonHandler.ImageButtonMapper` are not sealed: on them only replacing an existing key is recorded, and assigning a new key stores it directly. Don't assume sealed semantics there, and treat sealing them as a behavior change.
+- A framework remap of a key on a child mapper, including a key it inherits from a chained parent, places the framework mapping before every app customization. The child then builds on the parent's framework mapping only and stops observing app customizations of that key made on the parent, even ones registered before the first attach. Before remapping an inherited key on a child mapper, check whether apps customize it on the parent (for example `ViewHandler.ViewMapper`).
 
 ## Testing
 - `Controls.Core.UnitTests` targets a non-platform TFM, so platform-specific attribute branches need device tests (`ShellHandlerResolutionTests.iOS.cs`, `Material3HandlerResolutionTests.Android.cs`). Assert both `GetHandlerType` and actual handler creation.
 - Device tests that toggle an `AppContext` switch must use a `[CollectionDefinition(..., DisableParallelization = true)]` collection and restore the original value in `finally`.
-- Mapper-preservation tests should cover app customizations made both before and after the lazy remap. Include keys that are absent until the remap and keys inherited from a chained mapper.
+- Global mappers (`ViewHandler.ViewMapper`, `ButtonHandler.Mapper`, ...) only contain the Controls remaps after the relevant control type has attached a handler. A test that reads their keys or mappings must trigger the remap first, for example `new VisualElement().RemapForControls();` (see `VisualElementMapperTests`), so it doesn't depend on test order.
+- Mapper-preservation tests should cover app customizations made both before and after the lazy remap. Include keys that are absent until the remap, keys inherited from a chained mapper, and, for unsealed mappers, the narrower replace-only recording.
 - CI runs Core unit tests through xunit.console, which can load the test assembly twice. Do not rely on `Type` identity across assembly loads (Hot Reload handler replacement matches by type name).

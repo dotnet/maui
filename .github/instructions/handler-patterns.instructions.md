@@ -30,7 +30,7 @@ applyTo:
 - When extending existing mappers, ensure the base mapper chain is called — do not silently replace
 - Static mapper methods should be `public static` to enable platform-specific overrides
 - Use `nameof()` for property keys — avoid magic strings
-- End built-in property and command mapper initializers with `.WithFrameworkMappingsSealed()` so later assignments are recorded as app customizations
+- End the initializer of a property or command mapper that Controls remaps with `.WithFrameworkMappingsSealed()` so later assignments are recorded as app customizations (`SwitchHandler.Mapper` and `ButtonHandler.TextButtonMapper`/`ImageButtonMapper` are existing unsealed exceptions)
 - Controls-layer changes to a Core handler mapper belong in the control's lazy `RemapForControls()` and use the internal `*ForControls` helpers, not the public `AppendToMapping`/`ModifyMapping`/`ReplaceMapping` app customization APIs
 
 ## Registering Built-in Handlers
