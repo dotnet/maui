@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics;
 using System.Diagnostics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -80,26 +80,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(ISafeAreaElement.SafeAreaEdges)] = MapSafeAreaEdges
 #endif
 			};
-
-		// MAUI's own transform mappings, captured right after ViewMapper is built and before app code can append to or
-		// replace them (ViewMapper is mutable). The animation engine coalesces one frame's transform updates into one
-		// platform rebuild only for properties still mapped to these; a customized mapping runs as usual.
-		// Declared before BuiltInTransformMappings: static initializers run in textual order.
-		internal static readonly string[] TransformMappingKeys =
-		{
-			nameof(IView.TranslationX), nameof(IView.TranslationY), nameof(IView.Scale), nameof(IView.ScaleX), nameof(IView.ScaleY),
-			nameof(IView.Rotation), nameof(IView.RotationX), nameof(IView.RotationY), nameof(IView.AnchorX), nameof(IView.AnchorY),
-		};
-
-		internal static readonly System.Action<IElementHandler, IElement>?[] BuiltInTransformMappings = CaptureTransformMappings();
-
-		static System.Action<IElementHandler, IElement>?[] CaptureTransformMappings()
-		{
-			var mappings = new System.Action<IElementHandler, IElement>?[TransformMappingKeys.Length];
-			for (var i = 0; i < mappings.Length; i++)
-				mappings[i] = ViewMapper.GetProperty(TransformMappingKeys[i]);
-			return mappings;
-		}
 
 		/// <summary>
 		/// A dictionary that maps the virtual view commands to their platform view counterparts.

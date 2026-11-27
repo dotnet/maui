@@ -383,8 +383,7 @@ namespace Microsoft.Maui.Authentication
 		{
 			try
 			{
-				if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041) &&
-					global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.ApplicationModel.AppInfo"))
+				if (global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.ApplicationModel.AppInfo"))
 				{
 					var applicationId = global::Windows.ApplicationModel.AppInfo.Current.Id;
 					if (!string.IsNullOrEmpty(applicationId))
