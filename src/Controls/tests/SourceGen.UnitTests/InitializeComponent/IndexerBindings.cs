@@ -256,8 +256,8 @@ public class TestViewModel
 
 	[Theory]
 	[InlineData("Items[he.llo]", "string?", "source.Items?[\"he.llo\"]")]
-	[InlineData("Items[he.llo].Length", "int", "source.Items?[\"he.llo\"]?.Length")]
-	[InlineData("Items[a[b].Length", "int", "source.Items?[\"a[b\"]?.Length")]
+	[InlineData("Items[he.llo].Length", "int", "source.Items?[\"he.llo\"]?.Length ?? default")]
+	[InlineData("Items[a[b].Length", "int", "source.Items?[\"a[b\"]?.Length ?? default")]
 	public void BindingToLiteralDictionaryKey(string path, string valueType, string getter)
 	{
 		var xaml =
@@ -299,7 +299,7 @@ public class TestViewModel
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
 		Assert.Contains($"TypedBinding<global::Test.TestViewModel, {valueType}>", generated, StringComparison.Ordinal);
-		Assert.Contains($"static source => {getter}", generated, StringComparison.Ordinal);
+		Assert.Contains($"getter: source => ({getter}, true),", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
