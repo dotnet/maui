@@ -26,10 +26,15 @@ namespace Microsoft.Maui.Controls
 			RadioButtonHandler.Mapper.ReplaceMappingForControls<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
 #endif
 #if ANDROID
-			// This runs lazily on first attachment; keep a factory the app installed during startup, which would
-			// have replaced the Controls factory when it was installed eagerly.
-			RadioButtonHandler.PlatformViewFactory ??= CreatePlatformView;
+			InstallPlatformViewFactory();
 #endif
 		}
+
+#if ANDROID
+		// This runs lazily on first attachment; keep a factory the app installed during startup, which would
+		// have replaced the Controls factory when it was installed eagerly.
+		internal static void InstallPlatformViewFactory() =>
+			RadioButtonHandler.PlatformViewFactory ??= CreatePlatformView;
+#endif
 	}
 }

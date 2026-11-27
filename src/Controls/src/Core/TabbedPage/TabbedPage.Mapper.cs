@@ -35,9 +35,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if PLATFORM
-			// This runs lazily on first attachment; keep a factory the app installed during startup, which would
-			// have replaced the Controls factory when it was installed eagerly.
-			TabbedViewHandler.PlatformViewFactory ??= OnCreatePlatformView;
+			InstallPlatformViewFactory();
 #endif
 
 #if IOS || MACCATALYST
@@ -48,5 +46,12 @@ namespace Microsoft.Maui.Controls
 			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.TabbedPage.TranslucencyModeProperty.PropertyName, MapTranslucencyMode);
 #endif
 		}
+
+#if PLATFORM
+		// This runs lazily on first attachment; keep a factory the app installed during startup, which would
+		// have replaced the Controls factory when it was installed eagerly.
+		internal static void InstallPlatformViewFactory() =>
+			TabbedViewHandler.PlatformViewFactory ??= OnCreatePlatformView;
+#endif
 	}
 }
