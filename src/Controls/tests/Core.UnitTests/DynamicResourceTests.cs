@@ -139,6 +139,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SettingDynamicResourceToNullClearsValueButMissingResourceDoesNot()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary
+				{
+					{ "old", "old text" },
+					{ "empty", null }
+				}
+			};
+
+			label.SetDynamicResource(Label.TextProperty, "old");
+			Assert.Equal("old text", label.Text);
+
+			label.SetDynamicResource(Label.TextProperty, "missing");
+			Assert.Equal("old text", label.Text);
+
+			label.SetDynamicResource(Label.TextProperty, "empty");
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
 		public void RemoveDynamicResourceStopsUpdating()
 		{
 			var label = new Label
