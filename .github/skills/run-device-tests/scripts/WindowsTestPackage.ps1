@@ -82,18 +82,27 @@ function New-WindowsTestCertificate {
         -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')
 }
 
+# The AppX deployment service only honours machine-level trust: a signer trusted only in
+# CurrentUser\TrustedPeople fails with 0x800B0109. Only the public certificate is added to
+# LocalMachine\TrustedPeople (which requires an elevated agent); the private key stays
+# non-exportable in CurrentUser\My.
 function Trust-WindowsTestCertificate {
     param($Certificate)
-    $store = [Security.Cryptography.X509Certificates.X509Store]::new('TrustedPeople', 'CurrentUser')
     $publicCertificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new($Certificate.RawData)
     try {
-        $store.Open('ReadWrite')
-        $store.Add($publicCertificate)
+        foreach ($location in @('CurrentUser', 'LocalMachine')) {
+            $store = [Security.Cryptography.X509Certificates.X509Store]::new('TrustedPeople', $location)
+            try {
+                try { $store.Open('ReadWrite') }
+                catch {
+                    throw "Trusting the MSIX test signer requires write access to $location\TrustedPeople (run elevated): $($_.Exception.Message)"
+                }
+                $store.Add($publicCertificate)
+            }
+            finally { $store.Dispose() }
+        }
     }
-    finally {
-        $publicCertificate.Dispose()
-        $store.Dispose()
-    }
+    finally { $publicCertificate.Dispose() }
 }
 
 function Initialize-WindowsTestPackage {
@@ -176,7 +185,7 @@ function Remove-WindowsTestCertificate {
     param([string] $Thumbprint, [string] $Publisher, [string] $OwnerId)
     if ($Thumbprint -notmatch '^[A-Fa-f0-9]{40}$') { throw 'Invalid owned certificate thumbprint.' }
     $ownedPaths = @()
-    foreach ($store in @('Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople')) {
+    foreach ($store in @('Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople', 'Cert:\LocalMachine\TrustedPeople')) {
         $path = "$store\$Thumbprint"
         if (Test-Path -LiteralPath $path) {
             $certificate = Get-Item -LiteralPath $path -ErrorAction Stop
