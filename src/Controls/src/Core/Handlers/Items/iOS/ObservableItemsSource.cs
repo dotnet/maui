@@ -320,16 +320,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			OnCollectionViewUpdating(args);
-			var observer = controller as IItemsUpdateObserver;
-			observer?.ItemsUpdating();
-			try
-			{
-				update(collectionView);
-			}
-			finally
-			{
-				observer?.ItemsUpdated();
-			}
+			update(collectionView);
 			OnCollectionViewUpdated(args);
 		}
 
