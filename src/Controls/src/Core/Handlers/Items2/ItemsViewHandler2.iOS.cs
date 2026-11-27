@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
-			Controller?.DetachScrollAnchor();
 			Controller?.DisposeItemsSource();
 			Controller?.DisposeObserver();
 			base.DisconnectHandler(platformView);
@@ -170,27 +169,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 #endif
 
-		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args) => TryScrollTo(args);
-
-		internal bool TryScrollTo(ScrollToRequestEventArgs args) => TryScrollTo(args, out _);
-
-		// Scrolls to the item the request is for. Returns whether the request still stands once that scroll returns: not when
-		// the view doesn't have the item, which it doesn't scroll for, nor when the app made a newer request from what the
-		// scroll raised (its Scrolled event), which wins. It also says whether UIKit animates the scroll, and reports when the
-		// animation ends (see ItemsViewController2.ScrollToItem).
-		internal bool TryScrollTo(ScrollToRequestEventArgs args, out bool animating)
+		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			int section = 0, item = 0;
-			int request;
 			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
-			animating = false;
 
 			using (var indexPath = DetermineIndex(args))
 			{
 				if (!IsIndexPathValid(indexPath))
 				{
 					// Specified path wasn't valid, or item wasn't found
-					return false;
+					return;
 				}
 
 				var scrollDirection = Controller.GetScrollDirection();
@@ -199,11 +188,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Capture section and item as ints before the using block disposes the indexPath
 				section = (int)indexPath.Section;
 				item = (int)indexPath.Item;
-
-				// A newer request: what an earlier scroll left for when its animation ends, or for the next layout, no longer
-				// applies. A request for an item the view doesn't have scrolls nowhere, and returned above, leaving it.
-				request = Controller.StartScrollRequest();
-				Controller.ScrollingToEdge(null);
 
 				// Clear any previously armed restore before issuing the new scroll. Otherwise the
 				// synchronous KVO contentOffset notification fired by this ScrollToItem call could be
@@ -215,27 +199,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 #endif
 
-				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. An animated
-				// one is judged once UIKit reports that it ended.
-				var scrollAnchor = Controller.ScrollAnchor;
-				scrollAnchor?.ScrollRequesting();
-				try
-				{
-					animating = Controller.ScrollToItem(indexPath, scrollPosition, args.IsAnimated);
-				}
-				finally
-				{
-					scrollAnchor?.ScrollRequested(Controller.CollectionView, Controller.IsLatestScrollRequest(request), animating);
-				}
-			}
-
-			// A newer request the app made from the Scrolled event the scroll raised wins: this one doesn't keep its item in
-			// view. A ScrollToStart or ScrollToEnd scrolls now that this scroll returned (see ScrollToItem).
-			if (!Controller.IsLatestScrollRequest(request))
-			{
-				animating = false;
-				Controller.ScrolledToItem();
-				return false;
+				Controller.CollectionView.ScrollToItem(indexPath,
+					scrollPosition, args.IsAnimated);
 			}
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift
@@ -248,8 +213,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 #endif
-
-			return true;
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{

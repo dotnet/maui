@@ -118,7 +118,6 @@ namespace Microsoft.Maui.Platform
 			// We gate on Hint only (not Description) so Description-only layouts retain their
 			// existing legacy-path behavior.
 			if (view is ILayout layout &&
-				view is not IContentButton &&
 				!string.IsNullOrWhiteSpace(semantics.Hint))
 			{
 				if (!string.IsNullOrWhiteSpace(semantics.Description))
