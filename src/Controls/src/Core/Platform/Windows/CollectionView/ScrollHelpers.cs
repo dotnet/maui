@@ -36,13 +36,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
 		{
-			if (point.Y > (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+			if (point.Y > scrollViewer.VerticalOffset + headerHeight
+				&& point.Y + itemSize.Height > scrollViewer.VerticalOffset + scrollViewer.ViewportHeight)
 			{
 				return AdjustToEndVertical(point, itemSize, scrollViewer);
 			}
 
 			if (point.Y >= scrollViewer.VerticalOffset + headerHeight
-				&& point.Y < (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
+				&& point.Y <= (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
 			{
 				// The target is already in the viewport and not hidden behind the sticky header
 				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
@@ -54,13 +55,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
-			if (point.X > (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth))
+			if (point.X > scrollViewer.HorizontalOffset
+				&& point.X + itemSize.Width > scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth)
 			{
 				return AdjustToEndHorizontal(point, itemSize, scrollViewer);
 			}
 
 			if (point.X >= scrollViewer.HorizontalOffset
-				&& point.X < (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
+				&& point.X <= (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
 			{
 				// The target is already in the viewport, no reason to scroll at all
 				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
@@ -468,6 +470,10 @@ namespace Microsoft.Maui.Controls.Platform
 					offset = AdjustToEnd(offset, itemSize, scrollViewer);
 					break;
 			}
+
+			if (scrollToPosition == ScrollToPosition.MakeVisible &&
+				scrollViewer.HorizontalOffset == offset.X && scrollViewer.VerticalOffset == offset.Y)
+				return;
 
 			await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
 		}
