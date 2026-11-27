@@ -16,10 +16,20 @@ namespace Microsoft.Maui.Controls.Animations
 		partial void StartObserving()
 		{
 			_queue = DispatcherQueue.GetForCurrentThread();
-			Settings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
+
+			if (System.OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
+			{
+				Settings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
+			}
 		}
 
-		partial void StopObserving() => Settings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
+		partial void StopObserving()
+		{
+			if (System.OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
+			{
+				Settings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
+			}
+		}
 
 		// Raised on a background thread.
 		void OnAnimationsEnabledChanged(UISettings sender, UISettingsAnimationsEnabledChangedEventArgs args)
