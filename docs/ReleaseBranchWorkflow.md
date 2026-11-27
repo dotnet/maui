@@ -138,40 +138,6 @@ from the old SR `N+1` inflight and becomes the SR `N+1` candidate, while the old
 inflight advances to SR `N+2`. The real release cut is manual and independent of these moves.
 Continue the daily `net11`-to-`main` merges.
 
-## Daily candidate-to-inflight synchronization
-
-The **Sync candidate into inflight** workflow merges the active candidate into
-the following SR's inflight branch every day at **05:15 UTC**, or through
-zero-input manual activation. It reads `eng/release-rollover.json` from trusted
-`main` and uses `Get-ReleaseRolloverPlan.ps1` to resolve the current pair, so an SR
-rotation does not require updating the schedule or hard-coding branch names.
-
-The invariant is commit ancestry, not equal commit counts: inflight must contain
-every candidate commit, but retains all inflight-only commits. The workflow
-merges a pinned candidate SHA through GitHub's merge API, never rebases,
-force-pushes, resets, deletes branches, or merges individual PRs. When candidate
-is already an ancestor of inflight, it does nothing. After a merge it verifies
-that both the candidate snapshot and the previous inflight tip remain ancestors.
-It shares the release-tracking concurrency group to serialize with rollover.
-
-Conflicts, missing branches, protection failures, and a candidate advancing
-during synchronization fail the run explicitly. A maintainer must resolve
-conflicts while preserving both histories, or satisfy the existing branch
-protections, then rerun. The workflow does not bypass protections or choose a
-conflict resolution automatically. Its repository-scoped `GITHUB_TOKEN` needs
-contents-write permission; no new secret is required. GitHub Actions push
-workflows do not activate from writes using that token; this synchronization
-does not claim to validate the resulting branch through CI.
-
-Inspect the live route and missing candidate commit count without any writes:
-
-```powershell
-pwsh -NoProfile -File eng/scripts/Sync-CandidateIntoInflight.ps1 -PlanOnly
-```
-
-The daily schedule becomes active once the workflow is deployed on `main`;
-until a successful run, containment is not guaranteed.
-
 ## Rolling integration PRs
 
 Maintain these two draft PRs against the fixes branch, `net11`:

@@ -1,15 +1,74 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task ShowContextFlyoutRequiresLoadedTarget()
+		{
+			SetupBuilder();
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var label = new Label { Text = "Context menu" };
+				FlyoutBase.SetContextFlyout(label, new MenuFlyout { new MenuFlyoutItem { Text = "Action" } });
+				CreateHandler<LabelHandler>(label);
+
+				Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(label));
+			});
+		}
+
+		[Fact]
+		public async Task ShowContextFlyoutReusesAttachedNativeMenu()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Context menu", WidthRequest = 150, HeightRequest = 50 };
+			var submenu = new MenuFlyoutSubItem { Text = "Submenu" };
+			submenu.Add(new MenuFlyoutItem { Text = "Child" });
+			var flyout = new MenuFlyout
+			{
+				new MenuFlyoutItem { Text = "Action" },
+				new MenuFlyoutSeparator(),
+				submenu,
+				new MenuFlyoutItem { Text = "Disabled", IsEnabled = false }
+			};
+			FlyoutBase.SetContextFlyout(label, flyout);
+
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, async handler =>
+			{
+				var nativeFlyout = Assert.IsType<Microsoft.UI.Xaml.Controls.MenuFlyout>(handler.PlatformView.ContextFlyout);
+				try
+				{
+					FlyoutBase.ShowContextFlyout(label);
+					await AssertEventually(() => nativeFlyout.IsOpen);
+
+					Assert.Same(nativeFlyout, handler.PlatformView.ContextFlyout);
+					Assert.Same(nativeFlyout, flyout.Handler.PlatformView);
+					Assert.Equal(4, nativeFlyout.Items.Count);
+					Assert.IsType<Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator>(nativeFlyout.Items[1]);
+					var nativeSubmenu = Assert.IsType<Microsoft.UI.Xaml.Controls.MenuFlyoutSubItem>(nativeFlyout.Items[2]);
+					Assert.Single(nativeSubmenu.Items);
+					Assert.False(nativeFlyout.Items[3].IsEnabled);
+
+					FlyoutBase.ShowContextFlyout(label);
+					Assert.True(nativeFlyout.IsOpen);
+				}
+				finally
+				{
+					nativeFlyout.Hide();
+					await AssertEventually(() => !nativeFlyout.IsOpen);
+				}
+			});
+		}
+
 		[Fact(DisplayName = "MenuFlyoutItem MapSource sets ShowAsMonochrome to false for FileImageSource")]
 		public async Task MenuFlyoutItemMapSourceSetsShowAsMonochromeToFalse()
 		{

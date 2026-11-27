@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+using System;
+using Microsoft.Maui.Graphics;
 using System.Diagnostics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+		internal const string ShowContextFlyoutCommandKey = "ShowContextFlyout";
+
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
 		/// </summary>
@@ -72,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
 				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
-#if WINDOWS || MACCATALYST
+#if ANDROID || IOS || WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
 
@@ -113,7 +116,33 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.ZIndex)] = MapZIndex,
 			[nameof(IView.Focus)] = MapFocus,
 			[nameof(IView.Unfocus)] = MapUnfocus,
+			[ShowContextFlyoutCommandKey] = MapShowContextFlyout,
 		};
+
+		/// <summary>Maps a context-flyout presentation request to the platform implementation.</summary>
+		/// <param name="handler">The target view's handler.</param>
+		/// <param name="view">The target view.</param>
+		/// <param name="args">The command arguments.</param>
+		/// <exception cref="PlatformNotSupportedException">The platform or OS version is not supported.</exception>
+		/// <exception cref="InvalidOperationException">The target or its attached menu is not ready for presentation.</exception>
+		public static void MapShowContextFlyout(IViewHandler handler, IView view, object? args)
+		{
+#if ANDROID
+			MauiContextMenu.Show(handler, view);
+#elif WINDOWS
+			ShowContextFlyoutWindows(handler, view);
+#else
+#if IOS || MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(15) ||
+				OperatingSystem.IsMacCatalystVersionAtLeast(15))
+			{
+				MauiContextFlyoutPopover.Show(handler, view);
+				return;
+			}
+#endif
+			throw new PlatformNotSupportedException("Programmatic context flyouts require Android, Windows, iOS 15 or later, or Mac Catalyst 15 or later.");
+#endif
+		}
 
 		bool _hasContainer;
 

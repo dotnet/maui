@@ -23,3 +23,5 @@ static Microsoft.Maui.Easing.Steps(int count, bool jumpAtStart = false) -> Micro
 static readonly Microsoft.Maui.Easing.Hold -> Microsoft.Maui.Easing!
 Microsoft.Maui.ILabel.IsTextSelectable.get -> bool
 static Microsoft.Maui.Handlers.LabelHandler.MapIsTextSelectable(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
+#nullable enable
+static Microsoft.Maui.Handlers.ViewHandler.MapShowContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view, object? args) -> void

@@ -203,7 +203,7 @@ public partial class ShellSearchControlPage : Shell
 	// ── Search Detail Page (navigated to when a search result is tapped) ─────────
 
 	[QueryProperty(nameof(ItemName), nameof(ItemName))]
-	internal sealed partial class SearchDetailPage : ContentPage
+	internal sealed class SearchDetailPage : ContentPage
 	{
 		readonly Label _nameLabel;
 		readonly Label _categoryLabel;

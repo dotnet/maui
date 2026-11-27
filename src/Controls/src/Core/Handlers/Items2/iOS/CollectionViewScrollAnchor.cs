@@ -191,9 +191,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Publish(collectionView, itemsView, _tracker.IsAnchored);
 		}
 
-		// Whether UIKit animates a scroll. Before iOS and Mac Catalyst 17.4, which don't tell, it says it doesn't.
+		// Whether UIKit animates a scroll. Before iOS and Mac Catalyst 17, which don't tell, it says it doesn't.
 		static bool IsScrollAnimating(UICollectionView collectionView) =>
-			(OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4)) && collectionView.ScrollAnimating;
+			(OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17)) && collectionView.ScrollAnimating;
 
 		// Where the view is, measured from the start of its content, above the content inset.
 		static ScrollAnchorMetrics Measure(UICollectionView collectionView, UIEdgeInsets inset) =>

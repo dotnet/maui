@@ -2432,24 +2432,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			var label = new Label { Opacity = 0.9 };
 			var player = Fade(0.3, 0.3, 1000).Begin(label);
 			Advance(10);
-			var log = new System.Collections.Generic.List<(string Notification, double Opacity)>();
+			var log = new System.Collections.Generic.List<string>();
 			label.PropertyChanging += (_, e) =>
 			{
 				if (e.PropertyName != nameof(Label.Opacity))
 					return;
-				log.Add(("changing", label.Opacity));
+				log.Add("changing:" + label.Opacity);
 				if (player.State == PlaybackState.Running)
 					player.Stop();
 			};
 			label.PropertyChanged += (_, e) =>
 			{
 				if (e.PropertyName == nameof(Label.Opacity))
-					log.Add(("changed", label.Opacity));
+					log.Add("changed:" + label.Opacity);
 			};
 
 			label.SetValueFromRenderer(VisualElement.OpacityProperty, 0.6);
 
-			Assert.Equal(new[] { ("changing", 0.3), ("changed", 0.6) }, log);
+			Assert.Equal(new[] { "changing:0.3", "changed:0.6" }, log);
 		}
 
 		[Fact]
