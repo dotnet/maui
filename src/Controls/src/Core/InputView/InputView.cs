@@ -312,9 +312,20 @@ namespace Microsoft.Maui.Controls
 		string ITextInput.Text
 		{
 			get => Text;
-			// Apply the transform here so typing raises TextChanged once, with the transformed text,
-			// instead of once for the raw input and again when the platform echoes the transformed text.
-			set => SetValue(TextProperty, IsPasswordInput ? value : TextTransformUtilities.GetTransformedText(value, TextTransform), SetterSpecificity.FromHandler);
+			set
+			{
+				// Normalize before notifying subscribers, without changing the casing of passwords.
+				var transformedText = IsPasswordInput ? value : TextTransformUtilities.GetTransformedText(value, TextTransform);
+
+				if (value != transformedText && Text == transformedText)
+				{
+					// The native edit needs correcting even though the managed value hasn't changed.
+					Handler?.UpdateValue(nameof(ITextInput.Text));
+					return;
+				}
+
+				SetValue(TextProperty, transformedText, SetterSpecificity.FromHandler);
+			}
 		}
 
 		bool IsPasswordInput

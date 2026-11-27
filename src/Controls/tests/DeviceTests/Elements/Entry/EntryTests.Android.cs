@@ -97,6 +97,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, entry.Text);
 		}
 
+		[Theory]
+		[InlineData(TextTransform.Uppercase, "A", "a")]
+		[InlineData(TextTransform.Lowercase, "a", "A")]
+		public async Task CaseOnlyPlatformEditRestoresTransformedTextWithoutNotification(TextTransform transform, string expected, string input)
+		{
+			var entry = new Entry { TextTransform = transform, Text = expected };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = 0;
+				entry.TextChanged += (_, _) => changes++;
+				var platformEntry = GetPlatformControl(handler);
+
+				platformEntry.EditableText.Replace(0, platformEntry.EditableText.Length(), input);
+
+				Assert.Equal(expected, platformEntry.Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(0, changes);
+			});
+		}
+
 		[Fact]
 		public async Task ClearButtonFollowsIsReadOnly()
 		{
