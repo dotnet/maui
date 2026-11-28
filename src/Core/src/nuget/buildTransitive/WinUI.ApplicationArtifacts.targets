@@ -1,0 +1,279 @@
+<Project>
+
+  <!--
+    Reports the final Windows App SDK application outputs as @(ApplicationArtifact), following the
+    contract shipped by .NET for Android and .NET for iOS/Mac Catalyst:
+
+      dotnet build   -t:GetApplicationArtifacts -getItem:ApplicationArtifact
+      dotnet publish -getItem:ApplicationArtifact
+
+    Set EnableWindowsApplicationArtifacts=false to opt out.
+  -->
+  <PropertyGroup>
+    <_MauiWindowsApplicationArtifactsEnabled
+        Condition="'$(EnableWindowsApplicationArtifacts)' != 'false'
+          and '$(MicrosoftWindowsAppSDKPackageDir)' != ''
+          and '$(MSBuildProjectExtension)' != '.wapproj'
+          and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
+          and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">true</_MauiWindowsApplicationArtifactsEnabled>
+
+    <GetApplicationArtifactsDependsOn Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'">
+      _CollectMauiWindowsApplicationArtifacts;
+      $(GetApplicationArtifactsDependsOn)
+    </GetApplicationArtifactsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetApplicationArtifacts"
+          Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'"
+          DependsOnTargets="Build;$(GetApplicationArtifactsDependsOn)"
+          Returns="@(ApplicationArtifact)" />
+
+  <!-- GenerateMsixPackage is the last producer for packaged and sparse outputs. -->
+  <Target Name="_CollectMauiWindowsApplicationArtifactsAfterGenerateMsixPackage"
+          Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'
+            and '$(BuildingProject)' == 'true'
+            and '$(WindowsPackageType)' != 'None'"
+          AfterTargets="GenerateMsixPackage"
+          DependsOnTargets="_CollectMauiWindowsApplicationArtifacts" />
+
+  <!--
+    MSBuild runs a target's dependencies before its BeforeTargets hooks. Collect immediately before
+    the Publish body so its output files already exist and AfterTargets="Publish" consumers observe
+    the publish-path items in the same invocation.
+  -->
+  <Target Name="_CollectMauiWindowsApplicationArtifactsForPublish"
+          Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'
+            and '$(BuildingProject)' == 'true'"
+          BeforeTargets="Publish"
+          DependsOnTargets="_PrepareMauiWindowsApplicationArtifactsForPublish;_CollectMauiWindowsApplicationArtifacts;_RefreshMauiWindowsUnpackagedApplicationArtifactsForPublish" />
+
+  <Target Name="_PrepareMauiWindowsApplicationArtifactsForPublish"
+          DependsOnTargets="_GenerateMsixPackageForMauiWindowsApplicationArtifacts">
+    <PropertyGroup>
+      <_MauiWindowsArtifactsCollectingForPublish>true</_MauiWindowsArtifactsCollectingForPublish>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GenerateMsixPackageForMauiWindowsApplicationArtifacts"
+          Condition="'$(WindowsPackageType)' != 'None'"
+          DependsOnTargets="GenerateMsixPackage" />
+
+  <Target Name="_ComputeMauiWindowsApplicationArtifactPaths"
+          Condition="'$(WindowsPackageType)' != 'None'"
+          DependsOnTargets="_ComputeAppxPackageOutput" />
+
+  <!--
+    MSBuild executes each target at most once per project instance. If GetApplicationArtifacts ran
+    before Publish, the main collector cannot run again, so refresh the unpackaged directory item
+    with a distinct target after the Publish output has been created.
+  -->
+  <Target Name="_RefreshMauiWindowsUnpackagedApplicationArtifactsForPublish"
+          Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'
+            and '$(WindowsPackageType)' == 'None'
+            and '$(PublishDir)' != ''
+            and Exists('$(PublishDir)')">
+    <PropertyGroup>
+      <_MauiWindowsArtifactUnpackagedDirectory>$([System.IO.Path]::GetDirectoryName($([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(PublishDir)'))))))</_MauiWindowsArtifactUnpackagedDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_MauiWindowsArtifactPrevious Include="@(ApplicationArtifact)"
+          Condition="'%(ApplicationArtifact._MauiWindowsApplicationArtifact)' == 'true'" />
+      <ApplicationArtifact Remove="@(_MauiWindowsArtifactPrevious)" />
+      <ApplicationArtifact Include="$(_MauiWindowsArtifactUnpackagedDirectory)">
+        <PackageFormat>directory</PackageFormat>
+        <IsDirectory>true</IsDirectory>
+        <Signed>false</Signed>
+        <EntryPoint>$(_MauiWindowsArtifactEntryPoint)</EntryPoint>
+        <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
+        <PlatformName>Windows</PlatformName>
+        <ApplicationId>$(_MauiWindowsArtifactApplicationId)</ApplicationId>
+        <ApplicationTitle>$(_MauiWindowsArtifactApplicationTitle)</ApplicationTitle>
+        <ApplicationName>$(_MauiWindowsArtifactApplicationName)</ApplicationName>
+        <ApplicationDisplayVersion>$(_MauiWindowsArtifactApplicationDisplayVersion)</ApplicationDisplayVersion>
+        <ApplicationVersion>$(_MauiWindowsArtifactApplicationVersion)</ApplicationVersion>
+        <_MauiWindowsApplicationArtifact>true</_MauiWindowsApplicationArtifact>
+      </ApplicationArtifact>
+      <_MauiWindowsArtifactPrevious Remove="@(_MauiWindowsArtifactPrevious)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CollectMauiWindowsApplicationArtifacts"
+          Condition="'$(_MauiWindowsApplicationArtifactsEnabled)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'
+            and '$(BuildingProject)' == 'true'"
+          DependsOnTargets="_ComputeMauiWindowsApplicationArtifactPaths">
+
+    <ItemGroup>
+      <_MauiWindowsArtifactPrevious Include="@(ApplicationArtifact)"
+          Condition="'%(ApplicationArtifact._MauiWindowsApplicationArtifact)' == 'true'" />
+      <ApplicationArtifact Remove="@(_MauiWindowsArtifactPrevious)" />
+      <_MauiWindowsArtifactPrevious Remove="@(_MauiWindowsArtifactPrevious)" />
+      <_MauiWindowsArtifactRaw Remove="@(_MauiWindowsArtifactRaw)" />
+      <_MauiWindowsArtifactReportedOutput Remove="@(_MauiWindowsArtifactReportedOutput)" />
+      <_MauiWindowsArtifactNormalized Remove="@(_MauiWindowsArtifactNormalized)" />
+      <_MauiWindowsArtifactDistinct Remove="@(_MauiWindowsArtifactDistinct)" />
+    </ItemGroup>
+
+    <!-- Packaged identity, display name, and version come from the final Appx manifest. -->
+    <XmlPeek Condition="'$(WindowsPackageType)' != 'None' and Exists('$(FinalAppxManifestName)')"
+             XmlInputPath="$(FinalAppxManifestName)"
+             Query="/*[local-name()='Package']/*[local-name()='Identity']/@Name">
+      <Output TaskParameter="Result" PropertyName="_MauiWindowsArtifactManifestIdentity" />
+    </XmlPeek>
+    <XmlPeek Condition="'$(WindowsPackageType)' != 'None' and Exists('$(FinalAppxManifestName)')"
+             XmlInputPath="$(FinalAppxManifestName)"
+             Query="/*[local-name()='Package']/*[local-name()='Identity']/@Version">
+      <Output TaskParameter="Result" PropertyName="_MauiWindowsArtifactManifestVersion" />
+    </XmlPeek>
+    <XmlPeek Condition="'$(WindowsPackageType)' != 'None' and Exists('$(FinalAppxManifestName)')"
+             XmlInputPath="$(FinalAppxManifestName)"
+             Query="/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='DisplayName']/text()">
+      <Output TaskParameter="Result" PropertyName="_MauiWindowsArtifactManifestDisplayName" />
+    </XmlPeek>
+    <XmlPeek Condition="'$(WindowsPackageType)' != 'None' and Exists('$(FinalAppxManifestName)')"
+             XmlInputPath="$(FinalAppxManifestName)"
+             Query="/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application'][1]/@Executable">
+      <Output TaskParameter="Result" PropertyName="_MauiWindowsArtifactManifestExecutable" />
+    </XmlPeek>
+
+    <PropertyGroup>
+      <_MauiWindowsArtifactPackageVersion Condition="'$(WindowsPackageType)' != 'None'">$([MSBuild]::ValueOrDefault('$(_MauiWindowsArtifactManifestVersion)', '$(AppxManifestIdentityVersion)'))</_MauiWindowsArtifactPackageVersion>
+
+      <_MauiWindowsArtifactApplicationId Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactManifestIdentity)' != ''">$(_MauiWindowsArtifactManifestIdentity)</_MauiWindowsArtifactApplicationId>
+      <_MauiWindowsArtifactApplicationId Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactApplicationId)' == '' and '$(AppxManifestIdentityName)' != ''">$(AppxManifestIdentityName)</_MauiWindowsArtifactApplicationId>
+      <_MauiWindowsArtifactApplicationId Condition="'$(_MauiWindowsArtifactApplicationId)' == '' and '$(ApplicationId)' != ''">$(ApplicationId)</_MauiWindowsArtifactApplicationId>
+      <_MauiWindowsArtifactApplicationId Condition="'$(_MauiWindowsArtifactApplicationId)' == ''">$(AssemblyName)</_MauiWindowsArtifactApplicationId>
+
+      <_MauiWindowsArtifactApplicationTitle Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactManifestDisplayName)' != ''">$(_MauiWindowsArtifactManifestDisplayName)</_MauiWindowsArtifactApplicationTitle>
+      <_MauiWindowsArtifactApplicationTitle Condition="'$(_MauiWindowsArtifactApplicationTitle)' == '' and '$(ApplicationTitle)' != ''">$(ApplicationTitle)</_MauiWindowsArtifactApplicationTitle>
+      <_MauiWindowsArtifactApplicationTitle Condition="'$(_MauiWindowsArtifactApplicationTitle)' == '' and '$(ApplicationName)' != ''">$(ApplicationName)</_MauiWindowsArtifactApplicationTitle>
+      <_MauiWindowsArtifactApplicationTitle Condition="'$(_MauiWindowsArtifactApplicationTitle)' == '' and '$(AssemblyTitle)' != ''">$(AssemblyTitle)</_MauiWindowsArtifactApplicationTitle>
+      <_MauiWindowsArtifactApplicationTitle Condition="'$(_MauiWindowsArtifactApplicationTitle)' == ''">$(AssemblyName)</_MauiWindowsArtifactApplicationTitle>
+
+      <_MauiWindowsArtifactApplicationName Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactManifestDisplayName)' != ''">$(_MauiWindowsArtifactManifestDisplayName)</_MauiWindowsArtifactApplicationName>
+      <_MauiWindowsArtifactApplicationName Condition="'$(_MauiWindowsArtifactApplicationName)' == '' and '$(ApplicationName)' != ''">$(ApplicationName)</_MauiWindowsArtifactApplicationName>
+      <_MauiWindowsArtifactApplicationName Condition="'$(_MauiWindowsArtifactApplicationName)' == '' and '$(ApplicationTitle)' != ''">$(ApplicationTitle)</_MauiWindowsArtifactApplicationName>
+      <_MauiWindowsArtifactApplicationName Condition="'$(_MauiWindowsArtifactApplicationName)' == ''">$(AssemblyName)</_MauiWindowsArtifactApplicationName>
+
+      <!-- A four-part package version maps to display version "a.b.c" and build version "d". -->
+      <_MauiWindowsArtifactApplicationDisplayVersion
+          Condition="'$(WindowsPackageType)' != 'None'
+            and $([System.Text.RegularExpressions.Regex]::IsMatch('$(_MauiWindowsArtifactPackageVersion)', '^\d+\.\d+\.\d+\.\d+$'))">$([System.Text.RegularExpressions.Regex]::Replace('$(_MauiWindowsArtifactPackageVersion)', '^(\d+\.\d+\.\d+)\.(\d+)$', '$1'))</_MauiWindowsArtifactApplicationDisplayVersion>
+      <_MauiWindowsArtifactApplicationVersion
+          Condition="'$(WindowsPackageType)' != 'None'
+            and $([System.Text.RegularExpressions.Regex]::IsMatch('$(_MauiWindowsArtifactPackageVersion)', '^\d+\.\d+\.\d+\.\d+$'))">$([System.Text.RegularExpressions.Regex]::Replace('$(_MauiWindowsArtifactPackageVersion)', '^(\d+\.\d+\.\d+)\.(\d+)$', '$2'))</_MauiWindowsArtifactApplicationVersion>
+      <_MauiWindowsArtifactApplicationDisplayVersion Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactApplicationDisplayVersion)' == ''">$(_MauiWindowsArtifactPackageVersion)</_MauiWindowsArtifactApplicationDisplayVersion>
+      <_MauiWindowsArtifactApplicationVersion Condition="'$(WindowsPackageType)' != 'None' and '$(_MauiWindowsArtifactApplicationVersion)' == ''">$(ApplicationVersion)</_MauiWindowsArtifactApplicationVersion>
+
+      <_MauiWindowsArtifactApplicationDisplayVersion Condition="'$(WindowsPackageType)' == 'None' and '$(ApplicationDisplayVersion)' != ''">$(ApplicationDisplayVersion)</_MauiWindowsArtifactApplicationDisplayVersion>
+      <_MauiWindowsArtifactApplicationDisplayVersion Condition="'$(WindowsPackageType)' == 'None' and '$(_MauiWindowsArtifactApplicationDisplayVersion)' == '' and '$(InformationalVersion)' != ''">$(InformationalVersion)</_MauiWindowsArtifactApplicationDisplayVersion>
+      <_MauiWindowsArtifactApplicationDisplayVersion Condition="'$(WindowsPackageType)' == 'None' and '$(_MauiWindowsArtifactApplicationDisplayVersion)' == ''">$(Version)</_MauiWindowsArtifactApplicationDisplayVersion>
+      <_MauiWindowsArtifactApplicationVersion Condition="'$(WindowsPackageType)' == 'None' and '$(ApplicationVersion)' != ''">$(ApplicationVersion)</_MauiWindowsArtifactApplicationVersion>
+      <_MauiWindowsArtifactApplicationVersion Condition="'$(WindowsPackageType)' == 'None' and '$(_MauiWindowsArtifactApplicationVersion)' == '' and '$(FileVersion)' != ''">$(FileVersion)</_MauiWindowsArtifactApplicationVersion>
+      <_MauiWindowsArtifactApplicationVersion Condition="'$(WindowsPackageType)' == 'None' and '$(_MauiWindowsArtifactApplicationVersion)' == ''">$(AssemblyVersion)</_MauiWindowsArtifactApplicationVersion>
+
+      <_MauiWindowsArtifactSigned Condition="'$(WindowsPackageType)' != 'None' and '$(AppxPackageSigningEnabled)' == 'true'">true</_MauiWindowsArtifactSigned>
+      <_MauiWindowsArtifactSigned Condition="'$(_MauiWindowsArtifactSigned)' == ''">false</_MauiWindowsArtifactSigned>
+
+      <_MauiWindowsArtifactEntryPoint Condition="'$(WindowsPackageType)' != 'None'">$(_MauiWindowsArtifactManifestExecutable)</_MauiWindowsArtifactEntryPoint>
+      <_MauiWindowsArtifactEntryPoint Condition="'$(WindowsPackageType)' == 'None'">$(TargetName).exe</_MauiWindowsArtifactEntryPoint>
+    </PropertyGroup>
+
+    <!-- Unpackaged: the application is the output directory; EntryPoint names the executable. -->
+    <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+      <_MauiWindowsArtifactUnpackagedDirectory Condition="'$(_MauiWindowsArtifactsCollectingForPublish)' == 'true' and '$(PublishDir)' != '' and Exists('$(PublishDir)')">$(PublishDir)</_MauiWindowsArtifactUnpackagedDirectory>
+      <_MauiWindowsArtifactUnpackagedDirectory Condition="'$(_MauiWindowsArtifactUnpackagedDirectory)' == '' and '$(TargetDir)' != '' and Exists('$(TargetDir)')">$(TargetDir)</_MauiWindowsArtifactUnpackagedDirectory>
+      <_MauiWindowsArtifactUnpackagedDirectory Condition="'$(_MauiWindowsArtifactUnpackagedDirectory)' != ''">$([System.IO.Path]::GetDirectoryName($([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(_MauiWindowsArtifactUnpackagedDirectory)'))))))</_MauiWindowsArtifactUnpackagedDirectory>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(WindowsPackageType)' == 'None' and '$(_MauiWindowsArtifactUnpackagedDirectory)' != ''">
+      <_MauiWindowsArtifactRaw Include="$(_MauiWindowsArtifactUnpackagedDirectory)"
+          PackageFormat="directory"
+          IsDirectory="true" />
+    </ItemGroup>
+
+    <!-- Packaged and sparse: final package outputs reported by the Windows App SDK packaging targets. -->
+    <ItemGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_MauiWindowsArtifactRaw Include="$(AppxPackageOutput)" Condition="'$(AppxPackageOutput)' != '' and Exists('$(AppxPackageOutput)')" />
+      <_MauiWindowsArtifactRaw Include="$(AppxMainPackageOutput)" Condition="'$(AppxMainPackageOutput)' != '' and Exists('$(AppxMainPackageOutput)')" />
+      <_MauiWindowsArtifactRaw Include="@(FinalAppxPackageItem)" Condition="Exists('%(FinalAppxPackageItem.Identity)')" />
+      <_MauiWindowsArtifactRaw Include="$(AppxBundleOutput)" Condition="'$(AppxBundleOutput)' != '' and Exists('$(AppxBundleOutput)')" />
+      <_MauiWindowsArtifactRaw Include="$(AppxStoreContainer)" Condition="'$(AppxStoreContainer)' != '' and Exists('$(AppxStoreContainer)')" />
+      <_MauiWindowsArtifactRaw Include="@(AppInstallerFilePath)" Condition="Exists('%(AppInstallerFilePath.Identity)')" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_MauiWindowsArtifactReportedOutput Include="@(InstallerFileWrites);@(PackagingFileWrites);@(AllBuiltSideloadPackages);@(AppInstallerFileWrites)" />
+      <_MauiWindowsArtifactReportedOutput Update="@(_MauiWindowsArtifactReportedOutput)">
+        <_Comparable>$([System.String]::Copy('%(FullPath)').ToLowerInvariant())</_Comparable>
+        <_ExtensionLower>$([System.String]::Copy('%(Extension)').ToLowerInvariant())</_ExtensionLower>
+      </_MauiWindowsArtifactReportedOutput>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_MauiWindowsArtifactIntermediateDirComparable Condition="'$(IntermediateOutputPath)' != ''">$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)'))).ToLowerInvariant())</_MauiWindowsArtifactIntermediateDirComparable>
+      <_MauiWindowsArtifactUploadDirComparable Condition="'$(AppxUploadPackageDir)' != ''">$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(AppxUploadPackageDir)'))).ToLowerInvariant())</_MauiWindowsArtifactUploadDirComparable>
+    </PropertyGroup>
+
+    <!--
+      Only final application packages and deployment manifests are reported. Intermediate files,
+      dependency framework packages, loose store-upload contents, symbols, certificates, and install
+      scripts are not application artifacts.
+    -->
+    <ItemGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_MauiWindowsArtifactReportedOutput Update="@(_MauiWindowsArtifactReportedOutput)">
+        <_IsFinal>false</_IsFinal>
+        <_IsFinal Condition="'%(_ExtensionLower)' == '.msix' or '%(_ExtensionLower)' == '.appx'
+            or '%(_ExtensionLower)' == '.msixbundle' or '%(_ExtensionLower)' == '.appxbundle'
+            or '%(_ExtensionLower)' == '.msixupload' or '%(_ExtensionLower)' == '.appxupload'
+            or '%(_ExtensionLower)' == '.appinstaller'">true</_IsFinal>
+      </_MauiWindowsArtifactReportedOutput>
+      <_MauiWindowsArtifactReportedOutput Update="@(_MauiWindowsArtifactReportedOutput)"
+          Condition="'%(_IsFinal)' == 'true'
+            and ((('$(_MauiWindowsArtifactIntermediateDirComparable)' != '' and $([System.String]::Copy('%(_Comparable)').StartsWith('$(_MauiWindowsArtifactIntermediateDirComparable)')))
+              or ('$(_MauiWindowsArtifactUploadDirComparable)' != '' and $([System.String]::Copy('%(_Comparable)').StartsWith('$(_MauiWindowsArtifactUploadDirComparable)')))
+              or $([System.String]::Copy('%(_Comparable)').Contains('\dependencies\'))
+              or $([System.String]::Copy('%(_Comparable)').Contains('/dependencies/'))))">
+        <_IsFinal>false</_IsFinal>
+      </_MauiWindowsArtifactReportedOutput>
+
+      <_MauiWindowsArtifactRaw Include="@(_MauiWindowsArtifactReportedOutput)"
+          Condition="'%(_MauiWindowsArtifactReportedOutput._IsFinal)' == 'true' and Exists('%(_MauiWindowsArtifactReportedOutput.Identity)')" />
+
+      <_MauiWindowsArtifactRaw Update="@(_MauiWindowsArtifactRaw)">
+        <PackageFormat>$([System.String]::Copy('%(Extension)').TrimStart('.').ToLowerInvariant())</PackageFormat>
+        <IsDirectory>false</IsDirectory>
+      </_MauiWindowsArtifactRaw>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_MauiWindowsArtifactNormalized Include="@(_MauiWindowsArtifactRaw->'%(FullPath)')" KeepMetadata="PackageFormat;IsDirectory" />
+    </ItemGroup>
+
+    <RemoveDuplicates Inputs="@(_MauiWindowsArtifactNormalized)">
+      <Output TaskParameter="Filtered" ItemName="_MauiWindowsArtifactDistinct" />
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <ApplicationArtifact Include="@(_MauiWindowsArtifactDistinct)">
+        <PackageFormat>%(_MauiWindowsArtifactDistinct.PackageFormat)</PackageFormat>
+        <IsDirectory>%(_MauiWindowsArtifactDistinct.IsDirectory)</IsDirectory>
+        <Signed>$(_MauiWindowsArtifactSigned)</Signed>
+        <EntryPoint>$(_MauiWindowsArtifactEntryPoint)</EntryPoint>
+        <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
+        <PlatformName>Windows</PlatformName>
+        <ApplicationId>$(_MauiWindowsArtifactApplicationId)</ApplicationId>
+        <ApplicationTitle>$(_MauiWindowsArtifactApplicationTitle)</ApplicationTitle>
+        <ApplicationName>$(_MauiWindowsArtifactApplicationName)</ApplicationName>
+        <ApplicationDisplayVersion>$(_MauiWindowsArtifactApplicationDisplayVersion)</ApplicationDisplayVersion>
+        <ApplicationVersion>$(_MauiWindowsArtifactApplicationVersion)</ApplicationVersion>
+        <_MauiWindowsApplicationArtifact>true</_MauiWindowsApplicationArtifact>
+      </ApplicationArtifact>
+    </ItemGroup>
+  </Target>
+
+</Project>
