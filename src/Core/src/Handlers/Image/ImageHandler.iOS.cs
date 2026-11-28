@@ -49,8 +49,13 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IView.Opacity));
 		}
 
-		public static void MapAspect(IImageHandler handler, IImage image) =>
+		public static void MapAspect(IImageHandler handler, IImage image)
+		{
 			handler.PlatformView?.UpdateAspect(image);
+
+			// An image decoded at a smaller size may not be sharp enough for the new aspect (for example Center).
+			handler.SourceLoader.UpdateDecodedSize();
+		}
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
 			handler.PlatformView?.UpdateIsAnimationPlaying(image);
@@ -70,6 +75,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));
+			else
+				SourceLoader.UpdateDecodedSize();
 		}
 
 		partial class ImageImageSourcePartSetter

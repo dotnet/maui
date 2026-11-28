@@ -47,6 +47,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.ObjectKey;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -61,6 +62,7 @@ import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -332,7 +334,11 @@ public class PlatformInterop {
     }
 
     private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
+        load(builder, context, cachingEnabled, callback, model, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+    }
+
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model, int width, int height) {
+        MauiCustomTarget target = new MauiCustomTarget(context, callback, model, width, height);
         prepare(builder, target, cachingEnabled, callback);
     }
 
@@ -353,6 +359,65 @@ public class PlatformInterop {
             .with(imageView)
             .load(androidUri);
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
+    }
+
+    /**
+     * Loads an image that MAUI downloaded into its own disk cache.
+     * Glide does not cache the file on disk again, but keeps the decoded image in memory.
+     * The version changes whenever the file content changes, so a refreshed file is never shown from Glide's memory cache.
+     */
+    public static void loadImageFromCachedFile(ImageView imageView, String file, long version, ImageLoaderCallback callback) {
+        if (isContextDestroyed(imageView.getContext())) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(new File(file))
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .signature(new ObjectKey(version));
+        loadInto(builder, imageView, true, callback, file);
+    }
+
+    /**
+     * Cancels the image load that is in progress for the view (and clears its image), as starting a new load would.
+     * Used before waiting for a download, so that a previous load cannot complete into the view in the meantime.
+     */
+    /**
+     * Stops a load into the view that has not finished yet, like starting a new load into it would (which also clears the view).
+     * A load that finished, and the image it shows, are left alone.
+     */
+    public static void stopUnfinishedImageViewLoad(ImageView imageView) {
+        MauiCustomViewTarget.stopUnfinishedLoad(imageView);
+    }
+
+    public static void clearImageView(ImageView imageView) {
+        MauiCustomViewTarget.onViewChanged(imageView);
+        MauiCustomViewTarget.forgetCurrent(imageView);
+        if (isContextDestroyed(imageView.getContext())) {
+            return;
+        }
+        // Glide does not allow clearing from inside one of its target callbacks; the next load clears it instead.
+        Object invokingCallbacks = imageView.getTag(microsoft.maui.R.id.maui_custom_view_target_running_callbacks_tag);
+        if (invokingCallbacks instanceof Boolean && (Boolean) invokingCallbacks) {
+            return;
+        }
+        Glide.with(imageView).clear(imageView);
+    }
+
+    /**
+     * Loads image bytes that MAUI downloaded (and caches itself), decoding them for the view's size like a URI load.
+     * Glide does not cache them on disk.
+     */
+    public static void loadImageFromDownloadedBytes(ImageView imageView, byte[] data, ImageLoaderCallback callback) {
+        if (isContextDestroyed(imageView.getContext())) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(data);
+        loadInto(builder, imageView, false, callback, null);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
@@ -381,6 +446,13 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
+        loadImageFromFile(context, file, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    /**
+     * Loads an image file for a view of the given size (in pixels), decoding it like a load into that view would.
+     */
+    public static void loadImageFromFile(Context context, String file, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -388,10 +460,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback, file);
+        load(builder, context, true, callback, file, width, height);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
+        loadImageFromUri(context, uri, cachingEnabled, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, int width, int height, ImageLoaderCallback callback) {
         if (isContextDestroyed(context)) {
             callback.onComplete(false, null, null);
             return;
@@ -404,7 +480,47 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback, androidUri);
+        load(builder, context, cachingEnabled, callback, androidUri, width, height);
+    }
+
+    public static void loadImageFromCachedFile(Context context, String file, long version, ImageLoaderCallback callback) {
+        loadImageFromCachedFile(context, file, version, Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL, callback);
+    }
+
+    public static void loadImageFromCachedFile(Context context, String file, long version, int width, int height, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(new File(file))
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .signature(new ObjectKey(version));
+        load(builder, context, true, callback, file, width, height);
+    }
+
+    public static void loadImageFromBytes(Context context, byte[] data, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(data)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+        load(builder, context, false, callback, data);
+    }
+
+    public static void loadImageFromBytes(Context context, byte[] data, int width, int height, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(data);
+        load(builder, context, false, callback, null, width, height);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
@@ -417,18 +533,6 @@ public class PlatformInterop {
             .load(inputStream)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         load(builder, context, false, callback, inputStream);
-    }
-
-    public static void loadImageFromBytes(Context context, byte[] bytes, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
-            .load(bytes)
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, false, callback, bytes);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {

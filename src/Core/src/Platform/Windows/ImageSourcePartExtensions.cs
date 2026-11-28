@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Platform
 			IImageSourceServiceProvider services,
 			Action<WImageSource?> setImage,
 			float imageScale = 1.0f,
-			CancellationToken cancellationToken = default)
+			CancellationToken cancellationToken = default,
+			Action<Exception>? onFailed = null,
+			Action<IImageSourceServiceResult>? onImageShown = null)
 		{
 			image.UpdateIsLoading(false);
 
@@ -44,7 +46,21 @@ namespace Microsoft.Maui.Platform
 					setImage(uiImage);
 				}
 
+				// Setting the image runs mappers (such as IsAnimationPlaying), which may have started a newer load.
+				applied = applied && !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+
+				// The image is shown before that is reported (which may start another load).
+				if (applied && result is not null)
+					onImageShown?.Invoke(result);
+
 				events?.LoadingCompleted(applied);
+
+				if (!applied)
+				{
+					// The image was never shown.
+					result?.Dispose();
+					return null;
+				}
 
 				return result;
 			}
@@ -53,15 +69,25 @@ namespace Microsoft.Maui.Platform
 				// no-op
 				events?.LoadingCompleted(false);
 			}
+			catch (Exception) when (cancellationToken.IsCancellationRequested || imageSource != image.Source)
+			{
+				// The load was cancelled or a newer source is loading; this failure is no longer relevant
+				// and must not clear the newer image.
+				events?.LoadingCompleted(false);
+			}
 			catch (Exception ex)
 			{
-				setImage?.Invoke(null);
+				if (onFailed is not null)
+					onFailed(ex);
+				else
+					setImage?.Invoke(null);
 				events?.LoadingFailed(ex);
 			}
 			finally
 			{
-				// only mark as finished if we are still working on the same image
-				if (imageSource == image.Source)
+				// only mark as finished if we are still working on the same image (a newer load,
+				// including a reload of the same source, cancels this one and reports its own state)
+				if (imageSource == image.Source && !cancellationToken.IsCancellationRequested)
 				{
 					image.UpdateIsLoading(false);
 				}

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Runtime;
+using Android.Views;
 using Android.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
@@ -49,6 +50,33 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmap = bitmapDrawable.Bitmap;
 
 			await bitmap.AssertContainsColor(expectedColor).ConfigureAwait(false);
+		}
+
+		[Fact]
+		public async Task LoadDrawableAsyncDoesNotShowAStreamThatArrivesAfterCancellation()
+		{
+			var service = new StreamImageSourceService();
+			using var cts = new CancellationTokenSource();
+			var imageSource = new StreamImageSourceStub(_ =>
+			{
+				// The stream ignores cancellation and arrives after the load was cancelled (for example replaced by a newer load).
+				cts.Cancel();
+				return Task.FromResult(CreateBitmapStream(100, 100, Microsoft.Maui.Graphics.Colors.Red));
+			});
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var imageView = new ImageView(MauiProgram.DefaultContext)
+				{
+					LayoutParameters = new ViewGroup.LayoutParams(100, 100),
+				};
+
+				var load = service.LoadDrawableAsync(imageSource, imageView, cts.Token);
+				await Task.WhenAny(load, Task.Delay(5_000));
+
+				Assert.True(load.IsCanceled);
+				Assert.Null(imageView.Drawable);
+			});
 		}
 
 		[Fact]
