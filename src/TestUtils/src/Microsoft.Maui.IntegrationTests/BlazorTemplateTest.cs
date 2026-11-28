@@ -8,6 +8,61 @@ public class BlazorTemplateTest : BaseTemplateTests
 {
 	public BlazorTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
+	[Fact]
+	public void PublishTrimmedRootComponentPreservesConstructor()
+	{
+		SetTestIdentifier();
+		var projectFile = Path.Combine(TestDirectory, "RootComponentTrimming.csproj");
+		var publishDirectory = Path.Combine(TestDirectory, "publish");
+		File.WriteAllText(projectFile, $$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <OutputType>Exe</OutputType>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <PublishTrimmed>true</PublishTrimmed>
+			    <TrimMode>full</TrimMode>
+			    <SelfContained>true</SelfContained>
+			    <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="{{MauiPackageVersion}}" />
+			    <PackageReference Include="Microsoft.Maui.Controls" Version="{{MauiPackageVersion}}" />
+			  </ItemGroup>
+			</Project>
+			""");
+		File.WriteAllText(Path.Combine(TestDirectory, "Program.cs"), """
+			using System;
+			using System.Diagnostics.CodeAnalysis;
+			using System.Threading.Tasks;
+			using Microsoft.AspNetCore.Components;
+			using Microsoft.AspNetCore.Components.WebView.Maui;
+
+			var root = new RootComponent { ComponentType = typeof(TestComponent), Selector = "#app" };
+			if (CreateComponent(root.ComponentType) is not TestComponent)
+			    throw new InvalidOperationException("Root component activation failed.");
+
+			static object CreateComponent([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
+			    => Activator.CreateInstance(type);
+
+			public sealed class TestComponent : IComponent
+			{
+			    public TestComponent() { }
+			    public void Attach(RenderHandle renderHandle) { }
+			    public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+			}
+			""");
+
+		var buildProps = BuildProps;
+		buildProps.Add($"PublishDir=\"{publishDirectory}\"");
+		var binlog = Path.Combine(TestDirectory, "publish.binlog");
+		Assert.True(DotnetInternal.Publish(projectFile, "Release", properties: buildProps,
+			runtimeIdentifier: System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier,
+			binlogPath: binlog, output: _output), "Root component test app failed to publish with full trimming.");
+		BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog).AssertNoWarnings();
+		Assert.True(DotnetInternal.Run("exec", $"\"{Path.Combine(publishDirectory, "RootComponentTrimming.dll")}\"", output: _output),
+			"The trimmed root component constructor was not preserved.");
+	}
+
 	[Theory]
 	[InlineData("maui-blazor", "", true)]
 	[InlineData("maui-blazor", "--empty", false)]
@@ -328,11 +383,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 
 		// Assert: No precompressed files should be in the MAUI APK
 		// These files bloat the app bundle since Blazor Hybrid serves assets locally
-		Assert.True(gzFiles.Length == 0, 
+		Assert.True(gzFiles.Length == 0,
 			$"APK should not contain .gz files but found {gzFiles.Length}. " +
 			$"See https://github.com/dotnet/maui/issues/33773. Files: {string.Join(", ", gzFiles.Select(f => Path.GetFileName(f)))}");
-		
-		Assert.True(brFiles.Length == 0, 
+
+		Assert.True(brFiles.Length == 0,
 			$"APK should not contain .br files but found {brFiles.Length}. " +
 			$"See https://github.com/dotnet/maui/issues/33773. Files: {string.Join(", ", brFiles.Select(f => Path.GetFileName(f)))}");
 
@@ -343,10 +398,10 @@ public class BlazorTemplateTest : BaseTemplateTests
 		// Check that our test file exists (uncompressed)
 		var sharedContentDir = Directory.GetDirectories(Path.Combine(wwwrootDir, "_content"), "*Shared*", SearchOption.TopDirectoryOnly);
 		Assert.True(sharedContentDir.Length > 0, "Shared RCL content directory should exist in APK");
-		
+
 		var testJsInApk = Path.Combine(sharedContentDir[0], "test-compression.js");
 		Assert.True(File.Exists(testJsInApk), $"Test JS file should exist uncompressed at {testJsInApk}");
-		
+
 		_output.WriteLine("✅ APK correctly contains no precompressed .gz/.br files from RCL");
 	}
 
@@ -408,11 +463,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 		}
 
 		// Assert: Web app SHOULD have precompressed files for HTTP serving
-		Assert.True(gzFiles.Length > 0, 
+		Assert.True(gzFiles.Length > 0,
 			"Web app publish output should contain .gz files for HTTP compression. " +
 			"If this fails, the compression system may be broken.");
-		
-		Assert.True(brFiles.Length > 0, 
+
+		Assert.True(brFiles.Length > 0,
 			"Web app publish output should contain .br files for HTTP compression. " +
 			"If this fails, the compression system may be broken.");
 
@@ -421,9 +476,9 @@ public class BlazorTemplateTest : BaseTemplateTests
 		var testJsGz = Directory.GetFiles(sharedContentDir, "test-compression.js.gz", SearchOption.AllDirectories);
 		var testJsBr = Directory.GetFiles(sharedContentDir, "test-compression.js.br", SearchOption.AllDirectories);
 
-		Assert.True(testJsGz.Length > 0, 
+		Assert.True(testJsGz.Length > 0,
 			"Test JS file should have a .gz compressed version in web publish output");
-		Assert.True(testJsBr.Length > 0, 
+		Assert.True(testJsBr.Length > 0,
 			"Test JS file should have a .br compressed version in web publish output");
 
 		_output.WriteLine("✅ Web app correctly contains precompressed .gz/.br files from RCL");

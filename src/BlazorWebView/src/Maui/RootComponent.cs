@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Gets or sets the type of the root component. This type must implement <see cref="IComponent"/>.
 		/// </summary>
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		public Type? ComponentType { get; set; }
 
 		/// <summary>
