@@ -97,6 +97,9 @@ The thread reply names the model whose fix was kept, and any idea it adopted fro
 The items come from:
 
 - the expert review: all critical and major findings, plus small and safe moderate and minor ones,
+- **UI test screenshots**: for a screenshot failure (`Baseline snapshot not yet created` or `Snapshot different than
+  baseline`) the round downloads the new screenshot from the build's `uitest-snapshot-results-*` artifact. If the PR
+  causes the visual change, it commits the screenshot as the baseline,
 - failing tests the PR causes. Before fixing anything, GPT-6.2 Sol, MAI Code 2 and Claude Opus 5.5 each judge every
   failure independently as `related`, `unrelated` (infrastructure, flaky, or already broken on the base branch) or
   `unsure`, using the failed jobs and error lines collected from Azure DevOps. The majority decides; a split counts as

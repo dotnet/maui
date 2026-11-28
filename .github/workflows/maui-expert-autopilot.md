@@ -180,7 +180,17 @@ on:
           // "No more findings" are clean).
           const expertFindings = expert && Number(/^## Expert Review\s+\S+\s+(\d+)/.exec(expert.body)?.[1]) > 0;
           const expertHandled = expertFindings && threads.lastReply > (expert.submitted_at || '');
-          if (!expert) {
+          // GitHub computes mergeability lazily; null means "not known yet", not "conflicting".
+          let mergeable = pr.mergeable;
+          if (mergeable === null) {
+            await new Promise(r => setTimeout(r, 5000));
+            mergeable = (await github.rest.pulls.get({ ...repo, pull_number: number })).data.mergeable;
+          }
+          const conflicting = mergeable === false;
+          if (conflicting) {
+            // Merge conflicts come first: the round rebases the PR onto its base in a follow-up PR.
+            stage = 'fix'; source = 'conflicts';
+          } else if (!expert) {
             stage = 'review';
           } else if (expertFindings && (!expertHandled || threads.open)) {
             stage = 'fix'; source = 'expert';
@@ -266,7 +276,7 @@ on:
           core.setOutput('round', String(Math.max(round, 1)));
           // Claude Opus 5.5 proposes first, in its own workflow; it then continues this fix round.
           const opusRun = /^\d+$/.test(context.payload.inputs?.opus_run || '') ? context.payload.inputs.opus_run : '';
-          if (stage === 'fix' && !opusRun) stage = 'opus';
+          if (stage === 'fix' && !opusRun && source !== 'conflicts') stage = 'opus';
           core.setOutput('opus_run', opusRun);
           core.info(`#${number} @ ${head.slice(0, 7)}: ${stage}${source ? ` (${source}, round ${Math.max(round, 1)})` : ''}, on behalf of @${requester}.`);
           if (!current.has(LABEL) && stage !== 'done' && stage !== 'stop') {
@@ -300,7 +310,8 @@ on:
           if (stage === 'done' || stage === 'stop') { await stopLoop(note, stage === 'done' ? 'waiting-for-maintainer-review' : 'needs-maintainer-decision'); stage = 'none'; }
           else await setPhase({ review: 'reviewing', fix: 'fixing', opus: 'fixing', tests: 'testing', wait: 'testing' }[stage]);
 
-          const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name;
+          // Fork PRs, and PRs rebased to resolve conflicts, are finished in an autopilot/pr-<n> follow-up PR.
+          const isFork = pr.head.repo?.full_name !== pr.base.repo.full_name || conflicting;
           core.setOutput('stage', stage);
           core.setOutput('source', source);
           core.setOutput('requested_by', requester);
@@ -396,7 +407,8 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-    timeout-minutes: 3
+    # Room for the rate-limit back-off below.
+    timeout-minutes: 25
     steps:
       - name: Resolve the threads maui-expert-autopilot fixed
         # The agent resolves threads through safe outputs; GitHub's API sometimes fails transiently, so
@@ -457,7 +469,7 @@ jobs:
               for (const c of bot.filter(c => (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
                 await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
               const summary = failed
-                ? `❌ The [fix round](${runUrl}) failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.`
+                ? `❌ The [fix round](${runUrl}) failed twice in a row${rateLimited ? ', on the Copilot API rate limit' : ''}. A maintainer can comment \`/review autopilot\` to try again.`
                 : '❌ The last fix round found nothing more it could fix. A maintainer can decide how to continue.';
               await github.rest.issues.createComment({ ...context.repo, issue_number: number,
                 body: `## MAUI Autopilot — Stopped\n\n${summary}${reason ? `\n\n<details><summary>Why</summary>\n\n${reason}\n\n</details>` : ''}\n\n<!-- maui-expert-autopilot-status -->` });
@@ -467,11 +479,27 @@ jobs:
             const retrying = labels.some(l => l.name === 's/autopilot-retrying');
             // A failed threat detection skips publishing; count that like a failed agent.
             const failed = process.env.AGENT_RESULT === 'failure' || ['failure', 'skipped'].includes(process.env.SAFE_OUTPUTS_RESULT);
+            // A Copilot API rate limit (429) clears on its own; retrying at once just hits it again.
+            let rateLimited = false;
+            if (process.env.AGENT_RESULT === 'failure') {
+              try {
+                const { data } = await github.rest.actions.listJobsForWorkflowRun({ ...context.repo, run_id: context.runId, per_page: 100 });
+                const job = data.jobs.find(j => j.name === 'agent');
+                if (job) {
+                  const log = await github.rest.actions.downloadJobLogsForWorkflowRun({ ...context.repo, job_id: job.id });
+                  rateLimited = /429 Too Many Requests/.test(String(log.data));
+                }
+              } catch (e) { core.warning(`Could not read the agent log: ${e.message}`); }
+            }
             // One automatic retry: a single flaky fix run should not end an autonomous loop.
             if (failed && !retrying && labels.some(l => l.name === LABEL)) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
                 description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
               await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              if (rateLimited) {
+                core.info('The Copilot API rate limit was hit; waiting 15 minutes before retrying.');
+                await new Promise(r => setTimeout(r, 15 * 60 * 1000));
+              }
               await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
                 ref: context.payload.repository.default_branch, inputs: { pr_number: String(number), opus_run: process.env.OPUS_RUN || '' } });
               return core.info(`#${number}: the fix round failed; retrying once.`);
@@ -608,7 +636,39 @@ steps:
         # push_to_pull_request_branch diffs origin/<branch>..<branch>.
         git update-ref "refs/remotes/origin/${HEAD_REF}" "refs/remotes/origin/pr-${PR_NUMBER}"
       fi
-      git checkout -B "${WORK_BRANCH}" "refs/remotes/origin/pr-${PR_NUMBER}"
+      CONFLICT_AUTHOR=""
+      if [ "${SOURCE}" = "conflicts" ]; then
+        # Rebase the PR's net change onto the base tip as one commit. Pushing a merge with the base would bring
+        # in its workflow and build changes, which neither GITHUB_TOKEN nor the allowed-files list permits.
+        CONFLICT_AUTHOR="$(git log --reverse --format='%an <%ae>' "refs/remotes/origin/${BASE_REF}..refs/remotes/origin/pr-${PR_NUMBER}" | head -1)"
+        git checkout -B "${WORK_BRANCH}" "refs/remotes/origin/${BASE_REF}"
+        # git merge needs an identity even for --squash.
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git merge --squash "refs/remotes/origin/pr-${PR_NUMBER}" || true
+        # PublicAPI.Unshipped.txt entries are a set: base entries, plus the PR's added ones, minus its removed ones.
+        for FILE in $(git diff --name-only --diff-filter=U | grep -E '(^|/)PublicAPI\.Unshipped\.txt$' || true); do
+          git show ":1:${FILE}" > /tmp/api-base 2>/dev/null || : > /tmp/api-base
+          git show ":2:${FILE}" > /tmp/api-ours
+          git show ":3:${FILE}" > /tmp/api-pr
+          { grep -vxFf /tmp/api-pr /tmp/api-base > /tmp/api-removed || true; }
+          { grep -vxFf /tmp/api-base /tmp/api-pr | grep -vxFf /tmp/api-ours > /tmp/api-added || true; }
+          { grep -vxFf /tmp/api-removed /tmp/api-ours || true; cat /tmp/api-added; } > "${FILE}"
+          git add -- "${FILE}"
+        done
+        {
+          echo "# Merge conflicts with ${BASE_REF}"
+          echo
+          echo "The PR's changes were applied onto the tip of \`${BASE_REF}\` on \`${WORK_BRANCH}\`."
+          echo "PublicAPI.Unshipped.txt conflicts were resolved by combining the entries. Commit author: ${CONFLICT_AUTHOR}"
+          echo
+          echo "Still conflicting:"
+          git diff --name-only --diff-filter=U | sed 's/^/- /'
+        } > /tmp/gh-aw/autopilot/conflicts.md
+        cat /tmp/gh-aw/autopilot/conflicts.md
+      else
+        git checkout -B "${WORK_BRANCH}" "refs/remotes/origin/pr-${PR_NUMBER}"
+      fi
 
       # The Copilot CLI loads agents, skills and instructions from the working tree. Overlay the
       # trusted .github/ and AGENTS.md so a PR cannot change the agent's instructions, and hide the
@@ -620,6 +680,10 @@ steps:
 
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      if [ "${SOURCE}" = "conflicts" ] && [ -z "$(git diff --name-only --diff-filter=U)" ] && ! git diff --cached --quiet; then
+        git commit -q --author="${CONFLICT_AUTHOR}" -m "Changes from #${PR_NUMBER}, rebased on ${BASE_REF}" \
+          -m "Rebased by MAUI Autopilot to resolve merge conflicts."
+      fi
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
       # A fork PR's fixes go to a follow-up PR whose patch replays every commit, and only src/ and
       # PublicAPI.Unshipped.txt may change. If the contributor's commits touched other files (even ones a
@@ -694,6 +758,30 @@ steps:
           printf '```\n' >> "${OUT}"
         done
       done
+      # UI test screenshots: each uitest-snapshot-results-* artifact holds snapshots-diff/<env>/<Test>.png (the new
+      # screenshot) and <Test>-diff.png. Map each to the baseline it belongs to in this repo.
+      SHOTS=/tmp/gh-aw/autopilot/screenshots
+      mkdir -p "${SHOTS}"
+      ROWS=""
+      for BUILD in $(grep -oE 'buildId=[0-9]+' <<< "${BODY}" | cut -d= -f2 | sort -u); do
+        for ART in $(curl -fsSL "${API}/${BUILD}/artifacts?api-version=7.1" | jq -r '.value[]?.name | select(startswith("uitest-snapshot-results-"))' | head -20); do
+          URL="$(curl -fsSL "${API}/${BUILD}/artifacts?artifactName=${ART}&api-version=7.1" | jq -r '.resource.downloadUrl // empty')"
+          [ -n "${URL}" ] || continue
+          curl -fsSL "${URL}" -o "/tmp/${ART}.zip" && unzip -oq "/tmp/${ART}.zip" -d "${SHOTS}" || continue
+          while IFS= read -r PNG; do
+            NAME="$(basename "${PNG}")"; ENV="$(basename "$(dirname "${PNG}")")"
+            case "${NAME}" in *-diff.png) continue ;; esac
+            TARGET="$(ls -d src/Controls/tests/*/snapshots/"${ENV}" 2>/dev/null | head -1)"
+            if [ -n "${TARGET}" ]; then
+              STATE="missing"; [ -f "${TARGET}/${NAME}" ] && STATE="changed"
+              ROWS="${ROWS}| \`${NAME%.png}\` | \`${ENV}\` | ${STATE} | \`${PNG}\` | \`${TARGET}/${NAME}\` |"$'\n'
+            fi
+          done < <(find "${SHOTS}/${ART}" -path '*/snapshots-diff/*' -name '*.png' 2>/dev/null)
+        done
+      done
+      if [ -n "${ROWS}" ]; then
+        printf '\n## UI test screenshots\n\n| Test | Environment | Baseline | New screenshot | Baseline path in this repo |\n|---|---|---|---|---|\n%s' "${ROWS}" >> "${OUT}"
+      fi
       cat "${OUT}"
 
   - name: Download the Claude Opus 5.5 candidate
@@ -746,6 +834,9 @@ safe-outputs:
     base-branch: "main"
     allowed-base-branches: ["main", "net11"]
     allowed-branches: ["autopilot/**"]
+    # next_round finds the follow-up PR by its exact branch, autopilot/pr-<n>.
+    preserve-branch-name: true
+    recreate-ref: true
     protected-files: blocked
     allowed-files:
       - "src/**"
@@ -780,6 +871,13 @@ whether the PR is merged.
 - `expert`: the latest `## Expert Review` (by `github-actions[bot]`) on `head_sha` has findings.
 - `tests`: the expert review is clean, but the latest `/review run-tests` comment (by
   `github-actions[bot]`, marked `<!-- review-run-tests-head: <head_sha> -->`) reports failing tests.
+- `conflicts`: the PR has merge conflicts with its base. Setup already applied the PR's changes onto the base tip
+  on `work_branch` and combined `PublicAPI.Unshipped.txt` entries; `/tmp/gh-aw/autopilot/conflicts.md` lists what
+  still conflicts. **This round only resolves the conflicts:** fix every remaining conflict marker so both sides'
+  intent survives (only under `src/`; if a conflict is anywhere else, publish nothing and say why), `git add` the
+  files, then, if nothing is committed yet, `git commit --author "<author from conflicts.md>" -m "Changes from
+  #<pr_number>, rebased on <base_ref>"`. Build what you can to check it. Publish it as the follow-up PR below and
+  make no other changes.
 - `threads`: the expert review is handled, but trusted reviewers left unresolved threads, from this or earlier
   heads, that nobody has answered yet.
 
@@ -812,6 +910,12 @@ The PR head is checked out on `work_branch`.
      - The verdict is the majority of the models that answered. A split, or an `unsure` with a credible argument
        that the PR causes it, counts as `related`. Only `related` failures become items; never "fix" the others.
      - Keep each model's verdict per failure for your comment.
+     - **Screenshot failures** (`Baseline snapshot not yet created`, `Snapshot different than baseline`): the
+       `## UI test screenshots` table in `test-failures.md` has the new screenshot from Azure DevOps and the baseline
+       path it belongs to. When the failure is `related` (the PR adds or changes that visual test, or intentionally
+       changes how it renders), the fix is to copy the new screenshot to the baseline path with `cp` and commit it
+       (`Add <Test> baseline for <environment>` or `Update ...`); look at the image and its `-diff.png` first, and say
+       in the reply what the screenshot shows. Never add or update a baseline for an `unrelated` failure.
    - **In every round, every earlier suggestion:** each unresolved thread in `threads.json` from a trusted
      reviewer that this run hasn't answered: no maui-expert-autopilot reply since `loop_start` in the context file,
      whatever head it was left on and whether or not GitHub marks it outdated. **Each `/review autopilot` starts
@@ -868,7 +972,8 @@ The PR head is checked out on `work_branch`.
    - If `is_fork` is `false`, call `push_to_pull_request_branch` with `branch` set to `work_branch`.
    - If `is_fork` is `true`, call `create_pull_request` with `branch` set to `work_branch` and `base`
      set to `base_ref`. Title: the original PR title. Body: start with
-     `Finishes #<pr_number> by @<author>. Includes their commits plus fixes for the review feedback.`,
+     `Finishes #<pr_number> by @<author>. Includes their commits plus fixes for the review feedback.` (when `source`
+     is `conflicts`: `Finishes #<pr_number> by @<author>, rebased on <base_ref> to resolve merge conflicts.`),
      then this exact line, so the loop continues on the follow-up PR:
      `- [x] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**`
      then list the fixes.
