@@ -1,6 +1,7 @@
 using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis.CSharp;
 
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
@@ -351,17 +352,17 @@ public static class BindingCodeWriter
 				// Make binding react for PropertyChanged events on indexer itself
 				if (part is IndexAccess indexAccess)
 				{
-					AppendLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+					AppendLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(indexAccess.DefaultMemberName, quote: true)}),");
 				}
 				else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
 				{
-					AppendLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+					AppendLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(innerIndexAccess.DefaultMemberName, quote: true)}),");
 				}
 
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
 				if (part.PropertyName is string propertyName)
 				{
-					AppendLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
+					AppendLine($"new(static source => {previousExpression}, {SymbolDisplay.FormatLiteral(propertyName, quote: true)}),");
 				}
 			}
 			Unindent();

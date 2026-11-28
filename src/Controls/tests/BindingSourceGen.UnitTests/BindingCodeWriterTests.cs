@@ -368,7 +368,7 @@ public class BindingCodeWriterTests
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
 				new IndexAccess("Item", 12),
-				new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
+				new ConditionalAccess(new IndexAccess("Indexer", """he"\.llo""")),
 				new IndexAccess("Item", 0),
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
@@ -404,7 +404,7 @@ public class BindingCodeWriterTests
                         
                         if (source[12] is {} p0)
                         {
-                            p0["Abc"][0] = value;
+                            p0["he\"\\.llo"][0] = value;
                         }
                     };
                 }
@@ -417,9 +417,9 @@ public class BindingCodeWriterTests
                         new(static source => source, "Item"),
                         new(static source => source, "Item[12]"),
                         new(static source => source[12], "Indexer"),
-                        new(static source => source[12], "Indexer[Abc]"),
-                        new(static source => source[12]?["Abc"], "Item"),
-                        new(static source => source[12]?["Abc"], "Item[0]"),
+                        new(static source => source[12], "Indexer[he\"\\.llo]"),
+                        new(static source => source[12]?["he\"\\.llo"], "Item"),
+                        new(static source => source[12]?["he\"\\.llo"], "Item[0]"),
                     })
                     {
                     	Mode = mode,

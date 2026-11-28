@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+using Microsoft.CodeAnalysis.CSharp;
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 public sealed record Setter(
@@ -108,7 +109,7 @@ public sealed record Setter(
 			{
 				int numericIndex => $"{accessAccumulator}[{numericIndex}] = {assignedValueExpression};",
 				EnumIndex enumIndex => $"{accessAccumulator}[{enumIndex.FullyQualifiedEnumValue}] = {assignedValueExpression};",
-				string stringIndex => $"{accessAccumulator}[\"{stringIndex}\"] = {assignedValueExpression};",
+				string stringIndex => $"{accessAccumulator}[{SymbolDisplay.FormatLiteral(stringIndex, quote: true)}] = {assignedValueExpression};",
 				_ => throw new NotSupportedException($"Unsupported index type: {indexAccess.Index.GetType()}"),
 			},
 			_ => $"{accessAccumulator} = {assignedValueExpression};",

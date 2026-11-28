@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+using Microsoft.CodeAnalysis.CSharp;
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 
@@ -16,7 +17,7 @@ public static class AccessExpressionBuilder
 			ConditionalAccess conditionalAccess => ExtendExpression(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
 			IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
 			IndexAccess { Index: EnumIndex enumIndex } => $"{previousExpression}[{enumIndex.FullyQualifiedEnumValue}]",
-			IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
+			IndexAccess { Index: string stringIndex } => $"{previousExpression}[{SymbolDisplay.FormatLiteral(stringIndex, quote: true)}]",
 			MemberAccess { Kind: AccessorKind.Field, IsGetterAccessible: false } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({previousExpression})",
 			MemberAccess { Kind: AccessorKind.Property, IsGetterAccessible: false } memberAccess => $"{CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({previousExpression})",
 			MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
