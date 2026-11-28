@@ -113,7 +113,9 @@ How the fixes are published:
 
 - **Same-repository PRs:** the round pushes to the PR branch.
 - **Fork PRs:** gh-aw cannot push to contributor forks, so the round opens an `[autopilot]` follow-up PR. That PR
-  keeps the contributor's commits, and the loop moves to it.
+  keeps the contributor's commits, and the loop moves to it. If any of those commits touched files outside `src/`
+  (even ones a later commit reverted), they're squashed into one commit by the contributor with the same net change,
+  because the follow-up patch may only change `src/` and `PublicAPI.Unshipped.txt`.
 
 ### The conversation happens in the review threads
 

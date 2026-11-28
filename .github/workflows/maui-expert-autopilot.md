@@ -493,32 +493,36 @@ jobs:
               }).length;
             };
             let target = number;
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
+            // A fork PR's fix goes to a follow-up PR; any other PR's fix moves its head.
+            let followUp = null;
             if (process.env.IS_FORK === 'true') {
-              // The fix went to a follow-up PR; the loop moves there.
               const { data: prs } = await github.rest.pulls.list({ ...context.repo, state: 'open',
                 head: `${context.repo.owner}:autopilot/pr-${number}`, per_page: 1 });
-              await stop();
-              if (!prs.length) return core.info('No follow-up PR was opened; the loop is done.');
-              target = prs[0].number;
-              await github.rest.issues.addLabels({ ...context.repo, issue_number: target, labels: [LABEL] });
-            } else {
-              const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: number });
-              if (pr.state !== 'open' || pr.head.sha === process.env.HEAD_SHA) {
-                // Nothing pushed, but if the round answered every open thread, the loop moves on (to tests or done).
-                if (pr.state === 'open' && !failed && !(await unansweredThreads())) {
-                  await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
-                    ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
-                  return core.info(`#${number}: every thread is answered; the loop continues.`);
-                }
-                await stop();
-                if (pr.state === 'open') {
-                  await finishNoop(failed);
-                  await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-needs-maintainer-decision', color: 'B60205',
-                    description: 'MAUI Autopilot stopped: a maintainer needs to decide how to continue' }).catch(() => {});
-                  await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-needs-maintainer-decision'] });
-                }
-                return core.info('Nothing was pushed; the loop is done (see the maui-expert-autopilot comment).');
+              followUp = prs[0] || null;
+            }
+            const published = process.env.IS_FORK === 'true' ? !!followUp : pr.state === 'open' && pr.head.sha !== process.env.HEAD_SHA;
+            if (!published) {
+              // Nothing published, but if the round answered every open thread, the loop moves on (to tests or done).
+              if (pr.state === 'open' && !failed && !(await unansweredThreads())) {
+                await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+                  ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+                return core.info(`#${number}: every thread is answered; the loop continues.`);
               }
+              await stop();
+              if (pr.state === 'open') {
+                await finishNoop(failed);
+                await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-needs-maintainer-decision', color: 'B60205',
+                  description: 'MAUI Autopilot stopped: a maintainer needs to decide how to continue' }).catch(() => {});
+                await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-needs-maintainer-decision'] });
+              }
+              return core.info('Nothing was published; the loop is done (see the maui-expert-autopilot comment).');
+            }
+            if (followUp) {
+              // The loop moves to the follow-up PR.
+              await stop();
+              target = followUp.number;
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: target, labels: [LABEL] });
             }
             await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
               ref: context.payload.repository.default_branch, inputs: { pr_number: String(target) } });
@@ -617,6 +621,17 @@ steps:
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       MERGE_BASE="$(git merge-base "refs/remotes/origin/${BASE_REF}" HEAD)"
+      # A fork PR's fixes go to a follow-up PR whose patch replays every commit, and only src/ and
+      # PublicAPI.Unshipped.txt may change. If the contributor's commits touched other files (even ones a
+      # later commit reverted), squash them into one commit with the same net change, keeping the author.
+      if [ "${IS_FORK}" = "true" ] && git log --format= --name-only "${MERGE_BASE}..HEAD" | sort -u |
+           grep -v '^$' | grep -qvE '^src/|(^|/)PublicAPI\.Unshipped\.txt$'; then
+        AUTHOR="$(git log --reverse --format='%an <%ae>' "${MERGE_BASE}..HEAD" | head -1)"
+        git reset -q --soft "${MERGE_BASE}"
+        git commit -q --author="${AUTHOR}" -m "Changes from #${PR_NUMBER}" \
+          -m "Squashed because some of its commits touch files outside src/; the net change is the same."
+        echo "Squashed the contributor's commits for the follow-up PR."
+      fi
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
         --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" --arg loop_start "${LOOP_START}" \
@@ -653,13 +668,15 @@ steps:
 
   - name: Collect the failing test evidence
     # The agent can't reach Azure DevOps itself; fetch the failed jobs, tasks, and error lines up front.
+    # Best effort: missing evidence must never fail the round.
     if: needs.pre_activation.outputs.autopilot_source == 'tests'
+    continue-on-error: true
     env:
       PR_NUMBER: ${{ needs.pre_activation.outputs.autopilot_pr }}
       HEAD_SHA: ${{ needs.pre_activation.outputs.autopilot_head_sha }}
       GH_TOKEN: ${{ github.token }}
     run: |
-      set -uo pipefail
+      set +e -uo pipefail
       OUT=/tmp/gh-aw/autopilot/test-failures.md
       API=https://dev.azure.com/dnceng-public/public/_apis/build/builds
       BODY="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate \
