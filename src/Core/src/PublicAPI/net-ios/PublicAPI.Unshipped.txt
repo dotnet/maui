@@ -1,2 +1,4 @@
 #nullable enable
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
+override Microsoft.Maui.Platform.MauiRefreshView.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiRefreshView.LayoutSubviews() -> void
