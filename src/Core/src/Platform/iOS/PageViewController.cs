@@ -3,6 +3,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
+	internal interface IPageViewControllerAppearanceObserver
+	{
+		void OnPageViewControllerAppeared(IElement page, UIViewController controller);
+	}
+
 	public class PageViewController : ContainerViewController
 	{
 		public PageViewController(IView page, IMauiContext mauiContext)
@@ -19,6 +24,13 @@ namespace Microsoft.Maui.Platform
 			{
 				CrossPlatformLayout = (IContentView)view
 			};
+		}
+
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			if (CurrentView is { Parent: IPageViewControllerAppearanceObserver observer } page)
+				observer.OnPageViewControllerAppeared(page, this);
 		}
 
 		public override bool PrefersHomeIndicatorAutoHidden

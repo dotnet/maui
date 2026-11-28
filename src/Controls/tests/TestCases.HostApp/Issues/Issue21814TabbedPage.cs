@@ -13,6 +13,67 @@ namespace Maui.Controls.Sample.Issues
 			Children.Add(new Issue21814TabItem1());
 			Children.Add(new Issue21814TabItem2());
 			Children.Add(new Issue21814TabItem3());
+			Children.Add(new ContentPage { Title = "Tab 4" });
+			Children.Add(new ContentPage { Title = "Tab 5" });
+			var morePage = new Issue21814MoreTab();
+			Children.Add(morePage);
+			CurrentPageChanged += (_, _) => morePage.UpdateSelection(CurrentPage == morePage);
+
+			var navigationStatus = new Label { AutomationId = "MoreNavigationTabStatus", Text = "0" };
+			var detailTabStatus = new Label { AutomationId = "MoreDetailTabStatus", Text = "0" };
+			var selectionStatus = new Label { AutomationId = "MoreNavigationTabSelection", Text = "Not selected" };
+			var detailSelectionStatus = new Label { AutomationId = "MoreDetailTabSelection", Text = "Not selected" };
+			var detailStatus = new Label { AutomationId = "MoreDetailStatus", Text = "Not navigated" };
+			var push = new Button { AutomationId = "PushMoreDetail", Text = "Push detail" };
+			var navigationRoot = new ContentPage
+			{
+				Title = "Navigation root",
+				Content = new VerticalStackLayout { Padding = 20, Children = { navigationStatus, selectionStatus, push } }
+			};
+			var detail = new ContentPage
+			{
+				Title = "Navigation detail",
+				Content = new VerticalStackLayout { Padding = 20, Children = { detailStatus, detailTabStatus, detailSelectionStatus } }
+			};
+			var navigationTab = new NavigationPage(navigationRoot) { Title = "Tab 7" };
+			var navigatedToCount = 0;
+			navigationTab.NavigatedTo += (_, _) =>
+				navigationStatus.Text = detailTabStatus.Text = (++navigatedToCount).ToString();
+			CurrentPageChanged += (_, _) =>
+				selectionStatus.Text = detailSelectionStatus.Text = CurrentPage == navigationTab ? "Selected" : "Not selected";
+			detail.NavigatedTo += (_, _) => detailStatus.Text = "Navigated";
+			push.Clicked += async (_, _) => await navigationTab.PushAsync(detail);
+			Children.Add(navigationTab);
+		}
+	}
+
+	// Issue 16175: selecting a child from iOS More must raise OnNavigatedTo.
+	public class Issue21814MoreTab : ContentPage
+	{
+		readonly Label _navigationStatus = new Label { AutomationId = "MoreTabNavigationStatus", Text = "Not navigated" };
+		readonly Label _selectionStatus = new Label { AutomationId = "MoreTabSelectionStatus", Text = "Not selected" };
+
+		public Issue21814MoreTab()
+		{
+			Title = "Tab 6";
+			Content = new StackLayout
+			{
+				Padding = 20,
+				Children =
+				{
+					new Label { AutomationId = "MoreTabContent", Text = "Tab 6 content" },
+					_navigationStatus,
+					_selectionStatus
+				}
+			};
+		}
+
+		public void UpdateSelection(bool selected) => _selectionStatus.Text = selected ? "Selected" : "Not selected";
+
+		protected override void OnNavigatedTo(NavigatedToEventArgs args)
+		{
+			base.OnNavigatedTo(args);
+			_navigationStatus.Text = "Navigated";
 		}
 	}
 
@@ -21,15 +82,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem1()
 		{
 			Title = "Tab 1";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab1OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab1OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab1OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -45,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);
@@ -76,15 +137,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem2()
 		{
 			Title = "Tab 2";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab2OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab2OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab2OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -100,7 +161,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);
@@ -131,15 +192,15 @@ namespace Maui.Controls.Sample.Issues
 		readonly Label _onNavigatedToLabel;
 		readonly Label _onNavigatingFromLabel;
 		readonly Label _onNavigatedFromLabel;
-		
+
 		public Issue21814TabItem3()
 		{
 			Title = "Tab 3";
-			
+
 			_onNavigatedToLabel = new Label { AutomationId = "Tab3OnNavigatedToLabel", Text = "-" };
 			_onNavigatingFromLabel = new Label { AutomationId = "Tab3OnNavigatingFromLabel", Text = "-" };
 			_onNavigatedFromLabel = new Label { AutomationId = "Tab3OnNavigatedFromLabel", Text = "-" };
-			
+
 			Content = new StackLayout
 			{
 				Padding = 20,
@@ -155,7 +216,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-		
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			base.OnNavigatedTo(args);
