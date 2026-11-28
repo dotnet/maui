@@ -396,7 +396,8 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-    timeout-minutes: 3
+    # Room for the rate-limit back-off below.
+    timeout-minutes: 25
     steps:
       - name: Resolve the threads maui-expert-autopilot fixed
         # The agent resolves threads through safe outputs; GitHub's API sometimes fails transiently, so
@@ -457,7 +458,7 @@ jobs:
               for (const c of bot.filter(c => (c.body || '').includes('<!-- maui-expert-autopilot-status -->')))
                 await github.graphql('mutation($id: ID!) { minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) { minimizedComment { isMinimized } } }', { id: c.node_id }).catch(() => {});
               const summary = failed
-                ? `❌ The [fix round](${runUrl}) failed twice in a row. A maintainer can comment \`/review autopilot\` to try again.`
+                ? `❌ The [fix round](${runUrl}) failed twice in a row${rateLimited ? ', on the Copilot API rate limit' : ''}. A maintainer can comment \`/review autopilot\` to try again.`
                 : '❌ The last fix round found nothing more it could fix. A maintainer can decide how to continue.';
               await github.rest.issues.createComment({ ...context.repo, issue_number: number,
                 body: `## MAUI Autopilot — Stopped\n\n${summary}${reason ? `\n\n<details><summary>Why</summary>\n\n${reason}\n\n</details>` : ''}\n\n<!-- maui-expert-autopilot-status -->` });
@@ -467,11 +468,27 @@ jobs:
             const retrying = labels.some(l => l.name === 's/autopilot-retrying');
             // A failed threat detection skips publishing; count that like a failed agent.
             const failed = process.env.AGENT_RESULT === 'failure' || ['failure', 'skipped'].includes(process.env.SAFE_OUTPUTS_RESULT);
+            // A Copilot API rate limit (429) clears on its own; retrying at once just hits it again.
+            let rateLimited = false;
+            if (process.env.AGENT_RESULT === 'failure') {
+              try {
+                const { data } = await github.rest.actions.listJobsForWorkflowRun({ ...context.repo, run_id: context.runId, per_page: 100 });
+                const job = data.jobs.find(j => j.name === 'agent');
+                if (job) {
+                  const log = await github.rest.actions.downloadJobLogsForWorkflowRun({ ...context.repo, job_id: job.id });
+                  rateLimited = /429 Too Many Requests/.test(String(log.data));
+                }
+              } catch (e) { core.warning(`Could not read the agent log: ${e.message}`); }
+            }
             // One automatic retry: a single flaky fix run should not end an autonomous loop.
             if (failed && !retrying && labels.some(l => l.name === LABEL)) {
               await github.rest.issues.createLabel({ ...context.repo, name: 's/autopilot-retrying', color: 'BFD4F2',
                 description: 'maui-expert-autopilot: retrying a step that failed once' }).catch(() => {});
               await github.rest.issues.addLabels({ ...context.repo, issue_number: number, labels: ['s/autopilot-retrying'] });
+              if (rateLimited) {
+                core.info('The Copilot API rate limit was hit; waiting 15 minutes before retrying.');
+                await new Promise(r => setTimeout(r, 15 * 60 * 1000));
+              }
               await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
                 ref: context.payload.repository.default_branch, inputs: { pr_number: String(number), opus_run: process.env.OPUS_RUN || '' } });
               return core.info(`#${number}: the fix round failed; retrying once.`);
@@ -694,6 +711,30 @@ steps:
           printf '```\n' >> "${OUT}"
         done
       done
+      # UI test screenshots: each uitest-snapshot-results-* artifact holds snapshots-diff/<env>/<Test>.png (the new
+      # screenshot) and <Test>-diff.png. Map each to the baseline it belongs to in this repo.
+      SHOTS=/tmp/gh-aw/autopilot/screenshots
+      mkdir -p "${SHOTS}"
+      ROWS=""
+      for BUILD in $(grep -oE 'buildId=[0-9]+' <<< "${BODY}" | cut -d= -f2 | sort -u); do
+        for ART in $(curl -fsSL "${API}/${BUILD}/artifacts?api-version=7.1" | jq -r '.value[]?.name | select(startswith("uitest-snapshot-results-"))' | head -20); do
+          URL="$(curl -fsSL "${API}/${BUILD}/artifacts?artifactName=${ART}&api-version=7.1" | jq -r '.resource.downloadUrl // empty')"
+          [ -n "${URL}" ] || continue
+          curl -fsSL "${URL}" -o "/tmp/${ART}.zip" && unzip -oq "/tmp/${ART}.zip" -d "${SHOTS}" || continue
+          while IFS= read -r PNG; do
+            NAME="$(basename "${PNG}")"; ENV="$(basename "$(dirname "${PNG}")")"
+            case "${NAME}" in *-diff.png) continue ;; esac
+            TARGET="$(ls -d src/Controls/tests/*/snapshots/"${ENV}" 2>/dev/null | head -1)"
+            if [ -n "${TARGET}" ]; then
+              STATE="missing"; [ -f "${TARGET}/${NAME}" ] && STATE="changed"
+              ROWS="${ROWS}| \`${NAME%.png}\` | \`${ENV}\` | ${STATE} | \`${PNG}\` | \`${TARGET}/${NAME}\` |"$'\n'
+            fi
+          done < <(find "${SHOTS}/${ART}" -path '*/snapshots-diff/*' -name '*.png' 2>/dev/null)
+        done
+      done
+      if [ -n "${ROWS}" ]; then
+        printf '\n## UI test screenshots\n\n| Test | Environment | Baseline | New screenshot | Baseline path in this repo |\n|---|---|---|---|---|\n%s' "${ROWS}" >> "${OUT}"
+      fi
       cat "${OUT}"
 
   - name: Download the Claude Opus 5.5 candidate
@@ -812,6 +853,12 @@ The PR head is checked out on `work_branch`.
      - The verdict is the majority of the models that answered. A split, or an `unsure` with a credible argument
        that the PR causes it, counts as `related`. Only `related` failures become items; never "fix" the others.
      - Keep each model's verdict per failure for your comment.
+     - **Screenshot failures** (`Baseline snapshot not yet created`, `Snapshot different than baseline`): the
+       `## UI test screenshots` table in `test-failures.md` has the new screenshot from Azure DevOps and the baseline
+       path it belongs to. When the failure is `related` (the PR adds or changes that visual test, or intentionally
+       changes how it renders), the fix is to copy the new screenshot to the baseline path with `cp` and commit it
+       (`Add <Test> baseline for <environment>` or `Update ...`); look at the image and its `-diff.png` first, and say
+       in the reply what the screenshot shows. Never add or update a baseline for an `unrelated` failure.
    - **In every round, every earlier suggestion:** each unresolved thread in `threads.json` from a trusted
      reviewer that this run hasn't answered: no maui-expert-autopilot reply since `loop_start` in the context file,
      whatever head it was left on and whether or not GitHub marks it outdated. **Each `/review autopilot` starts
