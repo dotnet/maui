@@ -384,7 +384,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 CurrentRenderer = renderer;
             }
 
-            if (ReferenceEquals(value, _tabBarController.MoreNavigationController))
+            // Programmatic selection reports the overflow section's controller even though UIKit displays it in More.
+            if (ReferenceEquals(value, _tabBarController.MoreNavigationController)
+                || (value is not null && _tabBarController.ViewControllers is { Length: > 5 } controllers
+                    && Array.IndexOf(controllers, value) >= 4))
             {
                 _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
                 _tabBarController.MoreNavigationController.Delegate = _moreNavigationDelegate;

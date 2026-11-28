@@ -159,7 +159,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					CurrentRenderer = renderer;
 				}
 
-				if (ReferenceEquals(value, MoreNavigationController))
+				// UIKit also uses More when an overflow section is selected programmatically.
+				if (ReferenceEquals(value, MoreNavigationController)
+					|| (value is not null && ViewControllers is { Length: > 5 } controllers
+						&& Array.IndexOf(controllers, value) >= 4))
 				{
 					MoreNavigationController.WeakDelegate = this;
 					EnsureMoreTransitionDriver();

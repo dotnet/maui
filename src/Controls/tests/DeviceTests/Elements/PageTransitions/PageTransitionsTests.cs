@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 					configureHandlers?.Invoke(handlers);
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.TryAddHandler(typeof(Window), typeof(WindowHandlerStub));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
@@ -271,10 +271,11 @@ namespace Microsoft.Maui.DeviceTests
 				var push = navPage.PushAsync(detail);
 
 				// Wait for the flight to hide the destination, then change its Opacity (as a binding would).
+				await OnLoadedAsync(target);
 				var watch = Stopwatch.StartNew();
 				while (NativeShown(target) && watch.Elapsed < TimeSpan.FromMilliseconds(1000))
 				{
-					await Task.Yield();
+					await Task.Delay(10);
 				}
 
 				Assert.False(NativeShown(target), "The destination was never hidden: no flight ran.");
@@ -285,7 +286,7 @@ namespace Microsoft.Maui.DeviceTests
 				while (!push.IsCompleted && !revealed)
 				{
 					revealed = NativeShown(target);
-					await Task.Yield();
+					await Task.Delay(10);
 				}
 
 				await push.WaitAsync(TimeSpan.FromSeconds(10));
