@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
@@ -409,6 +410,59 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
 						.Cast<object>().Count());
 			});
+		}
+
+		[Fact]
+		public async Task CollectionView2WithoutTemplateUsesSynchronizedSource()
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new ObservableCollection<string> { "First", "Second" };
+			var gate = new object();
+			int reads = 0;
+			BindingBase.EnableCollectionSynchronization(items, gate, (_, _, access, writeAccess) =>
+			{
+				Assert.False(writeAccess);
+				Interlocked.Increment(ref reads);
+				lock (gate)
+					access();
+			});
+			try
+			{
+				var collectionView = new CollectionView { ItemsSource = items, HeightRequest = 200 };
+				await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+				{
+					Assert.True(Volatile.Read(ref reads) > 0);
+					Assert.Equal(new[] { "First", "Second" },
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Cast<string>());
+
+					var initialReads = Volatile.Read(ref reads);
+					await Task.Run(() =>
+					{
+						lock (gate)
+							items.Add("Third");
+					});
+					await AssertEventually(() => Volatile.Read(ref reads) > initialReads &&
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Count() == 3);
+
+					Assert.Equal(new[] { "First", "Second", "Third" },
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Cast<string>());
+
+					collectionView.ItemsSource = new[] { "Replacement" };
+					lock (gate)
+						items.Add("Old source");
+					Assert.Equal(new[] { "Replacement" },
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Cast<string>());
+				});
+			}
+			finally
+			{
+				BindingBase.DisableCollectionSynchronization(items);
+			}
 		}
 
 		[Fact(DisplayName = "CollectionView Header Keeps Its BindingContext")]

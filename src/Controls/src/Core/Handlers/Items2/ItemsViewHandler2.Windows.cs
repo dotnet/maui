@@ -45,6 +45,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	CollectionViewSource? _collectionViewSource;
 	IList? _itemsSource;
+	MarshalingObservableCollection? _untemplatedSynchronizedSource;
 	ItemFactory? _itemFactory;
 
 	FrameworkElement? _emptyView;
@@ -306,6 +307,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			groupedCollection.CleanUp();
 
 		}
+		_untemplatedSynchronizedSource?.Dispose();
+		_untemplatedSynchronizedSource = null;
 
 		_itemFactory?.CleanUp();
 		_itemFactory = null;
@@ -349,6 +352,18 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped
 				&& IsItemsSourceGrouped(itemsSource))
 			{
+				if (itemsSource is INotifyCollectionChanged &&
+					ItemsView is not GroupableItemsView { IsGrouped: true } &&
+					BindingBase.TryGetSynchronizedCollection(itemsSource, out _))
+				{
+					_untemplatedSynchronizedSource = new MarshalingObservableCollection(itemsSource, Element.Dispatcher);
+					return new CollectionViewSource
+					{
+						Source = _untemplatedSynchronizedSource,
+						IsSourceGrouped = false
+					};
+				}
+
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
@@ -513,10 +528,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			{
 				groupedItemTemplateCollection.CleanUp();
 			}
-
 			_itemsChangedProxy?.Unsubscribe();
 			_itemsChangedProxy = null;
 
+			_untemplatedSynchronizedSource?.Dispose();
+			_untemplatedSynchronizedSource = null;
 			_collectionViewSource.Source = null;
 			_collectionViewSource = null;
 		}
