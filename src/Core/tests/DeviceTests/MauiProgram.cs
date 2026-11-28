@@ -30,10 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var options = new TestOptions
 				{
-					Assemblies = new List<Assembly>()
-					{
-						typeof(MauiProgram).Assembly
-					},
+					TestAssembly = typeof(MauiProgram).Assembly,
 					SkipCategories = typeof(TestCategory).GetExcludedTestCategories()
 				};
 

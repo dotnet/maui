@@ -1,4 +1,4 @@
-# Updates `/review run-tests` comments and their "maui-pr-uitests (selected run)" check when the
+# Updates `/review run-tests` (and run-ui-tests / run-device-tests) comments and their "maui-pr-uitests (selected run)" check when the
 # maui-pr-uitests build finishes. The build runs on a run-tests/* dispatch commit, where Azure
 # Pipelines reports its own checks; this keeps the PR's comment (Result badge, per-job table) and
 # check in sync with it. The periodic sweep also deletes expired run-tests/* dispatch branches.
@@ -29,15 +29,19 @@ concurrency:
 
 jobs:
   update:
-    # check_run fires for every check; only the overall maui-pr-uitests check matters.
+    # check_run fires for every check; only the overall maui-pr-uitests and maui-pr-devicetests checks matter.
     if: >-
       github.repository_owner == 'dotnet' &&
       (github.event_name != 'check_run' ||
-       (github.event.check_run.name == 'maui-pr-uitests' && github.event.check_run.app.slug == 'azure-pipelines'))
+       ((github.event.check_run.name == 'maui-pr-uitests' || github.event.check_run.name == 'maui-pr-devicetests') && github.event.check_run.app.slug == 'azure-pipelines'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      # Continues maui-expert-autopilot when a run finishes.
+      actions: write
       checks: write
+      # One commit status per job of the selected build.
+      statuses: write
       # Deletes expired run-tests/* dispatch branches.
       contents: write
       issues: write
@@ -48,6 +52,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: .github/scripts
       - name: Update run-tests comments
+        id: update
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.check_run.head_sha || inputs.head_sha }}
@@ -56,3 +61,25 @@ jobs:
           $arguments = @{}
           if ($env:HEAD_SHA) { $arguments.HeadSha = $env:HEAD_SHA }
           ./.github/scripts/Update-RunTestsResults.ps1 @arguments
+
+      - name: Continue maui-expert-autopilot
+        # A finished run-tests comment is maui-expert-autopilot's cue: fix failing tests, or finish.
+        if: steps.update.outputs.finished_prs != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          FINISHED_PRS: ${{ steps.update.outputs.finished_prs }}
+        with:
+          script: |
+            for (const value of process.env.FINISHED_PRS.split(',')) {
+              const number = Number(value);
+              if (!Number.isSafeInteger(number) || number < 1) continue;
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+              if (!labels.some(l => l.name === 's/autopilot-running')) {
+                // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+                for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && !['s/autopilot-waiting-for-maintainer-review', 's/autopilot-needs-maintainer-decision'].includes(l.name))) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+                continue;
+              }
+              await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+                ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
+              core.info(`#${number}: maui-expert-autopilot continues.`);
+            }

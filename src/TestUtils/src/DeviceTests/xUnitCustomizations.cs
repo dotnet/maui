@@ -1,22 +1,21 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Abstractions;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Attribute to skip a test on iOS when running on a specific version or higher.
-	/// The test will be skipped at runtime when the iOS version is at least the specified major version.
+	/// Skips a test on the specified iOS or Mac Catalyst version and later.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-	public class SkipOnIOSVersionAttribute : Attribute
+	public class SkipOnIOSVersionAttribute : BeforeAfterTestAttribute
 	{
 		public int Major { get; }
 		public int Minor { get; }
@@ -24,14 +23,10 @@ namespace Microsoft.Maui
 		public string Reason { get; }
 
 		public SkipOnIOSVersionAttribute(int major, string reason = "")
-			: this(major, 0, 0, reason)
-		{
-		}
+			: this(major, 0, 0, reason) { }
 
 		public SkipOnIOSVersionAttribute(int major, int minor, string reason = "")
-			: this(major, minor, 0, reason)
-		{
-		}
+			: this(major, minor, 0, reason) { }
 
 		public SkipOnIOSVersionAttribute(int major, int minor, int build, string reason = "")
 		{
@@ -51,327 +46,125 @@ namespace Microsoft.Maui
 #endif
 		}
 
-		public string GetSkipReason()
+		public string GetSkipReason() => string.IsNullOrEmpty(Reason)
+			? $"Test skipped on iOS/MacCatalyst {Major}.{Minor}.{Build} or higher"
+			: Reason;
+
+		public override void Before(MethodInfo methodUnderTest, IXunitTest test)
 		{
-			if (string.IsNullOrEmpty(Reason))
-				return $"Test skipped on iOS/MacCatalyst {Major}.{Minor}.{Build} or higher";
-			return Reason;
+			if (ShouldSkip())
+				Assert.Skip(GetSkipReason());
 		}
 	}
 
 	/// <summary>
-	/// This type provides the assembly name for the xUnit attributes specified in
-	/// the linked TestShared\xUnitSharedAttributes.cs file.
+	/// Adds categories to a test method or class.
 	/// </summary>
-	internal static class XUnitTypeData
-	{
-		internal const string XUnitAttributeAssembly = "Microsoft.Maui.TestUtils.DeviceTests";
-	}
-
-	/// <summary>
-	/// Custom trait discoverer which adds a Category trait for filtering, etc.
-	/// </summary>
-	public class CategoryDiscoverer : ITraitDiscoverer
-	{
-		public const string Category = "Category";
-
-		public CategoryDiscoverer(IMessageSink diagnosticMessageSink)
-		{
-		}
-
-		public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
-		{
-			var args = traitAttribute.GetConstructorArguments().FirstOrDefault();
-
-			if (args is string[] categories)
-			{
-				foreach (var category in categories)
-				{
-					yield return new KeyValuePair<string, string>(Category, category.ToString());
-				}
-			}
-		}
-	}
-
-	/// <summary>
-	/// Custom fact discoverer which wraps the resulting test cases to provide custom names
-	/// </summary>
-	public class FactDiscoverer : Xunit.Sdk.FactDiscoverer
-	{
-		public FactDiscoverer(IMessageSink diagnosticMessageSink) : base(diagnosticMessageSink)
-		{
-		}
-
-		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
-			ITestMethod testMethod, IAttributeInfo factAttribute)
-		{
-			var cases = base.Discover(discoveryOptions, testMethod, factAttribute);
-
-			foreach (var testCase in cases)
-			{
-				yield return new DeviceTestCase(testCase);
-			}
-		}
-	}
-
-	/// <summary>
-	/// Custom theory discoverer which wraps the resulting test cases to provide custom names
-	/// </summary>
-	public class TheoryDiscoverer : Xunit.Sdk.TheoryDiscoverer
-	{
-		public TheoryDiscoverer(IMessageSink diagnosticMessageSink) : base(diagnosticMessageSink)
-		{
-		}
-
-		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
-			ITestMethod testMethod, IAttributeInfo factAttribute)
-		{
-			var testCases = base.Discover(discoveryOptions, testMethod, factAttribute);
-
-			foreach (var testCase in testCases)
-			{
-				yield return new DeviceTestCase(testCase);
-			}
-		}
-	}
-
-	/// <summary>
-	/// Convenience attribute for setting a Category trait on a test or test class
-	/// </summary>
-	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 	public class CategoryAttribute : Attribute, ITraitAttribute
 	{
-		// Yes, it looks like the cateory parameter is not used. Don't worry, CategoryDiscoverer uses it. 
-		public CategoryAttribute(params string[] categories) { }
+		readonly string[] _categories;
+
+		public CategoryAttribute(params string[] categories) => _categories = categories;
+
+		public IReadOnlyCollection<KeyValuePair<string, string>> GetTraits() =>
+			_categories.Select(category => new KeyValuePair<string, string>("Category", category)).ToArray();
 	}
 
 	/// <summary>
-	/// Custom Fact attribute which defaults to using the test method name for the DisplayName property
+	/// Preserves category and renderer/handler variant names during discovery.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.FactDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
+	public class FactDiscoverer : Xunit.v3.FactDiscoverer
+	{
+		public override ValueTask<IReadOnlyCollection<IXunitTestCase>> Discover(
+			ITestFrameworkDiscoveryOptions discoveryOptions, IXunitTestMethod testMethod, IFactAttribute factAttribute)
+		{
+			if (factAttribute is FactAttribute fact)
+				fact.SetDisplayName(testMethod);
+			return base.Discover(discoveryOptions, testMethod, factAttribute);
+		}
+	}
+
+	/// <summary>
+	/// Preserves variant names without replacing xUnit's theory data handling.
+	/// </summary>
+	public class TheoryDiscoverer : Xunit.v3.TheoryDiscoverer
+	{
+		public override ValueTask<IReadOnlyCollection<IXunitTestCase>> Discover(
+			ITestFrameworkDiscoveryOptions discoveryOptions, IXunitTestMethod testMethod, IFactAttribute factAttribute)
+		{
+			if (factAttribute is TheoryAttribute theory)
+				theory.SetDisplayName(testMethod);
+			return base.Discover(discoveryOptions, testMethod, factAttribute);
+		}
+	}
+
+	/// <summary>
+	/// Uses the test method's name with category and variant prefixes.
+	/// </summary>
+	[XunitTestCaseDiscoverer(typeof(FactDiscoverer))]
 	public class FactAttribute : Xunit.FactAttribute
 	{
-		public FactAttribute([CallerMemberName] string displayName = "")
+		string? _originalDisplayName;
+
+		public FactAttribute([CallerMemberName] string displayName = "",
+			[CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+			: base(sourceFilePath, sourceLineNumber) => DisplayName = displayName;
+
+		internal void SetDisplayName(IXunitTestMethod method)
 		{
-			base.DisplayName = displayName;
+			_originalDisplayName ??= DisplayName ?? method.Method.Name;
+			DisplayName = DeviceTestNames.GetPrefix(method) + _originalDisplayName;
 		}
 	}
 
 	/// <summary>
-	/// Custom Theory attribute which defaults to using the test method name for the DisplayName property
+	/// Uses the test method's name with category and variant prefixes.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.TheoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
+	[XunitTestCaseDiscoverer(typeof(TheoryDiscoverer))]
 	public class TheoryAttribute : Xunit.TheoryAttribute
 	{
-		public TheoryAttribute([CallerMemberName] string displayName = "")
+		string? _originalDisplayName;
+
+		public TheoryAttribute([CallerMemberName] string displayName = "",
+			[CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+			: base(sourceFilePath, sourceLineNumber) => DisplayName = displayName;
+
+		internal void SetDisplayName(IXunitTestMethod method)
 		{
-			base.DisplayName = displayName;
+			_originalDisplayName ??= DisplayName ?? method.Method.Name;
+			DisplayName = DeviceTestNames.GetPrefix(method) + _originalDisplayName;
 		}
 	}
 
-#pragma warning disable xUnit3000 // Test case classes must derive directly or indirectly from Xunit.LongLivedMarshalByRefObject
-	// If we try to actually subclass Xunit.LongLivedMarshalByRefObject here, we get a version conflict between the XUnit and 
-	// the runner. LLMBRO is only a concern if we're worried about app domains, and for the moment we aren't. If we have to 
-	// worry about that later, we can work out the conflict issues.
-	public class DeviceTestCase : IXunitTestCase
-#pragma warning restore xUnit3000 // Test case classes must derive directly or indirectly from Xunit.LongLivedMarshalByRefObject
+	static class DeviceTestNames
 	{
-		readonly IXunitTestCase _inner = null!;
-
-		public DeviceTestCase() { }
-
-		public DeviceTestCase(IXunitTestCase inner)
+		public static string GetPrefix(IXunitTestMethod method)
 		{
-			_inner = inner;
-		}
+			var traits = method.Traits;
+			var prefix = traits.TryGetValue("Category", out var categories)
+				? $"[{string.Join(", ", categories)}] "
+				: string.Empty;
 
-		public Exception InitializationException => _inner.InitializationException;
-
-		public IMethodInfo Method => _inner.Method;
-
-		public int Timeout => _inner.Timeout;
-
-		string? _categoryPrefix;
-
-		string GetCategoryPrefix()
-		{
-			if (_categoryPrefix == null)
-			{
-				if (!Traits.ContainsKey(CategoryDiscoverer.Category))
-				{
-					_categoryPrefix = string.Empty;
-				}
-				else
-				{
-					_categoryPrefix = $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] ";
-				}
-			}
-
-			return _categoryPrefix;
-		}
-
-		string? _reuseVariantPrefix;
-
-		// Renderer/handler subclass pairs reuse the same test bodies, so DisplayName alone can't
-		// distinguish variants. Android uses the "Variant" trait ("[Renderer]"/"[Handler]"),
-		// NavigationPage uses "NavigationViewVariant" ("[NavigationRenderer]"/"[NavigationViewHandler]"),
-		// FlyoutPage uses "FlyoutViewVariant" ("[PhoneFlyoutPageRenderer]"/"[FlyoutViewHandler]"),
-		// and TabbedPage uses "TabbedViewVariant" ("[TabbedRenderer]"/"[TabbedViewHandler]").
-		string GetReuseVariantPrefix()
-		{
-			if (_reuseVariantPrefix == null)
-			{
-#if ANDROID || IOS || MACCATALYST
-				try
-				{
-					// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
 #if IOS || MACCATALYST
-					if (Traits.TryGetValue("NavigationViewVariant", out var navigationViewVariants) && navigationViewVariants is not null)
-					{
-						// Check Handler first: a Handler subclass also inherits the base class's
-						// "NavigationRenderer" trait, so Traits may contain both values for this key.
-						if (navigationViewVariants.Contains("NavigationViewHandler"))
-						{
-							_reuseVariantPrefix = "[NavigationViewHandler] ";
-						}
-						else if (navigationViewVariants.Contains("NavigationRenderer"))
-						{
-							_reuseVariantPrefix = "[NavigationRenderer] ";
-						}
-					}
-
-					if (Traits.TryGetValue("FlyoutViewVariant", out var flyoutViewVariants) && flyoutViewVariants is not null)
-					{
-						// Check Handler first: a Handler subclass also inherits the base class's
-						// "PhoneFlyoutPageRenderer" trait, so Traits may contain both values for this key.
-						if (flyoutViewVariants.Contains("FlyoutViewHandler"))
-						{
-							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[FlyoutViewHandler] ";
-						}
-						else if (flyoutViewVariants.Contains("PhoneFlyoutPageRenderer"))
-						{
-							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[PhoneFlyoutPageRenderer] ";
-						}
-					}
-
-					if (Traits.TryGetValue("TabbedViewVariant", out var tabbedViewVariants) && tabbedViewVariants is not null)
-					{
-						// Check Handler first: a Handler subclass also inherits the base class's
-						// "TabbedRenderer" trait, so Traits may contain both values for this key.
-						if (tabbedViewVariants.Contains("TabbedViewHandler"))
-						{
-							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedViewHandler] ";
-						}
-						else if (tabbedViewVariants.Contains("TabbedRenderer"))
-						{
-							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedRenderer] ";
-						}
-					}
+			prefix += Variant("NavigationViewVariant", "NavigationViewHandler", "NavigationRenderer");
+			prefix += Variant("FlyoutViewVariant", "FlyoutViewHandler", "PhoneFlyoutPageRenderer");
+			prefix += Variant("TabbedViewVariant", "TabbedViewHandler", "TabbedRenderer");
+#elif ANDROID
+			prefix += Variant("Variant", "Handler", "Renderer");
 #endif
+			return prefix;
 
-#if ANDROID
-					if (_reuseVariantPrefix is null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
-					{
-						// Check Handler first: a Handler subclass also inherits the base class's
-						// "Renderer" trait, so Traits may contain both values for this key.
-						if (variants.Contains("Handler"))
-						{
-							_reuseVariantPrefix = "[Handler] ";
-						}
-						else if (variants.Contains("Renderer"))
-						{
-							_reuseVariantPrefix = "[Renderer] ";
-						}
-					}
-#endif
-
-					_reuseVariantPrefix ??= string.Empty;
-				}
-				catch
-				{
-					// Never let display-name resolution crash the test run.
-					_reuseVariantPrefix = string.Empty;
-				}
-#else
-				_reuseVariantPrefix = string.Empty;
-#endif
-			}
-
-			return _reuseVariantPrefix;
-		}
-
-		string? _displayName;
-
-		public string DisplayName
-		{
-			get
+#if ANDROID || IOS || MACCATALYST
+			string Variant(string key, string handler, string renderer)
 			{
-				_displayName = _displayName ?? $"{GetCategoryPrefix()}{GetReuseVariantPrefix()}{_inner.DisplayName}";
-				return _displayName;
+				if (!traits.TryGetValue(key, out var variants))
+					return string.Empty;
+				if (variants.Contains(handler))
+					return $"[{handler}] ";
+				return variants.Contains(renderer) ? $"[{renderer}] " : string.Empty;
 			}
-		}
-
-		public string SkipReason => _inner.SkipReason;
-
-		public ISourceInformation SourceInformation { get => _inner.SourceInformation; set => _inner.SourceInformation = value; }
-
-		public ITestMethod TestMethod => _inner.TestMethod;
-
-		public object[] TestMethodArguments => _inner.TestMethodArguments;
-
-		public Dictionary<string, List<string>> Traits => _inner.Traits;
-
-		public string UniqueID => _inner.UniqueID;
-
-		public void Deserialize(IXunitSerializationInfo info)
-		{
-			_inner.Deserialize(info);
-		}
-
-		public Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-		{
-			// Check for SkipOnIOSVersionAttribute at runtime
-			var skipAttribute = GetSkipOnIOSVersionAttribute();
-			if (skipAttribute != null && skipAttribute.ShouldSkip())
-			{
-				return SkipTestAsync(messageBus, skipAttribute.GetSkipReason());
-			}
-
-			return _inner.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
-		}
-
-		private SkipOnIOSVersionAttribute? GetSkipOnIOSVersionAttribute()
-		{
-			var methodInfo = TestMethod.Method.ToRuntimeMethod();
-			var attribute = methodInfo?.GetCustomAttributes(typeof(SkipOnIOSVersionAttribute), inherit: true)
-				.FirstOrDefault() as SkipOnIOSVersionAttribute;
-
-			if (attribute != null)
-				return attribute;
-
-			// Also check the declaring type
-			var typeInfo = TestMethod.TestClass.Class.ToRuntimeType();
-			return typeInfo?.GetCustomAttributes(typeof(SkipOnIOSVersionAttribute), inherit: true)
-				.FirstOrDefault() as SkipOnIOSVersionAttribute;
-		}
-
-		private Task<RunSummary> SkipTestAsync(IMessageBus messageBus, string skipReason)
-		{
-			var test = new XunitTest(this, DisplayName);
-			
-			messageBus.QueueMessage(new TestStarting(test));
-			messageBus.QueueMessage(new TestSkipped(test, skipReason));
-			messageBus.QueueMessage(new TestFinished(test, 0, null));
-
-			return Task.FromResult(new RunSummary { Total = 1, Skipped = 1 });
-		}
-
-		public void Serialize(IXunitSerializationInfo info)
-		{
-			_inner.Serialize(info);
+#endif
 		}
 	}
 }

@@ -1,4 +1,4 @@
-# Trigger full '/review' or gate-only '/review gate' on a PR.
+# Trigger the full '/review' workflow on a PR.
 # Uses OIDC (no PAT) — see .github/docs/trigger-azdo-pipeline-setup.md for identity setup.
 
 name: Review Trigger
@@ -11,11 +11,6 @@ on:
       pr_number:
         description: 'PR number to review'
         required: true
-      gate_only:
-        description: 'Run only existing-test verification instead of the full review'
-        required: false
-        type: boolean
-        default: false
       platform:
         description: 'Target platform (auto uses PR labels, then the pipeline default)'
         required: false
@@ -58,7 +53,6 @@ jobs:
     outputs:
       matched: ${{ steps.check.outputs.matched }}
       proceed: ${{ steps.gate.outputs.proceed }}
-      gate_only: ${{ steps.gate.outputs.gate_only }}
     steps:
       - name: Match /review command
         id: check
@@ -76,15 +70,8 @@ jobs:
             echo "matched=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # The combined command shares the expert workflow's event but starts only Gate here.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
-            if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]; then
-              echo "matched=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "matched=false" >> "$GITHUB_OUTPUT"
-            fi
-          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|run-tests|performance)([[:space:]]|$) ]] ||
-               [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|performance|autopilot)([[:space:]]|$) ]] ||
+             [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
@@ -104,28 +91,17 @@ jobs:
           REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
           COMMENT_BODY: ${{ github.event.comment.body }}
-          INPUT_GATE_ONLY: ${{ inputs.gate_only }}
         run: |
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-            if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
-              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]
-              return
-            fi
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|rerun|performance)([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(gate|tests|run-tests|run-ui-tests|run-device-tests|rerun|performance|autopilot)([[:space:]]|$) ]] &&
               [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             if [ -z "${COMMENT_ID}" ] && [ -z "${COMMENT_NODE_ID}" ]; then
-              case "${INPUT_GATE_ONLY}" in
-                true) GATE_ONLY=true ;;
-                false|"") GATE_ONLY=false ;;
-                *) echo "::error::gate_only must be true or false."; exit 1 ;;
-              esac
               echo "Manual workflow_dispatch — skipping source-comment dedupe and collaborator check"
-              echo "gate_only=${GATE_ONLY}" >> "$GITHUB_OUTPUT"
               echo "proceed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -153,13 +129,6 @@ jobs:
             fi
             ACTOR="${SOURCE_ACTOR}"
             COMMENT_BODY="${SOURCE_BODY}"
-          fi
-
-          GATE_ONLY=false
-          NORMALIZED_BODY=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-          if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]] ||
-             [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate$ ]]; then
-            GATE_ONLY=true
           fi
 
           # The scheduled recovery workflow adds a rocket reaction and minimizes
@@ -249,7 +218,6 @@ jobs:
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          echo "gate_only=${GATE_ONLY}" >> "$GITHUB_OUTPUT"
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
   trigger-review:
@@ -267,8 +235,7 @@ jobs:
       pull-requests: write
     env:
       REPO: ${{ github.repository }}
-      REVIEW_COMMAND: ${{ needs.match.outputs.gate_only == 'true' && '/review gate' || '/review' }}
-      GATE_ONLY: ${{ needs.match.outputs.gate_only }}
+      REVIEW_COMMAND: /review
     steps:
       - name: Parse parameters
         id: params
@@ -278,12 +245,7 @@ jobs:
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PIPELINE_REF: ${{ inputs.pipeline_ref }}
-          GATE_ONLY: ${{ needs.match.outputs.gate_only }}
         run: |
-          if [[ "${GATE_ONLY}" != "true" && "${GATE_ONLY}" != "false" ]]; then
-            echo "::error::The authorized review mode was not resolved."
-            exit 1
-          fi
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
 
@@ -314,10 +276,6 @@ jobs:
             PR_NUMBER="${{ github.event.issue.number }}"
             ARGS=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs '
               sub("^\\s*/[rR][eE][vV][iI][eE][wW](\\s+|$)"; "")')
-            if [ "${GATE_ONLY}" = "true" ]; then
-              ARGS=$(printf '%s' "${ARGS}" | jq -Rrs 'sub("^[gG][aA][tT][eE](\\s+|$)"; "")')
-            fi
-
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -389,9 +347,8 @@ jobs:
             echo "pr_number=${PR_NUMBER}"
             echo "platform=${PLATFORM}"
             echo "pipeline_ref=${PIPELINE_REF}"
-            echo "gate_only=${GATE_ONLY}"
           } >> "$GITHUB_OUTPUT"
-          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}, Gate only: ${GATE_ONLY}"
+          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
 
       - name: Validate PR
         id: pr
@@ -627,7 +584,6 @@ jobs:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
           PLATFORM: ${{ steps.infer.outputs.platform }}
-          GATE_ONLY: ${{ steps.params.outputs.gate_only }}
           AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           GH_TOKEN: ${{ github.token }}
@@ -704,12 +660,11 @@ jobs:
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
             --arg plat "${PLATFORM}" \
-            --argjson gateOnly "${GATE_ONLY}" \
             --arg ref "refs/heads/${PIPELINE_REF}" \
             '{
               templateParameters: { PRNumber: $pr, Platform: $plat },
               resources: { repositories: { self: { refName: $ref } } }
-            } | if $gateOnly then .templateParameters.GateOnly = true else . end')
+            }')
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
@@ -839,7 +794,7 @@ jobs:
                 return
               fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|rerun|performance)([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|run-tests|run-ui-tests|run-device-tests|rerun|performance|autopilot)([[:space:]]|$) ]] &&
                 [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
             }
 

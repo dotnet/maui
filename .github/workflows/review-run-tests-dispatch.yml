@@ -1,5 +1,5 @@
-# Last step of `/review run-tests`. copilot-review-run-tests.md (GPT-6.2 Sol) collects the
-# context and selects; copilot-review-run-tests-opus.md (Claude Opus 5.5) selects from the same
+# Last step of `/review run-tests` (and run-ui-tests / run-device-tests). copilot-review-run-tests.md (GPT-6.2 Sol) collects the
+# context and selects; copilot-review-run-tests-mai.md (MAI Code 2) selects from the same
 # context and dispatches this workflow with both runs. Only the union of the two selections runs.
 #
 # The agentic workflows run in the `copilot-pat-pool` environment for their Copilot tokens, so
@@ -25,8 +25,12 @@ on:
         required: true
         type: string
       second_run_id:
-        description: Run of copilot-review-run-tests-opus (Claude Opus 5.5)
+        description: Run of copilot-review-run-tests-mai (MAI Code 2)
         required: true
+        type: string
+      requested_by:
+        description: Maintainer who started maui-expert-autopilot (forwarded by the run-tests workflows)
+        required: false
         type: string
 
 permissions: {}
@@ -40,10 +44,14 @@ jobs:
     # Credentialed dispatch only from the trusted default branch.
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Up to two dispatches (UI and device tests), each waiting up to 10 minutes for its build.
+    timeout-minutes: 40
     permissions:
-      actions: read
+      # Reads the source runs; continues maui-expert-autopilot.
+      actions: write
       checks: write
+      # Skipped, test selection and selected run statuses on the PR head.
+      statuses: write
       # Creates the run-tests/* dispatch branch (Git Data API; no checkout is pushed).
       contents: write
       issues: write
@@ -62,6 +70,7 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
           SECOND_RUN_ID: ${{ inputs.second_run_id }}
+          REQUESTED_BY: ${{ inputs.requested_by }}
           REPO: ${{ github.repository }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         shell: pwsh
@@ -82,17 +91,25 @@ jobs:
           if (([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($run.created_at)).TotalHours -gt 3) {
             throw 'The source run is too old; request /review run-tests again.'
           }
-          # The Claude Opus 5.5 run must be the second model for this same request.
+          # The MAI Code 2 run must be the second model for this same request.
           $second = gh api "repos/$env:REPO/actions/runs/$env:SECOND_RUN_ID" | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) { throw 'Could not read the second model run.' }
-          if ($second.path -ne '.github/workflows/copilot-review-run-tests-opus.lock.yml' -or
+          if ($second.path -ne '.github/workflows/copilot-review-run-tests-mai.lock.yml' -or
               $second.head_branch -ne $env:DEFAULT_BRANCH -or
               $second.repository.full_name -ne $env:REPO -or
               $second.event -ne 'workflow_dispatch' -or
               [DateTimeOffset]::Parse($second.created_at) -lt [DateTimeOffset]::Parse($run.created_at)) {
-            throw "Run $env:SECOND_RUN_ID is not the Claude Opus 5.5 selection for run $env:SOURCE_RUN_ID."
+            throw "Run $env:SECOND_RUN_ID is not the MAI Code 2 selection for run $env:SOURCE_RUN_ID."
           }
-          "requester=$($run.triggering_actor.login)" >> $env:GITHUB_OUTPUT
+          # maui-expert-autopilot starts the run as github-actions[bot] on behalf of a maintainer; Invoke-RunTests
+          # re-checks that maintainer's write access before anything is queued.
+          $requester = $run.triggering_actor.login
+          if ($requester -ceq 'github-actions[bot]') {
+            if ($env:REQUESTED_BY -cnotmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}$') { throw 'A maui-expert-autopilot run-tests request needs the requesting maintainer.' }
+            $requester = $env:REQUESTED_BY
+            "autopilot=true" >> $env:GITHUB_OUTPUT
+          }
+          "requester=$requester" >> $env:GITHUB_OUTPUT
           "run_url=$($run.html_url)" >> $env:GITHUB_OUTPUT
 
       - name: Download the collected context
@@ -115,7 +132,7 @@ jobs:
         shell: pwsh
         run: |
           $paths = @()
-          foreach ($entry in @(@{ run = $env:SOURCE_RUN_ID; model = 'gpt-6.2-sol' }, @{ run = $env:SECOND_RUN_ID; model = 'claude-opus-5.5' })) {
+          foreach ($entry in @(@{ run = $env:SOURCE_RUN_ID; model = 'gpt-6.2-sol' }, @{ run = $env:SECOND_RUN_ID; model = 'mai-code-2' })) {
             $name = "run-tests-proposal-$($entry.run)"
             $listed = gh api "repos/$env:REPO/actions/runs/$($entry.run)/artifacts?name=$name" --jq '.total_count'
             if ($LASTEXITCODE -ne 0) { throw "Could not list the artifacts of run $($entry.run)." }
@@ -127,14 +144,14 @@ jobs:
             $proposal = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
             # Each run may only speak for its own model, and the second model for this request only.
             if ($proposal.model -cne $entry.model) { throw "Run $($entry.run) did not produce a $($entry.model) proposal." }
-            if ($entry.model -eq 'claude-opus-5.5' -and [string]$proposal.sourceRunId -ne $env:SOURCE_RUN_ID) {
-              throw 'The Claude Opus 5.5 proposal belongs to a different request.'
+            if ($entry.model -eq 'mai-code-2' -and [string]$proposal.sourceRunId -ne $env:SOURCE_RUN_ID) {
+              throw 'The MAI Code 2 proposal belongs to a different request.'
             }
             $paths += $path
           }
           "paths=$($paths -join ';')" >> $env:GITHUB_OUTPUT
 
-      - name: Validate, dispatch maui-pr-uitests, publish checks and comment
+      - name: Validate, dispatch maui-pr-uitests / maui-pr-devicetests, publish checks and comment
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -143,6 +160,7 @@ jobs:
           SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
           # Forks of the repository have no maui-pr-uitests to dispatch to: publish the selection only.
           SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+          FROM_AUTOPILOT: ${{ steps.source.outputs.autopilot }}
         shell: pwsh
         run: |
           $arguments = @{
@@ -156,7 +174,28 @@ jobs:
           $proposals = @($env:PROPOSAL_PATHS -split ';' | Where-Object { $_ })
           if ($proposals.Count) { $arguments.ProposalPath = $proposals }
           if ($env:SKIP_QUEUE -eq 'true') { $arguments.SkipQueue = $true }
+          if ($env:FROM_AUTOPILOT -eq 'true') { $arguments.OmitRequester = $true }
           ./.github/scripts/Invoke-RunTests.ps1 @arguments
+
+      - name: Continue maui-expert-autopilot
+        # The run-tests comment now exists (running, or already final when nothing was queued).
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ ...context.repo, issue_number: number });
+            if (!labels.some(l => l.name === 's/autopilot-running')) {
+              // Removing s/autopilot-running stops the loop: clear the step labels it left behind.
+              for (const l of labels.filter(l => l.name.startsWith('s/autopilot-') && !['s/autopilot-waiting-for-maintainer-review', 's/autopilot-needs-maintainer-decision'].includes(l.name))) await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: l.name }).catch(() => {});
+              return;
+            }
+            if (labels.some(l => l.name === 's/autopilot-retrying'))
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: number, name: 's/autopilot-retrying' }).catch(() => {});
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'maui-expert-autopilot.lock.yml',
+              ref: context.payload.repository.default_branch, inputs: { pr_number: String(number) } });
 
       - name: Keep the selection evidence
         if: always()

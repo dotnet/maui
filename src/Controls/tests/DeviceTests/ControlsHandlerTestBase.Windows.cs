@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -24,6 +25,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool IsWindow(IntPtr windowHandle);
+
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
@@ -35,18 +40,66 @@ namespace Microsoft.Maui.DeviceTests
 				var appStub = new MauiAppNewWindowStub(window);
 				UI.Xaml.Application.Current.SetApplicationHandler(appStub, applicationContext);
 				WWindow newWindow = null;
+				IntPtr windowHandle = IntPtr.Zero;
+				MauiContext windowContext = null;
+				var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				void OnClosed(object sender, UI.Xaml.WindowEventArgs args) => closed.TrySetResult();
 				try
 				{
 					ApplicationExtensions.CreatePlatformWindow(UI.Xaml.Application.Current, appStub, new Handlers.OpenWindowRequest());
 					newWindow = window.Handler.PlatformView as WWindow;
+					windowContext = window.Handler.MauiContext as MauiContext;
+					if (newWindow is not null)
+					{
+						windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(newWindow);
+						Assert.NotEqual(IntPtr.Zero, windowHandle);
+						newWindow.Closed += OnClosed;
+					}
 					await runTests.Invoke();
 				}
 				finally
 				{
-					window.Handler?.DisconnectHandler();
-					await Task.Delay(10);
-					newWindow?.Close();
-					appStub.Handler?.DisconnectHandler();
+					windowContext ??= window.Handler?.MauiContext as MauiContext;
+					try
+					{
+						if (newWindow is not null)
+						{
+							// Destroying needs the live handler and window scope during native closure.
+							if (!closed.Task.IsCompleted)
+								newWindow.Close();
+							await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+							await AssertHelpers.AssertEventually(() => !IsWindow(windowHandle),
+								timeout: 5000,
+								message: $"Owned native HWND 0x{windowHandle.ToInt64():X} remained alive after window closure.");
+							Console.WriteLine($"WINDOW_NATIVE_DESTROYED: process={Environment.ProcessId}, hwnd=0x{windowHandle.ToInt64():X}");
+						}
+					}
+					finally
+					{
+						try
+						{
+							if (newWindow is not null)
+								newWindow.Closed -= OnClosed;
+						}
+						finally
+						{
+							try
+							{
+								window.Handler?.DisconnectHandler();
+							}
+							finally
+							{
+								try
+								{
+									windowContext?.DisposeWindowScope();
+								}
+								finally
+								{
+									appStub.Handler?.DisconnectHandler();
+								}
+							}
+						}
+					}
 				}
 			});
 		}

@@ -31,10 +31,6 @@
     Create the review branch from the current branch instead of main.
     By default, the script checks out main before creating the review branch.
 
-.PARAMETER GateOnly
-    Run only Setup or Gate for the hosted /review gate command. No Copilot CLI,
-    category sweep, regression cross-reference, or alternative fix is required.
-
 .PARAMETER DryRun
     Show what would be done without making changes
 
@@ -70,9 +66,6 @@ param(
     [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
-    [switch]$GateOnly,
-
-    [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
@@ -103,10 +96,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-
-if ($GateOnly -and $Phase -notin @('Setup', 'Gate')) {
-    throw '-GateOnly requires -Phase Setup or -Phase Gate. Publication runs separately on a fresh agent.'
-}
+. (Join-Path $PSScriptRoot 'shared/XunitMtp.ps1')
 
 if ($LogFile) {
     # When running with -Phase, each phase is a separate process writing to the same log.
@@ -330,11 +320,7 @@ function Invoke-WithoutGhTokens {
 # ─── Banner ───────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-if ($GateOnly) {
-    Write-Host "║           PR Gate: Existing Test Verification             ║" -ForegroundColor Cyan
-} else {
-    Write-Host "║           PR Review with Copilot CLI                      ║" -ForegroundColor Cyan
-}
+Write-Host "║           PR Review with Copilot CLI                      ║" -ForegroundColor Cyan
 Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  PR:        #$PRNumber                                          ║" -ForegroundColor Cyan
 if ($Platform) {
@@ -374,13 +360,11 @@ $ghVersion = gh --version 2>$null | Select-Object -First 1
 if (-not $ghVersion) { Write-Error "GitHub CLI (gh) not installed"; exit 1 }
 Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
 
-if (-not $GateOnly) {
-    $copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
-    if (-not $copilotCmd) { Write-Error "Copilot CLI not installed"; exit 1 }
-    $copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
-    if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
-    Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
-}
+$copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
+if (-not $copilotCmd) { Write-Error "Copilot CLI not installed"; exit 1 }
+$copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
+if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
+Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
 $prInfoJson = Invoke-GhCommandWithRetry `
     -Arguments @('api', "repos/dotnet/maui/pulls/$PRNumber") `
@@ -563,7 +547,7 @@ if ($DryRun) {
             git checkout $originalBranch 2>$null
             git branch -D $reviewBranch 2>$null
             git branch -D $tempBranch 2>$null
-            if (-not $GateOnly -and (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue)) {
+            if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
                 Remove-StaleMauiBotIssueComments `
                     -PRNumber $PRNumber `
                     -IncludeMergeConflict `
@@ -574,15 +558,13 @@ if ($DryRun) {
 <!-- MAUI_BOT_MERGE_CONFLICT -->
 ⚠️ **Merge Conflict Detected** — This PR conflicts with its target branch ``$baseRefName``. Please rebase onto the target branch and resolve the conflicts.
 "@
-            if (-not $GateOnly) {
-                try { gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null } catch { }
-            }
+            try { gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null } catch { }
             Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
             Write-Error "Merge conflicts between PR #$PRNumber head and latest '$baseRefName'. Review cannot proceed until conflicts are resolved."
             exit 1
         }
         git branch -D $tempBranch 2>$null | Out-Null
-        if (-not $GateOnly -and (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue)) {
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
                 -IncludeMergeConflict `
@@ -626,7 +608,7 @@ if ($DryRun) {
             exit 1
         }
 
-        if (-not $GateOnly -and (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue)) {
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
                 -IncludeMergeConflict `
@@ -642,7 +624,7 @@ if ($DryRun) {
         git branch -D $reviewBranch 2>$null
         git branch -D $tempBranch 2>$null
 
-        if (-not $GateOnly -and (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue)) {
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
                 -IncludeMergeConflict `
@@ -655,13 +637,11 @@ if ($DryRun) {
 <!-- MAUI_BOT_MERGE_CONFLICT -->
 ⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts.
 "@
-        if (-not $GateOnly) {
-            try {
-                gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
-                Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
-            } catch {
-                Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
-            }
+        try {
+            gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
+            Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
+        } catch {
+            Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
         }
 
         Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
@@ -713,7 +693,7 @@ if ($Phase -eq 'Setup') {
     # CopilotReview phase after the squash-merge checkout, and $prInfo is only populated
     # here in Setup, so we hand the values across phases via this file (same shared-dir
     # mechanism as the setup-complete sentinel).
-    if ($prInfo -and -not $GateOnly) {
+    if ($prInfo) {
         try {
             ([ordered]@{ title = [string]$prInfo.title; body = [string]$prInfo.body } | ConvertTo-Json -Depth 4) |
                 Set-Content (Join-Path $sentinelDir "pr-metadata.json") -Encoding UTF8
@@ -1804,8 +1784,6 @@ Gate skipped (``-SkipGate`` fast test mode). No UI/device tests were run for thi
     Write-Host "  📄 Gate result persisted: SKIPPED (fast test mode)" -ForegroundColor Gray
 } else {
 
-if (-not $GateOnly) {
-
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  STEP 2: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
@@ -1995,8 +1973,9 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                     { $_ -eq 'UnitTest' -or $_ -eq 'XamlUnitTest' } {
                         if ($t.ProjectPath) {
                             $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
-                            Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = Invoke-WithoutGhTokens { dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1 }
+                            $testArguments = @(Get-XunitTestArguments -RepoRoot $RepoRoot -ProjectPath $resolvedProj -Filter $t.Filter)
+                            Write-Host "    🧪 Running: dotnet $($testArguments -join ' ')" -ForegroundColor Cyan
+                            $testOutput = Invoke-WithoutGhTokens { & dotnet @testArguments 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -2078,8 +2057,6 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 #  STEP 4: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
-} # end if (-not $GateOnly)
-
 # TEMP: Skip Gate (STEP 4) + Try-Fix (STEP 5) for fast iteration on the
 # inline-stages architecture. Both phases are expensive (build the whole
 # repo, run agents on multiple candidates) and we just need STEPs 1-3 +
@@ -2141,20 +2118,6 @@ $verifyArgs = @{
     Platform = $gatePlatform
     PRNumber = $PRNumber
 }
-if ($GateOnly) {
-    $snapshot = Get-Content -LiteralPath (Join-Path $sentinelDir 'review-snapshot.json') -Raw |
-        ConvertFrom-Json
-    if ($snapshot.baseSha -notmatch '^[0-9a-fA-F]{40}$' -or
-        $snapshot.reviewTreeSha -cne ([string](git rev-parse HEAD)).Trim()) {
-        throw 'Gate requires the immutable base and prepared review tree captured by Setup.'
-    }
-    $pinnedMergeBase = ([string](git merge-base HEAD $snapshot.baseSha)).Trim()
-    if ($LASTEXITCODE -ne 0 -or $pinnedMergeBase -cne $snapshot.baseSha) {
-        throw 'The pinned gate baseline must be present and an ancestor of the prepared review snapshot.'
-    }
-    $verifyArgs.BaseBranch = [string]$snapshot.baseSha
-}
-
 for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateAttempt -gt 1) {
         Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
@@ -2186,14 +2149,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # PR like a regression repro), it falls back to "verify failure only" mode
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
-    # The hosted gate has a pinned baseline and needs no metadata credential.
-    # Local full-review callers retain metadata access; the verifier strips
-    # credentials at every PR-controlled subprocess call site in either mode.
-    if ($GateOnly) {
-        $gateOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File "$verifyScript" @verifyArgs 2>&1 }
-    } else {
-        $gateOutput = & pwsh -NoProfile -File "$verifyScript" @verifyArgs 2>&1
-    }
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" @verifyArgs 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
@@ -2338,7 +2294,7 @@ function Get-GateFallbackDetails {
     # (PR #35706 iOS: agent had zero usable runtimes; PR #36572 Android: xharness install failure.)
     $platLabel = if ($ReviewedPlatform) { $ReviewedPlatform } else { "device" }
     if ($Tail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)|No (?:preferred )?device (?:pre-installed|found)') {
-        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Retry test verification with ``/review gate``."
+        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Retry test verification with ``/review``."
     }
     elseif ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)|Install failure|Test command cannot continue') {
         $likely += "Device/emulator setup failed (env error class)."
@@ -2414,15 +2370,15 @@ No tests were detected in this PR.
         # gate never looks like a PR problem. (PRs #35706 iOS, #36572 Android boot;
         # #36109 exit-3 infra; #36209 device-test app crash before writing results.)
         $gateLeadIn = if ($gateLogTail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)') {
-            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent. Comment ``/review gate`` to try again."
+            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent. Comment ``/review`` to try again."
         } elseif ($gateLogTail -match '(?i)empty or not valid XML|likely crashed or exited before writing|app likely crashed|APP_CRASH|XHarness exit code:\s*80|test result file[^\n]*is empty') {
-            "> ⚠️ The gate launched the test app but it **crashed or exited before writing its results**, so no pass/fail could be recorded. Inspect the crash diagnostics and comment ``/review gate`` to retry on a fresh agent."
+            "> ⚠️ The gate launched the test app but it **crashed or exited before writing its results**, so no pass/fail could be recorded. Inspect the crash diagnostics and comment ``/review`` to retry on a fresh agent."
         } elseif ($gateLogTail -match '(?i)APP_LAUNCH_FAILURE|XHarness exit code:\s*83|could not find/launch the app|package[^\n]*install[^\n]*fail|XHarness exit 78') {
-            "> ⚠️ The gate could not **launch** the test app on the CI agent, so the fix could not be verified. Inspect the install/launch diagnostics and comment ``/review gate`` to retry."
+            "> ⚠️ The gate could not **launch** the test app on the CI agent, so the fix could not be verified. Inspect the install/launch diagnostics and comment ``/review`` to retry."
         } elseif ($gateExitCode -eq 3) {
-            "> ⚠️ The gate could not **conclusively** verify the fix: building or running the tests was blocked (exit code 3 = INCONCLUSIVE). The diagnostics below show what stopped verification. Comment ``/review gate`` after resolving the blocker."
+            "> ⚠️ The gate could not **conclusively** verify the fix: building or running the tests was blocked (exit code 3 = INCONCLUSIVE). The diagnostics below show what stopped verification. Comment ``/review`` after resolving the blocker."
         } else {
-            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report (exit code ``$gateExitCode``). Inspect the diagnostics below and comment ``/review gate`` to retry."
+            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report (exit code ``$gateExitCode``). Inspect the diagnostics below and comment ``/review`` to retry."
         }
         @"
 ### Gate Result: $resultIcon $gateResult
@@ -2479,12 +2435,10 @@ if ($risksData) {
 }
 
 # Persist detect script path and detected categories for Tier 3 refresh
-if (-not $GateOnly) {
-    if ($detectScript) {
-        $detectScript | Set-Content (Join-Path $gateVerdictDir "detect-script-path.txt") -Encoding UTF8
-    }
-    $uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
+if ($detectScript) {
+    $detectScript | Set-Content (Join-Path $gateVerdictDir "detect-script-path.txt") -Encoding UTF8
 }
+$uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
 
 } # end if (-not $skipGateAndTryFix)
 

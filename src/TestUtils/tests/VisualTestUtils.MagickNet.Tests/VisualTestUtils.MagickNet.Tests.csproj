@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -19,11 +19,11 @@ public class IncrementalGenerationTests
 
 		var inputCompilation1 = SourceGenHelpers.CreateCompilation(source);
 		var driver1 = SourceGenHelpers.CreateDriver([new BindingSourceGenerator().AsSourceGenerator()]);
-		var result1 = driver1.RunGenerators(inputCompilation1).GetRunResult().Results.Single();
+		var result1 = driver1.RunGenerators(inputCompilation1, TestContext.Current.CancellationToken).GetRunResult().Results.Single();
 
 		var inputCompilation2 = SourceGenHelpers.CreateCompilation(source);
 		var driver2 = SourceGenHelpers.CreateDriver([new BindingSourceGenerator().AsSourceGenerator()]);
-		var result2 = driver2.RunGenerators(inputCompilation2).GetRunResult().Results.Single();
+		var result2 = driver2.RunGenerators(inputCompilation2, TestContext.Current.CancellationToken).GetRunResult().Results.Single();
 
 		Assert.Equal(result1.TrackedSteps.Count, result2.TrackedSteps.Count);
 		CompareGeneratorOutputs(result1, result2);

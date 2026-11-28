@@ -1,8 +1,19 @@
 ---
-description: Shared instructions for the /review run-tests models (GPT-6.1 Sol and Claude Opus 5.5).
+description: Shared instructions for the /review run-tests, run-ui-tests and run-device-tests models (GPT-6.2 Sol and MAI Code 2).
 ---
 
-# Select the UI tests this PR needs
+# Select the tests this PR needs
+
+First read `suite` in `/tmp/gh-aw/agent/run-tests/context.json`:
+
+- `"ui"` (`/review run-ui-tests`): select UI tests. Follow the UI test sections below.
+- `"device"` (`/review run-device-tests`): select device tests. Skip to
+  **Device tests (`/review run-device-tests`)** at the end; the UI rules do not apply.
+- `"all"` (`/review run-tests`): select both, independently. See **Both suites
+  (`/review run-tests`)** at the end.
+
+The output tool, `run_selected_ui_tests`, is the same for all three.
+
 
 You decide which .NET MAUI UI tests (the `maui-pr-uitests` pipeline) must run to
 validate this pull request. Running every category on every platform takes hours;
@@ -97,3 +108,65 @@ two runs.
 
 Do not post comments or claim tests passed; the trusted job queues the run,
 publishes the checks and comments on the PR.
+
+## Device tests (`/review run-device-tests`)
+
+You decide which .NET MAUI device tests (the `maui-pr-devicetests` pipeline, run on
+Helix devices and simulators) must run for this PR. The whole suite takes hours.
+
+`inventory.categories` lists the selectable units:
+
+- `Controls.<Category>` — Controls.DeviceTests (`src/Controls/tests/DeviceTests`), one
+  per `TestCategory` value (`Controls.Button`, `Controls.CollectionView`, `Controls.Shell`…).
+  `Controls` alone runs all of them.
+- `Core.<Category>` — Core.DeviceTests (`src/Core/tests/DeviceTests`, handler tests),
+  likewise; `Core` alone runs all of them.
+- `Graphics`, `Essentials`, `BlazorWebView` — those test projects, which run whole.
+
+`testCategoryHints` lists the units referenced by changed device tests
+(`[Category(TestCategory.X)]`); always include them. Read files at the PR head with
+the GitHub tools to find a changed type's device tests (for example
+`src/Controls/tests/DeviceTests/Elements/Button/`, `src/Core/tests/DeviceTests/Handlers/Button/`).
+
+**Mapping**
+
+- A handler change (`src/Core/src/Handlers/<Control>/`, `Platform/*/<Control>Extensions`)
+  → `Core.<Control>` and `Controls.<Control>`.
+- A Controls change (`src/Controls/src/Core/<Control>/`, its handler mappers) → `Controls.<Control>`.
+- Items/Items2 handlers → `Controls.CollectionView` and `Controls.CarouselView`; Shell → `Controls.Shell`;
+  navigation → `Controls.NavigationPage`, `Controls.Modal`; window/lifecycle → `Controls.Window`, `Controls.Lifecycle`.
+- `src/Graphics/` → `Graphics`; `src/Essentials/` → `Essentials`; `src/BlazorWebView/` → `BlazorWebView`.
+- Memory/leak fixes → also `Controls.Memory`.
+- Base classes with a wide blast radius (`View`, `VisualElement`, `Element`, `ViewHandler`,
+  mappers, layout/measure, `MauiContext`, app startup) → the whole `Controls` and `Core`, or
+  `full_run` when Graphics or Essentials are affected too. Build or SDK changes that alter how
+  device test apps build, or shared device test infrastructure (`src/TestUtils`, `DeviceTests.Shared`) → `full_run`.
+- Platforms follow the same rules as UI tests (`*.Android.cs` → `android`, `*.iOS.cs` →
+  `ios` and `maccatalyst`, `*.Windows.cs` → `windows`, shared code → every affected platform).
+
+Use `platforms: "[]"` when no device test can be affected: docs, `.github/`, UI tests
+(`TestCases.*`) only, unit tests only, templates, packaging or other pipelines.
+
+Call `run_selected_ui_tests` once with `platforms`, `categories` (units from
+`inventory.categories`, e.g. `"[\"Core.Button\",\"Controls.Button\"]"`), `full_run`,
+`summary` and `rationale`, as described above. Unknown units are dropped, not widened.
+
+## Both suites (`/review run-tests`)
+
+When `suite` is `"all"`, context.json keeps the shared PR data (title, body,
+`changedFiles`) at the top level, and each suite's own data under `ui` and `device`
+(`testCategoryHints`, `inventory`, and for UI `changedTestRunnable`).
+`suites` lists the suites that can run on this PR; `notes` says why any other cannot.
+
+Make two independent selections from the same diff, each by its own rules above:
+UI tests from `ui.inventory`, device tests from `device.inventory`. A PR often needs
+only one of them (for example UI test changes need no device tests, and a
+`src/Graphics` change may need no UI tests); use `"[]"` platforms for the other.
+
+Call `run_selected_ui_tests` once with:
+
+- `platforms`, `categories`, `full_run`, `summary`, `rationale`: the UI test selection.
+- `device_platforms`, `device_categories`, `device_full_run`, `device_summary`,
+  `device_rationale`: the device test selection.
+
+If a suite is missing from `suites`, leave its platforms as `"[]"`.

@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {

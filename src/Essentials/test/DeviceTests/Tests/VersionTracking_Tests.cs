@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {

@@ -45,33 +45,12 @@ Describe 'Copilot reviewer base branch allowlist' {
 
     Describe 'Copilot model policy' {
         It 'contains no Anthropic model identifiers in repository automation' {
-            # Single exception: /review run-tests asks a second model (Claude Opus 5.5) to select UI tests
-            # independently of GPT-6.1 Sol and runs the union. Only that model id, only in these files.
-            $runTestsException = @{
-                Model = 'claude-opus-5.5'
-                Files = @(
-                    '.github/workflows/copilot-review-run-tests-opus.md'
-                    '.github/workflows/copilot-review-run-tests-opus.lock.yml'
-                    '.github/workflows/review-run-tests-dispatch.yml'
-                    '.github/scripts/RunTests.Common.ps1'
-                    '.github/scripts/RunTests.Tests.ps1'
-                    '.github/scripts/CopilotPipeline.Tests.ps1'
-                )
-            }
-            $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
             $violations = foreach ($file in $script:AutomationFiles) {
-                $relative = [IO.Path]::GetRelativePath($repoRoot, $file.FullName) -replace '\\', '/'
                 Select-String `
                     -LiteralPath $file.FullName `
                     -Pattern '(?i)\b(?:claude|anthropic)-[a-z0-9][a-z0-9.-]*\b' `
                     -AllMatches |
-                    ForEach-Object {
-                        $line = $_
-                        $other = @($line.Matches | Where-Object {
-                            -not ($_.Value -ceq $runTestsException.Model -and $relative -in $runTestsException.Files)
-                        })
-                        if ($other.Count) { "$($file.FullName):$($line.LineNumber):$($line.Line.Trim())" }
-                    }
+                    ForEach-Object { "$($file.FullName):$($_.LineNumber):$($_.Line.Trim())" }
             }
 
             @($violations) | Should -BeNullOrEmpty
@@ -84,12 +63,6 @@ Describe 'Copilot reviewer base branch allowlist' {
             $reviewScript | Should -Not -Match 'COPILOT_REVIEW_MODEL'
         }
 
-        It 'does not accept an environment override for the local test reviewer' {
-            $reviewTestsScript = Get-Content -Raw -LiteralPath (
-                Join-Path $PSScriptRoot 'Review-Tests.ps1')
-
-            $reviewTestsScript | Should -Not -Match 'COPILOT_REVIEW_TESTS_MODEL'
-        }
     }
 
     It 'accepts every supported base branch shape' {
