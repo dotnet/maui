@@ -239,9 +239,44 @@ namespace Microsoft.Maui.DeviceTests
 					refreshView.RefreshControl.EndRefreshing();
 					refreshView.SetNeedsLayout();
 					refreshView.LayoutIfNeeded();
+					await Task.Delay(100);
 
 					Assert.False(refreshView.RefreshControl.Refreshing);
 					Assert.True(refreshView.IsRefreshing);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task PendingRefreshStartsAfterTheLayoutPass()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var host = new UIView(new CGRect(0, 0, 300, 300));
+				using var refreshView = new MauiRefreshView
+				{
+					Frame = new CGRect(0, 0, 300, 300)
+				};
+				using var scrollView = new UIScrollView(new CGRect(0, 0, 300, 300))
+				{
+					ContentSize = new CGSize(300, 1200)
+				};
+
+				refreshView.AddSubview(scrollView);
+				refreshView.UpdateIsRefreshEnabled(true);
+				refreshView.IsRefreshing = true;
+
+				await host.AttachAndRun(async () =>
+				{
+					host.AddSubview(refreshView);
+					refreshView.LayoutIfNeeded();
+
+					Assert.False(refreshView.RefreshControl.Refreshing);
+
+					await AssertHelpers.AssertEventually(
+						() => refreshView.RefreshControl.Refreshing,
+						timeout: 2000,
+						message: "The pending refresh did not start after the layout pass");
 				});
 			});
 		}
