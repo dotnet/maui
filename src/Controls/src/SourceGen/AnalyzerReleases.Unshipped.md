@@ -39,3 +39,4 @@ MAUIX2020 | XamlInflation | Warning | ConflictingXmlnsType
 MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
 MAUIX2022 | XamlInflation | Error | ExtensionPropertyResolution
 MAUIX2023 | XamlParsing | Error | XCodeRequiresSourceGen
+MAUIX2026 | XamlInflation | Warning | UnrecognizedGeneratedMemberAccessibility

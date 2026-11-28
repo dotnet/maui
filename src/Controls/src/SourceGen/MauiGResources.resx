@@ -152,6 +152,13 @@
   <data name="DuplicateTypeError" xml:space="preserve">
     <value>Multiple Types found for "{0}".</value>
   </data>
+  <data name="UnrecognizedGeneratedMemberAccessibilityTitle" xml:space="preserve">
+    <value>Unrecognized accessibility of a generated bindable property member</value>
+  </data>
+  <data name="UnrecognizedGeneratedMemberAccessibilityMessage" xml:space="preserve">
+    <value>The value "{2}" of "{1}" on "{0}" doesn't map to C# accessibility keywords, so XAML won't see that member. Map each value in the AccessibilityValues argument of GeneratesBindableProperty, or use a string.</value>
+    <comment>{0} is the attribute class, {1} is the named argument, and {2} is the value.</comment>
+  </data>
   <data name="ConflictingXmlnsTypeTitle" xml:space="preserve">
     <value>Conflicting XAML namespace types</value>
   </data>

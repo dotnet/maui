@@ -86,12 +86,32 @@ public class XamlGenerator : IIncrementalGenerator
 			.Select(GetSource)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
+		var markedAttributeNamesInReferencesProvider = referenceCompilationProvider
+			.Select(static (compilation, ct) => GeneratedBindablePropertyDeclarations.GetMarkedAttributeNamesInReferences(compilation, ct))
+			.WithTrackingName(TrackingNames.MarkedAttributeNamesInReferencesProvider);
+
+		var generatedBindablePropertyStubsProvider = initContext.CompilationProvider
+			.Combine(markedAttributeNamesInReferencesProvider)
+			.Select(static (pair, ct) => GeneratedBindablePropertyDeclarations.GetStubDeclarations(pair.Left, pair.Right, ct))
+			.WithTrackingName(TrackingNames.GeneratedBindablePropertyStubsProvider);
+
+		initContext.RegisterSourceOutput(generatedBindablePropertyStubsProvider, static (context, declarations) =>
+		{
+			foreach (var problem in declarations.Problems)
+			{
+				var location = Location.Create(problem.FilePath, problem.Span, problem.LineSpan);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.UnrecognizedGeneratedMemberAccessibility, location, problem.AttributeName, problem.ArgumentName, problem.Value));
+			}
+		});
+
 		var compilationWithCodeBehindProvider = xamlSourceProviderForCB
 			.Collect()
 			.Combine(initContext.CompilationProvider)
-			.Select(static (t, ct) =>
+			.Combine(generatedBindablePropertyStubsProvider)
+			.Select(static (tuple, ct) =>
 			{
-				var compilation = t.Right;
+				var t = tuple.Left;
+				var compilation = GeneratedBindablePropertyDeclarations.AddStubs(t.Right, tuple.Right, ct);
 				var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
 				foreach (var (source, xamlItem, diagnostics) in t.Left)
 				{

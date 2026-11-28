@@ -247,6 +247,10 @@ namespace Microsoft.Maui.Controls.SourceGen {
 
 		internal static string ConflictingXmlnsTypeMessage => ResourceManager.GetString("ConflictingXmlnsTypeMessage", resourceCulture);
 
+		internal static string UnrecognizedGeneratedMemberAccessibilityTitle => ResourceManager.GetString("UnrecognizedGeneratedMemberAccessibilityTitle", resourceCulture);
+
+		internal static string UnrecognizedGeneratedMemberAccessibilityMessage => ResourceManager.GetString("UnrecognizedGeneratedMemberAccessibilityMessage", resourceCulture);
+
 		internal static string MemberResolution => ResourceManager.GetString("MemberResolution", resourceCulture);
 
 		internal static string ExtensionPropertyResolution => ResourceManager.GetString("ExtensionPropertyResolution", resourceCulture);
