@@ -31,7 +31,7 @@ public class TestClass<T>
 	public void CreateVariableName()
 	{
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var context = SourceGenContext.CreateNewForTests();
 		Assert.Equal("testClass", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));
 		Assert.Equal("testClass1", NamingHelpers.CreateUniqueVariableNameImpl(context, compilation.GetTypeByMetadataName("Test.TestClass")!));

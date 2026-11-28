@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {

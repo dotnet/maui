@@ -53,8 +53,8 @@ $script:RunTestsSuites = @{
         CommentMarker = '<!-- review-run-devicetests -->'; UnsupportedMarker = '<!-- review-run-devicetests-unsupported -->'
         DispatchBranchPrefix = 'run-devicetests/'; RequestPath = 'eng/pipelines/common/run-devicetests-request.yml'
         PipelinePath = 'eng/pipelines/ci-device-tests.yml'
-        # The Helix project and Windows runner apply the selection, so they come from the trusted side too.
-        TrustedPaths = @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
+        # The pipeline templates and device scripts apply the selection, so they come from the trusted side too.
+        TrustedPaths = @('.github', 'eng/pipelines', 'eng/devices')
     }
 }
 
@@ -193,7 +193,7 @@ function Get-RunTestsInventory {
     }
 }
 
-# Device test projects (eng/helix_xharness.proj MAUIScenario names) and their TestCategory sources.
+# Device test projects (eng/pipelines/arcade/stage-device-tests.yml scenario names) and their TestCategory sources.
 # Controls and Core filter by category (TestFilter=SkipCategories=...); the others run whole.
 $script:RunTestsDeviceProjects = [ordered]@{
     Controls      = @{ scenario = 'Controls'; categories = 'src/Controls/tests/DeviceTests/TestCategory.cs' }
@@ -252,8 +252,8 @@ function New-RunTestsDeviceRequestYaml {
     Content of eng/pipelines/common/run-devicetests-request.yml for a dispatch commit.
     .DESCRIPTION
     Turns a validated device selection into the variables eng/pipelines/ci-device-tests.yml and
-    eng/helix_xharness.proj read: platforms, the scenarios to run, and per filtered project the
-    categories to skip (or, on Windows, to run). Every value is checked again because it is
+    eng/pipelines/arcade/stage-device-tests.yml read: platforms, the scenarios to run, and per filtered
+    project the categories to skip (and, informationally, to run). Every value is checked again because it is
     written into pipeline YAML and MSBuild properties.
     #>
     param(

@@ -15,7 +15,7 @@
 .PARAMETER TestType
     The type of tests to run:
     - Unit:        Unit tests (runs on build machine via dotnet test)
-    - Device:      Device tests (runs on device/emulator via xharness)
+    - Device:      Device tests (runs on device/emulator via dotnet test)
     - UI:          UI tests with Appium (builds HostApp, deploys, runs dotnet test)
     - Integration: Integration tests (template builds, workload validation)
 
@@ -33,10 +33,11 @@
     android, ios, catalyst (or maccatalyst), windows
 
 .PARAMETER TestFilter
-    Test filter expression passed to dotnet test --filter (e.g., "FullyQualifiedName~Issue12345")
+    For xUnit, a name, FullyQualifiedName= or ~ expression, or Category= expression.
+    Homogeneous alternatives can be joined with |. UI filters retain NUnit syntax.
 
 .PARAMETER Category
-    Test category filter. Converted to --filter "Category=<value>" for unit/UI tests,
+    Test category filter, translated to the selected framework's MTP arguments,
     or passed as -Category for integration tests.
     Cannot be used together with -TestFilter.
 
@@ -133,6 +134,7 @@ $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
+. "$PSScriptRoot/shared/XunitMtp.ps1"
 
 #region Project Definitions
 
@@ -367,8 +369,7 @@ function Invoke-UnitTests {
         $projectPath = Join-Path $RepoRoot $projectsToRun[$key]
 
         if (-not (Test-Path $projectPath)) {
-            Write-Warn "Project not found: $projectPath — skipping"
-            continue
+            throw "Test project not found: $projectPath"
         }
 
         Write-Host ""
@@ -376,48 +377,28 @@ function Invoke-UnitTests {
         Write-Step "Testing: $key"
         Write-Info "Project: $($projectsToRun[$key])"
 
+        $projectResults = Join-Path $ResultsDirectory "$key-$([guid]::NewGuid().ToString('N'))"
         $testArgs = @(
-            "test", $projectPath,
+            "test", "--project", $projectPath,
             "--configuration", $Config,
-            "--no-restore",
-            "--logger", "console;verbosity=normal",
-            "--logger", "trx;LogFileName=$key.trx",
-            "--results-directory", $ResultsDirectory
+            "--report-trx", "--report-trx-filename", "$key.trx",
+            "--results-directory", $projectResults
         )
 
         if ($Filter) {
-            $testArgs += @("--filter", $Filter)
+            $testArgs += @(Get-XunitMtpFilterArguments $Filter)
         }
 
         $startTime = Get-Date
-        $output = & dotnet @testArgs 2>&1
-        $exitCode = $LASTEXITCODE
+        $output = Invoke-XunitMtpProcess -TestArguments $testArgs
+        $exitCode = $script:XunitMtpExitCode
         $duration = (Get-Date) - $startTime
 
-        # Parse test counts from output
-        # dotnet test outputs lines like:
-        #   "Total tests: 65"
-        #   "     Passed: 65"
-        #   "     Failed: 2"
-        #   "    Skipped: 3"
-        # Or single-line: "Passed! - Failed: 0, Passed: 123, Skipped: 0, Total: 123"
-        $passed = 0
-        $failed = 0
-        $skipped = 0
-
-        foreach ($line in $output) {
-            $lineStr = "$line"
-            # Match standalone summary lines (with leading whitespace)
-            if ($lineStr -match "^\s+Passed:\s*(\d+)") { $passed = [int]$Matches[1] }
-            if ($lineStr -match "^\s+Failed:\s*(\d+)") { $failed = [int]$Matches[1] }
-            if ($lineStr -match "^\s+Skipped:\s*(\d+)") { $skipped = [int]$Matches[1] }
-            # Match single-line summary: "Failed: 0, Passed: 123, Skipped: 0"
-            if ($lineStr -match "Failed:\s*(\d+),\s*Passed:\s*(\d+),\s*Skipped:\s*(\d+)") {
-                $failed = [int]$Matches[1]
-                $passed = [int]$Matches[2]
-                $skipped = [int]$Matches[3]
-            }
-        }
+        $summary = Read-XunitMtpResults (Join-Path $projectResults "$key.trx")
+        $passed = $summary.Passed
+        $failed = $summary.Failed + $summary.Errors
+        $skipped = $summary.Skipped
+        if ($failed -gt 0 -and $exitCode -eq 0) { $exitCode = 1 }
 
         $totalPassed += $passed
         $totalFailed += $failed

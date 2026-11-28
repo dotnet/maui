@@ -1,179 +1,445 @@
 parameters:
-  platform: '' # [ android, ios, catalyst, windows ]
-  path: '' # path to csproj
-  device: '' # the xharness device to use
-  apiversion: '' # the iOS device api version to use
-  cakeArgs: '' # additional cake args
-  deviceTestConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
-  provisionatorChannel: 'latest'
-  artifactName: 'nuget'
-  artifactItemPattern: '**/*.nupkg'
-  checkoutDirectory: $(System.DefaultWorkingDirectory)
-  useArtifacts: false
-  skipProvisioning: true
-  targetFrameworkVersion: ''
-  appArtifactName: ''
-  rebootAgent: true
-  poolName: 'Azure Pipelines'
-  skipDotNet: false
-  buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
-  useCoreClr: true # Use CoreCLR for Android, iOS, and Catalyst builds
+  platform: ''
+  path: ''
+  apiVersion: latest
+  device: ''
+  deviceTestConfiguration: Release
+  targetFrameworkVersion: net12.0
+  useCoreClr: true
+  testFilter: ''
+  applicationId: ''
+  expectedOSMajor: 0
+  expectedArchitecture: ''
+  requireWindows11: false
 
 steps:
+- checkout: self
+  clean: true
+  persistCredentials: false
 
-##################################################
-#               Provision Machine                #
-##################################################
+- pwsh: |
+    New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$(Build.Arcade.LogsPath)" | Out-Null
+    Write-Host "##vso[task.setvariable variable=TestResultsDirectory]$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)"
+  displayName: Initialize unique results directory
 
-# Clean the machine for iOS builds that are running on physical machines
-- ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
-  - bash: |
-      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-      $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-    displayName: 'Clean bot'
-    continueOnError: true
-    timeoutInMinutes: 60
-
-- ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
+- ${{ if eq(parameters.platform, 'android') }}:
   - template: enable-kvm.yml
 
-# Provision the various SDKs that are needed
 - template: provision.yml
   parameters:
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipSimulatorSetup: true
     skipJdk: ${{ ne(parameters.platform, 'android') }}
     skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-    skipAndroidPlatformApis: ${{ or(eq(parameters.buildType, 'testOnly'), ne(parameters.platform, 'android')) }}
+    skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
     onlyAndroidPlatformDefaultApis: true
-    skipAndroidEmulatorImages: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
+    skipAndroidEmulatorImages: true
     skipAndroidCreateAvds: true
-    androidEmulatorApiLevel: ${{ parameters.apiversion }}
-    provisionatorChannel: ${{ parameters.provisionatorChannel }}
-    ${{ if eq(parameters.skipProvisioning, false) }}:
-      skipProvisionator: false
     skipInternalFeeds: true
 
-##################################################
-#                Provision .NET                  #
-##################################################
-
-# Install a local .NET SDK
-- script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
-  displayName: 'Install .NET'
-  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
-  retryCountOnTaskFailure: 4
+- script: dotnet cake --target=dotnet-buildtasks --configuration="${{ parameters.deviceTestConfiguration }}" --verbosity=diagnostic
+  displayName: Provision SDK and build BuildTasks
   env:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
     PRIVATE_BUILD: $(PrivateBuild)
 
-# Add the .NET SDK to the PATH
-- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-  displayName: 'Add .NET to PATH'
-  condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
+- pwsh: |
+    & ./.github/skills/run-device-tests/scripts/Start-TestDevice.ps1 -Platform '${{ parameters.platform }}' -ApiVersion '${{ parameters.apiVersion }}' -ResultsDirectory "$(TestResultsDirectory)" -DeviceDirectory "$(Pipeline.Workspace)/test-devices/$(System.JobId)/$(System.JobAttempt)" -ExpectedOSMajor ${{ parameters.expectedOSMajor }} -ExpectedArchitecture '${{ parameters.expectedArchitecture }}' -RequireWindows11 ([System.Convert]::ToBoolean('${{ parameters.requireWindows11 }}'))
+  displayName: Provision and select job-owned device
+  timeoutInMinutes: 15
 
-##################################################
-#                 Prepare Build                  #
-##################################################
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'unpackaged')) }}:
+  - pwsh: |
+      $arguments = '-p:SelfContained=true -p:WindowsPackageType=None -p:_MauiDeviceTestUnpackaged=true -p:ExtraDefineConstants=UNPACKAGED'
+      Write-Host "##vso[task.setvariable variable=DeviceTestArguments]$arguments"
+    displayName: Configure Windows unpackaged execution
 
-# Do not prepare the .NET install if we are not going to build anything
-- ${{ if ne(parameters.buildType, 'testOnly') }}:
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'packaged')) }}:
+  - pwsh: |
+      $state = & ./.github/skills/run-device-tests/scripts/WindowsTestPackage.ps1 -Action Prepare -StatePath "$(TestResultsDirectory)/package-state.json" -ProjectPath "${{ parameters.path }}" -TimeoutSeconds 6600
+      $arguments = @(
+          '-p:MauiTestPackaged=true'
+          '-p:WindowsPackageType=MSIX'
+          '-p:_MauiDeviceTestUnpackaged=false'
+          "-p:ApplicationId=$($state.IdentityName)"
+          "-p:MauiTestPackageIdentityName=$($state.IdentityName)"
+          "-p:MauiTestPackagePublisher=$($state.Publisher)"
+          "-p:PackageCertificateThumbprint=$($state.CertificateThumbprint)"
+          '-p:AppxPackageSigningEnabled=true'
+          '-p:UapAppxPackageBuildMode=SideloadOnly'
+          '-p:AppxBundle=Never'
+          '-p:SelfContained=true'
+          '-p:ExtraDefineConstants=PACKAGED'
+          '-p:AppxPackageDir="$(TestResultsDirectory)/msix/"'
+          '-p:MauiTestLauncherPath="$(TestResultsDirectory)/launcher/WindowsTestLauncher.dll"'
+          '-p:MauiTestPackageStatePath="$(TestResultsDirectory)/package-state.json"'
+          '-p:MauiTestPackageManifestPath="$(TestResultsDirectory)/Package.appxmanifest"'
+      )
+      Write-Host "##vso[task.setvariable variable=DeviceTestArguments]$($arguments -join ' ')"
+    displayName: Prepare unique MSIX identity and signing certificate
 
-  # Download the pre-build .NET MAUI workload and install it to the local .NET SDK
-  - ${{ if eq(parameters.useArtifacts, true) }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Build installed-package MTP launcher
+      command: build
+      project: .github/skills/run-device-tests/scripts/windows-launcher/WindowsTestLauncher.csproj
+      arguments: --configuration Release --output "$(TestResultsDirectory)/launcher"
+      continueOnError: false
+      useExitCodeForErrors: true
 
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download Packages'
-      retryCountOnTaskFailure: 4
-      inputs:
-        artifactName: ${{ parameters.artifactName }}
-        itemPattern: ${{ parameters.artifactItemPattern }}
-        downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Build and sign owned MSIX
+      command: build
+      project: '"${{ parameters.path }}"'
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
+        -p:RuntimeIdentifier=win-x64
+        -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
+        -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
+        -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
+        $(DeviceTestArguments)
+        -bl:"$(TestResultsDirectory)/build-packaged.binlog"
+      continueOnError: false
+      useExitCodeForErrors: true
 
-    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
-      displayName: Move the downloaded artifacts
+  - pwsh: |
+      $null = & ./.github/skills/run-device-tests/scripts/WindowsTestPackage.ps1 -Action Install -StatePath "$(TestResultsDirectory)/package-state.json" -PackageDirectory "$(TestResultsDirectory)/msix"
+    displayName: Install signed MSIX and its SDK dependencies
 
-    - script: dotnet cake --target=dotnet-local-workloads --verbosity=diagnostic
-      displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 4
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-      env:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
+- ${{ if eq(parameters.platform, 'android') }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Run Android tests directly
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-android
+        --device "$(TestDevice)"
+        --report-trx
+        --results-directory "$(TestResultsDirectory)"
+        -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
+        -p:_DisableCheckForUnsupportedMonoMobileRuntime=true
+        -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
+        -bl:"$(TestResultsDirectory)/test.binlog"
+      continueOnError: false
+      useExitCodeForErrors: true
 
-  # Run the build for .NET MAUI on this machine
-  - ${{ else }}:
+- ${{ if eq(parameters.platform, 'ios') }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Run iOS tests directly
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-ios
+        --device "$(TestDevice)"
+        -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
+        -p:CodesignRequireProvisioningProfile=false
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
+        -p:_DisableCheckForUnsupportedMonoMobileRuntime=true
+        -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
+        -bl:"$(TestResultsDirectory)/test.binlog"
+      continueOnError: false
+      useExitCodeForErrors: true
 
-    - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
-      displayName: 'Build the MSBuild Tasks'
+- ${{ if eq(parameters.platform, 'catalyst') }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Run Mac Catalyst tests directly
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-maccatalyst
+        -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
+        -p:CodesignRequireProvisioningProfile=false
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
+        -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
+        -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
+        -bl:"$(TestResultsDirectory)/test.binlog"
+      continueOnError: false
+      useExitCodeForErrors: true
 
-##################################################
-#                  Prepare Run                   #
-##################################################
-
-# If this job is a test-only job, download the pre-built artifacts from the build job
-- task: DownloadPipelineArtifact@2
-  displayName: 'Download Build'
-  retryCountOnTaskFailure: 4
-  condition: and(succeeded(), eq('${{ parameters.buildType }}', 'testOnly'))
-  inputs:
-    artifactName: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
-    targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-##################################################
-#                  Build / Run                   #
-##################################################
-
-# First run the build if this is a build-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="buildOnly" --project="${{ parameters.path }}" --coreclr="${{ parameters.useCoreClr }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-  displayName: Execute Build
-  workingDirectory: ${{ parameters.checkoutDirectory }}
-  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'testOnly'))
-  retryCountOnTaskFailure: 1
-
-# Then run the tests if this is a test-only or build-and-test job
-- script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target="testOnly" --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device)) }} ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion)) }} --create="${{ ne(parameters.buildType, 'buildOnly') }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" --verbosity=diagnostic ${{ parameters.cakeArgs }}
-  displayName: Execute Test Run
-  workingDirectory: ${{ parameters.checkoutDirectory }}
-  condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-  ${{ if or(eq(parameters.buildType, 'windows'), eq(parameters.platform, 'android'), eq(parameters.platform, 'ios')) }}:
-    retryCountOnTaskFailure: 1
-
-##################################################
-#                    Publish                     #
-##################################################
-
-# Cleanup and create simulator logs for iOS builds
-- ${{ if eq(parameters.platform, 'ios')}}:
-  - script: dotnet cake --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
-    displayName: Cleanup and Create Simulator Logs
-    condition: always()
+# Native fail-fast crashes bypass the testing platform's .NET crash dump. Ask Windows Error Reporting
+# for a dump of the test executables; the registration is removed again after the tests.
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $folder = "$(TestResultsDirectory)\wer"
+      New-Item -ItemType Directory -Force -Path $folder | Out-Null
+      foreach ($name in @('Microsoft.Maui.Controls.DeviceTests', 'Microsoft.Maui.Core.DeviceTests', 'Microsoft.Maui.Essentials.DeviceTests', 'Microsoft.Maui.Graphics.DeviceTests', 'Microsoft.Maui.MauiBlazorWebView.DeviceTests')) {
+          $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$name.exe"
+          New-Item -Path $key -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $folder -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+          New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 5 -Force | Out-Null
+      }
+    displayName: Collect native crash dumps of the test executables
     continueOnError: true
 
-# Publish the artifacts directory if this is a build-only job
-- ${{ if eq(parameters.buildType, 'buildOnly') }}:
-  - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-    displayName: Publish Succeeded Artifacts Directory
-    condition: succeeded()
-    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}
-  - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-    displayName: Publish Failed Artifacts Directory
-    condition: not(succeeded())
-    artifact: ${{ parameters.appArtifactName }}_${{ iif(eq(parameters.useCoreClr, 'true'), 'coreclr', 'mono') }}_failed_$(System.JobAttempt)
+- ${{ if and(eq(parameters.platform, 'windows'), or(ne(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'), ne(parameters.testFilter, ''))) }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Run Windows ${{ parameters.device }} tests directly
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
+        --report-trx
+        --results-directory "$(TestResultsDirectory)"
+        --diagnostic
+        --diagnostic-synchronous-write
+        --diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"
+        --crashdump
+        --crashdump-type Mini
+        -p:RuntimeIdentifier=win-x64
+        -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
+        -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
+        -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
+        $(DeviceTestArguments)
+        -bl:"$(TestResultsDirectory)/test.binlog"
+        ${{ iif(eq(parameters.device, 'packaged'), '--no-build', '') }}
+      continueOnError: false
+      useExitCodeForErrors: true
 
-# Publish the test results
-- ${{ if ne(parameters.buildType, 'buildOnly') }}:
-  - task: PublishTestResults@2
-    displayName: Publish the $(Agent.JobName) test results
+# Like the former cake runner, run each Controls category in its own test host: in one
+# process WinUI state accumulated across ~350-600 tests terminates the host (0xDEAD) in tests that
+# pass in isolation. The final shard runs every test outside the listed categories.
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'), eq(parameters.testFilter, '')) }}:
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $env:DOTNET_ROOT = "$(Build.SourcesDirectory)\.dotnet"
+      $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+      $env:MSBuildEnableWorkloadResolver = 'true'
+      $env:PATH = "$($env:DOTNET_ROOT);$env:PATH"
+      $dotnet = Join-Path $env:DOTNET_ROOT 'dotnet.exe'
+      $env:DOTNET_PATH = $dotnet
+      $env:DOTNET_HOST_PATH = $dotnet
+
+      $categoryFile = "$(Build.SourcesDirectory)\src\Controls\tests\DeviceTests\TestCategory.cs"
+      $categories = @(Select-String -LiteralPath $categoryFile -Pattern 'public const string \w+\s*=\s*(?:"([^"]+)"|nameof\((\w+)\))' |
+          ForEach-Object { $groups = $_.Matches[0].Groups; if ($groups[1].Success) { $groups[1].Value } else { $groups[2].Value } } |
+          Sort-Object -Unique)
+      if ($categories.Count -lt 10) { throw "Expected the Controls test categories in '$categoryFile', found $($categories.Count)." }
+      $shards = @()
+      foreach ($category in $categories) { $shards += New-Object psobject -Property @{ Name = $category; Filter = @('--filter-trait', "Category=$category") } }
+      $exclude = @()
+      foreach ($category in $categories) { $exclude += @('--filter-not-trait', "Category=$category") }
+      $shards += New-Object psobject -Property @{ Name = 'Uncategorized'; Filter = $exclude }
+
+      $resultsRoot = "$(TestResultsDirectory)"
+      $noBuild = '${{ parameters.device }}' -eq 'packaged'
+      $failed = @()
+      foreach ($shard in $shards) {
+          $output = Join-Path $resultsRoot "categories\$($shard.Name)"
+          $before = @(Get-ChildItem -LiteralPath $resultsRoot -Filter '*.trx' -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object FullName)
+          $testArguments = @('test', '--project', '${{ parameters.path }}',
+              '--configuration', '${{ parameters.deviceTestConfiguration }}',
+              '--framework', '${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0',
+              '--report-trx', '--report-trx-filename', "Controls-$($shard.Name).trx",
+              '--results-directory', $output,
+              '--diagnostic', '--diagnostic-synchronous-write', '--diagnostic-output-directory', (Join-Path $output 'diagnostics'),
+              '--crashdump', '--crashdump-type', 'Mini',
+              '-p:RuntimeIdentifier=win-x64', '-p:RuntimeIdentifierOverride=win-x64', '-p:IsRidAgnostic=false',
+              "-p:MauiTestResultsDirectory=$resultsRoot")
+          if ($noBuild) { $testArguments += '--no-build' } else { $testArguments += "-bl:$resultsRoot\test.binlog" }
+          Write-Host "##[group]Category $($shard.Name)"
+          & $dotnet @testArguments $(DeviceTestArguments) @($shard.Filter)
+          $exitCode = $LASTEXITCODE
+          Write-Host '##[endgroup]'
+          $noBuild = $true
+          $produced = @(Get-ChildItem -LiteralPath $resultsRoot -Filter '*.trx' -Recurse -File -ErrorAction SilentlyContinue |
+              Where-Object { $before -notcontains $_.FullName })
+          if ($exitCode -eq 8) {
+              # Zero tests matched: this category has no Windows tests.
+              $produced | Remove-Item -Force
+              Write-Host "Category $($shard.Name): no tests on Windows."
+          }
+          elseif ($exitCode -ne 0) {
+              $failed += "$($shard.Name) (exit $exitCode)"
+              Write-Host "##vso[task.logissue type=error]Category $($shard.Name) failed with exit code $exitCode."
+          }
+          else { Write-Host "Category $($shard.Name): passed." }
+      }
+      if ($failed.Count) {
+          Write-Host "##vso[task.logissue type=error]Test suite had $($failed.Count) failing categories: $($failed -join ', ')"
+          exit 1
+      }
+    displayName: Run Windows ${{ parameters.device }} tests directly (one host per category)
+    timeoutInMinutes: 110
+
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Verify native ownership and focus regressions
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
+        --no-build
+        --filter-class
+        Microsoft.Maui.DeviceTests.WindowTests
+        Microsoft.Maui.DeviceTests.FlyoutPageTests
+        Microsoft.Maui.DeviceTests.Memory.WindowOverlayTests
+        Microsoft.Maui.DeviceTests.Memory.MemoryTests
+        Microsoft.Maui.DeviceTests.ScrollViewTests
+        Microsoft.Maui.DeviceTests.ShellTests
+        --filter-method
+        "*NativeAttachmentDisposesItsWindowScope*"
+        "*DoesNotLeakAsModal*"
+        "Microsoft.Maui.DeviceTests.Memory.WindowOverlayTests.DoesNotLeak"
+        "Microsoft.Maui.DeviceTests.ScrollViewTests.DoesNotLeak"
+        "*CollectionWaitKeepsRootedViewsAlive*"
+        "Microsoft.Maui.DeviceTests.ShellTests.PagesDoNotLeak"
+        "*EntryDoesNotReceiveFocusWhenScrollViewReloads*"
+        "*RemovingScrollViewDuringLoadingDoesNotStrandTemporaryTabStop*"
+        "*QueuedTabStopRestoreDoesNotRunAfterDisconnect*"
+        --report-trx
+        --results-directory "$(TestResultsDirectory)/ownership-regressions"
+        --diagnostic
+        --diagnostic-output-directory "$(TestResultsDirectory)/ownership-regressions/diagnostics"
+        -p:RuntimeIdentifier=win-x64
+        -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
+        $(DeviceTestArguments)
+      condition: always()
+      continueOnError: false
+      useExitCodeForErrors: true
+
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $dumps = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -File -Filter 'native-process-*.dmp' -Recurse)
+      if (!$dumps.Count) {
+          Write-Host 'No owned native process snapshot was produced.'
+          exit 0
+      }
+      foreach ($name in @('GITHUB_TOKEN', 'GH_TOKEN', 'GH_ENTERPRISE_TOKEN', 'GITHUB_ENTERPRISE_TOKEN', 'COPILOT_GITHUB_TOKEN')) {
+          [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+      }
+      $env:DOTNET_ROOT = "$(Build.SourcesDirectory)/.dotnet"
+      $dotnet = Join-Path $env:DOTNET_ROOT 'dotnet.exe'
+      $tools = "$(Agent.TempDirectory)/maui-dump-tools/$(System.JobId)/$(System.JobAttempt)"
+      $analyzer = Join-Path $tools 'dotnet-dump.exe'
+      if (!(Test-Path -LiteralPath $analyzer -PathType Leaf)) {
+          Write-Host 'Installing the missing dump analyzer into this job-owned tool directory.'
+          & $dotnet tool install dotnet-dump --tool-path $tools --allow-roll-forward
+          if ($LASTEXITCODE -ne 0) { throw "Dump analyzer installation failed with exit code $LASTEXITCODE." }
+      }
+      foreach ($dump in $dumps) {
+          $summary = "$($dump.FullName).analysis.txt"
+          & $analyzer analyze $dump.FullName -c 'dumpheap -stat' -c 'clrthreads' -c exit *> $summary
+          if ($LASTEXITCODE -ne 0) { throw "Dump analysis failed with exit code $LASTEXITCODE. See $summary." }
+          $statistics = Get-Content -LiteralPath $summary
+          foreach ($type in @('Microsoft.Maui.MauiWinUIWindow', 'Microsoft.Maui.WindowOverlay', 'Microsoft.Maui.Platform.WindowRootView', 'Microsoft.Maui.Controls.FlyoutPage', 'Microsoft.Maui.Controls.ContentPage')) {
+              $typePattern = '^\s*([0-9a-fA-F]{12,16})\s+[\d,]+\s+[\d,]+\s+' + [regex]::Escape($type) + '\s*$'
+              $methodTables = @($statistics | ForEach-Object {
+                  if ($_ -match $typePattern) { $Matches[1] }
+              })
+              if (!$methodTables.Count) {
+                  Write-Host "No objects of exact type $type were listed in this snapshot."
+                  continue
+              }
+              $objects = "$($dump.FullName).$type.objects.txt"
+              $commands = @('analyze', $dump.FullName)
+              foreach ($methodTable in $methodTables) {
+                  $commands += @('-c', "dumpheap -mt $methodTable -short")
+              }
+              & $analyzer @commands -c exit *> $objects
+              if ($LASTEXITCODE -ne 0) { throw "Object enumeration failed with exit code $LASTEXITCODE. See $objects." }
+              $addresses = @(Get-Content -LiteralPath $objects |
+                  Where-Object { $_ -match '^\s*[0-9a-fA-F]{12,16}\s*$' } |
+                  ForEach-Object { $_.Trim() })
+              if (!$addresses.Count) { throw "No addresses were enumerated for $type despite its heap statistics entry. See $objects." }
+              $roots = "$($dump.FullName).$type.roots.txt"
+              $commands = @('analyze', $dump.FullName)
+              foreach ($address in $addresses) {
+                  $commands += @('-c', "dumpobj $address", '-c', "gcroot $address")
+              }
+              & $analyzer @commands -c exit *> $roots
+              if ($LASTEXITCODE -ne 0) { throw "Root analysis failed with exit code $LASTEXITCODE. See $roots." }
+              $completed = @(Select-String -LiteralPath $roots -Pattern '^\s*Found \d+ unique roots\.\s*$')
+              if ($completed.Count -ne $addresses.Count) { throw "Root analysis completed $($completed.Count) of $($addresses.Count) objects for $type. See $roots." }
+              Write-Host "Analyzed all $($addresses.Count) objects of exact type $type."
+          }
+      }
+    displayName: Analyze owned native process snapshots
     condition: always()
-    inputs:
-      testResultsFormat: xUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/*Results*(-*).xml'
-      testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+    timeoutInMinutes: 10
 
-# Publish the job artifacts
-- task: PublishBuildArtifacts@1
-  displayName: Publish Logs
+- ${{ if eq(parameters.platform, 'ios') }}:
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $PSNativeCommandUseErrorActionPreference = $true
+      $statePath = "$(TestResultsDirectory)/device.json"
+      if (!(Test-Path -LiteralPath $statePath)) { throw 'No job-owned simulator was provisioned.' }
+      $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+      if (!$state.Device) { throw 'No simulator UDID was recorded.' }
+      $container = (& xcrun simctl get_app_container $state.Device '${{ parameters.applicationId }}' data).Trim()
+      if (!$container -or !(Test-Path -LiteralPath $container -PathType Container)) {
+          throw 'Could not resolve the installed test app data container.'
+      }
+      $source = Join-Path $container 'Documents/TestResults'
+      if (!(Test-Path -LiteralPath (Join-Path $source 'testResults.trx') -PathType Leaf)) {
+          throw "The native reporter did not produce '$source/testResults.trx'."
+      }
+      Copy-Item -LiteralPath $source -Destination "$(TestResultsDirectory)/native" -Recurse
+    displayName: Collect genuine native TRX from the owned iOS simulator app
+    condition: always()
+
+- pwsh: |
+    & ./eng/scripts/Assert-TestResults.ps1 -ResultsDirectory "$(TestResultsDirectory)"
+  displayName: Require real nonempty successful TRX
+  condition: always()
+
+- pwsh: |
+    & ./.github/skills/run-device-tests/scripts/Stop-TestDevice.ps1 -ResultsDirectory "$(TestResultsDirectory)"
+  displayName: Capture device logs and remove only job-owned devices
+  condition: always()
+  timeoutInMinutes: 10
+
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - powershell: |
+      foreach ($name in @('Microsoft.Maui.Controls.DeviceTests', 'Microsoft.Maui.Core.DeviceTests', 'Microsoft.Maui.Essentials.DeviceTests', 'Microsoft.Maui.Graphics.DeviceTests', 'Microsoft.Maui.MauiBlazorWebView.DeviceTests')) {
+          Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$name.exe" -Recurse -Force -ErrorAction SilentlyContinue
+      }
+      Get-ChildItem -LiteralPath "$(TestResultsDirectory)\wer" -Filter '*.dmp' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Native crash dump: $($_.FullName) ($($_.Length) bytes)" }
+    displayName: Remove native crash dump registration
+    condition: always()
+
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'packaged')) }}:
+  - pwsh: |
+      & ./.github/skills/run-device-tests/scripts/WindowsTestPackage.ps1 -Action Cleanup -StatePath "$(TestResultsDirectory)/package-state.json"
+    displayName: Stop recorded activated PID and remove only the owned MSIX and certificate
+    condition: always()
+    timeoutInMinutes: 10
+
+- task: PublishTestResults@2
   condition: always()
   inputs:
-    artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+    testResultsFormat: VSTest
+    testResultsFiles: '$(TestResultsDirectory)/**/*.trx'
+    testRunTitle: '$(System.JobName) (attempt $(System.JobAttempt))'
+    failTaskOnFailedTests: true
+    failTaskOnMissingResultsFile: true
+    failTaskOnFailureToPublishResults: true
+
+- publish: $(TestResultsDirectory)
+  displayName: Publish native results and device logs
+  condition: always()
+  artifact: DeviceTests-$(System.StageName)-$(System.JobId)-$(System.JobAttempt)
+
+- publish: $(Build.Arcade.LogsPath)
+  displayName: Publish build logs
+  condition: always()
+  artifact: DeviceTestBuildLogs-$(System.StageName)-$(System.JobId)-$(System.JobAttempt)

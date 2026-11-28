@@ -35,11 +35,11 @@ public partial class TestPage : ContentPage
 }
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var physicalPath = Path.Combine(Environment.CurrentDirectory, "Source", "Test.xaml");
 		var xamlFile = new AdditionalXamlFile(physicalPath, xaml, RelativePath: "Test.xaml", TargetPath: "Test.xaml", Lineinfo: "default");
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile, assertNoCompilationErrors: false);
-		var error = Assert.Single(compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics().Where(d => d.Id == "CS0619"));
+		var error = Assert.Single(compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics(TestContext.Current.CancellationToken).Where(d => d.Id == "CS0619"));
 		var location = error.Location.GetMappedLineSpan();
 
 		Assert.Equal(physicalPath, location.Path);
@@ -74,11 +74,11 @@ public partial class TestPage : ContentPage
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
 			.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var physicalPath = Path.Combine(Environment.CurrentDirectory, "Source", "Test.xaml");
 		var xamlFile = new AdditionalXamlFile(physicalPath, xaml, RelativePath: targetPath, TargetPath: targetPath, Lineinfo: "default");
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile);
-		var diagnostics = compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics();
+		var diagnostics = compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics(TestContext.Current.CancellationToken);
 		var warning = Assert.Single(diagnostics.Where(d => d.Id == "CS8622"));
 		var location = warning.Location.GetMappedLineSpan();
 

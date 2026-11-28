@@ -48,7 +48,7 @@ public partial class TestPage : ContentPage
 }
 """;
 
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var xamlFile = new AdditionalXamlFile(Path.Combine(Environment.CurrentDirectory, "Test.xaml"), xaml, RelativePath: "Test.xaml",
 			ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", EnableIncrementalHotReload: true, TrimmableStyles: "true");
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile);

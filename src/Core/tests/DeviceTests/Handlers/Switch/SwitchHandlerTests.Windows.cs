@@ -208,6 +208,62 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task CustomOnColorKeepsOneOverlayAfterManagedCollection()
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<ConfiguredHoverSwitchHandler>(switchStub);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					handler.PlatformView.ApplyTemplate();
+					UpdateTrackColorWithoutRetainingResources(handler, switchStub, Colors.Red);
+
+					await AssertionExtensions.Collect();
+
+					UpdateTrackColorWithoutRetainingResources(handler, switchStub, Colors.Blue);
+					var resources = GetHoverThemeResources(handler.PlatformView, "Default");
+					var hover = Assert.IsType<SolidColorBrush>(resources["ToggleSwitchFillOnPointerOver"]);
+					Assert.Equal(Colors.Blue.ToWindowsColor(), hover.Color);
+					Assert.Equal(0.9, hover.Opacity, 2);
+
+					UpdateTrackColorWithoutRetainingResources(handler, switchStub, null);
+					Assert.Empty(handler.PlatformView.Resources.MergedDictionaries);
+				}, MauiContext);
+			});
+		}
+
+		[Fact]
+		public async Task ClearingOnColorRemovesOverlayAfterManagedCollection()
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<ConfiguredHoverSwitchHandler>(switchStub);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					handler.PlatformView.ApplyTemplate();
+					var resources = handler.PlatformView.Resources;
+					UpdateTrackColorWithoutRetainingResources(handler, switchStub, Colors.Red);
+
+					await AssertionExtensions.Collect();
+
+					UpdateTrackColorWithoutRetainingResources(handler, switchStub, null);
+					Assert.Empty(resources.MergedDictionaries);
+					var original = Assert.IsType<ResourceDictionary>(resources.ThemeDictionaries["Default"]);
+					Assert.Same(handler.OriginalHoverBrush, original["ToggleSwitchFillOnPointerOver"]);
+				}, MauiContext);
+			});
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static void UpdateTrackColorWithoutRetainingResources(SwitchHandler handler, SwitchStub switchStub, Color color)
+		{
+			switchStub.TrackColor = color;
+			handler.UpdateValue(nameof(ISwitch.TrackColor));
+		}
+
 		[Theory]
 		[InlineData("Default", true)]
 		[InlineData("HighContrast", true)]

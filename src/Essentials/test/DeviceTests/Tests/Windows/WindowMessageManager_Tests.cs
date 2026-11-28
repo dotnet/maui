@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,6 +57,29 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				manager.Dispose();
 
 				Assert.False(isAttached);
+			});
+
+		[Fact]
+		public Task ClosingMauiWindowDetachesItsWindowMessageHandler() =>
+			Utils.OnMainThread(async () =>
+			{
+				var window = new MauiWinUIWindow();
+				var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				window.Closed += (_, _) => closed.TrySetResult();
+				using var manager = WindowMessageManager.Get(window);
+				try
+				{
+					window.Content = new UI.Xaml.Controls.Grid();
+					window.Activate();
+					Assert.True(manager.IsAttached);
+				}
+				finally
+				{
+					window.Close();
+				}
+
+				await closed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+				Assert.False(manager.IsAttached);
 			});
 
 		[Fact]
@@ -185,6 +209,53 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 				{
 					messages.Add(e.MessageId);
+				}
+			});
+
+		[Fact]
+		public Task DetachingDuringMessageStillForwardsToPreviousProcedure() =>
+			Utils.OnMainThread(async () =>
+			{
+				var window = new UI.Xaml.Window();
+				var handle = window.GetWindowHandle();
+				var previousProcedure = IntPtr.Zero;
+				var forwarded = false;
+				PlatformMethods.WindowProc forwardingProcedure = (hWnd, message, wParam, lParam) =>
+				{
+					if (message == TEST_MESSAGE)
+					{
+						forwarded = true;
+						return IntPtr.Zero;
+					}
+
+					return PlatformMethods.CallWindowProc(previousProcedure, hWnd, message, wParam, lParam);
+				};
+				previousProcedure = PlatformMethods.SetWindowLongPtr(handle,
+					PlatformMethods.WindowLongFlags.GWL_WNDPROC, forwardingProcedure);
+				try
+				{
+					Assert.NotEqual(IntPtr.Zero, previousProcedure);
+					using var manager = WindowMessageManager.Get(window);
+					manager.WindowMessage += OnWindowMessage;
+
+					await PostTestMessageAsync(window);
+					await WaitForMessageAsync(() => forwarded);
+
+					Assert.False(manager.IsAttached);
+					Assert.True(forwarded);
+
+					void OnWindowMessage(object? sender, WindowMessageEventArgs args)
+					{
+						if (args.MessageId == TEST_MESSAGE)
+							manager.WindowMessage -= OnWindowMessage;
+					}
+				}
+				finally
+				{
+					if (previousProcedure != IntPtr.Zero)
+						PlatformMethods.SetWindowLongPtr(handle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, previousProcedure);
+					window.Close();
+					GC.KeepAlive(forwardingProcedure);
 				}
 			});
 

@@ -57,8 +57,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var ticker = new PlatformTicker();
-				var manager = new AnimationManager(ticker);
+				using var ticker = new EnabledPlatformTicker();
+				using var manager = new AnimationManager(ticker);
 
 				for (int i = 0; i < 5; i++)
 					manager.Add(new Animation { Duration = 1.0 });
@@ -68,6 +68,11 @@ namespace Microsoft.Maui.DeviceTests
 				ticker.Stop();
 				Assert.False(ticker.IsRunning);
 			});
+		}
+
+		sealed class EnabledPlatformTicker : PlatformTicker
+		{
+			public EnabledPlatformTicker() => SystemEnabled = true;
 		}
 	}
 }

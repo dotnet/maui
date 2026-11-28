@@ -37,13 +37,13 @@ public partial class ExtensionMetadataPage : ContentPage
 			.AddReferences(
 				MetadataReference.CreateFromFile(typeof(ExtensionPropertyMetadataTests).Assembly.Location),
 				MetadataReference.CreateFromFile(Path.Combine(runtimePath, "System.ComponentModel.dll")))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("ExtensionMetadataPage.xaml", xaml));
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
 			.Select(d => $"{d.Id}: {d.GetMessage()}"));
 
 		using var output = new MemoryStream();
-		var emit = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(output);
+		var emit = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(output, cancellationToken: TestContext.Current.CancellationToken);
 		Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics.Select(d => $"{d.Id}: {d.GetMessage()}")));
 		var type = Assembly.Load(output.ToArray()).GetType("Test.ExtensionMetadataPage", throwOnError: true)!;
 		var page = (ContentPage)Activator.CreateInstance(type)!;

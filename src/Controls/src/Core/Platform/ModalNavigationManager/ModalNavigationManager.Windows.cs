@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform
 				?.GetNavigationRootManager()
 				?.Disconnect();
 
-			page.Handler?.DisconnectHandler();
+			page.DisconnectHandlers();
 		}
 
 		IDisposable? _waitingForIncomingPage;
