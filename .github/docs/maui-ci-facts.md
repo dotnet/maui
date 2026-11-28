@@ -455,6 +455,28 @@ otherwise production-release validation reports missing signing certificates
 on these analysis-only copies. This classification does not disable `APIScan@2`
 or change signing and validation of the actual release artifacts.
 
+### CodeQL for the compiled languages
+
+The official pipeline scans C# and Java in the `CodeQL` stage (job `CodeQL
+Windows`). The stage runs after `Pack`, in the scheduled and manual builds of
+`main`. Its job builds the shipping projects (`/p:BuildPackageProjects=true`)
+between explicit `CodeQL3000Init@0` and `CodeQL3000Finalize@0` tasks.
+`ci-official.yml` turns off the compiled scan that the 1ES template injects
+into every job; the SDL Sources job still scans the interpreted languages.
+
+- CodeQL scans each repository, branch, language and `BuildIdentifier` at most
+  every 72 hours, and a failed scan still blocks the next one. A green job does
+  not mean that a scan happened. Read the `|Language|Status|Message|` table in
+  the log of the `CodeQL Initialize` step: `skipped` with
+  `Last csharp database from ...` means that no scan was due.
+- If any step in the job has failed before `CodeQL Finalize` runs, CodeQL drops
+  the database of each compiled language ("Pipeline failed or was canceled;
+  cannot create database for compiled language"). Keep the build the only step
+  between the two tasks, and start CodeQL after the provisioning.
+- The tasks read `Codeql.<Name>` variables, and a task input with the same name
+  overrides the variable. `variables.yml` sets `Codeql.Enabled` to `false`, so
+  `CodeQL Initialize` passes `Enabled: true`.
+
 ## Test count deduplication
 
 **Never sum raw failed counts across test runs.** MAUI UI/device tests repeat the
