@@ -14,6 +14,8 @@ public class TrackingNames
 	public const string XamlProjectItemProviderForIC = nameof(XamlProjectItemProviderForIC);
 	public const string XamlSourceProviderForCB = nameof(XamlSourceProviderForCB);
 	public const string XamlSourceProviderForIC = nameof(XamlSourceProviderForIC);
+	public const string MarkedAttributeNamesInReferencesProvider = nameof(MarkedAttributeNamesInReferencesProvider);
+	public const string GeneratedBindablePropertyStubsProvider = nameof(GeneratedBindablePropertyStubsProvider);
 	public const string CompilationWithCodeBehindProvider = nameof(CompilationWithCodeBehindProvider);
 	public const string XmlnsDefinitionsProviderForIC = nameof(XmlnsDefinitionsProviderForIC);
 }

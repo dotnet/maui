@@ -170,6 +170,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor UnrecognizedGeneratedMemberAccessibility = new DiagnosticDescriptor(
+			id: "MAUIX2026",
+			title: new LocalizableResourceString(nameof(MauiGResources.UnrecognizedGeneratedMemberAccessibilityTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.UnrecognizedGeneratedMemberAccessibilityMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
 			id: "MAUIX2002",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
