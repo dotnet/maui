@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Handlers;
@@ -25,12 +26,42 @@ namespace Microsoft.Maui.DeviceTests
 
 		static UIView NativeRoot(Window window) => PlatformWindow(window).RootViewController?.View;
 
-		static int SnapshotViews(UIWindow window) => window.Subviews.Count(v => v is not null && v.GetType().Name.Contains("Snapshot", StringComparison.Ordinal));
+		static int SnapshotViews(UIWindow window) => window.Subviews.Count(v => v is not null && v.Class.Name.Contains("Replicant", StringComparison.Ordinal));
+
+		void SetupRootBuilder() => SetupBuilder(configureHandlers: handlers => handlers.AddHandler<Window, RootWindowHandler>());
+
+		// WindowHandlerStub presents a workspace without replacing UIWindow.RootViewController.
+		sealed class RootWindowHandler : WindowHandler
+		{
+			public RootWindowHandler() : base(new PropertyMapper<IWindow, IWindowHandler>(WindowHandler.Mapper)
+			{
+				[nameof(IWindow.Content)] = (handler, window) =>
+				{
+					WindowHandler.MapContent(handler, window);
+					handler.PlatformView.MakeKeyAndVisible();
+				}
+			})
+			{
+			}
+
+			protected override UIWindow CreatePlatformElement()
+			{
+				var host = MauiContext.Services.GetRequiredService<UIWindow>();
+				return new UIWindow(host.WindowScene) { Frame = host.Bounds };
+			}
+
+			protected override void DisconnectHandler(UIWindow platformView)
+			{
+				base.DisconnectHandler(platformView);
+				platformView.Hidden = true;
+				platformView.RootViewController = null;
+			}
+		}
 
 		[Fact(DisplayName = "A root replacement started during another settles on the newest root (UIKit)")]
 		public async Task OverlappingRootReplacementsSettleOnUIKit()
 		{
-			SetupBuilder();
+			SetupRootBuilder();
 			var first = CreatePage("First");
 			var second = CreatePage("Second");
 			var third = CreatePage("Third");
@@ -68,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "A root replacement started from the assignment's PropertyChanging animates once its own page lands (UIKit)")]
 		public async Task RootReplacementQueuedBehindAnotherAssignmentStillAnimates()
 		{
-			SetupBuilder();
+			SetupRootBuilder();
 			var first = CreatePage("First");
 			var second = CreatePage("Second");
 			var third = CreatePage("Third");
@@ -117,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Opacity set on the incoming root during a replacement is kept (UIKit)")]
 		public async Task OpacitySetDuringARootReplacementIsKept()
 		{
-			SetupBuilder();
+			SetupRootBuilder();
 			var first = CreatePage("First");
 			var navPage = new NavigationPage(CreatePage("Root"));
 			var window = new Window(first);
@@ -141,10 +172,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "A root replacement leaves the incoming root's own animations running (UIKit)")]
 		public async Task RootReplacementKeepsTheRootsOwnAnimations()
 		{
-			SetupBuilder();
+			SetupRootBuilder();
 			var first = CreatePage("First");
 			var second = CreatePage("Second");
-			var third = CreatePage("Third");
 			var window = new Window(first);
 			const string ownKey = "pagetransitions-test-own";
 
@@ -152,33 +182,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(first.Content);
 
-				// The page's own repeating native animation, added as its root goes in.
-				CALayer animatedLayer = null;
-				window.PropertyChanged += (_, e) =>
-				{
-					if (e.PropertyName == Window.PageProperty.PropertyName && ReferenceEquals(window.Page, second) && animatedLayer is null)
-					{
-						animatedLayer = NativeRoot(window)?.Layer;
-						animatedLayer?.AddAnimation(new CABasicAnimation
-						{
-							KeyPath = "shadowOpacity",
-							From = NSNumber.FromFloat(0),
-							To = NSNumber.FromFloat(1),
-							Duration = 1,
-							RepeatCount = float.PositiveInfinity,
-						}, ownKey);
-					}
-				};
-
 				var outer = window.ReplacePageAsync(second, new SlideTransition { Duration = TimeSpan.FromSeconds(1) });
+				// PropertyChanged precedes the native root mapping.
+				var animatedLayer = NativeRoot(window).Layer;
+				animatedLayer.AddAnimation(new CABasicAnimation
+				{
+					KeyPath = "shadowOpacity",
+					From = NSNumber.FromFloat(0),
+					To = NSNumber.FromFloat(1),
+					Duration = 1,
+					RepeatCount = float.PositiveInfinity,
+				}, ownKey);
+				Assert.NotNull(animatedLayer.AnimationForKey(ownKey));
 				await Task.Delay(200);
 
-				// Ended early by another replacement: only what the first one added is removed.
-				await window.ReplacePageAsync(third, PageTransition.None).WaitAsync(TimeSpan.FromSeconds(10));
+				// Finish without removing the root (UIKit itself removes animations from an outgoing root).
+				RootPageTransition.FinishRunning(window);
 				await outer.WaitAsync(TimeSpan.FromSeconds(10));
 
-				Assert.NotNull(animatedLayer);
 				Assert.NotNull(animatedLayer.AnimationForKey(ownKey));
+				animatedLayer.RemoveAnimation(ownKey);
 			});
 		}
 
@@ -350,7 +373,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(watch.Elapsed >= MoreTransitionDuration * 0.8, $"Pop completed after {watch.Elapsed}.");
 
 				await shell.Navigation.PushAsync(first, false);
+				await OnLoadedAsync(first.Content);
 				await shell.Navigation.PushAsync(second).WaitAsync(TimeSpan.FromSeconds(10));
+				await OnLoadedAsync(second.Content);
 				watch.Restart();
 				await shell.Navigation.PopToRootAsync().WaitAsync(TimeSpan.FromSeconds(10));
 				Assert.True(watch.Elapsed >= MoreTransitionDuration * 0.8, $"Pop to root completed after {watch.Elapsed}.");

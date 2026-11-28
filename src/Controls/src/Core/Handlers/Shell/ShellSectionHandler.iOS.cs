@@ -1911,7 +1911,7 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             if (moreNavigationController.Delegate is ShellItemHandler.MoreNavigationDelegate { RunsPageTransition: true }
                 && moreNavigationController.GetTransitionCoordinator() is { } coordinator
-                && coordinator.AnimateAlongsideTransition(null!, _ => complete()))
+                && coordinator.AnimateAlongsideTransition(_ => { }, _ => complete()))
             {
                 return;
             }

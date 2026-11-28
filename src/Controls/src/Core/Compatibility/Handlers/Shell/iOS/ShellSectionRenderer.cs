@@ -605,6 +605,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ProcessPopToRoot();
 			}
 
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				var more = tabBarController.MoreNavigationController;
+				if (tabBarController is ShellItemRenderer item)
+					item.MoreNavigationRunsPageTransition = false;
+				var popped = more.PopToViewController(_renderer.ViewController, animated);
+				CompleteMoreNavigationAfterTransition(tabBarController, _renderer.ViewController);
+				return popped;
+			}
+
 			return base.PopToRootViewController(animated);
 		}
 
@@ -836,7 +846,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_pendingViewControllers = null;
 
 			// UIKit asks for no animator for an unanimated push, so its transition is resolved and recorded here.
-			if (!animated && TopViewController is { } top)
+			if (!animated && ActiveNavigationController().TopViewController is { } top)
 			{
 				Microsoft.Maui.Platform.NavigationTransitionDriver.OnUnanimatedNavigation(
 					ShellSection as IView, UINavigationControllerOperation.Push, PageForViewController(top), PageForViewController(viewController));
@@ -893,7 +903,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// AnimateAlongsideTransition returns false when no transition is running; complete straight away then.
 			if (tabBarController is ShellItemRenderer { MoreNavigationRunsPageTransition: true }
 				&& moreNavigationController.GetTransitionCoordinator() is { } coordinator
-				&& coordinator.AnimateAlongsideTransition(null, _ => HandleMoreNavigationCompletionTasks(viewController)))
+				&& coordinator.AnimateAlongsideTransition(_ => { }, _ => HandleMoreNavigationCompletionTasks(viewController)))
 			{
 				return;
 			}
