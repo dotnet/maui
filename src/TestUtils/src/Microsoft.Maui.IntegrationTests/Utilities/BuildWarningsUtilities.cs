@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.IntegrationTests
 {

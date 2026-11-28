@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -49,7 +48,7 @@ public partial class Benchmark : ContentPage
 			_output.WriteLine($"    - Resolved: {diag.ResolvedLazyCount}");
 			_output.WriteLine($"    - Unresolved: {diag.LazyCount - diag.ResolvedLazyCount}");
 			_output.WriteLine("");
-			
+
 			_output.WriteLine($"Eager keys ({diag.EagerKeys.Count}):");
 			foreach (var key in diag.EagerKeys)
 				_output.WriteLine($"  - {key}");
@@ -70,7 +69,7 @@ public partial class Benchmark : ContentPage
 			// Assertions
 			Assert.True(diag.TotalCount > 0, "Should have resources");
 			Assert.True(diag.LazyCount > 0, "Should have lazy resources with LazyRD enabled");
-			
+
 			// With Label uncommented, we expect the Label style to be resolved
 			// but other styles should remain unresolved
 			_output.WriteLine("");
@@ -82,16 +81,16 @@ public partial class Benchmark : ContentPage
 		public void ResourceDictionaryDiagnostics_SourceGen_WithExplicitAccess()
 		{
 			var page = new Benchmark("SourceGen");
-			
+
 			// Before accessing any resource
 			var diagBefore = page.Resources.GetDiagnostics();
 			_output.WriteLine($"=== Before accessing any resource ===");
 			_output.WriteLine($"Resolved: {diagBefore.ResolvedLazyCount} / {diagBefore.LazyCount}");
-			
+
 			// Access just one resource - the Label style
 			var labelStyle = page.Resources["Microsoft.Maui.Controls.Label"];
 			Assert.NotNull(labelStyle);
-			
+
 			// After accessing Label style
 			var diagAfter = page.Resources.GetDiagnostics();
 			_output.WriteLine($"");
@@ -104,7 +103,7 @@ public partial class Benchmark : ContentPage
 			_output.WriteLine($"");
 			_output.WriteLine($"Unresolved keys ({diagAfter.UnresolvedKeys.Count}):");
 			// Just show count to keep output short
-			
+
 			// The Label style should be resolved, along with the colors it uses
 			Assert.True(diagAfter.ResolvedKeys.Contains("Microsoft.Maui.Controls.Label"), "Label style should be resolved");
 		}

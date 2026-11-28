@@ -84,6 +84,44 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DetachedCarouselPreservesNativeItemIndexMapping(bool loop)
+		{
+			SetupBuilder();
+			var carousel = new CarouselView
+			{
+				Loop = loop,
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = new[] { 1, 2 },
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				await AssertEventually(() => controller.InitialPositionSet);
+				var expectedIndices = loop ? new[] { 1, 0, 1, 0 } : new[] { 0, 1 };
+
+				for (int i = 0; i < expectedIndices.Length; i++)
+				{
+					using var index = Foundation.NSIndexPath.FromItemSection(i, 0);
+					Assert.Equal(expectedIndices[i], controller.GetIndexFromIndexPath(index));
+				}
+
+				controller.CollectionView.RemoveFromSuperview();
+				Assert.Null(controller.CollectionView.Window);
+
+				for (int i = 0; i < expectedIndices.Length; i++)
+				{
+					using var index = Foundation.NSIndexPath.FromItemSection(i, 0);
+					Assert.Equal(expectedIndices[i], controller.GetIndexFromIndexPath(index));
+				}
+			});
+		}
+
 		sealed class NewCarouselTemplateSelector : DataTemplateSelector
 		{
 			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
@@ -204,6 +242,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => controller.InitialPositionSet &&
 					controller.CollectionView.VisibleCells.Length > 0,
 					message: "The carousel did not finish its initial layout.");
+				await WaitForQueuedInitialPositionPasses();
 
 				await AssertOnlyTargetIsReported(origin: 0, target: 3, passedOver: new[] { 1, 2 });
 				await AssertOnlyTargetIsReported(origin: 3, target: 1, passedOver: new[] { 2 });
@@ -227,6 +266,11 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+
+		// Every layout pass before the initial position is set queues its own delayed (100ms) pass, which scrolls to the
+		// initial position without animation. One still queued after InitialPositionSet turns true would cancel an
+		// animated ScrollTo started now, so let them all run first.
+		static Task WaitForQueuedInitialPositionPasses() => Task.Delay(300);
 
 		// UIScrollView's Tracking/Dragging/Decelerating are read-only, so the controller's user-scroll
 		// detection is overridden to emulate a drag interrupting an animated ScrollTo.
@@ -266,6 +310,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => controller.InitialPositionSet &&
 					controller.CollectionView.VisibleCells.Length > 0,
 					message: "The carousel did not finish its initial layout.");
+				await WaitForQueuedInitialPositionPasses();
 
 				Assert.Equal(0, carouselView.Position);
 				positionChanges.Clear();

@@ -101,22 +101,22 @@ namespace TestMarkup
 """;
 
 		var compilation = CreateMauiCompilation();
-		
+
 		// Add the markup extension code to the compilation
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(markupExtensionCode));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(markupExtensionCode, cancellationToken: TestContext.Current.CancellationToken));
 
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		// This should NOT produce "Index was outside the bounds of the array" error
 		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-		
+
 		// Output diagnostics for debugging
 		foreach (var diag in errors)
 		{
 			System.Console.WriteLine($"Error: {diag.GetMessage()}");
 		}
-		
-		Assert.False(errors.Any(e => e.GetMessage().Contains("Index was outside the bounds of the array", System.StringComparison.Ordinal)), 
+
+		Assert.False(errors.Any(e => e.GetMessage().Contains("Index was outside the bounds of the array", System.StringComparison.Ordinal)),
 			$"Found IndexOutOfRangeException: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
 	}
 }

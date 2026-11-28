@@ -16,7 +16,7 @@ public partial class Maui24849 : ContentPage
 	public Maui24849() => InitializeComponent();
 
 	[Collection("Issue")]
-	public class Test : IDisposable
+	public class Test : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -25,12 +25,6 @@ public partial class Maui24849 : ContentPage
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		}
-
-		public void Dispose()
-		{
-			AppInfo.SetCurrent(null);
-			DeviceInfo.SetCurrent(null);
 		}
 
 		[Theory]

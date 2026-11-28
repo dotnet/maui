@@ -132,7 +132,7 @@ public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(target));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(target, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
 		Assert.Empty(errors);
@@ -178,7 +178,7 @@ public class StyleTargets
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(target));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(target, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 
@@ -251,7 +251,7 @@ public static class StyleConstants
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(constants));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(constants, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 
@@ -365,7 +365,7 @@ public static class StyleTypes
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(types));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(types, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 
@@ -646,7 +646,7 @@ public static class StyleTypes
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(types));
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(types, cancellationToken: TestContext.Current.CancellationToken));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2024");

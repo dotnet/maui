@@ -11,16 +11,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 			appBuilder
 				.ConfigureTests(new TestOptions
 				{
-					Assemblies =
-					{
-						typeof(MauiProgram).Assembly
-					},
+					TestAssembly = typeof(MauiProgram).Assembly,
 				})
 				.UseHeadlessRunner(new HeadlessRunnerOptions
 				{
 					RequiresUIContext = true,
-				})
-				.UseVisualRunner();
+				});
 
 			return appBuilder.Build();
 		}

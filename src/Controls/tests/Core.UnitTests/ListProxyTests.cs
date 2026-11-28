@@ -277,6 +277,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Task.Factory.StartNew(() =>
 			{
+				// The options are thread-static and this is a shared thread-pool thread, so restore them
+				// before another test runs on it.
 				DispatcherProviderStubOptions.IsInvokeRequired = () => true;
 				DispatcherProviderStubOptions.InvokeOnMainThread = action =>
 				{
@@ -284,10 +286,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					action();
 				};
 
-				lock (collection)
-					collection.Add("foo");
-
-				mre.Set();
+				try
+				{
+					lock (collection)
+						collection.Add("foo");
+				}
+				finally
+				{
+					DispatcherProviderStubOptions.IsInvokeRequired = null;
+					DispatcherProviderStubOptions.InvokeOnMainThread = null;
+					mre.Set();
+				}
 			}, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
 
 			mre.WaitOne(5000);

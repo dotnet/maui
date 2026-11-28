@@ -9,7 +9,8 @@ Integration tests validate end-to-end functionality by creating, building, and r
 
 ## Test Framework
 
-These integration tests use **xUnit** as the test framework.
+These integration tests use **xUnit** as the outer test framework. Installed
+sample applications are ordinary apps, not native test runners.
 
 ## CI Infrastructure
 
@@ -104,14 +105,17 @@ public void RunOniOS_MauiDebug_CoreCLR() =>
 ```
 
 `AppleTemplateTests` applies the `RunOniOS` trait at class level. Its helper
-creates and builds the template, selects the requested runtime, and uses XHarness
-to run it on a simulator and verify the completion marker.
+creates and builds the template, selects the requested runtime, then installs and
+launches it on the fixture's dedicated simulator with `simctl` (`AppLaunch.RunApple`)
+and verifies the completion marker.
 
 ### Platform Guards
 
-Run platform-specific categories on suitable hosts. `TestEnvironment` provides
-platform detection, but a test that returns early is not evidence that its
-platform-specific scenario executed.
+```csharp
+Assert.SkipUnless(TestEnvironment.IsMacOS, "Running Apple templates is only supported on macOS.");
+
+Assert.SkipUnless(TestEnvironment.IsWindows, "Running Windows templates is only supported on Windows.");
+```
 
 ## Key Classes
 
@@ -120,7 +124,7 @@ platform-specific scenario executed.
 | `BaseBuildTest` | Base class with `TestDirectory`, `BuildProps`, lifecycle methods |
 | `BaseTemplateTests` | Extends BaseBuildTest with template-specific setup |
 | `DotnetInternal` | Wraps `dotnet` CLI using local SDK (`.dotnet/dotnet`) |
-| `XHarness` | Runs apps on devices/simulators |
+| `AppLaunch` | Launches ordinary sample apps with simctl/adb and checks completion evidence |
 | `Simulator` | iOS simulator management (boot, shutdown, UDID) |
 | `TestEnvironment` | Platform detection, paths, `IOSSimulatorRuntimeIdentifier` |
 | `FileUtilities` | File manipulation helpers |
@@ -194,8 +198,8 @@ The skill sets these automatically, but for manual runs:
 |----------|----------|---------|
 | `MAUI_PACKAGE_VERSION` | Yes | Version of MAUI packages being tested |
 | `IOS_TEST_DEVICE` | No | iOS simulator target (e.g., `ios-simulator-64_18.5`) |
-| `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and XHarness; fixture boots/shuts it down, so never select a shared device |
-| `SKIP_XCODE_VERSION_CHECK` | No | Diagnostic override; a build using an unsupported Xcode is not validation |
+| `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and app launcher; fixture boots/shuts it down, so never select a shared device |
+| `SKIP_XCODE_VERSION_CHECK` | No | Set to `true` to bypass Xcode version validation |
 
 ### Manual Run Commands (Fallback Only)
 
@@ -205,12 +209,12 @@ The skill sets these automatically, but for manual runs:
 # Set environment first
 export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
 # Run specific category
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
-  --filter "Category=Build"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests \
+  -- --filter-trait "Category=Build" --report-trx
 
 # Run specific test
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
-  --filter "FullyQualifiedName~AppleTemplateTests.RunOniOS"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests \
+  -- --filter-method "Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS*" --report-trx
 ```
 
 ## Common Pitfalls
@@ -220,7 +224,7 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 | Template not found | Verify workloads installed, `MAUI_PACKAGE_VERSION` set |
 | Xcode version mismatch | Install the Xcode version required by the workload |
 | Device/simulator not found | Verify `IOS_TEST_DEVICE` or emulator is running |
-| XHarness timeout on iOS | Failure: discovery/install/launch share the command timeout; timeout alone never proves startup |
+| App launch timeout on iOS | Failure: install/launch/exit verification share a 300-second timeout; timeout alone never proves startup |
 | Architecture mismatch | Verify the actual host, simulator and RID; `TestEnvironment.IOSSimulatorRuntimeIdentifier` is currently arm64 |
 
 ## Best Practices
@@ -229,10 +233,28 @@ The iOS template smoke tests inject `AppleTemplateLaunchProbe.cs` into the gener
 app (not the shipped templates). Both application `OnActivated` and
 `SceneOnActivated` start the same guarded main-run-loop timer, which waits
 15 seconds, writes a unique per-test completion marker, and exits with code zero.
-`XHarness.RunApple` requires both that marker in the application logs and exit code
-zero. Its existing 300-second command budget covers discovery, installation,
-launch, and execution; it is not the app's 15-second observation interval.
-Do not accept timeout codes or SIGKILL as evidence that the app started.
+`AppLaunch.RunApple` requires that marker in `application.log`, successful native
+commands, and a zero native application wait status for the launched PID from
+runningboard's `termination reported by launchd` log. `simctl launch --console`
+alone returns zero even for an application exiting nonzero, so its status is not
+sufficient. Missing native exit evidence fails closed. Its 300-second command
+budget covers installation, launch, execution and exit verification; it is not the
+app's 15-second observation interval. Do not accept timeout codes or SIGKILL as
+evidence that the app started. Logs are retained under `app-results/<test-name>/`.
+
+The fixture uses `simctl list runtimes --json` to select the newest available iOS
+runtime (or the `IOS_TEST_DEVICE` version), creates a dedicated compatible iPhone,
+and deletes it after testing. An explicit `IOS_TEST_DEVICE_UDID` is shut down but
+not deleted. App installation, launch, termination and uninstall use that same UUID.
+
+Android builds install via the workload's `Install` target with an explicit
+`AdbTarget`. `AppLaunch.RunAndroid` invokes `adb -s <id> shell am instrument -w`
+and requires both `INSTRUMENTATION_CODE: -1` and the unique completion marker
+returned only after the activity starts. A zero adb exit code alone is not success.
+The instrumented app is force-stopped after execution; device logs are retained,
+and teardown uninstalls the package on the same emulator. Both launch helpers
+accept cancellation, terminate their child process on cancellation/timeout, and
+perform bounded cleanup.
 
 For local template validation, set `DOTNET_CLI_HOME` to a session-owned directory
 before restoring tools and invoking the integration-test skill. This isolates

@@ -332,7 +332,8 @@ namespace Microsoft.Maui.Controls
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
-			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
+			(this as IControlsVisualElement).WindowChanged += OnWindowOrHandlerChanged;
+			HandlerChanged += OnWindowOrHandlerChanged;
 			this.SizeChanged += OnSizeChanged;
 		}
 
@@ -353,15 +354,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnWindowChanged(object sender, EventArgs e)
+		void OnWindowOrHandlerChanged(object sender, EventArgs e)
 		{
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+
 			if (Window is null)
 			{
 				SizeChanged -= OnSizeChanged;
 				SizeChanged += OnSizeChanged;
-				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			}
-			else
+			else if (Handler is not null)
 			{
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}

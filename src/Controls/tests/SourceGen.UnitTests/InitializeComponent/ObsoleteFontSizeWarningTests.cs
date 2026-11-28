@@ -154,7 +154,7 @@ $$"""
 """;
 
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(DefaultCodeBehind));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(DefaultCodeBehind, cancellationToken: TestContext.Current.CancellationToken));
 
 		var xamlPath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
 		var additionalFile = new AdditionalXamlFile(
@@ -167,9 +167,9 @@ $$"""
 			.AddAdditionalTexts([additionalFile.Text])
 			.WithUpdatedAnalyzerConfigOptions(CreateAnalyzerConfigOptionsProvider(additionalFile));
 
-		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var generatorDiagnostics);
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var generatorDiagnostics, cancellationToken: TestContext.Current.CancellationToken);
 
 		Assert.Equal(2, generatorDiagnostics.Count(d => d.Id == "MAUIX2025"));
-		Assert.DoesNotContain(updatedCompilation.GetDiagnostics(), d => d.Id == "CS0612");
+		Assert.DoesNotContain(updatedCompilation.GetDiagnostics(cancellationToken: TestContext.Current.CancellationToken), d => d.Id == "CS0612");
 	}
 }
