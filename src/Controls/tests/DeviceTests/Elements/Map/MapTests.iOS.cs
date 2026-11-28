@@ -223,7 +223,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Disposed Cluster Annotation Is Not Treated As A Cluster")]
-		public void DisposedClusterAnnotationIsNotTreatedAsACluster()
+		public Task DisposedClusterAnnotationIsNotTreatedAsACluster() => InvokeOnMainThreadAsync(() =>
 		{
 			// A cluster whose managed peer was disposed while a MapKit callback was in flight has a
 			// zero handle; treating it as a cluster throws ObjectDisposedException from
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 			member.Dispose();
 
 			Assert.Null(InvokeResolveAnnotationPeer(cluster));
-		}
+		});
 
 		// MapKit marshals the annotation into the GetViewForAnnotation block as the generated
 		// protocol wrapper for IMKAnnotation. It cannot be produced by the public runtime helpers

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 		IServiceProvider _servicesProvider;
 		IMauiContext _mauiContext;
 		bool _isCreated;
+		// Collection assertions must be able to release views before fixture teardown.
+		readonly List<WeakReference<IElementHandler>> _initializedHandlers = new();
 
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
@@ -102,6 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 			handler.SetMauiContext(mauiContext);
+			_initializedHandlers.Add(new WeakReference<IElementHandler>(handler));
 			element.Handler = handler;
 			handler.SetVirtualView(element);
 
@@ -317,14 +321,54 @@ namespace Microsoft.Maui.DeviceTests
 
 		public async ValueTask DisposeAsync()
 		{
-			if (_mauiApp != null)
+			try
 			{
-				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
-			}
+				if (_mauiApp != null)
+				{
+					await InvokeOnMainThreadAsync(async () =>
+					{
+						try
+						{
+							foreach (var reference in _initializedHandlers)
+							{
+								if (!reference.TryGetTarget(out var handler) || handler.VirtualView is null)
+									continue;
 
-			_mauiApp = null;
-			_servicesProvider = null;
-			_mauiContext = null;
+#if ANDROID
+								if (handler.PlatformView is global::Java.Lang.Object nativeView && nativeView.Handle == IntPtr.Zero)
+									continue;
+#endif
+
+								if (handler.VirtualView is IWindow window)
+									window.Content?.DisconnectHandlers();
+
+								if (handler.VirtualView is IView view)
+									view.DisconnectHandlers();
+								else
+									handler.DisconnectHandler();
+							}
+						}
+						finally
+						{
+							_initializedHandlers.Clear();
+							try
+							{
+								(_mauiContext as IDisposable)?.Dispose();
+							}
+							finally
+							{
+								await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+							}
+						}
+					});
+				}
+			}
+			finally
+			{
+				_mauiApp = null;
+				_servicesProvider = null;
+				_mauiContext = null;
+			}
 		}
 	}
 }

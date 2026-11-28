@@ -2617,6 +2617,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// https://github.com/dotnet/maui/issues/8342
 		public void TwoWayBindingToNullableDoublePropertyWithEmptyStringBecomesNull()
 		{
+			CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 			var vm = new NullableDoubleViewModel { Value = 3.14 };
 			var entry = new Entry { BindingContext = vm };
 			entry.SetBinding(Entry.TextProperty, "Value", BindingMode.TwoWay);

@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items[0].Items[0].Items.Add(navigatingToShellContent);
 
 			bool executed = false;
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			ShellContent contentActiveBeforeCompletingDeferral = null;
 			shell.Navigating += (_, args) =>
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items[0].Items[0].Items.Add(navigatingToShellContent);
 
 			bool executed = false;
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			ShellContent contentActiveBeforeCompletingDeferral = null;
 
@@ -240,7 +240,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				_token.Complete();
 			};
 
-			var source = new TaskCompletionSource<object>();
+			// Navigated is raised before Shell resets the implicit page routes. xUnit v3 has no async
+			// test synchronization context, so an inline continuation would let this test (and the
+			// next ones) run inside that callback and have their routes reset underneath them.
+			var source = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 			shell.Navigated += (_, args) =>
 			{
 				source.SetResult(true);

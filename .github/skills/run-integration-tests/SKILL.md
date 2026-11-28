@@ -47,7 +47,7 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Samples" -Configuration "Release"
 
 # Run with custom test filter
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~BuildSample"
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/*/*BuildSample*"
 
 # Skip build step (if already built)
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Build" -SkipBuild
@@ -64,7 +64,10 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
 | `-Category` | No | - | Test category to run (WindowsTemplates, Samples, Build, etc.) |
-| `-TestFilter` | No | - | Custom NUnit test filter expression |
+| `-TestFilter` | No | - | Native xUnit query filter, e.g. `/*/*/AppleTemplateTests/RunOniOS_MauiDebug` |
+| `-TestClass` | No | - | Fully qualified xUnit class names; cannot combine with `-TestFilter` |
+| `-DotnetPath` | No | `.dotnet/dotnet` | Alternate outer-host SDK executable; requires `-SkipBuild -SkipInstall` |
+| `-ArtifactsDirectory` | No | Repository default | Isolated outer-host build artifacts directory |
 | `-Configuration` | No | Debug | Build configuration (Debug/Release) |
 | `-SkipBuild` | No | false | Skip build/pack step if already done |
 | `-SkipInstall` | No | false | Skip workload installation if already done |
@@ -79,7 +82,7 @@ The script performs these steps:
 1. **Build & Pack**: `.\build.cmd -restore -pack -configuration $Configuration`
 2. **Install Workloads**: `.dotnet\dotnet build .\src\DotNet\DotNet.csproj -t:Install -c $Configuration`
 3. **Extract Version**: Reads MAUI_PACKAGE_VERSION from installed packs
-4. **Run Tests**: `.dotnet\dotnet test ... -filter "Category=$Category"`
+4. **Run Tests**: `.dotnet\dotnet test --project ... -- --filter-trait "Category=$Category" --report-trx`
 
 ## Example Usage
 
@@ -91,7 +94,27 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Samples"
 
 # Run multiple categories
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "Category=Build|Category=Blazor"
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/*/*[Category=Build|Category=Blazor]"
+```
+
+### Focused host-helper tests without an in-tree workload
+
+The launch-contract tests do not build generated applications. An installed SDK
+with MAUI packs can run just those classes using `-DotnetPath`; this does not
+change SDK pins or install workloads. Full template tests still require the
+repository-local `.dotnet` SDK and packaged MAUI artifacts.
+
+```powershell
+& .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 `
+  -TestClass @(
+    "Microsoft.Maui.IntegrationTests.AppLaunchTests",
+    "Microsoft.Maui.IntegrationTests.AppleLaunchTests",
+    "Microsoft.Maui.IntegrationTests.AndroidLaunchTests",
+    "Microsoft.Maui.IntegrationTests.SimulatorTests"
+  ) `
+  -DotnetPath /usr/local/share/dotnet/dotnet `
+  -ArtifactsDirectory artifacts/integration-validation `
+  -SkipBuild -SkipInstall
 ```
 
 ## Prerequisites
@@ -144,8 +167,8 @@ ls .dotnet/packs/Microsoft.Maui.Sdk
 | "Cannot proceed with locked .dotnet folder" | Kill processes using `.dotnet`: `Get-Process \| Where-Object { $_.Path -like "*\.dotnet\*" } \| ForEach-Object { Stop-Process -Id $_.Id -Force }` |
 | Session times out / becomes invalid | Integration tests are long-running (15-60+ min). Run manually in a terminal window instead of via Copilot CLI |
 | Tests take too long | Start with `Build` category (fastest), then run others. Use `-SkipBuild -SkipInstall` if workloads are already installed |
-| iOS tests fail with "mlaunch exited with 1" | Simulator state issue. Run individual tests instead of the whole category (see below) |
-| iOS simulator state errors (code 137/149) | Reset simulator: `xcrun simctl shutdown all && xcrun simctl erase all` or run tests individually |
+| iOS launch fails | Inspect `app-results/<test-name>/` logs for installation, application output and PID-specific native termination evidence |
+| iOS simulator state errors | The fixture creates/deletes its own dedicated simulator. If overriding its UUID, reset only that explicitly selected dedicated simulator, never all devices |
 
 ## Running Manually (Recommended for Long-Running Tests)
 
@@ -159,7 +182,7 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 
 # Option 2: Run dotnet test directly (if workloads already installed)
 $env:MAUI_PACKAGE_VERSION = (Get-ChildItem .dotnet\packs\Microsoft.Maui.Sdk -Directory | Sort-Object Name -Descending | Select-Object -First 1).Name
-.dotnet\dotnet test src\TestUtils\src\Microsoft.Maui.IntegrationTests --filter "Category=Build"
+.dotnet\dotnet test --project src\TestUtils\src\Microsoft.Maui.IntegrationTests -- --filter-trait "Category=Build" --report-trx
 ```
 
 ### Running All Categories Sequentially
@@ -189,11 +212,11 @@ $iosTests = @(
 )
 
 # Run a specific iOS test
-pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~RunOniOS_MauiDebug" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/AppleTemplateTests/RunOniOS_MauiDebug" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 
 # Run all iOS tests individually (more reliable than running category)
 foreach ($test in $iosTests) {
     Write-Host "Running $test..." -ForegroundColor Cyan
-    pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~$test" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+    pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "/*/*/AppleTemplateTests/$test" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 }
 ```

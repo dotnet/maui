@@ -285,7 +285,7 @@ Describe 'Pipeline support checks' {
         Set-RunTestsSuite ui
         $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines')
         Set-RunTestsSuite device
-        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices', 'eng/helix_xharness.proj')
+        $script:RunTestsTrustedPaths | Should -Be @('.github', 'eng/pipelines', 'eng/devices')
         Set-RunTestsSuite ui
         $invoke | Should -Match 'parents = @\(\$parentSha\)'
         # A PR GitHub reports as conflicting is told so plainly.
@@ -858,24 +858,8 @@ Describe '/review run-device-tests' {
         $ci = Get-Content (Join-Path $pipelines 'ci-device-tests.yml') -Raw
         Test-RunTestsPipelineSupportsDispatch $ci | Should -BeTrue
         $ci | Should -Match ([regex]::Escape("- `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/run-devicetests/') }}:") + '\s+- template: /eng/pipelines/common/run-devicetests-request\.yml@self')
-        $stage = Get-Content (Join-Path $pipelines 'arcade/stage-device-tests.yml') -Raw
-        foreach ($name in 'devicetests_build_mono', 'devicetests_android_mono', 'devicetests_ios_mono') {
-            $stage | Should -Match ("- \$\{\{ if not\(parameters\.selectedRun\) \}\}:\s+(#[^\n]*\s+)?- stage: $name")
-        }
-        @([regex]::Matches($stage, 'HelixProjectArguments: [^\n]*\$\{\{ parameters\.extraHelixArguments \}\}')).Count | Should -Be 12
         $request = Get-Content (Join-Path $pipelines 'common/run-devicetests-request.yml') -Raw
         $request | Should -Match "RunTestsMode\s+value: 'none'"
-        $helix = Get-Content (Join-Path $PSScriptRoot '../../eng/helix_xharness.proj') -Raw
-        $helix | Should -Match ([regex]::Escape('<Target Name="ApplyRunDeviceTestsSelection" AfterTargets="DiscoverTestBundles" Condition="''$(RunDeviceTestsProjects)'' != ''''">'))
-        # Windows runs only the listed categories of both projects; the script loops categories when given a filter.
-        foreach ($project in 'Controls', 'Core') {
-            $helix | Should -Match ([regex]::Escape("StartsWith('$project.DeviceTests-'))"">") + '\s+' + [regex]::Escape("<Command>%(Command) ""`$(RunDeviceTests${project}Run)""</Command>"))
-            $ci | Should -Match ([regex]::Escape("/p:RunDeviceTests${project}Run=`${{ variables['RunDeviceTests${project}Run'] }}"))
-        }
-        $windows = Get-Content (Join-Path $PSScriptRoot '../../eng/devices/run-windows-devicetests.cmd') -Raw
-        $windows | Should -Match 'if defined CATEGORY_FILTER set USE_CATEGORY_RUNS=1'
-        ([regex]::Matches($windows, 'if %USE_CATEGORY_RUNS%==1 \(')).Count | Should -Be 2
-        $windows | Should -Not -Match 'if %IS_CONTROLS_TEST%==1'
         Test-RunTestsPipelineSupportsDispatch (Get-Content (Join-Path $pipelines 'ci-uitests.yml') -Raw) | Should -BeFalse
     }
 }

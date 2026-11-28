@@ -5,12 +5,8 @@ using System.Security.Cryptography.X509Certificates;
 
 const string defaultVersion = "10.0.19041.0";
 
-// Test category filtering:
-// Use --test-filter to run only specific categories. Examples:
-//   --test-filter="Button"              # Run only Button category
-//   --test-filter="Button,Label"        # Run Button and Label categories
-//   --test-filter="Button,Layout"       # Run any category containing "Button" or "Layout"
-// Categories are matched case-insensitively using substring matching
+// Native filters use Category=<name> or SkipCategories=<name>,<name>.
+// Appium keeps its NUnit filter contract.
 
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
@@ -44,19 +40,12 @@ string DOTNET_PLATFORM = $"win-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
-bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.csproj");
+bool isNativeProjectTestRun = FileExists(PROJECT) &&
+	XDocument.Load(PROJECT.FullPath).Descendants("Import").Any(import =>
+		((string)import.Attribute("Project"))?.Contains("Microsoft.Maui.TestUtils.DeviceTests.Runners.props", StringComparison.OrdinalIgnoreCase) == true);
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
-
-// Uninstall the deployed app
-var uninstallPS = new Action(() =>
-{
-	try {
-		StartProcess("powershell",
-			"$app = Get-AppxPackage -Name " + PACKAGEID + "; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }");
-	} catch { }
-});
 
 Information("Project File: {0}", PROJECT);
 Information("Application ID: {0}", PACKAGEID);
@@ -68,7 +57,7 @@ Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
 
 Task("GenerateMsixCert")
-	.WithCriteria(isPackagedTestRun)
+	.WithCriteria(isPackagedTestRun && !isNativeProjectTestRun)
 	.Does(() =>
 {
 	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key.
@@ -248,6 +237,11 @@ Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	if (isNativeProjectTestRun)
+	{
+		ExecuteWindowsNativeTests(buildOnly: true);
+		return;
+	}
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
@@ -321,332 +315,11 @@ Task("buildOnly")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-// Launch a packaged app via IApplicationActivationManager and wait for it to fully exit.
-// This gives us the real PID (Start-Process shell:AppsFolder\... only returns the launcher PID),
-// so we can synchronously wait for the test runner to finish and release its result-file handle.
-// Returns true if the app exited cleanly within the timeout.
-Func<string, string, int, bool> LaunchPackagedAndWait = (string appArgs, string description, int timeoutSeconds) => {
-	var scriptPath = MakeAbsolute((FilePath)"./Run-PackagedAppAndWait.ps1").FullPath;
-	var psArgs = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -PackageName \"{PACKAGEID}\" -AppArguments \"{appArgs.Replace("\"", "\\\"")}\" -TimeoutSeconds {timeoutSeconds}";
-	Information($"Launching packaged app ({description}): {appArgs}");
-	var exitCode = StartProcess("powershell", psArgs);
-	if (exitCode != 0) {
-		Warning($"Run-PackagedAppAndWait exited with code {exitCode} for {description}");
-		return false;
-	}
-	return true;
-};
-
-// Helper function to filter categories based on testFilter parameter
-Func<string[], string[]> FilterCategories = (string[] allCategories) => {
-	if (string.IsNullOrWhiteSpace(testFilter)) {
-		Information("No test filter specified, running all categories");
-		return allCategories;
-	}
-	
-	var filters = testFilter.Split(',', StringSplitOptions.RemoveEmptyEntries)
-		.Select(f => f.Trim())
-		.ToArray();
-	
-	var filteredCategories = allCategories.Where(category => 
-		filters.Any(filter => 
-			category.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
-		)
-	).ToArray();
-	
-	Information($"Test filter '{testFilter}' applied:");
-	Information($"  - Total categories available: {allCategories.Length}");
-	Information($"  - Filtered categories to run: {filteredCategories.Length}");
-	
-	if (filteredCategories.Length > 0) {
-		Information("  - Categories that will run:");
-		foreach (var category in filteredCategories) {
-			Information($"    * {category}");
-		}
-	} else {
-		Warning($"No categories matched the filter '{testFilter}'. Available categories:");
-		foreach (var category in allCategories) {
-			Information($"    * {category}");
-		}
-	}
-	
-	return filteredCategories;
-};
-
 Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	CleanDirectories(TEST_RESULTS);
-	Information("Cleaned directories");
-
-	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
-
-	// For Controls project tests, each category gets its own result file, so don't append testFilter here
-	// For non-Controls tests, append testFilter to the single result file
-	if (!isControlsProjectTestRun && !string.IsNullOrWhiteSpace(testFilter))
-	{
-		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
-	}
-
-	testResultsFile += ".xml";
-
-	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
-
-	Information($"Test Results File: {testResultsFile}");
-	Information($"Tests To Run File: {testsToRunFile}");
-
-	if (FileExists(testResultsFile))
-	{
-		DeleteFile(testResultsFile);
-	}
-
-	if (FileExists(testsToRunFile))
-	{
-		DeleteFile(testsToRunFile);
-	}
-
-	// Track completed and failed test categories
-	var completedCategories = new List<string>();
-	var failedCategories = new List<string>();
-
-	if (isPackagedTestRun)
-	{
-		Information("isPackagedTestRuns");
-		// Try to uninstall the app if it exists from before
-		uninstallPS();
-
-		Information("Uninstalled previously deployed app");
-
-		var projectDir = PROJECT.GetDirectory();
-		Information($"Get Cert {projectDir}");
-
-		var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
-		var msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
-		if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
-		{
-			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-
-			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
-			{
-				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
-			}
-			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
-			{
-				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
-			}
-			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
-			{
-				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
-			}
-			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
-			{
-				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
-			}	
-			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
-			{
-				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
-			}
-			cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
-		    msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
-			if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
-			{
-				Error("Error: Couldn't find .cer or .msix file");
-				throw new Exception("Error: Couldn't find .cer or .msix file");
-			}
-		}
-
-		var msixPath = msixPaths.First();
-		var cerPath = cerPaths.First();
-		Information($"Found MSIX, installing: {msixPath}");
-
-		int InstallAppxPackage(FilePath path) {
-			var absPath = MakeAbsolute(path).FullPath;
-			Information("Installing MSIX: {0}", absPath);
-			// $ProgressPreference='SilentlyContinue' suppresses Add-AppxPackage's
-			// progress output which otherwise chokes cake's stdout pipe.
-			return StartProcess("powershell",
-				"-NoProfile -Command \"$ProgressPreference='SilentlyContinue'; Add-AppxPackage -Path '" + absPath + "'; if (-not $?) { exit 1 }\"");
-		}
-
-		// Install dependencies
-		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
-		foreach (var dep in dependencies) {
-			try {
-				var depExit = InstallAppxPackage(dep);
-				if (depExit != 0) {
-					Warning($"Failed to install dependency (exit code {depExit}): {dep}");
-				}
-			} catch {
-				Warning($"Failed to install dependency: {dep}");
-			}
-		}
-
-		// Install the DeviceTests app
-		var installExit = InstallAppxPackage(msixPath);
-		if (installExit != 0) {
-			throw new Exception($"Failed to install app MSIX (exit code {installExit}): {msixPath}");
-		}
-
-		if (isControlsProjectTestRun)
-		{
-			// Start the app once to trigger the discovery of the test categories; we wait
-			// for the actual app process to exit, then read the categories file.
-			if (!LaunchPackagedAndWait($"\"{testResultsFile}\" \"-1\"", "category discovery", 120)) {
-				throw new Exception("Category discovery run did not complete successfully");
-			}
-
-			if (!FileExists(testsToRunFile)) {
-				throw new Exception("Test categories file was not created during discovery phase");
-			}
-
-			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
-			var filteredCategories = FilterCategories(expectedCategories);
-			
-			if (filteredCategories.Length == 0) {
-				Information("No categories to run after applying filter. Skipping test execution.");
-				return;
-			}
-			
-			Information($"Will run {filteredCategories.Length} filtered categories out of {expectedCategories.Length} total");
-
-			for (int i = 0; i < filteredCategories.Length; i++)
-			{
-				var categoryName = filteredCategories[i];
-				// Find the original index of this category in the expected categories
-				var originalIndex = Array.IndexOf(expectedCategories, categoryName);
-				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
-				
-				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
-
-				// Start the DeviceTests app and wait for the process to exit, then verify the result file exists.
-				var launched = LaunchPackagedAndWait($"\"{testResultsFile}\" \"{originalIndex}\"", $"category {categoryName}", 480);
-				if (launched && FileExists(expectedResultFile)) {
-					completedCategories.Add(categoryName);
-					Information($"✓ Category {categoryName} completed successfully");
-				} else {
-					failedCategories.Add(categoryName);
-					Error($"✗ Category {categoryName} failed or timed out");
-				}
-			}
-		}
-		else
-		{
-			// Start the DeviceTests app and wait for it to fully exit.
-			var launched = LaunchPackagedAndWait($"\"{testResultsFile}\"", "All Tests", 480);
-			if (launched && FileExists(testResultsFile)) {
-				completedCategories.Add("All Tests");
-			} else {
-				failedCategories.Add("All Tests");
-			}
-		}
-	}
-	else
-	{
-		if (isControlsProjectTestRun)
-		{
-			// Start the app once, this will trigger the discovery of the test categories.
-			// Cake's StartProcess blocks until the unpackaged exe exits, so the discovery
-			// file is fully flushed by the time this returns.
-			StartProcess(TEST_APP, testResultsFile + " -1");
-
-			if (!FileExists(testsToRunFile)) {
-				throw new Exception("Test categories file was not created during discovery phase");
-			}
-
-			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
-			var filteredCategories = FilterCategories(expectedCategories);
-			
-			if (filteredCategories.Length == 0) {
-				Information("No categories to run after applying filter. Skipping test execution.");
-				return;
-			}
-
-			Information($"Will run {filteredCategories.Length} filtered categories out of {expectedCategories.Length} total");
-
-			for (int i = 0; i < filteredCategories.Length; i++)
-			{
-				var categoryName = filteredCategories[i];
-				// Find the original index of this category in the expected categories
-				var originalIndex = Array.IndexOf(expectedCategories, categoryName);
-				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
-				
-				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
-				
-				// Start the DeviceTests app for unpackaged — StartProcess blocks until exit.
-				StartProcess(TEST_APP, testResultsFile + " " + originalIndex);
-
-				if (FileExists(expectedResultFile)) {
-					completedCategories.Add(categoryName);
-					Information($"✓ Category {categoryName} completed successfully");
-				} else {
-					failedCategories.Add(categoryName);
-					Error($"✗ Category {categoryName} did not produce a result file: {expectedResultFile}");
-				}
-			}
-		}
-		else
-		{
-			// StartProcess blocks until the unpackaged exe exits.
-			StartProcess(TEST_APP, testResultsFile);
-
-			if (FileExists(testResultsFile)) {
-				completedCategories.Add("All Tests");
-			} else {
-				failedCategories.Add("All Tests");
-			}
-		}
-	}
-
-	// Final validation and reporting
-	Information($"=== Test Execution Summary ===");
-	Information($"Completed categories: {completedCategories.Count}");
-	Information($"Failed categories: {failedCategories.Count}");
-
-	if (completedCategories.Any()) {
-		Information("✓ Successfully completed categories:");
-		foreach (var category in completedCategories) {
-			Information($"  - {category}");
-		}
-	}
-
-	if (failedCategories.Any()) {
-		Error("✗ Failed or timed out categories:");
-		foreach (var category in failedCategories) {
-			Error($"  - {category}");
-		}
-	}
-
-	// Clean up the test categories file
-	if (FileExists(testsToRunFile))
-	{
-		DeleteFile(testsToRunFile);
-	}
-
-	// Check if we have any test result files at all
-	var actualResultFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
-	if (actualResultFiles.Length == 0)
-	{
-		throw new Exception($"No test result files found. All test processes may have crashed or failed to start.");
-	}
-
-	// If we're running Controls tests, validate we have results for expected categories
-	if (isControlsProjectTestRun && failedCategories.Any())
-	{
-		throw new Exception($"Some test categories failed to complete: {string.Join(", ", failedCategories)}. Expected {completedCategories.Count + failedCategories.Count} categories, but {failedCategories.Count} failed.");
-	}
-
-	// Check for test failures in the result files
-	foreach(var file in actualResultFiles)
-	{
-		var failed = XmlPeek(file, "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-		if (!string.IsNullOrEmpty(failed)) {
-			throw new Exception($"At least {failed} test(s) failed in {System.IO.Path.GetFileName(file)}.");
-		}
-	}
-
-	Information($"✓ All test executions completed successfully with {actualResultFiles.Length} result file(s)");
+	ExecuteWindowsNativeTests(buildOnly: false);
 });
 
 Task("build")
@@ -662,6 +335,13 @@ Task("buildAndTest")
 
 Task("SetupTestPaths")
 	.Does(() => RunUITestSetupWithRetry(() => {
+	if (isNativeProjectTestRun)
+	{
+		if (string.IsNullOrEmpty(TEST_RESULTS))
+			TEST_RESULTS = rootFolder.Combine("artifacts/device-tests/windows").FullPath;
+		CreateDirectory(TEST_RESULTS);
+		return;
+	}
 
 	// UI Tests
 	if (string.IsNullOrEmpty(TEST_APP) )
@@ -804,3 +484,31 @@ Task("uitest")
 });
 
 RunTarget(TARGET);
+
+void ExecuteWindowsNativeTests(bool buildOnly)
+{
+	if (!isNativeProjectTestRun)
+		throw new InvalidOperationException("Native Windows test targets require a MAUI device-test project; use uitest for NUnit/Appium.");
+	var results = string.IsNullOrEmpty(TEST_RESULTS)
+		? rootFolder.Combine("artifacts/device-tests/windows").FullPath
+		: MakeAbsolute(Directory(TEST_RESULTS)).FullPath;
+	var args = new ProcessArgumentBuilder()
+		.Append("-NoLogo").Append("-NoProfile").Append("-File")
+		.AppendQuoted(rootFolder.CombineWithFilePath(".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1").FullPath)
+		.Append("-ProjectPath").AppendQuoted(MakeAbsolute(PROJECT).FullPath)
+		.Append("-Platform").Append("windows")
+		.Append("-WindowsPackaging").Append(isPackagedTestRun ? "packaged" : "unpackaged")
+		.Append("-Configuration").AppendQuoted(CONFIGURATION)
+		.Append("-TargetFramework").AppendQuoted(TARGET_FRAMEWORK)
+		.Append("-RepoRoot").AppendQuoted(rootFolder.FullPath)
+		.Append("-OutputDirectory").AppendQuoted(results);
+	if (!string.IsNullOrEmpty(dotnetToolPath))
+		args.Append("-DotnetPath").AppendQuoted(dotnetToolPath);
+	if (!string.IsNullOrWhiteSpace(testFilter))
+		args.Append("-TestFilter").AppendQuoted(testFilter);
+	if (buildOnly)
+		args.Append("-BuildOnly");
+	var exitCode = StartProcess("pwsh", new ProcessSettings { Arguments = args });
+	if (exitCode != 0)
+		throw new InvalidOperationException($"Native Windows dotnet test failed with exit code {exitCode}.");
+}

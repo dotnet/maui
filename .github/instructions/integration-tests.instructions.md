@@ -9,7 +9,8 @@ Integration tests validate end-to-end functionality by creating, building, and r
 
 ## Test Framework
 
-These integration tests use **NUnit** as the test framework.
+These integration tests use **xUnit** as the outer test framework. Installed
+sample applications are ordinary apps, not native test runners.
 
 ## CI Infrastructure
 
@@ -76,21 +77,21 @@ Tests are organized by categories (defined in `Utilities/Categories.cs`) that ma
 ### Basic Pattern
 
 ```csharp
-[Test]
-[Category(Categories.Build)]
-[TestCase("maui", DotNetCurrent, "Debug")]
-[TestCase("maui", DotNetCurrent, "Release")]
+[Theory]
+[Trait("Category", Categories.Build)]
+[InlineData("maui", DotNetCurrent, "Debug")]
+[InlineData("maui", DotNetCurrent, "Release")]
 public void Build(string id, string framework, string config)
 {
     var projectDir = TestDirectory;
     var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
     // Create from template
-    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+    Assert.True(DotnetInternal.New(id, projectDir, framework),
         $"Unable to create template {id}.");
 
     // Build
-    Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+    Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps),
         $"Project failed to build.");
 }
 ```
@@ -98,31 +99,29 @@ public void Build(string id, string framework, string config)
 ### Device Test Pattern (iOS)
 
 ```csharp
-[Test]
-[Category(Categories.RunOniOS)]
-[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+[Theory]
+[Trait("Category", Categories.RunOniOS)]
+[InlineData("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
 public void RunOniOS(string id, string config, string framework, RuntimeVariant rv, string? trimMode)
 {
     // Create and build
-    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework));
-    Assert.IsTrue(DotnetInternal.Build(projectFile, config, 
+    Assert.True(DotnetInternal.New(id, projectDir, framework));
+    Assert.True(DotnetInternal.Build(projectFile, config,
         framework: $"{framework}-ios",
         properties: buildProps,
         runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
 
-    // Run with XHarness (omit UDID to let XHarness control simulator lifecycle)
-    Assert.IsTrue(XHarness.RunApple(appPath, resultDir, TestSimulator.XHarnessID, completionMarker));
+    // Install and launch on the same dedicated simulator managed by the fixture.
+    Assert.True(AppLaunch.RunApple(appPath, resultDir, TestSimulator.GetUDID(), completionMarker));
 }
 ```
 
 ### Platform Guards
 
 ```csharp
-if (!TestEnvironment.IsMacOS)
-    Assert.Ignore("Running Apple templates is only supported on macOS.");
+Assert.SkipUnless(TestEnvironment.IsMacOS, "Running Apple templates is only supported on macOS.");
 
-if (!TestEnvironment.IsWindows)
-    Assert.Ignore("Running Windows templates is only supported on Windows.");
+Assert.SkipUnless(TestEnvironment.IsWindows, "Running Windows templates is only supported on Windows.");
 ```
 
 ## Key Classes
@@ -132,7 +131,7 @@ if (!TestEnvironment.IsWindows)
 | `BaseBuildTest` | Base class with `TestDirectory`, `BuildProps`, lifecycle methods |
 | `BaseTemplateTests` | Extends BaseBuildTest with template-specific setup |
 | `DotnetInternal` | Wraps `dotnet` CLI using local SDK (`.dotnet/dotnet`) |
-| `XHarness` | Runs apps on devices/simulators |
+| `AppLaunch` | Launches ordinary sample apps with simctl/adb and checks completion evidence |
 | `Simulator` | iOS simulator management (boot, shutdown, UDID) |
 | `TestEnvironment` | Platform detection, paths, `IOSSimulatorRuntimeIdentifier` |
 | `FileUtilities` | File manipulation helpers |
@@ -206,7 +205,7 @@ The skill sets these automatically, but for manual runs:
 |----------|----------|---------|
 | `MAUI_PACKAGE_VERSION` | Yes | Version of MAUI packages being tested |
 | `IOS_TEST_DEVICE` | No | iOS simulator target (e.g., `ios-simulator-64_18.5`) |
-| `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and XHarness; fixture boots/shuts it down, so never select a shared device |
+| `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and app launcher; fixture boots/shuts it down, so never select a shared device |
 | `SKIP_XCODE_VERSION_CHECK` | No | Set to `true` to bypass Xcode version validation |
 
 ### Manual Run Commands (Fallback Only)
@@ -219,12 +218,12 @@ export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
 export SKIP_XCODE_VERSION_CHECK=true
 
 # Run specific category
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
-  --filter "Category=Build"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests \
+  -- --filter-trait "Category=Build" --report-trx
 
 # Run specific test
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
-  --filter "FullyQualifiedName~AppleTemplateTests.RunOniOS"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests \
+  -- --filter-method "Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS*" --report-trx
 ```
 
 ## Common Pitfalls
@@ -234,7 +233,7 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 | Template not found | Verify workloads installed, `MAUI_PACKAGE_VERSION` set |
 | Xcode version mismatch | Set `SKIP_XCODE_VERSION_CHECK=true` |
 | Device/simulator not found | Verify `IOS_TEST_DEVICE` or emulator is running |
-| XHarness timeout on iOS | Failure: discovery/install/launch share the command timeout; timeout alone never proves startup |
+| App launch timeout on iOS | Failure: install/launch/exit verification share a 300-second timeout; timeout alone never proves startup |
 | Architecture mismatch | Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` |
 
 ## Best Practices
@@ -243,10 +242,28 @@ The iOS template smoke tests inject `AppleTemplateLaunchProbe.cs` into the gener
 app (not the shipped templates). Both application `OnActivated` and
 `SceneOnActivated` start the same guarded main-run-loop timer, which waits
 15 seconds, writes a unique per-test completion marker, and exits with code zero.
-`XHarness.RunApple` requires both that marker in the application logs and exit code
-zero. Its existing 300-second command budget covers discovery, installation,
-launch, and execution; it is not the app's 15-second observation interval.
-Do not accept timeout codes or SIGKILL as evidence that the app started.
+`AppLaunch.RunApple` requires that marker in `application.log`, successful native
+commands, and a zero native application wait status for the launched PID from
+runningboard's `termination reported by launchd` log. `simctl launch --console`
+alone returns zero even for an application exiting nonzero, so its status is not
+sufficient. Missing native exit evidence fails closed. Its 300-second command
+budget covers installation, launch, execution and exit verification; it is not the
+app's 15-second observation interval. Do not accept timeout codes or SIGKILL as
+evidence that the app started. Logs are retained under `app-results/<test-name>/`.
+
+The fixture uses `simctl list runtimes --json` to select the newest available iOS
+runtime (or the `IOS_TEST_DEVICE` version), creates a dedicated compatible iPhone,
+and deletes it after testing. An explicit `IOS_TEST_DEVICE_UDID` is shut down but
+not deleted. App installation, launch, termination and uninstall use that same UUID.
+
+Android builds install via the workload's `Install` target with an explicit
+`AdbTarget`. `AppLaunch.RunAndroid` invokes `adb -s <id> shell am instrument -w`
+and requires both `INSTRUMENTATION_CODE: -1` and the unique completion marker
+returned only after the activity starts. A zero adb exit code alone is not success.
+The instrumented app is force-stopped after execution; device logs are retained,
+and teardown uninstalls the package on the same emulator. Both launch helpers
+accept cancellation, terminate their child process on cancellation/timeout, and
+perform bounded cleanup.
 
 For local template validation, set `DOTNET_CLI_HOME` to a session-owned directory
 before restoring tools and invoking the integration-test skill. This isolates

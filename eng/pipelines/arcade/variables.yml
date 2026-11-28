@@ -12,10 +12,6 @@ variables:
   value: $(Build.SourcesDirectory)\build.cmd -ci
 - name: _buildScriptMacOS
   value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError false
-- name: _helixScriptMacOS
-  value: $(Build.SourcesDirectory)/helix.sh
-- name: _helixScript
-  value: $(Build.SourcesDirectory)\helix.cmd
 - name: _msbuildCommand
   value: powershell -ExecutionPolicy ByPass -NoProfile $(Build.SourcesDirectory)\eng\common\msbuild.ps1 -ci
 - name: _msbuildMacOsCommand
