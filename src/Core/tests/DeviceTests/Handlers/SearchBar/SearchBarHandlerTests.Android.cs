@@ -113,11 +113,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal((1, 4), selection);
 		}
 
-		IViewHandler CreateSearchBarHandler(SearchBarStub searchBar, bool material3) =>
+		IViewHandler CreateSearchBarHandler(ISearchBar searchBar, bool material3) =>
 			material3 ? CreateHandler<SearchBarHandler2>(searchBar) : CreateHandler<SearchBarHandler>(searchBar);
 
 		static EditText GetQueryEditText(IViewHandler handler) =>
 			handler is SearchBarHandler2 handler2 ? handler2.QueryEditor! : ((SearchView)handler.PlatformView).GetChildrenOfType<EditText>().First();
+
+		static bool IsClearButtonVisible(IViewHandler handler) =>
+			handler is SearchBarHandler2 handler2
+				? handler2.PlatformView.EndIconVisible
+				: Assert.IsAssignableFrom<ImageView>(((SearchView)handler.PlatformView).GetCancelButton()).Visibility == ViewStates.Visible;
 
 		[Fact(DisplayName = "Deferred Selection Update After Disconnect Does Not Crash (Issue 37425)")]
 		public async Task DeferredSelectionUpdateAfterDisconnectDoesNotCrash()
@@ -146,6 +151,63 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(cursorPosition, searchBar.CursorPosition);
 				Assert.Equal(selectionLength, searchBar.SelectionLength);
+			});
+		}
+
+		[Theory]
+		[InlineData(false, ClearButtonVisibility.Never)]
+		[InlineData(false, ClearButtonVisibility.WhileEditing)]
+		[InlineData(true, ClearButtonVisibility.Never)]
+		[InlineData(true, ClearButtonVisibility.WhileEditing)]
+		public async Task ClearButtonVisibilityFollowsRuntimeChanges(bool material3, ClearButtonVisibility visibility)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var searchBar = new Controls.SearchBar { Text = "search", ClearButtonVisibility = visibility };
+				var handler = CreateSearchBarHandler(searchBar, material3);
+				var editor = GetQueryEditText(handler);
+				using var layout = new LinearLayout(MauiContext.Context) { Orientation = Orientation.Vertical };
+				using var focusTarget = new Button(MauiContext.Context) { FocusableInTouchMode = true };
+				layout.AddView(focusTarget, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 150));
+				layout.AddView(Assert.IsAssignableFrom<View>(handler.PlatformView),
+					new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 150));
+
+				await layout.AttachAndRun(async () =>
+				{
+					Assert.True(focusTarget.RequestFocus());
+					await AssertEventually(() => !searchBar.IsFocused && !IsClearButtonVisible(handler));
+
+					Assert.True(editor.RequestFocus());
+					await AssertEventually(() => searchBar.IsFocused &&
+						IsClearButtonVisible(handler) == (visibility == ClearButtonVisibility.WhileEditing));
+
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+					Assert.False(IsClearButtonVisible(handler));
+
+					editor.Text = "typed";
+					await AssertEventually(() => searchBar.Text == "typed" && !IsClearButtonVisible(handler));
+
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+					Assert.True(IsClearButtonVisible(handler));
+					Assert.Equal("typed", editor.Text);
+
+					Assert.True(focusTarget.RequestFocus());
+					await AssertEventually(() => !searchBar.IsFocused && !IsClearButtonVisible(handler));
+
+					Assert.True(editor.RequestFocus());
+					await AssertEventually(() => searchBar.IsFocused && IsClearButtonVisible(handler));
+
+					searchBar.Text = string.Empty;
+					Assert.False(IsClearButtonVisible(handler));
+					searchBar.Text = null;
+					Assert.False(IsClearButtonVisible(handler));
+					searchBar.Text = " ";
+					Assert.True(IsClearButtonVisible(handler));
+
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+					searchBar.Text = "again";
+					Assert.False(IsClearButtonVisible(handler));
+				});
 			});
 		}
 

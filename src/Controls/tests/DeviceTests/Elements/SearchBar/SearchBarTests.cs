@@ -48,9 +48,17 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "CancelButtonColor is set correctly"
 			};
 
-			var actualColor = await GetPlatformCancelButtonColor(await CreateHandlerAsync<SearchBarHandler>(searchBar));
-
-			Assert.Equal(expected, actualColor);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					Assert.True(searchBar.Focus());
+					await AssertHelpers.AssertEventually(() => searchBar.IsFocused);
+					var actualColor = await GetPlatformCancelButtonColor(handler);
+					Assert.Equal(expected, actualColor);
+				});
+			});
 		}
 #endif
 

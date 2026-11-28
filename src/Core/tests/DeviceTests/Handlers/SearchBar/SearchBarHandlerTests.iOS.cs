@@ -214,9 +214,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var searchBarStub = new SearchBarStub();
 
-			await InvokeOnMainThreadAsync(() =>
+			await AttachAndRun(searchBarStub, handler =>
 			{
-				var searchBar = CreateHandler(searchBarStub).PlatformView;
+				var searchBar = handler.PlatformView;
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
 
 				Assert.False(searchBar.ShowsCancelButton);
 
@@ -227,6 +228,149 @@ namespace Microsoft.Maui.DeviceTests
 				searchBarStub.Text = "";
 				searchBarStub.Handler.UpdateValue(nameof(ISearchBar.Text));
 				Assert.False(searchBar.ShowsCancelButton);
+			});
+		}
+
+		[Theory]
+		[InlineData(ClearButtonVisibility.WhileEditing)]
+		[InlineData(ClearButtonVisibility.Never)]
+		public async Task ClearButtonVisibilityUpdatesAtRuntime(ClearButtonVisibility visibility)
+		{
+			var searchBar = new SearchBarStub { Text = "search", ClearButtonVisibility = visibility };
+
+			await AttachAndRun(searchBar, handler =>
+			{
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
+				Assert.Equal(visibility == ClearButtonVisibility.WhileEditing, handler.PlatformView.ShowsCancelButton);
+
+				searchBar.ClearButtonVisibility = visibility == ClearButtonVisibility.Never
+					? ClearButtonVisibility.WhileEditing : ClearButtonVisibility.Never;
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+				Assert.Equal(visibility == ClearButtonVisibility.Never, handler.PlatformView.ShowsCancelButton);
+
+				searchBar.ClearButtonVisibility = visibility;
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+				Assert.Equal(visibility == ClearButtonVisibility.WhileEditing, handler.PlatformView.ShowsCancelButton);
+				Assert.Equal("search", handler.PlatformView.Text);
+
+				Assert.True(handler.QueryEditor.ResignFirstResponder());
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+#if MACCATALYST
+				Assert.True(Assert.IsAssignableFrom<UIButton>(handler.PlatformView.GetClearButton()).Hidden);
+#endif
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
+				Assert.Equal(visibility == ClearButtonVisibility.WhileEditing, handler.PlatformView.ShowsCancelButton);
+
+				searchBar.Text = null;
+				handler.UpdateValue(nameof(ISearchBar.Text));
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+			});
+		}
+
+		[Fact]
+		public async Task ClearButtonModeFollowsVisibilityChanges()
+		{
+			var searchBar = new SearchBarStub { Text = "search" };
+
+			await AttachAndRun(searchBar, handler =>
+			{
+				var editor = Assert.IsAssignableFrom<UITextField>(handler.QueryEditor);
+				Assert.True(editor.BecomeFirstResponder());
+				editor.ClearButtonMode = UITextFieldViewMode.Always;
+
+				searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+				Assert.Equal(UITextFieldViewMode.Never, editor.ClearButtonMode);
+#if MACCATALYST
+				Assert.True(Assert.IsAssignableFrom<UIButton>(handler.PlatformView.GetClearButton()).Hidden);
+#endif
+
+				searchBar.Text = "changed";
+				handler.UpdateValue(nameof(ISearchBar.Text));
+				Assert.Equal(UITextFieldViewMode.Never, editor.ClearButtonMode);
+
+				searchBar.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+				Assert.True(handler.PlatformView.ShowsCancelButton);
+				Assert.Equal(UITextFieldViewMode.WhileEditing, editor.ClearButtonMode);
+#if MACCATALYST
+				Assert.False(Assert.IsAssignableFrom<UIButton>(handler.PlatformView.GetClearButton()).Hidden);
+#endif
+
+				searchBar.Text = string.Empty;
+				handler.UpdateValue(nameof(ISearchBar.Text));
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+#if MACCATALYST
+				Assert.True(Assert.IsAssignableFrom<UIButton>(handler.PlatformView.GetClearButton()).Hidden);
+#endif
+			});
+		}
+
+		[Fact]
+		public async Task ClearButtonIsHiddenWhenInitializedWithoutCancelButton()
+		{
+			var searchBar = new SearchBarStub { Text = "search", ClearButtonVisibility = ClearButtonVisibility.Never };
+
+			await AttachAndRun(searchBar, handler =>
+			{
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+				Assert.Equal(UITextFieldViewMode.Never, handler.QueryEditor.ClearButtonMode);
+#if MACCATALYST
+				Assert.True(Assert.IsAssignableFrom<UIButton>(handler.PlatformView.GetClearButton()).Hidden);
+#endif
+			});
+		}
+
+		[Fact]
+		public async Task ReusedHandlerTracksTheCurrentSearchBarVisibility()
+		{
+			var original = new SearchBarStub { Text = "original" };
+			var replacement = new SearchBarStub { Text = "replacement", ClearButtonVisibility = ClearButtonVisibility.Never };
+
+			await AttachAndRun(original, handler =>
+			{
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
+				handler.SetVirtualView(replacement);
+				Assert.True(handler.QueryEditor.ResignFirstResponder());
+				Assert.True(handler.QueryEditor.BecomeFirstResponder());
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+
+				handler.QueryEditor.Text = "typed";
+				handler.QueryEditor.SendActionForControlEvents(UIControlEvent.EditingChanged);
+				Assert.Equal("typed", replacement.Text);
+				Assert.Equal("original", original.Text);
+				Assert.False(handler.PlatformView.ShowsCancelButton);
+				Assert.Equal(UITextFieldViewMode.Never, handler.QueryEditor.ClearButtonMode);
+
+				replacement.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+				handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+				Assert.True(handler.PlatformView.ShowsCancelButton);
+			});
+		}
+
+		[Fact]
+		public async Task VisibilityDoesNotDependOnTheCancelButtonColorMapper()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var searchBar = new SearchBarStub { Text = "search" };
+				var mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(SearchBarHandler.Mapper)
+				{
+					[nameof(ISearchBar.CancelButtonColor)] = (_, _) => { }
+				};
+				var handler = new SearchBarHandler(mapper);
+				InitializeViewHandler(searchBar, handler);
+
+				await handler.PlatformView.AttachAndRun(() =>
+				{
+					Assert.True(handler.QueryEditor.BecomeFirstResponder());
+					Assert.True(handler.PlatformView.ShowsCancelButton);
+					searchBar.ClearButtonVisibility = ClearButtonVisibility.Never;
+					handler.UpdateValue(nameof(ISearchBarClearButtonVisibility.ClearButtonVisibility));
+					Assert.False(handler.PlatformView.ShowsCancelButton);
+					Assert.Equal(UITextFieldViewMode.Never, handler.QueryEditor.ClearButtonMode);
+				});
 			});
 		}
 
