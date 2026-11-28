@@ -144,8 +144,10 @@ namespace Microsoft.Maui
 				parent is not MauiScrollView)
 			{
 				// We'll need to adjust the center point to reflect the RTL layout
-				// Find the center of the parent
-				var parentCenter = parent.Bounds.Right - (parent.Bounds.Width / 2);
+				// Find the center of the area the parent arranges its children in. Safe area insets are physical,
+				// so they stay on their edge in RTL (e.g. the iPhone Duo's side status bar)
+				var safeArea = parent is MauiView mauiView ? mauiView.ArrangeSafeArea : SafeAreaPadding.Empty;
+				var parentCenter = parent.Bounds.Right - (parent.Bounds.Width / 2) + (safeArea.Left - safeArea.Right) / 2;
 
 				// Figure out how far the center of the destination rect is from the center of the parent
 				var distanceFromParentCenter = parentCenter - centerX;

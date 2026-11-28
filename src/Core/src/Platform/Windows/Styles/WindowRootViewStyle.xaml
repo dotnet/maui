@@ -62,6 +62,20 @@
             <Setter.Value>
                 <ControlTemplate TargetType="maui:WindowRootView">
                     <Page Margin="0" Padding="0" x:Name="RootPage">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowActivationStates">
+                                <VisualState x:Name="WindowActivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="AppTitleBarContainer.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="WindowDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="AppTitleBarContainer.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Page.Resources>
 
                             <!-- 

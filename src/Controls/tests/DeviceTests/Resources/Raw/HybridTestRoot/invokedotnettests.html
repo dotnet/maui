@@ -21,6 +21,9 @@
                     case 'Invoke_OneParam_ReturnDictionary':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
                         break;
+                    case 'Invoke_NonAsciiParam_ReturnValueType':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, ['Grüße 10 € 😀 100%']);
+                        break;
                     case 'Invoke_NullParam_ReturnComplex':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [null]);
                         break;

@@ -772,6 +772,38 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+#if IOS || MACCATALYST
+	// https://github.com/dotnet/maui/issues/34461
+	[Fact("CollectionView Header Bound To Its Page Does Not Leak")]
+	public async Task CollectionViewHeaderBoundToItsPageDoesNotLeak()
+	{
+		SetupBuilder();
+
+		WeakReference pageReference = null;
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var page = new ContentPage
+			{
+				Content = new CollectionView
+				{
+					Header = new Label { Text = "Header" },
+					ItemsSource = new[] { "One", "Two", "Three" },
+				}
+			};
+			// The header inherits the page as its BindingContext, like a XAML page with BindingContext = this
+			page.BindingContext = page;
+			pageReference = new WeakReference(page);
+
+			await navPage.Navigation.PushAsync(page);
+			await navPage.Navigation.PopAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(pageReference);
+	}
+#endif
+
 	// https://github.com/dotnet/maui/issues/35472
 	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
 	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.

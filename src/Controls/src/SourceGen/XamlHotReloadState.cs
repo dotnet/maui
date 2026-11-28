@@ -126,6 +126,11 @@ internal static class XamlHotReloadState
 		/// or empty when the current generation carries no pending patch.
 		/// </summary>
 		public IReadOnlyList<GenerationSnapshot> Baselines { get; set; } = System.Array.Empty<GenerationSnapshot>();
+		/// <summary>
+		/// Whether this generation is a structural change live instances can't be patched to. Kept so a
+		/// later generation with the same XAML (re-evaluation, C#-only edit) re-emits the same output.
+		/// </summary>
+		public bool RequiresReload { get; set; }
 
 		public CacheEntry Clone()
 		{
@@ -259,7 +264,7 @@ internal static class XamlHotReloadState
 	/// (plus, when that generation carries a patch, the at most <see cref="MaxBaselines"/> generations it
 	/// can be applied from), never an accumulated patch chain.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, IReadOnlyList<GenerationSnapshot>? baselines = null)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, IReadOnlyList<GenerationSnapshot>? baselines = null, bool requiresReload = false)
 	{
 		if (sessionToken is null)
 			return;
@@ -279,6 +284,22 @@ internal static class XamlHotReloadState
 			entry.Version = version;
 			entry.GenerationKey = parsedRoot is null || nodeIds is null ? null : NodeIdHelper.ComputeGenerationKey(xamlText, parsedRoot, nodeIds);
 			entry.Baselines = baselines ?? System.Array.Empty<GenerationSnapshot>();
+			entry.RequiresReload = requiresReload;
+		}
+	}
+
+	/// <summary>
+	/// Returns whether the current generation for the given file is a structural change live instances
+	/// can't be patched to (see <see cref="CacheEntry.RequiresReload"/>).
+	/// </summary>
+	public static bool GetRequiresReload(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+				&& entry.RequiresReload;
 		}
 	}
 

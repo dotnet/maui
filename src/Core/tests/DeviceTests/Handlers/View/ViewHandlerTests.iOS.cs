@@ -196,6 +196,58 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// Insets seen with Display Zoom "Larger Text" (#36975): every other layout pass, UIKit
+		// reports the same half-pixel inset with floating-point noise.
+		[Theory]
+		[InlineData(1, 26.5, 26.499999999999886)]
+		[InlineData(3, 27.166666666666668, 27.166666666666554)]
+		public async Task SafeAreaNoiseAtHalfPixelDoesNotRemeasure(double scale, double inset, double noisyInset)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+#pragma warning disable CA1422 // A scene-less window is enough to give the view an effective scale.
+				using var window = new UIWindow();
+#pragma warning restore CA1422
+				var layout = new MeasureCountingSafeAreaLayout();
+				using var view = new NoisySafeAreaView { View = layout, CrossPlatformLayout = layout, Frame = new CGRect(0, 0, 320, 120) };
+				window.AddSubview(view);
+				view.ContentScaleFactor = (nfloat)scale;
+
+				// A bounded stand-in for the run loop, which would otherwise lay out forever
+				for (int pass = 0; pass < 10; pass++)
+				{
+					view.BottomInset = pass % 2 == 0 ? inset : noisyInset;
+					view.SafeAreaInsetsDidChange();
+					view.LayoutSubviews();
+				}
+
+				// Only the first pass, which starts applying the inset, needs a measure
+				Assert.Equal(1, layout.MeasureCount);
+			});
+		}
+
+		class NoisySafeAreaView : MauiView
+		{
+			public double BottomInset { get; set; }
+			public override UIEdgeInsets SafeAreaInsets => new(0, 0, (nfloat)BottomInset, 0);
+		}
+
+		class MeasureCountingSafeAreaLayout : StubBase, ICrossPlatformLayout, ISafeAreaView2
+		{
+			public int MeasureCount { get; private set; }
+			public bool HasExplicitSafeAreaEdges => true;
+			public Thickness SafeAreaInsets { private get; set; }
+			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Container;
+
+			public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+			{
+				MeasureCount++;
+				return new Graphics.Size(widthConstraint, heightConstraint);
+			}
+
+			public Graphics.Size CrossPlatformArrange(Graphics.Rect bounds) => bounds.Size;
+		}
+
 		[Fact]
 		public async Task NonUIControlDisablesUserInteractionWhenIsEnabledFalse()
 		{

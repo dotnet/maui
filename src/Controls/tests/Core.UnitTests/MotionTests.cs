@@ -27,6 +27,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AnimationCommitWithZeroRateCompletes()
+		{
+			var view = AnimationReadyHandler.Prepare(new View());
+			var completed = false;
+			var animation = new Animation(_ => { });
+
+			animation.Commit(
+				view,
+				"ZeroRate",
+				rate: 0,
+				length: 250,
+				finished: (_, wasCanceled) => completed = !wasCanceled);
+
+			Assert.True(completed);
+		}
+
+		[Theory]
+		[InlineData(0u, 1u)]
+		[InlineData(32u, 32u)]
+		public void TweenerNormalizesZeroRateButPreservesPositiveRate(uint rate, uint expectedRate)
+		{
+			var tweener = new Tweener(250, rate, new TestAnimationManager());
+
+			Assert.Equal(expectedRate, tweener.Rate);
+		}
+
+		[Fact]
 		public void ThrowsWithNullCallback()
 		{
 			Assert.Throws<ArgumentNullException>(() => new View().Animate("Test", (Action<double>)null));

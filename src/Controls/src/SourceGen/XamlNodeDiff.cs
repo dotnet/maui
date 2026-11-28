@@ -241,11 +241,24 @@ static class XamlGeneratedFieldCollector
 }
 
 /// <summary>
+/// A node of the new tree whose live object needs its <c>VisualDiagnostics</c> source info
+/// (re-)registered: its XAML location moved, or the patch creates a fresh instance for it.
+/// </summary>
+readonly struct SourceInfoChange(string nodeId, ElementNode node)
+{
+	/// <summary>The effective ID of the node (<c>""</c> for the root).</summary>
+	public string NodeId { get; } = nodeId;
+
+	/// <summary>The node in the new tree, carrying the current line info and type.</summary>
+	public ElementNode Node { get; } = node;
+}
+
+/// <summary>
 /// The result of a successful diff between two XAML trees.
 /// A <see langword="null"/> result from <see cref="XamlNodeDiff.ComputeDiff"/> indicates a structural change
 /// that requires a full-page reload.
 /// </summary>
-class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListChangeDiff> childListChanges)
+class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListChangeDiff> childListChanges, IReadOnlyList<SourceInfoChange>? sourceInfoChanges = null)
 {
 	/// <summary>Per-node property-change records.</summary>
 	public IReadOnlyList<NodeDiff> NodeChanges { get; } = nodeChanges;
@@ -253,8 +266,17 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 	/// <summary>Child-list mutation records (reorder, insert, remove).</summary>
 	public IReadOnlyList<ChildListChangeDiff> ChildListChanges { get; } = childListChanges;
 
-	/// <summary>Returns <see langword="true"/> when the two trees are semantically identical.</summary>
-	public bool IsEmpty => NodeChanges.Count == 0 && ChildListChanges.Count == 0;
+	/// <summary>
+	/// Nodes whose source info must be refreshed on live objects. Only populated when the diff
+	/// was computed with source-info tracking (XAML diagnostics enabled), in new-tree order.
+	/// </summary>
+	public IReadOnlyList<SourceInfoChange> SourceInfoChanges { get; } = sourceInfoChanges ?? Array.Empty<SourceInfoChange>();
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the two trees are semantically identical and, when
+	/// source info is tracked, every node is still at the same location.
+	/// </summary>
+	public bool IsEmpty => NodeChanges.Count == 0 && ChildListChanges.Count == 0 && SourceInfoChanges.Count == 0;
 
 	/// <summary>
 	/// Returns a human-readable summary of the diff for debug/diagnostic output.
@@ -267,6 +289,8 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 		sb.Append(NodeChanges.Count).Append(" node(s) with property changes");
 		if (ChildListChanges.Count > 0)
 			sb.Append(", ").Append(ChildListChanges.Count).Append(" child list change(s)");
+		if (SourceInfoChanges.Count > 0)
+			sb.Append(", ").Append(SourceInfoChanges.Count).Append(" source info change(s)");
 
 		for (int i = 0; i < NodeChanges.Count; i++)
 		{
@@ -352,6 +376,11 @@ static class XamlNodeDiff
 	/// maps new-tree nodes to their effective IDs (matched nodes inherit the old ID; added nodes
 	/// keep their new ID). Callers should cache <paramref name="effectiveNewIds"/> for the next diff.
 	/// </summary>
+	/// <param name="trackSourceInfo">
+	/// When <see langword="true"/> (XAML diagnostics enabled), also reports in
+	/// <see cref="XamlTreeDiff.SourceInfoChanges"/> every node whose live object needs its
+	/// <c>VisualDiagnostics</c> source info refreshed, so a location-only edit is not empty.
+	/// </param>
 	/// <returns>
 	/// A <see cref="XamlTreeDiff"/> describing the changes, or
 	/// <see langword="null"/> if the trees differ structurally in ways that require a full reload.
@@ -360,7 +389,8 @@ static class XamlNodeDiff
 		ElementNode oldRoot, ElementNode newRoot,
 		Dictionary<ElementNode, string> oldIds,
 		Dictionary<ElementNode, string> newIds,
-		out Dictionary<ElementNode, string>? effectiveNewIds)
+		out Dictionary<ElementNode, string>? effectiveNewIds,
+		bool trackSourceInfo = false)
 	{
 		if (oldRoot is null) throw new ArgumentNullException(nameof(oldRoot));
 		if (newRoot is null) throw new ArgumentNullException(nameof(newRoot));
@@ -383,7 +413,76 @@ static class XamlNodeDiff
 		}
 
 		effectiveNewIds = effective;
-		return new XamlTreeDiff(nodeChanges, childListChanges);
+		return new XamlTreeDiff(nodeChanges, childListChanges,
+			trackSourceInfo ? CollectSourceInfoChanges(oldIds, newRoot, effective, childListChanges) : null);
+	}
+
+	/// <summary>
+	/// Lists the new-tree nodes whose live object must have its source info (re-)registered after
+	/// the patch: a matched node whose line or position moved, and every node of a subtree the patch
+	/// creates (added, or locally rebuilt under the same ID). Locations are absolute and compared
+	/// against the generation the patch starts from, so the patch stays idempotent. Ordered by the
+	/// new tree's traversal order for deterministic output.
+	/// </summary>
+	static List<SourceInfoChange> CollectSourceInfoChanges(
+		Dictionary<ElementNode, string> oldIds,
+		ElementNode newRoot,
+		Dictionary<ElementNode, string> effective,
+		List<ChildListChangeDiff> childListChanges)
+	{
+		var oldNodesById = new Dictionary<string, ElementNode>(StringComparer.Ordinal);
+		foreach (var pair in oldIds)
+			oldNodesById[pair.Value] = pair.Key;
+
+		var created = new HashSet<ElementNode>();
+		foreach (var change in childListChanges)
+		{
+			foreach (var entry in change.NewChildren)
+			{
+				if (entry.Kind != ChildChangeKind.Retained && entry.NewElement is { } element)
+					CollectSubtree(element, created);
+			}
+		}
+
+		var order = NodeIdHelper.AssignIds(newRoot);
+		var changes = new List<(int Order, SourceInfoChange Change)>();
+		foreach (var pair in effective)
+		{
+			var node = pair.Key;
+			if (!created.Contains(node)
+				&& (!oldNodesById.TryGetValue(pair.Value, out var oldNode)
+					|| oldNode.LineNumber == node.LineNumber && oldNode.LinePosition == node.LinePosition))
+				continue;
+
+			var position = !order.TryGetValue(node, out var positionId) ? int.MaxValue
+				: positionId.Length == 0 ? 0
+				: int.Parse(positionId, System.Globalization.CultureInfo.InvariantCulture) + 1;
+			changes.Add((position, new SourceInfoChange(pair.Value, node)));
+		}
+
+		changes.Sort(static (a, b) => a.Order != b.Order ? a.Order.CompareTo(b.Order) : string.CompareOrdinal(a.Change.NodeId, b.Change.NodeId));
+		var result = new List<SourceInfoChange>(changes.Count);
+		foreach (var change in changes)
+			result.Add(change.Change);
+		return result;
+
+		static void CollectSubtree(INode node, HashSet<ElementNode> nodes)
+		{
+			if (node is ElementNode element)
+			{
+				if (!nodes.Add(element))
+					return;
+				foreach (var property in element.Properties)
+					CollectSubtree(property.Value, nodes);
+				foreach (var child in element.CollectionItems)
+					CollectSubtree(child, nodes);
+			}
+			else if (node is ListNode list)
+			{
+				foreach (var child in list.CollectionItems)
+					CollectSubtree(child, nodes);
+			}
+		}
 	}
 
 	/// <summary>

@@ -27,6 +27,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
 		readonly List<INativeObject> _interactions = new List<INativeObject>();
+
+		readonly List<FakeRightClickContextMenuInteraction> _fakeRightClickInteractions = new();
+		UIDragInteraction? _dragInteraction;
+		UIDropInteraction? _dropInteraction;
 		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
@@ -128,6 +132,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_interactions.Clear();
+			_fakeRightClickInteractions.Clear();
+			_dragInteraction = null;
+			_dropInteraction = null;
 			_gestureRecognizers.Clear();
 
 			if (PlatformView is not null)
@@ -754,14 +761,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
-					foreach (var interaction in PlatformView.Interactions)
+					if (_dragInteraction is not null && _dragInteraction.View != PlatformView)
 					{
-						if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
-							uIDragInteraction = uIDrag;
-
-						if (interaction is UIDropInteraction uiDrop && uiDrop.Delegate == _dragAndDropDelegate)
-							uIDropInteraction = uiDrop;
+						_interactions.Remove(_dragInteraction);
+						_dragInteraction = null;
 					}
+
+					if (_dropInteraction is not null && _dropInteraction.View != PlatformView)
+					{
+						_interactions.Remove(_dropInteraction);
+						_dropInteraction = null;
+					}
+
+					uIDragInteraction = _dragInteraction;
+					uIDropInteraction = _dropInteraction;
 				}
 			}
 
@@ -907,6 +920,7 @@ namespace Microsoft.Maui.Controls.Platform
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
 						_interactions.Add(interaction);
+						_dragInteraction = interaction;
 						PlatformView.AddInteraction(interaction);
 					}
 				}
@@ -919,6 +933,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
 						_interactions.Add(interaction);
+						_dropInteraction = interaction;
 						PlatformView.AddInteraction(interaction);
 					}
 				}
@@ -949,10 +964,16 @@ namespace Microsoft.Maui.Controls.Platform
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && PlatformView != null)
+				{
 					PlatformView.RemoveInteraction(uIDragInteraction);
+					_dragInteraction = null;
+				}
 
 				if (!dropFound && uIDropInteraction != null && PlatformView != null)
+				{
 					PlatformView.RemoveInteraction(uIDropInteraction);
+					_dropInteraction = null;
+				}
 			}
 
 			var toRemove = new List<IGestureRecognizer>();
@@ -1000,14 +1021,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				// Cache Interactions; each access marshals the whole native array (see #34396).
-				var interactions = PlatformView.Interactions;
-				for (int i = interactions.Length - 1; i >= 0; i--)
+				for (int i = _fakeRightClickInteractions.Count - 1; i >= 0; i--)
 				{
-					var interaction = (IUIInteraction)interactions[i];
-					if (interaction is FakeRightClickContextMenuInteraction && !_interactions.Contains(interaction))
+					var interaction = _fakeRightClickInteractions[i];
+					if (!_interactions.Contains(interaction))
 					{
 						PlatformView.RemoveInteraction(interaction);
+						_fakeRightClickInteractions.RemoveAt(i);
 					}
 				}
 			}
@@ -1248,22 +1268,27 @@ namespace Microsoft.Maui.Controls.Platform
 					return (ButtonsMask)0;
 				}
 
-				if (PlatformView != null)
+				for (int i = _fakeRightClickInteractions.Count - 1; i >= 0; i--)
 				{
-					foreach (var interaction in PlatformView.Interactions)
+					var faker = _fakeRightClickInteractions[i];
+
+					// check if this gesture was already added
+					if (faker.TapGestureRecognizer != tapRecognizer)
+						continue;
+
+					if (faker.View == PlatformView)
 					{
-						// check if this gesture was already added
-						if (interaction is FakeRightClickContextMenuInteraction faker &&
-							faker.TapGestureRecognizer == tapRecognizer)
-						{
-							_interactions.Add(faker);
-							return tapRecognizer.Buttons;
-						}
+						_interactions.Add(faker);
+						return tapRecognizer.Buttons;
 					}
+
+					_fakeRightClickInteractions.RemoveAt(i);
+					_interactions.Remove(faker);
 				}
 
 				var fakeInteraction = new FakeRightClickContextMenuInteraction(tapRecognizer, this);
 				_interactions.Add(fakeInteraction);
+				_fakeRightClickInteractions.Add(fakeInteraction);
 
 				PlatformView?.AddInteraction(fakeInteraction);
 

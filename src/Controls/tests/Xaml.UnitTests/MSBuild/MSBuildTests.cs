@@ -378,6 +378,159 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
+		[Fact]
+		public void HotReloadDiagnostics_PartialTrim_PreservesReflectionContractOnlyWhenEnabled()
+		{
+			SetUp();
+
+			const string appSource = """
+				using System;
+				using System.Collections.Generic;
+				using System.Linq;
+				using System.Reflection;
+				using Microsoft.Maui.Controls.Xaml;
+
+				static class Program
+				{
+					static readonly Dictionary<string, string[]> Properties = new()
+					{
+						["HotReloadRequestedEventArgs"] = ["UpdatedTypes", "HandledTypes", "Timestamp"],
+						["HotReloadAppliedEventArgs"] = ["UpdatedTypes", "InstanceCount", "FromVersion", "ToVersion", "Duration", "Timestamp"],
+						["HotReloadErrorEventArgs"] = ["UpdatedType", "Instance", "Exception", "Version", "Timestamp"],
+						["HotReloadSkippedEventArgs"] = ["UpdatedTypes", "HandledTypes", "Timestamp"],
+					};
+					static readonly HashSet<string> Observed = new();
+					static Type? _diagnosticsType;
+
+					static int Main(string[] args)
+					{
+						bool enabled = bool.Parse(args[0]);
+						string[] eventNames = ["UpdateRequested", "UpdateApplied", "UpdateFailed", "UpdateSkipped"];
+
+						if (!enabled)
+						{
+							XamlIncrementalHotReloadHandler.UpdateApplication(Array.Empty<Type>());
+							var controls = AppDomain.CurrentDomain.GetAssemblies()
+								.FirstOrDefault(assembly => assembly.GetName().Name == "Microsoft.Maui.Controls");
+							_diagnosticsType = controls?.GetType("Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics");
+							if (_diagnosticsType is not null &&
+								Array.Exists(eventNames, name => _diagnosticsType.GetEvent(name, BindingFlags.Public | BindingFlags.Static) is not null))
+							{
+								throw new InvalidOperationException("XIHR diagnostics events were preserved while the feature was disabled.");
+							}
+							return 0;
+						}
+
+						var controlsAssembly = Assembly.Load("Microsoft.Maui.Controls");
+						_diagnosticsType = controlsAssembly.GetType("Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics");
+						if (_diagnosticsType is null)
+							throw new InvalidOperationException("HotReloadDiagnostics was removed.");
+
+						foreach (string eventName in eventNames)
+						{
+							var eventInfo = _diagnosticsType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Static)
+								?? throw new InvalidOperationException($"Event {eventName} was removed.");
+							var handlerType = eventInfo.EventHandlerType
+								?? throw new InvalidOperationException($"Event {eventName} has no handler type.");
+							var argsType = handlerType.GetGenericArguments()[0];
+							var observer = typeof(Program).GetMethod(nameof(Observe), BindingFlags.NonPublic | BindingFlags.Static)!
+								.MakeGenericMethod(argsType);
+							eventInfo.AddEventHandler(null, Delegate.CreateDelegate(handlerType, observer));
+						}
+
+						XamlIncrementalHotReloadHandler.UpdateApplication(Array.Empty<Type>());
+						Invoke("OnUpdateApplied", [Array.Empty<Type>(), 2, 1, 2, TimeSpan.FromMilliseconds(5)]);
+						Invoke("OnUpdateFailed", [typeof(string), new object(), new InvalidOperationException("fixture"), 2]);
+
+						if (!Observed.SetEquals(Properties.Keys))
+							throw new InvalidOperationException($"Expected all four event args to be read; observed: {string.Join(", ", Observed)}.");
+
+						return 0;
+					}
+
+					static void Observe<TArgs>(object? sender, TArgs args) where TArgs : EventArgs
+					{
+						foreach (string propertyName in Properties[typeof(TArgs).Name])
+						{
+							var property = typeof(TArgs).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)
+								?? throw new InvalidOperationException($"Property {propertyName} was removed from {typeof(TArgs).Name}.");
+							_ = property.GetValue(args);
+						}
+
+						Observed.Add(typeof(TArgs).Name);
+					}
+
+					static void Invoke(string methodName, object?[] arguments)
+					{
+						var method = _diagnosticsType!.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static)
+							?? throw new InvalidOperationException($"Method {methodName} was removed.");
+						method.Invoke(null, arguments);
+					}
+				}
+				""";
+
+			foreach (bool enabled in new[] { true, false })
+			{
+				string variant = enabled ? "enabled" : "disabled";
+				string projectDirectory = IOPath.Combine(tempDirectory, variant);
+				Directory.CreateDirectory(projectDirectory);
+
+				string previousTempDirectory = tempDirectory;
+				XElement project;
+				try
+				{
+					tempDirectory = projectDirectory;
+					project = NewProject();
+					project.Add(AddFile("Program.cs", "Compile", appSource));
+				}
+				finally
+				{
+					tempDirectory = previousTempDirectory;
+				}
+
+				foreach (var hintPath in project.Descendants().Where(element => element.Name.LocalName == "HintPath"))
+					hintPath.Value = IOPath.Combine("..", "..", "..", IOPath.GetFileName(hintPath.Value));
+
+				var fixtureProperties = NewElement("PropertyGroup");
+				fixtureProperties.Add(NewElement("OutputType").WithValue("Exe"));
+				fixtureProperties.Add(NewElement("AssemblyName").WithValue("HotReloadDiagnosticsTrimmingFixture"));
+				project.Add(fixtureProperties);
+
+				string projectFile = IOPath.Combine(projectDirectory, "HotReloadDiagnosticsTrimmingFixture.csproj");
+				project.Save(projectFile);
+				string publishDirectory = IOPath.Combine(projectDirectory, "publish");
+				string enabledProperty = enabled ? "true" : "false";
+				Build(
+					projectFile,
+					target: "Publish",
+					verbosity: "minimal",
+					command: "publish",
+					additionalArgs: $"-c Debug -p:PublishTrimmed=true -p:TrimMode=partial -p:EnableMauiIncrementalHotReload={enabledProperty} -p:PublishDir=\"{publishDirectory}\"");
+
+				string publishedAssembly = IOPath.Combine(publishDirectory, "HotReloadDiagnosticsTrimmingFixture.dll");
+				AssertExists(publishedAssembly, nonEmpty: true);
+
+				var dotnetExtension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+				var dotnet = IOPath.GetFullPath(IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", "..", "..", "bin", "dotnet", $"dotnet{dotnetExtension}"));
+				if (!File.Exists(dotnet))
+					dotnet = "dotnet";
+
+				var startInfo = new ProcessStartInfo
+				{
+					FileName = dotnet,
+					Arguments = $"\"{publishedAssembly}\" {enabledProperty}",
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+				};
+				using var process = Process.Start(startInfo);
+				Assert.NotNull(process);
+				string output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+				process.WaitForExit();
+				Assert.True(process.ExitCode == 0, $"Trimmed {variant} fixture failed:{Environment.NewLine}{output}");
+			}
+		}
+
 		[Theory]
 		[InlineData(null, true)]
 		[InlineData("false", true)]

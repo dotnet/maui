@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			};
+			platformView.ReapplyAppCompatNightMode();
 
 			platformView.Settings.JavaScriptEnabled = true;
 			platformView.Settings.DomStorageEnabled = true;

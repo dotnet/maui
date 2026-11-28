@@ -5,9 +5,9 @@
 
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
-            Text="{Binding Title}" 
+            Text="{Binding Title}"
             CharacterSpacing="{Binding CharacterSpacing, Converter={StaticResource CharacterSpacingConverter}}"
-            Foreground="{Binding TitleColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
+            Foreground="{Binding TitleColor, Converter={StaticResource ColorConverter}, ConverterParameter=ThemeResourceFallback, FallbackValue={ThemeResource DefaultTextForegroundThemeBrush}}" />
     </DataTemplate>
 
 </ResourceDictionary> 

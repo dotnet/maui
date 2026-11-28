@@ -47,6 +47,12 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <item>Property not found on type — omit that property assignment.</item>
 /// </list>
 /// </para>
+/// <para>
+/// When XAML diagnostics are enabled, the patch also re-registers <c>VisualDiagnostics</c> source info on
+/// the live objects whose XAML location moved and on the objects it creates (see
+/// <see cref="XamlTreeDiff.SourceInfoChanges"/>, https://github.com/dotnet/maui/issues/40605). A structural
+/// change live instances can't be patched to is reported by the companion's <c>RequiresReload()</c>.
+/// </para>
 /// </remarks>
 static class UpdateComponentCodeWriter
 {
@@ -60,6 +66,13 @@ static class UpdateComponentCodeWriter
 	/// <c>XamlIncrementalHotReloadHandler.SignalTypeName</c> in Microsoft.Maui.Controls.Xaml.
 	/// </summary>
 	internal const string SignalTypeName = "__XamlHotReloadSignal";
+
+	/// <summary>
+	/// Name of the static method of the <see cref="SignalTypeName"/> companion that tells whether the
+	/// generation is a structural change live instances can't be patched to. Must match
+	/// <c>XamlIncrementalHotReloadHandler.RequiresReloadMethodName</c> in Microsoft.Maui.Controls.Xaml.
+	/// </summary>
+	internal const string RequiresReloadMethodName = "RequiresReload";
 
 	/// <summary>
 	/// Prefix of the <c>XamlComponentRegistry</c> entry that records the
@@ -227,8 +240,71 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine();
 		}
 
+		EmitSourceInfoChanges(codeWriter, diff, rootType, compilation, xmlnsCache, typeCache, projectItem, templateNodeIds);
+
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
+	}
+
+	/// <summary>
+	/// Re-registers <c>VisualDiagnostics</c> source info on the live objects of the nodes in
+	/// <see cref="XamlTreeDiff.SourceInfoChanges"/> (https://github.com/dotnet/maui/issues/40605), so
+	/// tools that map a live object back to its XAML (go to source, live property editing) keep
+	/// pointing at the right declaration after an edit. Emitted after every other change, so the
+	/// registry lookups resolve the objects the patch just created. Like <c>InitializeComponent()</c>,
+	/// an object registered for a value-provider node is the provided value: it is only updated when
+	/// it is an instance of the node's own type (e.g. a <c>Setter</c>), never a provided value.
+	/// </summary>
+	static void EmitSourceInfoChanges(
+		IndentedTextWriter codeWriter,
+		XamlTreeDiff diff,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ProjectItem? projectItem,
+		ISet<string>? templateNodeIds)
+	{
+		if (diff.SourceInfoChanges.Count == 0 || projectItem is null)
+			return;
+
+		const string uriVar = "__xihrSourceUri";
+		codeWriter.WriteLine($"var {uriVar} = {NodeSGExtensions.GetSourceInfoUriExpression(projectItem.RelativePath, compilation.Assembly.Name)};");
+		var index = 0;
+		foreach (var change in diff.SourceInfoChanges)
+		{
+			var location = $"{change.Node.LineNumber}, {change.Node.LinePosition}";
+			if (change.NodeId.Length == 0)
+			{
+				codeWriter.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(this, {uriVar}, {location});");
+				continue;
+			}
+
+			if (!change.Node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var nodeType)
+				|| nodeType is null
+				|| !compilation.IsSymbolAccessibleWithin(nodeType, rootType))
+				continue;
+
+			var targetVar = $"__si_{index++}";
+			var id = EscapeString(change.NodeId);
+			var typeName = nodeType.ToFQDisplayString();
+			if (templateNodeIds?.Contains(change.NodeId) == true)
+			{
+				codeWriter.WriteLine($"foreach (var {targetVar} in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetTemplateComponents(this, \"{id}\"))");
+				codeWriter.Indent++;
+				codeWriter.WriteLine($"if ({targetVar} is {typeName})");
+				codeWriter.Indent++;
+				codeWriter.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({targetVar}, {uriVar}, {location});");
+				codeWriter.Indent -= 2;
+			}
+			else
+			{
+				codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{id}\", out var {targetVar}) && {targetVar} is {typeName})");
+				codeWriter.Indent++;
+				codeWriter.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({targetVar}, {uriVar}, {location});");
+				codeWriter.Indent--;
+			}
+		}
 	}
 
 	static void EmitNameChanges(
@@ -420,11 +496,26 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
+	/// <summary>
+	/// Generates the <c>UpdateComponent()</c> of a generation whose XAML change can't be applied to live
+	/// instances (a structural change): the method is empty, as for any generation without a patch, but the
+	/// companion signal type reports <c>RequiresReload() =&gt; true</c> and gets a fingerprint unique to
+	/// <paramref name="reloadKey"/>. The runtime then reports the type in <c>ReloadRequiredTypes</c>, so
+	/// tools know the live instances still reflect the previous XAML (including their
+	/// <c>VisualDiagnostics</c> source info, https://github.com/dotnet/maui/issues/40605).
+	/// </summary>
+	public static string GenerateStructuralResetUpdateComponent(
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		string reloadKey)
+		=> GenerateUpdateComponent(rootType, accessModifier, static _ => { }, "reload:" + reloadKey, requiresReload: true);
+
 	static string GenerateUpdateComponent(
 		INamedTypeSymbol rootType,
 		string accessModifier,
 		Action<IndentedTextWriter> writeBody,
-		string? fingerprintSource)
+		string? fingerprintSource,
+		bool requiresReload = false)
 	{
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
 
@@ -466,6 +557,9 @@ static class UpdateComponentCodeWriter
 			using (PrePost.NewBlock(codeWriter))
 			{
 				codeWriter.WriteLine($"internal static string Fingerprint() => \"{ComputeFingerprint(fingerprintSource)}\";");
+				// Always emitted (member stability). True when this generation's XAML change could not be
+				// applied to live instances; read by XamlIncrementalHotReloadHandler (RequiresReloadMethodName).
+				codeWriter.WriteLine($"internal static bool {RequiresReloadMethodName}() => {(requiresReload ? "true" : "false")};");
 			}
 		}
 
