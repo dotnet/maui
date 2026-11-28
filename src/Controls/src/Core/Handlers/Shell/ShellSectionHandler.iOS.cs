@@ -342,7 +342,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 shellStack is { Count: > 1 } &&
                 ActiveViewControllers().Length < shellStack.Count)
             {
-                SendPoppedOnCompletion(Task.CompletedTask);
+                if (ActiveViewControllers().Length == 1)
+                {
+                    SendPoppedToRootOnCompletion(Task.CompletedTask);
+                }
+                else
+                {
+                    SendPoppedOnCompletion(Task.CompletedTask);
+                }
             }
 
             if (!_firstLayoutCompleted)
@@ -1244,6 +1251,27 @@ namespace Microsoft.Maui.Controls.Handlers
             await popTask;
 
             DisposePage(poppedPage);
+        }
+
+        async void SendPoppedToRootOnCompletion(Task popTask)
+        {
+            ArgumentNullException.ThrowIfNull(popTask);
+
+            if (((IElementHandler)this).VirtualView is not ShellSection { Stack.Count: > 1 } section)
+            {
+                return;
+            }
+
+            var pages = section.Stack.ToList();
+
+            ((IShellSectionController)section).SendPoppingToRoot(popTask);
+
+            await popTask;
+
+            for (int i = pages.Count - 1; i >= 1; i--)
+            {
+                DisposePage(pages[i]);
+            }
         }
 
         #endregion

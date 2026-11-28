@@ -97,6 +97,14 @@ namespace Microsoft.Maui.Controls.Handlers
             _ = _tabBarController.View;
             _tabBarController.ShouldSelectViewController = (tabController, viewController) =>
             {
+                // Prevent UIKit from popping the active tab to root while its navigation transition is in progress.
+                if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+                    ReferenceEquals(viewController, _tabBarController.SelectedViewController) &&
+                    _tabBarController.SelectedViewController?.GetTransitionCoordinator() is not null)
+                {
+                    return false;
+                }
+
                 bool accept = true;
                 var renderer = viewController is null ? null : RendererForViewController(viewController);
                 if (renderer is not null)

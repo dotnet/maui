@@ -1329,6 +1329,136 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabReselectionRaisesNavigatingWithRootTargetAndPopsToRoot(bool explicitRoutes)
+		{
+			Routing.RegisterRoute("Detail1", typeof(ContentPage));
+			Routing.RegisterRoute("Detail2", typeof(ContentPage));
+
+			var tabBar = new TabBar();
+			var homeTab = new Tab { Title = "Home" };
+			if (explicitRoutes)
+			{
+				tabBar.Route = "tabs";
+				homeTab.Route = "home";
+			}
+
+			var homeContent = new ShellContent
+			{
+				Route = "MainPage",
+				Content = new ContentPage()
+			};
+			homeTab.Items.Add(homeContent);
+			tabBar.Items.Add(homeTab);
+
+			var shell = new TestShell(tabBar);
+			var firstPushed = new ContentPage();
+			var secondPushed = new ContentPage();
+			Routing.SetRoute(firstPushed, "Detail1");
+			Routing.SetRoute(secondPushed, "Detail2");
+
+			await shell.Navigation.PushAsync(firstPushed);
+			await shell.Navigation.PushAsync(secondPushed);
+
+			var expectedRoot = explicitRoutes ? "//tabs/home/MainPage" : "//MainPage";
+			var expectedDeep = $"{expectedRoot}/Detail1/Detail2";
+			Assert.Equal(expectedDeep, shell.CurrentState.Location.ToString());
+			Assert.Equal(3, shell.Navigation.NavigationStack.Count);
+
+			var navigatingEvents = new List<ShellNavigatingEventArgs>();
+			var navigatedEvents = new List<ShellNavigatedEventArgs>();
+			shell.Navigating += (_, args) => navigatingEvents.Add(args);
+			shell.Navigated += (_, args) => navigatedEvents.Add(args);
+
+			await shell.CurrentItem.SendTabReselectedAsync(shell.CurrentSection);
+
+			var navigating = Assert.Single(navigatingEvents);
+			Assert.Equal(ShellNavigationSource.ShellSectionChanged, navigating.Source);
+			Assert.Equal(expectedDeep, navigating.Current.Location.ToString());
+			Assert.Equal(expectedRoot, navigating.Target.Location.ToString());
+			Assert.True(navigating.CanCancel);
+
+			Assert.Single(shell.Navigation.NavigationStack);
+			Assert.Equal(expectedRoot, shell.CurrentState.Location.ToString());
+
+			var navigated = Assert.Single(navigatedEvents);
+			Assert.Equal(ShellNavigationSource.PopToRoot, navigated.Source);
+			Assert.Equal(expectedDeep, navigated.Previous.Location.ToString());
+			Assert.Equal(expectedRoot, navigated.Current.Location.ToString());
+		}
+
+		[Fact]
+		public async Task TabReselectionCanBeCancelledInOnNavigating()
+		{
+			var tabBar = new TabBar();
+			var homeTab = new Tab { Title = "Home" };
+			homeTab.Items.Add(new ShellContent
+			{
+				Route = "MainPage",
+				ContentTemplate = new DataTemplate(() => new ContentPage())
+			});
+			tabBar.Items.Add(homeTab);
+
+			var shell = new TestShell(tabBar);
+			var pushedPage = new ContentPage();
+			await shell.Navigation.PushAsync(pushedPage);
+
+			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+			var expectedDeep = shell.CurrentState.Location.ToString();
+			Assert.NotEqual("//MainPage", expectedDeep);
+
+			bool navigatedFired = false;
+			ShellNavigatingEventArgs capturedNavigating = null;
+			shell.Navigating += (_, args) =>
+			{
+				capturedNavigating = args;
+				if (args.Source == ShellNavigationSource.ShellSectionChanged)
+				{
+					args.Cancel();
+				}
+			};
+			shell.Navigated += (_, _) => navigatedFired = true;
+
+			await shell.CurrentItem.SendTabReselectedAsync(shell.CurrentSection);
+
+			Assert.NotNull(capturedNavigating);
+			Assert.Equal(expectedDeep, capturedNavigating.Current.Location.ToString());
+			Assert.Equal("//MainPage", capturedNavigating.Target.Location.ToString());
+			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(expectedDeep, shell.CurrentState.Location.ToString());
+			Assert.False(navigatedFired);
+		}
+
+		[Fact]
+		public async Task TabReselectionAtRootRaisesNavigatingWithoutPopping()
+		{
+			var tabBar = new TabBar();
+			var homeTab = new Tab { Title = "Home" };
+			homeTab.Items.Add(new ShellContent
+			{
+				Route = "MainPage",
+				Content = new ContentPage()
+			});
+			tabBar.Items.Add(homeTab);
+
+			var shell = new TestShell(tabBar);
+			ShellNavigatingEventArgs capturedNavigating = null;
+			bool navigatedFired = false;
+
+			shell.Navigating += (_, args) => capturedNavigating = args;
+			shell.Navigated += (_, _) => navigatedFired = true;
+
+			await shell.CurrentItem.SendTabReselectedAsync(shell.CurrentSection);
+
+			Assert.NotNull(capturedNavigating);
+			Assert.Equal(ShellNavigationSource.ShellSectionChanged, capturedNavigating.Source);
+			Assert.Equal("//MainPage", capturedNavigating.Current.Location.ToString());
+			Assert.Equal("//MainPage", capturedNavigating.Target.Location.ToString());
+			Assert.False(navigatedFired);
+		}
+
 		ShellNavigatingEventArgs CreateShellNavigatedEventArgs() =>
 			new ShellNavigatingEventArgs("..", "../newstate", ShellNavigationSource.Push, true);
 	}

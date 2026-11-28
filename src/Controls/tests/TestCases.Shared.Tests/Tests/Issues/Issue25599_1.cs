@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Clicking an already selected tab does not trigger navigation events on Windows or Android
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,4 +24,3 @@ public class Issue25599_1 : _IssuesUITest
 		Assert.That(currentLabel.GetText(), Is.Not.EqualTo(targetLabel.GetText()));
 	}
 }
-#endif

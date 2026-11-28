@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		readonly Shell _shell;
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
+		internal bool LastProposedAnimate { get; private set; } = true;
 		public bool AccumulateNavigatedEvents => _accumulateNavigatedEvents;
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
 		public event EventHandler<ShellNavigatingEventArgs> Navigating;
@@ -563,6 +564,7 @@ namespace Microsoft.Maui.Controls
 			};
 
 			HandleNavigating(navArgs);
+			LastProposedAnimate = navArgs.Animate;
 
 			return navArgs;
 		}
@@ -741,28 +743,37 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-#if IOS || MACCATALYST
 			// This fix addresses #25599 (Navigating event showing same Current and Target when
-			// re-tapping a tab on iOS). It only applies when called from the Navigating event
+			// re-tapping a tab). It only applies when called from the Navigating event
 			// context (ProposeNavigationOutsideGotoAsync), not when updating Shell.CurrentState.
 			// Applying it in UpdateCurrentState would cause Shell.CurrentState to be stale
 			// after a GoToAsync deep-navigation (#34662).
-			if (isNavigateThroughTab && Shell.Current?.CurrentState?.Location is not null)
+			if (isNavigateThroughTab && routeStack.Count > 3)
 			{
-				var currentRoute = Shell.Current?.CurrentState?.Location?.ToString();
-				if (!string.IsNullOrEmpty(currentRoute))
+				var shell = shellItem?.Parent as Shell ?? Shell.Current;
+				if (shell is not null &&
+					shell.CurrentItem == shellItem &&
+					shellItem?.CurrentItem == shellSection &&
+					shellSection?.CurrentItem == shellContent)
 				{
-					var currentPaths = new List<string>(currentRoute.Split('/'));
-					// Indices 0 and 1 of both routeStack and currentPaths are dummy/empty values
-					// The first meaningful route segment is at index 2.
-					if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
+					routeStack.RemoveRange(3, routeStack.Count - 3);
+				}
+				else if (shell?.CurrentState?.Location is not null)
+				{
+					var currentRoute = shell.CurrentState.Location.ToString();
+					if (!string.IsNullOrEmpty(currentRoute))
 					{
-						// Current route is same as the new route, so remove the last elements of the routeStack
-						routeStack.RemoveRange(3, routeStack.Count - 3);
+						var currentPaths = new List<string>(currentRoute.Split('/'));
+						// Indices 0 and 1 of both routeStack and currentPaths are dummy/empty values
+						// The first meaningful route segment is at index 2.
+						if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
+						{
+							// Current route is same as the new route, so remove the last elements of the routeStack
+							routeStack.RemoveRange(3, routeStack.Count - 3);
+						}
 					}
 				}
 			}
-#endif
 
 			if (routeStack.Count > 0)
 				routeStack.Insert(0, "/");

@@ -98,6 +98,40 @@ namespace Microsoft.Maui.Controls
 			return accept;
 		}
 
+		internal Task SendTabReselectedAsync(ShellSection shellSection)
+		{
+			if (shellSection is null || !ShellItemController.ProposeSection(shellSection, false))
+				return Task.CompletedTask;
+
+			if ((shellSection.Stack.Count > 1 || shellSection.Navigation.ModalStack.Count > 0) &&
+				Parent is Shell shell &&
+				!shell.NavigationManager.AccumulateNavigatedEvents)
+			{
+				var targetState = ShellNavigationManager.GetNavigationState(
+					this,
+					shellSection,
+					shellSection.CurrentItem,
+					null,
+					null);
+
+				var deferredArgs = new ShellNavigatingEventArgs(
+					shell.CurrentState,
+					targetState,
+					ShellNavigationSource.ShellSectionChanged,
+					true);
+
+				return shell.NavigationManager.GoToAsync(new ShellNavigationParameters
+				{
+					Animated = shell.NavigationManager.LastProposedAnimate,
+					TargetState = targetState,
+					DeferredArgs = deferredArgs,
+					PopAllPagesNotSpecifiedOnTargetState = true
+				});
+			}
+
+			return Task.CompletedTask;
+		}
+
 		// we want the list returned from here to remain point in time accurate
 		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => ((ShellSectionCollection)Items).VisibleItemsReadOnly;
 

@@ -4,7 +4,7 @@
        x:Class="Maui.Controls.Sample.Issues.Issue25599"
        xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
     <TabBar>
-        <Tab Title="Home" x:Name="FirstTab" AutomationId="Tab1">
+        <Tab Title="Home" x:Name="FirstTab">
             <ShellContent
             Title="Home" >
             <ShellContent.ContentTemplate>

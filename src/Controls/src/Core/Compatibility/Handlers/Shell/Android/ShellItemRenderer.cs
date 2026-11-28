@@ -407,7 +407,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnMoreItemSelected(ShellSection shellSection, BottomSheetDialog dialog)
 		{
-			ChangeSection(shellSection);
+			if (shellSection == ShellSection)
+				OnTabReselected(shellSection);
+			else
+				ChangeSection(shellSection);
 
 			dialog.Dismiss(); //should trigger OnMoreSheetDismissed, which will clean up the dialog
 			if (dialog != _bottomSheetDialog) //should never be true, but just in case, prevent a leak
@@ -562,6 +565,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
 		{
+			ShellItem?.SendTabReselectedAsync(shellSection).FireAndForget();
 		}
 
 		protected virtual void ResetAppearance() => _appearanceTracker.ResetAppearance(_bottomView);
