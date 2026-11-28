@@ -65,6 +65,51 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task AutoSizeEditorShowsWholePlaceholder(TextAlignment verticalTextAlignment)
+		{
+			SetupBuilder();
+			const string longPlaceholder = "A long placeholder that needs several lines to be fully visible inside a narrow editor";
+			var editor = new Editor
+			{
+				Placeholder = "Short",
+				WidthRequest = 100,
+				VerticalTextAlignment = verticalTextAlignment
+			};
+			var layout = new VerticalStackLayout { WidthRequest = 300, Children = { editor } };
+
+			await AttachAndRun<LayoutHandler>(layout, async _ =>
+			{
+				var textView = (MauiTextView)editor.Handler.PlatformView;
+				var placeholder = textView.Subviews.OfType<UILabel>().Single();
+				bool FitsPlaceholder() =>
+					placeholder.Frame.Top - textView.ContentOffset.Y >= 0 &&
+					placeholder.Frame.Top - textView.ContentOffset.Y + placeholder.SizeThatFits(new CoreGraphics.CGSize(placeholder.Frame.Width, nfloat.MaxValue)).Height <= textView.Bounds.Height + 1;
+
+				await AssertEventually(() => textView.Frame.Height > 0);
+				var shortHeight = textView.Frame.Height;
+
+				editor.Placeholder = longPlaceholder;
+				await Task.Delay(200);
+				Assert.Equal(shortHeight, textView.Frame.Height);
+
+				editor.AutoSize = EditorAutoSizeOption.TextChanges;
+				await AssertEventually(() => textView.Frame.Height > shortHeight * 2 && FitsPlaceholder());
+
+				editor.Text = "typed";
+				await AssertEventually(() => textView.Frame.Height < shortHeight * 2);
+
+				editor.Text = string.Empty;
+				await AssertEventually(() => textView.Frame.Height > shortHeight * 2 && FitsPlaceholder());
+
+				editor.Placeholder = "Short";
+				await AssertEventually(() => textView.Frame.Height < shortHeight * 2);
+			});
+		}
+
+		[Theory]
 		[InlineData(TextAlignment.Start, TextAlignment.Start)]
 		[InlineData(TextAlignment.Center, TextAlignment.Start)]
 		[InlineData(TextAlignment.End, TextAlignment.Start)]
