@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -25,6 +27,33 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EditorHandler editorHandler, string text) =>
 			GetPlatformControl(editorHandler).Text = text;
+
+		[Fact]
+		public async Task NativeTextEditUsesCustomTextTransform()
+		{
+			const string expected = "\u0130";
+			var editor = new TurkishEditor { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EditorHandler>(editor, handler =>
+			{
+				var changes = new List<string>();
+				editor.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "i");
+
+				Assert.Equal(expected, GetPlatformControl(handler).Text);
+				Assert.Equal(expected, editor.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			});
+		}
+
+		sealed class TurkishEditor : Editor, ITextElement
+		{
+			string ITextElement.UpdateFormsText(string original, TextTransform transform) =>
+				transform == TextTransform.Uppercase
+					? (original ?? string.Empty).ToUpper(CultureInfo.GetCultureInfo("tr-TR"))
+					: UpdateFormsText(original, transform);
+		}
 
 		static int GetPlatformCursorPosition(EditorHandler editorHandler)
 		{

@@ -1,9 +1,12 @@
 ﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
 
@@ -17,6 +20,36 @@ namespace Microsoft.Maui.DeviceTests
 		static Task<string> GetPlatformText(SearchBarHandler handler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
+		}
+
+		[Theory]
+		[InlineData(TextTransform.Uppercase, "AB")]
+		[InlineData(TextTransform.Lowercase, "ab")]
+		public async Task HandlerEditPreservesQueryCasingWhileMappingDisplay(TextTransform transform, string displayText)
+		{
+			const string query = "aB";
+			var source = new Entry();
+			var searchBar = new SearchBar { TextTransform = transform };
+			searchBar.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: source));
+
+			await AttachAndRun<SearchBarHandler>(searchBar, async handler =>
+			{
+				var platformSearchBar = GetPlatformControl(handler);
+				var changes = new List<string>();
+				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				// Pass the query through the same virtual-view setter as the WinUI user-input callback.
+				handler.VirtualView.Text = query;
+
+				var idle = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				Assert.True(platformSearchBar.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => idle.TrySetResult()));
+				await idle.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Equal(query, searchBar.Text);
+				Assert.Equal(query, source.Text);
+				Assert.Equal(query, Assert.Single(changes));
+				Assert.Equal(displayText, platformSearchBar.Text);
+			});
 		}
 
 		static int GetPlatformSelectionLength(SearchBarHandler searchBarHandler)

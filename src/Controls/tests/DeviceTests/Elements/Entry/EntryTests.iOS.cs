@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -27,6 +29,105 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).Text = text;
+
+		[Fact]
+		public async Task NativeTextEditUsesCustomTextTransform()
+		{
+			const string expected = "\u0130";
+			var entry = new TurkishEntry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "i");
+
+				Assert.Equal(expected, GetPlatformControl(handler).Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			});
+		}
+
+		sealed class TurkishEntry : Entry, ITextElement
+		{
+			string ITextElement.UpdateFormsText(string original, TextTransform transform) =>
+				transform == TextTransform.Uppercase
+					? (original ?? string.Empty).ToUpper(CultureInfo.GetCultureInfo("tr-TR"))
+					: UpdateFormsText(original, transform);
+		}
+
+		[Theory]
+		[InlineData(TextTransform.Uppercase, TextTransform.None, "aB")]
+		[InlineData(TextTransform.None, TextTransform.Uppercase, "AB")]
+		public async Task NativeEditUsesInterfaceTextTransform(TextTransform concreteTransform, TextTransform interfaceTransform, string expected)
+		{
+			var entry = new InterfaceTransformEntry { TextTransform = concreteTransform };
+			((ITextElement)entry).TextTransform = interfaceTransform;
+			var source = new Entry();
+			entry.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: source));
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal(expected, GetPlatformControl(handler).Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(expected, source.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			});
+		}
+
+		sealed class InterfaceTransformEntry : Entry, ITextElement
+		{
+			TextTransform ITextElement.TextTransform { get; set; }
+		}
+
+		[Fact]
+		public async Task NonSecureNativeTextEditRaisesOneTransformedChange()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var textField = GetPlatformControl(handler);
+				Assert.False(textField.SecureTextEntry);
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "d");
+
+				Assert.Equal("D", textField.Text);
+				Assert.Equal("D", entry.Text);
+				Assert.Equal("D", Assert.Single(changes));
+			});
+		}
+
+		[Fact]
+		public async Task NativeSecureTextEntryPreservesCasing()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+			var bindingSource = new Entry();
+			entry.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: bindingSource));
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var textField = GetPlatformControl(handler);
+				textField.SecureTextEntry = true;
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal("aB", textField.Text);
+				Assert.Equal("aB", entry.Text);
+				Assert.Equal("aB", bindingSource.Text);
+				Assert.Equal("aB", Assert.Single(changes));
+			});
+		}
 
 		static int GetPlatformCursorPosition(EntryHandler entryHandler)
 		{

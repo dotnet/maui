@@ -4,6 +4,15 @@ using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+#if ANDROID || WINDOWS
+using Microsoft.Maui.Handlers;
+#endif
+#if IOS || MACCATALYST || WINDOWS
+using Microsoft.Maui.Platform;
+#endif
+#if IOS || MACCATALYST
+using UIKit;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
@@ -312,7 +321,81 @@ namespace Microsoft.Maui.Controls
 		string ITextInput.Text
 		{
 			get => Text;
-			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+			set
+			{
+#if WINDOWS
+				if (this is SearchBar && Handler is SearchBarHandler)
+				{
+					// AutoSuggestBox ignores the mapper's programmatic echo: only the display is transformed.
+					SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+					return;
+				}
+#endif
+				// Normalize before notifying subscribers, without changing the casing of passwords.
+				var transformedText = value;
+				if (!IsPasswordInput)
+				{
+					if (value is null)
+						transformedText = string.Empty;
+					else
+					{
+						var textElement = GetHandlerTextElement();
+						var transform = textElement?.TextTransform ?? TextTransform;
+						if (transform is TextTransform.Lowercase or TextTransform.Uppercase)
+							transformedText = textElement is not null
+								? textElement.UpdateFormsText(value, transform)
+								: TextTransformUtilities.GetTransformedText(value, transform);
+					}
+				}
+
+				if (value != transformedText && Text == transformedText)
+				{
+					// The native edit needs correcting even though the managed value hasn't changed.
+					Handler?.UpdateValue(nameof(ITextInput.Text));
+					return;
+				}
+
+				SetValue(TextProperty, transformedText, SetterSpecificity.FromHandler);
+			}
+		}
+
+		ITextElement GetHandlerTextElement()
+		{
+			// Match the native mappers that dispatch through ITextElement.
+#if ANDROID
+			if (this is Entry or Editor || (this is SearchBar && Handler is SearchBarHandler2))
+				return this;
+#elif IOS || MACCATALYST
+			if (this is Entry or Editor)
+				return this;
+#endif
+			return null;
+		}
+
+		bool IsPasswordInput
+		{
+			get
+			{
+#if ANDROID
+				if (this is SearchBar && Handler is SearchBarHandler2 searchBarHandler)
+					return Platform.EditTextExtensions.IsPasswordInput(searchBarHandler.QueryEditor, this);
+
+				if (this is Entry or Editor)
+				{
+					var editText = Handler is EntryHandler2 entryHandler
+						? entryHandler.PlatformView?.EditText
+						: Handler?.PlatformView as global::Android.Widget.EditText;
+					return Platform.EditTextExtensions.IsPasswordInput(editText, this);
+				}
+#elif IOS || MACCATALYST
+				if ((this is Entry or Editor) && Handler?.PlatformView is IUITextInput textInput && textInput.GetSecureTextEntry())
+					return true;
+#elif WINDOWS
+				if (this is Entry && Handler?.PlatformView is MauiPasswordTextBox { IsPassword: true })
+					return true;
+#endif
+				return this is Entry entry && entry.IsPassword;
+			}
 		}
 
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)

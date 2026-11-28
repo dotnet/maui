@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Text;
 using AndroidX.AppCompat.Widget;
 using Google.Android.Material.TextField;
 using Microsoft.Maui.Controls;
@@ -95,6 +97,71 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedText, platformText);
 			Assert.Equal(expectedText, entry.Text);
+		}
+
+		[Theory]
+		[InlineData(TextTransform.Uppercase, "A", "a")]
+		[InlineData(TextTransform.Lowercase, "a", "A")]
+		public async Task CaseOnlyPlatformEditRestoresTransformedTextWithoutNotification(TextTransform transform, string expected, string input)
+		{
+			var entry = new Entry { TextTransform = transform, Text = expected };
+
+			await AttachAndRun<EntryHandler>(entry, handler =>
+			{
+				var changes = 0;
+				entry.TextChanged += (_, _) => changes++;
+				var platformEntry = GetPlatformControl(handler);
+
+				platformEntry.EditableText.Replace(0, platformEntry.EditableText.Length(), input);
+
+				Assert.Equal(expected, platformEntry.Text);
+				Assert.Equal(expected, entry.Text);
+				Assert.Equal(0, changes);
+			});
+		}
+
+		[Fact]
+		public async Task Material3NonSecureNativeTextEditRaisesOneTransformedChange()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler2>(entry, handler =>
+			{
+				var platformEntry = handler.PlatformView.EditText;
+				Assert.NotNull(platformEntry);
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = platformEntry.EditableText;
+				text.Replace(0, text.Length(), "d");
+
+				Assert.Equal("D", platformEntry.Text);
+				Assert.Equal("D", entry.Text);
+				Assert.Equal("D", Assert.Single(changes));
+			});
+		}
+
+		[Fact]
+		public async Task Material3NativePasswordInputTypePreservesCasing()
+		{
+			const string input = "aB";
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler2>(entry, handler =>
+			{
+				var platformEntry = handler.PlatformView.EditText;
+				Assert.NotNull(platformEntry);
+				platformEntry.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
+				var changes = new List<string>();
+				entry.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = platformEntry.EditableText;
+				text.Replace(0, text.Length(), input);
+
+				Assert.Equal(input, platformEntry.Text);
+				Assert.Equal(input, entry.Text);
+				Assert.Equal(input, Assert.Single(changes));
+			});
 		}
 
 		[Fact]

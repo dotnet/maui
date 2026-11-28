@@ -23,21 +23,27 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var oldText = editText.Text ?? string.Empty;
 
-			var inputType = editText.InputType;
+			var newText = textElement.UpdateFormsText(text,
+				IsPasswordInput(editText, textElement) ? TextTransform.None : textElement.TextTransform);
 
+			return (oldText, newText);
+		}
+
+		internal static bool IsPasswordInput(EditText editText, ITextElement textElement)
+		{
 			// A read-only EditText has no InputType flags (TYPE_NULL), so check what sets the password ones too:
 			// IsPassword on an Entry, the keyboard on other inputs
-			bool isPasswordEnabled =
-				(textElement is Entry entry ? entry.IsPassword : textElement is InputView inputView && inputView.Keyboard == Keyboard.Password) ||
-				(inputType.HasFlag(InputTypes.ClassText) &&
+			if (textElement is Entry entry ? entry.IsPassword : textElement is InputView inputView && inputView.Keyboard == Keyboard.Password)
+				return true;
+
+			if (editText is null)
+				return false;
+
+			var inputType = editText.InputType;
+			return (inputType.HasFlag(InputTypes.ClassText) &&
 					inputType.HasFlag(InputTypes.TextVariationPassword)) ||
 				(inputType.HasFlag(InputTypes.ClassNumber) &&
 					inputType.HasFlag(InputTypes.NumberVariationPassword));
-
-			var newText = textElement.UpdateFormsText(text,
-				isPasswordEnabled ? TextTransform.None : textElement.TextTransform);
-
-			return (oldText, newText);
 		}
 
 		public static void UpdateText(this EditText editText, InputView inputView) =>

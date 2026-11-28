@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Text;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -96,6 +98,49 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedText, platformText);
 			Assert.Equal(expectedText, editor.Text);
+		}
+
+		[Fact]
+		public async Task PasswordKeyboardPlatformTextPreservesCasing()
+		{
+			var editor = new Editor { Keyboard = Keyboard.Password, TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EditorHandler>(editor, handler =>
+			{
+				var changes = 0;
+				editor.TextChanged += (_, _) => changes++;
+
+				SetPlatformText(handler, "aB");
+
+				Assert.Equal("aB", editor.Text);
+				Assert.Equal("aB", GetPlatformControl(handler).Text);
+				Assert.Equal(1, changes);
+			});
+		}
+
+		[Fact]
+		public async Task NativePasswordInputTypePreservesCasing()
+		{
+			const string input = "aB";
+			var editor = new Editor { TextTransform = TextTransform.Uppercase };
+			var bindingSource = new Entry();
+			editor.SetBinding(InputView.TextProperty, new Binding(nameof(Entry.Text), source: bindingSource));
+
+			await AttachAndRun<EditorHandler>(editor, handler =>
+			{
+				var platformEditor = GetPlatformControl(handler);
+				platformEditor.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
+				var changes = new List<string>();
+				editor.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = platformEditor.EditableText;
+				text.Replace(0, text.Length(), input);
+
+				Assert.Equal(input, platformEditor.Text);
+				Assert.Equal(input, editor.Text);
+				Assert.Equal(input, bindingSource.Text);
+				Assert.Equal(input, Assert.Single(changes));
+			});
 		}
 
 		[Theory]

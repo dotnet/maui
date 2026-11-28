@@ -1,10 +1,13 @@
 ﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
 using WControl = Microsoft.UI.Xaml.Controls.Control;
@@ -36,6 +39,64 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).Text = text;
+
+		[Fact]
+		public async Task NonSecureNativeTextEditRaisesOneTransformedChange()
+		{
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, async handler =>
+			{
+				var textBox = Assert.IsType<MauiPasswordTextBox>(GetPlatformControl(handler));
+				Assert.False(textBox.IsPassword);
+				var changes = new List<string>();
+				var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				entry.TextChanged += (_, args) =>
+				{
+					changes.Add(args.NewTextValue);
+					changed.TrySetResult();
+				};
+
+				SetPlatformText(handler, "d");
+				await changed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				// Drain the native echo before checking the number of managed notifications.
+				var idle = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				Assert.True(textBox.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => idle.TrySetResult()));
+				await idle.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Equal("D", textBox.Text);
+				Assert.Equal("D", entry.Text);
+				Assert.Equal("D", Assert.Single(changes));
+			});
+		}
+
+		[Fact]
+		public async Task NativePasswordTextBoxPreservesCasing()
+		{
+			const string input = "aB";
+			var entry = new Entry { TextTransform = TextTransform.Uppercase };
+
+			await AttachAndRun<EntryHandler>(entry, async handler =>
+			{
+				var passwordBox = Assert.IsType<MauiPasswordTextBox>(GetPlatformControl(handler));
+				passwordBox.IsPassword = true;
+				var changes = new List<string>();
+				var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				entry.TextChanged += (_, args) =>
+				{
+					changes.Add(args.NewTextValue);
+					changed.TrySetResult();
+				};
+
+				passwordBox.Password = input;
+				await changed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Equal(input, passwordBox.Password);
+				Assert.Equal(input, entry.Text);
+				Assert.Equal(input, Assert.Single(changes));
+			});
+		}
 
 		static int GetPlatformCursorPosition(EntryHandler entryHandler) =>
 			GetPlatformControl(entryHandler).SelectionStart;

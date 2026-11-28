@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
@@ -41,6 +43,79 @@ namespace Microsoft.Maui.DeviceTests
 				var nativeView = GetPlatformControl(searchBarHandler);
 				return nativeView.Alpha;
 			});
+		}
+
+		[Theory]
+		[InlineData(false, true, false, "aB", "AB")]
+		[InlineData(true, true, false, "aB", "aB")]
+		[InlineData(true, false, false, "d", "D")]
+		[InlineData(false, false, true, "i", "I")]
+		[InlineData(true, false, true, "i", "\u0130")]
+		public async Task PlatformEditRespectsSearchBarHandlerAndKeyboard(bool material3, bool passwordKeyboard, bool customTransform, string input, string expectedText)
+		{
+			SearchBar searchBar = customTransform ? new TurkishSearchBar() : new SearchBar();
+			searchBar.Keyboard = passwordKeyboard ? Keyboard.Password : Keyboard.Default;
+			searchBar.TextTransform = TextTransform.Uppercase;
+
+			if (material3)
+				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
+			else
+				await AttachAndRun<SearchBarHandler>(searchBar, handler => AssertPlatformEdit(handler.QueryEditor));
+
+			void AssertPlatformEdit(EditText queryEditor)
+			{
+				Assert.NotNull(queryEditor);
+				var changes = new List<string>();
+				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = queryEditor.EditableText;
+				text.Replace(0, text.Length(), input);
+
+				Assert.Equal(expectedText, queryEditor.Text);
+				Assert.Equal(expectedText, searchBar.Text);
+				Assert.Equal(expectedText, Assert.Single(changes));
+			}
+		}
+
+		sealed class TurkishSearchBar : SearchBar, ITextElement
+		{
+			string ITextElement.UpdateFormsText(string original, TextTransform transform) =>
+				transform == TextTransform.Uppercase
+					? (original ?? string.Empty).ToUpper(CultureInfo.GetCultureInfo("tr-TR"))
+					: UpdateFormsText(original, transform);
+		}
+
+		[Theory]
+		[InlineData(false, "AB")]
+		[InlineData(true, "aB")]
+		public async Task NativeEditUsesInterfaceTextTransformOnlyForMaterial3(bool material3, string expected)
+		{
+			var searchBar = new InterfaceTransformSearchBar { TextTransform = TextTransform.Uppercase };
+			((ITextElement)searchBar).TextTransform = TextTransform.None;
+
+			if (material3)
+				await AttachAndRun<SearchBarHandler2>(searchBar, handler => AssertNativeEdit(handler.QueryEditor));
+			else
+				await AttachAndRun<SearchBarHandler>(searchBar, handler => AssertNativeEdit(handler.QueryEditor));
+
+			void AssertNativeEdit(EditText queryEditor)
+			{
+				Assert.NotNull(queryEditor);
+				var changes = new List<string>();
+				searchBar.TextChanged += (_, args) => changes.Add(args.NewTextValue);
+
+				var text = queryEditor.EditableText;
+				text.Replace(0, text.Length(), "aB");
+
+				Assert.Equal(expected, queryEditor.Text);
+				Assert.Equal(expected, searchBar.Text);
+				Assert.Equal(expected, Assert.Single(changes));
+			}
+		}
+
+		sealed class InterfaceTransformSearchBar : SearchBar, ITextElement
+		{
+			TextTransform ITextElement.TextTransform { get; set; }
 		}
 
 		[Fact]
