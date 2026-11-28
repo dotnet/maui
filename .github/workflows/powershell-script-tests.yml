@@ -19,6 +19,8 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      # Review-Expert.ps1 pins this rulebook's routing hash; Review-Expert.Tests.ps1 checks they match.
+      - '.github/agents/maui-expert-reviewer.md'
       - '.github/patches/**'
       - '.github/skills/run-device-tests/scripts/**'
       - '.github/skills/run-integration-tests/scripts/**'

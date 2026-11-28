@@ -225,6 +225,8 @@ These provide specialized guidance for specific scenarios used by all agents:
 - **`instructions/templates.instructions.md`** - Template modification rules
 - **`instructions/xaml-unittests.instructions.md`** - XAML unit testing guidelines
 - **`instructions/collectionview-handler-detection.instructions.md`** - CollectionView handler configuration
+- **`instructions/handler-patterns.instructions.md`** - Handler mapper, lifecycle, and native defaults patterns
+- **`instructions/handler-registration.instructions.md`** - Built-in handler declaration (`[ElementHandler]`), resolution precedence, and lazy Controls mapper remaps
 - **`instructions/agents.instructions.md`** - Custom agent authoring guidelines
 - **`instructions/skills.instructions.md`** - Skill development standards
 - **`instructions/helix-device-tests.instructions.md`** - Direct `dotnet test` device infrastructure (retained compatibility filename)

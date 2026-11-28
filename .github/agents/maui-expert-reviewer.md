@@ -69,14 +69,19 @@ Avoiding expensive operations on hot paths: measure/arrange, scrolling, binding 
 Correct usage of mapper/command-mapper, lifecycle symmetry, and chained mapper handling.
 
 - CHECK: Property updates go through `Handler.UpdateValue(nameof(Property))`, not direct mapper calls
-- CHECK: Mapper registrations use `AppendToMapping`/`PrependToMapping` for extensibility
+- CHECK: App, sample, and library mapper customizations use `AppendToMapping`/`PrependToMapping` to extend existing mappings rather than replacing them
 - CHECK: Handler properties are initialized in correct dependency order
 - CHECK: CommandMapper entries return void and use `(handler, view, args)` signature — Commands are for requests (`ScrollTo`, `Remove`), Mapper properties associate with `BindableProperty` values
 - CHECK: Platform-specific mapper overrides call base mapper when extending
 - CHECK: **ConnectHandler/DisconnectHandler symmetry** — every listener, event handler, or callback registered in `ConnectHandler` must be unregistered in `DisconnectHandler`
 - CHECK: Don't null handler references eagerly in `DisconnectHandler` — the view might be removed and re-added (e.g., Shell tab switching); clear subscriptions while keeping weak references alive
 - CHECK: On Android, assign per-view state in `AttachedToWindow`/`DetachedFromWindow` rather than constructor to avoid leaks when views are recycled
-- CHECK: Use `ModifyMapping` for Controls-layer overrides that override Core behavior, so user-registered mappings aren't silently replaced
+- CHECK: Controls-layer overrides of Core handler mappers live in the control's lazy `RemapForControls()` (call `base.RemapForControls()`, then a static `OneTimeInitializationAction.InvokeOnce()`) and use the internal `ReplaceMappingForControls`/`AppendToMappingForControls`/`PrependToMappingForControls`/`ModifyMappingForControls` helpers. Flag the public `AppendToMapping`/`ModifyMapping`/`ReplaceMapping`/indexer inside a remap: those are the app customization layer, and a lazy framework call through them reorders or overrides app customizations made at startup. Label's Android `IsTextSelectable` and Apple `FlowDirection` public appends are the only deliberate exception. They live in `static Label()`, not the lazy remap, to keep main's type-initialization timing; flag moving them into the remap or copying the pattern
+- CHECK: Core handler property and command mappers that Controls remaps end their initializer with `.WithFrameworkMappingsSealed()`, so later assignments, including new keys, are recorded as app customizations. `SwitchHandler.Mapper` and `ButtonHandler.TextButtonMapper`/`ImageButtonMapper` are unsealed (only replacements of existing keys are recorded); flag code that assumes sealed semantics on them, or seals them without disclosing the behavior change
+- CHECK: A new framework remap of a key a child mapper inherits from a chained parent (e.g. `ViewHandler.ViewMapper`) is evaluated for app impact: the remap builds on the parent's mapping as it is at the first attachment of that control type, so it includes parent app customizations registered before then but not later ones. Flag reference comparisons between a sealed mapper's indexer/`GetProperty`/`GetCommand` result and a built-in delegate (inherited keys return a child-bound mapping there); framework code that needs the chained delegate uses the internal `PropertyMapper.GetPropertyDirect`
+- CHECK: Unit tests that read keys or mappings of global handler mappers trigger the lazy Controls remap first (e.g. `new VisualElement().RemapForControls()`); otherwise they depend on test order
+- CHECK: A lazy remap that sets a public static factory (e.g. `PlatformViewFactory`) does so through an internal `InstallPlatformViewFactory()` helper using `??=`, so a factory the app set during startup survives
+- CHECK: Non-mapper setup such as `CommandProperty.DependsOn(...)` stays in control type initialization, not in the lazy remap — bindings need it before a handler attaches
 - CHECK: Mapper methods must be idempotent — they can be called at any time, not just initial setup; must fully initialize state from scratch
 - CHECK: `ConnectHandler` calls `base.ConnectHandler()` before custom setup; `DisconnectHandler` cleans up before calling `base.DisconnectHandler()` — reversed ordering can access disposed resources
 - CHECK: Centralize listener instances via static registry for per-CoordinatorLayout or per-DrawerLayout listeners to reduce allocations
@@ -239,6 +244,9 @@ Breaking changes, Xamarin.Forms migration paths, and third-party renderer impact
 - CHECK: Removed/renamed APIs go through `[Obsolete]` cycle before removal
 - CHECK: Default property value changes are evaluated for impact on existing apps
 - CHECK: Compatibility renderers maintain behavioral parity with handler equivalents
+- CHECK: Handler resolution changes keep `MauiHandlersFactory.GetHandler(Type)` and `GetHandlerType(Type)` consistent and preserve the precedence in `docs/design/HandlerResolution.md`: exact registration, direct `[ElementHandler]`, the more specific of nearest registered base class and nearest inherited attribute, registered interfaces (with Controls defaults, `IContentButton`/`IContentView` defaults compete as interface registrations), then content-interface fallbacks. Interface resolution compares every matching interface before reporting an ambiguity. Hot Reload handler replacement must also apply to attribute and content-default handlers (scoped to the collection passed to `RegisterHandlers`), and handler types that need constructor injection are never retained as singletons. `TryAddHandler` must not replace directly attributed defaults or the content-interface defaults when Controls defaults are enabled; guidance or samples that replace a built-in handler use `AddHandler`, not `RemoveAll` followed by `TryAddHandler`
+- CHECK: Handler or mapper changes that existing apps can observe are recorded in the "Behavior changes" section of `docs/design/HandlerResolution.md` with migration guidance
+- CHECK: Code or docs do not rely on custom `IMauiHandlersFactory` implementations (unsupported; they cannot see attribute defaults) or on `AddMauiControlsHandlers()` registering anything (it is a compatibility no-op)
 
 ### 13. Platform-Specific Code Scoping `[moderate]`
 
@@ -318,6 +326,9 @@ Patterns that work with .NET trimmer and NativeAOT.
 - CHECK: For IL2026/IL3050, trace the complete annotation chain before recommending a fix: identify the annotated member, any generic or `DynamicallyAccessedMembers` hop, the feature guard, and the target platform/toolchain that produced the warning
 - CHECK: Do not assume either that a `FeatureGuard` silences every annotation chain or that every IL2026/IL3050 suppression is wrong. Validate that the guarded path is disabled for the affected publish configuration and that the relevant analyzer honors the guard on that platform
 - CHECK: Reject broad suppressions and expected-warning baselines that hide a reachable dynamic-code path. A `#pragma` is acceptable only when the path is proven unreachable for the affected configuration, a platform/toolchain limitation is documented, and the diagnostic scope is restored immediately after the affected call. An `UnconditionalSuppressMessage` is acceptable only with the same unreachable-path and toolchain-limitation evidence, and it must target the exact diagnostic on the narrowest applicable member
+- CHECK: Built-in Controls views declare their default handler with the internal `[ElementHandler(typeof(XHandler))]` attribute on the control class (scoped with `#if` to platforms where the handler exists), not with a DI registration in Controls hosting, which roots the handler for every app. DI registrations are for app/library overrides and interfaces. Exception: keep the existing `HybridWebView` default, the `AddHandler<HybridWebView>(static _ => new HybridWebViewHandler())` factory in `SetupDefaults`; do not flag it or ask to convert it. Flag new built-in defaults that copy it: a factory delegate only defers construction, and the handler stays rooted. Attribute-resolved handlers need a public parameterless constructor; only `ToHandler()` falls back to constructor injection
+- CHECK: Feature-switch-dependent handler selection uses a nested `ElementHandlerAttribute` subclass whose `GetHandlerType()` branches on a `[FeatureSwitchDefinition]` `RuntimeFeature` property (Android Material3 controls, Windows `CollectionView`, Apple `Shell`), so the inactive handler stays trimmable. Flag selection that roots both handlers outside a feature-switch branch. Returning `null` from `GetHandlerType()` is valid and means no handler is declared in that configuration
+- CHECK: Platform-specific `[ElementHandler]` branches have device-test coverage that asserts both `GetHandlerType` and handler creation, because `Controls.Core.UnitTests` builds a non-platform TFM. Tests that toggle `AppContext` switches use a `DisableParallelization` collection and restore the switch
 - CHECK: Prefer a structural fix when the warning represents a real reachability path: isolate annotated registration behind a helper with matching annotations, or replace reflection/dynamic serialization with source-generated metadata. Do not present a branch-specific helper as if it exists on every target branch
 
 ### 19. CollectionView — iOS/MacCatalyst (Items2/) `[major]`
@@ -514,6 +525,8 @@ Map each changed file against this table to determine which dimensions to activa
 |---|---|---|
 | `src/Core/src/Layouts/**` | Layout Measure-Arrange, Performance-Critical Path, Logic and Correctness | all |
 | `src/Core/src/Handlers/**` | Handler Mapper and Property Patterns, Public API Surface, Architectural Layer | all |
+| `src/Core/src/PropertyMapper*.cs`, `src/Core/src/CommandMapper*.cs`, `src/Core/src/MappingCustomizationSequence.cs` | Handler Mapper and Property Patterns | all |
+| `src/{Core,Controls}/tests/**/*Mapper*Tests.cs` | Handler Mapper and Property Patterns | all |
 | `src/Core/src/Platform/Android/**` | Memory Leak Prevention, Async and Threading, Android Platform | android |
 | `src/Core/src/Platform/iOS/**` | Safe Area, Performance-Critical Path, Memory Leak, iOS/MacCatalyst Platform | ios+maccatalyst |
 | `src/Core/src/Platform/Windows/**` | Native Defaults Preservation, Async and Threading, Windows Platform | windows |
@@ -534,6 +547,7 @@ Map each changed file against this table to determine which dimensions to activa
 | Path Pattern | Dimensions | Platform |
 |---|---|---|
 | `src/Controls/src/Core/Handlers/**` (non-Items) | Handler Mapper, Null Safety, Cross-Platform Consistency | all |
+| `src/Controls/src/Core/**/*.Mapper.cs` | Handler Mapper and Property Patterns | all |
 | `src/Controls/src/Core/Shell/**`, `src/Controls/src/Core/Handlers/Shell/**` | Navigation & Shell, Logic and Correctness, Regression Prevention | all |
 | `src/Controls/src/Core/{View,Page,Layout,VisualElement,Element}/**` | Public API Surface, Architectural Layer, Backward Compatibility | all |
 | `src/Controls/src/Core/*Gesture*/**` | Gestures, Logic and Correctness | all |
@@ -591,8 +605,8 @@ These apply regardless of file paths: Logic and Correctness, Regression Preventi
 | Dimension | Trigger |
 |---|---|
 | Public API Surface | Adds/removes `public` members or modifies `PublicAPI.Unshipped.txt` |
-| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance`; adds or changes `RequiresDynamicCode`, `RequiresUnreferencedCode`, `DynamicallyAccessedMembers`, `FeatureGuard`, `UnconditionalSuppressMessage`, or an IL20xx/IL30xx suppression |
-| Backward Compatibility | Changes defaults, removes APIs, or touches Compatibility/ |
+| Trimming/AOT | Changes any `.cs` file (built-in handler declarations such as `[ElementHandler]` live on control classes); also uses reflection, `Type.GetType`, or `Activator.CreateInstance`; adds or changes `RequiresDynamicCode`, `RequiresUnreferencedCode`, `DynamicallyAccessedMembers`, `FeatureGuard`, `UnconditionalSuppressMessage`, or an IL20xx/IL30xx suppression |
+| Backward Compatibility | Changes any `.cs` file, changes defaults, removes APIs, or touches Compatibility/ |
 | Input and Path Correctness | Diff extracts archives, constructs process arguments, builds file paths from external/caller input, deserializes external payloads, parses URIs/deep links, adds a high-confidence real token, key, connection string, or password — or touches the Input & Path Boundaries paths above. |
 
 ---
