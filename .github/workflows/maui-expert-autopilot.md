@@ -318,6 +318,8 @@ on:
           core.setOutput('loop_start', loopStart);
           core.setOutput('pr_number', String(number));
           core.setOutput('head_ref', pr.head.ref);
+          core.setOutput('pr_title', pr.title);
+          core.setOutput('pr_author', pr.user.login);
           core.setOutput('base_ref', pr.base.ref);
           core.setOutput('head_sha', head);
           core.setOutput('is_fork', String(isFork));
@@ -337,6 +339,8 @@ jobs:
       autopilot_is_fork: ${{ steps.state.outputs.is_fork }}
       autopilot_requested_by: ${{ steps.state.outputs.requested_by }}
       autopilot_loop_start: ${{ steps.state.outputs.loop_start }}
+      autopilot_pr_title: ${{ steps.state.outputs.pr_title }}
+      autopilot_pr_author: ${{ steps.state.outputs.pr_author }}
       autopilot_opus_run: ${{ steps.state.outputs.opus_run }}
   advance:
     # Starts the expert review or the test run. gh-aw makes activation wait for this job, so it
@@ -614,6 +618,9 @@ steps:
       SOURCE: ${{ needs.pre_activation.outputs.autopilot_source }}
       ROUND: ${{ needs.pre_activation.outputs.autopilot_round }}
       LOOP_START: ${{ needs.pre_activation.outputs.autopilot_loop_start }}
+      # The agent's GitHub tools can filter fork PRs' content, so the follow-up PR's title and author come from here.
+      PR_TITLE: ${{ needs.pre_activation.outputs.autopilot_pr_title }}
+      PR_AUTHOR: ${{ needs.pre_activation.outputs.autopilot_pr_author }}
       GH_TOKEN: ${{ github.token }}
       HEAD_REF: ${{ needs.pre_activation.outputs.autopilot_head_ref }}
       BASE_REF: ${{ needs.pre_activation.outputs.autopilot_base_ref }}
@@ -699,7 +706,8 @@ steps:
       jq -n --arg pr "${PR_NUMBER}" --arg head "${HEAD_REF}" --arg base "${BASE_REF}" \
         --arg fork "${IS_FORK}" --arg branch "${WORK_BRANCH}" --arg sha "$(git rev-parse HEAD)" \
         --arg mb "${MERGE_BASE}" --arg source "${SOURCE}" --arg round "${ROUND}" --arg loop_start "${LOOP_START}" \
-        '{pr_number: ($pr|tonumber), head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber), loop_start: $loop_start}' \
+        --arg title "${PR_TITLE}" --arg author "${PR_AUTHOR}" \
+        '{pr_number: ($pr|tonumber), pr_title: $title, pr_author: $author, head_ref: $head, base_ref: $base, is_fork: ($fork == "true"), work_branch: $branch, head_sha: $sha, merge_base: $mb, source: $source, round: ($round|tonumber), loop_start: $loop_start}' \
         > /tmp/gh-aw/autopilot/context.json
       cat /tmp/gh-aw/autopilot/context.json
 
@@ -971,9 +979,9 @@ The PR head is checked out on `work_branch`.
 6. **Publish.**
    - If `is_fork` is `false`, call `push_to_pull_request_branch` with `branch` set to `work_branch`.
    - If `is_fork` is `true`, call `create_pull_request` with `branch` set to `work_branch` and `base`
-     set to `base_ref`. Title: the original PR title. Body: start with
-     `Finishes #<pr_number> by @<author>. Includes their commits plus fixes for the review feedback.` (when `source`
-     is `conflicts`: `Finishes #<pr_number> by @<author>, rebased on <base_ref> to resolve merge conflicts.`),
+     set to `base_ref`. Title: `pr_title` from the context file. Body: start with
+     `Finishes #<pr_number> by @<pr_author>. Includes their commits plus fixes for the review feedback.` (when `source`
+     is `conflicts`: `Finishes #<pr_number> by @<pr_author>, rebased on <base_ref> to resolve merge conflicts.`),
      then this exact line, so the loop continues on the follow-up PR:
      `- [x] **Let the MAUI agent address review feedback and fix remaining issues on this PR.**`
      then list the fixes.
