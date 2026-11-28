@@ -952,7 +952,9 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				// Only now do we look up the value - on demand
-				object value = resolver(key);
+				object value = key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal)
+					? this.GetMergedStyleClassResource(key)
+					: resolver(key);
 				if (value == null)
 					continue;
 
@@ -976,8 +978,22 @@ namespace Microsoft.Maui.Controls
 				specificities = new SetterSpecificityList<string>(2);
 			specificities[specificity] = key;
 			DynamicResources[property] = specificities;
-			if (this.TryGetResource(key, out var value))
-				OnResourceChanged(property, value, specificity);
+
+			object value;
+			if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+			{
+				value = this.GetMergedStyleClassResource(key);
+				if (value is null && !this.TryGetResource(key, out value))
+				{
+					return;
+				}
+			}
+			else if (!this.TryGetResource(key, out value))
+			{
+				return;
+			}
+
+			OnResourceChanged(property, value, specificity);
 		}
 
 		internal event EventHandler ParentSet;

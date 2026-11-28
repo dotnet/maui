@@ -1,14 +1,16 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.StyleSheets;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>Represents a portion of formatted text for use in a FormattedString.</summary>
 	[ContentProperty("Text")]
-	public class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement, IDecorableTextElement
+	public class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement, IDecorableTextElement, IStyleSelectable
 	{
 		internal readonly MergedStyle _mergedStyle;
 
@@ -41,6 +43,26 @@ namespace Microsoft.Maui.Controls
 			get { return (Style)GetValue(StyleProperty); }
 			set { SetValue(StyleProperty, value); }
 		}
+
+		/// <summary>Gets or sets the style classes applied to this span.</summary>
+		/// <remarks>Equivalent to <see cref="@class"/>. Multiple classes compose without requiring style inheritance.</remarks>
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> StyleClass
+		{
+			get => @class;
+			set => @class = value;
+		}
+
+		/// <summary>Gets or sets the style classes applied to this span.</summary>
+		/// <remarks>Equivalent to <see cref="StyleClass"/>.</remarks>
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> @class
+		{
+			get => _mergedStyle.StyleClass;
+			set => _mergedStyle.StyleClass = value;
+		}
+
+		IList<string> IStyleSelectable.Classes => StyleClass;
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty
