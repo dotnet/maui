@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -14,15 +15,26 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
+		static long handlerCacheGeneration;
+		internal static long HandlerCacheGeneration => Interlocked.Read(ref handlerCacheGeneration);
+
 		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
 		{
-			HandlerService = handlerService;
+			lock (handlerReplacementLock)
+			{
+				// Replacements already applied to a previous collection still need to be applied to this one.
+				if (!ReferenceEquals(HandlerService, handlerService))
+					replacedHandlers.Clear();
+
+				HandlerService = handlerService;
+			}
 		}
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
 		public static void Reset()
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			replacedViews.Clear();
 			activatedHandlerTypes = new();
 
@@ -134,27 +146,56 @@ namespace Microsoft.Maui.HotReload
 		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
 		{
 			activatedHandlerTypes.GetValue(descriptor, static _ => new()).Type = handlerType;
+			ApplyPendingHandlerReplacement(descriptor.ServiceType, handlerType);
+		}
 
-			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
-				return;
+		/// <summary>
+		/// Applies a pending Hot Reload replacement of <paramref name="handlerType"/> to <paramref name="viewType"/> for a
+		/// handler that the factory resolved without a collection descriptor, such as an <see cref="Handlers.ElementHandlerAttribute"/>
+		/// or content interface default, which <see cref="RegisterHandlerReplacement"/> cannot find in the collection.
+		/// Only the collection registered through <see cref="RegisterHandlers"/> receives replacements, so resolving
+		/// through another app's factory leaves both apps' registrations unchanged. The factory only resolves such a
+		/// handler when the collection has no registration for the view type, so the replacement is installed again
+		/// if its registration was removed.
+		/// </summary>
+		/// <returns><see langword="true"/> if a replacement was registered in <paramref name="collection"/>, so resolving the view again uses it.</returns>
+		[UnconditionalSuppressMessage("Trimming", "IL2026",
+			Justification = "Pending replacements are only populated by the trim-incompatible Hot Reload path.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050",
+			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
+		internal static bool TryApplyPendingHandlerReplacement(object collection, Type viewType, Type handlerType) =>
+			!pendingHandlerReplacements.IsEmpty
+				&& ReferenceEquals(collection, HandlerService)
+				&& ApplyPendingHandlerReplacement(viewType, handlerType, reinstall: true);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
+		static bool ApplyPendingHandlerReplacement(Type viewType, Type handlerType, bool reinstall = false)
+		{
+			if (pendingHandlerReplacements.IsEmpty || HandlerService is null || handlerType.FullName is not string handlerTypeName)
+				return false;
 
 			lock (handlerReplacementLock)
 			{
 				if (!pendingHandlerReplacements.TryGetValue(handlerTypeName, out var newHandlerType))
-					return;
+					return false;
 
-				var handler = new KeyValuePair<Type, Type>(descriptor.ServiceType, handlerType);
+				var handler = new KeyValuePair<Type, Type>(viewType, handlerType);
 				if (!replacedHandlers.TryGetValue(handlerTypeName, out var views))
 				{
 					views = new List<KeyValuePair<Type, Type>>();
 					replacedHandlers[handlerTypeName] = views;
 				}
 
-				if (views.Contains(handler))
-					return;
+				if (!views.Contains(handler))
+					views.Add(handler);
+				else if (!reinstall)
+					return false;
 
-				views.Add(handler);
 				RegisterHandler(handler, newHandlerType);
+				return true;
 			}
 		}
 
@@ -170,6 +211,8 @@ namespace Microsoft.Maui.HotReload
 
 			if (!IsEnabled)
 				return;
+
+			Interlocked.Increment(ref handlerCacheGeneration);
 
 			Action<MethodInfo> executeStaticMethod = (method) =>
 			{
@@ -281,11 +324,16 @@ namespace Microsoft.Maui.HotReload
 #endif
 		public static void UpdateApplication(Type[] types)
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			IsEnabled = true;
 			foreach (var t in types)
 				RegisterReplacedView(t.FullName ?? "", t);
 		}
-		public static void ClearCache(Type[] types) => TriggerReload();
+		public static void ClearCache(Type[] types)
+		{
+			Interlocked.Increment(ref handlerCacheGeneration);
+			TriggerReload();
+		}
 		#endregion
 	}
 }
