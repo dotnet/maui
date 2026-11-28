@@ -2025,7 +2025,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				{
 					item.SetMetadata("BaseSize", baseSize);
 				}
-				var size = ResizeImageInfo.Parse(item);
+				var size = ResizeImageInfo.Parse(item, TaskEnvironment.Fallback);
 				Assert.Equal(resize, size.Resize);
 			}
 		}

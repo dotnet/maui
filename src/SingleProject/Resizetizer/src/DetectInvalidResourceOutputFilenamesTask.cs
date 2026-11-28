@@ -8,7 +8,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class DetectInvalidResourceOutputFilenamesTask : Task
+	[MSBuildMultiThreadableTask]
+	public class DetectInvalidResourceOutputFilenamesTask : MauiTask
 	{
 		public ITaskItem[] Items { get; set; }
 
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					foreach (var item in Items)
 					{
-						var image = ResizeImageInfo.Parse(item);
+						var image = ResizeImageInfo.Parse(item, TaskEnvironment);
 						var output = image.OutputName;
 						if (!Utils.IsValidResourceFilename(output))
 							tempInvalidItems.Add(item, output);

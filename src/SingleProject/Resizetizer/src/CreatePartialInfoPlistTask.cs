@@ -5,7 +5,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class CreatePartialInfoPlistTask : Task
+	[MSBuildMultiThreadableTask]
+	public class CreatePartialInfoPlistTask : MauiTask
 	{
 		public ITaskItem[] CustomFonts { get; set; }
 
@@ -33,11 +34,11 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			try
 			{
-				Directory.CreateDirectory(IntermediateOutputPath);
+				Directory.CreateDirectory(TaskEnvironment.GetAbsolutePath(IntermediateOutputPath));
 
 				var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
 
-				using (var f = File.CreateText(plistFilename))
+				using (var f = File.CreateText(TaskEnvironment.GetAbsolutePath(plistFilename)))
 				{
 					f.WriteLine(plistHeader);
 
@@ -48,9 +49,7 @@ namespace Microsoft.Maui.Resizetizer
 
 						foreach (var font in CustomFonts)
 						{
-							var fontFile = new FileInfo(font.ItemSpec);
-
-							f.WriteLine("	<string>" + fontFile.Name + "</string>");
+							f.WriteLine("	<string>" + Path.GetFileName(font.ItemSpec) + "</string>");
 						}
 
 						f.WriteLine("  </array>");

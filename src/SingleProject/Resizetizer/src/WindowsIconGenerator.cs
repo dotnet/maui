@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			string fileName = Path.GetFileNameWithoutExtension(Info.OutputName);
 			string destination = Path.Combine(destinationFolder, $"{fileName}.ico");
-			Directory.CreateDirectory(destinationFolder);
+			Directory.CreateDirectory(new AbsolutePath(destinationFolder));
 
 			Logger.Log($"Generating ICO: {destination}");
 
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Resizetizer
 			memoryStream.Position = 0;
 
 			int numberOfImages = 1;
-			using BinaryWriter writer = new BinaryWriter(File.Create(destination));
+			using BinaryWriter writer = new BinaryWriter(File.Create(new AbsolutePath(destination)));
 			writer.Write((short)0x0); // Reserved. Must always be 0.
 			writer.Write((short)0x1); // Specifies image type: 1 for icon (.ICO) image
 			writer.Write((short)numberOfImages); // Specifies number of images in the file.

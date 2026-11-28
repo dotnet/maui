@@ -8,7 +8,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class GeneratePackageAppxManifest : Task
+	[MSBuildMultiThreadableTask]
+	public class GeneratePackageAppxManifest : MauiTask
 	{
 		const string DefaultPlaceholder = "$placeholder$";
 		const string PngPlaceholder = "$placeholder$.png";
@@ -46,15 +47,15 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			try
 			{
-				Directory.CreateDirectory(IntermediateOutputPath);
+				Directory.CreateDirectory(TaskEnvironment.GetAbsolutePath(IntermediateOutputPath));
 
 				var filename = Path.Combine(IntermediateOutputPath, GeneratedFilename ?? "Package.appxmanifest");
 
-				var appx = XDocument.Load(AppxManifest.ItemSpec);
+				var appx = XDocument.Load(TaskEnvironment.GetAbsolutePath(AppxManifest.ItemSpec));
 
 				UpdateManifest(appx);
 
-				appx.Save(filename);
+				appx.Save(TaskEnvironment.GetAbsolutePath(filename));
 
 				GeneratedAppxManifest = new TaskItem(filename);
 			}
@@ -68,8 +69,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		void UpdateManifest(XDocument appx)
 		{
-			var appIconInfo = AppIcon?.Length > 0 ? ResizeImageInfo.Parse(AppIcon[0]) : null;
-			var splashInfo = SplashScreen?.Length > 0 ? ResizeImageInfo.Parse(SplashScreen[0]) : null;
+			var appIconInfo = AppIcon?.Length > 0 ? ResizeImageInfo.Parse(AppIcon[0], TaskEnvironment) : null;
+			var splashInfo = SplashScreen?.Length > 0 ? ResizeImageInfo.Parse(SplashScreen[0], TaskEnvironment) : null;
 
 			var xmlns = appx.Root!.GetDefaultNamespace();
 

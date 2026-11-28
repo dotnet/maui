@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Resizetizer
 	/// may not have created yet. Existing deletion candidates never use that permissive path.
 	/// </para>
 	/// </remarks>
-	public class DeleteStaleOutputFilesTask : Task
+	[MSBuildMultiThreadableTask]
+	public class DeleteStaleOutputFilesTask : MauiTask
 	{
 		/// <summary>The directory whose stale files may be removed.</summary>
 		[Required]
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer
 				return true;
 			}
 
-			using var session = StaleOutputDeletionSession.TryOpen(Root, out var openError);
+			using var session = StaleOutputDeletionSession.TryOpen(lexicalRoot, out var openError);
 			if (session is null)
 			{
 				Log.LogMessage(MessageImportance.Low, $"Skipping stale file cleanup because the root '{Root}' could not be opened safely: {openError}");
@@ -142,7 +143,7 @@ namespace Microsoft.Maui.Resizetizer
 					continue;
 				}
 
-				var key = canonicalizer.GetComparisonKey(item?.ItemSpec);
+				var key = canonicalizer.GetComparisonKey(path);
 				if (key is not null &&
 					TryGetRelativePath(key, physicalRoot, PathComparison, out var physicalRelative))
 				{
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				try
 				{
-					entries = Directory.GetFileSystemEntries(directory);
+					entries = Directory.GetFileSystemEntries(new AbsolutePath(directory));
 				}
 				catch (Exception ex)
 				{
@@ -179,7 +180,7 @@ namespace Microsoft.Maui.Resizetizer
 					FileAttributes attributes;
 					try
 					{
-						attributes = File.GetAttributes(entry);
+						attributes = File.GetAttributes(new AbsolutePath(entry));
 					}
 					catch (Exception ex)
 					{
@@ -208,14 +209,14 @@ namespace Microsoft.Maui.Resizetizer
 				? StringComparison.Ordinal
 				: StringComparison.OrdinalIgnoreCase;
 
-		static string NormalizePath(string path)
+		string NormalizePath(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
 				return null;
 
 			try
 			{
-				return TrimTrailingSeparators(Path.GetFullPath(path));
+				return TrimTrailingSeparators(Path.GetFullPath(TaskEnvironment.GetAbsolutePath(path).Value));
 			}
 			catch (Exception)
 			{

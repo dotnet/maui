@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -19,6 +20,11 @@ namespace Microsoft.Maui.Resizetizer
 	/// already resolved. When any segment of the project path is a link (macOS <c>/tmp</c> and
 	/// <c>/var/folders</c>, or a Windows junction) the two spellings differ, so a set difference between
 	/// MSBuild items and task outputs wrongly reports freshly written files as stale.
+	/// </para>
+	/// <para>
+	/// Paths must already be rooted: callers resolve relative item specs through their task's
+	/// <see cref="Microsoft.Build.Framework.TaskEnvironment"/> so that multithreaded MSBuild never resolves
+	/// them against the shared process working directory. A relative path cannot be interpreted.
 	/// </para>
 	/// <para>
 	/// Only the <em>directory</em> part of a path is link resolved. The file name is kept verbatim, so two
@@ -97,7 +103,7 @@ namespace Microsoft.Maui.Resizetizer
 			string full;
 			try
 			{
-				full = TrimTrailingSeparators(Path.GetFullPath(path));
+				full = TrimTrailingSeparators(Path.GetFullPath(new AbsolutePath(path).Value));
 			}
 			catch (Exception)
 			{
@@ -130,7 +136,7 @@ namespace Microsoft.Maui.Resizetizer
 			string full;
 			try
 			{
-				full = TrimTrailingSeparators(Path.GetFullPath(directory));
+				full = TrimTrailingSeparators(Path.GetFullPath(new AbsolutePath(directory).Value));
 			}
 			catch (Exception)
 			{
@@ -294,7 +300,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			try
 			{
-				var attributes = File.GetAttributes(path);
+				var attributes = File.GetAttributes(new AbsolutePath(path));
 
 				return (attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint
 					? DirectoryKind.Link

@@ -34,13 +34,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
-		public void RelativePathsAreRooted()
+		public void RelativePathsAreNotResolvedAgainstTheWorkingDirectory()
 		{
 			var canonicalizer = new PathCanonicalizer();
+			var relative = Path.Combine("obj", "resizetizer", "r", "camera.png");
 
-			var canonical = canonicalizer.GetComparisonKey(Path.Combine("obj", "resizetizer", "r", "camera.png"));
-
-			Assert.True(Path.IsPathRooted(canonical), $"Expected a rooted path, got '{canonical}'.");
+			Assert.Null(canonicalizer.GetComparisonKey(relative));
+			Assert.Null(canonicalizer.CanonicalizeDirectory(Path.GetDirectoryName(relative)));
 		}
 
 		[Fact]

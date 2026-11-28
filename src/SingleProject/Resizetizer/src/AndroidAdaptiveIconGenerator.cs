@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -25,6 +26,8 @@ namespace Microsoft.Maui.Resizetizer
 		public ILogger Logger { get; private set; }
 
 		public string AppIconName { get; }
+
+		public FileRetryPolicy RetryPolicy { get; set; } = FileRetryPolicy.Default;
 
 		const string AdaptiveIconDrawableXml =
 @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -51,7 +54,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			var results = new List<ResizedImageInfo>();
 
-			var fullIntermediateOutputPath = new DirectoryInfo(IntermediateOutputPath);
+			var fullIntermediateOutputPath = new DirectoryInfo(new AbsolutePath(IntermediateOutputPath));
 
 			ProcessBackground(results, fullIntermediateOutputPath);
 			ProcessForeground(results, fullIntermediateOutputPath);
@@ -80,7 +83,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				Directory.CreateDirectory(dir);
+				Directory.CreateDirectory(new AbsolutePath(dir));
 
 				if (Resizer.IsUpToDate(new[] { backgroundFile }, destination, InputsFile, Logger, backgroundFile))
 				{
@@ -94,12 +97,14 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					// resize the background
 					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Info.Quality, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
 				}
 				else
 				{
 					// manufacture
 					var tools = SkiaSharpTools.CreateImaginary(Info.Color, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination);
 				}
 
@@ -122,7 +127,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
-				Directory.CreateDirectory(dir);
+				Directory.CreateDirectory(new AbsolutePath(dir));
 
 				if (Resizer.IsUpToDate(new[] { foregroundFile }, destination, InputsFile, Logger, foregroundFile))
 				{
@@ -136,12 +141,14 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					// resize the foreground
 					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Info.Quality, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination, Info.ForegroundScale, dpiSizeIsAbsolute: true);
 				}
 				else
 				{
 					// manufacture
 					var tools = SkiaSharpTools.CreateImaginary(null, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination);
 				}
 
@@ -164,7 +171,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, monochromeDestFilename);
-				Directory.CreateDirectory(dir);
+				Directory.CreateDirectory(new AbsolutePath(dir));
 
 				if (Resizer.IsUpToDate(new[] { monochromeFile }, destination, InputsFile, Logger, monochromeFile))
 				{
@@ -177,11 +184,13 @@ namespace Microsoft.Maui.Resizetizer
 				if (monochromeExists)
 				{
 					var tools = SkiaSharpTools.Create(Info.MonochromeIsVector, Info.MonochromeFilename, dpi.Size, null, null, Info.Quality, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
 				}
 				else
 				{
 					var tools = SkiaSharpTools.CreateImaginary(null, Logger);
+					tools.RetryPolicy = RetryPolicy;
 					tools.Resize(dpi, destination);
 				}
 
@@ -194,7 +203,7 @@ namespace Microsoft.Maui.Resizetizer
 			var dir = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26");
 			var adaptiveIconDestination = Path.Combine(dir, AppIconName + ".xml");
 			var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
-			Directory.CreateDirectory(dir);
+			Directory.CreateDirectory(new AbsolutePath(dir));
 
 			var adaptiveIconXmlStr = (HasMonochromeFile ? AdaptiveIconDrawableWithMonochromeXml : AdaptiveIconDrawableXml)
 				.Replace("{name}", AppIconName);
@@ -209,9 +218,10 @@ namespace Microsoft.Maui.Resizetizer
 
 		static void WriteFileIfChanged(string path, string content)
 		{
-			if (File.Exists(path) && File.ReadAllText(path) == content)
+			AbsolutePath file = new(path);
+			if (File.Exists(file) && File.ReadAllText(file) == content)
 				return;
-			File.WriteAllText(path, content);
+			File.WriteAllText(file, content);
 		}
 	}
 }

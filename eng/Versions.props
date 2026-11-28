@@ -124,8 +124,10 @@
     <SystemMemoryPackageVersion>4.6.3</SystemMemoryPackageVersion>
     <SystemBuffersPackageVersion>4.6.1</SystemBuffersPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <MicrosoftBuildFrameworkPackageVersion>17.9.5</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>17.9.5</MicrosoftBuildUtilitiesCorePackageVersion>
+    <!-- MSBuild 18.6+ is required for IMultiThreadableTask and TaskEnvironment; keep at or below the SDK's minimumMSBuildVersion. -->
+    <MicrosoftBuildFrameworkPackageVersion>18.7.1</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>18.7.1</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>18.13.0-1.26522.101</MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>
     <MonoApiToolsMSBuildTasksPackageVersion>0.6.0</MonoApiToolsMSBuildTasksPackageVersion>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:

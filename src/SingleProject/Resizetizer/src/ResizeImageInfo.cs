@@ -77,7 +77,10 @@ namespace Microsoft.Maui.Resizetizer
 		private static bool IsVectorExtension(string? extension)
 			=> extension?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
 
-		public static List<ResizeImageInfo> Parse(IEnumerable<ITaskItem> images)
+		/// <summary>
+		/// Parses image items, resolving file metadata against <paramref name="environment"/>'s project directory.
+		/// </summary>
+		public static List<ResizeImageInfo> Parse(IEnumerable<ITaskItem> images, TaskEnvironment environment)
 		{
 			var r = new List<ResizeImageInfo>();
 
@@ -86,14 +89,17 @@ namespace Microsoft.Maui.Resizetizer
 
 			foreach (var image in images)
 			{
-				var info = Parse(image);
+				var info = Parse(image, environment);
 				r.Add(info);
 			}
 
 			return r;
 		}
 
-		public static ResizeImageInfo Parse(ITaskItem image)
+		/// <summary>
+		/// Parses an image item, resolving file metadata against <paramref name="environment"/>'s project directory.
+		/// </summary>
+		public static ResizeImageInfo Parse(ITaskItem image, TaskEnvironment environment)
 		{
 			var info = new ResizeImageInfo();
 
@@ -152,7 +158,7 @@ namespace Microsoft.Maui.Resizetizer
 			var fgFile = image.GetMetadata("ForegroundFile");
 			if (!string.IsNullOrEmpty(fgFile))
 			{
-				var fgFileInfo = new FileInfo(fgFile);
+				var fgFileInfo = new FileInfo(environment.GetAbsolutePath(fgFile));
 				if (!fgFileInfo.Exists)
 					throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
@@ -162,7 +168,7 @@ namespace Microsoft.Maui.Resizetizer
 			var darkFile = image.GetMetadata("DarkFile");
 			if (!string.IsNullOrEmpty(darkFile))
 			{
-				var darkFileInfo = new FileInfo(darkFile);
+				var darkFileInfo = new FileInfo(environment.GetAbsolutePath(darkFile));
 				if (!darkFileInfo.Exists)
 					throw new FileNotFoundException("Unable to find dark file: " + darkFileInfo.FullName, darkFileInfo.FullName);
 
@@ -172,7 +178,7 @@ namespace Microsoft.Maui.Resizetizer
 			var monoFile = image.GetMetadata("MonochromeFile");
 			if (!string.IsNullOrEmpty(monoFile))
 			{
-				var monoFileInfo = new FileInfo(monoFile);
+				var monoFileInfo = new FileInfo(environment.GetAbsolutePath(monoFile));
 				if (!monoFileInfo.Exists)
 					throw new FileNotFoundException("Unable to find monochrome file: " + monoFileInfo.FullName, monoFileInfo.FullName);
 

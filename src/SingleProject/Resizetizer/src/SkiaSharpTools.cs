@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -11,45 +12,6 @@ namespace Microsoft.Maui.Resizetizer
 	{
 		internal const int ERROR_ACCESS_DENIED = -2147024891;
 		internal const int ERROR_SHARING_VIOLATION = -2147024864;
-		const int DEFAULT_FILE_WRITE_RETRY_ATTEMPTS = 10;
-		const int DEFAULT_FILE_WRITE_RETRY_DELAY_MS = 1000;
-
-		static int fileWriteRetry = -1;
-		static int fileWriteRetryDelay = -1;
-
-		/// <summary>
-		/// Checks for the environment variable DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS to
-		/// see if a custom value for the number of times to retry writing a file has been 
-		/// set.
-		/// </summary>
-		/// <returns>The value of DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS or the default of DEFAULT_FILE_WRITE_RETRY_ATTEMPTS</returns>
-		public static int GetFileWriteRetryAttempts()
-		{
-			if (fileWriteRetry == -1)
-			{
-				var retryVariable = Environment.GetEnvironmentVariable("DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS");
-				if (string.IsNullOrEmpty(retryVariable) || !int.TryParse(retryVariable, out fileWriteRetry))
-					fileWriteRetry = DEFAULT_FILE_WRITE_RETRY_ATTEMPTS;
-			}
-			return fileWriteRetry;
-		}
-
-		/// <summary>
-		/// Checks for the environment variable DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS to
-		/// see if a custom value for the delay between trying to write a file has been 
-		/// set.
-		/// </summary>
-		/// <returns>The value of DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS or the default of DEFAULT_FILE_WRITE_RETRY_DELAY_MS</returns>
-		public static int GetFileWriteRetryDelay()
-		{
-			if (fileWriteRetryDelay == -1)
-			{
-				var delayVariable = Environment.GetEnvironmentVariable("DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS");
-				if (string.IsNullOrEmpty(delayVariable) || !int.TryParse(delayVariable, out fileWriteRetryDelay))
-					fileWriteRetryDelay = DEFAULT_FILE_WRITE_RETRY_DELAY_MS;
-			}
-			return fileWriteRetryDelay;
-		}
 
 		static SkiaSharpTools()
 		{
@@ -117,6 +79,8 @@ namespace Microsoft.Maui.Resizetizer
 		public ResizeQuality Quality { get; }
 
 		public SKSamplingOptions SamplingOptions { get; }
+
+		public FileRetryPolicy RetryPolicy { get; set; } = FileRetryPolicy.Default;
 
 		public void Resize(DpiPath dpi, string destination, double additionalScale = 1.0, bool dpiSizeIsAbsolute = false)
 		{
@@ -211,13 +175,14 @@ namespace Microsoft.Maui.Resizetizer
 		void Save(string destination, SKBitmap tempBitmap)
 		{
 			int attempt = 0;
-			int attempts = GetFileWriteRetryAttempts();
-			int delay = GetFileWriteRetryDelay();
+			AbsolutePath file = new(destination);
+			int attempts = RetryPolicy.Attempts;
+			int delay = RetryPolicy.DelayMilliseconds;
 			while (attempt <= attempts)
 			{
 				try
 				{
-					using var stream = File.Create(destination);
+					using var stream = File.Create(file);
 					tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 					return;
 				}

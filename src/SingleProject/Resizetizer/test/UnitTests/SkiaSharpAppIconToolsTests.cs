@@ -53,8 +53,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void BasicTest(double dpi, double fgScale, string bg, string fg, int exWidth, int exHeight)
 			{
 				var info = new ResizeImageInfo();
-				info.Filename = "images/" + bg;
-				info.ForegroundFilename = "images/" + fg;
+				info.Filename = Path.GetFullPath("images/" + bg);
+				info.ForegroundFilename = Path.GetFullPath("images/" + fg);
 				info.ForegroundScale = fgScale;
 				info.IsAppIcon = true;
 
@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void ComplexIconTest(double dpi, double fgScale, string bg, string fg, int exWidth, int exHeight)
 			{
 				var info = new ResizeImageInfo();
-				info.Filename = "images/" + bg;
-				info.ForegroundFilename = "images/" + fg;
+				info.Filename = Path.GetFullPath("images/" + bg);
+				info.ForegroundFilename = Path.GetFullPath("images/" + fg);
 				info.ForegroundScale = fgScale;
 				info.IsAppIcon = true;
 
@@ -103,8 +103,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo
 				{
-					Filename = "images/" + bg,
-					ForegroundFilename = "images/" + fg,
+					Filename = Path.GetFullPath("images/" + bg),
+					ForegroundFilename = Path.GetFullPath("images/" + fg),
 					ForegroundScale = fgScale,
 					IsAppIcon = true,
 					Color = SKColors.Orange,
@@ -136,8 +136,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo
 				{
-					Filename = "images/" + bg,
-					ForegroundFilename = "images/" + fg,
+					Filename = Path.GetFullPath("images/" + bg),
+					ForegroundFilename = Path.GetFullPath("images/" + fg),
 					ForegroundScale = fgScale,
 					IsAppIcon = true,
 					Color = SKColors.Orange,
@@ -170,8 +170,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo
 				{
-					Filename = "images/" + bg,
-					ForegroundFilename = "images/" + fg,
+					Filename = Path.GetFullPath("images/" + bg),
+					ForegroundFilename = Path.GetFullPath("images/" + fg),
 					ForegroundScale = fgScale,
 					IsAppIcon = true,
 					Color = SKColors.Orange,

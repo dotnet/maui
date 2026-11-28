@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Resizetizer
 	/// <summary>
 	/// Generates the MauiSplash.storyboard file for iOS splash screens
 	/// </summary>
-	public class GenerateSplashStoryboard : Task, ILogger
+	[MSBuildMultiThreadableTask]
+	public class GenerateSplashStoryboard : MauiTask, ILogger
 	{
 		[Required]
 		public string IntermediateOutputPath { get; set; } = null!;
@@ -22,12 +23,20 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string? InputsFile { get; set; }
 
+		string intermediateOutputPath = null!;
+		string? inputsFile;
+		FileRetryPolicy retryPolicy = FileRetryPolicy.Default;
+
 		public override bool Execute()
 		{
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen: Intermediate Path " + IntermediateOutputPath);
 
 			try
 			{
+				intermediateOutputPath = TaskEnvironment.GetAbsolutePath(IntermediateOutputPath);
+				inputsFile = InputsFile is null or "" ? InputsFile : TaskEnvironment.GetAbsolutePath(InputsFile);
+				retryPolicy = FileRetryPolicy.FromEnvironment(TaskEnvironment);
+
 				CleanThemedAssets();
 
 				var splash = MauiSplashScreen?.FirstOrDefault();
@@ -39,9 +48,9 @@ namespace Microsoft.Maui.Resizetizer
 				else
 				{
 					// write a storyboard with an image and background color
-					var info = ResizeImageInfo.Parse(splash);
+					var info = ResizeImageInfo.Parse(splash, TaskEnvironment);
 
-					var resizer = new Resizer(info, IntermediateOutputPath, this);
+					var resizer = new Resizer(info, intermediateOutputPath, this) { RetryPolicy = retryPolicy };
 
 					WriteImages(resizer);
 					WriteStoryboard(resizer);
@@ -63,7 +72,7 @@ namespace Microsoft.Maui.Resizetizer
 				foreach (var dpi in DpiPath.Ios.Image)
 				{
 					Log.LogMessage(MessageImportance.Low, $"Splash Screen Resize: " + dpi);
-					resizer.Resize(dpi, InputsFile);
+					resizer.Resize(dpi, inputsFile);
 				}
 			}
 			else
@@ -71,14 +80,14 @@ namespace Microsoft.Maui.Resizetizer
 				var dpi = DpiPath.Ios.Original;
 
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen Copy: " + dpi);
-				resizer.CopyFile(dpi, InputsFile);
+				resizer.CopyFile(dpi, inputsFile);
 			}
 		}
 
 		private void WriteStoryboard(Resizer resizer)
 		{
-			Directory.CreateDirectory(IntermediateOutputPath);
-			var storyboardFile = Path.Combine(IntermediateOutputPath, "MauiSplash.storyboard");
+			Directory.CreateDirectory(new AbsolutePath(intermediateOutputPath));
+			var storyboardFile = Path.Combine(intermediateOutputPath, "MauiSplash.storyboard");
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen Storyboard: " + storyboardFile);
 
@@ -92,18 +101,18 @@ namespace Microsoft.Maui.Resizetizer
 
 			var color = resizer.Info.Color ?? SKColors.White;
 
-			using var writer = File.CreateText(storyboardFile);
+			using var writer = File.CreateText(new AbsolutePath(storyboardFile));
 			SubstituteStoryboard(writer, "MauiSplash.storyboard", image, color);
 		}
 
 		private void WriteEmptyStoryboard()
 		{
-			Directory.CreateDirectory(IntermediateOutputPath);
-			var storyboardFile = Path.Combine(IntermediateOutputPath, "MauiSplash.storyboard");
+			Directory.CreateDirectory(new AbsolutePath(intermediateOutputPath));
+			var storyboardFile = Path.Combine(intermediateOutputPath, "MauiSplash.storyboard");
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen Storyboard (empty): " + storyboardFile);
 
-			using var writer = File.CreateText(storyboardFile);
+			using var writer = File.CreateText(new AbsolutePath(storyboardFile));
 			SubstituteStoryboard(writer, "MauiNoSplash.storyboard", null, SKColors.White);
 		}
 
@@ -150,9 +159,9 @@ namespace Microsoft.Maui.Resizetizer
 
 		void CleanThemedAssets()
 		{
-			var assetsPath = Path.Combine(IntermediateOutputPath, "Assets.xcassets");
-			if (Directory.Exists(assetsPath))
-				Utils.DeleteDirectoryWithRetries(assetsPath);
+			var assetsPath = Path.Combine(intermediateOutputPath, "Assets.xcassets");
+			if (Directory.Exists(new AbsolutePath(assetsPath)))
+				Utils.DeleteDirectoryWithRetries(assetsPath, retryPolicy);
 		}
 	}
 }
